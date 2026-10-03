@@ -51,6 +51,15 @@ pub enum Error {
     },
 }
 
+impl Error {
+    fn is_language_exception(&self) -> bool {
+        match self {
+            Self::Thrown(_) | Self::Exception { .. } => true,
+            Self::Parse(_) | Self::Unsupported { .. } | Self::Limit { .. } => false,
+        }
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -364,27 +373,32 @@ impl Realm {
                 self.scopes.pop();
                 result
             }
-            StatementKind::TryFinally { body, finalizer } => {
-                let body_result = self.statement(body);
-                if let Err(error) = &body_result {
-                    match error {
-                        Error::Thrown(_) | Error::Exception { .. } => {}
-                        // Host failures abort execution, rather than entering
-                        // JavaScript control flow that could suppress them.
-                        Error::Parse(_) | Error::Unsupported { .. } | Error::Limit { .. } => {
-                            return body_result;
-                        }
+            StatementKind::Try {
+                body,
+                handler,
+                finalizer,
+            } => {
+                let mut result = self.statement(body);
+                // ECMA-262 14.15.2/14.15.3: catch without a parameter evaluates
+                // its block only on a throw, without an extra binding environment.
+                if result.as_ref().is_err_and(|e| e.is_language_exception()) {
+                    if let Some(handler) = handler {
+                        result = self.statement(handler);
                     }
+                }
+                // Host failures cannot enter or be suppressed by language control.
+                if result.as_ref().is_err_and(|e| !e.is_language_exception()) {
+                    return result;
                 }
                 // ECMA-262 14.15.3: a normal finalizer preserves the protected
                 // completion, ignoring its own value. An abrupt one replaces it.
-                let finalizer_result = self.statement(finalizer)?;
-                let result = if finalizer_result.kind == CompletionKind::Normal {
-                    body_result?
-                } else {
-                    finalizer_result
-                };
-                Ok(result.update_empty(Some(Value::Undefined)))
+                if let Some(finalizer) = finalizer {
+                    let finalizer_result = self.statement(finalizer)?;
+                    if finalizer_result.kind != CompletionKind::Normal {
+                        result = Ok(finalizer_result);
+                    }
+                }
+                result.map(|c| c.update_empty(Some(Value::Undefined)))
             }
             StatementKind::Switch {
                 discriminant,

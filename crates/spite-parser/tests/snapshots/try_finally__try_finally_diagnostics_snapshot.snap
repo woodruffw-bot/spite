@@ -17,7 +17,7 @@ expression: errors
             start: 6,
             end: 6,
         },
-        message: "expected finally",
+        message: "expected catch or finally",
     },
     Diagnostic {
         kind: Syntax,
@@ -46,9 +46,9 @@ expression: errors
     Diagnostic {
         kind: Unsupported,
         span: Span {
-            start: 7,
-            end: 12,
+            start: 13,
+            end: 14,
         },
-        message: "catch clauses are not implemented",
+        message: "catch parameters are not implemented",
     },
 ]

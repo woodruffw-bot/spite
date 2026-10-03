@@ -17,7 +17,7 @@ fn try_finally_diagnostics_snapshot() {
         "try {} finally ;",
         "try {} finally { break; }",
         "try {} finally { let x; let x; }",
-        "try {} catch {}",
+        "try {} catch (e) {}",
     ]
     .map(|s| parse_script(s).unwrap_err())
     .into();
@@ -136,13 +136,8 @@ fn strict_mode_and_asi_apply_to_both_blocks() {
 }
 
 #[test]
-fn catch_remains_explicitly_unsupported() {
-    for source in [
-        "try {} catch {}",
-        "try {} catch (e) {}",
-        "try {} catch (e) {} finally {}",
-        "try {} catch {} finally {}",
-    ] {
+fn catch_parameters_remain_explicitly_unsupported() {
+    for source in ["try {} catch (e) {}", "try {} catch (e) {} finally {}"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

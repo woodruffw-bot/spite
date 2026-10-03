@@ -47,12 +47,14 @@ pub enum StatementKind {
     },
     /// A block with its own lexical environment.
     Block(Vec<Statement>),
-    /// A try statement with a finally block and no catch clause.
-    TryFinally {
+    /// A try statement with a catch clause, a finally clause, or both.
+    Try {
         /// Protected block.
         body: Box<Statement>,
-        /// Block evaluated after the protected block completes.
-        finalizer: Box<Statement>,
+        /// Catch block without a catch parameter, when present.
+        handler: Option<Box<Statement>>,
+        /// Block evaluated after the protected block or catch completes.
+        finalizer: Option<Box<Statement>>,
     },
     /// A switch statement with a shared lexical scope for its clauses.
     Switch {

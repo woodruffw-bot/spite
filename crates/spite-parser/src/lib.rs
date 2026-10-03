@@ -238,12 +238,27 @@ impl Parser {
         } else if self.eat("try") {
             // ECMA-262 14.15 requires blocks, not arbitrary statements.
             let body = self.required_block()?;
-            if self.at("catch") {
-                return Err(self.unsupported("catch clauses are not implemented"));
+            let handler = if self.eat("catch") {
+                if self.at("(") {
+                    return Err(self.unsupported("catch parameters are not implemented"));
+                }
+                Some(self.required_block()?)
+            } else {
+                None
+            };
+            let finalizer = if self.eat("finally") {
+                Some(self.required_block()?)
+            } else {
+                None
+            };
+            if handler.is_none() && finalizer.is_none() {
+                return Err(self.error("expected catch or finally"));
             }
-            self.expect("finally")?;
-            let finalizer = self.required_block()?;
-            StatementKind::TryFinally { body, finalizer }
+            StatementKind::Try {
+                body,
+                handler,
+                finalizer,
+            }
         } else if self.eat("switch") {
             self.expect("(")?;
             let discriminant = self.expression(1)?;
@@ -796,9 +811,15 @@ fn validate_statement<'a>(
             }
         }
         StatementKind::Block(body) => validate_scope(body, strict, control, labels)?,
-        StatementKind::TryFinally { body, finalizer } => {
+        StatementKind::Try {
+            body,
+            handler,
+            finalizer,
+        } => {
             validate_statement(body, strict, control, labels)?;
-            validate_statement(finalizer, strict, control, labels)?;
+            for clause in [handler, finalizer].into_iter().flatten() {
+                validate_statement(clause, strict, control, labels)?;
+            }
         }
         StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {
             validate_expr(test, strict)?;

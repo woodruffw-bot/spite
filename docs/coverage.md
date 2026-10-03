@@ -14,7 +14,7 @@ not an alternative language specification.
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Expressions | Primitive literals, identifiers, parentheses, simple assignment, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
-| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, switch, labels, break/continue with optional targets, throw, try-finally |
+| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, switch, labels, break/continue with optional targets, throw, try with catch without a parameter and/or finally |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive throws, finalizer preservation and overrides of language completions |
@@ -38,13 +38,14 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
-expressions, templates, var, for-in/of, catch clauses, generators,
+expressions, templates, var, for-in/of, catch parameters, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and garbage collection remain open. See the roadmap for their order.
 
 Global lexical and simple value bindings work, but there is no observable global
 object or full property model yet. Built-in error categories are represented in
-Rust. JavaScript Error objects and catchable exception handling are future work.
+Rust. Catch clauses without a parameter handle language throws and built-in
+exceptions. JavaScript Error objects and catch parameters are future work.
 
 Recognized missing features return Unsupported. Because the grammar is incomplete,
 a syntax diagnostic alone does not prove arbitrary input violates ECMA-262. The
@@ -68,7 +69,7 @@ complete memory budget or an operating-system sandbox. State is not rolled back
 after runtime failure. Parsing and early errors occur before any execution.
 Host failures abort evaluation without running further JavaScript finalizers.
 Language throws and built-in exceptions do run finalizers and can be overridden
-by an abrupt finalizer, even though catch clauses are not yet implemented.
+by an abrupt finalizer.
 
 ## Intentionally outside scope
 
