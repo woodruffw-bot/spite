@@ -1,0 +1,25 @@
+---
+source: crates/spite-test262/tests/runner.rs
+expression: outcomes
+---
+[
+    Passed,
+    Failed {
+        stage: Runtime,
+        message: "uncaught primitive throw: 1",
+    },
+    Unsupported {
+        stage: Runtime,
+        message: "Unsupported at 75..79: $262 is not implemented",
+    },
+    UnverifiedSyntax(
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 70,
+                end: 71,
+            },
+            message: "unexpected character",
+        },
+    ),
+]

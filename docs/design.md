@@ -160,7 +160,10 @@ results by phase and error type, keeping harness/setup failures separate from th
 test result. Modules, async execution, and host helpers remain explicitly unsupported
 until implemented. While the grammar is partial, parse-negative passes additionally
 require a reviewed expected diagnostic span and message; an arbitrary syntax error
-is an unverified result, not a conformance pass.
+is an unverified result, not a conformance pass. Conformance realms reserve missing
+host helper globals, so reading or testing their type reports Unsupported rather
+than producing an accidental ReferenceError or undefined. Ordinary realms receive
+no Test262 globals. Parse-negative tests need no harness evaluation.
 
 Use CI for formatting, Clippy, unit tests, integration tests, documentation tests,
 snapshot review, and a dependency-policy check. Keep production crates buildable

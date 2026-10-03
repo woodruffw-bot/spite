@@ -134,6 +134,9 @@ name = "spite-test262"
 version = "0.1.0"
 dependencies = [
  "insta",
+ "spite-core",
+ "spite-parser",
+ "spite-runtime",
 ]
 
 [[package]]

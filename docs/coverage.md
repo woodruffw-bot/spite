@@ -67,8 +67,13 @@ Script execution passes. The fixture suite does not run the general harness,
 parse arbitrary Test262 YAML, report a whole-suite pass rate, or cover all of the
 implemented semantics. The new `spite-test262` crate reads a documented metadata
 subset, plans strict/non-strict/module/raw modes, and preserves harness include
-order. Unsupported metadata forms are explicit errors. Execution and phase-aware
-result accounting are the next runner increments.
+order. Its Script runner uses fresh realms, separates harness failures from test
+results, and matches negative tests by phase and error type. Parse-negative passes
+require a reviewed diagnostic range and message; unreviewed syntax errors remain
+unverified. Unsupported features, missing host helpers, and resource limits are
+separate non-passing results. Modules, async completion, agents, and the full
+upstream harness remain unsupported. Running the pinned corpus through this
+runner is the next increment.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion
 with ECMAScript presentation rules. Primitive numeric operations have boundary

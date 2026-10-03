@@ -42,8 +42,9 @@ The manifest is not a YAML metadata parser or a general Test262 runner. These
 results do not measure whole-suite conformance. Other tests require grammar,
 objects, functions, or harness facilities that have not been implemented yet.
 The `spite-test262` crate now reads a documented subset of frontmatter and plans
-execution modes and harness include order. General execution and phase-aware
-reporting remain the next roadmap increments.
+execution modes and harness include order. Its Script runner now separates parse,
+harness, and runtime outcomes, requiring a reviewed diagnostic for parse-negative
+passes. Migration of the pinned corpus to that runner is the next increment.
 
 Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attributes
 prevent line-ending normalization of fixtures. Do not edit the source files to

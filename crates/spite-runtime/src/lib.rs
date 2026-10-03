@@ -6,7 +6,10 @@ pub use value::Value;
 use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
 use spite_parser::{ast::*, parse_script};
-use std::{collections::BTreeMap, fmt};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fmt,
+};
 use value::{exponentiate, to_uint32};
 
 /// Built-in error categories produced by implemented runtime operations.
@@ -183,6 +186,7 @@ impl Completion {
 pub struct Realm {
     scopes: Vec<BTreeMap<String, BindingState>>,
     globals: BTreeMap<String, GlobalBinding>,
+    unsupported_host_globals: BTreeSet<String>,
     limits: Limits,
     remaining_steps: usize,
     strict: bool,
@@ -215,10 +219,21 @@ impl Realm {
                 )
             })
             .collect(),
+            unsupported_host_globals: BTreeSet::new(),
             limits,
             remaining_steps: 0,
             strict: false,
         }
+    }
+
+    /// Marks an unavailable host global so access reports Unsupported, not a
+    /// misleading ReferenceError or an undefined result from typeof.
+    ///
+    /// This does not install a JavaScript value. Lexical bindings can shadow the
+    /// name, and existing implemented globals retain their normal behavior.
+    /// Ordinary realms reserve no extra host names.
+    pub fn reserve_unsupported_global(&mut self, name: impl Into<String>) {
+        self.unsupported_host_globals.insert(name.into());
     }
 
     /// Parses, validates, and evaluates a Script in this realm.
@@ -423,7 +438,10 @@ impl Realm {
                     "var declaration conflicts with global lexical binding",
                 ));
             }
-            if standard_global(&binding.name) && !self.globals.contains_key(&binding.name) {
+            if (standard_global(&binding.name)
+                || self.unsupported_host_globals.contains(&binding.name))
+                && !self.globals.contains_key(&binding.name)
+            {
                 return Err(Self::unsupported(
                     binding.span,
                     format!("{} is not implemented", binding.name),
@@ -764,7 +782,7 @@ impl Realm {
         }
         if self.globals.contains_key(name) {
             Reference::Global(name)
-        } else if standard_global(name) {
+        } else if standard_global(name) || self.unsupported_host_globals.contains(name) {
             Reference::UnsupportedGlobal(name)
         } else {
             Reference::Unresolvable(name)
