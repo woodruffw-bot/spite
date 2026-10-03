@@ -176,7 +176,12 @@ under an explicit work budget. Data writes follow the receiver even when lookup
 starts on another object, preserve existing attributes, and reject inherited
 non-writable properties. Descriptor rejection returns false; invalid handles and
 resource exhaustion remain host errors. Allocation and these internal methods
-never collect implicitly. Explicit collection requires all live caller roots.
+never collect implicitly. Explicit collection combines caller-supplied handles
+with live host `Root` tokens. Tokens contain handles, not object data, and the
+registry holds only weak references to them. Repeated roots of an object share
+a token; dropping its last clone releases that root. Expired entries are reused,
+bounding the registry by heap slot capacity. Root registration and registry scans
+consume explicit work budgets. Object fields must hold handles, never root tokens.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later

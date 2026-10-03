@@ -10,7 +10,7 @@ use spite_heap::{Handle, Trace};
 use std::fmt;
 
 mod store;
-pub use store::{Budget, Error, Objects};
+pub use store::{Budget, Error, Objects, Root};
 
 /// A complete ordinary data property.
 #[derive(Clone, Debug, PartialEq)]

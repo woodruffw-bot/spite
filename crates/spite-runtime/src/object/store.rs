@@ -4,7 +4,27 @@ use super::{DataDescriptor, DataProperty, OrdinaryObject};
 use crate::Value;
 use spite_core::JsString;
 use spite_heap::{Collection, Handle, Heap};
-use std::fmt;
+use std::{
+    fmt,
+    rc::{Rc, Weak},
+};
+
+/// A host-held root that keeps an object reachable until its last clone is dropped.
+///
+/// Store unrooted handles in object fields, never roots: roots belong to host and
+/// interpreter lifetimes outside the heap graph. The token owns only a handle;
+/// it neither owns object data nor prevents the owning heap from being dropped.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Root {
+    handle: Rc<Handle>,
+}
+
+impl Root {
+    /// Borrows the rooted object's handle.
+    pub fn handle(&self) -> &Handle {
+        &self.handle
+    }
+}
 
 /// A host failure from ordinary-object storage or work accounting.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -78,12 +98,13 @@ impl Budget {
 /// An ordinary-object heap that validates prototypes and prevents their cycles.
 ///
 /// Allocation and internal methods never trigger collection. Returned handles
-/// are unrooted: every live host or interpreter handle must be included in the
-/// roots when explicitly collecting. Only data properties are implemented.
+/// are unrooted: retain a `Root` or include each live host/interpreter handle in
+/// the explicit collection roots. Only data properties are implemented.
 #[derive(Debug)]
 pub struct Objects {
     heap: Heap<OrdinaryObject>,
     max_properties: usize,
+    roots: Vec<Weak<Handle>>,
 }
 
 impl Objects {
@@ -92,6 +113,7 @@ impl Objects {
         Self {
             heap: Heap::new(max_objects),
             max_properties,
+            roots: Vec::new(),
         }
     }
 
@@ -108,6 +130,34 @@ impl Objects {
     /// Borrows a record for host inspection without traversing prototypes.
     pub fn inspect(&self, object: &Handle) -> Result<&OrdinaryObject, Error> {
         Ok(self.heap.get(object)?)
+    }
+
+    /// Retains an object across collections, validating ownership and liveness.
+    ///
+    /// Repeated roots of the same object share a token. Expired registry entries
+    /// are reused, so the registry cannot exceed the heap's slot capacity. Work
+    /// exhaustion creates no root and leaves existing root lifetimes unchanged.
+    pub fn root(&mut self, object: &Handle, budget: &mut Budget) -> Result<Root, Error> {
+        self.heap.get(object)?;
+        budget.charge(self.roots.len().checked_add(1).ok_or(Error::WorkLimit)?)?;
+        let mut empty = None;
+        for (index, entry) in self.roots.iter().enumerate() {
+            if let Some(handle) = entry.upgrade() {
+                if handle.as_ref() == object {
+                    return Ok(Root { handle });
+                }
+            } else if empty.is_none() {
+                empty = Some(index);
+            }
+        }
+        let handle = Rc::new(object.clone());
+        let entry = Rc::downgrade(&handle);
+        if let Some(index) = empty {
+            self.roots[index] = entry;
+        } else {
+            self.roots.push(entry);
+        }
+        Ok(Root { handle })
     }
 
     /// Disallows new own properties while preserving existing property attributes.
@@ -248,13 +298,28 @@ impl Objects {
         Ok(self.heap.get_mut(object)?.delete(key))
     }
 
-    /// Explicitly collects from every supplied live handle; no hidden roots exist.
+    /// Collects from live `Root` tokens and additional caller-supplied handles.
+    ///
+    /// Registry scans consume the same collection budget. Failure occurs before
+    /// sweeping, including when the registry scan itself exceeds the budget.
     pub fn collect<'a>(
         &mut self,
         roots: impl IntoIterator<Item = &'a Handle>,
         max_work: usize,
     ) -> Result<Collection, spite_heap::Error> {
-        self.heap.collect(roots, max_work)
+        let remaining = max_work
+            .checked_sub(self.roots.len())
+            .ok_or(spite_heap::Error::Limit)?;
+        let retained: Vec<_> = self.roots.iter().filter_map(Weak::upgrade).collect();
+        let mut registered = retained.iter();
+        let mut supplied = roots.into_iter();
+        let combined = std::iter::from_fn(|| match registered.next() {
+            Some(root) => Some(root.as_ref()),
+            None => supplied.next(),
+        });
+        let mut result = self.heap.collect(combined, remaining)?;
+        result.work_used += self.roots.len();
+        Ok(result)
     }
 
     fn find(
