@@ -1,0 +1,22 @@
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+repository = "https://github.com/woodruffw-bot/spite"
+publish = false
+
+[workspace.dependencies]
+spite-core = { path = "crates/spite-core" }
+insta = { version = "1.43", default-features = false }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+all = "warn"

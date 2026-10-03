@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  INSTA_UPDATE: 'no'
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }}, ${{ matrix.toolchain }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        toolchain: [stable, '1.85.0']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+        run: rustup toolchain install "$TOOLCHAIN" --profile minimal
+      - name: Run unit and integration tests
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+        run: cargo +"$TOOLCHAIN" test --workspace --all-targets --locked
+      - name: Run documentation tests
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+        run: cargo +"$TOOLCHAIN" test --workspace --doc --locked
+
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install Rust checks
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+      - run: cargo +stable fmt --all --check
+      - run: cargo +stable clippy --workspace --all-targets --locked -- -D warnings
+      - run: python3 tools/check-policy.py
