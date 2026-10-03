@@ -50,7 +50,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
 - [x] Add normalized integer storage, radix conversion, signed addition, and work budgets.
 - [x] Add integer multiplication and truncating division with signed remainders.
-- [ ] Add integer shifts, bitwise operations, and exponentiation.
+- [x] Add integer shifts, bitwise operations, and exponentiation.
 - [ ] Integrate BigInt literals, values, coercions, and language operators.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.
