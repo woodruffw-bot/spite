@@ -1,5 +1,11 @@
 //! Shared source locations, diagnostics, and ECMAScript strings.
 
+mod unicode;
+mod unicode_data;
+
+pub use unicode::{is_identifier_part, is_identifier_start};
+pub use unicode_data::UNICODE_VERSION;
+
 use std::fmt;
 
 /// A half-open range of UTF-8 byte offsets in source text.
