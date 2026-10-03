@@ -170,6 +170,14 @@ Property capacity failures remain distinct from descriptor rejection. Accessors,
 Symbols, inherited lookup, and prototype mutation arrive on explicit boundaries;
 the record layer does not yet expose objects to JavaScript.
 
+The `Objects` heap context validates prototype handles and prevents ordinary
+prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively
+under an explicit work budget. Data writes follow the receiver even when lookup
+starts on another object, preserve existing attributes, and reject inherited
+non-writable properties. Descriptor rejection returns false; invalid handles and
+resource exhaustion remain host errors. Allocation and these internal methods
+never collect implicitly. Explicit collection requires all live caller roots.
+
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later
 use explicit interpreter frames. Module loading, clocks, entropy, and agent creation

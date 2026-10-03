@@ -1,13 +1,16 @@
 //! Ordinary data-property storage, before objects are exposed to JavaScript.
 //!
 //! This layer implements own string-keyed data properties. Accessors, Symbols,
-//! prototype mutation, and inherited property operations are separate increments.
+//! and exotic internal methods are separate increments.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::Value;
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 use std::fmt;
+
+mod store;
+pub use store::{Budget, Error, Objects};
 
 /// A complete ordinary data property.
 #[derive(Clone, Debug, PartialEq)]

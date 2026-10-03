@@ -45,9 +45,11 @@ collection from explicit roots. Handle or budget failures occur before sweeping.
 Runtime object records add string-keyed data descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. These records
-have a host property-capacity limit and are not yet integrated into JavaScript
-values. Accessors, Symbol keys, prototype operations, and interpreter/embedding
-root lifetimes remain open.
+have a host property-capacity limit. A heap context adds bounded iterative
+prototype traversal, cycle-checked mutation, inherited data reads and presence
+checks, and receiver-sensitive writes. These operations are not yet integrated
+into JavaScript values. Accessors, Symbol keys, and interpreter/embedding root
+lifetimes remain open.
 
 Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
