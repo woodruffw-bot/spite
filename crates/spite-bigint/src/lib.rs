@@ -170,6 +170,70 @@ impl BigInt {
             .flatten()
     }
 
+    /// Compares mathematical values exactly, without rounding this integer to binary64.
+    ///
+    /// NaN is unordered. Infinities and fractional finite numbers are supported.
+    pub fn cmp_f64(&self, number: f64, budget: &mut Budget) -> Result<Option<Ordering>, Error> {
+        budget.charge(1)?;
+        if number.is_nan() {
+            return Ok(None);
+        }
+        if number.is_infinite() {
+            return Ok(Some(if number.is_sign_positive() {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }));
+        }
+        if self.is_zero() {
+            return Ok(0.0f64.partial_cmp(&number));
+        }
+        if number == 0.0 || self.negative != number.is_sign_negative() {
+            return Ok(Some(if self.negative {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }));
+        }
+        let exponent = ((number.to_bits() >> 52) & 0x7ff) as i32 - 1023;
+        let magnitude_order = if exponent < 0 {
+            // Every nonzero integer has magnitude at least one.
+            Ordering::Greater
+        } else {
+            let length = exponent as usize + 1;
+            let mut order = self.bit_length().cmp(&length);
+            if order.is_eq() {
+                budget.charge(length)?;
+                let significand = (number.to_bits() & ((1u64 << 52) - 1)) | (1u64 << 52);
+                for bit in (0..length).rev() {
+                    let integer_bit = (self.words[bit / 32] >> (bit % 32)) & 1;
+                    let significand_bit = bit as i32 - (exponent - 52);
+                    let number_bit = if (0..53).contains(&significand_bit) {
+                        ((significand >> significand_bit) & 1) as u32
+                    } else {
+                        0
+                    };
+                    order = integer_bit.cmp(&number_bit);
+                    if !order.is_eq() {
+                        break;
+                    }
+                }
+                if order.is_eq()
+                    && exponent < 52
+                    && significand & ((1u64 << (52 - exponent)) - 1) != 0
+                {
+                    order = Ordering::Less;
+                }
+            }
+            order
+        };
+        Ok(Some(if self.negative {
+            magnitude_order.reverse()
+        } else {
+            magnitude_order
+        }))
+    }
+
     /// Returns the negated integer.
     pub fn neg(&self, budget: &mut Budget) -> Result<Self, Error> {
         budget.charge(self.words.len() + 1)?;
@@ -506,6 +570,24 @@ impl From<i64> for BigInt {
     fn from(value: i64) -> Self {
         let magnitude = value.unsigned_abs();
         Self::normalized(value < 0, vec![magnitude as u32, (magnitude >> 32) as u32])
+    }
+}
+
+// Hexadecimal host formatting is linear, streaming, and does not perform division.
+impl fmt::LowerHex for BigInt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.negative {
+            f.write_str("-")?;
+        }
+        if f.alternate() {
+            f.write_str("0x")?;
+        }
+        let mut words = self.words.iter().rev();
+        write!(f, "{:x}", words.next().unwrap_or(&0))?;
+        for word in words {
+            write!(f, "{word:08x}")?;
+        }
+        Ok(())
     }
 }
 
