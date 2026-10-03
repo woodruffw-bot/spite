@@ -313,7 +313,7 @@ fn accessor_edges_are_validated_traced_and_removed_on_kind_change() {
     for (handle, error) in [
         (foreign, Error::Heap(spite_heap::Error::ForeignHandle)),
         (stale, Error::Heap(spite_heap::Error::StaleHandle)),
-        (object.clone(), Error::InvalidAccessor),
+        (object.clone(), Error::NotCallable),
     ] {
         assert_eq!(
             objects.define(

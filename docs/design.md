@@ -254,7 +254,7 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The eight intrinsic objects are published atomically after lazy
+(20.1.3, 10.4.7.1). The nine intrinsic objects are published atomically after lazy
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
@@ -270,8 +270,7 @@ arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth
 Function.prototype.toString emits `function NAME() { [native code] }` for builtin
 functions, using immutable builtin identity for [[InitialName]] (20.2.3.5). It
 never reads the public name property. Generated builtin strings respect the realm
-length limit, including during implicit coercion. User function source retention,
-and bound functions remain subsequent increments.
+length limit, including during implicit coercion. User function source retention remains a subsequent increment.
 
 Function.prototype.apply checks callability before inspecting argArray, treats
 nullish lists as empty, and otherwise performs object-only CreateListFromArrayLike
@@ -279,6 +278,21 @@ nullish lists as empty, and otherwise performs object-only CreateListFromArrayLi
 properties and getters, preserve the list receiver, and finish before the target
 call. Direct calls and apply share a configurable argument-list limit (16,384 by
 default). Work and argument limits are checked before allocating a large list.
+
+Bound function exotic records capture an unrooted target handle, a receiver value,
+and an argument list (10.4.1). The heap validates and traces every captured edge,
+including cycles through ordinary properties. Invocation ignores later receivers,
+prepends captured arguments, checks the combined argument limit, and transfers to
+the target iteratively. Capture copies consume work before allocation. Bind copies
+the target prototype before reading length/name, uses only own Number-valued length,
+and preserves exact UTF-16 name units with the standard "bound " prefix (20.2.3.2).
+Native source for bound functions is `function () { [native code] }`. Constructor
+forwarding must be added before any constructible function kind is exposed.
+
+Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
+64 until explicit frames replace Rust recursion. Every success and abrupt result
+restores the counter; iterative call/apply/bound transfers do not increase it.
+Host limit failures continue to bypass JavaScript catch/finally handlers.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later

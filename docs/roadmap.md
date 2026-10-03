@@ -93,7 +93,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.
-- [ ] Add bound function exotic objects and Function.prototype bind.
+- [x] Add bound callable objects, capture tracing, and Function.prototype bind.
+- [x] Bound re-entrant calls and dispatch builtin/bound tail transfers iteratively.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [ ] Run the upstream Test262 harness and grow a supported regression set.

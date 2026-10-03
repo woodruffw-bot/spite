@@ -309,8 +309,8 @@ impl Realm {
                     message: error.to_string(),
                 }
             }
-            object::Error::InvalidAccessor => {
-                unreachable!("realm descriptors validate accessor callability before storage")
+            object::Error::NotCallable => {
+                unreachable!("realm operations validate function callability before storage")
             }
             object::Error::Heap(
                 spite_heap::Error::ForeignHandle | spite_heap::Error::StaleHandle,
@@ -399,8 +399,7 @@ impl Realm {
             return false;
         };
         (object == &intrinsics.object_prototype && missing_object_method(key))
-            || (object == &intrinsics.function_prototype
-                && ["constructor", "bind"].iter().any(|name| key_is(key, name)))
+            || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
     }
 }
 

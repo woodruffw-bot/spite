@@ -2,7 +2,7 @@
 
 use super::{DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor};
 use crate::Value;
-use crate::function::{Builtin, Callable};
+use crate::function::{BoundFunction, Builtin, Callable};
 use spite_core::JsString;
 use spite_heap::{Collection, Handle, Heap};
 use std::{
@@ -36,8 +36,8 @@ pub enum Error {
     WorkLimit,
     /// A permitted new property would exceed the object's capacity.
     PropertyLimit,
-    /// A supplied accessor handle does not refer to a callable object.
-    InvalidAccessor,
+    /// A supplied function handle does not refer to a callable object.
+    NotCallable,
 }
 
 impl fmt::Display for Error {
@@ -46,7 +46,7 @@ impl fmt::Display for Error {
             Self::Heap(error) => error.fmt(f),
             Self::WorkLimit => f.write_str("object work limit exceeded"),
             Self::PropertyLimit => f.write_str("object property limit exceeded"),
-            Self::InvalidAccessor => f.write_str("accessor must be callable or undefined"),
+            Self::NotCallable => f.write_str("function handle must be callable"),
         }
     }
 }
@@ -74,7 +74,7 @@ impl Budget {
         self.remaining
     }
 
-    fn charge(&mut self, work: usize) -> Result<(), Error> {
+    pub(crate) fn charge(&mut self, work: usize) -> Result<(), Error> {
         self.remaining = self.remaining.checked_sub(work).ok_or(Error::WorkLimit)?;
         Ok(())
     }
@@ -162,6 +162,28 @@ impl Objects {
         self.heap.get(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Builtin(builtin));
+        Ok(self.heap.insert(object)?)
+    }
+
+    pub(crate) fn create_bound(
+        &mut self,
+        bound: BoundFunction,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        budget.charge(1)?;
+        let target = self.heap.get(&bound.target)?;
+        if !target.is_callable() {
+            return Err(Error::NotCallable);
+        }
+        let prototype = target.prototype().cloned();
+        for value in std::iter::once(&bound.this).chain(&bound.arguments) {
+            budget.charge(1)?;
+            if let Value::Object(handle) = value {
+                self.heap.get(handle)?;
+            }
+        }
+        let mut object = OrdinaryObject::new(prototype, self.max_properties);
+        object.callable = Some(Callable::Bound(bound));
         Ok(self.heap.insert(object)?)
     }
 
@@ -266,7 +288,7 @@ impl Objects {
                 for handle in [get, set].into_iter().flatten().flatten() {
                     budget.charge(1)?;
                     if !self.heap.get(handle)?.is_callable() {
-                        return Err(Error::InvalidAccessor);
+                        return Err(Error::NotCallable);
                     }
                 }
             }

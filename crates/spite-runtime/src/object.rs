@@ -4,7 +4,7 @@
 //! and additional exotic internal methods are separate increments.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
-use crate::function::Callable;
+use crate::{Value, function::Callable};
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 use std::fmt;
@@ -160,11 +160,17 @@ impl OrdinaryObject {
 
 impl Trace for OrdinaryObject {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
-        let callable = self.callable.as_ref().and_then(|callable| match callable {
+        let bound = self.callable.as_ref().and_then(|callable| match callable {
             Callable::Builtin(_) => None,
+            Callable::Bound(bound) => Some(bound),
         });
         std::iter::once(self.prototype.as_ref())
-            .chain(std::iter::once(callable))
+            .chain(std::iter::once(bound.map(|bound| &bound.target)))
+            .chain(bound.into_iter().flat_map(|bound| {
+                std::iter::once(&bound.this)
+                    .chain(&bound.arguments)
+                    .flat_map(Value::trace)
+            }))
             .chain(self.properties.iter().flat_map(|(_, property)| {
                 let (first, second) = match property {
                     Property::Data(data) => (data.value.trace().next().flatten(), None),

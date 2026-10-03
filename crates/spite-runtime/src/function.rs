@@ -6,11 +6,15 @@ use crate::{
 };
 use spite_core::{JsString, Span};
 
+mod bound;
+pub(crate) use bound::BoundFunction;
+
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
     FunctionPrototype,
     FunctionCall,
     FunctionApply,
+    FunctionBind,
     FunctionToString,
     ThrowTypeError,
     ObjectToString,
@@ -24,6 +28,7 @@ impl Builtin {
             Self::FunctionPrototype | Self::ThrowTypeError => "",
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
+            Self::FunctionBind => "bind",
             Self::FunctionToString | Self::ObjectToString => "toString",
             Self::ObjectValueOf => "valueOf",
         }
@@ -31,7 +36,7 @@ impl Builtin {
 
     fn length(self) -> f64 {
         match self {
-            Self::FunctionCall => 1.0,
+            Self::FunctionCall | Self::FunctionBind => 1.0,
             Self::FunctionApply => 2.0,
             _ => 0.0,
         }
@@ -39,229 +44,12 @@ impl Builtin {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::object::Budget;
-
-    #[test]
-    fn object_prototype_is_immutable_and_function_prototype_is_callable() {
-        let mut realm = Realm::default();
-        realm.eval("({})").unwrap();
-        let intrinsics = realm.intrinsics.as_ref().unwrap();
-        let object = intrinsics.object_prototype.clone();
-        let function = intrinsics.function_prototype.clone();
-        assert!(realm.objects.inspect(&object).unwrap().is_extensible());
-        assert!(
-            realm
-                .objects
-                .set_prototype(&object, None, &mut Budget::new(100))
-                .unwrap()
-        );
-        assert!(
-            !realm
-                .objects
-                .set_prototype(&object, Some(&function), &mut Budget::new(100))
-                .unwrap()
-        );
-        let independent = realm.objects.create(None).unwrap();
-        assert!(
-            !realm
-                .objects
-                .set_prototype(&object, Some(&independent), &mut Budget::new(100))
-                .unwrap()
-        );
-        assert_eq!(
-            realm.call(
-                Value::Object(function),
-                Value::Null,
-                vec![Value::Number(7.0)],
-                Span::new(0, 0)
-            ),
-            Ok(Value::Undefined)
-        );
-    }
-
-    #[test]
-    fn restricted_descriptors_share_a_frozen_nonextensible_thrower() {
-        let mut realm = Realm::default();
-        realm.eval("let f = ({}).toString").unwrap();
-        let intrinsics = realm.intrinsics.as_ref().unwrap();
-        let function = intrinsics.function_prototype.clone();
-        let thrower = intrinsics.throw_type_error.clone();
-        let object = realm.objects.inspect(&thrower).unwrap();
-        assert!(object.is_callable());
-        assert!(!object.is_extensible());
-        assert_eq!(object.prototype(), Some(&function));
-        for (name, expected) in [
-            ("name", Value::String(JsString::from(""))),
-            ("length", Value::Number(0.0)),
-        ] {
-            let property = object
-                .own_property(&JsString::from(name))
-                .unwrap()
-                .as_data()
-                .unwrap();
-            assert_eq!(property.value, expected);
-            assert!(!property.writable && !property.enumerable && !property.configurable);
-        }
-        for name in ["caller", "arguments"] {
-            let crate::object::Property::Accessor(property) = realm
-                .objects
-                .inspect(&function)
-                .unwrap()
-                .own_property(&JsString::from(name))
-                .unwrap()
-            else {
-                panic!("accessor")
-            };
-            assert_eq!(property.get.as_ref(), Some(&thrower));
-            assert_eq!(property.set.as_ref(), Some(&thrower));
-            assert!(!property.enumerable && property.configurable);
-            assert!(
-                realm
-                    .objects
-                    .delete(&function, &JsString::from(name), &mut Budget::new(1000))
-                    .unwrap()
-            );
-            assert_eq!(realm.eval(&format!("f.{name}")), Ok(Value::Undefined));
-            assert_eq!(
-                realm.eval(&format!("'{name}' in f")),
-                Ok(Value::Boolean(false))
-            );
-        }
-        // The intrinsic identity is retained even after deleting all accessor edges.
-        assert_eq!(realm.collect(1000).unwrap().live, 8);
-        assert!(realm.objects.inspect(&thrower).is_ok());
-    }
-
-    #[test]
-    fn call_forwarding_is_iterative_and_budgeted() {
-        let mut realm = Realm::default();
-        realm.eval("({})").unwrap();
-        let intrinsics = realm.intrinsics.as_ref().unwrap();
-        let call = Value::Object(intrinsics.function_call.clone());
-        let tag = Value::Object(intrinsics.object_to_string.clone());
-        let mut arguments = vec![call.clone(); 10_000];
-        arguments.extend([tag.clone(), Value::Null]);
-        assert_eq!(
-            realm.call(call.clone(), call.clone(), arguments, Span::new(0, 0)),
-            Ok(Value::String(JsString::from("[object Null]")))
-        );
-        realm.remaining_steps = 3;
-        assert!(matches!(
-            realm.call(
-                call.clone(),
-                call.clone(),
-                vec![call.clone(); 10],
-                Span::new(0, 0)
-            ),
-            Err(Error::Limit { .. })
-        ));
-        // An abrupt host exit leaves no pending call state behind.
-        assert_eq!(
-            realm.eval("({}).toString.call(null)"),
-            Ok(Value::String(JsString::from("[object Null]")))
-        );
-    }
-
-    #[test]
-    fn native_source_does_not_read_the_name_property() {
-        let mut realm = Realm::default();
-        realm.eval("let f = ({}).valueOf").unwrap();
-        let intrinsics = realm.intrinsics.as_ref().unwrap();
-        let function = intrinsics.object_value_of.clone();
-        let thrower = intrinsics.throw_type_error.clone();
-        realm
-            .objects
-            .define(
-                &function,
-                JsString::from("name"),
-                PropertyDescriptor {
-                    kind: DescriptorKind::Accessor {
-                        get: Some(Some(thrower)),
-                        set: Some(None),
-                    },
-                    ..Default::default()
-                },
-                &mut Budget::new(1000),
-            )
-            .unwrap();
-        assert_eq!(
-            realm.eval("f.toString()"),
-            Ok(Value::String(JsString::from(
-                "function valueOf() { [native code] }"
-            )))
-        );
-        assert!(matches!(
-            realm.eval("f.name"),
-            Err(Error::Exception {
-                kind: ExceptionKind::TypeError,
-                ..
-            })
-        ));
-    }
-
-    #[test]
-    fn apply_reads_every_index_with_the_list_receiver_before_calling_the_target() {
-        let mut realm = Realm::default();
-        let Value::Object(base) = realm
-            .eval("let base = {}; let args = {__proto__: base, length: 1}; base")
-            .unwrap()
-        else {
-            panic!("object")
-        };
-        let intrinsics = realm.intrinsics.as_ref().unwrap();
-        let value_of = intrinsics.object_value_of.clone();
-        let thrower = intrinsics.throw_type_error.clone();
-        realm
-            .objects
-            .define(
-                &base,
-                JsString::from("0"),
-                PropertyDescriptor {
-                    kind: DescriptorKind::Accessor {
-                        get: Some(Some(value_of)),
-                        set: Some(None),
-                    },
-                    ..Default::default()
-                },
-                &mut Budget::new(1000),
-            )
-            .unwrap();
-        assert_eq!(
-            realm.eval("({}).valueOf.call.apply(({}).valueOf, args) === args"),
-            Ok(Value::Boolean(true))
-        );
-        realm
-            .objects
-            .define(
-                &base,
-                JsString::from("1"),
-                PropertyDescriptor {
-                    kind: DescriptorKind::Accessor {
-                        get: Some(Some(thrower)),
-                        set: Some(None),
-                    },
-                    ..Default::default()
-                },
-                &mut Budget::new(1000),
-            )
-            .unwrap();
-        // Object.prototype.toString ignores its arguments, but apply must still
-        // read the full list and propagate a later getter's exception first.
-        assert!(matches!(
-            realm.eval("args.length = 2; ({}).toString.apply(null, args)"),
-            Err(Error::Exception {
-                kind: ExceptionKind::TypeError,
-                ..
-            })
-        ));
-    }
-}
+mod tests;
 
 #[derive(Clone, Debug)]
 pub(crate) enum Callable {
     Builtin(Builtin),
+    Bound(BoundFunction),
 }
 
 #[derive(Debug)]
@@ -273,6 +61,7 @@ pub(super) struct Intrinsics {
     pub throw_type_error: ObjectHandle,
     pub function_call: ObjectHandle,
     pub function_apply: ObjectHandle,
+    pub function_bind: ObjectHandle,
     pub function_to_string: ObjectHandle,
 }
 
@@ -286,6 +75,7 @@ impl Intrinsics {
             &self.throw_type_error,
             &self.function_call,
             &self.function_apply,
+            &self.function_bind,
             &self.function_to_string,
         ]
         .into_iter()
@@ -355,11 +145,13 @@ impl Realm {
         }
         let function_call = self.new_builtin(&function_prototype, Builtin::FunctionCall, span)?;
         let function_apply = self.new_builtin(&function_prototype, Builtin::FunctionApply, span)?;
+        let function_bind = self.new_builtin(&function_prototype, Builtin::FunctionBind, span)?;
         let function_to_string =
             self.new_builtin(&function_prototype, Builtin::FunctionToString, span)?;
         for (name, handle) in [
             ("call", &function_call),
             ("apply", &function_apply),
+            ("bind", &function_bind),
             ("toString", &function_to_string),
         ] {
             self.define_builtin_property(
@@ -380,6 +172,7 @@ impl Realm {
             throw_type_error,
             function_call,
             function_apply,
+            function_bind,
             function_to_string,
         });
         Ok(object_prototype)
@@ -495,6 +288,27 @@ impl Realm {
 
     pub(super) fn call(
         &mut self,
+        function: Value,
+        this: Value,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // Tail transfers stay in call_inner; only getter/coercion re-entry grows
+        // the Rust stack. Keep this bound fixed until explicit frames replace it.
+        if self.call_depth >= 64 {
+            return Err(Error::Limit {
+                span,
+                message: "call nesting limit exceeded".into(),
+            });
+        }
+        self.call_depth += 1;
+        let result = self.call_inner(function, this, arguments, span);
+        self.call_depth -= 1;
+        result
+    }
+
+    fn call_inner(
+        &mut self,
         mut function: Value,
         mut this: Value,
         arguments: Vec<Value>,
@@ -505,14 +319,35 @@ impl Realm {
         loop {
             // 13.3.6.2: callers evaluate arguments before entering this callable check.
             let callable = if let Value::Object(object) = function {
-                self.object_work(span, |objects, _| {
-                    Ok(objects.inspect(&object)?.callable().cloned())
+                self.object_work(span, |objects, budget| {
+                    objects
+                        .inspect(&object)?
+                        .callable()
+                        .map(|callable| callable.copy_with_budget(budget))
+                        .transpose()
                 })?
             } else {
                 None
             };
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
+                Some(Callable::Bound(bound)) => {
+                    let count = bound
+                        .arguments
+                        .len()
+                        .checked_add(arguments.len())
+                        .ok_or_else(|| Error::Limit {
+                            span,
+                            message: "call argument limit exceeded".into(),
+                        })?;
+                    self.check_argument_count(count, span)?;
+                    let mut values = bound.arguments;
+                    values.extend(arguments);
+                    function = Value::Object(bound.target);
+                    this = bound.this;
+                    arguments = values.into_iter();
+                    continue;
+                }
                 None => {
                     return Err(Self::exception(
                         ExceptionKind::TypeError,
@@ -529,6 +364,7 @@ impl Realm {
                     this = arguments.next().unwrap_or(Value::Undefined);
                     continue;
                 }
+                Builtin::FunctionBind => return self.bind_function(this, arguments, span),
                 Builtin::FunctionApply => {
                     // 20.2.3.1 checks the target before inspecting the argument list.
                     if !self.is_callable(&this, span)? {
@@ -555,15 +391,17 @@ impl Realm {
                     // an observable read of the mutable public name property.
                     let callable = if let Value::Object(object) = &this {
                         self.object_work(span, |objects, _| {
-                            Ok(objects.inspect(object)?.callable().cloned())
+                            Ok(objects
+                                .inspect(object)?
+                                .callable()
+                                .map(Callable::native_name))
                         })?
                     } else {
                         None
                     };
                     match callable {
-                        Some(Callable::Builtin(builtin)) => Ok(Value::String(JsString::from(
-                            format!("function {}() {{ [native code] }}", builtin.initial_name())
-                                .as_str(),
+                        Some(name) => Ok(Value::String(JsString::from(
+                            format!("function {name}() {{ [native code] }}").as_str(),
                         ))),
                         None => Err(Self::exception(
                             ExceptionKind::TypeError,

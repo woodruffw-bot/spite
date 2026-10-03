@@ -86,16 +86,20 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the eight objects remain rooted. Function.prototype caller/arguments
+is atomic and the nine objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
-wrappers returned by valueOf, bind, spread arguments, optional calls, and
+wrappers returned by valueOf, spread arguments, optional calls, and
 user functions remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
 length with ToLength, and reads inherited/indexed getters before the target call.
-Argument lists have a configurable host limit shared with direct calls.
+Argument lists have a configurable host limit shared with direct calls and bound
+arguments. Bind implements callable receiver/argument capture, target prototype
+selection, standard length/name metadata, and iterative invocation. Captured
+object edges survive collection and unreachable cycles are reclaimed. Re-entrant
+getter/coercion calls have a host nesting limit of 64; tail transfers are iterative.
 
 Symbols, primitive wrapper constructors,
 arrays, user functions, closures, constructors, classes, destructuring, regular
