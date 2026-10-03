@@ -235,6 +235,14 @@ retains a `RootedValue`; cloning the underlying Value alone does not keep it ali
 No language operation or allocation calls the collector. Before enabling collection
 inside evaluation, temporary and pending-completion lifetimes still need roots.
 
+Function support begins with call syntax and reference-aware callee evaluation.
+GetValue of the callee precedes arguments; argument evaluation precedes the
+IsCallable check. Member calls retain their base as the receiver, including through
+parentheses. Spread arguments and optional calls remain unsupported. Add builtin
+function objects first, then captured environment storage and user functions.
+All currently materialized values are non-callable; unavailable standard functions
+report Unsupported during lookup rather than reaching a false TypeError result.
+
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later
 use explicit interpreter frames. Module loading, clocks, entropy, and agent creation

@@ -529,6 +529,12 @@ impl Parser {
                 PropertyName::Computed(key) => key.depth,
                 PropertyName::Literal(_) => 0,
             }),
+            ExprKind::Call { callee, arguments } => arguments
+                .iter()
+                .map(|argument| argument.depth)
+                .max()
+                .unwrap_or(0)
+                .max(callee.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
             ExprKind::Template { substitutions, .. } => {
                 substitutions.iter().map(|e| e.depth).max().unwrap_or(0)
@@ -573,6 +579,35 @@ impl Parser {
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
         let mut left = self.prefix()?;
         loop {
+            if minimum <= 17 && self.at("(") {
+                if !member_base(&left) {
+                    if self.current().newline {
+                        break;
+                    }
+                    return Err(self.error("call requires a left-hand-side expression"));
+                }
+                self.bump();
+                let mut arguments = Vec::new();
+                while !self.at(")") {
+                    if self.at("...") {
+                        return Err(self.unsupported("spread arguments are not implemented"));
+                    }
+                    arguments.push(self.expression_with_in(2, true)?);
+                    if !self.eat(",") {
+                        break;
+                    }
+                }
+                self.expect(")")?;
+                let span = Span::new(left.span.start, self.tokens[self.index - 1].span.end);
+                left = self.make_expr(
+                    ExprKind::Call {
+                        callee: Box::new(left),
+                        arguments,
+                    },
+                    span,
+                )?;
+                continue;
+            }
             if minimum <= 17 && (self.at(".") || self.at("[")) {
                 if !member_base(&left) {
                     // 12.10.1: a completed UpdateExpression cannot continue as
@@ -683,18 +718,15 @@ impl Parser {
             let span = Span::new(left.span.start, right.span.end);
             left = self.make_expr(ExprKind::Binary(op, Box::new(left), Box::new(right)), span)?;
         }
-        // These tokens continue an expression even across a newline. ASI cannot
-        // make a call or optional chain into a separate expression statement.
-        if matches!(self.current().kind, Kind::Punct("(" | "?.")) {
+        // An optional chain continues a left-hand-side expression across newlines.
+        if self.at("?.") {
             if !member_base(&left) {
                 if self.current().newline {
                     return Ok(left);
                 }
-                return Err(
-                    self.error("call or optional chain requires a left-hand-side expression")
-                );
+                return Err(self.error("optional chain requires a left-hand-side expression"));
             }
-            return Err(self.unsupported("calls and optional chaining are not implemented"));
+            return Err(self.unsupported("optional chaining is not implemented"));
         }
         if matches!(
             self.current().kind,
@@ -940,6 +972,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::Template { .. }
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
+            | ExprKind::Call { .. }
     )
 }
 
@@ -1394,6 +1427,12 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
             validate_expr(base, strict)?;
             if let PropertyName::Computed(key) = name {
                 validate_expr(key, strict)?;
+            }
+        }
+        ExprKind::Call { callee, arguments } => {
+            validate_expr(callee, strict)?;
+            for argument in arguments {
+                validate_expr(argument, strict)?;
             }
         }
         ExprKind::Update { argument, .. } => {

@@ -1,0 +1,159 @@
+---
+source: crates/spite-parser/tests/calls.rs
+expression: "parse_script(\"(obj.method)(1, x = 2,).next()[key]();\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 8,
+                    kind: Call {
+                        callee: Expr {
+                            depth: 7,
+                            kind: Member(
+                                Expr {
+                                    depth: 6,
+                                    kind: Call {
+                                        callee: Expr {
+                                            depth: 5,
+                                            kind: Member(
+                                                Expr {
+                                                    depth: 4,
+                                                    kind: Call {
+                                                        callee: Expr {
+                                                            depth: 3,
+                                                            kind: Parenthesized(
+                                                                Expr {
+                                                                    depth: 2,
+                                                                    kind: Member(
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Identifier(
+                                                                                "obj",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 1,
+                                                                                end: 4,
+                                                                            },
+                                                                        },
+                                                                        Literal(
+                                                                            String(
+                                                                                "method",
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 1,
+                                                                        end: 11,
+                                                                    },
+                                                                },
+                                                            ),
+                                                            span: Span {
+                                                                start: 0,
+                                                                end: 12,
+                                                            },
+                                                        },
+                                                        arguments: [
+                                                            Expr {
+                                                                depth: 1,
+                                                                kind: Literal(
+                                                                    Number(
+                                                                        1.0,
+                                                                    ),
+                                                                ),
+                                                                span: Span {
+                                                                    start: 13,
+                                                                    end: 14,
+                                                                },
+                                                            },
+                                                            Expr {
+                                                                depth: 2,
+                                                                kind: Assign(
+                                                                    Expr {
+                                                                        depth: 1,
+                                                                        kind: Identifier(
+                                                                            "x",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 16,
+                                                                            end: 17,
+                                                                        },
+                                                                    },
+                                                                    Expr {
+                                                                        depth: 1,
+                                                                        kind: Literal(
+                                                                            Number(
+                                                                                2.0,
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 20,
+                                                                            end: 21,
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                span: Span {
+                                                                    start: 16,
+                                                                    end: 21,
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                    span: Span {
+                                                        start: 0,
+                                                        end: 23,
+                                                    },
+                                                },
+                                                Literal(
+                                                    String(
+                                                        "next",
+                                                    ),
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 0,
+                                                end: 28,
+                                            },
+                                        },
+                                        arguments: [],
+                                    },
+                                    span: Span {
+                                        start: 0,
+                                        end: 30,
+                                    },
+                                },
+                                Computed(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "key",
+                                        ),
+                                        span: Span {
+                                            start: 31,
+                                            end: 34,
+                                        },
+                                    },
+                                ),
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 35,
+                            },
+                        },
+                        arguments: [],
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 37,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 38,
+            },
+        },
+    ],
+    strict: false,
+}

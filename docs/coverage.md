@@ -77,8 +77,13 @@ primitive right operands before converting the left key, and recognizes standard
 Object.prototype method presence. The parser applies the In grammar parameter to
 for initializers and nested expressions. For-in/of iteration remains unsupported.
 
+Call expressions parse, retain member receivers, and evaluate callee then arguments
+in order. Non-callable values throw TypeError after argument evaluation. Callable
+function objects, spread arguments, optional calls, and user functions remain open;
+unavailable standard functions still report Unsupported during lookup.
+
 Symbols, primitive wrapper constructors,
-arrays, functions, calls, closures, constructors, classes, destructuring, regular
+arrays, callable functions, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

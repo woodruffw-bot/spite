@@ -269,6 +269,13 @@ pub enum ExprKind {
     Parenthesized(Box<Expr>),
     /// A dotted or computed property reference.
     Member(Box<Expr>, PropertyName),
+    /// A call with an ordered list of non-spread arguments.
+    Call {
+        /// Expression whose value is called; references retain their receiver.
+        callee: Box<Expr>,
+        /// Argument expressions in source order.
+        arguments: Vec<Expr>,
+    },
     /// A prefix unary expression.
     Unary(UnaryOp, Box<Expr>),
     /// An increment or decrement of a reference.

@@ -985,6 +985,24 @@ impl Realm {
         self.tick(expr.span)?;
         let result = match &expr.kind {
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
+            ExprKind::Call { callee, arguments } => {
+                let (function, this) = if reference_expression(callee) {
+                    let mut reference = self.reference(callee)?;
+                    let function = self.get(&mut reference, callee.span)?;
+                    let this = match reference {
+                        Reference::Property { base, .. } => base,
+                        _ => Value::Undefined,
+                    };
+                    (function, this)
+                } else {
+                    (self.expression(callee)?, Value::Undefined)
+                };
+                let mut values = Vec::new();
+                for argument in arguments {
+                    values.push(self.expression(argument)?);
+                }
+                self.call(function, this, values, expr.span)?
+            }
             ExprKind::Template {
                 elements,
                 substitutions,
@@ -1152,6 +1170,23 @@ impl Realm {
         };
         self.check_string(&result, expr.span)?;
         Ok(result)
+    }
+
+    fn call(
+        &mut self,
+        _function: Value,
+        _this: Value,
+        _arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 13.3.6.2 checks IsCallable after ArgumentListEvaluation. All currently
+        // materialized values are non-callable; missing intrinsics fail earlier
+        // during GetValue rather than reaching this language TypeError.
+        Err(Self::exception(
+            ExceptionKind::TypeError,
+            span,
+            "value is not callable",
+        ))
     }
 
     fn binary(

@@ -131,8 +131,8 @@ fn malformed_access_and_invalid_targets_are_syntax_errors() {
 }
 
 #[test]
-fn calls_optional_chains_and_tagged_templates_remain_unsupported() {
-    for source in ["a.b()", "a?.b", "a?.[b]", "a[b]`x`", "a\n(b)"] {
+fn optional_chains_and_tagged_templates_remain_unsupported() {
+    for source in ["a?.b", "a?.[b]", "a[b]`x`"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,
