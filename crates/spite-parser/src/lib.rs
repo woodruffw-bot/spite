@@ -202,6 +202,10 @@ impl Parser {
             }
             self.expect("}")?;
             StatementKind::Block(body)
+        } else if self.eat("var") {
+            let bindings = self.binding_list(false, false, false)?;
+            self.semicolon()?;
+            StatementKind::Var(bindings)
         } else if lexical {
             if !allow_declaration {
                 return Err(self.error("lexical declaration requires a statement list"));
@@ -294,11 +298,10 @@ impl Parser {
                 return Err(self.unsupported("for-await-of is not implemented"));
             }
             self.expect("(")?;
-            if self.at("var") {
-                return Err(self.unsupported("var declarations are not implemented"));
-            }
             let initializer = if self.at(";") {
                 None
+            } else if self.eat("var") {
+                Some(ForInitializer::Var(self.binding_list(false, true, false)?))
             } else if self.at("const")
                 || (self.at("let")
                     && self
@@ -384,7 +387,7 @@ impl Parser {
                 if !self.current().escaped
                     && matches!(
                         word.as_str(),
-                        "var" | "function" | "class" | "return" | "with" | "import" | "export"
+                        "function" | "class" | "return" | "with" | "import" | "export"
                     )
                 {
                     return Err(self.unsupported("statement is not implemented"));
@@ -413,6 +416,15 @@ impl Parser {
         if !mutable {
             self.expect("const")?;
         }
+        Ok((mutable, self.binding_list(!mutable, for_header, true)?))
+    }
+
+    fn binding_list(
+        &mut self,
+        require_initializer: bool,
+        for_header: bool,
+        lexical: bool,
+    ) -> Result<Vec<Binding>, Diagnostic> {
         let mut bindings = Vec::new();
         loop {
             if self.at("[") || self.at("{") {
@@ -426,11 +438,11 @@ impl Parser {
                     "expected binding identifier",
                 ));
             };
-            if reserved(&name) || name == "let" {
+            if reserved(&name) || (lexical && name == "let") {
                 return Err(Diagnostic::new(
                     DiagnosticKind::Syntax,
                     token.span,
-                    "invalid lexical binding identifier",
+                    "invalid binding identifier",
                 ));
             }
             let initializer = if self.eat("=") {
@@ -441,7 +453,7 @@ impl Parser {
             if for_header && (self.at("in") || self.at("of")) {
                 return Err(self.unsupported("for-in and for-of are not implemented"));
             }
-            if !mutable && initializer.is_none() {
+            if require_initializer && initializer.is_none() {
                 return Err(self.error("const requires an initializer"));
             }
             bindings.push(Binding {
@@ -453,7 +465,7 @@ impl Parser {
                 break;
             }
         }
-        Ok((mutable, bindings))
+        Ok(bindings)
     }
 
     fn label_identifier(&mut self) -> Result<Label, Diagnostic> {
@@ -791,11 +803,25 @@ fn validate_binding_names<'a>(
         if !names.insert(binding.name.as_str()) {
             return Err(early(binding.span, "duplicate lexical binding"));
         }
-        if strict
-            && (strict_reserved(&binding.name)
-                || matches!(binding.name.as_str(), "eval" | "arguments"))
-        {
-            return Err(early(binding.span, "invalid binding in strict mode"));
+        validate_binding(binding, strict)?;
+    }
+    Ok(())
+}
+
+fn validate_binding(binding: &Binding, strict: bool) -> Result<(), Diagnostic> {
+    if strict
+        && (strict_reserved(&binding.name) || matches!(binding.name.as_str(), "eval" | "arguments"))
+    {
+        return Err(early(binding.span, "invalid binding in strict mode"));
+    }
+    Ok(())
+}
+
+fn validate_var_bindings(bindings: &[Binding], strict: bool) -> Result<(), Diagnostic> {
+    for binding in bindings {
+        validate_binding(binding, strict)?;
+        if let Some(expr) = &binding.initializer {
+            validate_expr(expr, strict)?;
         }
     }
     Ok(())
@@ -815,9 +841,32 @@ fn validate_scope<'a>(
     labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     let mut names = BTreeSet::new();
+    let mut var_names = BTreeSet::new();
+    let mut declarations = Vec::new();
     for statement in statements {
         if let StatementKind::Lexical { bindings, .. } = &statement.kind {
             validate_binding_names(bindings, strict, &mut names)?;
+            for binding in bindings {
+                if var_names.contains(binding.name.as_str()) {
+                    return Err(early(
+                        binding.span,
+                        "lexical declaration conflicts with var",
+                    ));
+                }
+            }
+        }
+        // ECMA-262 14.2.1, 14.12.1, 16.1.1: vars in nested statements
+        // cannot conflict with lexical names of an enclosing statement list.
+        declarations.clear();
+        statement.collect_var_declarations(&mut declarations);
+        for binding in &declarations {
+            if names.contains(binding.name.as_str()) {
+                return Err(early(
+                    binding.span,
+                    "var declaration conflicts with lexical binding",
+                ));
+            }
+            var_names.insert(binding.name.as_str());
         }
         validate_statement(statement, strict, control, labels)?;
     }
@@ -830,6 +879,7 @@ fn validate_statement<'a>(
     labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     match &statement.kind {
+        StatementKind::Var(bindings) => validate_var_bindings(bindings, strict)?,
         StatementKind::Expression(expr) | StatementKind::Throw(expr) => {
             validate_expr(expr, strict)?
         }
@@ -872,8 +922,21 @@ fn validate_statement<'a>(
             if let Some(initializer) = initializer {
                 match initializer {
                     ForInitializer::Expression(expr) => validate_expr(expr, strict)?,
+                    ForInitializer::Var(bindings) => validate_var_bindings(bindings, strict)?,
                     ForInitializer::Lexical { bindings, .. } => {
-                        validate_binding_names(bindings, strict, &mut BTreeSet::new())?;
+                        let mut names = BTreeSet::new();
+                        validate_binding_names(bindings, strict, &mut names)?;
+                        let mut declarations = Vec::new();
+                        body.collect_var_declarations(&mut declarations);
+                        // ECMA-262 14.7.4.1: lexical header names cannot be vars in the body.
+                        for binding in declarations {
+                            if names.contains(binding.name.as_str()) {
+                                return Err(early(
+                                    binding.span,
+                                    "var declaration conflicts with lexical for binding",
+                                ));
+                            }
+                        }
                         for binding in bindings {
                             if let Some(expr) = &binding.initializer {
                                 validate_expr(expr, strict)?;

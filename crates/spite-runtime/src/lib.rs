@@ -209,6 +209,12 @@ impl Realm {
 
     /// Evaluates a Script already validated by the parser.
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
+        if let Some(binding) = script.var_declarations().first() {
+            return Err(Self::unsupported(
+                binding.span,
+                "var evaluation is not implemented",
+            ));
+        }
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
         self.instantiate(script.statements().iter(), true)?;
@@ -365,6 +371,10 @@ impl Realm {
                 self.initialize_bindings(bindings)?;
                 Ok(Completion::normal(None))
             }
+            StatementKind::Var(_) => Err(Self::unsupported(
+                statement.span,
+                "var evaluation is not implemented",
+            )),
             StatementKind::Block(body) => {
                 self.scopes.push(BTreeMap::new());
                 let result = self
@@ -453,6 +463,10 @@ impl Realm {
                 // ECMA-262 14.7.4.2: all header bindings exist before any
                 // initializer runs, and the outer scope is restored on every exit.
                 match initializer {
+                    Some(ForInitializer::Var(_)) => Err(Self::unsupported(
+                        statement.span,
+                        "var evaluation is not implemented",
+                    )),
                     Some(ForInitializer::Lexical { mutable, bindings }) => {
                         let scope = bindings
                             .iter()

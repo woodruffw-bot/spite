@@ -36,6 +36,9 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
+Var declarations parse and validate, including for headers and lexical conflicts.
+Scripts containing var declarations return Unsupported before evaluation.
+
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, templates, var, for-in/of, catch parameters, generators,

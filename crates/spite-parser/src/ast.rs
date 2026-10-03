@@ -18,6 +18,14 @@ impl Script {
     pub fn is_strict(&self) -> bool {
         self.strict
     }
+    /// Returns Script-scoped var declarations in source order, including repeats.
+    pub fn var_declarations(&self) -> Vec<&Binding> {
+        let mut declarations = Vec::new();
+        for statement in &self.statements {
+            statement.collect_var_declarations(&mut declarations);
+        }
+        declarations
+    }
 }
 
 /// A statement with its source range.
@@ -29,6 +37,62 @@ pub struct Statement {
     pub span: Span,
 }
 
+impl Statement {
+    pub(crate) fn collect_var_declarations<'a>(&'a self, declarations: &mut Vec<&'a Binding>) {
+        match &self.kind {
+            StatementKind::Var(bindings) => declarations.extend(bindings),
+            StatementKind::Block(body) => {
+                for statement in body {
+                    statement.collect_var_declarations(declarations);
+                }
+            }
+            StatementKind::If {
+                consequent,
+                alternate,
+                ..
+            } => {
+                consequent.collect_var_declarations(declarations);
+                if let Some(alternate) = alternate {
+                    alternate.collect_var_declarations(declarations);
+                }
+            }
+            StatementKind::While { body, .. }
+            | StatementKind::DoWhile { body, .. }
+            | StatementKind::Labelled { body, .. } => body.collect_var_declarations(declarations),
+            StatementKind::For {
+                initializer, body, ..
+            } => {
+                if let Some(ForInitializer::Var(bindings)) = initializer {
+                    declarations.extend(bindings);
+                }
+                body.collect_var_declarations(declarations);
+            }
+            StatementKind::Switch { clauses, .. } => {
+                for statement in clauses.iter().flat_map(|c| &c.statements) {
+                    statement.collect_var_declarations(declarations);
+                }
+            }
+            StatementKind::Try {
+                body,
+                handler,
+                finalizer,
+            } => {
+                body.collect_var_declarations(declarations);
+                for clause in [handler, finalizer].into_iter().flatten() {
+                    clause.collect_var_declarations(declarations);
+                }
+            }
+            StatementKind::Empty
+            | StatementKind::Debugger
+            | StatementKind::Expression(_)
+            | StatementKind::Lexical { .. }
+            | StatementKind::Break(_)
+            | StatementKind::Continue(_)
+            | StatementKind::Throw(_) => {}
+        }
+    }
+}
+
 /// Supported statements and declarations.
 #[derive(Clone, Debug, PartialEq)]
 pub enum StatementKind {
@@ -38,6 +102,8 @@ pub enum StatementKind {
     Debugger,
     /// An expression statement.
     Expression(Expr),
+    /// A variable declaration in the surrounding variable environment.
+    Var(Vec<Binding>),
     /// A lexical declaration.
     Lexical {
         /// Whether bindings may be reassigned.
@@ -128,6 +194,8 @@ pub struct SwitchClause {
 pub enum ForInitializer {
     /// An expression whose value is discarded.
     Expression(Expr),
+    /// Variable declarations in the surrounding variable environment.
+    Var(Vec<Binding>),
     /// A declaration in a new loop scope.
     Lexical {
         /// Whether bindings may be reassigned and are copied per iteration.
@@ -146,7 +214,7 @@ pub struct Label {
     pub span: Span,
 }
 
-/// A lexical binding and optional initializer.
+/// A binding identifier and optional initializer.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Binding {
     /// Binding identifier.

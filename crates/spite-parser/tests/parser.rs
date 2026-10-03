@@ -183,7 +183,7 @@ fn strings_preserve_utf16_and_escapes() {
 
 #[test]
 fn unsupported_features_remain_distinct() {
-    for source in ["1n", "`x`", "var x", "function f() {}", "'\\1'", "012"] {
+    for source in ["1n", "`x`", "function f() {}", "'\\1'", "012"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

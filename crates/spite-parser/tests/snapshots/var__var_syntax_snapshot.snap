@@ -1,0 +1,169 @@
+---
+source: crates/spite-parser/tests/var.rs
+expression: "parse_script(\"var x, y = 1; for (var i = 0; i < 2; i++) var z = i;\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Var(
+                [
+                    Binding {
+                        name: "x",
+                        span: Span {
+                            start: 4,
+                            end: 5,
+                        },
+                        initializer: None,
+                    },
+                    Binding {
+                        name: "y",
+                        span: Span {
+                            start: 7,
+                            end: 8,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        1.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 11,
+                                    end: 12,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            ),
+            span: Span {
+                start: 0,
+                end: 13,
+            },
+        },
+        Statement {
+            kind: For {
+                initializer: Some(
+                    Var(
+                        [
+                            Binding {
+                                name: "i",
+                                span: Span {
+                                    start: 23,
+                                    end: 24,
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                0.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 27,
+                                            end: 28,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    ),
+                ),
+                test: Some(
+                    Expr {
+                        depth: 2,
+                        kind: Binary(
+                            Less,
+                            Expr {
+                                depth: 1,
+                                kind: Identifier(
+                                    "i",
+                                ),
+                                span: Span {
+                                    start: 30,
+                                    end: 31,
+                                },
+                            },
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        2.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 34,
+                                    end: 35,
+                                },
+                            },
+                        ),
+                        span: Span {
+                            start: 30,
+                            end: 35,
+                        },
+                    },
+                ),
+                update: Some(
+                    Expr {
+                        depth: 2,
+                        kind: Update {
+                            op: Increment,
+                            argument: Expr {
+                                depth: 1,
+                                kind: Identifier(
+                                    "i",
+                                ),
+                                span: Span {
+                                    start: 37,
+                                    end: 38,
+                                },
+                            },
+                            prefix: false,
+                        },
+                        span: Span {
+                            start: 37,
+                            end: 40,
+                        },
+                    },
+                ),
+                body: Statement {
+                    kind: Var(
+                        [
+                            Binding {
+                                name: "z",
+                                span: Span {
+                                    start: 46,
+                                    end: 47,
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "i",
+                                        ),
+                                        span: Span {
+                                            start: 50,
+                                            end: 51,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 42,
+                        end: 52,
+                    },
+                },
+            },
+            span: Span {
+                start: 14,
+                end: 52,
+            },
+        },
+    ],
+    strict: false,
+}
