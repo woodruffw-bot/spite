@@ -157,3 +157,115 @@ fn invalid_digits_radices_and_resource_exhaustion_are_distinct() {
     );
     assert_eq!(empty.remaining_work(), 0);
 }
+
+#[test]
+fn multiplication_and_division_match_exact_native_arithmetic() {
+    let values = [
+        i64::MIN,
+        -4294967296,
+        -4294967295,
+        -7,
+        -1,
+        0,
+        1,
+        7,
+        4294967295,
+        4294967296,
+        i64::MAX,
+    ];
+    for a in values {
+        for b in values {
+            let x = BigInt::from(a);
+            let y = BigInt::from(b);
+            assert_eq!(
+                decimal(&x.mul(&y, &mut budget()).unwrap()),
+                (i128::from(a) * i128::from(b)).to_string()
+            );
+            if b != 0 {
+                let (q, r) = x.div_rem(&y, &mut budget()).unwrap();
+                assert_eq!(decimal(&q), (i128::from(a) / i128::from(b)).to_string());
+                assert_eq!(decimal(&r), (i128::from(a) % i128::from(b)).to_string());
+                assert_eq!(
+                    q.mul(&y, &mut budget())
+                        .unwrap()
+                        .add(&r, &mut budget())
+                        .unwrap(),
+                    x
+                );
+            }
+        }
+    }
+    for a in -64..=64 {
+        for b in -64..=64 {
+            if b == 0 {
+                continue;
+            }
+            let (q, r) = BigInt::from(a)
+                .div_rem(&BigInt::from(b), &mut budget())
+                .unwrap();
+            assert_eq!(q, BigInt::from(a / b));
+            assert_eq!(r, BigInt::from(a % b));
+        }
+    }
+}
+
+#[test]
+fn large_products_and_division_reconstruct_the_dividend() {
+    let x = parse(&"f".repeat(256), 16);
+    let product = x.mul(&x, &mut budget()).unwrap();
+    let expected = format!("{}e{}1", "f".repeat(255), "0".repeat(255));
+    assert_eq!(product.to_radix(16, &mut budget()).unwrap(), expected);
+    assert_eq!(
+        product.div_rem(&x, &mut budget()).unwrap(),
+        (x.clone(), BigInt::default())
+    );
+    let dividend = parse(
+        "123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        16,
+    );
+    for divisor in [
+        "80000000",
+        "ffffffff",
+        "100000000",
+        "ffffffffffffffff",
+        "10000000000000001",
+        "123456789abcdef",
+    ] {
+        let divisor = parse(divisor, 16);
+        let (q, r) = dividend.div_rem(&divisor, &mut budget()).unwrap();
+        assert!(r < divisor);
+        assert_eq!(
+            q.mul(&divisor, &mut budget())
+                .unwrap()
+                .add(&r, &mut budget())
+                .unwrap(),
+            dividend
+        );
+    }
+}
+
+#[test]
+fn multiplication_and_division_limits_are_checked() {
+    assert_eq!(
+        BigInt::from(1).div_rem(&BigInt::default(), &mut budget()),
+        Err(Error::DivisionByZero)
+    );
+    assert_eq!(
+        BigInt::default().div_rem(&BigInt::default(), &mut budget()),
+        Err(Error::DivisionByZero)
+    );
+    assert_eq!(
+        BigInt::from(16).mul(&BigInt::from(16), &mut Budget::new(8, 100)),
+        Err(Error::Limit)
+    );
+    let x = parse(&"f".repeat(256), 16);
+    assert_eq!(x.mul(&x, &mut Budget::new(4096, 4)), Err(Error::Limit));
+    assert_eq!(
+        x.div_rem(&BigInt::from(3), &mut Budget::new(4096, 40)),
+        Err(Error::Limit)
+    );
+    assert_eq!(
+        x.mul(&BigInt::default(), &mut Budget::new(0, 1)),
+        Ok(BigInt::default())
+    );
+}

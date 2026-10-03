@@ -9,6 +9,8 @@ pub enum Error {
     InvalidRadix,
     /// Input is empty or contains a character outside the requested radix.
     InvalidDigit,
+    /// Division or remainder by zero.
+    DivisionByZero,
     /// An operation exceeds its size or work budget.
     Limit,
 }
@@ -18,6 +20,7 @@ impl fmt::Display for Error {
         f.write_str(match self {
             Self::InvalidRadix => "invalid integer radix",
             Self::InvalidDigit => "invalid integer digit",
+            Self::DivisionByZero => "integer division by zero",
             Self::Limit => "integer resource limit exceeded",
         })
     }
@@ -155,6 +158,81 @@ impl BigInt {
     /// Subtracts another integer.
     pub fn sub(&self, other: &Self, budget: &mut Budget) -> Result<Self, Error> {
         self.add_signed(other, !other.negative, budget)
+    }
+
+    /// Multiplies two integers.
+    pub fn mul(&self, other: &Self, budget: &mut Budget) -> Result<Self, Error> {
+        budget.charge(1)?;
+        if self.is_zero() || other.is_zero() {
+            return Ok(Self::default());
+        }
+        let minimum_bits = self
+            .bit_length()
+            .checked_add(other.bit_length())
+            .and_then(|n| n.checked_sub(1))
+            .ok_or(Error::Limit)?;
+        if minimum_bits > budget.max_bits {
+            return Err(Error::Limit);
+        }
+        let work = self
+            .words
+            .len()
+            .checked_mul(other.words.len())
+            .and_then(|n| n.checked_add(self.words.len()))
+            .ok_or(Error::Limit)?;
+        budget.charge(work)?;
+        let length = self
+            .words
+            .len()
+            .checked_add(other.words.len())
+            .ok_or(Error::Limit)?;
+        let mut words = vec![0u32; length];
+        for (i, a) in self.words.iter().enumerate() {
+            let mut carry = 0u64;
+            for (j, b) in other.words.iter().enumerate() {
+                // The product, destination word, and carry sum to at most u64::MAX.
+                let n = u64::from(*a) * u64::from(*b) + u64::from(words[i + j]) + carry;
+                words[i + j] = n as u32;
+                carry = n >> 32;
+            }
+            words[i + other.words.len()] = carry as u32;
+        }
+        budget.finish(Self::normalized(self.negative != other.negative, words))
+    }
+
+    /// Divides with truncation toward zero, returning quotient and remainder.
+    ///
+    /// The remainder is zero or has the dividend's sign (ECMA-262 6.1.6.2.5–6).
+    pub fn div_rem(&self, other: &Self, budget: &mut Budget) -> Result<(Self, Self), Error> {
+        budget.charge(self.words.len() + 1)?;
+        if other.is_zero() {
+            return Err(Error::DivisionByZero);
+        }
+        if self.cmp_magnitude(other).is_lt() {
+            return Ok((Self::default(), budget.finish(self.clone())?));
+        }
+        let mut quotient = vec![0u32; self.words.len()];
+        let mut remainder = Self::default();
+        let step_work = other
+            .words
+            .len()
+            .checked_add(1)
+            .and_then(|n| n.checked_mul(4))
+            .ok_or(Error::Limit)?;
+        // Binary long division maintains 0 <= remainder < divisor after each bit.
+        for bit in (0..self.bit_length()).rev() {
+            budget.charge(step_work)?;
+            remainder.multiply_add_small(2, (self.words[bit / 32] >> (bit % 32)) & 1);
+            if !remainder.cmp_magnitude(other).is_lt() {
+                remainder =
+                    Self::normalized(false, Self::sub_magnitudes(&remainder.words, &other.words));
+                quotient[bit / 32] |= 1 << (bit % 32);
+            }
+        }
+        let quotient =
+            budget.finish(Self::normalized(self.negative != other.negative, quotient))?;
+        remainder.negative = self.negative && !remainder.is_zero();
+        Ok((quotient, budget.finish(remainder)?))
     }
 
     fn add_signed(&self, other: &Self, negative: bool, budget: &mut Budget) -> Result<Self, Error> {

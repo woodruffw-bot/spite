@@ -37,7 +37,8 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 ## Not implemented
 
 The `spite-bigint` crate provides integer storage, radix conversion, and signed
-addition and subtraction. JavaScript BigInt values are not integrated yet.
+addition, subtraction, multiplication, and division. JavaScript BigInt values
+are not integrated yet.
 
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
