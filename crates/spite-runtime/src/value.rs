@@ -323,7 +323,7 @@ fn string_to_number(value: &JsString) -> f64 {
 // https://262.ecma-international.org/17.0/#sec-numeric-types-number-tostring
 // Number::toString decimal presentation. Rust supplies the shortest round-trip
 // significand. ECMA-262 specifies different fixed/scientific cutoffs and signs.
-fn number_to_string(value: f64) -> String {
+pub(crate) fn number_to_string(value: f64) -> String {
     if value.is_nan() {
         return "NaN".into();
     }

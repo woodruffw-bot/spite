@@ -24,19 +24,78 @@ impl RootedValue {
 }
 
 impl Realm {
-    pub(super) fn property_object(base: &Value, span: Span) -> Result<&ObjectHandle, Error> {
+    pub(super) fn require_object_coercible(base: &Value, span: Span) -> Result<(), Error> {
         match base {
-            Value::Object(handle) => Ok(handle),
             Value::Null | Value::Undefined => Err(Self::exception(
                 crate::ExceptionKind::TypeError,
                 span,
                 "cannot access a property of null or undefined",
             )),
-            _ => Err(Self::unsupported(
-                span,
-                "primitive property access requires wrapper objects",
-            )),
+            _ => Ok(()),
         }
+    }
+
+    pub(super) fn get_property_value(
+        &mut self,
+        base: &Value,
+        key: &JsString,
+        span: Span,
+    ) -> Result<Value, Error> {
+        if let Value::Object(object) = base {
+            return self.get_property(object, key, span);
+        }
+        self.tick(span)?;
+        if let Value::String(string) = base {
+            if key_is(key, "length") {
+                return Ok(Value::Number(string.len() as f64));
+            }
+            if let Some(index) = string_index(string, key) {
+                return Ok(Value::String(JsString::from_code_units(vec![
+                    string.code_units()[index],
+                ])));
+            }
+        }
+        if missing_primitive_method(base, key) {
+            return Err(Self::unsupported(
+                span,
+                "primitive prototype method is not implemented",
+            ));
+        }
+        Ok(Value::Undefined)
+    }
+
+    pub(super) fn set_property_value(
+        &mut self,
+        base: &Value,
+        key: JsString,
+        value: Value,
+        span: Span,
+    ) -> Result<bool, Error> {
+        if let Value::Object(object) = base {
+            return self.object_work(span, |objects, budget| {
+                objects.set(object, key, value, Some(object), budget)
+            });
+        }
+        // GetThisValue retains the primitive receiver. String own properties
+        // reject writes; ordinary inherited data properties reject non-objects
+        // as receivers (10.1.9.2). No primitive prototype has an enabled setter.
+        self.tick(span)?;
+        Ok(false)
+    }
+
+    pub(super) fn delete_property_value(
+        &mut self,
+        base: &Value,
+        key: &JsString,
+        span: Span,
+    ) -> Result<bool, Error> {
+        if let Value::Object(object) = base {
+            return self.object_work(span, |objects, budget| objects.delete(object, key, budget));
+        }
+        self.tick(span)?;
+        Ok(
+            !matches!(base, Value::String(string) if key_is(key, "length") || string_index(string, key).is_some()),
+        )
     }
 
     pub(super) fn reference_key(&mut self, key: &mut Value, span: Span) -> Result<JsString, Error> {
@@ -260,5 +319,77 @@ fn missing_object_method(key: &JsString) -> bool {
         "valueOf",
     ]
     .iter()
-    .any(|name| key.code_units().iter().copied().eq(name.encode_utf16()))
+    .any(|name| key_is(key, name))
+}
+
+fn key_is(key: &JsString, name: &str) -> bool {
+    key.code_units().iter().copied().eq(name.encode_utf16())
+}
+
+fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
+    if missing_object_method(key) {
+        return true;
+    }
+    let names: &[&str] = match base {
+        Value::String(_) => &[
+            "at",
+            "charAt",
+            "charCodeAt",
+            "codePointAt",
+            "concat",
+            "endsWith",
+            "includes",
+            "indexOf",
+            "isWellFormed",
+            "lastIndexOf",
+            "localeCompare",
+            "match",
+            "matchAll",
+            "normalize",
+            "padEnd",
+            "padStart",
+            "repeat",
+            "replace",
+            "replaceAll",
+            "search",
+            "slice",
+            "split",
+            "startsWith",
+            "substring",
+            "toLocaleLowerCase",
+            "toLocaleUpperCase",
+            "toLowerCase",
+            "toUpperCase",
+            "toWellFormed",
+            "trim",
+            "trimEnd",
+            "trimStart",
+        ],
+        Value::Number(_) => &["toExponential", "toFixed", "toLocaleString", "toPrecision"],
+        Value::BigInt(_) => &["toLocaleString"],
+        _ => &[],
+    };
+    names.iter().any(|name| key_is(key, name))
+}
+
+// 10.4.3.5: only canonical, non-negative integral Number names below the string
+// length identify characters. Decimal parsing bounds work by usize's width;
+// the final Number::toString check rejects decimal integers rounded by binary64.
+fn string_index(string: &JsString, key: &JsString) -> Option<usize> {
+    let units = key.code_units();
+    if units.is_empty() || units.len() > 20 || units.len() > 1 && units[0] == u16::from(b'0') {
+        return None;
+    }
+    let mut index = 0usize;
+    for &unit in units {
+        let digit = unit.checked_sub(u16::from(b'0'))?;
+        if digit > 9 {
+            return None;
+        }
+        index = index.checked_mul(10)?.checked_add(usize::from(digit))?;
+    }
+    if index >= string.len() || !key_is(key, &crate::value::number_to_string(index as f64)) {
+        return None;
+    }
+    Some(index)
 }

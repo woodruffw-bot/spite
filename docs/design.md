@@ -197,7 +197,7 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity; its callable
 properties remain incomplete. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. Primitive wrapper properties and object coercion hooks
+that method normally. Object coercion hooks and primitive wrapper constructors
 remain explicit implementation gaps.
 
 Property references retain the evaluated base and the unconverted computed name.
@@ -207,6 +207,15 @@ caches the converted name for a later compound-assignment write. These operation
 apply ToObject before key conversion, so a nullish base throws TypeError first.
 Deletion does not GetValue. Strict writes/deletions translate false internal-method
 results into TypeError. Ordinary data lookup and prototype traversal remain bounded.
+
+Primitive property operations avoid allocating unobservable temporary wrappers,
+as permitted by the GetValue/PutValue/delete notes. String own properties expose
+UTF-16 length and single-code-unit indices with non-writable, non-configurable
+attributes. Canonical numeric index names exclude string `-0`, leading zeros,
+fractions, and out-of-range indices. Writes retain the primitive receiver and
+fail without persisting a property; strict mode throws. Missing standard prototype
+methods report Unsupported, while absent properties produce undefined. The
+optional Annex B String methods and prototype accessor are not installed.
 
 `Realm::collect` runs only between evaluations and scans persistent lexical/global
 bindings, intrinsic handles, and host roots. Environment scans are budgeted even

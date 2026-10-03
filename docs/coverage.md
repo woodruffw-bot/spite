@@ -17,6 +17,7 @@ not an alternative language specification.
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
+| Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof, void, and delete |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
@@ -63,11 +64,14 @@ Dotted and computed property references parse and evaluate for ordinary objects,
 including assignment, compound assignment, update, and delete targets. Tests cover
 IdentifierName spelling, precedence, strict targets, ASI, inherited reads/writes,
 and edition-17 deferred key conversion. Nullish bases produce TypeError at
-GetValue/PutValue/delete. Primitive wrappers remain unsupported. Reading a missing
-Object.prototype intrinsic method reports Unsupported, while ordinary properties
-can shadow it. The optional Annex B prototype accessor is not installed.
+GetValue/PutValue/delete. Primitive property operations use ephemeral wrapper
+semantics; String indices and length are read-only and non-configurable. Writes
+do not persist on primitives, and strict failures throw TypeError. Reading a
+missing standard prototype method reports Unsupported, while ordinary object
+properties can shadow it. Optional Annex B prototype accessors and String methods
+are not installed.
 
-Symbols, primitive wrapper properties,
+Symbols, primitive wrapper constructors,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared

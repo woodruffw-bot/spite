@@ -82,7 +82,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Collect between evaluations with persistent bindings, intrinsic handles, and host roots.
 - [x] Parse dotted/computed property references and preserve assignment targets in the AST.
 - [x] Evaluate ordinary-object property reads, writes, updates, and deletion with ordered references.
-- [ ] Implement primitive wrapper property behavior and object coercion hooks.
+- [x] Implement primitive property access, String indices/length, and strict write/delete behavior.
+- [ ] Implement object coercion hooks and primitive wrapper constructors/prototypes.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.

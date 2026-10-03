@@ -186,7 +186,7 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 }
 
 #[test]
-fn incomplete_intrinsics_and_primitive_wrappers_report_unsupported() {
+fn incomplete_intrinsic_methods_report_unsupported() {
     for name in [
         "constructor",
         "toString",
@@ -208,7 +208,7 @@ fn incomplete_intrinsics_and_primitive_wrappers_report_unsupported() {
         number(&format!("({{__proto__: {{ {name}: 7 }} }}).{name}"), 7.0);
         number(&format!("let o = {{}}; o.{name} = 3; o.{name}"), 3.0);
     }
-    for source in ["1..x", "'abc'.length", "true.x = 1", "delete 1n.x"] {
+    for source in ["1..toFixed", "'abc'.slice", "true.valueOf", "1n.toString"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

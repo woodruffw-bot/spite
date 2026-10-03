@@ -857,9 +857,9 @@ impl Realm {
     fn get(&mut self, reference: &mut Reference<'_>, span: Span) -> Result<Value, Error> {
         match reference {
             Reference::Property { base, key } => {
-                let object = Self::property_object(base, span)?;
+                Self::require_object_coercible(base, span)?;
                 let key = self.reference_key(key, span)?;
-                self.get_property(object, &key, span)
+                self.get_property_value(base, &key, span)
             }
             Reference::Lexical(index, name) => {
                 self.scopes[*index][*name].value.clone().ok_or_else(|| {
@@ -885,11 +885,9 @@ impl Realm {
     fn put(&mut self, reference: Reference<'_>, value: Value, span: Span) -> Result<(), Error> {
         match reference {
             Reference::Property { base, mut key } => {
-                let object = Self::property_object(&base, span)?;
+                Self::require_object_coercible(&base, span)?;
                 let key = self.reference_key(&mut key, span)?;
-                let written = self.object_work(span, |objects, budget| {
-                    objects.set(object, key, value, Some(object), budget)
-                })?;
+                let written = self.set_property_value(&base, key, value, span)?;
                 if !written && self.strict {
                     return Err(Self::exception(
                         ExceptionKind::TypeError,
@@ -1079,11 +1077,9 @@ impl Realm {
                     let reference = self.reference(inner)?;
                     let deleted = match reference {
                         Reference::Property { base, mut key } => {
-                            let object = Self::property_object(&base, inner.span)?;
+                            Self::require_object_coercible(&base, inner.span)?;
                             let key = self.reference_key(&mut key, inner.span)?;
-                            let deleted = self.object_work(inner.span, |objects, budget| {
-                                objects.delete(object, &key, budget)
-                            })?;
+                            let deleted = self.delete_property_value(&base, &key, inner.span)?;
                             if !deleted && self.strict {
                                 return Err(Self::exception(
                                     ExceptionKind::TypeError,
