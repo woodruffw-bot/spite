@@ -78,9 +78,10 @@ impl Parser {
     fn current(&self) -> &Token {
         &self.tokens[self.index]
     }
+    // Grammar terminals cannot contain Unicode escapes (ECMA-262 5.1.5.1).
     fn at(&self, text: &str) -> bool {
         match &self.current().kind {
-            Kind::Word(s) => s == text,
+            Kind::Word(s) => !self.current().escaped && s == text,
             Kind::Punct(s) => *s == text,
             _ => false,
         }
@@ -260,24 +261,26 @@ impl Parser {
             StatementKind::Throw(expr)
         } else {
             if let Kind::Word(word) = &self.current().kind {
-                if matches!(
-                    word.as_str(),
-                    "var"
-                        | "function"
-                        | "class"
-                        | "return"
-                        | "while"
-                        | "for"
-                        | "do"
-                        | "switch"
-                        | "try"
-                        | "with"
-                        | "break"
-                        | "continue"
-                        | "debugger"
-                        | "import"
-                        | "export"
-                ) {
+                if !self.current().escaped
+                    && matches!(
+                        word.as_str(),
+                        "var"
+                            | "function"
+                            | "class"
+                            | "return"
+                            | "while"
+                            | "for"
+                            | "do"
+                            | "switch"
+                            | "try"
+                            | "with"
+                            | "break"
+                            | "continue"
+                            | "debugger"
+                            | "import"
+                            | "export"
+                    )
+                {
                     return Err(self.unsupported("statement is not implemented"));
                 }
             }
@@ -375,8 +378,8 @@ impl Parser {
             Kind::Punct("-") => Some(UnaryOp::Minus),
             Kind::Punct("!") => Some(UnaryOp::Not),
             Kind::Punct("~") => Some(UnaryOp::BitNot),
-            Kind::Word(s) if s == "void" => Some(UnaryOp::Void),
-            Kind::Word(s) if s == "typeof" => Some(UnaryOp::Typeof),
+            Kind::Word(s) if !token.escaped && s == "void" => Some(UnaryOp::Void),
+            Kind::Word(s) if !token.escaped && s == "typeof" => Some(UnaryOp::Typeof),
             _ => None,
         };
         if let Some(op) = op {
@@ -395,6 +398,11 @@ impl Parser {
                 let span = Span::new(span.start, self.tokens[self.index - 1].span.end);
                 self.make_expr(ExprKind::Parenthesized(Box::new(expr)), span)
             }
+            Kind::Word(_) if token.escaped => Err(Diagnostic::new(
+                DiagnosticKind::Syntax,
+                span,
+                "reserved word cannot be an identifier",
+            )),
             Kind::Word(_) | Kind::Punct("[" | "{" | "/" | "++" | "--") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
@@ -459,10 +467,15 @@ fn forbidden_nullish_mix(op: BinaryOp, expr: &Expr) -> bool {
         || (other == BinaryOp::Nullish && matches!(op, BinaryOp::And | BinaryOp::Or))
 }
 
+// ReservedWord StringValues other than the context-sensitive yield and await.
+// https://262.ecma-international.org/17.0/#sec-identifiers-static-semantics-early-errors
 fn reserved(name: &str) -> bool {
     matches!(
         name,
-        "break"
+        "null"
+            | "true"
+            | "false"
+            | "break"
             | "case"
             | "catch"
             | "class"

@@ -31,7 +31,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
 - [x] Implement Unicode identifier properties and literal identifier names.
-- [ ] Implement identifier escapes and escape-aware reserved-word validation.
+- [x] Implement identifier escapes and escape-aware reserved-word validation.
 - [ ] Establish a pinned Test262 runner with strict modes and phase-aware results.
 
 ## 3. Objects and functions

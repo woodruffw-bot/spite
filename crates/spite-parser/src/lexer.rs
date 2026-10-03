@@ -14,6 +14,7 @@ pub(crate) struct Token {
     pub kind: Kind,
     pub span: Span,
     pub newline: bool,
+    pub escaped: bool,
 }
 
 pub(crate) struct Lexer<'a> {
@@ -82,25 +83,18 @@ impl<'a> Lexer<'a> {
                 kind: Kind::Eof,
                 span: Span::new(start, start),
                 newline,
+                escaped: false,
             });
         };
-        let kind = if id_start(c) {
-            self.bump();
-            while self.peek().is_some_and(id_continue) {
-                self.bump();
-            }
-            if self.peek() == Some('\\') {
-                return Err(self.error(
-                    start,
-                    DiagnosticKind::Unsupported,
-                    "identifier escapes are not implemented",
-                ));
-            }
-            match &self.source[start..self.pos] {
-                "null" => Kind::Literal(Literal::Null),
-                "true" => Kind::Literal(Literal::Boolean(true)),
-                "false" => Kind::Literal(Literal::Boolean(false)),
-                word => Kind::Word(word.to_owned()),
+        let mut escaped = false;
+        let kind = if id_start(c) || c == '\\' {
+            let (name, had_escape) = self.identifier()?;
+            escaped = had_escape;
+            match (name.as_str(), escaped) {
+                ("null", false) => Kind::Literal(Literal::Null),
+                ("true", false) => Kind::Literal(Literal::Boolean(true)),
+                ("false", false) => Kind::Literal(Literal::Boolean(false)),
+                _ => Kind::Word(name),
             }
         } else if c.is_ascii_digit()
             || (c == '.'
@@ -113,12 +107,12 @@ impl<'a> Lexer<'a> {
             Kind::Literal(Literal::Number(self.number()?))
         } else if matches!(c, '\'' | '"') {
             Kind::Literal(Literal::String(self.string()?))
-        } else if c == '`' || c == '\\' {
+        } else if c == '`' {
             self.bump();
             return Err(self.error(
                 start,
                 DiagnosticKind::Unsupported,
-                "templates and identifier escapes are not implemented",
+                "templates are not implemented",
             ));
         } else {
             // Maximal munch prevents unsupported compound operators from being split.
@@ -147,7 +141,47 @@ impl<'a> Lexer<'a> {
             kind,
             span: Span::new(start, self.pos),
             newline,
+            escaped,
         })
+    }
+
+    // https://262.ecma-international.org/17.0/#sec-identifier-names
+    fn identifier(&mut self) -> Result<(String, bool), Diagnostic> {
+        let mut name = String::new();
+        let mut escaped = false;
+        while let Some(c) = self.peek() {
+            let valid = if name.is_empty() {
+                id_start
+            } else {
+                id_continue
+            };
+            if c == '\\' {
+                let start = self.pos;
+                self.bump();
+                if self.bump() != Some('u') {
+                    return Err(self.syntax(start, "identifier escape must use \\u"));
+                }
+                let cp = self.unicode_escape(start)?;
+                let c = char::from_u32(cp).filter(|c| valid(*c)).ok_or_else(|| {
+                    self.syntax(
+                        start,
+                        if name.is_empty() {
+                            "invalid identifier start escape"
+                        } else {
+                            "invalid identifier part escape"
+                        },
+                    )
+                })?;
+                name.push(c);
+                escaped = true;
+            } else if valid(c) {
+                self.bump();
+                name.push(c);
+            } else {
+                break;
+            }
+        }
+        Ok((name, escaped))
     }
 
     fn digits(&mut self, radix: u32, required: bool) -> Result<(), Diagnostic> {
@@ -252,6 +286,33 @@ impl<'a> Lexer<'a> {
         Ok(value)
     }
 
+    // Called after the escape's `u`. String escapes may denote lone surrogates.
+    // Identifier callers separately validate the code point and its position.
+    fn unicode_escape(&mut self, start: usize) -> Result<u32, Diagnostic> {
+        if self.peek() != Some('{') {
+            return self.hex(4, start);
+        }
+        self.bump();
+        let mut value = 0u32;
+        let mut digits = 0;
+        while self.peek() != Some('}') {
+            let Some(d) = self.bump().and_then(|c| c.to_digit(16)) else {
+                return Err(self.syntax(start, "invalid Unicode escape"));
+            };
+            value = value
+                .checked_mul(16)
+                .and_then(|v| v.checked_add(d))
+                .filter(|v| *v <= 0x10ffff)
+                .ok_or_else(|| self.syntax(start, "Unicode escape out of range"))?;
+            digits += 1;
+        }
+        self.bump();
+        if digits == 0 {
+            return Err(self.syntax(start, "empty Unicode escape"));
+        }
+        Ok(value)
+    }
+
     fn string(&mut self) -> Result<JsString, Diagnostic> {
         let start = self.pos;
         let quote = self.bump();
@@ -297,34 +358,13 @@ impl<'a> Lexer<'a> {
                 }
                 'x' => self.hex(2, start)? as u16,
                 'u' => {
-                    if self.peek() != Some('{') {
-                        self.hex(4, start)? as u16
+                    let value = self.unicode_escape(start)?;
+                    if value <= 0xffff {
+                        value as u16
                     } else {
-                        self.bump();
-                        let mut value = 0u32;
-                        let mut digits = 0;
-                        while self.peek() != Some('}') {
-                            let Some(d) = self.bump().and_then(|c| c.to_digit(16)) else {
-                                return Err(self.syntax(start, "invalid Unicode escape"));
-                            };
-                            value = value
-                                .checked_mul(16)
-                                .and_then(|v| v.checked_add(d))
-                                .filter(|v| *v <= 0x10ffff)
-                                .ok_or_else(|| self.syntax(start, "Unicode escape out of range"))?;
-                            digits += 1;
-                        }
-                        self.bump();
-                        if digits == 0 {
-                            return Err(self.syntax(start, "empty Unicode escape"));
-                        }
-                        if value <= 0xffff {
-                            value as u16
-                        } else {
-                            let value = value - 0x10000;
-                            units.push(0xd800 + (value >> 10) as u16);
-                            0xdc00 + (value & 0x3ff) as u16
-                        }
+                        let value = value - 0x10000;
+                        units.push(0xd800 + (value >> 10) as u16);
+                        0xdc00 + (value & 0x3ff) as u16
                     }
                 }
                 c => {

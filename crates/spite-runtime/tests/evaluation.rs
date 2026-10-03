@@ -355,3 +355,35 @@ fn unicode_bindings_preserve_code_point_identity() {
     realm.eval("let π = 3").unwrap();
     assert_eq!(realm.eval("π + 1"), Ok(Value::Number(4.0)));
 }
+
+#[test]
+fn escaped_identifiers_resolve_the_same_binding() {
+    number(r"let \u0061 = 1; a = 2; \u{61}", 2.0);
+    number(r"let \u03c0 = 3; π = π + 1; \u{3c0}", 4.0);
+    number(r"let \u{10400} = 5; 𐐀", 5.0);
+    number(r"let a\u200c = 1; a\u{200c} = 2; a\u200c", 2.0);
+    number(r"let \u00e9 = 1; let e\u0301 = 2; é + e\u{301}", 3.0);
+    exception(r"\u03c0; let π = 1", ExceptionKind::ReferenceError);
+    exception(r"const a = 1; \u0061 = 2", ExceptionKind::TypeError);
+    assert_eq!(
+        eval(r"typeof \u0075ndefined"),
+        Value::String(JsString::from("undefined"))
+    );
+    number(r"\u0049nfinity", f64::INFINITY);
+    number(r"l\u0065t = 2; let", 2.0);
+    let mut realm = Realm::default();
+    realm.eval("let π = 3").unwrap();
+    assert_eq!(realm.eval(r"\u03c0"), Ok(Value::Number(3.0)));
+    assert!(matches!(
+        realm.eval(r"let \u03c0"),
+        Err(Error::Exception {
+            kind: ExceptionKind::SyntaxError,
+            ..
+        })
+    ));
+    assert!(matches!(
+        realm.eval(r"π = 4; let tr\u0075e"),
+        Err(Error::Parse(_))
+    ));
+    assert_eq!(realm.eval("π"), Ok(Value::Number(3.0)));
+}

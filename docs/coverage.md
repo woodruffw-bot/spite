@@ -10,24 +10,29 @@ not an alternative language specification.
 | --- | --- |
 | Source | UTF-8 input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
-| Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers |
+| Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Expressions | Primitive literals, identifiers, parentheses, simple assignment, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
 | Statements | Empty and expression statements, let and const, blocks, if/else, throw |
-| Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions |
+| Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, uncaught primitive throws |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
 | Limits | 1 MiB source, depth 64, configurable evaluation steps and string code-unit limits |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures |
 
+Identifier names retain their exact decoded code point sequence. Canonically
+equivalent spellings are distinct bindings. Escapes cannot turn reserved words
+into identifiers or stand in for grammar keywords. Unicode property tables are
+generated from pinned data and do not depend on the Rust toolchain version.
+
 Each production crate depends only on std and workspace crates. insta is a test
 only dependency. Rust unsafe code is forbidden through inherited workspace lints.
 
 ## Not implemented
 
-Identifier escapes, BigInt, Symbols, objects, properties,
+BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, templates, var, loops, labels, switch, try/catch/finally, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
