@@ -1,0 +1,22 @@
+# upstream path	start byte	end byte	exact parse diagnostic (or three dashes for positive tests)
+test/language/comments/hashbang/not-empty.js	-	-	-
+test/language/comments/hashbang/line-terminator-carriage-return.js	-	-	-
+test/language/comments/hashbang/line-terminator-line-separator.js	-	-	-
+test/language/comments/hashbang/line-terminator-paragraph-separator.js	-	-	-
+test/language/comments/hashbang/preceding-empty-statement.js	1	2	unexpected character
+test/language/comments/hashbang/preceding-whitespace.js	1	2	unexpected character
+test/language/comments/hashbang/preceding-hashbang.js	3	4	unexpected character
+test/language/comments/hashbang/preceding-directive-prologue.js	13	14	unexpected character
+test/language/comments/hashbang/preceding-directive-prologue-sc.js	14	15	unexpected character
+test/language/comments/hashbang/preceding-multi-line-comment.js	5	6	unexpected character
+test/language/comments/hashbang/preceding-line-comment.js	3	4	unexpected character
+test/language/literals/bigint/legacy-octal-like-invalid-00n.js	598	601	invalid BigInt literal
+test/language/literals/bigint/legacy-octal-like-invalid-01n.js	598	601	invalid BigInt literal
+test/language/literals/bigint/legacy-octal-like-invalid-07n.js	598	601	invalid BigInt literal
+test/language/literals/bigint/non-octal-like-invalid-0008n.js	621	626	invalid BigInt literal
+test/language/literals/bigint/non-octal-like-invalid-08n.js	621	624	invalid BigInt literal
+test/language/literals/bigint/non-octal-like-invalid-09n.js	621	624	invalid BigInt literal
+test/language/literals/bigint/non-octal-like-invalid-012348n.js	621	628	invalid BigInt literal
+test/language/literals/bigint/mv-is-not-integer-dil-dot-dds.js	722	729	invalid BigInt literal
+test/language/literals/bigint/mv-is-not-integer-dot-dds.js	700	712	invalid BigInt literal
+test/language/literals/bigint/exponent-part.js	374	378	invalid BigInt literal

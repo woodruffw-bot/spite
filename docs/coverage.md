@@ -23,7 +23,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive throws, finalizer preservation and overrides of language completions |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, and BigInt magnitude bits |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures, 13 identifier lexer fixtures, and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31 reviewed Test262 variants from 11 hashbang and 10 BigInt files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -72,8 +72,10 @@ results, and matches negative tests by phase and error type. Parse-negative pass
 require a reviewed diagnostic range and message; unreviewed syntax errors remain
 unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. Modules, async completion, agents, and the full
-upstream harness remain unsupported. Running the pinned corpus through this
-runner is the next increment.
+upstream harness remain unsupported. CI runs the reviewed corpus on Linux and
+Windows with the minimum supported Rust version and stable Rust. Its 31 variants
+are four raw positive evaluations and 27 reviewed parse-negative variants, not a
+whole-suite conformance measurement. Component fixtures do not enter this count.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion
 with ECMAScript presentation rules. Primitive numeric operations have boundary

@@ -20,7 +20,7 @@ fn pinned_test262_raw_scripts() {
         // They are not counted as passing Script evaluations here.
         if matches!(
             expectation,
-            "identifier-tokens" | "identifier-error" | "parser-pass"
+            "identifier-tokens" | "identifier-error" | "parser-pass" | "parse-syntax-error"
         ) {
             continue;
         }

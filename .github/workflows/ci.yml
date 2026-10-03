@@ -45,6 +45,11 @@ jobs:
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: cargo +"$TOOLCHAIN" test --workspace --doc --locked
+      - name: Run reviewed Test262 corpus
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+        run: cargo +"$TOOLCHAIN" run -p spite-test262 --locked -- tests/test262
 
   quality:
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 30 unmodified fixtures come from
+These 40 unmodified fixtures come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -38,13 +38,27 @@ the Test262 harness or count as full Script execution passes.
 
 ## Scope and maintenance
 
-The manifest is not a YAML metadata parser or a general Test262 runner. These
-results do not measure whole-suite conformance. Other tests require grammar,
+The `spite-test262` command runs 31 variants from 21 reviewed sources: the eleven
+raw hashbang fixtures and ten BigInt parse-negative files in both Script modes.
+That means four raw positive evaluations and 27 reviewed parse-negative variants.
+The other nineteen files remain component regressions, outside this result count.
+`runner.tsv` records exact rejection byte ranges and messages for negative tests.
+Strict variants adjust these ranges only for the prescribed directive prefix.
+No test bodies are rewritten, and parse-negative tests never evaluate harness code.
+
+Run `cargo run -p spite-test262 --locked -- tests/test262` from the repository root.
+Every selected file and non-passing result is reported. Missing files, invalid
+metadata, unsupported features, limits, setup failures, unverified diagnostics,
+and unexpected outcomes cannot produce a successful gate. GitHub Actions runs
+this command in every platform/toolchain test configuration.
+
+These results do not measure whole-suite conformance. Other tests require grammar,
 objects, functions, or harness facilities that have not been implemented yet.
 The `spite-test262` crate now reads a documented subset of frontmatter and plans
 execution modes and harness include order. Its Script runner now separates parse,
 harness, and runtime outcomes, requiring a reviewed diagnostic for parse-negative
-passes. Migration of the pinned corpus to that runner is the next increment.
+passes. The complete upstream harness, modules, async completion, and agent
+configuration remain unsupported.
 
 Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attributes
 prevent line-ending normalization of fixtures. Do not edit the source files to

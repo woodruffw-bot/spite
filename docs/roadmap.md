@@ -57,10 +57,10 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Integrate BigInt literals, values, coercions, and language operators.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.
-- [ ] Establish a pinned Test262 runner with strict modes and phase-aware results.
+- [x] Establish a pinned Test262 runner with strict modes and phase-aware results.
 - [x] Parse Test262 execution metadata and plan modes and ordered harness includes.
 - [x] Classify Test262 phases and keep unsupported, host-limit, and unverified results distinct.
-- [ ] Run a reviewed pinned corpus through the runner in CI.
+- [x] Run a reviewed pinned corpus through the runner in CI.
 
 ## 3. Objects and functions
 

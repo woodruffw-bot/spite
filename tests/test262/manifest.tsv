@@ -29,3 +29,13 @@ parser-pass	f493ed8d9a13534d7e0e5923849af316328ef86b4c64355f9f9be017fe823f5a	tes
 parser-pass	c4994ce35f50ca389b400c9c517f0b899f9e7f8028780e0ad0a2319cde04869e	test/language/statements/if/let-identifier-with-newline.js
 parser-pass	73a6d383c765037a38a03a941aa71edd2e05b5893d6361d6b882bdc1093f8cd5	test/language/statements/for/let-block-with-newline.js
 parser-pass	33188cc83a8a85bd6b82c514ef425aee1123d0b4f18fe452ee7a37c455560b79	test/language/statements/for/let-identifier-with-newline.js
+parse-syntax-error	a4a6b6818d416192dd271a72a8ecea7f20118b3682996405f0838d282202e12c	test/language/literals/bigint/legacy-octal-like-invalid-00n.js
+parse-syntax-error	73ce6aee682f7f1a7e1c21b00e857359accff8f920e77b3f8eab4eb67eefc258	test/language/literals/bigint/legacy-octal-like-invalid-01n.js
+parse-syntax-error	df4a69fd8d9d50dc4f856c0b13d7ddf690cd70b33aaef15621860335e849b814	test/language/literals/bigint/legacy-octal-like-invalid-07n.js
+parse-syntax-error	5cedfb551348cf3ca64e1ff44e8e328380686ff7a973656e40be212375e9f9f0	test/language/literals/bigint/non-octal-like-invalid-0008n.js
+parse-syntax-error	4c4881b90775b2465561eff22a01d69a249f4beeeba3327f14fffeff9364eff9	test/language/literals/bigint/non-octal-like-invalid-08n.js
+parse-syntax-error	3b73c7fdc1c0b2e92278b5b221c901627d0acf7bc95ab126f55bd06d8cc9a9ea	test/language/literals/bigint/non-octal-like-invalid-09n.js
+parse-syntax-error	f3a51359fe3a2aac2df8cadb3131d3f957b1202fddd357d740051a0f66ff4265	test/language/literals/bigint/non-octal-like-invalid-012348n.js
+parse-syntax-error	b311e04e37639ee42799be9a7c3560bc9561264fed953992b474eeef75b5e846	test/language/literals/bigint/mv-is-not-integer-dil-dot-dds.js
+parse-syntax-error	1b12408b8c3347301244e76e7fa77d7cfcd0d8aa4369e2c18db2a8cc498b6496	test/language/literals/bigint/mv-is-not-integer-dot-dds.js
+parse-syntax-error	aa28ffdf429c4cf0ce43fc705fc98594ab1607a2d19f4762cf02f55404ba6cdc	test/language/literals/bigint/exponent-part.js
