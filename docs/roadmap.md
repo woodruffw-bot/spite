@@ -48,6 +48,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
 - [x] Instantiate Script vars and execute variable statements and for headers.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
+- [x] Add normalized integer storage, radix conversion, signed addition, and work budgets.
+- [ ] Add integer multiplication, division, shifts, bitwise operations, and exponentiation.
+- [ ] Integrate BigInt literals, values, coercions, and language operators.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.
 - [ ] Establish a pinned Test262 runner with strict modes and phase-aware results.

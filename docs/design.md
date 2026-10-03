@@ -34,6 +34,7 @@ measurements identify a problem and conformance tests protect the behavior.
 
 | Crate | Responsibility | Dependencies |
 | --- | --- | --- |
+| `spite-bigint` | Bounded arbitrary-precision integer arithmetic | std |
 | `spite-core` | Source locations, UTF-16 strings, shared language primitives | std |
 | `spite-parser` | Lexical grammar, AST, parsing, static semantics and early errors | core |
 | `spite-runtime` | Values, abstract operations, environments, objects, execution | core, parser |
@@ -42,8 +43,8 @@ measurements identify a problem and conformance tests protect the behavior.
 
 Create crates when they first have real functionality. Keep parser internals in
 one crate. Keep built-ins inside the runtime until an actual dependency boundary
-justifies another crate. A regular expression implementation and arbitrary-precision
-integers may later deserve separate crates. The regular expression implementation may use `regex` under the exception above.
+justifies another crate. Integer arithmetic lives in `spite-bigint`. A regular
+expression implementation may later need its own crate and may use `regex`.
 
 ## Syntax
 
@@ -80,6 +81,16 @@ abstract operations near their specification names and link subtle algorithms to
 stable section anchors. Use binary64 Numbers, preserve negative zero and NaN, and
 keep Number and BigInt distinct. Do not use Rust equality as a substitute for the
 language's separate equality algorithms.
+
+BigInt uses a sign and a normalized little-endian vector of 32-bit magnitude
+words. Zero has no words and no negative sign. Start with straightforward carry,
+borrow, multiplication, and division algorithms. Each arithmetic operation takes
+a budget that bounds result bits and charges word operations before doing the
+work. The runtime translates budget exhaustion into a host limit, while division
+by zero and negative exponents become JavaScript RangeError exceptions.
+Conversions between BigInt and Number must compare mathematical values without
+rounding the integer first. Literal grammar, string coercion, and mixed-type
+operator rules remain in the parser and runtime rather than the arithmetic crate.
 
 Model references separately from values. Model normal completion with an optional
 value so an empty completion cannot be confused with JavaScript undefined. Add

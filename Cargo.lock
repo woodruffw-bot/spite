@@ -105,6 +105,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "spite-bigint"
+version = "0.1.0"
+
+[[package]]
 name = "spite-core"
 version = "0.1.0"
 
