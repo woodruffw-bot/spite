@@ -227,11 +227,35 @@ impl Parser {
         } else if self.eat("try") {
             // ECMA-262 14.15 requires blocks, not arbitrary statements.
             let body = self.required_block()?;
-            let handler = if self.eat("catch") {
-                if self.at("(") {
-                    return Err(self.unsupported("catch parameters are not implemented"));
-                }
-                Some(self.required_block()?)
+            let handler = if self.at("catch") {
+                let start = self.bump().span.start;
+                let parameter = if self.eat("(") {
+                    if self.at("[") || self.at("{") {
+                        return Err(self.unsupported("catch binding patterns are not implemented"));
+                    }
+                    let token = self.bump();
+                    let Kind::Word(name) = token.kind else {
+                        return Err(early(token.span, "expected catch binding identifier"));
+                    };
+                    if reserved(&name) {
+                        return Err(early(token.span, "invalid catch binding identifier"));
+                    }
+                    self.expect(")")?;
+                    Some(Binding {
+                        name,
+                        span: token.span,
+                        initializer: None,
+                    })
+                } else {
+                    None
+                };
+                let body = self.required_block()?;
+                let span = Span::new(start, body.span.end);
+                Some(Box::new(CatchClause {
+                    parameter,
+                    body,
+                    span,
+                }))
             } else {
                 None
             };
@@ -957,8 +981,41 @@ fn validate_statement<'a>(
             finalizer,
         } => {
             validate_statement(body, strict, control, labels)?;
-            for clause in [handler, finalizer].into_iter().flatten() {
-                validate_statement(clause, strict, control, labels)?;
+            if let Some(handler) = handler {
+                if let Some(parameter) = &handler.parameter {
+                    validate_binding(parameter, strict)?;
+                    let StatementKind::Block(statements) = &handler.body.kind else {
+                        unreachable!("catch requires a block");
+                    };
+                    // ECMA-262 14.15.1. The Annex B exception allowing var to
+                    // redeclare a simple catch parameter is not enabled by this host.
+                    for statement in statements {
+                        if let StatementKind::Lexical { bindings, .. } = &statement.kind {
+                            for binding in bindings {
+                                if binding.name == parameter.name {
+                                    return Err(early(
+                                        binding.span,
+                                        "catch parameter conflicts with lexical declaration",
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                    let mut declarations = Vec::new();
+                    handler.body.collect_var_declarations(&mut declarations);
+                    for binding in declarations {
+                        if binding.name == parameter.name {
+                            return Err(early(
+                                binding.span,
+                                "catch parameter conflicts with var declaration",
+                            ));
+                        }
+                    }
+                }
+                validate_statement(&handler.body, strict, control, labels)?;
+            }
+            if let Some(finalizer) = finalizer {
+                validate_statement(finalizer, strict, control, labels)?;
             }
         }
         StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {

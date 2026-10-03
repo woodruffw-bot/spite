@@ -78,8 +78,11 @@ impl Statement {
                 finalizer,
             } => {
                 body.collect_var_declarations(declarations);
-                for clause in [handler, finalizer].into_iter().flatten() {
-                    clause.collect_var_declarations(declarations);
+                if let Some(handler) = handler {
+                    handler.body.collect_var_declarations(declarations);
+                }
+                if let Some(finalizer) = finalizer {
+                    finalizer.collect_var_declarations(declarations);
                 }
             }
             StatementKind::Empty
@@ -117,8 +120,8 @@ pub enum StatementKind {
     Try {
         /// Protected block.
         body: Box<Statement>,
-        /// Catch block without a catch parameter, when present.
-        handler: Option<Box<Statement>>,
+        /// Catch clause, when present.
+        handler: Option<Box<CatchClause>>,
         /// Block evaluated after the protected block or catch completes.
         finalizer: Option<Box<Statement>>,
     },
@@ -176,6 +179,17 @@ pub enum StatementKind {
     Continue(Option<Label>),
     /// Throw a language value.
     Throw(Expr),
+}
+
+/// A catch clause with an optional binding identifier.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CatchClause {
+    /// The catch binding, whose initializer is always absent.
+    pub parameter: Option<Binding>,
+    /// Catch block, with its own lexical environment inside the parameter's scope.
+    pub body: Box<Statement>,
+    /// Source range including the catch keyword, parameter, and block.
+    pub span: Span,
 }
 
 /// A switch clause and its statement list.

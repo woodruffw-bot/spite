@@ -53,7 +53,10 @@ New global vars are non-deletable. A var declaration for an existing global valu
 preserves its value and deletability. There is no observable global object or
 full property model yet. Built-in error categories are represented in
 Rust. Catch clauses without a parameter handle language throws and built-in
-exceptions. JavaScript Error objects and catch parameters are future work.
+exceptions. Catch binding identifiers now parse with scope and strict-mode early
+errors, including the required non-browser rejection of conflicting var names.
+Executing those parameter bindings and creating JavaScript Error objects are
+future work. Catch binding patterns remain unsupported.
 
 Recognized missing features return Unsupported. Because the grammar is incomplete,
 a syntax diagnostic alone does not prove arbitrary input violates ECMA-262. The

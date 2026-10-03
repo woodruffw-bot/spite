@@ -185,7 +185,7 @@ fn invalid_or_unsupported_handlers_prevent_all_execution() {
     for (handler, kind) in [
         ("catch { let x; let x; }", DiagnosticKind::Syntax),
         ("catch { continue; }", DiagnosticKind::Syntax),
-        ("catch (e) {}", DiagnosticKind::Unsupported),
+        ("catch ({e}) {}", DiagnosticKind::Unsupported),
     ] {
         let mut realm = Realm::default();
         realm.eval("let x = 1;").unwrap();

@@ -46,9 +46,9 @@ expression: errors
     Diagnostic {
         kind: Unsupported,
         span: Span {
-            start: 13,
-            end: 14,
+            start: 14,
+            end: 15,
         },
-        message: "catch parameters are not implemented",
+        message: "catch binding patterns are not implemented",
     },
 ]

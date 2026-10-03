@@ -552,7 +552,13 @@ impl Realm {
                 // its block only on a throw, without an extra binding environment.
                 if result.as_ref().is_err_and(|e| e.is_language_exception()) {
                     if let Some(handler) = handler {
-                        result = self.statement(handler);
+                        if handler.parameter.is_some() {
+                            return Err(Self::unsupported(
+                                handler.span,
+                                "catch parameter execution is not implemented",
+                            ));
+                        }
+                        result = self.statement(&handler.body);
                     }
                 }
                 // Host failures cannot enter or be suppressed by language control.

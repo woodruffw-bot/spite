@@ -41,6 +41,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Evaluate finalizers and their normal and abrupt completion overrides.
 - [x] Implement debugger statements with no active debugging facility.
 - [x] Handle optional-binding catch clauses and catch-finally completions.
+- [x] Parse catch binding identifiers and validate catch scope conflicts.
+- [ ] Execute catch binding identifiers for primitive throws.
 - [ ] Add remaining statements, for-in/of loops, catch parameters, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.

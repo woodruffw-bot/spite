@@ -1,6 +1,6 @@
 ---
-source: crates/spite-parser/tests/catch.rs
-expression: "parse_script(\"try { throw 1; } catch { 2; } finally { 3; }\").unwrap()"
+source: crates/spite-parser/tests/catch_parameters.rs
+expression: "parse_script(r\"try { throw 7; } catch (\\u0065) { e += 1; e; } finally { 0; }\").unwrap()"
 ---
 Script {
     statements: [
@@ -15,7 +15,7 @@ Script {
                                         depth: 1,
                                         kind: Literal(
                                             Number(
-                                                1.0,
+                                                7.0,
                                             ),
                                         ),
                                         span: Span {
@@ -38,40 +38,78 @@ Script {
                 },
                 handler: Some(
                     CatchClause {
-                        parameter: None,
+                        parameter: Some(
+                            Binding {
+                                name: "e",
+                                span: Span {
+                                    start: 24,
+                                    end: 30,
+                                },
+                                initializer: None,
+                            },
+                        ),
                         body: Statement {
                             kind: Block(
                                 [
                                     Statement {
                                         kind: Expression(
                                             Expr {
-                                                depth: 1,
-                                                kind: Literal(
-                                                    Number(
-                                                        2.0,
-                                                    ),
+                                                depth: 2,
+                                                kind: CompoundAssign(
+                                                    Add,
+                                                    "e",
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Literal(
+                                                            Number(
+                                                                1.0,
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 39,
+                                                            end: 40,
+                                                        },
+                                                    },
                                                 ),
                                                 span: Span {
-                                                    start: 25,
-                                                    end: 26,
+                                                    start: 34,
+                                                    end: 40,
                                                 },
                                             },
                                         ),
                                         span: Span {
-                                            start: 25,
-                                            end: 27,
+                                            start: 34,
+                                            end: 41,
+                                        },
+                                    },
+                                    Statement {
+                                        kind: Expression(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "e",
+                                                ),
+                                                span: Span {
+                                                    start: 42,
+                                                    end: 43,
+                                                },
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 42,
+                                            end: 44,
                                         },
                                     },
                                 ],
                             ),
                             span: Span {
-                                start: 23,
-                                end: 29,
+                                start: 32,
+                                end: 46,
                             },
                         },
                         span: Span {
                             start: 17,
-                            end: 29,
+                            end: 46,
                         },
                     },
                 ),
@@ -85,32 +123,32 @@ Script {
                                             depth: 1,
                                             kind: Literal(
                                                 Number(
-                                                    3.0,
+                                                    0.0,
                                                 ),
                                             ),
                                             span: Span {
-                                                start: 40,
-                                                end: 41,
+                                                start: 57,
+                                                end: 58,
                                             },
                                         },
                                     ),
                                     span: Span {
-                                        start: 40,
-                                        end: 42,
+                                        start: 57,
+                                        end: 59,
                                     },
                                 },
                             ],
                         ),
                         span: Span {
-                            start: 38,
-                            end: 44,
+                            start: 55,
+                            end: 61,
                         },
                     },
                 ),
             },
             span: Span {
                 start: 0,
-                end: 44,
+                end: 61,
             },
         },
     ],
