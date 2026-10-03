@@ -75,7 +75,7 @@ impl std::error::Error for Error {}
 /// Host resource limits. They do not alter ECMAScript exceptions.
 #[derive(Clone, Copy, Debug)]
 pub struct Limits {
-    /// Maximum statement and expression evaluation steps per Script.
+    /// Maximum evaluation steps per Script, including binding and clause work.
     pub max_steps: usize,
     /// Maximum code units in any produced string.
     pub max_string_units: usize,
@@ -139,7 +139,7 @@ impl Completion {
                     .is_none_or(|target| labels.contains(&target)))
     }
 
-    // ECMA-262 14.13.4: only unlabelled breaks are consumed by loops.
+    // ECMA-262 14.13.4: loops and switches consume only unlabelled breaks.
     fn consume_unlabelled_break(mut self) -> Self {
         if self.kind == CompletionKind::Break && self.target.is_none() {
             self.kind = CompletionKind::Normal;
@@ -202,9 +202,9 @@ impl Realm {
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
-        self.instantiate(script.statements(), true)?;
+        self.instantiate(script.statements().iter(), true)?;
         let completion = self.statements(script.statements())?;
-        // Validated Scripts cannot transfer control outside an enclosing loop.
+        // Validated Scripts cannot leave an unhandled control transfer.
         debug_assert_eq!(completion.kind, CompletionKind::Normal);
         Ok(completion.value.unwrap_or(Value::Undefined))
     }
@@ -244,13 +244,17 @@ impl Realm {
         Ok(())
     }
 
-    fn instantiate(&mut self, statements: &[Statement], global: bool) -> Result<(), Error> {
+    fn instantiate<'a>(
+        &mut self,
+        statements: impl Iterator<Item = &'a Statement> + Clone,
+        global: bool,
+    ) -> Result<(), Error> {
         let scope = self
             .scopes
             .last_mut()
             .expect("a realm always has a global scope");
         // Check all global conflicts before creating any bindings.
-        for statement in statements {
+        for statement in statements.clone() {
             if let StatementKind::Lexical { bindings, .. } = &statement.kind {
                 for binding in bindings {
                     if scope.contains_key(&binding.name)
@@ -354,15 +358,28 @@ impl Realm {
             StatementKind::Block(body) => {
                 self.scopes.push(BTreeMap::new());
                 let result = self
-                    .instantiate(body, false)
+                    .instantiate(body.iter(), false)
                     .and_then(|()| self.statements(body));
                 self.scopes.pop();
                 result
             }
-            StatementKind::Switch { .. } => Err(Self::unsupported(
-                statement.span,
-                "switch evaluation is not implemented",
-            )),
+            StatementKind::Switch {
+                discriminant,
+                clauses,
+            } => {
+                // ECMA-262 14.12.4 evaluates the discriminant before creating
+                // the shared case-block environment. Selectors use that new scope.
+                let input = self.expression(discriminant)?;
+                self.scopes.push(BTreeMap::new());
+                let result = self
+                    .instantiate(
+                        clauses.iter().flat_map(|clause| clause.statements.iter()),
+                        false,
+                    )
+                    .and_then(|()| self.case_block(clauses, &input));
+                self.scopes.pop();
+                result.map(Completion::consume_unlabelled_break)
+            }
             // ECMA-262 14.7.3.2: the result is the last non-empty body value,
             // initially undefined. Condition values never replace it.
             StatementKind::While { test, body } => {
@@ -450,6 +467,43 @@ impl Realm {
                 Ok(result.update_empty(Some(Value::Undefined)))
             }
         }
+    }
+
+    // ECMA-262 14.12.2/14.12.3: locate the first strictly equal selector,
+    // skipping default during the search. After a match, fall through in source
+    // order without evaluating any further selectors. Only when no selector
+    // matches does execution begin at default (if present).
+    fn case_block(&mut self, clauses: &[SwitchClause], input: &Value) -> Result<Completion, Error> {
+        let mut selected = None;
+        let mut default = None;
+        for (index, clause) in clauses.iter().enumerate() {
+            self.tick(clause.span)?;
+            if let Some(test) = &clause.test {
+                if input.strictly_equal(&self.expression(test)?) {
+                    selected = Some(index);
+                    break;
+                }
+            } else {
+                default = Some(index);
+            }
+        }
+        let mut value = Value::Undefined;
+        if let Some(start) = selected.or(default) {
+            for clause in &clauses[start..] {
+                // Empty fall-through clauses still consume the host work budget.
+                self.tick(clause.span)?;
+                let result = self
+                    .statements(&clause.statements)?
+                    .update_empty(Some(value));
+                if result.kind != CompletionKind::Normal {
+                    return Ok(result);
+                }
+                value = result
+                    .value
+                    .expect("case-block UpdateEmpty supplies a value");
+            }
+        }
+        Ok(Completion::normal(Some(value)))
     }
 
     // ECMA-262 14.7.4.3 ForBodyEvaluation. The body's completion determines
