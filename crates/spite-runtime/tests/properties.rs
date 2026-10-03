@@ -231,7 +231,7 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
             .eval("let o = {}; o.self = o; try { throw o; } catch (e) { e.flag = 7; } o.self.flag"),
         Ok(Value::Number(7.0))
     );
-    assert_eq!(realm.collect(1000).unwrap().live, 6);
+    assert_eq!(realm.collect(1000).unwrap().live, 8);
     assert_eq!(realm.eval("o === o.self"), Ok(Value::Boolean(true)));
     realm.eval("o = null").unwrap();
     assert_eq!(realm.collect(1000).unwrap().reclaimed, 1);
@@ -240,11 +240,11 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
 #[test]
 fn long_prototype_reads_are_bounded_and_host_failures_skip_finalizers() {
     let mut realm = Realm::new(Limits {
-        max_steps: 256,
+        max_steps: 512,
         ..Limits::default()
     });
     realm.eval("let p = null; let flag = 0").unwrap();
-    for _ in 0..100 {
+    for _ in 0..180 {
         realm.eval("p = {__proto__: p}").unwrap();
     }
     assert!(matches!(

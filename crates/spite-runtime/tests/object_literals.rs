@@ -170,7 +170,7 @@ fn prototype_initializers_are_distinct_from_computed_and_shorthand_properties() 
 }
 
 #[test]
-fn early_errors_precede_all_effects_and_object_conversion_stays_explicit() {
+fn early_errors_precede_all_effects() {
     let mut realm = Realm::default();
     realm.eval("let effect = 0").unwrap();
     assert!(matches!(
@@ -178,19 +178,6 @@ fn early_errors_precede_all_effects_and_object_conversion_stays_explicit() {
         Err(Error::Parse(_))
     ));
     assert_eq!(realm.eval("effect"), Ok(Value::Number(0.0)));
-    for source in [
-        "+({}).toString",
-        "({}).toString + 1",
-        "1n - ({}).toString",
-        "({}).toString == 1",
-        "`${({}).toString}`",
-        "({}).toString < 1",
-    ] {
-        assert!(
-            matches!(realm.eval(source), Err(Error::Unsupported { .. })),
-            "{source}"
-        );
-    }
 }
 
 #[test]
@@ -222,13 +209,13 @@ fn allocation_property_and_key_limits_are_host_failures() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_properties: 4,
+        max_properties: 6,
         ..Limits::default()
     });
     let handle = object(&mut realm, "({a: 1, a: 2})");
     assert_eq!(own(&realm, &handle, "a"), Value::Number(2.0));
     assert!(matches!(
-        realm.eval("({a: 1, b: 2, c: 3, d: 4, e: 5})"),
+        realm.eval("({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7})"),
         Err(Error::Limit { .. })
     ));
 }

@@ -9,9 +9,30 @@ use spite_core::{JsString, Span};
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
     FunctionPrototype,
+    FunctionCall,
+    FunctionToString,
     ThrowTypeError,
     ObjectToString,
     ObjectValueOf,
+}
+
+impl Builtin {
+    // [[InitialName]] does not change when the public name property is altered.
+    fn initial_name(self) -> &'static str {
+        match self {
+            Self::FunctionPrototype | Self::ThrowTypeError => "",
+            Self::FunctionCall => "call",
+            Self::FunctionToString | Self::ObjectToString => "toString",
+            Self::ObjectValueOf => "valueOf",
+        }
+    }
+
+    fn length(self) -> f64 {
+        match self {
+            Self::FunctionCall => 1.0,
+            _ => 0.0,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -106,8 +127,75 @@ mod tests {
             );
         }
         // The intrinsic identity is retained even after deleting all accessor edges.
-        assert_eq!(realm.collect(1000).unwrap().live, 5);
+        assert_eq!(realm.collect(1000).unwrap().live, 7);
         assert!(realm.objects.inspect(&thrower).is_ok());
+    }
+
+    #[test]
+    fn call_forwarding_is_iterative_and_budgeted() {
+        let mut realm = Realm::default();
+        realm.eval("({})").unwrap();
+        let intrinsics = realm.intrinsics.as_ref().unwrap();
+        let call = Value::Object(intrinsics.function_call.clone());
+        let tag = Value::Object(intrinsics.object_to_string.clone());
+        let mut arguments = vec![call.clone(); 10_000];
+        arguments.extend([tag.clone(), Value::Null]);
+        assert_eq!(
+            realm.call(call.clone(), call.clone(), arguments, Span::new(0, 0)),
+            Ok(Value::String(JsString::from("[object Null]")))
+        );
+        realm.remaining_steps = 3;
+        assert!(matches!(
+            realm.call(
+                call.clone(),
+                call.clone(),
+                vec![call.clone(); 10],
+                Span::new(0, 0)
+            ),
+            Err(Error::Limit { .. })
+        ));
+        // An abrupt host exit leaves no pending call state behind.
+        assert_eq!(
+            realm.eval("({}).toString.call(null)"),
+            Ok(Value::String(JsString::from("[object Null]")))
+        );
+    }
+
+    #[test]
+    fn native_source_does_not_read_the_name_property() {
+        let mut realm = Realm::default();
+        realm.eval("let f = ({}).valueOf").unwrap();
+        let intrinsics = realm.intrinsics.as_ref().unwrap();
+        let function = intrinsics.object_value_of.clone();
+        let thrower = intrinsics.throw_type_error.clone();
+        realm
+            .objects
+            .define(
+                &function,
+                JsString::from("name"),
+                PropertyDescriptor {
+                    kind: DescriptorKind::Accessor {
+                        get: Some(Some(thrower)),
+                        set: Some(None),
+                    },
+                    ..Default::default()
+                },
+                &mut Budget::new(1000),
+            )
+            .unwrap();
+        assert_eq!(
+            realm.eval("f.toString()"),
+            Ok(Value::String(JsString::from(
+                "function valueOf() { [native code] }"
+            )))
+        );
+        assert!(matches!(
+            realm.eval("f.name"),
+            Err(Error::Exception {
+                kind: ExceptionKind::TypeError,
+                ..
+            })
+        ));
     }
 }
 
@@ -123,6 +211,8 @@ pub(super) struct Intrinsics {
     pub object_to_string: ObjectHandle,
     pub object_value_of: ObjectHandle,
     pub throw_type_error: ObjectHandle,
+    pub function_call: ObjectHandle,
+    pub function_to_string: ObjectHandle,
 }
 
 impl Intrinsics {
@@ -133,6 +223,8 @@ impl Intrinsics {
             &self.object_to_string,
             &self.object_value_of,
             &self.throw_type_error,
+            &self.function_call,
+            &self.function_to_string,
         ]
         .into_iter()
     }
@@ -146,15 +238,11 @@ impl Realm {
         let object_prototype =
             self.object_work(span, |objects, _| objects.create_object_prototype())?;
         let function_prototype =
-            self.new_builtin(&object_prototype, Builtin::FunctionPrototype, "", span)?;
-        let object_to_string = self.new_builtin(
-            &function_prototype,
-            Builtin::ObjectToString,
-            "toString",
-            span,
-        )?;
+            self.new_builtin(&object_prototype, Builtin::FunctionPrototype, span)?;
+        let object_to_string =
+            self.new_builtin(&function_prototype, Builtin::ObjectToString, span)?;
         let object_value_of =
-            self.new_builtin(&function_prototype, Builtin::ObjectValueOf, "valueOf", span)?;
+            self.new_builtin(&function_prototype, Builtin::ObjectValueOf, span)?;
         for (name, handle) in [
             ("toString", &object_to_string),
             ("valueOf", &object_value_of),
@@ -169,7 +257,7 @@ impl Realm {
         }
         // 9.3.2 / 10.2.4: Function.prototype owns the shared restricted accessors.
         let throw_type_error =
-            self.new_builtin(&function_prototype, Builtin::ThrowTypeError, "", span)?;
+            self.new_builtin(&function_prototype, Builtin::ThrowTypeError, span)?;
         for name in ["name", "length"] {
             self.object_work(span, |objects, budget| {
                 objects.define(
@@ -203,6 +291,18 @@ impl Realm {
                 )
             })?;
         }
+        let function_call = self.new_builtin(&function_prototype, Builtin::FunctionCall, span)?;
+        let function_to_string =
+            self.new_builtin(&function_prototype, Builtin::FunctionToString, span)?;
+        for (name, handle) in [("call", &function_call), ("toString", &function_to_string)] {
+            self.define_builtin_property(
+                &function_prototype,
+                name,
+                Value::Object(handle.clone()),
+                true,
+                span,
+            )?;
+        }
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -211,6 +311,8 @@ impl Realm {
             object_to_string,
             object_value_of,
             throw_type_error,
+            function_call,
+            function_to_string,
         });
         Ok(object_prototype)
     }
@@ -219,17 +321,22 @@ impl Realm {
         &mut self,
         prototype: &ObjectHandle,
         builtin: Builtin,
-        name: &str,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
         let object = self.object_work(span, |objects, _| {
             objects.create_builtin(prototype, builtin)
         })?;
-        self.define_builtin_property(&object, "length", Value::Number(0.0), false, span)?;
+        self.define_builtin_property(
+            &object,
+            "length",
+            Value::Number(builtin.length()),
+            false,
+            span,
+        )?;
         self.define_builtin_property(
             &object,
             "name",
-            Value::String(JsString::from(name)),
+            Value::String(JsString::from(builtin.initial_name())),
             false,
             span,
         )?;
@@ -272,64 +379,98 @@ impl Realm {
 
     pub(super) fn call(
         &mut self,
-        function: Value,
-        this: Value,
-        _arguments: Vec<Value>,
+        mut function: Value,
+        mut this: Value,
+        arguments: Vec<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        // 13.3.6.2: callers evaluate arguments before entering this callable check.
-        let callable = if let Value::Object(object) = function {
-            self.object_work(span, |objects, _| {
-                Ok(objects.inspect(&object)?.callable().cloned())
-            })?
-        } else {
-            None
-        };
-        let builtin = match callable {
-            Some(Callable::Builtin(builtin)) => builtin,
-            None => {
-                return Err(Self::exception(
+        let mut arguments = arguments.into_iter();
+        loop {
+            // 13.3.6.2: callers evaluate arguments before entering this callable check.
+            let callable = if let Value::Object(object) = function {
+                self.object_work(span, |objects, _| {
+                    Ok(objects.inspect(&object)?.callable().cloned())
+                })?
+            } else {
+                None
+            };
+            let builtin = match callable {
+                Some(Callable::Builtin(builtin)) => builtin,
+                None => {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "value is not callable",
+                    ));
+                }
+            };
+            let result = match builtin {
+                Builtin::FunctionCall => {
+                    // 20.2.3.3 is a tail call. Transfer ownership of the receiver and
+                    // advance the argument iterator without Rust stack recursion.
+                    function = this;
+                    this = arguments.next().unwrap_or(Value::Undefined);
+                    continue;
+                }
+                Builtin::FunctionToString => {
+                    // 20.2.3.5: builtin source uses immutable [[InitialName]], never
+                    // an observable read of the mutable public name property.
+                    let callable = if let Value::Object(object) = &this {
+                        self.object_work(span, |objects, _| {
+                            Ok(objects.inspect(object)?.callable().cloned())
+                        })?
+                    } else {
+                        None
+                    };
+                    match callable {
+                        Some(Callable::Builtin(builtin)) => Ok(Value::String(JsString::from(
+                            format!("function {}() {{ [native code] }}", builtin.initial_name())
+                                .as_str(),
+                        ))),
+                        None => Err(Self::exception(
+                            ExceptionKind::TypeError,
+                            span,
+                            "Function.prototype.toString requires a callable receiver",
+                        )),
+                    }
+                }
+                Builtin::FunctionPrototype => Ok(Value::Undefined),
+                Builtin::ThrowTypeError => Err(Self::exception(
                     ExceptionKind::TypeError,
                     span,
-                    "value is not callable",
-                ));
-            }
-        };
-        match builtin {
-            Builtin::FunctionPrototype => Ok(Value::Undefined),
-            Builtin::ThrowTypeError => Err(Self::exception(
-                ExceptionKind::TypeError,
-                span,
-                "restricted function property",
-            )),
-            Builtin::ObjectValueOf => {
-                Self::require_object_coercible(&this, span)?;
-                if matches!(this, Value::Object(_)) {
-                    Ok(this)
-                } else {
-                    Err(Self::unsupported(
-                        span,
-                        "returning primitive wrapper objects is not implemented",
-                    ))
+                    "restricted function property",
+                )),
+                Builtin::ObjectValueOf => {
+                    Self::require_object_coercible(&this, span)?;
+                    if matches!(this, Value::Object(_)) {
+                        Ok(this)
+                    } else {
+                        Err(Self::unsupported(
+                            span,
+                            "returning primitive wrapper objects is not implemented",
+                        ))
+                    }
                 }
-            }
-            Builtin::ObjectToString => {
-                // 20.1.3.6. No Symbol keys or additional exotic object kinds are
-                // exposed yet; their tags and hooks must join this dispatch later.
-                let tag = match &this {
-                    Value::Undefined => "Undefined",
-                    Value::Null => "Null",
-                    Value::Boolean(_) => "Boolean",
-                    Value::Number(_) => "Number",
-                    Value::BigInt(_) => "BigInt",
-                    Value::String(_) => "String",
-                    Value::Object(_) if self.is_callable(&this, span)? => "Function",
-                    Value::Object(_) => "Object",
-                };
-                Ok(Value::String(JsString::from(
-                    format!("[object {tag}]").as_str(),
-                )))
-            }
+                Builtin::ObjectToString => {
+                    // 20.1.3.6. No Symbol keys or additional exotic object kinds are
+                    // exposed yet; their tags and hooks must join this dispatch later.
+                    let tag = match &this {
+                        Value::Undefined => "Undefined",
+                        Value::Null => "Null",
+                        Value::Boolean(_) => "Boolean",
+                        Value::Number(_) => "Number",
+                        Value::BigInt(_) => "BigInt",
+                        Value::String(_) => "String",
+                        Value::Object(_) if self.is_callable(&this, span)? => "Function",
+                        Value::Object(_) => "Object",
+                    };
+                    Ok(Value::String(JsString::from(
+                        format!("[object {tag}]").as_str(),
+                    )))
+                }
+            }?;
+            self.check_string(&result, span)?;
+            return Ok(result);
         }
     }
 }

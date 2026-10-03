@@ -73,7 +73,7 @@ fn truthiness_identity_and_nullish_equality_never_request_conversion() {
 }
 
 #[test]
-fn conversions_run_left_to_right_after_both_operand_expressions() {
+fn conversions_follow_both_operand_expressions() {
     for operator in ["+", "-", "*", "/", "<", ">", "<=", ">="] {
         let mut realm = Realm::default();
         realm.eval("let flag = 0").unwrap();
@@ -92,7 +92,13 @@ fn conversions_run_left_to_right_after_both_operand_expressions() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
         let source = format!("({{}}).toString {operator} ({{__proto__: null}})");
         assert!(
-            matches!(realm.eval(&source), Err(Error::Unsupported { .. })),
+            matches!(
+                realm.eval(&source),
+                Err(Error::Exception {
+                    kind: ExceptionKind::TypeError,
+                    ..
+                })
+            ),
             "{operator}"
         );
     }
@@ -138,16 +144,14 @@ fn failed_conversion_is_catchable_and_prevents_later_values_or_writes() {
 }
 
 #[test]
-fn missing_callable_intrinsics_remain_unsupported_and_string_hook_names_are_ordinary() {
-    for source in ["+({}).toString", "`${({}).toString}`"] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+fn native_function_conversion_and_string_hook_names() {
+    assert!(matches!(Realm::default().eval("+({}).toString"), Ok(Value::Number(n)) if n.is_nan()));
+    assert_eq!(
+        Realm::default().eval("`${({}).toString}`"),
+        Ok(Value::String(
+            "function toString() { [native code] }".into()
+        ))
+    );
     assert_eq!(
         Realm::default().eval("({valueOf: 1}) + 2"),
         Ok(Value::String("[object Object]2".into()))

@@ -86,11 +86,14 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the five objects remain rooted. Function.prototype caller/arguments
+is atomic and the seven objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
-wrappers returned by valueOf, other Function.prototype methods, spread arguments, optional
-calls, and user functions remain open; missing operations report Unsupported.
+wrappers returned by valueOf, apply/bind, spread arguments, optional calls, and
+user functions remain open; missing operations report Unsupported. Function.prototype
+call passes receivers unchanged through bounded iterative dispatch. Native function
+toString uses the original builtin name even after public name changes; generated
+strings obey host limits.
 
 Symbols, primitive wrapper constructors,
 arrays, user functions, closures, constructors, classes, destructuring, regular

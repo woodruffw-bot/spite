@@ -254,7 +254,7 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The five intrinsic objects are published atomically after lazy
+(20.1.3, 10.4.7.1). The seven intrinsic objects are published atomically after lazy
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
@@ -264,6 +264,14 @@ deletion do not invoke accessors. Unavailable standard methods remain Unsupporte
 Native Object.prototype.valueOf still reports Unsupported when it would
 return a primitive wrapper. Captured environment storage and user functions follow
 this callable-object foundation.
+
+Function.prototype.call forwards thisArg unchanged and consumes the remaining
+arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
+Function.prototype.toString emits `function NAME() { [native code] }` for builtin
+functions, using immutable builtin identity for [[InitialName]] (20.2.3.5). It
+never reads the public name property. Generated builtin strings respect the realm
+length limit, including during implicit coercion. User function source retention,
+apply, and bind remain subsequent increments.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later
