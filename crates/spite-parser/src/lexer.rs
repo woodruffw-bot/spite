@@ -115,7 +115,7 @@ impl<'a> Lexer<'a> {
                 "templates are not implemented",
             ));
         } else {
-            // Maximal munch prevents unsupported compound operators from being split.
+            // Maximal munch keeps multi-character operators intact.
             const PUNCT: &[&str] = &[
                 ">>>=", "===", "!==", ">>>", "**=", "<<=", ">>=", "&&=", "||=", "??=", "...", "=>",
                 "++", "--", "**", "==", "!=", "<=", ">=", "&&", "||", "??", "<<", ">>", "+=", "-=",

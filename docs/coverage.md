@@ -12,7 +12,7 @@ not an alternative language specification.
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
 | Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
-| Expressions | Primitive literals, identifiers, parentheses, simple assignment, prefix/postfix updates, conditional and comma expressions |
+| Expressions | Primitive literals, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
 | Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, switch, labels, break/continue with optional targets, throw, try with catch without a parameter and/or finally |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |

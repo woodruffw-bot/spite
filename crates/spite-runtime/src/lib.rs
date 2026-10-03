@@ -705,6 +705,23 @@ impl Realm {
                 self.put(reference, value.clone(), expr.span)?;
                 value
             }
+            ExprKind::CompoundAssign(op, name, right) => {
+                // ECMA-262 13.15.2: read the reference before the RHS. Logical
+                // assignments that short-circuit perform neither RHS nor PutValue.
+                let reference = self.resolve(name);
+                let left = self.get(&reference, expr.span)?;
+                match op {
+                    BinaryOp::And if !left.to_boolean() => left,
+                    BinaryOp::Or if left.to_boolean() => left,
+                    BinaryOp::Nullish if !matches!(left, Value::Null | Value::Undefined) => left,
+                    _ => {
+                        let right = self.expression(right)?;
+                        let value = self.binary(*op, left, right, expr.span)?;
+                        self.put(reference, value.clone(), expr.span)?;
+                        value
+                    }
+                }
+            }
             ExprKind::Update {
                 op,
                 argument,

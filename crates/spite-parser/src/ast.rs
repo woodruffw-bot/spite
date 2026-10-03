@@ -191,6 +191,8 @@ pub enum ExprKind {
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     /// A simple assignment to an identifier.
     Assign(String, Box<Expr>),
+    /// A compound assignment to an identifier, including logical assignment.
+    CompoundAssign(BinaryOp, String, Box<Expr>),
     /// A conditional expression.
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
 }

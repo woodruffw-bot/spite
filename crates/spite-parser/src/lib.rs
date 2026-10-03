@@ -137,30 +137,8 @@ impl Parser {
             || self.current().newline
         {
             Ok(())
-        } else if matches!(
-            self.current().kind,
-            Kind::Punct(
-                "(" | "["
-                    | "."
-                    | "?."
-                    | "+="
-                    | "-="
-                    | "*="
-                    | "/="
-                    | "%="
-                    | "**="
-                    | "&&="
-                    | "||="
-                    | "??="
-                    | "&="
-                    | "|="
-                    | "^="
-                    | "<<="
-                    | ">>="
-                    | ">>>="
-            )
-        ) {
-            Err(self.unsupported("calls, properties, and compound assignment are not implemented"))
+        } else if matches!(self.current().kind, Kind::Punct("(" | "[" | "." | "?.")) {
+            Err(self.unsupported("calls and property access are not implemented"))
         } else {
             Err(self.error("expected a semicolon or line terminator"))
         }
@@ -491,7 +469,10 @@ impl Parser {
 
     fn make_expr(&self, kind: ExprKind, span: Span) -> Result<Expr, Diagnostic> {
         let depth = 1 + match &kind {
-            ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) | ExprKind::Assign(_, e) => e.depth,
+            ExprKind::Unary(_, e)
+            | ExprKind::Parenthesized(e)
+            | ExprKind::Assign(_, e)
+            | ExprKind::CompoundAssign(_, _, e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
             ExprKind::Binary(_, a, b) => a.depth.max(b.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
@@ -538,14 +519,21 @@ impl Parser {
                 )?;
                 continue;
             }
-            if minimum <= 2 && self.eat("=") {
+            let assignment_op = compound_assignment(&self.current().kind);
+            if minimum <= 2 && (self.at("=") || assignment_op.is_some()) {
+                self.bump();
                 let Some(name) = assignment_name(&left) else {
                     return Err(self.error("invalid assignment target"));
                 };
                 let name = name.to_owned();
                 let right = self.expression(2)?;
                 let span = Span::new(left.span.start, right.span.end);
-                left = self.make_expr(ExprKind::Assign(name, Box::new(right)), span)?;
+                let kind = if let Some(op) = assignment_op {
+                    ExprKind::CompoundAssign(op, name, Box::new(right))
+                } else {
+                    ExprKind::Assign(name, Box::new(right))
+                };
+                left = self.make_expr(kind, span)?;
                 continue;
             }
             if minimum <= 3 && self.eat("?") {
@@ -584,27 +572,6 @@ impl Parser {
         // make a call or property access into a separate expression statement.
         if matches!(self.current().kind, Kind::Punct("(" | "[" | "." | "?.")) {
             return Err(self.unsupported("calls and property access are not implemented"));
-        }
-        if matches!(
-            self.current().kind,
-            Kind::Punct(
-                "+=" | "-="
-                    | "*="
-                    | "/="
-                    | "%="
-                    | "**="
-                    | "&&="
-                    | "||="
-                    | "??="
-                    | "&="
-                    | "|="
-                    | "^="
-                    | "<<="
-                    | ">>="
-                    | ">>>="
-            )
-        ) {
-            return Err(self.unsupported("compound assignment is not implemented"));
         }
         Ok(left)
     }
@@ -716,6 +683,31 @@ fn binary(kind: &Kind) -> Option<(BinaryOp, u8)> {
         "/" => (Divide, 13),
         "%" => (Remainder, 13),
         "**" => (Exponentiate, 14),
+        _ => return None,
+    })
+}
+
+fn compound_assignment(kind: &Kind) -> Option<BinaryOp> {
+    use BinaryOp::*;
+    let Kind::Punct(p) = kind else {
+        return None;
+    };
+    Some(match *p {
+        "+=" => Add,
+        "-=" => Subtract,
+        "*=" => Multiply,
+        "/=" => Divide,
+        "%=" => Remainder,
+        "**=" => Exponentiate,
+        "<<=" => LeftShift,
+        ">>=" => RightShift,
+        ">>>=" => UnsignedRightShift,
+        "&=" => BitAnd,
+        "^=" => BitXor,
+        "|=" => BitOr,
+        "&&=" => And,
+        "||=" => Or,
+        "??=" => Nullish,
         _ => return None,
     })
 }
@@ -1000,7 +992,7 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Identifier(name) if strict && strict_reserved(name) => {
             return Err(early(expr.span, "reserved identifier in strict mode"));
         }
-        ExprKind::Assign(name, value) => {
+        ExprKind::Assign(name, value) | ExprKind::CompoundAssign(_, name, value) => {
             if strict && (strict_reserved(name) || matches!(name.as_str(), "eval" | "arguments")) {
                 return Err(early(expr.span, "invalid assignment in strict mode"));
             }

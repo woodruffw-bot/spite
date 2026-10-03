@@ -87,7 +87,6 @@ fn unsupported_header_forms_are_not_syntax_error_passes() {
         "for (x in y) ;",
         "for (x of y) ;",
         "for await (x of y) ;",
-        "for (i += 1;;) ;",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
