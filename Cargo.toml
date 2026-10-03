@@ -11,6 +11,7 @@ publish = false
 
 [workspace.dependencies]
 spite-core = { path = "crates/spite-core" }
+spite-parser = { path = "crates/spite-parser" }
 insta = { version = "1.43", default-features = false }
 
 [workspace.lints.rust]

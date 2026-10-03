@@ -1,0 +1,233 @@
+---
+source: crates/spite-parser/tests/parser.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    Binding {
+                        name: "x",
+                        span: Span {
+                            start: 4,
+                            end: 5,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 3,
+                                kind: Binary(
+                                    Add,
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 8,
+                                            end: 9,
+                                        },
+                                    },
+                                    Expr {
+                                        depth: 2,
+                                        kind: Binary(
+                                            Multiply,
+                                            Expr {
+                                                depth: 1,
+                                                kind: Literal(
+                                                    Number(
+                                                        2.0,
+                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 12,
+                                                    end: 13,
+                                                },
+                                            },
+                                            Expr {
+                                                depth: 1,
+                                                kind: Literal(
+                                                    Number(
+                                                        3.0,
+                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 16,
+                                                    end: 17,
+                                                },
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 12,
+                                            end: 17,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 8,
+                                    end: 17,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 18,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: Assign(
+                        "x",
+                        Expr {
+                            depth: 2,
+                            kind: Binary(
+                                Exponentiate,
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 23,
+                                        end: 24,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            2.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 28,
+                                        end: 29,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 23,
+                                end: 29,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 19,
+                        end: 29,
+                    },
+                },
+            ),
+            span: Span {
+                start: 19,
+                end: 30,
+            },
+        },
+        Statement {
+            kind: If {
+                test: Expr {
+                    depth: 2,
+                    kind: Binary(
+                        Greater,
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 35,
+                                end: 36,
+                            },
+                        },
+                        Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    4.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 39,
+                                end: 40,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 35,
+                        end: 40,
+                    },
+                },
+                consequent: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 44,
+                                            end: 45,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 44,
+                                    end: 46,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 42,
+                        end: 48,
+                    },
+                },
+                alternate: Some(
+                    Statement {
+                        kind: Block(
+                            [
+                                Statement {
+                                    kind: Expression(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Null,
+                                            ),
+                                            span: Span {
+                                                start: 56,
+                                                end: 60,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 56,
+                                        end: 61,
+                                    },
+                                },
+                            ],
+                        ),
+                        span: Span {
+                            start: 54,
+                            end: 63,
+                        },
+                    },
+                ),
+            },
+            span: Span {
+                start: 31,
+                end: 63,
+            },
+        },
+    ],
+    strict: false,
+}
