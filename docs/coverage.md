@@ -42,8 +42,12 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 The `spite-heap` foundation provides capacity-bounded generational storage,
 checked cross-heap identity, stale-handle rejection, and bounded iterative
 collection from explicit roots. Handle or budget failures occur before sweeping.
-This foundation is not yet integrated into JavaScript values. Object records and
-interpreter/embedding root lifetimes are the next object-model increments.
+Runtime object records add string-keyed data descriptors, extensibility,
+deletion, array-index ordering, and tracing of prototype handles. Frozen
+properties use SameValue and preserve equivalent NaN payloads. These records
+have a host property-capacity limit and are not yet integrated into JavaScript
+values. Accessors, Symbol keys, prototype operations, and interpreter/embedding
+root lifetimes remain open.
 
 Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular

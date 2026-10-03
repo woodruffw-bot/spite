@@ -72,6 +72,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add iterative tracing with explicit roots and failure-before-sweep guarantees.
 - [ ] Root interpreter temporaries, environments, intrinsics, and host-held object values.
 - [ ] Implement ordinary objects, descriptors, prototypes, and property order.
+- [x] Add ordinary data-property records, descriptor invariants, deletion, and string-key order.
+- [ ] Implement prototype traversal and mutation with bounded cycle checks.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.

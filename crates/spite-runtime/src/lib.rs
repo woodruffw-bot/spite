@@ -1,5 +1,6 @@
 //! A tree-walking interpreter for the implemented ECMAScript subset.
 
+pub mod object;
 mod value;
 pub use value::Value;
 

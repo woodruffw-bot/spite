@@ -1,6 +1,7 @@
 use crate::ExceptionKind;
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
 use spite_core::{JsString, is_line_terminator, is_whitespace, parse_radix_integer};
+use spite_heap::{Handle, Trace};
 use std::{cmp::Ordering, fmt};
 
 /// A supported ECMAScript primitive value.
@@ -20,6 +21,21 @@ pub enum Value {
     BigInt(BigInt),
     /// A sequence of UTF-16 code units.
     String(JsString),
+}
+
+impl Trace for Value {
+    fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
+        // Keep this exhaustive: adding a reference-bearing value must also add
+        // its outgoing edge here. Primitive fields still consume scan work.
+        std::iter::once(match self {
+            Self::Undefined
+            | Self::Null
+            | Self::Boolean(_)
+            | Self::Number(_)
+            | Self::BigInt(_)
+            | Self::String(_) => None,
+        })
+    }
 }
 
 impl Value {

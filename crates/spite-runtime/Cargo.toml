@@ -9,6 +9,7 @@ publish.workspace = true
 [dependencies]
 spite-bigint.workspace = true
 spite-core.workspace = true
+spite-heap.workspace = true
 spite-parser.workspace = true
 
 [lints]

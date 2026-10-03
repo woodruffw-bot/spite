@@ -42,7 +42,7 @@ measurements identify a problem and conformance tests protect the behavior.
 | `spite-heap` | Safe generational storage, explicit roots, and bounded tracing | std |
 | `spite-core` | Source locations, UTF-16 strings, shared language primitives | std |
 | `spite-parser` | Lexical grammar, AST, parsing, static semantics and early errors | core |
-| `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, parser |
+| `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, heap, parser |
 | `spite` | Small embedding facade and command-line host | core, parser, runtime |
 | `spite-test262` | Test262 metadata, execution modes, harness and result accounting | engine, development tooling |
 
@@ -159,6 +159,16 @@ Property descriptors, key ordering, prototypes, internal methods, and exotic
 objects are semantic requirements. Add ordinary objects first. Implement arrays,
 functions, proxies, typed arrays, and other exotic objects on explicit internal
 method boundaries rather than ad hoc evaluator branches.
+
+Ordinary records start with string-keyed data properties in a creation-ordered
+vector. Partial descriptors preserve omitted fields, enforce non-configurable
+and non-writable invariants, and use SameValue. A successful equivalent-value
+definition on a frozen property preserves its stored value, including NaN bits
+(10.1.6.3). Enumeration sorts array indices numerically before other strings in
+creation order. Deletion followed by re-creation gives a string a new position.
+Property capacity failures remain distinct from descriptor rejection. Accessors,
+Symbols, inherited lookup, and prototype mutation arrive on explicit boundaries;
+the record layer does not yet expose objects to JavaScript.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later
