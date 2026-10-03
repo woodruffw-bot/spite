@@ -605,6 +605,7 @@ impl Parser {
             Kind::Punct("~") => Some(UnaryOp::BitNot),
             Kind::Word(s) if !token.escaped && s == "void" => Some(UnaryOp::Void),
             Kind::Word(s) if !token.escaped && s == "typeof" => Some(UnaryOp::Typeof),
+            Kind::Word(s) if !token.escaped && s == "delete" => Some(UnaryOp::Delete),
             _ => None,
         };
         if let Some(op) = op {
@@ -1004,6 +1005,10 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 return Err(early(argument.span, "invalid update target in strict mode"));
             }
             validate_expr(argument, strict)?;
+        }
+        ExprKind::Unary(UnaryOp::Delete, e) if strict && assignment_name(e).is_some() => {
+            // ECMA-262 13.5.1.1 also rejects parenthesized identifier references.
+            return Err(early(e.span, "cannot delete an identifier in strict mode"));
         }
         ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => validate_expr(e, strict)?,
         ExprKind::Binary(_, a, b) => {

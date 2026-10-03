@@ -747,6 +747,28 @@ impl Realm {
                 }
             }
             ExprKind::Unary(op, inner) => {
+                if *op == UnaryOp::Delete {
+                    if let Some(name) = identifier(inner) {
+                        // ECMA-262 13.5.1.2: deleting an environment reference
+                        // does not GetValue, even for an uninitialized binding.
+                        let deleted = match self.resolve(name) {
+                            Reference::Lexical(..) => false,
+                            Reference::Global(name) if restricted_global(name) => false,
+                            Reference::Global(name) => {
+                                self.globals.remove(name);
+                                true
+                            }
+                            Reference::Unresolvable(_) => true,
+                            Reference::UnsupportedGlobal(name) => {
+                                return Err(Self::unsupported(
+                                    inner.span,
+                                    format!("{name} is not implemented"),
+                                ));
+                            }
+                        };
+                        return Ok(Value::Boolean(deleted));
+                    }
+                }
                 if *op == UnaryOp::Typeof {
                     if let Some(name) = identifier(inner) {
                         if matches!(self.resolve(name), Reference::Unresolvable(_)) {
@@ -766,6 +788,7 @@ impl Realm {
                     }
                     UnaryOp::Void => Value::Undefined,
                     UnaryOp::Typeof => Value::String(JsString::from(value.type_name())),
+                    UnaryOp::Delete => Value::Boolean(true),
                 }
             }
             ExprKind::Binary(op, left, right) => {

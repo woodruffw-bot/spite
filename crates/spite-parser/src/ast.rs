@@ -234,6 +234,8 @@ pub enum UnaryOp {
     Void,
     /// The typeof operator.
     Typeof,
+    /// Delete a reference, or evaluate and discard a non-reference.
+    Delete,
 }
 
 /// Binary operators, ordered independently of precedence.
