@@ -1,7 +1,7 @@
 //! Safe, capacity-bounded generational storage for single-threaded object graphs.
 //!
 //! Handles validate both heap identity and slot generation. Cloning a handle does
-//! not keep its stored value alive; collection roots will be supplied explicitly.
+//! not keep its stored value alive; collection roots are supplied explicitly.
 //! Allocation never performs implicit collection.
 
 use std::{fmt, rc::Rc};
@@ -47,6 +47,8 @@ pub enum Error {
     ForeignHandle,
     /// The handle's slot is empty or belongs to a later generation.
     StaleHandle,
+    /// Collection exhausted its work budget before sweeping any values.
+    Limit,
 }
 
 impl fmt::Display for Error {
@@ -55,10 +57,33 @@ impl fmt::Display for Error {
             Self::Capacity => "heap slot limit exceeded",
             Self::ForeignHandle => "handle belongs to another heap",
             Self::StaleHandle => "handle refers to a removed value",
+            Self::Limit => "heap collection work limit exceeded",
         })
     }
 }
 impl std::error::Error for Error {}
+
+/// Enumerates the fields a collector must inspect to find outgoing references.
+///
+/// Yield `Some(handle)` for an outgoing edge and `None` for an inspected value
+/// that contains no edge. Yielding non-reference fields lets the collector charge
+/// for scanning primitive-valued properties too. Each iterator step must perform
+/// bounded work; do not hide an unbounded filter or scan inside `next`.
+pub trait Trace {
+    /// Returns each inspected field, without cloning handles or mutating the graph.
+    fn trace(&self) -> impl Iterator<Item = Option<&Handle>>;
+}
+
+/// The result of a completed mark-and-sweep collection.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct Collection {
+    /// Number of unreachable values removed.
+    pub reclaimed: usize,
+    /// Number of values remaining reachable from the supplied roots.
+    pub live: usize,
+    /// Work units consumed by slot scans, roots, values, and traced fields.
+    pub work_used: usize,
+}
 
 #[derive(Debug)]
 struct Slot<T> {
@@ -177,6 +202,77 @@ impl<T> Heap<T> {
         // A slot at u64::MAX is retired, never returned to the free list.
         value
     }
+}
+
+impl<T: Trace> Heap<T> {
+    /// Collects values unreachable from the explicitly supplied roots.
+    ///
+    /// Traversal is iterative, so cycles and deep graphs do not use Rust recursion.
+    /// All roots and reached edges are validated before sweeping. A work-limit or
+    /// handle error leaves every value and generation unchanged. Handle variables
+    /// outside this root list do not automatically keep their values alive.
+    pub fn collect<'a>(
+        &mut self,
+        roots: impl IntoIterator<Item = &'a Handle>,
+        max_work: usize,
+    ) -> Result<Collection, Error> {
+        let mut remaining = max_work;
+        // Reserve both scratch initialization and the final sweep before allocating
+        // mark state. The sweep cannot exhaust the budget midway through removal.
+        charge(
+            &mut remaining,
+            self.slots.len().checked_mul(2).ok_or(Error::Limit)?,
+        )?;
+        let mut marked = vec![false; self.slots.len()];
+        let mut pending = Vec::new();
+        for root in roots {
+            charge(&mut remaining, 1)?;
+            self.mark(root, &mut marked, &mut pending)?;
+        }
+        while let Some(index) = pending.pop() {
+            charge(&mut remaining, 1)?;
+            let value = self.slots[index]
+                .value
+                .as_ref()
+                .expect("marked slot is occupied");
+            for field in value.trace() {
+                charge(&mut remaining, 1)?;
+                if let Some(edge) = field {
+                    self.mark(edge, &mut marked, &mut pending)?;
+                }
+            }
+        }
+        let before = self.live;
+        for (index, reached) in marked.into_iter().enumerate() {
+            if !reached && self.slots[index].value.is_some() {
+                drop(self.take(index));
+            }
+        }
+        Ok(Collection {
+            reclaimed: before - self.live,
+            live: self.live,
+            work_used: max_work - remaining,
+        })
+    }
+
+    fn mark(
+        &self,
+        handle: &Handle,
+        marked: &mut [bool],
+        pending: &mut Vec<usize>,
+    ) -> Result<(), Error> {
+        let index = self.index(handle)?;
+        if !marked[index] {
+            marked[index] = true;
+            pending.push(index);
+        }
+        Ok(())
+    }
+}
+
+fn charge(remaining: &mut usize, work: usize) -> Result<(), Error> {
+    *remaining = remaining.checked_sub(work).ok_or(Error::Limit)?;
+    Ok(())
 }
 
 #[cfg(test)]

@@ -146,6 +146,9 @@ reached through stale handles, including after slot reuse.
 Add a non-moving mark-and-sweep collector with caller-supplied roots and iterative
 edge traversal. Charge collection work before each scan or edge traversal. If
 tracing sees a foreign/stale handle or exceeds its budget, return without sweeping.
+Trace iterators yield an optional handle for each inspected field, including
+primitive-valued fields, so a scan cannot evade its budget by filtering out all
+non-reference properties. Deep object graphs use an explicit work stack.
 Allocation initially never invokes collection implicitly. Before integrating
 collection into evaluation, explicitly root environment bindings, intrinsics,
 pending completions, suspended frames, expression temporaries, and host-held

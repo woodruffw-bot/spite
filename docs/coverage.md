@@ -39,10 +39,11 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
-The new `spite-heap` foundation provides capacity-bounded generational storage,
-checked cross-heap identity, and stale-handle rejection. It is not yet integrated
-into JavaScript values. Tracing, roots, collection, and object records are the next
-object-model increments.
+The `spite-heap` foundation provides capacity-bounded generational storage,
+checked cross-heap identity, stale-handle rejection, and bounded iterative
+collection from explicit roots. Handle or budget failures occur before sweeping.
+This foundation is not yet integrated into JavaScript values. Object records and
+interpreter/embedding root lifetimes are the next object-model increments.
 
 Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
