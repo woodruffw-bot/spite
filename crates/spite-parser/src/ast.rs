@@ -292,6 +292,13 @@ pub enum Literal {
     Boolean(bool),
     /// An IEEE 754 binary64 value.
     Number(f64),
+    /// An exact unsigned integer, converted under the evaluator's resource budget.
+    BigInt {
+        /// Validated digits with separators, prefix, and suffix removed.
+        digits: String,
+        /// The source radix: 2, 8, 10, or 16.
+        radix: u32,
+    },
     /// UTF-16 code units, including lone surrogates.
     String(JsString),
 }

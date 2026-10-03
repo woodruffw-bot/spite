@@ -1,0 +1,46 @@
+---
+source: crates/spite-parser/tests/bigint.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 3,
+        },
+        message: "invalid BigInt literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid BigInt literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid BigInt literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 2,
+        },
+        message: "separator cannot follow a leading zero",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid character after numeric literal",
+    },
+]

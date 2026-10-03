@@ -822,6 +822,12 @@ impl Realm {
                 Literal::Null => Value::Null,
                 Literal::Boolean(v) => Value::Boolean(*v),
                 Literal::Number(v) => Value::Number(*v),
+                Literal::BigInt { .. } => {
+                    return Err(Self::unsupported(
+                        expr.span,
+                        "BigInt values are not implemented",
+                    ));
+                }
                 Literal::String(v) => Value::String(v.clone()),
             },
             ExprKind::Identifier(name) => self.get(&self.resolve(name), expr.span)?,

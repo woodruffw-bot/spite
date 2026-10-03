@@ -1,0 +1,135 @@
+---
+source: crates/spite-parser/tests/bigint.rs
+expression: "parse_script(\"let x = -0xF_Fn; x += 2n ** 64n; typeof x;\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    Binding {
+                        name: "x",
+                        span: Span {
+                            start: 4,
+                            end: 5,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 2,
+                                kind: Unary(
+                                    Minus,
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            BigInt {
+                                                digits: "FF",
+                                                radix: 16,
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 9,
+                                            end: 15,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 8,
+                                    end: 15,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 16,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: CompoundAssign(
+                        Add,
+                        "x",
+                        Expr {
+                            depth: 2,
+                            kind: Binary(
+                                Exponentiate,
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        BigInt {
+                                            digits: "2",
+                                            radix: 10,
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 22,
+                                        end: 24,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        BigInt {
+                                            digits: "64",
+                                            radix: 10,
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 28,
+                                        end: 31,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 22,
+                                end: 31,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 17,
+                        end: 31,
+                    },
+                },
+            ),
+            span: Span {
+                start: 17,
+                end: 32,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 2,
+                    kind: Unary(
+                        Typeof,
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 40,
+                                end: 41,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 33,
+                        end: 41,
+                    },
+                },
+            ),
+            span: Span {
+                start: 33,
+                end: 42,
+            },
+        },
+    ],
+    strict: false,
+}

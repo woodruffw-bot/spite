@@ -91,6 +91,8 @@ by zero and negative exponents become JavaScript RangeError exceptions.
 Conversions between BigInt and Number must compare mathematical values without
 rounding the integer first. Literal grammar, string coercion, and mixed-type
 operator rules remain in the parser and runtime rather than the arithmetic crate.
+The AST stores validated BigInt digits and their radix. Evaluation converts them
+under the realm's budget, so parsing never performs unbounded integer arithmetic.
 
 Model references separately from values. Model normal completion with an optional
 value so an empty completion cannot be confused with JavaScript undefined. Add

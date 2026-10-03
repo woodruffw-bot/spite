@@ -38,7 +38,8 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 The `spite-bigint` crate provides integer storage, radix conversion, and signed
 addition, subtraction, multiplication, division, shifts, bitwise operations, and
-exponentiation. JavaScript BigInt values
+exponentiation. The parser preserves exact BigInt digits and radices; evaluation
+still reports them as unsupported. JavaScript BigInt values
 are not integrated yet.
 
 BigInt, Symbols, objects, properties,

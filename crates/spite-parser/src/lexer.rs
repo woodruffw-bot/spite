@@ -114,7 +114,7 @@ impl<'a> Lexer<'a> {
                     .get(1)
                     .is_some_and(u8::is_ascii_digit))
         {
-            Kind::Literal(Literal::Number(self.number()?))
+            Kind::Literal(self.number()?)
         } else if matches!(c, '\'' | '"') {
             Kind::Literal(Literal::String(self.string()?))
         } else if c == '`' || (c == '}' && self.template_braces.last() == Some(&0)) {
@@ -349,9 +349,11 @@ impl<'a> Lexer<'a> {
         Ok(())
     }
 
-    fn number(&mut self) -> Result<f64, Diagnostic> {
+    fn number(&mut self) -> Result<Literal, Diagnostic> {
         let start = self.pos;
         let mut radix = 10;
+        let mut integer = true;
+        let mut leading_zero = false;
         if self.rest().starts_with('0') {
             radix = match self.rest().as_bytes().get(1) {
                 Some(b'x' | b'X') => 16,
@@ -364,26 +366,24 @@ impl<'a> Lexer<'a> {
             self.pos += 2;
             self.digits(radix, true)?;
         } else {
-            if self.peek() == Some('0')
+            if self.rest().starts_with("0_") {
+                self.pos += 2;
+                return Err(self.syntax(start, "separator cannot follow a leading zero"));
+            }
+            leading_zero = self.peek() == Some('0')
                 && self
                     .rest()
                     .as_bytes()
                     .get(1)
-                    .is_some_and(|c| c.is_ascii_digit() || *c == b'_')
-            {
-                self.bump();
-                return Err(self.error(
-                    start,
-                    DiagnosticKind::Unsupported,
-                    "legacy leading-zero numeric literals are not supported",
-                ));
-            }
+                    .is_some_and(u8::is_ascii_digit);
             self.digits(10, false)?;
             if self.peek() == Some('.') {
+                integer = false;
                 self.bump();
                 self.digits(10, false)?;
             }
             if matches!(self.peek(), Some('e' | 'E')) {
+                integer = false;
                 self.bump();
                 if matches!(self.peek(), Some('+' | '-')) {
                     self.bump();
@@ -391,13 +391,13 @@ impl<'a> Lexer<'a> {
                 self.digits(10, true)?;
             }
         }
-        if self.peek() == Some('n') {
+        let end = self.pos;
+        let bigint = self.peek() == Some('n');
+        if bigint {
             self.bump();
-            return Err(self.error(
-                start,
-                DiagnosticKind::Unsupported,
-                "BigInt literals are not implemented",
-            ));
+            if !integer || leading_zero {
+                return Err(self.syntax(start, "invalid BigInt literal"));
+            }
         }
         if self
             .peek()
@@ -406,13 +406,32 @@ impl<'a> Lexer<'a> {
             self.bump();
             return Err(self.syntax(start, "invalid character after numeric literal"));
         }
-        let clean = self.source[start..self.pos].replace('_', "");
+        if leading_zero {
+            return Err(self.error(
+                start,
+                DiagnosticKind::Unsupported,
+                "legacy leading-zero numeric literals are not supported",
+            ));
+        }
+        let clean = self.source[start..end].replace('_', "");
+        if bigint {
+            return Ok(Literal::BigInt {
+                digits: if radix == 10 {
+                    clean
+                } else {
+                    clean[2..].into()
+                },
+                radix,
+            });
+        }
         if radix == 10 {
             clean
                 .parse()
+                .map(Literal::Number)
                 .map_err(|_| self.syntax(start, "invalid decimal literal"))
         } else {
             spite_core::parse_radix_integer(&clean[2..], radix)
+                .map(Literal::Number)
                 .ok_or_else(|| self.syntax(start, "invalid integer literal"))
         }
     }

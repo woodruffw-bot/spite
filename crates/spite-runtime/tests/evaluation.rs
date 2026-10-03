@@ -1,6 +1,6 @@
 //! Observable behavior of the first executable subset.
 
-use spite_core::{DiagnosticKind, JsString};
+use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn eval(source: &str) -> Value {
@@ -333,9 +333,10 @@ fn unsupported_features_cannot_masquerade_as_runtime_exceptions() {
         Realm::default().eval("Object"),
         Err(Error::Unsupported { .. })
     ));
-    assert!(
-        matches!(Realm::default().eval("1n"), Err(Error::Parse(d)) if d.kind == DiagnosticKind::Unsupported)
-    );
+    assert!(matches!(
+        Realm::default().eval("1n"),
+        Err(Error::Unsupported { .. })
+    ));
     for name in ["console", "process", "require", "setTimeout", "fetch"] {
         exception(name, ExceptionKind::ReferenceError);
     }
