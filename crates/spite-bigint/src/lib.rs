@@ -62,7 +62,8 @@ impl Budget {
         self.remaining_work
     }
 
-    fn charge(&mut self, work: usize) -> Result<(), Error> {
+    /// Reserves work before an operation, including caller-owned conversion work.
+    pub fn charge(&mut self, work: usize) -> Result<(), Error> {
         self.remaining_work = self.remaining_work.checked_sub(work).ok_or(Error::Limit)?;
         Ok(())
     }

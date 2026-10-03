@@ -93,6 +93,12 @@ rounding the integer first. Literal grammar, string coercion, and mixed-type
 operator rules remain in the parser and runtime rather than the arithmetic crate.
 The AST stores validated BigInt digits and their radix. Evaluation converts them
 under the realm's budget, so parsing never performs unbounded integer arithmetic.
+The evaluator shares its step budget with integer arithmetic and conversion and
+also bounds BigInt magnitude bits (65,536 by default). BigInt/Number comparisons
+inspect the binary64 significand and exponent without rounding the integer.
+ToNumber is fallible; it rejects BigInt with TypeError. Language ToString produces
+decimal digits. Host value display uses exact hexadecimal BigInt notation to keep
+diagnostic formatting linear and independent of the evaluator's remaining budget.
 
 Model references separately from values. Model normal completion with an optional
 value so an empty completion cannot be confused with JavaScript undefined. Add

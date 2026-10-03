@@ -124,6 +124,7 @@ dependencies = [
 name = "spite-runtime"
 version = "0.1.0"
 dependencies = [
+ "spite-bigint",
  "spite-core",
  "spite-parser",
 ]

@@ -47,13 +47,13 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
 - [x] Instantiate Script vars and execute variable statements and for headers.
-- [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
+- [x] Add arbitrary-precision BigInt and primitive numeric conversions.
 - [x] Add normalized integer storage, radix conversion, signed addition, and work budgets.
 - [x] Add integer multiplication and truncating division with signed remainders.
 - [x] Add integer shifts, bitwise operations, and exponentiation.
 - [x] Parse exact BigInt literals, separators, and numeric-token boundaries.
 - [x] Compare arbitrary integers with binary64 values without rounding.
-- [ ] Integrate BigInt literals, values, coercions, and language operators.
+- [x] Integrate BigInt literals, values, coercions, and language operators.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.
 - [ ] Establish a pinned Test262 runner with strict modes and phase-aware results.

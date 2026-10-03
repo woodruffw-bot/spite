@@ -1,9 +1,11 @@
+use crate::ExceptionKind;
+use spite_bigint::{BigInt, Budget, Error as IntegerError};
 use spite_core::{JsString, is_line_terminator, is_whitespace, parse_radix_integer};
-use std::fmt;
+use std::{cmp::Ordering, fmt};
 
 /// A supported ECMAScript primitive value.
 ///
-/// BigInt, Symbol, and Object values are not implemented yet.
+/// Symbol and Object values are not implemented yet.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// The undefined value.
@@ -14,6 +16,8 @@ pub enum Value {
     Boolean(bool),
     /// A binary64 Number, including signed zero, infinities, and NaN.
     Number(f64),
+    /// An arbitrary-precision signed integer, distinct from Number.
+    BigInt(BigInt),
     /// A sequence of UTF-16 code units.
     String(JsString),
 }
@@ -25,30 +29,35 @@ impl Value {
             Self::Undefined | Self::Null => false,
             Self::Boolean(v) => *v,
             Self::Number(v) => *v != 0.0 && !v.is_nan(),
+            Self::BigInt(v) => !v.is_zero(),
             Self::String(v) => !v.is_empty(),
         }
     }
 
     /// Applies ToNumber to the supported primitive types.
-    pub fn to_number(&self) -> f64 {
-        match self {
+    /// BigInt produces a TypeError, as required by ECMA-262 7.1.4.
+    pub fn to_number(&self) -> Result<f64, ExceptionKind> {
+        Ok(match self {
             Self::Undefined => f64::NAN,
             Self::Null => 0.0,
             Self::Boolean(v) => u8::from(*v) as f64,
             Self::Number(v) => *v,
+            Self::BigInt(_) => return Err(ExceptionKind::TypeError),
             Self::String(v) => string_to_number(v),
-        }
+        })
     }
 
     /// Applies ToString to the supported primitive types.
-    pub fn to_js_string(&self) -> JsString {
-        match self {
+    /// Integer formatting consumes the supplied arithmetic work budget.
+    pub fn to_js_string(&self, budget: &mut Budget) -> Result<JsString, IntegerError> {
+        Ok(match self {
             Self::Undefined => JsString::from("undefined"),
             Self::Null => JsString::from("null"),
             Self::Boolean(v) => JsString::from(if *v { "true" } else { "false" }),
             Self::Number(v) => JsString::from(number_to_string(*v).as_str()),
+            Self::BigInt(v) => JsString::from(v.to_radix(10, budget)?.as_str()),
             Self::String(v) => v.clone(),
-        }
+        })
     }
 
     /// Implements IsStrictlyEqual for the supported values.
@@ -57,6 +66,7 @@ impl Value {
             (Self::Undefined, Self::Undefined) | (Self::Null, Self::Null) => true,
             (Self::Boolean(a), Self::Boolean(b)) => a == b,
             (Self::Number(a), Self::Number(b)) => a == b,
+            (Self::BigInt(a), Self::BigInt(b)) => a == b,
             (Self::String(a), Self::String(b)) => a == b,
             _ => false,
         }
@@ -72,15 +82,53 @@ impl Value {
         }
     }
 
-    pub(crate) fn loosely_equal(&self, other: &Self) -> bool {
-        match (self, other) {
+    pub(crate) fn loosely_equal(
+        &self,
+        other: &Self,
+        budget: &mut Budget,
+    ) -> Result<bool, IntegerError> {
+        Ok(match (self, other) {
             (Self::Null, Self::Undefined) | (Self::Undefined, Self::Null) => true,
-            (Self::Number(a), Self::String(_)) => *a == other.to_number(),
-            (Self::String(_), Self::Number(b)) => self.to_number() == *b,
-            (Self::Boolean(_), _) => Self::Number(self.to_number()).loosely_equal(other),
-            (_, Self::Boolean(_)) => self.loosely_equal(&Self::Number(other.to_number())),
+            (Self::Number(a), Self::String(b)) => *a == string_to_number(b),
+            (Self::String(a), Self::Number(b)) => string_to_number(a) == *b,
+            (Self::BigInt(a), Self::String(b)) | (Self::String(b), Self::BigInt(a)) => {
+                string_to_bigint(b, budget)?.is_some_and(|b| *a == b)
+            }
+            (Self::BigInt(a), Self::Number(b)) | (Self::Number(b), Self::BigInt(a)) => {
+                a.cmp_f64(*b, budget)? == Some(Ordering::Equal)
+            }
+            (Self::Boolean(a), _) => {
+                Self::Number(u8::from(*a) as f64).loosely_equal(other, budget)?
+            }
+            (_, Self::Boolean(b)) => {
+                self.loosely_equal(&Self::Number(u8::from(*b) as f64), budget)?
+            }
             _ => self.strictly_equal(other),
-        }
+        })
+    }
+
+    // ECMA-262 7.2.12. Primitive conversion has no user-observable side effects.
+    pub(crate) fn compare(
+        &self,
+        other: &Self,
+        budget: &mut Budget,
+    ) -> Result<Option<Ordering>, IntegerError> {
+        Ok(match (self, other) {
+            (Self::String(a), Self::String(b)) => Some(a.cmp(b)),
+            (Self::BigInt(a), Self::String(b)) => string_to_bigint(b, budget)?.map(|b| a.cmp(&b)),
+            (Self::String(a), Self::BigInt(b)) => string_to_bigint(a, budget)?.map(|a| a.cmp(b)),
+            (Self::BigInt(a), Self::BigInt(b)) => Some(a.cmp(b)),
+            (Self::BigInt(a), b) => {
+                a.cmp_f64(b.to_number().expect("non-BigInt primitive"), budget)?
+            }
+            (a, Self::BigInt(b)) => b
+                .cmp_f64(a.to_number().expect("non-BigInt primitive"), budget)?
+                .map(Ordering::reverse),
+            (a, b) => a
+                .to_number()
+                .expect("non-BigInt primitive")
+                .partial_cmp(&b.to_number().expect("non-BigInt primitive")),
+        })
     }
 
     pub(crate) fn type_name(&self) -> &'static str {
@@ -89,6 +137,7 @@ impl Value {
             Self::Null => "object",
             Self::Boolean(_) => "boolean",
             Self::Number(_) => "number",
+            Self::BigInt(_) => "bigint",
             Self::String(_) => "string",
         }
     }
@@ -98,9 +147,53 @@ impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::String(value) => write!(f, "{value:?}"),
-            value => f.write_str(&value.to_js_string().to_utf8().map_err(|_| fmt::Error)?),
+            // Host diagnostics use an exact, linear-time representation. Language
+            // ToString remains decimal and uses the evaluator's arithmetic budget.
+            Self::BigInt(value) => write!(f, "{value:#x}n"),
+            Self::Number(value) => f.write_str(&number_to_string(*value)),
+            Self::Undefined => f.write_str("undefined"),
+            Self::Null => f.write_str("null"),
+            Self::Boolean(value) => write!(f, "{value}"),
         }
     }
+}
+
+// ECMA-262 7.1.14: signed decimal integers, unsigned radix prefixes, and empty
+// whitespace are accepted. Separators, suffixes, fractions, and exponents are not.
+fn string_to_bigint(value: &JsString, budget: &mut Budget) -> Result<Option<BigInt>, IntegerError> {
+    budget.charge(value.len().checked_add(1).ok_or(IntegerError::Limit)?)?;
+    let Ok(text) = value.to_utf8() else {
+        return Ok(None);
+    };
+    let text = text.trim_matches(|c| is_whitespace(c) || is_line_terminator(c));
+    if text.is_empty() {
+        return Ok(Some(BigInt::default()));
+    }
+    for (prefix, radix) in [
+        ("0x", 16),
+        ("0X", 16),
+        ("0o", 8),
+        ("0O", 8),
+        ("0b", 2),
+        ("0B", 2),
+    ] {
+        if let Some(digits) = text.strip_prefix(prefix) {
+            if digits.is_empty() || !digits.bytes().all(|b| char::from(b).is_digit(radix)) {
+                return Ok(None);
+            }
+            return BigInt::parse_digits(digits, radix, budget).map(Some);
+        }
+    }
+    let digits = text.strip_prefix(['+', '-']).unwrap_or(text);
+    if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
+        return Ok(None);
+    }
+    let value = BigInt::parse_digits(digits, 10, budget)?;
+    Ok(Some(if text.starts_with('-') {
+        value.neg(budget)?
+    } else {
+        value
+    }))
 }
 
 // https://262.ecma-international.org/17.0/#sec-tonumber-applied-to-the-string-type

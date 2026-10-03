@@ -20,7 +20,9 @@ fn evaluates_an_argument() {
 fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),
-        ("1n", "Unsupported"),
+        ("BigInt", "Unsupported"),
+        ("1n + 1", "TypeError"),
+        ("1n / 0n", "RangeError"),
         ("throw 7", "uncaught 7"),
         ("const x;", "Syntax"),
     ] {
@@ -31,6 +33,21 @@ fn errors_have_a_failing_exit_status() {
         assert_eq!(output.status.code(), Some(1));
         assert!(String::from_utf8(output.stderr).unwrap().contains(expected));
         assert!(output.stdout.is_empty());
+    }
+}
+
+#[test]
+fn bigint_host_display_is_exact_and_language_string_conversion_is_decimal() {
+    for (source, expected) in [
+        ("2n ** 64n + 1n", "0x10000000000000001n"),
+        ("`${2n ** 64n + 1n}`", "\"18446744073709551617\""),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--eval", source])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), expected);
     }
 }
 

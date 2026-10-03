@@ -301,6 +301,7 @@ fn resource_failures_are_host_errors_and_restore_scopes() {
     let mut realm = Realm::new(Limits {
         max_steps: 4,
         max_string_units: 16,
+        ..Limits::default()
     });
     assert!(matches!(
         realm.eval("{ 1; 2; 3; }"),
@@ -311,6 +312,7 @@ fn resource_failures_are_host_errors_and_restore_scopes() {
     let mut realm = Realm::new(Limits {
         max_steps: 100,
         max_string_units: 4,
+        ..Limits::default()
     });
     assert!(matches!(
         realm.eval("'abc' + 'def'"),
@@ -334,7 +336,7 @@ fn unsupported_features_cannot_masquerade_as_runtime_exceptions() {
         Err(Error::Unsupported { .. })
     ));
     assert!(matches!(
-        Realm::default().eval("1n"),
+        Realm::default().eval("BigInt"),
         Err(Error::Unsupported { .. })
     ));
     for name in ["console", "process", "require", "setTimeout", "fetch"] {

@@ -328,6 +328,7 @@ fn host_failures_abort_without_running_or_being_overridden_by_finalizers() {
         let mut realm = Realm::new(Limits {
             max_steps: 64,
             max_string_units: 1,
+            ..Limits::default()
         });
         realm.eval("let x = 1; let flag = 0;").unwrap();
         let source = format!(
