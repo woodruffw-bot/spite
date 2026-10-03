@@ -1,4 +1,4 @@
-"""Reject external production dependencies and missing workspace lint inheritance."""
+"""Enforce the dependency allowlist and workspace lint inheritance."""
 
 import json
 import pathlib
@@ -24,11 +24,13 @@ for package in metadata["packages"]:
     if manifest.get("lints", {}).get("workspace") is not True:
         errors.append(f'{package["name"]}: workspace lints must be inherited')
     for dep in package["dependencies"]:
-        if dep["kind"] == "dev":
-            continue
         path = dep.get("path")
-        if not path or pathlib.Path(path).resolve() not in paths:
-            errors.append(f'{package["name"]}: external production dependency {dep["name"]}')
+        if path and pathlib.Path(path).resolve() in paths:
+            continue
+        allowed = {"regex", "jiff"} if dep["kind"] is None else {"insta"} if dep["kind"] == "dev" else set()
+        if dep["name"] in allowed and dep.get("source") == "registry+https://github.com/rust-lang/crates.io-index":
+            continue
+        errors.append(f'{package["name"]}: unapproved {dep["kind"] or "normal"} dependency {dep["name"]}')
 if errors:
     raise SystemExit("\n".join(errors))
-print("All workspace crates inherit lints and use only workspace production dependencies.")
+print("All workspace crates inherit lints and satisfy the dependency allowlist.")

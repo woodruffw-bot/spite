@@ -13,9 +13,17 @@ but optional for this host. ECMA-402, Node.js, CommonJS, DOM APIs, timers, and n
 APIs are outside the target. Standard facilities such as Date, Promise, modules,
 RegExp, and shared memory remain in scope even when they need host integration.
 
-Every production crate uses only Rust's standard library and workspace crates.
-No external normal or build dependencies are allowed. Development dependencies
-such as insta are permitted. Workspace lints forbid unsafe code in every crate,
+Production crates use Rust's standard library and workspace crates. Two direct
+external production dependencies are approved when needed: `regex` for regular
+expressions and `jiff` for time APIs. No other new direct dependencies are approved.
+External build dependencies remain forbidden. The existing `insta` development
+dependency remains allowed. Review features and transitive dependencies when
+introducing either exception. Neither dependency is added preemptively.
+
+These libraries are implementation tools, not alternative language specifications.
+RegExp syntax, matching, and UTF-16 behavior must still follow ECMA-262, including
+features that `regex` does not implement. Time operations must likewise expose
+only the specified ECMAScript behavior. Workspace lints forbid unsafe code in every crate,
 including tests and tools. This forbids unsafe Rust in our code, not the standard
 library's internal implementation.
 
@@ -35,7 +43,7 @@ measurements identify a problem and conformance tests protect the behavior.
 Create crates when they first have real functionality. Keep parser internals in
 one crate. Keep built-ins inside the runtime until an actual dependency boundary
 justifies another crate. A regular expression implementation and arbitrary-precision
-integers may later deserve separate crates. Neither uses an external runtime.
+integers may later deserve separate crates. The regular expression implementation may use `regex` under the exception above.
 
 ## Syntax
 

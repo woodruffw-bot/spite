@@ -27,8 +27,9 @@ equivalent spellings are distinct bindings. Escapes cannot turn reserved words
 into identifiers or stand in for grammar keywords. Unicode property tables are
 generated from pinned data and do not depend on the Rust toolchain version.
 
-Each production crate depends only on std and workspace crates. insta is a test
-only dependency. Rust unsafe code is forbidden through inherited workspace lints.
+Each production crate currently depends only on std and workspace crates. The
+design permits regex and jiff when needed. Neither has been added. insta remains
+a test-only dependency. Rust unsafe code is forbidden through inherited workspace lints.
 
 ## Not implemented
 

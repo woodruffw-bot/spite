@@ -6,7 +6,8 @@ spite targets [ECMAScript 2026](https://262.ecma-international.org/17.0/).
 It implements an initial subset and is **not a conforming engine yet**.
 Node.js compatibility, browser APIs, and syntax extensions are outside its scope.
 
-Production crates use only std and workspace crates. Workspace lints forbid unsafe
+Production crates currently use only std and workspace crates. The design permits
+regex and jiff when needed. Workspace lints forbid unsafe
 code. insta is used only for tests.
 
 ## Run
