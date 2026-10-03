@@ -36,6 +36,9 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
+Untagged template literals parse and validate, including nested substitutions.
+Their evaluation and tagged templates remain unsupported.
+
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, templates, for-in/of, catch parameters, generators,

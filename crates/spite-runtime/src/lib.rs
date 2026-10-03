@@ -774,6 +774,12 @@ impl Realm {
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
+            ExprKind::Template { .. } => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "template evaluation is not implemented",
+                ));
+            }
             ExprKind::Literal(literal) => match literal {
                 Literal::Null => Value::Null,
                 Literal::Boolean(v) => Value::Boolean(*v),

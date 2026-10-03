@@ -488,6 +488,9 @@ impl Parser {
             ExprKind::Update { argument, .. } => argument.depth,
             ExprKind::Binary(_, a, b) => a.depth.max(b.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
+            ExprKind::Template { substitutions, .. } => {
+                substitutions.iter().map(|e| e.depth).max().unwrap_or(0)
+            }
             _ => 0,
         };
         if depth > MAX_DEPTH {
@@ -585,6 +588,15 @@ impl Parser {
         if matches!(self.current().kind, Kind::Punct("(" | "[" | "." | "?.")) {
             return Err(self.unsupported("calls and property access are not implemented"));
         }
+        if matches!(
+            self.current().kind,
+            Kind::Template {
+                continuation: false,
+                ..
+            }
+        ) {
+            return Err(self.unsupported("tagged templates are not implemented"));
+        }
         Ok(left)
     }
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
@@ -626,6 +638,43 @@ impl Parser {
             return self.make_expr(ExprKind::Unary(op, Box::new(right)), span);
         }
         match token.kind {
+            Kind::Template {
+                element,
+                tail,
+                continuation: false,
+            } => {
+                let mut elements = vec![element];
+                let mut substitutions = Vec::new();
+                let mut tail = tail;
+                let mut end = span.end;
+                while !tail {
+                    substitutions.push(self.expression(1)?);
+                    let token = self.bump();
+                    let Kind::Template {
+                        element,
+                        tail: is_tail,
+                        continuation: true,
+                    } = token.kind
+                    else {
+                        return Err(early(token.span, "expected template substitution tail"));
+                    };
+                    elements.push(element);
+                    tail = is_tail;
+                    end = token.span.end;
+                }
+                for element in &elements {
+                    if element.cooked.is_none() {
+                        return Err(early(element.span, "invalid escape in untagged template"));
+                    }
+                }
+                self.make_expr(
+                    ExprKind::Template {
+                        elements,
+                        substitutions,
+                    },
+                    Span::new(span.start, end),
+                )
+            }
             Kind::Literal(lit) => self.make_expr(ExprKind::Literal(lit), span),
             Kind::Word(name) if !reserved(&name) => {
                 self.make_expr(ExprKind::Identifier(name), span)
@@ -1053,6 +1102,11 @@ fn labels_iteration(mut statement: &Statement) -> bool {
 
 fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
     match &expr.kind {
+        ExprKind::Template { substitutions, .. } => {
+            for expression in substitutions {
+                validate_expr(expression, strict)?;
+            }
+        }
         ExprKind::Identifier(name) if strict && strict_reserved(name) => {
             return Err(early(expr.span, "reserved identifier in strict mode"));
         }

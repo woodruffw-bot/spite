@@ -1,4 +1,4 @@
-use crate::ast::Literal;
+use crate::ast::{Literal, TemplateElement};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -6,6 +6,11 @@ pub(crate) enum Kind {
     Literal(Literal),
     Word(String),
     Punct(&'static str),
+    Template {
+        element: TemplateElement,
+        tail: bool,
+        continuation: bool,
+    },
     Eof,
 }
 
@@ -20,6 +25,7 @@ pub(crate) struct Token {
 pub(crate) struct Lexer<'a> {
     source: &'a str,
     pos: usize,
+    template_braces: Vec<usize>,
 }
 
 use spite_core::{
@@ -29,7 +35,11 @@ use spite_core::{
 
 impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
-        Self { source, pos: 0 }
+        Self {
+            source,
+            pos: 0,
+            template_braces: Vec::new(),
+        }
     }
     fn rest(&self) -> &'a str {
         &self.source[self.pos..]
@@ -107,13 +117,28 @@ impl<'a> Lexer<'a> {
             Kind::Literal(Literal::Number(self.number()?))
         } else if matches!(c, '\'' | '"') {
             Kind::Literal(Literal::String(self.string()?))
-        } else if c == '`' {
+        } else if c == '`' || (c == '}' && self.template_braces.last() == Some(&0)) {
+            let continuation = c == '}';
             self.bump();
-            return Err(self.error(
-                start,
-                DiagnosticKind::Unsupported,
-                "templates are not implemented",
-            ));
+            if continuation {
+                self.template_braces.pop();
+            }
+            let (element, tail) = self.template_component(start)?;
+            if !tail {
+                if self.template_braces.len() >= crate::MAX_DEPTH {
+                    return Err(self.error(
+                        start,
+                        DiagnosticKind::Limit,
+                        "template nesting limit exceeded",
+                    ));
+                }
+                self.template_braces.push(0);
+            }
+            Kind::Template {
+                element,
+                tail,
+                continuation,
+            }
         } else {
             // Maximal munch keeps multi-character operators intact.
             const PUNCT: &[&str] = &[
@@ -135,6 +160,13 @@ impl<'a> Lexer<'a> {
                 return Err(self.syntax(start, "unexpected character"));
             };
             self.pos += punct.len();
+            if let Some(depth) = self.template_braces.last_mut() {
+                if *punct == "{" {
+                    *depth += 1;
+                } else if *punct == "}" {
+                    *depth -= 1;
+                }
+            }
             Kind::Punct(punct)
         };
         Ok(Token {
@@ -143,6 +175,116 @@ impl<'a> Lexer<'a> {
             newline,
             escaped,
         })
+    }
+
+    // ECMA-262 12.9.6: TV interprets escapes while TRV preserves them. Both
+    // normalize CR and CRLF to LF. Invalid escapes have undefined TV so that
+    // the parser can distinguish untagged syntax errors from unsupported tags.
+    fn template_component(&mut self, start: usize) -> Result<(TemplateElement, bool), Diagnostic> {
+        let content_start = self.pos;
+        let mut cooked = Vec::new();
+        let mut valid = true;
+        loop {
+            if self.peek() == Some('`') || self.rest().starts_with("${") {
+                let content_end = self.pos;
+                let tail = self.peek() == Some('`');
+                self.pos += if tail { 1 } else { 2 };
+                let raw = self.source[content_start..content_end]
+                    .replace("\r\n", "\n")
+                    .replace('\r', "\n");
+                return Ok((
+                    TemplateElement {
+                        cooked: valid.then(|| JsString::from_code_units(cooked)),
+                        raw: JsString::from(raw.as_str()),
+                        span: Span::new(content_start, content_end),
+                    },
+                    tail,
+                ));
+            }
+            let Some(c) = self.bump() else {
+                return Err(self.syntax(start, "unterminated template"));
+            };
+            if c == '\r' {
+                if self.peek() == Some('\n') {
+                    self.bump();
+                }
+                cooked.push(10);
+                continue;
+            }
+            if c != '\\' {
+                cooked.extend_from_slice(c.encode_utf16(&mut [0; 2]));
+                continue;
+            }
+            let Some(escape) = self.bump() else {
+                return Err(self.syntax(start, "unterminated template escape"));
+            };
+            let cp = match escape {
+                '\n' | '\u{2028}' | '\u{2029}' => continue,
+                '\r' => {
+                    if self.peek() == Some('\n') {
+                        self.bump();
+                    }
+                    continue;
+                }
+                'n' => Some(10),
+                'r' => Some(13),
+                't' => Some(9),
+                'b' => Some(8),
+                'f' => Some(12),
+                'v' => Some(11),
+                '0' if !self.peek().is_some_and(|c| c.is_ascii_digit()) => Some(0),
+                '0'..='9' => None,
+                'x' => self.template_hex(2),
+                'u' => self.template_unicode(),
+                c => Some(c as u32),
+            };
+            if let Some(cp) = cp {
+                if cp <= 0xffff {
+                    cooked.push(cp as u16);
+                } else {
+                    cooked.extend_from_slice(
+                        char::from_u32(cp)
+                            .expect("validated template code point")
+                            .encode_utf16(&mut [0; 2]),
+                    );
+                }
+            } else {
+                valid = false;
+            }
+        }
+    }
+
+    fn template_hex(&mut self, count: usize) -> Option<u32> {
+        let mut value = 0;
+        for _ in 0..count {
+            // Leave non-digits for template scanning, especially ` and ${.
+            let digit = self.peek()?.to_digit(16)?;
+            self.bump();
+            value = value * 16 + digit;
+        }
+        Some(value)
+    }
+
+    fn template_unicode(&mut self) -> Option<u32> {
+        if self.peek() != Some('{') {
+            return self.template_hex(4);
+        }
+        self.bump();
+        let mut value = Some(0u32);
+        let mut digits = 0;
+        while let Some(digit) = self.peek().and_then(|c| c.to_digit(16)) {
+            self.bump();
+            digits += 1;
+            value = value
+                .and_then(|n| n.checked_mul(16))
+                .and_then(|n| n.checked_add(digit))
+                .filter(|n| *n <= 0x10ffff);
+        }
+        if self.peek() != Some('}') {
+            return None;
+        }
+        self.bump();
+        value.filter(|_| digits != 0)
     }
 
     // https://262.ecma-international.org/17.0/#sec-identifier-names

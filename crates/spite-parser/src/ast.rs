@@ -240,6 +240,13 @@ pub struct Expr {
 pub enum ExprKind {
     /// A primitive literal.
     Literal(Literal),
+    /// An untagged template literal. There is one more element than substitution.
+    Template {
+        /// Cooked and raw components in source order.
+        elements: Vec<TemplateElement>,
+        /// Expressions interpolated between elements.
+        substitutions: Vec<Expr>,
+    },
     /// An identifier reference.
     Identifier(String),
     /// A parenthesized expression. Retained for grammar restrictions.
@@ -263,6 +270,17 @@ pub enum ExprKind {
     CompoundAssign(BinaryOp, String, Box<Expr>),
     /// A conditional expression.
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+}
+
+/// A template literal component, excluding its delimiters.
+#[derive(Clone, Debug, PartialEq)]
+pub struct TemplateElement {
+    /// Text with escapes interpreted, or None for an invalid escape sequence.
+    pub cooked: Option<JsString>,
+    /// Text with escapes preserved and CR/CRLF normalized to LF.
+    pub raw: JsString,
+    /// Source range excluding delimiters.
+    pub span: Span,
 }
 
 /// Primitive literal values.
