@@ -21,14 +21,10 @@ pub(crate) struct Lexer<'a> {
     pos: usize,
 }
 
-use spite_core::{is_line_terminator as is_line, is_whitespace as is_space};
-
-fn id_start(c: char) -> bool {
-    c.is_ascii_alphabetic() || matches!(c, '_' | '$')
-}
-fn id_continue(c: char) -> bool {
-    id_start(c) || c.is_ascii_digit()
-}
+use spite_core::{
+    is_identifier_part as id_continue, is_identifier_start as id_start,
+    is_line_terminator as is_line, is_whitespace as is_space,
+};
 
 impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
@@ -93,14 +89,11 @@ impl<'a> Lexer<'a> {
             while self.peek().is_some_and(id_continue) {
                 self.bump();
             }
-            if self
-                .peek()
-                .is_some_and(|c| c == '\\' || (!c.is_ascii() && !is_space(c) && !is_line(c)))
-            {
+            if self.peek() == Some('\\') {
                 return Err(self.error(
                     start,
                     DiagnosticKind::Unsupported,
-                    "Unicode identifiers are not implemented",
+                    "identifier escapes are not implemented",
                 ));
             }
             match &self.source[start..self.pos] {
@@ -120,12 +113,12 @@ impl<'a> Lexer<'a> {
             Kind::Literal(Literal::Number(self.number()?))
         } else if matches!(c, '\'' | '"') {
             Kind::Literal(Literal::String(self.string()?))
-        } else if c == '`' || c == '\\' || !c.is_ascii() {
+        } else if c == '`' || c == '\\' {
             self.bump();
             return Err(self.error(
                 start,
                 DiagnosticKind::Unsupported,
-                "templates and Unicode identifiers are not implemented",
+                "templates and identifier escapes are not implemented",
             ));
         } else {
             // Maximal munch prevents unsupported compound operators from being split.
@@ -230,9 +223,10 @@ impl<'a> Lexer<'a> {
                 "BigInt literals are not implemented",
             ));
         }
-        if self.peek().is_some_and(|c| {
-            id_continue(c) || c == '\\' || (!c.is_ascii() && !is_space(c) && !is_line(c))
-        }) {
+        if self
+            .peek()
+            .is_some_and(|c| id_start(c) || c.is_ascii_digit() || c == '\\')
+        {
             self.bump();
             return Err(self.syntax(start, "invalid character after numeric literal"));
         }

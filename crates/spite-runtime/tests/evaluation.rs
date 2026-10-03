@@ -340,3 +340,18 @@ fn unsupported_features_cannot_masquerade_as_runtime_exceptions() {
         exception(name, ExceptionKind::ReferenceError);
     }
 }
+
+#[test]
+fn unicode_bindings_preserve_code_point_identity() {
+    number("let π = 2; { let π = 3; π = 4; } π", 2.0);
+    number("let 字 = 6; 字 = 字 * 7; 字", 42.0);
+    number("let 𐐀 = 3; let a\u{200c} = 4; 𐐀 + a\u{200c}", 7.0);
+    number(
+        "let é = 1; let e\u{0301} = 2; let K = 3; let K = 4; é + e\u{0301} + K + K",
+        10.0,
+    );
+    exception("π; let π = 1", ExceptionKind::ReferenceError);
+    let mut realm = Realm::default();
+    realm.eval("let π = 3").unwrap();
+    assert_eq!(realm.eval("π + 1"), Ok(Value::Number(4.0)));
+}

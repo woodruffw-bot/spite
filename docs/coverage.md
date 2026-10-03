@@ -10,7 +10,7 @@ not an alternative language specification.
 | --- | --- |
 | Source | UTF-8 input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
-| Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, ASCII identifiers |
+| Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Expressions | Primitive literals, identifiers, parentheses, simple assignment, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
@@ -27,7 +27,7 @@ only dependency. Rust unsafe code is forbidden through inherited workspace lints
 
 ## Not implemented
 
-Unicode identifiers and identifier escapes, BigInt, Symbols, objects, properties,
+Identifier escapes, BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, templates, var, loops, labels, switch, try/catch/finally, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared

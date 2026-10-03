@@ -186,7 +186,6 @@ fn unsupported_features_remain_distinct() {
     for source in [
         "1n",
         "`x`",
-        "let π = 1",
         "let \\u0061 = 1",
         "var x",
         "function f() {}",
