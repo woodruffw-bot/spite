@@ -224,6 +224,24 @@ impl Objects {
             .map_err(|_| Error::PropertyLimit)
     }
 
+    /// Copies an own data descriptor with bounded key scans and value-copy work.
+    pub fn get_own(
+        &self,
+        object: &Handle,
+        key: &JsString,
+        budget: &mut Budget,
+    ) -> Result<Option<DataProperty>, Error> {
+        let record = self.heap.get(object)?;
+        budget.lookup(record, key)?;
+        match record.own_property(key) {
+            Some(property) => {
+                budget.value(&property.value)?;
+                Ok(Some(property.clone()))
+            }
+            None => Ok(None),
+        }
+    }
+
     /// Implements OrdinaryGet for data properties, searching prototypes iteratively.
     pub fn get(
         &self,

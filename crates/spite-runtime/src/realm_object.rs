@@ -24,6 +24,56 @@ impl RootedValue {
 }
 
 impl Realm {
+    pub(super) fn property_object(base: &Value, span: Span) -> Result<&ObjectHandle, Error> {
+        match base {
+            Value::Object(handle) => Ok(handle),
+            Value::Null | Value::Undefined => Err(Self::exception(
+                crate::ExceptionKind::TypeError,
+                span,
+                "cannot access a property of null or undefined",
+            )),
+            _ => Err(Self::unsupported(
+                span,
+                "primitive property access requires wrapper objects",
+            )),
+        }
+    }
+
+    pub(super) fn reference_key(&mut self, key: &mut Value, span: Span) -> Result<JsString, Error> {
+        let converted = self.property_key(key.clone(), span)?;
+        *key = Value::String(converted.clone());
+        Ok(converted)
+    }
+
+    pub(super) fn get_property(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let mut next = Some(object.clone());
+        while let Some(handle) = next {
+            let own = self.object_work(span, |objects, budget| {
+                objects.get_own(&handle, key, budget)
+            })?;
+            if let Some(property) = own {
+                return Ok(property.value);
+            }
+            // Missing standard methods must not appear to be absent. Until
+            // callable intrinsics are implemented, accessing one is a host gap.
+            if self.object_prototype.as_ref() == Some(&handle) && missing_object_method(key) {
+                return Err(Self::unsupported(
+                    span,
+                    "Object.prototype method is not implemented",
+                ));
+            }
+            next = self.object_work(span, |objects, _| {
+                Ok(objects.inspect(&handle)?.prototype().cloned())
+            })?;
+        }
+        Ok(Value::Undefined)
+    }
+
     /// Retains an embedding value across explicit collection in this realm.
     ///
     /// Objects from another realm and already-collected handles are rejected.
@@ -197,4 +247,18 @@ impl Realm {
         }
         Ok(Value::Object(object))
     }
+}
+
+fn missing_object_method(key: &JsString) -> bool {
+    [
+        "constructor",
+        "hasOwnProperty",
+        "isPrototypeOf",
+        "propertyIsEnumerable",
+        "toLocaleString",
+        "toString",
+        "valueOf",
+    ]
+    .iter()
+    .any(|name| key.code_units().iter().copied().eq(name.encode_utf16()))
 }

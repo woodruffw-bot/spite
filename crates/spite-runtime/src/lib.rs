@@ -136,6 +136,12 @@ enum Reference<'a> {
     Global(&'a str),
     Unresolvable(&'a str),
     UnsupportedGlobal(&'a str),
+    Property {
+        base: Value,
+        // Edition 17 converts a computed name at GetValue/PutValue, not when
+        // creating the reference. GetValue caches the converted property key.
+        key: Value,
+    },
 }
 
 // Implemented statement completions. Throws already carry a non-empty value in
@@ -837,15 +843,24 @@ impl Realm {
         match &target.kind {
             ExprKind::Identifier(name) => Ok(self.resolve(name)),
             ExprKind::Parenthesized(inner) => self.reference(inner),
-            ExprKind::Member(..) => Err(Self::unsupported(
-                target.span,
-                "property reference evaluation is not implemented",
-            )),
+            ExprKind::Member(base, name) => {
+                let base = self.expression(base)?;
+                let key = match name {
+                    PropertyName::Literal(literal) => self.literal_value(literal, target.span)?,
+                    PropertyName::Computed(expression) => self.expression(expression)?,
+                };
+                Ok(Reference::Property { base, key })
+            }
             _ => unreachable!("parser validated reference target"),
         }
     }
-    fn get(&self, reference: &Reference<'_>, span: Span) -> Result<Value, Error> {
+    fn get(&mut self, reference: &mut Reference<'_>, span: Span) -> Result<Value, Error> {
         match reference {
+            Reference::Property { base, key } => {
+                let object = Self::property_object(base, span)?;
+                let key = self.reference_key(key, span)?;
+                self.get_property(object, &key, span)
+            }
             Reference::Lexical(index, name) => {
                 self.scopes[*index][*name].value.clone().ok_or_else(|| {
                     Self::exception(
@@ -869,6 +884,20 @@ impl Realm {
     }
     fn put(&mut self, reference: Reference<'_>, value: Value, span: Span) -> Result<(), Error> {
         match reference {
+            Reference::Property { base, mut key } => {
+                let object = Self::property_object(&base, span)?;
+                let key = self.reference_key(&mut key, span)?;
+                let written = self.object_work(span, |objects, budget| {
+                    objects.set(object, key, value, Some(object), budget)
+                })?;
+                if !written && self.strict {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "property is not writable",
+                    ));
+                }
+            }
             Reference::Lexical(index, name) => {
                 let binding = self.scopes[index]
                     .get_mut(name)
@@ -985,13 +1014,11 @@ impl Realm {
                 Value::String(JsString::from_code_units(units))
             }
             ExprKind::Literal(literal) => self.literal_value(literal, expr.span)?,
-            ExprKind::Identifier(name) => self.get(&self.resolve(name), expr.span)?,
+            ExprKind::Identifier(name) => self.get(&mut self.resolve(name), expr.span)?,
             ExprKind::Parenthesized(inner) => self.expression(inner)?,
             ExprKind::Member(..) => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "property reference evaluation is not implemented",
-                ));
+                let mut reference = self.reference(expr)?;
+                self.get(&mut reference, expr.span)?
             }
             ExprKind::Assign(target, right) => {
                 let reference = self.reference(target)?;
@@ -1002,8 +1029,8 @@ impl Realm {
             ExprKind::CompoundAssign(op, target, right) => {
                 // ECMA-262 13.15.2: read the reference before the RHS. Logical
                 // assignments that short-circuit perform neither RHS nor PutValue.
-                let reference = self.reference(target)?;
-                let left = self.get(&reference, expr.span)?;
+                let mut reference = self.reference(target)?;
+                let left = self.get(&mut reference, expr.span)?;
                 match op {
                     BinaryOp::And if !left.to_boolean() => left,
                     BinaryOp::Or if left.to_boolean() => left,
@@ -1023,8 +1050,8 @@ impl Realm {
             } => {
                 // ECMA-262 13.4.2–13.4.5: GetValue and ToNumeric precede
                 // PutValue. Postfix returns the numeric old value, not its input.
-                let reference = self.reference(argument)?;
-                let old = Self::numeric(self.get(&reference, argument.span)?, argument.span)?;
+                let mut reference = self.reference(argument)?;
+                let old = Self::numeric(self.get(&mut reference, argument.span)?, argument.span)?;
                 let one = if matches!(old, Value::BigInt(_)) {
                     Value::BigInt(BigInt::from(1))
                 } else {
@@ -1046,27 +1073,41 @@ impl Realm {
                 }
             }
             ExprKind::Unary(op, inner) => {
-                if *op == UnaryOp::Delete {
-                    if let Some(name) = identifier(inner) {
-                        // ECMA-262 13.5.1.2: deleting an environment reference
-                        // does not GetValue, even for an uninitialized binding.
-                        let deleted = match self.resolve(name) {
-                            Reference::Lexical(..) => false,
-                            Reference::Global(name) if !self.globals[name].deletable => false,
-                            Reference::Global(name) => {
-                                self.globals.remove(name);
-                                true
-                            }
-                            Reference::Unresolvable(_) => true,
-                            Reference::UnsupportedGlobal(name) => {
-                                return Err(Self::unsupported(
+                if *op == UnaryOp::Delete && reference_expression(inner) {
+                    // ECMA-262 13.5.1.2: deleting an environment reference
+                    // does not GetValue, even for an uninitialized binding.
+                    let reference = self.reference(inner)?;
+                    let deleted = match reference {
+                        Reference::Property { base, mut key } => {
+                            let object = Self::property_object(&base, inner.span)?;
+                            let key = self.reference_key(&mut key, inner.span)?;
+                            let deleted = self.object_work(inner.span, |objects, budget| {
+                                objects.delete(object, &key, budget)
+                            })?;
+                            if !deleted && self.strict {
+                                return Err(Self::exception(
+                                    ExceptionKind::TypeError,
                                     inner.span,
-                                    format!("{name} is not implemented"),
+                                    "property is not configurable",
                                 ));
                             }
-                        };
-                        return Ok(Value::Boolean(deleted));
-                    }
+                            deleted
+                        }
+                        Reference::Lexical(..) => false,
+                        Reference::Global(name) if !self.globals[name].deletable => false,
+                        Reference::Global(name) => {
+                            self.globals.remove(name);
+                            true
+                        }
+                        Reference::Unresolvable(_) => true,
+                        Reference::UnsupportedGlobal(name) => {
+                            return Err(Self::unsupported(
+                                inner.span,
+                                format!("{name} is not implemented"),
+                            ));
+                        }
+                    };
+                    return Ok(Value::Boolean(deleted));
                 }
                 if *op == UnaryOp::Typeof {
                     if let Some(name) = identifier(inner) {
@@ -1232,6 +1273,14 @@ fn identifier(expr: &Expr) -> Option<&str> {
         ExprKind::Identifier(name) => Some(name),
         ExprKind::Parenthesized(e) => identifier(e),
         _ => None,
+    }
+}
+
+fn reference_expression(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::Identifier(_) | ExprKind::Member(..) => true,
+        ExprKind::Parenthesized(inner) => reference_expression(inner),
+        _ => false,
     }
 }
 fn restricted_global(name: &str) -> bool {

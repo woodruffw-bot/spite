@@ -59,12 +59,15 @@ survive collection; tokens release roots when their last clone is dropped. Root
 registry storage is reused. Collection during evaluation remains disabled until
 temporary and pending-completion root lifetimes are implemented.
 
-Dotted and computed property references now parse, including assignment,
-compound assignment, update, and delete targets. IdentifierName spelling,
-precedence, strict target restrictions, and ASI after completed update expressions
-have regression tests. Property-reference evaluation remains unsupported.
+Dotted and computed property references parse and evaluate for ordinary objects,
+including assignment, compound assignment, update, and delete targets. Tests cover
+IdentifierName spelling, precedence, strict targets, ASI, inherited reads/writes,
+and edition-17 deferred key conversion. Nullish bases produce TypeError at
+GetValue/PutValue/delete. Primitive wrappers remain unsupported. Reading a missing
+Object.prototype intrinsic method reports Unsupported, while ordinary properties
+can shadow it. The optional Annex B prototype accessor is not installed.
 
-Symbols, property access,
+Symbols, primitive wrapper properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared

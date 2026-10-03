@@ -195,8 +195,18 @@ Realm allocation is bounded by object slots and per-object property counts. Obje
 literals create data properties in source order, convert computed keys before
 evaluating values, and implement the required non-computed `__proto__` initializer.
 The intrinsic Object prototype has a stable, retained identity; its callable
-properties remain incomplete. Object coercion and property syntax do not yet
-expose those missing methods with substitute behavior.
+properties remain incomplete. A lookup that reaches an unimplemented intrinsic
+method reports Unsupported; own or nearer inherited data properties can shadow
+that method normally. Primitive wrapper properties and object coercion hooks
+remain explicit implementation gaps.
+
+Property references retain the evaluated base and the unconverted computed name.
+Edition 17's 13.3.3 defers ToPropertyKey until GetValue, PutValue, or deletion;
+simple assignment therefore evaluates its RHS before converting the key. GetValue
+caches the converted name for a later compound-assignment write. These operations
+apply ToObject before key conversion, so a nullish base throws TypeError first.
+Deletion does not GetValue. Strict writes/deletions translate false internal-method
+results into TypeError. Ordinary data lookup and prototype traversal remain bounded.
 
 `Realm::collect` runs only between evaluations and scans persistent lexical/global
 bindings, intrinsic handles, and host roots. Environment scans are budgeted even
