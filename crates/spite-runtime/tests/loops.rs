@@ -146,3 +146,140 @@ fn infinite_loops_exhaust_the_host_budget_and_restore_scopes() {
         assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
     }
 }
+
+#[test]
+fn break_skips_the_remaining_body_and_do_while_condition() {
+    result(
+        "let x = 0; while (true) { x = 1; break; x = 99; } x",
+        Value::Number(1.0),
+    );
+    result(
+        "let x = 0; do { x = 1; break; x = 99; } while (missing); x",
+        Value::Number(1.0),
+    );
+    result("while (true) { break; throw 99; }", Value::Undefined);
+    result("while (true) { break\nmissing; }", Value::Undefined);
+}
+
+#[test]
+fn continue_resumes_at_the_condition() {
+    result(
+        "let i = 0; let count = 0; while ((i = i + 1) < 4) { if (i === 2) continue; count = count + 1; } count",
+        Value::Number(2.0),
+    );
+    result(
+        "let i = 0; do { continue; throw 99; } while ((i = i + 1) < 3); i",
+        Value::Number(3.0),
+    );
+    result(
+        "let i = 0; while ((i = i + 1) < 3) { continue\nmissing; } i",
+        Value::Number(3.0),
+    );
+    assert!(matches!(
+        Realm::default().eval("do continue; while (missing);"),
+        Err(Error::Exception {
+            kind: ExceptionKind::ReferenceError,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn abrupt_completions_keep_statement_list_values() {
+    for source in [
+        "while (true) { 7; break; }",
+        "while (true) { 7; { break; } }",
+        "do { 7; break; } while (missing)",
+        "do { 7; { continue; } } while (false)",
+        "let i = 0; while ((i = i + 1) < 3) { 7; continue; }",
+    ] {
+        result(source, Value::Number(7.0));
+    }
+    result("while (true) { -0; break; }", Value::Number(-0.0));
+    result(
+        "do { NaN; continue; } while (false)",
+        Value::Number(f64::NAN),
+    );
+    result("99; while (true) break;", Value::Undefined);
+    result("99; do continue; while (false)", Value::Undefined);
+}
+
+#[test]
+fn if_applies_update_empty_to_abrupt_completions() {
+    // ECMA-262 14.6.2 fills an empty break/continue with undefined before the
+    // containing statement list can inherit the earlier numeric value.
+    for source in [
+        "while (true) { 7; if (true) break; }",
+        "while (true) { 7; if (false) ; else break; }",
+        "do { 7; if (true) continue; } while (false)",
+        "do { 7; if (false) ; else continue; } while (false)",
+        "while (true) { 7; { if (true) break; } }",
+    ] {
+        result(source, Value::Undefined);
+    }
+    result(
+        "while (true) { 7; if (true) { 8; break; } }",
+        Value::Number(8.0),
+    );
+    result(
+        "do { 7; if (true) { 8; continue; } } while (false)",
+        Value::Number(8.0),
+    );
+}
+
+#[test]
+fn nested_loops_consume_only_their_own_unlabelled_control() {
+    result(
+        "let i = 0; let count = 0; while (i < 3) { i = i + 1; do { break; } while (missing); count = count + 1; } count",
+        Value::Number(3.0),
+    );
+    result(
+        "let i = 0; let count = 0; while (i < 3) { i = i + 1; let j = 0; while ((j = j + 1) < 3) continue; count = count + j; } count",
+        Value::Number(9.0),
+    );
+}
+
+#[test]
+fn control_transfers_restore_scopes() {
+    result(
+        "let x = 1; while (true) { let x = 2; { let x = 3; break; } } x",
+        Value::Number(1.0),
+    );
+    result(
+        "let x = 1; let i = 0; while ((i = i + 1) < 3) { let x = 2; continue; } x",
+        Value::Number(1.0),
+    );
+    result(
+        "let x = 0; do { let x = 99; continue; } while ((x = x + 1) < 3); x",
+        Value::Number(3.0),
+    );
+    for source in [
+        "while (true) { let x = 2; continue; }",
+        "do { let x = 2; continue; } while (true)",
+    ] {
+        let mut realm = Realm::new(Limits {
+            max_steps: 100,
+            ..Limits::default()
+        });
+        realm.eval("let x = 1").unwrap();
+        assert!(matches!(realm.eval(source), Err(Error::Limit { .. })));
+        assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
+    }
+}
+
+#[test]
+fn invalid_loop_control_is_rejected_before_execution_or_instantiation() {
+    for source in [
+        "x = 1; break;",
+        "x = 1; if (false) continue;",
+        "let y; while (false) ; break;",
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("let x = 0").unwrap();
+        assert!(
+            matches!(realm.eval(source), Err(Error::Parse(d)) if d.kind == spite_core::DiagnosticKind::Syntax)
+        );
+        assert_eq!(realm.eval("x"), Ok(Value::Number(0.0)));
+        assert_eq!(realm.eval("let y = 2; y"), Ok(Value::Number(2.0)));
+    }
+}

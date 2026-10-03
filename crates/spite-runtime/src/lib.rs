@@ -104,6 +104,36 @@ enum Reference<'a> {
     UnsupportedGlobal(&'a str),
 }
 
+// Implemented statement completions. Throws already carry a non-empty value in
+// Error::Thrown; host failures remain separate from these control transfers.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CompletionKind {
+    Normal,
+    Break,
+    Continue,
+}
+
+struct Completion {
+    kind: CompletionKind,
+    // None is empty, distinct from Some(Value::Undefined).
+    value: Option<Value>,
+}
+
+impl Completion {
+    fn normal(value: Option<Value>) -> Self {
+        Self {
+            kind: CompletionKind::Normal,
+            value,
+        }
+    }
+
+    // ECMA-262 6.2.4.4 UpdateEmpty preserves the completion's kind.
+    fn update_empty(mut self, value: Option<Value>) -> Self {
+        self.value = self.value.or(value);
+        self
+    }
+}
+
 /// An isolated execution realm with persistent global lexical bindings.
 ///
 /// Only the documented subset is implemented. Standard object globals and host
@@ -153,9 +183,10 @@ impl Realm {
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
         self.instantiate(script.statements(), true)?;
-        Ok(self
-            .statements(script.statements())?
-            .unwrap_or(Value::Undefined))
+        let completion = self.statements(script.statements())?;
+        // Validated Scripts cannot transfer control outside an enclosing loop.
+        debug_assert_eq!(completion.kind, CompletionKind::Normal);
+        Ok(completion.value.unwrap_or(Value::Undefined))
     }
 
     fn exception(kind: ExceptionKind, span: Span, message: impl Into<String>) -> Error {
@@ -230,21 +261,31 @@ impl Realm {
         Ok(())
     }
 
-    // None is an empty completion, not the JavaScript value undefined.
-    fn statements(&mut self, statements: &[Statement]) -> Result<Option<Value>, Error> {
-        let mut value = None;
+    fn statements(&mut self, statements: &[Statement]) -> Result<Completion, Error> {
+        let mut completion = Completion::normal(None);
         for statement in statements {
-            if let Some(next) = self.statement(statement)? {
-                value = Some(next);
+            // ECMA-262 14.2.2: even an abrupt statement inherits the previous
+            // value when its own value is empty, then stops the statement list.
+            completion = self.statement(statement)?.update_empty(completion.value);
+            if completion.kind != CompletionKind::Normal {
+                break;
             }
         }
-        Ok(value)
+        Ok(completion)
     }
-    fn statement(&mut self, statement: &Statement) -> Result<Option<Value>, Error> {
+    fn statement(&mut self, statement: &Statement) -> Result<Completion, Error> {
         self.tick(statement.span)?;
         match &statement.kind {
-            StatementKind::Empty => Ok(None),
-            StatementKind::Expression(expr) => self.expression(expr).map(Some),
+            StatementKind::Empty => Ok(Completion::normal(None)),
+            StatementKind::Expression(expr) => Ok(Completion::normal(Some(self.expression(expr)?))),
+            StatementKind::Break | StatementKind::Continue => Ok(Completion {
+                kind: if matches!(statement.kind, StatementKind::Break) {
+                    CompletionKind::Break
+                } else {
+                    CompletionKind::Continue
+                },
+                value: None,
+            }),
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
             StatementKind::Lexical { bindings, .. } => {
                 for binding in bindings {
@@ -260,7 +301,7 @@ impl Realm {
                         .expect("declaration was instantiated")
                         .value = Some(value);
                 }
-                Ok(None)
+                Ok(Completion::normal(None))
             }
             StatementKind::Block(body) => {
                 self.scopes.push(BTreeMap::new());
@@ -275,21 +316,26 @@ impl Realm {
             StatementKind::While { test, body } => {
                 let mut value = Value::Undefined;
                 while self.expression(test)?.to_boolean() {
-                    if let Some(next) = self.statement(body)? {
-                        value = next;
+                    let result = self.statement(body)?.update_empty(Some(value));
+                    value = result.value.expect("loop UpdateEmpty supplies a value");
+                    // Unlabelled continue resumes this loop; unlabelled break
+                    // becomes normal at the BreakableStatement (14.13.4).
+                    if result.kind == CompletionKind::Break {
+                        break;
                     }
                 }
-                Ok(Some(value))
+                Ok(Completion::normal(Some(value)))
             }
             // ECMA-262 14.7.2.2: the first body precedes the first condition.
             StatementKind::DoWhile { body, test } => {
                 let mut value = Value::Undefined;
                 loop {
-                    if let Some(next) = self.statement(body)? {
-                        value = next;
-                    }
-                    if !self.expression(test)?.to_boolean() {
-                        return Ok(Some(value));
+                    let result = self.statement(body)?.update_empty(Some(value));
+                    value = result.value.expect("loop UpdateEmpty supplies a value");
+                    // Continue still evaluates the test; break must skip it.
+                    if result.kind == CompletionKind::Break || !self.expression(test)?.to_boolean()
+                    {
+                        return Ok(Completion::normal(Some(value)));
                     }
                 }
             }
@@ -303,10 +349,10 @@ impl Realm {
                 } else if let Some(alternate) = alternate {
                     self.statement(alternate)?
                 } else {
-                    None
+                    Completion::normal(None)
                 };
-                // IfStatement applies UpdateEmpty(result, undefined).
-                Ok(Some(result.unwrap_or(Value::Undefined)))
+                // ECMA-262 14.6.2 applies UpdateEmpty even to break/continue.
+                Ok(result.update_empty(Some(Value::Undefined)))
             }
         }
     }

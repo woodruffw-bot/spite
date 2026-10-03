@@ -1,0 +1,38 @@
+---
+source: crates/spite-parser/tests/loops.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "break requires an enclosing loop",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 2,
+            end: 11,
+        },
+        message: "continue requires an enclosing loop",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 11,
+            end: 17,
+        },
+        message: "break requires an enclosing loop",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 16,
+            end: 25,
+        },
+        message: "continue requires an enclosing loop",
+    },
+]

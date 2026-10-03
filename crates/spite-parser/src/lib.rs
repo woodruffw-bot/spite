@@ -64,7 +64,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
                 "\"use strict\"" | "'use strict'"
             )
         });
-    validate_scope(&statements, strict)?;
+    validate_scope(&statements, strict, false)?;
     Ok(Script { statements, strict })
 }
 
@@ -172,6 +172,14 @@ impl Parser {
     }
     fn statement_inner(&mut self, allow_declaration: bool) -> Result<Statement, Diagnostic> {
         let start = self.current().span.start;
+        if matches!(&self.current().kind, Kind::Word(name) if !reserved(name))
+            && self
+                .tokens
+                .get(self.index + 1)
+                .is_some_and(|t| t.kind == Kind::Punct(":"))
+        {
+            return Err(self.unsupported("labelled statements are not implemented"));
+        }
         let lexical = self.at("const")
             || (self.at("let")
                 && self
@@ -268,6 +276,26 @@ impl Parser {
             // do-while even without a line terminator before the next token.
             self.eat(";");
             StatementKind::DoWhile { body, test }
+        } else if self.at("break") || self.at("continue") {
+            let is_break = self.eat("break");
+            if !is_break {
+                self.expect("continue")?;
+            }
+            // ECMA-262 14.8/14.9: a label cannot follow a line terminator.
+            if !self.current().newline {
+                if let Kind::Word(name) = &self.current().kind {
+                    if reserved(name) {
+                        return Err(self.error("invalid label identifier"));
+                    }
+                    return Err(self.unsupported("labelled loop control is not implemented"));
+                }
+            }
+            self.semicolon()?;
+            if is_break {
+                StatementKind::Break
+            } else {
+                StatementKind::Continue
+            }
         } else if self.eat("throw") {
             if self.current().newline {
                 return Err(self.error("line terminator after throw"));
@@ -288,8 +316,6 @@ impl Parser {
                             | "switch"
                             | "try"
                             | "with"
-                            | "break"
-                            | "continue"
                             | "debugger"
                             | "import"
                             | "export"
@@ -542,7 +568,11 @@ fn early(span: Span, message: &str) -> Diagnostic {
     Diagnostic::new(DiagnosticKind::Syntax, span, message)
 }
 
-fn validate_scope(statements: &[Statement], strict: bool) -> Result<(), Diagnostic> {
+fn validate_scope(
+    statements: &[Statement],
+    strict: bool,
+    in_iteration: bool,
+) -> Result<(), Diagnostic> {
     let mut names = BTreeSet::new();
     for statement in statements {
         if let StatementKind::Lexical { bindings, .. } = &statement.kind {
@@ -558,11 +588,15 @@ fn validate_scope(statements: &[Statement], strict: bool) -> Result<(), Diagnost
                 }
             }
         }
-        validate_statement(statement, strict)?;
+        validate_statement(statement, strict, in_iteration)?;
     }
     Ok(())
 }
-fn validate_statement(statement: &Statement, strict: bool) -> Result<(), Diagnostic> {
+fn validate_statement(
+    statement: &Statement,
+    strict: bool,
+    in_iteration: bool,
+) -> Result<(), Diagnostic> {
     match &statement.kind {
         StatementKind::Expression(expr) | StatementKind::Throw(expr) => {
             validate_expr(expr, strict)?
@@ -574,10 +608,18 @@ fn validate_statement(statement: &Statement, strict: bool) -> Result<(), Diagnos
                 }
             }
         }
-        StatementKind::Block(body) => validate_scope(body, strict)?,
+        StatementKind::Block(body) => validate_scope(body, strict, in_iteration)?,
         StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {
             validate_expr(test, strict)?;
-            validate_statement(body, strict)?;
+            validate_statement(body, strict, true)?;
+        }
+        // ECMA-262 14.8.1/14.9.1. Switch and function bodies will need their
+        // own validation contexts when those forms are implemented.
+        StatementKind::Break if !in_iteration => {
+            return Err(early(statement.span, "break requires an enclosing loop"));
+        }
+        StatementKind::Continue if !in_iteration => {
+            return Err(early(statement.span, "continue requires an enclosing loop"));
         }
         StatementKind::If {
             test,
@@ -585,12 +627,12 @@ fn validate_statement(statement: &Statement, strict: bool) -> Result<(), Diagnos
             alternate,
         } => {
             validate_expr(test, strict)?;
-            validate_statement(consequent, strict)?;
+            validate_statement(consequent, strict, in_iteration)?;
             if let Some(alternate) = alternate {
-                validate_statement(alternate, strict)?;
+                validate_statement(alternate, strict, in_iteration)?;
             }
         }
-        StatementKind::Empty => {}
+        StatementKind::Empty | StatementKind::Break | StatementKind::Continue => {}
     }
     Ok(())
 }

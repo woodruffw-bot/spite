@@ -68,6 +68,10 @@ pub enum StatementKind {
         /// Condition.
         test: Expr,
     },
+    /// Exit the nearest enclosing loop (unlabelled).
+    Break,
+    /// Continue the nearest enclosing loop (unlabelled).
+    Continue,
     /// Throw a language value.
     Throw(Expr),
 }
