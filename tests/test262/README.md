@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 28 unmodified fixtures come from
+These 30 unmodified fixtures come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -30,7 +30,7 @@ parser tests. Each test group checks its reviewed manifest inventory.
 
 ## Statement parser tests
 
-Four `noStrict` fixtures cover the `let` lookahead rules in while and if bodies.
+Six `noStrict` fixtures cover the `let` lookahead rules in while, for, and if bodies.
 The parser receives each complete, unchanged source. Tests check that ASI leaves
 `let` as an identifier expression and that the following block or assignment
 becomes a separate statement. These are parser regressions only; they do not run

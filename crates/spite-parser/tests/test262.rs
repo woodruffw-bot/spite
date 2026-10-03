@@ -8,6 +8,8 @@ fn pinned_let_statement_lookahead() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262");
     let manifest = fs::read_to_string(root.join("manifest.tsv")).unwrap();
     let expected = BTreeSet::from([
+        "test/language/statements/for/let-block-with-newline.js",
+        "test/language/statements/for/let-identifier-with-newline.js",
         "test/language/statements/while/let-block-with-newline.js",
         "test/language/statements/while/let-identifier-with-newline.js",
         "test/language/statements/if/let-block-with-newline.js",
@@ -35,9 +37,9 @@ fn pinned_let_statement_lookahead() {
             "{path}: ASI must split the statements"
         );
         let body = match &script.statements()[0].kind {
-            StatementKind::While { body, .. } => body,
+            StatementKind::While { body, .. } | StatementKind::For { body, .. } => body,
             StatementKind::If { consequent, .. } => consequent,
-            _ => panic!("{path}: expected while or if"),
+            _ => panic!("{path}: expected while, for, or if"),
         };
         assert!(
             matches!(&body.kind, StatementKind::Expression(Expr { kind: ExprKind::Identifier(name), .. }) if name == "let")
