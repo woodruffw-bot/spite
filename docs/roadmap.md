@@ -44,7 +44,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
-- [ ] Instantiate Script vars and execute variable statements and for headers.
+- [x] Instantiate Script vars and execute variable statements and for headers.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.

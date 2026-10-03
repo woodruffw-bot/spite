@@ -14,7 +14,7 @@ not an alternative language specification.
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Expressions | Primitive literals, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof, void, and delete |
-| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, switch, labels, break/continue with optional targets, throw, try with catch without a parameter and/or finally |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch without a parameter and/or finally |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive throws, finalizer preservation and overrides of language completions |
@@ -36,17 +36,16 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
-Var declarations parse and validate, including for headers and lexical conflicts.
-Scripts containing var declarations return Unsupported before evaluation.
-
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
-expressions, templates, var, for-in/of, catch parameters, generators,
+expressions, templates, for-in/of, catch parameters, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and garbage collection remain open. See the roadmap for their order.
 
-Global lexical and simple value bindings work, but there is no observable global
-object or full property model yet. Built-in error categories are represented in
+Global lexical bindings and Script var declarations persist between evaluations.
+New global vars are non-deletable. A var declaration for an existing global value
+preserves its value and deletability. There is no observable global object or
+full property model yet. Built-in error categories are represented in
 Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. JavaScript Error objects and catch parameters are future work.
 

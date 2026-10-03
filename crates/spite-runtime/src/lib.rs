@@ -104,6 +104,12 @@ struct BindingState {
     mutable: bool,
 }
 
+#[derive(Debug)]
+struct GlobalBinding {
+    value: Value,
+    deletable: bool,
+}
+
 // Resolve references before evaluating assignment RHS expressions. GetValue and
 // PutValue are separate operations, including the unresolvable typeof case.
 enum Reference<'a> {
@@ -170,7 +176,7 @@ impl Completion {
 #[derive(Debug)]
 pub struct Realm {
     scopes: Vec<BTreeMap<String, BindingState>>,
-    globals: BTreeMap<String, Value>,
+    globals: BTreeMap<String, GlobalBinding>,
     limits: Limits,
     remaining_steps: usize,
     strict: bool,
@@ -187,11 +193,22 @@ impl Realm {
     pub fn new(limits: Limits) -> Self {
         Self {
             scopes: vec![BTreeMap::new()],
-            globals: BTreeMap::from([
-                ("undefined".into(), Value::Undefined),
-                ("NaN".into(), Value::Number(f64::NAN)),
-                ("Infinity".into(), Value::Number(f64::INFINITY)),
-            ]),
+            globals: [
+                ("undefined", Value::Undefined),
+                ("NaN", Value::Number(f64::NAN)),
+                ("Infinity", Value::Number(f64::INFINITY)),
+            ]
+            .into_iter()
+            .map(|(name, value)| {
+                (
+                    name.into(),
+                    GlobalBinding {
+                        value,
+                        deletable: false,
+                    },
+                )
+            })
+            .collect(),
             limits,
             remaining_steps: 0,
             strict: false,
@@ -209,15 +226,9 @@ impl Realm {
 
     /// Evaluates a Script already validated by the parser.
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
-        if let Some(binding) = script.var_declarations().first() {
-            return Err(Self::unsupported(
-                binding.span,
-                "var evaluation is not implemented",
-            ));
-        }
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
-        self.instantiate(script.statements().iter(), true)?;
+        self.instantiate_global(script)?;
         let completion = self.statements(script.statements())?;
         // Validated Scripts cannot leave an unhandled control transfer.
         debug_assert_eq!(completion.kind, CompletionKind::Normal);
@@ -273,7 +284,11 @@ impl Realm {
             if let StatementKind::Lexical { bindings, .. } = &statement.kind {
                 for binding in bindings {
                     if scope.contains_key(&binding.name)
-                        || (global && restricted_global(&binding.name))
+                        || (global
+                            && self
+                                .globals
+                                .get(&binding.name)
+                                .is_some_and(|b| !b.deletable))
                     {
                         return Err(Self::exception(
                             ExceptionKind::SyntaxError,
@@ -313,6 +328,54 @@ impl Realm {
                 .get_mut(&binding.name)
                 .expect("declaration was instantiated")
                 .value = Some(value);
+        }
+        Ok(())
+    }
+
+    fn instantiate_global(&mut self, script: &Script) -> Result<(), Error> {
+        // ECMA-262 16.1.7: check conflicts before creating any new bindings.
+        // All Script vars are instantiated, including vars in unreachable code.
+        let declarations = script.var_declarations();
+        for binding in &declarations {
+            self.tick(binding.span)?;
+            if self.scopes[0].contains_key(&binding.name) {
+                return Err(Self::exception(
+                    ExceptionKind::SyntaxError,
+                    binding.span,
+                    "var declaration conflicts with global lexical binding",
+                ));
+            }
+            if standard_global(&binding.name) && !self.globals.contains_key(&binding.name) {
+                return Err(Self::unsupported(
+                    binding.span,
+                    format!("{} is not implemented", binding.name),
+                ));
+            }
+        }
+        self.instantiate(script.statements().iter(), true)?;
+        for binding in declarations {
+            // CreateGlobalVarBinding preserves existing properties. Only new
+            // properties become non-deletable (ECMA-262 9.1.1.4.16).
+            self.globals
+                .entry(binding.name.clone())
+                .or_insert(GlobalBinding {
+                    value: Value::Undefined,
+                    deletable: false,
+                });
+        }
+        Ok(())
+    }
+
+    fn evaluate_var_bindings(&mut self, bindings: &[Binding]) -> Result<(), Error> {
+        for binding in bindings {
+            self.tick(binding.span)?;
+            // ECMA-262 14.3.2.1: a declaration without an initializer does not
+            // assign, and an initializer resolves its reference before the RHS.
+            if let Some(expr) = &binding.initializer {
+                let reference = self.resolve(&binding.name);
+                let value = self.expression(expr)?;
+                self.put(reference, value, binding.span)?;
+            }
         }
         Ok(())
     }
@@ -371,10 +434,10 @@ impl Realm {
                 self.initialize_bindings(bindings)?;
                 Ok(Completion::normal(None))
             }
-            StatementKind::Var(_) => Err(Self::unsupported(
-                statement.span,
-                "var evaluation is not implemented",
-            )),
+            StatementKind::Var(bindings) => {
+                self.evaluate_var_bindings(bindings)?;
+                Ok(Completion::normal(None))
+            }
             StatementKind::Block(body) => {
                 self.scopes.push(BTreeMap::new());
                 let result = self
@@ -463,10 +526,10 @@ impl Realm {
                 // ECMA-262 14.7.4.2: all header bindings exist before any
                 // initializer runs, and the outer scope is restored on every exit.
                 match initializer {
-                    Some(ForInitializer::Var(_)) => Err(Self::unsupported(
-                        statement.span,
-                        "var evaluation is not implemented",
-                    )),
+                    Some(ForInitializer::Var(bindings)) => {
+                        self.evaluate_var_bindings(bindings)?;
+                        self.for_body(test.as_ref(), update.as_ref(), body, &[], labels)
+                    }
                     Some(ForInitializer::Lexical { mutable, bindings }) => {
                         let scope = bindings
                             .iter()
@@ -639,7 +702,7 @@ impl Realm {
                     )
                 })
             }
-            Reference::Global(name) => Ok(self.globals[*name].clone()),
+            Reference::Global(name) => Ok(self.globals[*name].value.clone()),
             Reference::Unresolvable(name) => Err(Self::exception(
                 ExceptionKind::ReferenceError,
                 span,
@@ -690,7 +753,13 @@ impl Realm {
                 ));
             }
             Reference::Global(name) | Reference::Unresolvable(name) => {
-                self.globals.insert(name.to_owned(), value);
+                self.globals
+                    .entry(name.to_owned())
+                    .or_insert(GlobalBinding {
+                        value: Value::Undefined,
+                        deletable: true,
+                    })
+                    .value = value;
             }
             Reference::UnsupportedGlobal(name) => {
                 return Err(Self::unsupported(
@@ -767,7 +836,7 @@ impl Realm {
                         // does not GetValue, even for an uninitialized binding.
                         let deleted = match self.resolve(name) {
                             Reference::Lexical(..) => false,
-                            Reference::Global(name) if restricted_global(name) => false,
+                            Reference::Global(name) if !self.globals[name].deletable => false,
                             Reference::Global(name) => {
                                 self.globals.remove(name);
                                 true
