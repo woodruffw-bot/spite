@@ -270,6 +270,26 @@ impl Realm {
         Ok(())
     }
 
+    fn append_string(
+        &self,
+        units: &mut Vec<u16>,
+        part: &JsString,
+        span: Span,
+    ) -> Result<(), Error> {
+        if units
+            .len()
+            .checked_add(part.len())
+            .is_none_or(|len| len > self.limits.max_string_units)
+        {
+            return Err(Error::Limit {
+                span,
+                message: "string length limit exceeded".into(),
+            });
+        }
+        units.extend_from_slice(part.code_units());
+        Ok(())
+    }
+
     fn instantiate<'a>(
         &mut self,
         statements: impl Iterator<Item = &'a Statement> + Clone,
@@ -774,11 +794,29 @@ impl Realm {
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
-            ExprKind::Template { .. } => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "template evaluation is not implemented",
-                ));
+            ExprKind::Template {
+                elements,
+                substitutions,
+            } => {
+                // ECMA-262 13.2.8.6: each substitution is evaluated and converted
+                // with ToString before the next one. Raw text is not evaluated.
+                let mut units = Vec::new();
+                for (index, element) in elements.iter().enumerate() {
+                    self.tick(element.span)?;
+                    self.append_string(
+                        &mut units,
+                        element
+                            .cooked
+                            .as_ref()
+                            .expect("validated untagged template"),
+                        element.span,
+                    )?;
+                    if let Some(substitution) = substitutions.get(index) {
+                        let value = self.expression(substitution)?.to_js_string();
+                        self.append_string(&mut units, &value, substitution.span)?;
+                    }
+                }
+                Value::String(JsString::from_code_units(units))
             }
             ExprKind::Literal(literal) => match literal {
                 Literal::Null => Value::Null,

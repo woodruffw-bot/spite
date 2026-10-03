@@ -28,7 +28,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 - [ ] Complete lexical goals, templates, RegExp literals, and numeric literals.
 - [x] Parse untagged template literals with cooked/raw text and nested substitutions.
-- [ ] Evaluate untagged template substitutions and string conversion.
+- [x] Evaluate untagged template substitutions and string conversion.
 - [x] Add while and do-while loops, including completion values and ASI.
 - [x] Add unlabelled break and continue with completion propagation and early errors.
 - [x] Add labelled statements, labelled control transfers, and label early errors.
