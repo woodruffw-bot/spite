@@ -15,4 +15,7 @@
 
 pub use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 pub use spite_parser::{ast, parse_script};
-pub use spite_runtime::{ConversionError, Error, ExceptionKind, Limits, Realm, Value};
+pub use spite_runtime::{
+    Collection, ConversionError, Error, ExceptionKind, Limits, ObjectHandle, Realm, RootedValue,
+    Value,
+};

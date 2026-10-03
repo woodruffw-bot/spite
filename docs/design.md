@@ -120,7 +120,7 @@ on every exit, including a host abort.
 
 A catch parameter creates a mutable declarative binding in an environment outside
 the catch block's lexical environment. Restore both before a finalizer or outer
-handler runs. Primitive thrown values are bound without coercion. Until the object
+handler runs. Thrown values, including object identities, are bound without coercion. Until the object
 model supplies Error instances, binding a built-in exception reports Unsupported;
 catch clauses without a parameter can still handle those exceptions. The optional
 Annex B rule permitting var to redeclare a catch parameter is not enabled.
@@ -190,6 +190,20 @@ return a distinct `ConversionError::ObjectNeedsContext`, rather than inventing
 a primitive or JavaScript exception. Realm-level ToPrimitive must eventually
 perform the specified property lookups and calls; unsupported hooks remain an
 explicit implementation gap until that machinery is present.
+
+Realm allocation is bounded by object slots and per-object property counts. Object
+literals create data properties in source order, convert computed keys before
+evaluating values, and implement the required non-computed `__proto__` initializer.
+The intrinsic Object prototype has a stable, retained identity; its callable
+properties remain incomplete. Object coercion and property syntax do not yet
+expose those missing methods with substitute behavior.
+
+`Realm::collect` runs only between evaluations and scans persistent lexical/global
+bindings, intrinsic handles, and host roots. Environment scans are budgeted even
+for primitive bindings. Returned and thrown values are unrooted until the embedder
+retains a `RootedValue`; cloning the underlying Value alone does not keep it alive.
+No language operation or allocation calls the collector. Before enabling collection
+inside evaluation, temporary and pending-completion lifetimes still need roots.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later

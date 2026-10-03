@@ -42,7 +42,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement debugger statements with no active debugging facility.
 - [x] Handle optional-binding catch clauses and catch-finally completions.
 - [x] Parse catch binding identifiers and validate catch scope conflicts.
-- [x] Execute catch binding identifiers for primitive throws.
+- [x] Execute catch binding identifiers for implemented thrown values, including objects.
 - [ ] Bind built-in exceptions as JavaScript Error objects in catch clauses.
 - [ ] Add remaining statements, for-in/of loops, catch parameters, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
@@ -78,7 +78,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement prototype traversal and mutation with bounded cycle checks.
 - [x] Implement inherited data reads, presence checks, and receiver-sensitive writes.
 - [x] Parse object literals, computed keys, shorthand, and duplicate prototype-setter early errors.
-- [ ] Evaluate object literals and integrate the object heap with realms.
+- [x] Evaluate object literals and integrate the object heap with realms.
+- [x] Collect between evaluations with persistent bindings, intrinsic handles, and host roots.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.

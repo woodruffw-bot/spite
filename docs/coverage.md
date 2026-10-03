@@ -15,14 +15,15 @@ not an alternative language specification.
 | Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
-| Expressions | Primitive literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
+| Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
+| Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof, void, and delete |
-| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch and/or finally; catch identifiers bind primitive throws |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
-| Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive throws, finalizer preservation and overrides of language completions |
+| Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
-| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, and BigInt magnitude bits |
+| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, object slots, and properties per object |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31 reviewed Test262 variants from 11 hashbang and 10 BigInt files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
@@ -50,16 +51,19 @@ prototype traversal, cycle-checked mutation, inherited data reads and presence
 checks, and receiver-sensitive writes. Rust values carry object identity and
 trace object-valued property edges, including cycles. Object literals parse with
 literal/computed keys, shorthand, trailing commas, and duplicate prototype-setter
-early errors. Their evaluation and realm integration remain open. Methods,
-accessors, and spread remain unsupported. Checked host-root tokens retain objects across collection
-until their last clone is dropped, with bounded registry reuse. Accessors, Symbol
-keys, and interpreter environment/temporary root lifetimes remain open.
+early errors. Evaluation preserves key/value order and implements ordinary data
+properties and prototype initializers. Methods, accessors, and spread remain
+unsupported. Explicit collection between evaluations retains persistent bindings,
+intrinsics, and host roots. Returned/thrown object values need a host root to
+survive collection; tokens release roots when their last clone is dropped. Root
+registry storage is reused. Collection during evaluation remains disabled until
+temporary and pending-completion root lifetimes are implemented.
 
-Symbols, objects, properties,
+Symbols, property access,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
-memory, and garbage collection remain open. See the roadmap for their order.
+memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor and its prototype/static methods remain part of standard
 library work. The command-line host displays BigInt completion values in exact
 hexadecimal notation with an `n` suffix; JavaScript string conversion is decimal.
@@ -71,7 +75,7 @@ full property model yet. Built-in error categories are represented in
 Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
-Primitive throws initialize a mutable catch binding with no coercion. The catch
+Supported throws initialize a mutable catch binding without coercion, preserving object identity. The catch
 binding and block scopes are restored across every completion and host failure.
 Binding a built-in exception currently reports Unsupported because JavaScript
 Error objects are not yet implemented. Catch binding patterns remain unsupported.

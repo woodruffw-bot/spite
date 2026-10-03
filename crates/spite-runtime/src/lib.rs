@@ -1,7 +1,10 @@
 //! A tree-walking interpreter for the implemented ECMAScript subset.
 
 pub mod object;
+mod realm_object;
 mod value;
+pub use realm_object::RootedValue;
+pub use spite_heap::{Collection, Handle as ObjectHandle};
 pub use value::{ConversionError, Value};
 
 use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
@@ -97,6 +100,10 @@ pub struct Limits {
     pub max_string_units: usize,
     /// Maximum magnitude bits in a produced BigInt.
     pub max_bigint_bits: usize,
+    /// Maximum object heap slots, including lazily allocated intrinsics.
+    pub max_objects: usize,
+    /// Maximum own properties in each ordinary object.
+    pub max_properties: usize,
 }
 impl Default for Limits {
     fn default() -> Self {
@@ -104,6 +111,8 @@ impl Default for Limits {
             max_steps: 100_000,
             max_string_units: 1024 * 1024,
             max_bigint_bits: 65_536,
+            max_objects: 10_000,
+            max_properties: 1024,
         }
     }
 }
@@ -191,6 +200,8 @@ pub struct Realm {
     limits: Limits,
     remaining_steps: usize,
     strict: bool,
+    objects: object::Objects,
+    object_prototype: Option<ObjectHandle>,
 }
 
 impl Default for Realm {
@@ -224,6 +235,8 @@ impl Realm {
             limits,
             remaining_steps: 0,
             strict: false,
+            objects: object::Objects::new(limits.max_objects, limits.max_properties),
+            object_prototype: None,
         }
     }
 
@@ -241,6 +254,8 @@ impl Realm {
     ///
     /// Parsing and early errors occur before any execution. Runtime failures
     /// preserve effects that have already happened, as required by ECMAScript.
+    /// Returned and thrown object values are unrooted. Use [`Self::root_value`]
+    /// to retain them across explicit collection. Evaluation never collects.
     pub fn eval(&mut self, source: &str) -> Result<Value, Error> {
         let script = parse_script(source).map_err(Error::Parse)?;
         self.evaluate(&script)
@@ -930,12 +945,7 @@ impl Realm {
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
-            ExprKind::Object(_) => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "object literal evaluation is not implemented",
-                ));
-            }
+            ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
             ExprKind::Template {
                 elements,
                 substitutions,
@@ -963,17 +973,7 @@ impl Realm {
                 }
                 Value::String(JsString::from_code_units(units))
             }
-            ExprKind::Literal(literal) => match literal {
-                Literal::Null => Value::Null,
-                Literal::Boolean(v) => Value::Boolean(*v),
-                Literal::Number(v) => Value::Number(*v),
-                Literal::BigInt { digits, radix } => {
-                    Value::BigInt(self.integer_work(expr.span, |budget| {
-                        BigInt::parse_digits(digits, *radix, budget)
-                    })?)
-                }
-                Literal::String(v) => Value::String(v.clone()),
-            },
+            ExprKind::Literal(literal) => self.literal_value(literal, expr.span)?,
             ExprKind::Identifier(name) => self.get(&self.resolve(name), expr.span)?,
             ExprKind::Parenthesized(inner) => self.expression(inner)?,
             ExprKind::Assign(name, right) => {
