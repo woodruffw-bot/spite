@@ -167,7 +167,7 @@ fn function_metadata_is_readonly_but_configurable() {
 
 #[test]
 fn incomplete_function_intrinsics_are_guarded() {
-    for key in ["constructor", "apply", "bind"] {
+    for key in ["constructor", "bind"] {
         assert_eq!(
             Realm::default().eval(&format!("'{key}' in ({{}}).toString")),
             Ok(Value::Boolean(true))
@@ -231,11 +231,11 @@ fn builtin_graphs_and_host_roots_survive_collection() {
     let value = realm.eval("({}).toString").unwrap();
     let root = realm.root_value(value.clone(), 100).unwrap();
     let result = realm.collect(1000).unwrap();
-    assert_eq!(result.live, 7);
+    assert_eq!(result.live, 8);
     assert_eq!(result.reclaimed, 1);
     assert_eq!(realm.eval("({}).toString"), Ok(value));
     drop(root);
-    assert_eq!(realm.collect(1000).unwrap().live, 7);
+    assert_eq!(realm.collect(1000).unwrap().live, 8);
     string("({}).toString()", "[object Object]");
 }
 
@@ -251,9 +251,9 @@ fn partial_intrinsic_initialization_is_never_published() {
             Ok(Value::Object(_)) | Err(Error::Limit { .. })
         ));
         let live = realm.collect(1000).unwrap().live;
-        assert!(live == 0 || live == 7, "work={work}, live={live}");
+        assert!(live == 0 || live == 8, "work={work}, live={live}");
     }
-    for slots in 0..7 {
+    for slots in 0..8 {
         let mut realm = Realm::new(Limits {
             max_objects: slots,
             ..Limits::default()

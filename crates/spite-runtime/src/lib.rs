@@ -102,6 +102,8 @@ pub struct Limits {
     pub max_string_units: usize,
     /// Maximum magnitude bits in a produced BigInt.
     pub max_bigint_bits: usize,
+    /// Maximum values in a call argument list, including apply and bound arguments.
+    pub max_arguments: usize,
     /// Maximum object heap slots, including lazily allocated intrinsics.
     pub max_objects: usize,
     /// Maximum own properties in each ordinary object.
@@ -113,6 +115,7 @@ impl Default for Limits {
             max_steps: 100_000,
             max_string_units: 1024 * 1024,
             max_bigint_bits: 65_536,
+            max_arguments: 16_384,
             max_objects: 10_000,
             max_properties: 1024,
         }
@@ -1000,7 +1003,9 @@ impl Realm {
                 };
                 let mut values = Vec::new();
                 for argument in arguments {
-                    values.push(self.expression(argument)?);
+                    let value = self.expression(argument)?;
+                    self.check_argument_count(values.len() + 1, argument.span)?;
+                    values.push(value);
                 }
                 self.call(function, this, values, expr.span)?
             }

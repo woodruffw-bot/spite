@@ -400,9 +400,7 @@ impl Realm {
         };
         (object == &intrinsics.object_prototype && missing_object_method(key))
             || (object == &intrinsics.function_prototype
-                && ["constructor", "apply", "bind"]
-                    .iter()
-                    .any(|name| key_is(key, name)))
+                && ["constructor", "bind"].iter().any(|name| key_is(key, name)))
     }
 }
 

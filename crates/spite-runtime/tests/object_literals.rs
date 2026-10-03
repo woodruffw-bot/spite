@@ -209,13 +209,13 @@ fn allocation_property_and_key_limits_are_host_failures() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_properties: 6,
+        max_properties: 7,
         ..Limits::default()
     });
     let handle = object(&mut realm, "({a: 1, a: 2})");
     assert_eq!(own(&realm, &handle, "a"), Value::Number(2.0));
     assert!(matches!(
-        realm.eval("({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7})"),
+        realm.eval("({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8})"),
         Err(Error::Limit { .. })
     ));
 }

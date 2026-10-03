@@ -26,7 +26,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
-| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, object slots, and properties per object |
+| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, object slots, properties per object, and call argument count |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31 reviewed Test262 variants from 11 hashbang and 10 BigInt files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
@@ -86,14 +86,16 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the seven objects remain rooted. Function.prototype caller/arguments
+is atomic and the eight objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
-wrappers returned by valueOf, apply/bind, spread arguments, optional calls, and
+wrappers returned by valueOf, bind, spread arguments, optional calls, and
 user functions remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
-strings obey host limits.
+strings obey host limits. Apply accepts ordinary array-like objects, converts
+length with ToLength, and reads inherited/indexed getters before the target call.
+Argument lists have a configurable host limit shared with direct calls.
 
 Symbols, primitive wrapper constructors,
 arrays, user functions, closures, constructors, classes, destructuring, regular

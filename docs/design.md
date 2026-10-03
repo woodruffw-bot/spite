@@ -254,7 +254,7 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The seven intrinsic objects are published atomically after lazy
+(20.1.3, 10.4.7.1). The eight intrinsic objects are published atomically after lazy
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
@@ -271,7 +271,14 @@ Function.prototype.toString emits `function NAME() { [native code] }` for builti
 functions, using immutable builtin identity for [[InitialName]] (20.2.3.5). It
 never reads the public name property. Generated builtin strings respect the realm
 length limit, including during implicit coercion. User function source retention,
-apply, and bind remain subsequent increments.
+and bound functions remain subsequent increments.
+
+Function.prototype.apply checks callability before inspecting argArray, treats
+nullish lists as empty, and otherwise performs object-only CreateListFromArrayLike
+(20.2.3.1, 7.3.19). Length conversion uses ToLength; indexed reads include inherited
+properties and getters, preserve the list receiver, and finish before the target
+call. Direct calls and apply share a configurable argument-list limit (16,384 by
+default). Work and argument limits are checked before allocating a large list.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later

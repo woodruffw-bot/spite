@@ -10,7 +10,7 @@ fn persistent_lexical_var_and_sloppy_global_bindings_are_roots() {
         .eval("let lexical = {}; var variable = {}; sloppy = {}; { let local = {}; } ({})")
         .unwrap();
     let result = realm.collect(1000).unwrap();
-    assert_eq!(result.live, 10); // four intrinsic objects plus the three persistent values
+    assert_eq!(result.live, 11); // eight intrinsic objects plus the three persistent values
     assert_eq!(result.reclaimed, 2);
     for name in ["lexical", "variable", "sloppy"] {
         let Value::Object(handle) = realm.eval(name).unwrap() else {
@@ -22,7 +22,7 @@ fn persistent_lexical_var_and_sloppy_global_bindings_are_roots() {
         .eval("lexical = null; variable = null; delete sloppy;")
         .unwrap();
     assert_eq!(realm.collect(1000).unwrap().reclaimed, 3);
-    assert_eq!(realm.collect(1000).unwrap().live, 7);
+    assert_eq!(realm.collect(1000).unwrap().live, 8);
 }
 
 #[test]
@@ -35,10 +35,10 @@ fn rooted_returned_and_thrown_values_survive_until_their_last_clone_drops() {
         panic!("throw")
     };
     let thrown = realm.root_value(thrown, 100).unwrap();
-    assert_eq!(realm.collect(1000).unwrap().live, 10);
+    assert_eq!(realm.collect(1000).unwrap().live, 11);
     drop(root);
     assert_eq!(clone.value(), &value);
-    assert_eq!(realm.collect(1000).unwrap().live, 10);
+    assert_eq!(realm.collect(1000).unwrap().live, 11);
     drop(clone);
     assert_eq!(realm.collect(1000).unwrap().reclaimed, 2);
     drop(thrown);
@@ -68,7 +68,7 @@ fn foreign_values_are_rejected_and_failed_collection_preserves_state() {
         assert_eq!(realm.collect(work), Err(HeapError::Limit));
         assert!(realm.inspect_object(&handle).is_ok());
     }
-    assert_eq!(realm.collect(1000).unwrap().live, 9);
+    assert_eq!(realm.collect(1000).unwrap().live, 10);
     let primitive = realm.root_value(Value::Number(7.0), 0).unwrap();
     assert_eq!(primitive.value(), &Value::Number(7.0));
 }
@@ -76,7 +76,7 @@ fn foreign_values_are_rejected_and_failed_collection_preserves_state() {
 #[test]
 fn explicit_collection_reuses_slots_and_allocation_never_collects_implicitly() {
     let mut realm = Realm::new(Limits {
-        max_objects: 8,
+        max_objects: 9,
         ..Limits::default()
     });
     for _ in 0..100 {
@@ -102,6 +102,6 @@ fn abrupt_evaluation_restores_scopes_and_pending_completions_preserve_identity()
         realm.eval("{ let temporary = {}; throw {thrown: temporary}; }"),
         Err(Error::Thrown(_))
     ));
-    assert_eq!(realm.collect(1000).unwrap().live, 8);
+    assert_eq!(realm.collect(1000).unwrap().live, 9);
     assert_eq!(realm.eval("saved === same"), Ok(Value::Boolean(true)));
 }
