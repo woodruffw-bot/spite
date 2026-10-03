@@ -235,6 +235,15 @@ impl Parser {
             let (mutable, bindings) = self.lexical_bindings(false)?;
             self.semicolon()?;
             StatementKind::Lexical { mutable, bindings }
+        } else if self.eat("try") {
+            // ECMA-262 14.15 requires blocks, not arbitrary statements.
+            let body = self.required_block()?;
+            if self.at("catch") {
+                return Err(self.unsupported("catch clauses are not implemented"));
+            }
+            self.expect("finally")?;
+            let finalizer = self.required_block()?;
+            StatementKind::TryFinally { body, finalizer }
         } else if self.eat("switch") {
             self.expect("(")?;
             let discriminant = self.expression(1)?;
@@ -387,7 +396,6 @@ impl Parser {
                             | "function"
                             | "class"
                             | "return"
-                            | "try"
                             | "with"
                             | "debugger"
                             | "import"
@@ -406,6 +414,13 @@ impl Parser {
             kind,
             span: Span::new(start, end),
         })
+    }
+
+    fn required_block(&mut self) -> Result<Box<Statement>, Diagnostic> {
+        if !self.at("{") {
+            return Err(self.error("expected {"));
+        }
+        Ok(Box::new(self.statement(false)?))
     }
 
     fn lexical_bindings(&mut self, for_header: bool) -> Result<(bool, Vec<Binding>), Diagnostic> {
@@ -598,6 +613,9 @@ impl Parser {
                 span,
                 "reserved word cannot be an identifier",
             )),
+            Kind::Word(name) if matches!(name.as_str(), "catch" | "finally") => Err(
+                Diagnostic::new(DiagnosticKind::Syntax, span, "unexpected catch or finally"),
+            ),
             Kind::Word(_) | Kind::Punct("[" | "{" | "/" | "++" | "--") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
@@ -782,6 +800,10 @@ fn validate_statement<'a>(
             }
         }
         StatementKind::Block(body) => validate_scope(body, strict, control, labels)?,
+        StatementKind::TryFinally { body, finalizer } => {
+            validate_statement(body, strict, control, labels)?;
+            validate_statement(finalizer, strict, control, labels)?;
+        }
         StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {
             validate_expr(test, strict)?;
             validate_statement(

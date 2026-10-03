@@ -363,6 +363,10 @@ impl Realm {
                 self.scopes.pop();
                 result
             }
+            StatementKind::TryFinally { .. } => Err(Self::unsupported(
+                statement.span,
+                "try-finally evaluation is not implemented",
+            )),
             StatementKind::Switch {
                 discriminant,
                 clauses,

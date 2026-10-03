@@ -1,0 +1,54 @@
+---
+source: crates/spite-parser/tests/try_finally.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 4,
+            end: 5,
+        },
+        message: "expected {",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 6,
+            end: 6,
+        },
+        message: "expected finally",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 15,
+            end: 16,
+        },
+        message: "expected {",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 17,
+            end: 23,
+        },
+        message: "break requires an enclosing loop or switch",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 28,
+            end: 29,
+        },
+        message: "duplicate lexical binding",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 7,
+            end: 12,
+        },
+        message: "catch clauses are not implemented",
+    },
+]

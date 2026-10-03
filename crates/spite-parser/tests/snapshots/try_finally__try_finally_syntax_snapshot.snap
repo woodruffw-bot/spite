@@ -1,0 +1,137 @@
+---
+source: crates/spite-parser/tests/try_finally.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: TryFinally {
+                body: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Lexical {
+                                    mutable: true,
+                                    bindings: [
+                                        Binding {
+                                            name: "x",
+                                            span: Span {
+                                                start: 10,
+                                                end: 11,
+                                            },
+                                            initializer: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Literal(
+                                                        Number(
+                                                            1.0,
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 14,
+                                                        end: 15,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ],
+                                },
+                                span: Span {
+                                    start: 6,
+                                    end: 16,
+                                },
+                            },
+                            Statement {
+                                kind: Throw(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 23,
+                                            end: 24,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 17,
+                                    end: 25,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 4,
+                        end: 27,
+                    },
+                },
+                finalizer: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Lexical {
+                                    mutable: true,
+                                    bindings: [
+                                        Binding {
+                                            name: "x",
+                                            span: Span {
+                                                start: 42,
+                                                end: 43,
+                                            },
+                                            initializer: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Literal(
+                                                        Number(
+                                                            2.0,
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 46,
+                                                        end: 47,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ],
+                                },
+                                span: Span {
+                                    start: 38,
+                                    end: 48,
+                                },
+                            },
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 49,
+                                            end: 50,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 49,
+                                    end: 51,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 36,
+                        end: 53,
+                    },
+                },
+            },
+            span: Span {
+                start: 0,
+                end: 53,
+            },
+        },
+    ],
+    strict: false,
+}

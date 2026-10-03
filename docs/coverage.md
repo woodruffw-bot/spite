@@ -33,6 +33,9 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
+Try-finally blocks are parsed and validated, but evaluation returns Unsupported.
+Catch clauses remain unsupported syntax.
+
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, templates, var, for-in/of, try/catch/finally, generators,
