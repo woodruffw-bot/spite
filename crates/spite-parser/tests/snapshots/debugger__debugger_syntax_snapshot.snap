@@ -1,0 +1,33 @@
+---
+source: crates/spite-parser/tests/debugger.rs
+expression: "parse_script(\"debugger; { debugger }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Debugger,
+            span: Span {
+                start: 0,
+                end: 9,
+            },
+        },
+        Statement {
+            kind: Block(
+                [
+                    Statement {
+                        kind: Debugger,
+                        span: Span {
+                            start: 12,
+                            end: 20,
+                        },
+                    },
+                ],
+            ),
+            span: Span {
+                start: 10,
+                end: 22,
+            },
+        },
+    ],
+    strict: false,
+}

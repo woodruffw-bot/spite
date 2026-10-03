@@ -36,6 +36,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Evaluate switch selection, fall-through, and completion values.
 - [x] Parse try-finally blocks and validate their scopes and control targets.
 - [x] Evaluate finalizers and their normal and abrupt completion overrides.
+- [x] Implement debugger statements with no active debugging facility.
 - [ ] Add remaining statements, for-in/of loops, catch, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.

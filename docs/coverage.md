@@ -22,6 +22,9 @@ not an alternative language specification.
 | Limits | 1 MiB source, depth 64, configurable evaluation steps and string code-unit limits |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures, 13 identifier lexer fixtures, and 6 statement parser fixtures |
 
+Debugger statements parse with ordinary ASI and produce an empty completion.
+This host has no active debugging facility (ECMA-262 14.16.1).
+
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
 into identifiers or stand in for grammar keywords. Unicode property tables are

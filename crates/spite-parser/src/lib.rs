@@ -380,6 +380,9 @@ impl Parser {
             } else {
                 StatementKind::Continue(target)
             }
+        } else if self.eat("debugger") {
+            self.semicolon()?;
+            StatementKind::Debugger
         } else if self.eat("throw") {
             if self.current().newline {
                 return Err(self.error("line terminator after throw"));
@@ -392,14 +395,7 @@ impl Parser {
                 if !self.current().escaped
                     && matches!(
                         word.as_str(),
-                        "var"
-                            | "function"
-                            | "class"
-                            | "return"
-                            | "with"
-                            | "debugger"
-                            | "import"
-                            | "export"
+                        "var" | "function" | "class" | "return" | "with" | "import" | "export"
                     )
                 {
                     return Err(self.unsupported("statement is not implemented"));
@@ -917,7 +913,10 @@ fn validate_statement<'a>(
                 ));
             }
         }
-        StatementKind::Empty | StatementKind::Break(None) | StatementKind::Continue(None) => {}
+        StatementKind::Empty
+        | StatementKind::Debugger
+        | StatementKind::Break(None)
+        | StatementKind::Continue(None) => {}
     }
     Ok(())
 }

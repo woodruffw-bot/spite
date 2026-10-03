@@ -34,6 +34,8 @@ pub struct Statement {
 pub enum StatementKind {
     /// An empty statement.
     Empty,
+    /// A debugger statement.
+    Debugger,
     /// An expression statement.
     Expression(Expr),
     /// A lexical declaration.
