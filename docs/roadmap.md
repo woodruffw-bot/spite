@@ -30,7 +30,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add while and do-while loops, including completion values and ASI.
 - [x] Add unlabelled break and continue with completion propagation and early errors.
 - [x] Add labelled statements, labelled control transfers, and label early errors.
-- [ ] Add remaining statements, for loops, switch, try, and completions.
+- [x] Add expression-header for loops and their completion semantics.
+- [ ] Add lexical for-loop declarations and per-iteration environments.
+- [ ] Add remaining statements, for-in/of loops, switch, try, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
 - [x] Implement Unicode identifier properties and literal identifier names.

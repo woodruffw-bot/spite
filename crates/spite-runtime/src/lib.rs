@@ -381,6 +381,18 @@ impl Realm {
                     }
                 }
             }
+            StatementKind::For {
+                initializer,
+                test,
+                update,
+                body,
+            } => {
+                // ECMA-262 14.7.4.2: the initializer's value is discarded.
+                if let Some(initializer) = initializer {
+                    self.expression(initializer)?;
+                }
+                self.for_body(test.as_ref(), update.as_ref(), body, labels)
+            }
             StatementKind::If {
                 test,
                 consequent,
@@ -395,6 +407,34 @@ impl Realm {
                 };
                 // ECMA-262 14.6.2 applies UpdateEmpty even to break/continue.
                 Ok(result.update_empty(Some(Value::Undefined)))
+            }
+        }
+    }
+
+    // ECMA-262 14.7.4.3 ForBodyEvaluation. The body's completion determines
+    // whether the update runs, and only body values contribute to the result.
+    fn for_body(
+        &mut self,
+        test: Option<&Expr>,
+        update: Option<&Expr>,
+        body: &Statement,
+        labels: &[&str],
+    ) -> Result<Completion, Error> {
+        let mut value = Value::Undefined;
+        loop {
+            if let Some(test) = test {
+                if !self.expression(test)?.to_boolean() {
+                    return Ok(Completion::normal(Some(value)));
+                }
+            }
+            // Statement evaluation consumes host budget even for `for (;;) ;`.
+            let result = self.statement(body)?.update_empty(Some(value));
+            if !result.loop_continues(labels) {
+                return Ok(result.consume_unlabelled_break());
+            }
+            value = result.value.expect("loop UpdateEmpty supplies a value");
+            if let Some(update) = update {
+                self.expression(update)?;
             }
         }
     }

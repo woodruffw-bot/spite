@@ -285,6 +285,50 @@ impl Parser {
                 consequent,
                 alternate,
             }
+        } else if self.eat("for") {
+            if self.at("await") {
+                return Err(self.unsupported("for-await-of is not implemented"));
+            }
+            self.expect("(")?;
+            if self.at("var")
+                || self.at("const")
+                || (self.at("let")
+                    && self
+                        .tokens
+                        .get(self.index + 1)
+                        .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))))
+            {
+                return Err(self.unsupported("for declarations are not implemented"));
+            }
+            let initializer = if self.at(";") {
+                None
+            } else {
+                Some(self.expression(1)?)
+            };
+            if self.at("in") || self.at("of") {
+                return Err(self.unsupported("for-in and for-of are not implemented"));
+            }
+            // ECMA-262 12.10.1: ASI never supplies either header semicolon.
+            self.expect(";")?;
+            let test = if self.at(";") {
+                None
+            } else {
+                Some(self.expression(1)?)
+            };
+            self.expect(";")?;
+            let update = if self.at(")") {
+                None
+            } else {
+                Some(self.expression(1)?)
+            };
+            self.expect(")")?;
+            let body = Box::new(self.statement(false)?);
+            StatementKind::For {
+                initializer,
+                test,
+                update,
+                body,
+            }
         } else if self.eat("while") {
             self.expect("(")?;
             let test = self.expression(1)?;
@@ -335,7 +379,6 @@ impl Parser {
                             | "function"
                             | "class"
                             | "return"
-                            | "for"
                             | "switch"
                             | "try"
                             | "with"
@@ -441,6 +484,29 @@ impl Parser {
         // make a call or property access into a separate expression statement.
         if matches!(self.current().kind, Kind::Punct("(" | "[" | "." | "?.")) {
             return Err(self.unsupported("calls and property access are not implemented"));
+        }
+        if matches!(
+            self.current().kind,
+            Kind::Punct(
+                "++" | "--"
+                    | "+="
+                    | "-="
+                    | "*="
+                    | "/="
+                    | "%="
+                    | "**="
+                    | "&&="
+                    | "||="
+                    | "??="
+                    | "&="
+                    | "|="
+                    | "^="
+                    | "<<="
+                    | ">>="
+                    | ">>>="
+            )
+        ) {
+            return Err(self.unsupported("updates and compound assignment are not implemented"));
         }
         Ok(left)
     }
@@ -649,6 +715,17 @@ fn validate_statement<'a>(
             validate_expr(test, strict)?;
             validate_statement(body, strict, true, labels)?;
         }
+        StatementKind::For {
+            initializer,
+            test,
+            update,
+            body,
+        } => {
+            for expression in [initializer, test, update].into_iter().flatten() {
+                validate_expr(expression, strict)?;
+            }
+            validate_statement(body, strict, true, labels)?;
+        }
         // ECMA-262 14.8.1/14.9.1. Switch and function bodies will need their
         // own validation contexts when those forms are implemented.
         StatementKind::Break(None) if !in_iteration => {
@@ -711,7 +788,7 @@ fn labels_iteration(mut statement: &Statement) -> bool {
     }
     matches!(
         statement.kind,
-        StatementKind::While { .. } | StatementKind::DoWhile { .. }
+        StatementKind::While { .. } | StatementKind::DoWhile { .. } | StatementKind::For { .. }
     )
 }
 

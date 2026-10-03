@@ -68,6 +68,17 @@ pub enum StatementKind {
         /// Condition.
         test: Expr,
     },
+    /// A three-clause for loop with an expression initializer.
+    For {
+        /// Evaluated once before the first condition.
+        initializer: Option<Expr>,
+        /// Condition, or an unconditional loop when absent.
+        test: Option<Expr>,
+        /// Evaluated after each completed or continued iteration.
+        update: Option<Expr>,
+        /// Repeated statement.
+        body: Box<Statement>,
+    },
     /// A statement with a control-flow label.
     Labelled {
         /// Declared label.
