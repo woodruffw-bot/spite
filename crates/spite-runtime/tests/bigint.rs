@@ -54,7 +54,10 @@ fn literal_radices_and_primitive_identity() {
     bigint("0n ? 1n : 2n", "2");
     assert!(integer("0").same_value(&integer("-0")));
     assert!(!integer("1").same_value(&Value::Number(1.0)));
-    assert_eq!(integer("1").to_number(), Err(ExceptionKind::TypeError));
+    assert_eq!(
+        integer("1").to_number(),
+        Err(spite_runtime::ConversionError::BigIntToNumber)
+    );
 }
 
 #[test]

@@ -183,6 +183,14 @@ a token; dropping its last clone releases that root. Expired entries are reused,
 bounding the registry by heap slot capacity. Root registration and registry scans
 consume explicit work budgets. Object fields must hold handles, never root tokens.
 
+`Value::Object` carries an unrooted handle. Equality uses identity, every ordinary
+object is truthy, and property tracing visits object-valued edges. Heap-context
+definitions validate these edges before mutation. Context-free conversion APIs
+return a distinct `ConversionError::ObjectNeedsContext`, rather than inventing
+a primitive or JavaScript exception. Realm-level ToPrimitive must eventually
+perform the specified property lookups and calls; unsupported hooks remain an
+explicit implementation gap until that machinery is present.
+
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later
 use explicit interpreter frames. Module loading, clocks, entropy, and agent creation

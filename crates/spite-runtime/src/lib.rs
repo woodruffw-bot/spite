@@ -2,7 +2,7 @@
 
 pub mod object;
 mod value;
-pub use value::Value;
+pub use value::{ConversionError, Value};
 
 use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
@@ -289,7 +289,11 @@ impl Realm {
         let mut budget = Budget::new(self.limits.max_bigint_bits, self.remaining_steps);
         let result = work(&mut budget);
         self.remaining_steps = budget.remaining_work();
-        result.map_err(|error| match error {
+        result.map_err(|error| Self::integer_error(error, span))
+    }
+
+    fn integer_error(error: IntegerError, span: Span) -> Error {
+        match error {
             IntegerError::Limit => Error::Limit {
                 span,
                 message: "integer resource limit exceeded".into(),
@@ -300,13 +304,39 @@ impl Realm {
             IntegerError::InvalidDigit | IntegerError::InvalidRadix => {
                 unreachable!("integer input was validated before conversion")
             }
-        })
+        }
+    }
+
+    fn conversion_work<T>(
+        &mut self,
+        span: Span,
+        work: impl FnOnce(&mut Budget) -> Result<T, ConversionError>,
+    ) -> Result<T, Error> {
+        let mut budget = Budget::new(self.limits.max_bigint_bits, self.remaining_steps);
+        let result = work(&mut budget);
+        self.remaining_steps = budget.remaining_work();
+        result.map_err(|error| Self::conversion_error(error, span))
+    }
+
+    fn conversion_error(error: ConversionError, span: Span) -> Error {
+        match error {
+            ConversionError::BigIntToNumber => Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "cannot convert BigInt to Number",
+            ),
+            ConversionError::ObjectNeedsContext => Self::unsupported(
+                span,
+                "object conversion requires ToPrimitive and callable hooks",
+            ),
+            ConversionError::Integer(error) => Self::integer_error(error, span),
+        }
     }
 
     fn number(value: &Value, span: Span) -> Result<f64, Error> {
         value
             .to_number()
-            .map_err(|kind| Self::exception(kind, span, "cannot convert BigInt to Number"))
+            .map_err(|error| Self::conversion_error(error, span))
     }
 
     fn numeric(value: Value, span: Span) -> Result<Value, Error> {
@@ -919,8 +949,9 @@ impl Realm {
                     )?;
                     if let Some(substitution) = substitutions.get(index) {
                         let value = self.expression(substitution)?;
-                        let value = self
-                            .integer_work(substitution.span, |budget| value.to_js_string(budget))?;
+                        let value = self.conversion_work(substitution.span, |budget| {
+                            value.to_js_string(budget)
+                        })?;
                         self.append_string(&mut units, &value, substitution.span)?;
                     }
                 }
@@ -1084,12 +1115,13 @@ impl Realm {
             }
             Equal | NotEqual => {
                 self.comparison_work(&left, &right, span)?;
-                let equal = self.integer_work(span, |budget| left.loosely_equal(&right, budget))?;
+                let equal =
+                    self.conversion_work(span, |budget| left.loosely_equal(&right, budget))?;
                 return Ok(Value::Boolean(if op == Equal { equal } else { !equal }));
             }
             Add if matches!(left, Value::String(_)) || matches!(right, Value::String(_)) => {
-                let a = self.integer_work(span, |budget| left.to_js_string(budget))?;
-                let b = self.integer_work(span, |budget| right.to_js_string(budget))?;
+                let a = self.conversion_work(span, |budget| left.to_js_string(budget))?;
+                let b = self.conversion_work(span, |budget| right.to_js_string(budget))?;
                 if a.len()
                     .checked_add(b.len())
                     .is_none_or(|length| length > self.limits.max_string_units)
@@ -1103,7 +1135,7 @@ impl Realm {
             }
             Less | LessEqual | Greater | GreaterEqual => {
                 self.comparison_work(&left, &right, span)?;
-                let order = self.integer_work(span, |budget| left.compare(&right, budget))?;
+                let order = self.conversion_work(span, |budget| left.compare(&right, budget))?;
                 return Ok(Value::Boolean(order.is_some_and(|order| match op {
                     Less => order.is_lt(),
                     LessEqual => order.is_le(),
@@ -1113,6 +1145,12 @@ impl Realm {
                 })));
             }
             _ => {}
+        }
+        if matches!(left, Value::Object(_)) || matches!(right, Value::Object(_)) {
+            return Err(Self::conversion_error(
+                ConversionError::ObjectNeedsContext,
+                span,
+            ));
         }
         if let (Value::BigInt(a), Value::BigInt(b)) = (&left, &right) {
             if op == UnsignedRightShift {

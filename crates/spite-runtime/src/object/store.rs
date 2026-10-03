@@ -89,7 +89,11 @@ impl Budget {
         let size = match value {
             Value::String(value) => value.len(),
             Value::BigInt(value) => value.bit_length().div_ceil(32),
-            Value::Undefined | Value::Null | Value::Boolean(_) | Value::Number(_) => 1,
+            Value::Undefined
+            | Value::Null
+            | Value::Boolean(_)
+            | Value::Number(_)
+            | Value::Object(_) => 1,
         };
         self.charge(size)
     }
@@ -209,6 +213,9 @@ impl Objects {
     ) -> Result<bool, Error> {
         budget.lookup(self.heap.get(object)?, &key)?;
         if let Some(value) = &descriptor.value {
+            if let Value::Object(handle) = value {
+                self.heap.get(handle)?;
+            }
             budget.value(value)?;
         }
         self.heap

@@ -1,12 +1,40 @@
-use crate::ExceptionKind;
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
 use spite_core::{JsString, is_line_terminator, is_whitespace, parse_radix_integer};
 use spite_heap::{Handle, Trace};
 use std::{cmp::Ordering, fmt};
 
-/// A supported ECMAScript primitive value.
+/// A conversion that failed or needs access to an object's realm.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ConversionError {
+    /// ToNumber rejects a BigInt with a JavaScript TypeError.
+    BigIntToNumber,
+    /// Object conversion requires ToPrimitive and callable hooks in the realm.
+    ObjectNeedsContext,
+    /// Integer conversion exhausted a host limit or failed arithmetic validation.
+    Integer(IntegerError),
+}
+
+impl From<IntegerError> for ConversionError {
+    fn from(error: IntegerError) -> Self {
+        Self::Integer(error)
+    }
+}
+
+impl fmt::Display for ConversionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::BigIntToNumber => f.write_str("cannot convert BigInt to Number"),
+            Self::ObjectNeedsContext => f.write_str("object conversion requires realm context"),
+            Self::Integer(error) => error.fmt(f),
+        }
+    }
+}
+impl std::error::Error for ConversionError {}
+
+/// A supported ECMAScript value.
 ///
-/// Symbol and Object values are not implemented yet.
+/// Object handles are unrooted; retain a host root across explicit collection.
+/// Symbol values are not implemented yet.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// The undefined value.
@@ -21,6 +49,8 @@ pub enum Value {
     BigInt(BigInt),
     /// A sequence of UTF-16 code units.
     String(JsString),
+    /// Identity of an object owned by a realm's heap.
+    Object(Handle),
 }
 
 impl Trace for Value {
@@ -34,12 +64,13 @@ impl Trace for Value {
             | Self::Number(_)
             | Self::BigInt(_)
             | Self::String(_) => None,
+            Self::Object(handle) => Some(handle),
         })
     }
 }
 
 impl Value {
-    /// Applies ToBoolean to the supported primitive types.
+    /// Applies ToBoolean; every object is truthy in this non-browser host.
     pub fn to_boolean(&self) -> bool {
         match self {
             Self::Undefined | Self::Null => false,
@@ -47,25 +78,27 @@ impl Value {
             Self::Number(v) => *v != 0.0 && !v.is_nan(),
             Self::BigInt(v) => !v.is_zero(),
             Self::String(v) => !v.is_empty(),
+            Self::Object(_) => true,
         }
     }
 
-    /// Applies ToNumber to the supported primitive types.
-    /// BigInt produces a TypeError, as required by ECMA-262 7.1.4.
-    pub fn to_number(&self) -> Result<f64, ExceptionKind> {
+    /// Applies primitive ToNumber; objects explicitly require realm context.
+    /// BigInt requires a TypeError, as specified by ECMA-262 7.1.4.
+    pub fn to_number(&self) -> Result<f64, ConversionError> {
         Ok(match self {
             Self::Undefined => f64::NAN,
             Self::Null => 0.0,
             Self::Boolean(v) => u8::from(*v) as f64,
             Self::Number(v) => *v,
-            Self::BigInt(_) => return Err(ExceptionKind::TypeError),
+            Self::BigInt(_) => return Err(ConversionError::BigIntToNumber),
             Self::String(v) => string_to_number(v),
+            Self::Object(_) => return Err(ConversionError::ObjectNeedsContext),
         })
     }
 
-    /// Applies ToString to the supported primitive types.
+    /// Applies primitive ToString; objects explicitly require realm context.
     /// Integer formatting consumes the supplied arithmetic work budget.
-    pub fn to_js_string(&self, budget: &mut Budget) -> Result<JsString, IntegerError> {
+    pub fn to_js_string(&self, budget: &mut Budget) -> Result<JsString, ConversionError> {
         Ok(match self {
             Self::Undefined => JsString::from("undefined"),
             Self::Null => JsString::from("null"),
@@ -73,6 +106,7 @@ impl Value {
             Self::Number(v) => JsString::from(number_to_string(*v).as_str()),
             Self::BigInt(v) => JsString::from(v.to_radix(10, budget)?.as_str()),
             Self::String(v) => v.clone(),
+            Self::Object(_) => return Err(ConversionError::ObjectNeedsContext),
         })
     }
 
@@ -84,6 +118,7 @@ impl Value {
             (Self::Number(a), Self::Number(b)) => a == b,
             (Self::BigInt(a), Self::BigInt(b)) => a == b,
             (Self::String(a), Self::String(b)) => a == b,
+            (Self::Object(a), Self::Object(b)) => a == b,
             _ => false,
         }
     }
@@ -102,7 +137,7 @@ impl Value {
         &self,
         other: &Self,
         budget: &mut Budget,
-    ) -> Result<bool, IntegerError> {
+    ) -> Result<bool, ConversionError> {
         Ok(match (self, other) {
             (Self::Null, Self::Undefined) | (Self::Undefined, Self::Null) => true,
             (Self::Number(a), Self::String(b)) => *a == string_to_number(b),
@@ -119,6 +154,10 @@ impl Value {
             (_, Self::Boolean(b)) => {
                 self.loosely_equal(&Self::Number(u8::from(*b) as f64), budget)?
             }
+            (Self::Object(_), Self::String(_) | Self::Number(_) | Self::BigInt(_))
+            | (Self::String(_) | Self::Number(_) | Self::BigInt(_), Self::Object(_)) => {
+                return Err(ConversionError::ObjectNeedsContext);
+            }
             _ => self.strictly_equal(other),
         })
     }
@@ -128,8 +167,11 @@ impl Value {
         &self,
         other: &Self,
         budget: &mut Budget,
-    ) -> Result<Option<Ordering>, IntegerError> {
+    ) -> Result<Option<Ordering>, ConversionError> {
         Ok(match (self, other) {
+            (Self::Object(_), _) | (_, Self::Object(_)) => {
+                return Err(ConversionError::ObjectNeedsContext);
+            }
             (Self::String(a), Self::String(b)) => Some(a.cmp(b)),
             (Self::BigInt(a), Self::String(b)) => string_to_bigint(b, budget)?.map(|b| a.cmp(&b)),
             (Self::String(a), Self::BigInt(b)) => string_to_bigint(a, budget)?.map(|a| a.cmp(b)),
@@ -155,6 +197,7 @@ impl Value {
             Self::Number(_) => "number",
             Self::BigInt(_) => "bigint",
             Self::String(_) => "string",
+            Self::Object(_) => "object",
         }
     }
 }
@@ -170,6 +213,7 @@ impl fmt::Display for Value {
             Self::Undefined => f.write_str("undefined"),
             Self::Null => f.write_str("null"),
             Self::Boolean(value) => write!(f, "{value}"),
+            Self::Object(handle) => write!(f, "Object({handle:?})"),
         }
     }
 }
@@ -377,4 +421,42 @@ pub(crate) fn exponentiate(base: f64, exponent: f64) -> f64 {
         return f64::NAN;
     }
     base.powf(exponent)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::object::Objects;
+
+    #[test]
+    fn object_equality_only_requests_conversion_when_required() {
+        let mut objects = Objects::new(2, 0);
+        let a = Value::Object(objects.create(None).unwrap());
+        let b = Value::Object(objects.create(None).unwrap());
+        let mut budget = Budget::new(100, 100);
+        assert_eq!(a.loosely_equal(&a, &mut budget), Ok(true));
+        for other in [b, Value::Null, Value::Undefined] {
+            assert_eq!(a.loosely_equal(&other, &mut budget), Ok(false));
+            assert_eq!(other.loosely_equal(&a, &mut budget), Ok(false));
+        }
+        for other in [
+            Value::Boolean(false),
+            Value::String(JsString::from("")),
+            Value::Number(0.0),
+            Value::BigInt(BigInt::from(0)),
+        ] {
+            assert_eq!(
+                a.loosely_equal(&other, &mut budget),
+                Err(ConversionError::ObjectNeedsContext)
+            );
+            assert_eq!(
+                other.loosely_equal(&a, &mut budget),
+                Err(ConversionError::ObjectNeedsContext)
+            );
+        }
+        assert_eq!(
+            a.compare(&a, &mut budget),
+            Err(ConversionError::ObjectNeedsContext)
+        );
+    }
 }
