@@ -54,6 +54,20 @@ pub enum StatementKind {
         /// Selected when the condition is falsy.
         alternate: Option<Box<Statement>>,
     },
+    /// A loop that tests its condition before each iteration.
+    While {
+        /// Condition.
+        test: Expr,
+        /// Repeated statement.
+        body: Box<Statement>,
+    },
+    /// A loop that tests its condition after each iteration.
+    DoWhile {
+        /// Repeated statement, evaluated at least once.
+        body: Box<Statement>,
+        /// Condition.
+        test: Expr,
+    },
     /// Throw a language value.
     Throw(Expr),
 }

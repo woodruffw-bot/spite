@@ -252,6 +252,22 @@ impl Parser {
                 consequent,
                 alternate,
             }
+        } else if self.eat("while") {
+            self.expect("(")?;
+            let test = self.expression(1)?;
+            self.expect(")")?;
+            let body = Box::new(self.statement(false)?);
+            StatementKind::While { test, body }
+        } else if self.eat("do") {
+            let body = Box::new(self.statement(false)?);
+            self.expect("while")?;
+            self.expect("(")?;
+            let test = self.expression(1)?;
+            self.expect(")")?;
+            // ECMA-262 12.10.1 allows ASI after the closing parenthesis of
+            // do-while even without a line terminator before the next token.
+            self.eat(";");
+            StatementKind::DoWhile { body, test }
         } else if self.eat("throw") {
             if self.current().newline {
                 return Err(self.error("line terminator after throw"));
@@ -268,9 +284,7 @@ impl Parser {
                             | "function"
                             | "class"
                             | "return"
-                            | "while"
                             | "for"
-                            | "do"
                             | "switch"
                             | "try"
                             | "with"
@@ -561,6 +575,10 @@ fn validate_statement(statement: &Statement, strict: bool) -> Result<(), Diagnos
             }
         }
         StatementKind::Block(body) => validate_scope(body, strict)?,
+        StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {
+            validate_expr(test, strict)?;
+            validate_statement(body, strict)?;
+        }
         StatementKind::If {
             test,
             consequent,

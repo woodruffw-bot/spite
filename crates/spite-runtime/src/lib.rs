@@ -270,6 +270,29 @@ impl Realm {
                 self.scopes.pop();
                 result
             }
+            // ECMA-262 14.7.3.2: the result is the last non-empty body value,
+            // initially undefined. Condition values never replace it.
+            StatementKind::While { test, body } => {
+                let mut value = Value::Undefined;
+                while self.expression(test)?.to_boolean() {
+                    if let Some(next) = self.statement(body)? {
+                        value = next;
+                    }
+                }
+                Ok(Some(value))
+            }
+            // ECMA-262 14.7.2.2: the first body precedes the first condition.
+            StatementKind::DoWhile { body, test } => {
+                let mut value = Value::Undefined;
+                loop {
+                    if let Some(next) = self.statement(body)? {
+                        value = next;
+                    }
+                    if !self.expression(test)?.to_boolean() {
+                        return Ok(Some(value));
+                    }
+                }
+            }
             StatementKind::If {
                 test,
                 consequent,

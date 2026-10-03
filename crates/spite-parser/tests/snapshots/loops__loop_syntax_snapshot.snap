@@ -1,0 +1,106 @@
+---
+source: crates/spite-parser/tests/loops.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: While {
+                test: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Boolean(
+                            false,
+                        ),
+                    ),
+                    span: Span {
+                        start: 7,
+                        end: 12,
+                    },
+                },
+                body: Statement {
+                    kind: Empty,
+                    span: Span {
+                        start: 14,
+                        end: 15,
+                    },
+                },
+            },
+            span: Span {
+                start: 0,
+                end: 15,
+            },
+        },
+        Statement {
+            kind: DoWhile {
+                body: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 21,
+                                            end: 22,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 21,
+                                    end: 23,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 19,
+                        end: 25,
+                    },
+                },
+                test: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Boolean(
+                            false,
+                        ),
+                    ),
+                    span: Span {
+                        start: 33,
+                        end: 38,
+                    },
+                },
+            },
+            span: Span {
+                start: 16,
+                end: 39,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Number(
+                            2.0,
+                        ),
+                    ),
+                    span: Span {
+                        start: 40,
+                        end: 41,
+                    },
+                },
+            ),
+            span: Span {
+                start: 40,
+                end: 42,
+            },
+        },
+    ],
+    strict: false,
+}
