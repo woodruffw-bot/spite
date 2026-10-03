@@ -68,12 +68,28 @@ pub enum StatementKind {
         /// Condition.
         test: Expr,
     },
-    /// Exit the nearest enclosing loop (unlabelled).
-    Break,
-    /// Continue the nearest enclosing loop (unlabelled).
-    Continue,
+    /// A statement with a control-flow label.
+    Labelled {
+        /// Declared label.
+        label: Label,
+        /// Labelled statement.
+        body: Box<Statement>,
+    },
+    /// Exit the target label, or the nearest loop when absent.
+    Break(Option<Label>),
+    /// Continue the target loop, or the nearest loop when absent.
+    Continue(Option<Label>),
     /// Throw a language value.
     Throw(Expr),
+}
+
+/// A decoded label identifier and its source range.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Label {
+    /// Identifier name.
+    pub name: String,
+    /// Identifier source range.
+    pub span: Span,
 }
 
 /// A lexical binding and optional initializer.

@@ -14,10 +14,10 @@ not an alternative language specification.
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Expressions | Primitive literals, identifiers, parentheses, simple assignment, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
-| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, unlabelled break/continue, throw |
-| Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop checks |
+| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, labels, break/continue with optional targets, throw |
+| Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop checks, duplicate labels and control-target validation |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, temporal dead zones, immutable bindings, ordered evaluation |
-| Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks and conditionals, uncaught primitive throws |
+| Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, and nested loops, uncaught primitive throws |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
 | Limits | 1 MiB source, depth 64, configurable evaluation steps and string code-unit limits |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures, 13 identifier lexer fixtures, and 4 statement parser fixtures |
@@ -35,7 +35,7 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
-expressions, templates, var, for loops, labels and labelled break/continue, switch, try/catch/finally, generators,
+expressions, templates, var, for loops, switch, try/catch/finally, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and garbage collection remain open. See the roadmap for their order.
 

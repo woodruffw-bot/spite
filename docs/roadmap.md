@@ -29,7 +29,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Complete lexical goals, templates, RegExp literals, and numeric literals.
 - [x] Add while and do-while loops, including completion values and ASI.
 - [x] Add unlabelled break and continue with completion propagation and early errors.
-- [ ] Add remaining statements, for loops, labels, switch, try, and completions.
+- [x] Add labelled statements, labelled control transfers, and label early errors.
+- [ ] Add remaining statements, for loops, switch, try, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
 - [x] Implement Unicode identifier properties and literal identifier names.

@@ -36,7 +36,9 @@ Script {
                                         },
                                     },
                                     consequent: Statement {
-                                        kind: Continue,
+                                        kind: Continue(
+                                            None,
+                                        ),
                                         span: Span {
                                             start: 26,
                                             end: 35,
@@ -50,7 +52,9 @@ Script {
                                 },
                             },
                             Statement {
-                                kind: Break,
+                                kind: Break(
+                                    None,
+                                ),
                                 span: Span {
                                     start: 36,
                                     end: 42,

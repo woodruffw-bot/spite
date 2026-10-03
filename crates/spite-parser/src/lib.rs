@@ -64,7 +64,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
                 "\"use strict\"" | "'use strict'"
             )
         });
-    validate_scope(&statements, strict, false)?;
+    validate_scope(&statements, strict, false, &mut Vec::new())?;
     Ok(Script { statements, strict })
 }
 
@@ -178,7 +178,19 @@ impl Parser {
                 .get(self.index + 1)
                 .is_some_and(|t| t.kind == Kind::Punct(":"))
         {
-            return Err(self.unsupported("labelled statements are not implemented"));
+            let label = self.label_identifier()?;
+            self.expect(":")?;
+            // ECMA-262 14.13.1: labelled functions require the excluded Annex B
+            // extension even in non-strict code.
+            if self.at("function") {
+                return Err(self.error("labelled functions are not allowed"));
+            }
+            let body = Box::new(self.statement(false)?);
+            let span = Span::new(start, body.span.end);
+            return Ok(Statement {
+                kind: StatementKind::Labelled { label, body },
+                span,
+            });
         }
         // ECMA-262 14.5 forbids an ExpressionStatement starting with `let [`,
         // but permits `let` as an IdentifierReference in non-strict code. In a
@@ -295,19 +307,17 @@ impl Parser {
                 self.expect("continue")?;
             }
             // ECMA-262 14.8/14.9: a label cannot follow a line terminator.
-            if !self.current().newline {
-                if let Kind::Word(name) = &self.current().kind {
-                    if reserved(name) {
-                        return Err(self.error("invalid label identifier"));
-                    }
-                    return Err(self.unsupported("labelled loop control is not implemented"));
-                }
-            }
+            let target = if !self.current().newline && matches!(self.current().kind, Kind::Word(_))
+            {
+                Some(self.label_identifier()?)
+            } else {
+                None
+            };
             self.semicolon()?;
             if is_break {
-                StatementKind::Break
+                StatementKind::Break(target)
             } else {
-                StatementKind::Continue
+                StatementKind::Continue(target)
             }
         } else if self.eat("throw") {
             if self.current().newline {
@@ -346,6 +356,17 @@ impl Parser {
             kind,
             span: Span::new(start, end),
         })
+    }
+
+    fn label_identifier(&mut self) -> Result<Label, Diagnostic> {
+        let token = self.bump();
+        match token.kind {
+            Kind::Word(name) if !reserved(&name) => Ok(Label {
+                name,
+                span: token.span,
+            }),
+            _ => Err(early(token.span, "invalid label identifier")),
+        }
     }
 
     fn make_expr(&self, kind: ExprKind, span: Span) -> Result<Expr, Diagnostic> {
@@ -581,10 +602,11 @@ fn early(span: Span, message: &str) -> Diagnostic {
     Diagnostic::new(DiagnosticKind::Syntax, span, message)
 }
 
-fn validate_scope(
-    statements: &[Statement],
+fn validate_scope<'a>(
+    statements: &'a [Statement],
     strict: bool,
     in_iteration: bool,
+    labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     let mut names = BTreeSet::new();
     for statement in statements {
@@ -601,14 +623,15 @@ fn validate_scope(
                 }
             }
         }
-        validate_statement(statement, strict, in_iteration)?;
+        validate_statement(statement, strict, in_iteration, labels)?;
     }
     Ok(())
 }
-fn validate_statement(
-    statement: &Statement,
+fn validate_statement<'a>(
+    statement: &'a Statement,
     strict: bool,
     in_iteration: bool,
+    labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     match &statement.kind {
         StatementKind::Expression(expr) | StatementKind::Throw(expr) => {
@@ -621,17 +644,17 @@ fn validate_statement(
                 }
             }
         }
-        StatementKind::Block(body) => validate_scope(body, strict, in_iteration)?,
+        StatementKind::Block(body) => validate_scope(body, strict, in_iteration, labels)?,
         StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {
             validate_expr(test, strict)?;
-            validate_statement(body, strict, true)?;
+            validate_statement(body, strict, true, labels)?;
         }
         // ECMA-262 14.8.1/14.9.1. Switch and function bodies will need their
         // own validation contexts when those forms are implemented.
-        StatementKind::Break if !in_iteration => {
+        StatementKind::Break(None) if !in_iteration => {
             return Err(early(statement.span, "break requires an enclosing loop"));
         }
-        StatementKind::Continue if !in_iteration => {
+        StatementKind::Continue(None) if !in_iteration => {
             return Err(early(statement.span, "continue requires an enclosing loop"));
         }
         StatementKind::If {
@@ -640,15 +663,58 @@ fn validate_statement(
             alternate,
         } => {
             validate_expr(test, strict)?;
-            validate_statement(consequent, strict, in_iteration)?;
+            validate_statement(consequent, strict, in_iteration, labels)?;
             if let Some(alternate) = alternate {
-                validate_statement(alternate, strict, in_iteration)?;
+                validate_statement(alternate, strict, in_iteration, labels)?;
             }
         }
-        StatementKind::Empty | StatementKind::Break | StatementKind::Continue => {}
+        StatementKind::Labelled { label, body } => {
+            validate_label(label, strict)?;
+            // ECMA-262 8.3.1: duplicate labels are forbidden only while active.
+            if labels.iter().any(|(name, _)| *name == label.name) {
+                return Err(early(label.span, "duplicate label"));
+            }
+            labels.push((&label.name, labels_iteration(body)));
+            let result = validate_statement(body, strict, in_iteration, labels);
+            labels.pop();
+            result?;
+        }
+        StatementKind::Break(Some(target)) | StatementKind::Continue(Some(target)) => {
+            validate_label(target, strict)?;
+            // ECMA-262 8.3.2/8.3.3: continue needs an iteration target, not just
+            // a label enclosing an iteration somewhere in its subtree.
+            let Some((_, is_iteration)) = labels.iter().find(|(name, _)| *name == target.name)
+            else {
+                return Err(early(target.span, "undefined label"));
+            };
+            if matches!(statement.kind, StatementKind::Continue(_)) && !is_iteration {
+                return Err(early(
+                    target.span,
+                    "continue target is not an iteration label",
+                ));
+            }
+        }
+        StatementKind::Empty | StatementKind::Break(None) | StatementKind::Continue(None) => {}
     }
     Ok(())
 }
+fn validate_label(label: &Label, strict: bool) -> Result<(), Diagnostic> {
+    if strict && strict_reserved(&label.name) {
+        return Err(early(label.span, "reserved label in strict mode"));
+    }
+    Ok(())
+}
+
+fn labels_iteration(mut statement: &Statement) -> bool {
+    while let StatementKind::Labelled { body, .. } = &statement.kind {
+        statement = body;
+    }
+    matches!(
+        statement.kind,
+        StatementKind::While { .. } | StatementKind::DoWhile { .. }
+    )
+}
+
 fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
     match &expr.kind {
         ExprKind::Identifier(name) if strict && strict_reserved(name) => {

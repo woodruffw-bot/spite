@@ -117,6 +117,7 @@ struct Completion {
     kind: CompletionKind,
     // None is empty, distinct from Some(Value::Undefined).
     value: Option<Value>,
+    target: Option<String>,
 }
 
 impl Completion {
@@ -124,7 +125,26 @@ impl Completion {
         Self {
             kind: CompletionKind::Normal,
             value,
+            target: None,
         }
+    }
+
+    // ECMA-262 14.7.1.1 LoopContinues.
+    fn loop_continues(&self, labels: &[&str]) -> bool {
+        self.kind == CompletionKind::Normal
+            || (self.kind == CompletionKind::Continue
+                && self
+                    .target
+                    .as_deref()
+                    .is_none_or(|target| labels.contains(&target)))
+    }
+
+    // ECMA-262 14.13.4: only unlabelled breaks are consumed by loops.
+    fn consume_unlabelled_break(mut self) -> Self {
+        if self.kind == CompletionKind::Break && self.target.is_none() {
+            self.kind = CompletionKind::Normal;
+        }
+        self
     }
 
     // ECMA-262 6.2.4.4 UpdateEmpty preserves the completion's kind.
@@ -274,18 +294,41 @@ impl Realm {
         Ok(completion)
     }
     fn statement(&mut self, statement: &Statement) -> Result<Completion, Error> {
+        self.labelled_statement(statement, &[])
+    }
+
+    fn labelled_statement(
+        &mut self,
+        statement: &Statement,
+        labels: &[&str],
+    ) -> Result<Completion, Error> {
         self.tick(statement.span)?;
         match &statement.kind {
             StatementKind::Empty => Ok(Completion::normal(None)),
             StatementKind::Expression(expr) => Ok(Completion::normal(Some(self.expression(expr)?))),
-            StatementKind::Break | StatementKind::Continue => Ok(Completion {
-                kind: if matches!(statement.kind, StatementKind::Break) {
+            StatementKind::Break(target) | StatementKind::Continue(target) => Ok(Completion {
+                kind: if matches!(statement.kind, StatementKind::Break(_)) {
                     CompletionKind::Break
                 } else {
                     CompletionKind::Continue
                 },
                 value: None,
+                target: target.as_ref().map(|label| label.name.clone()),
             }),
+            StatementKind::Labelled { label, body } => {
+                // Only a chain of labels passes its label set into a loop.
+                // Blocks and conditional branches call statement with a fresh set.
+                let mut nested = labels.to_vec();
+                nested.push(&label.name);
+                let mut result = self.labelled_statement(body, &nested)?;
+                if result.kind == CompletionKind::Break
+                    && result.target.as_deref() == Some(&label.name)
+                {
+                    result.kind = CompletionKind::Normal;
+                    result.target = None;
+                }
+                Ok(result)
+            }
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
             StatementKind::Lexical { bindings, .. } => {
                 for binding in bindings {
@@ -317,12 +360,10 @@ impl Realm {
                 let mut value = Value::Undefined;
                 while self.expression(test)?.to_boolean() {
                     let result = self.statement(body)?.update_empty(Some(value));
-                    value = result.value.expect("loop UpdateEmpty supplies a value");
-                    // Unlabelled continue resumes this loop; unlabelled break
-                    // becomes normal at the BreakableStatement (14.13.4).
-                    if result.kind == CompletionKind::Break {
-                        break;
+                    if !result.loop_continues(labels) {
+                        return Ok(result.consume_unlabelled_break());
                     }
+                    value = result.value.expect("loop UpdateEmpty supplies a value");
                 }
                 Ok(Completion::normal(Some(value)))
             }
@@ -331,10 +372,11 @@ impl Realm {
                 let mut value = Value::Undefined;
                 loop {
                     let result = self.statement(body)?.update_empty(Some(value));
+                    if !result.loop_continues(labels) {
+                        return Ok(result.consume_unlabelled_break());
+                    }
                     value = result.value.expect("loop UpdateEmpty supplies a value");
-                    // Continue still evaluates the test; break must skip it.
-                    if result.kind == CompletionKind::Break || !self.expression(test)?.to_boolean()
-                    {
+                    if !self.expression(test)?.to_boolean() {
                         return Ok(Completion::normal(Some(value)));
                     }
                 }

@@ -190,12 +190,8 @@ fn line_terminators_prevent_loop_control_labels() {
             assert!(matches!(statements[1].kind, StatementKind::Expression(_)));
         }
         for separator in [" ", "/*comment*/", "\u{a0}"] {
-            let source = format!("while (false) {{ {keyword}{separator}label; }}");
-            assert_eq!(
-                parse_script(&source).unwrap_err().kind,
-                DiagnosticKind::Unsupported,
-                "{source}"
-            );
+            let source = format!("label: while (false) {{ {keyword}{separator}label; }}");
+            assert!(parse_script(&source).is_ok(), "{source}");
         }
         for ending in [" 1;", " if;", " true;", " +1;"] {
             let source = format!("while (false) {{ {keyword}{ending} }}");
@@ -207,12 +203,7 @@ fn line_terminators_prevent_loop_control_labels() {
         }
         assert!(parse_script(&format!("while (false) {{ {keyword} }}")).is_ok());
     }
-    assert_eq!(
-        parse_script("label: while (true) break label;")
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
-    );
+    assert!(parse_script("label: while (true) break label;").is_ok());
 }
 
 #[test]
