@@ -267,6 +267,8 @@ pub enum ExprKind {
     Identifier(String),
     /// A parenthesized expression. Retained for grammar restrictions.
     Parenthesized(Box<Expr>),
+    /// A dotted or computed property reference.
+    Member(Box<Expr>, PropertyName),
     /// A prefix unary expression.
     Unary(UnaryOp, Box<Expr>),
     /// An increment or decrement of a reference.
@@ -280,10 +282,10 @@ pub enum ExprKind {
     },
     /// A binary expression, including short-circuit operators.
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
-    /// A simple assignment to an identifier.
-    Assign(String, Box<Expr>),
-    /// A compound assignment to an identifier, including logical assignment.
-    CompoundAssign(BinaryOp, String, Box<Expr>),
+    /// A simple assignment to a validated reference expression.
+    Assign(Box<Expr>, Box<Expr>),
+    /// A compound assignment to a validated reference, including logical assignment.
+    CompoundAssign(BinaryOp, Box<Expr>, Box<Expr>),
     /// A conditional expression.
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
 }

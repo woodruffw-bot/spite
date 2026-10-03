@@ -75,11 +75,8 @@ fn legacy_number_token_boundaries_and_separators_remain_restricted() {
         );
     }
     // A dot can still begin property syntax; the lexer must not eat it as a
-    // decimal fraction after an octal integer. Property access is a future feature.
-    assert_eq!(
-        parse_script("010.foo").unwrap_err().kind,
-        DiagnosticKind::Unsupported
-    );
+    // decimal fraction after an octal integer.
+    assert!(parse_script("010.foo").is_ok());
     assert!(parse_script("010\n.5").is_ok());
     assert!(parse_script("'use strict'; 0; 0.5; 0e1; 0o10; 0x08; 0n;").is_ok());
 }

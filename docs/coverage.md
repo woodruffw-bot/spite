@@ -59,6 +59,11 @@ survive collection; tokens release roots when their last clone is dropped. Root
 registry storage is reused. Collection during evaluation remains disabled until
 temporary and pending-completion root lifetimes are implemented.
 
+Dotted and computed property references now parse, including assignment,
+compound assignment, update, and delete targets. IdentifierName spelling,
+precedence, strict target restrictions, and ASI after completed update expressions
+have regression tests. Property-reference evaluation remains unsupported.
+
 Symbols, property access,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,

@@ -249,10 +249,5 @@ fn let_expression_statement_and_declaration_lookahead_are_distinct() {
         StatementKind::Lexical { .. }
     ));
     // The `let [` lookahead restriction uses the terminal, not escaped names.
-    assert_eq!(
-        parse_script(r"while (false) l\u0065t[x];")
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
-    );
+    assert!(parse_script(r"while (false) l\u0065t[x];").is_ok());
 }

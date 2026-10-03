@@ -85,7 +85,16 @@ Script {
                 Expr {
                     depth: 3,
                     kind: Assign(
-                        "x",
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 19,
+                                end: 20,
+                            },
+                        },
                         Expr {
                             depth: 2,
                             kind: Binary(

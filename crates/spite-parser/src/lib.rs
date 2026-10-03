@@ -516,12 +516,15 @@ impl Parser {
 
     fn make_expr(&self, kind: ExprKind, span: Span) -> Result<Expr, Diagnostic> {
         let depth = 1 + match &kind {
-            ExprKind::Unary(_, e)
-            | ExprKind::Parenthesized(e)
-            | ExprKind::Assign(_, e)
-            | ExprKind::CompoundAssign(_, _, e) => e.depth,
+            ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
-            ExprKind::Binary(_, a, b) => a.depth.max(b.depth),
+            ExprKind::Binary(_, a, b)
+            | ExprKind::Assign(a, b)
+            | ExprKind::CompoundAssign(_, a, b) => a.depth.max(b.depth),
+            ExprKind::Member(base, name) => base.depth.max(match name {
+                PropertyName::Computed(key) => key.depth,
+                PropertyName::Literal(_) => 0,
+            }),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
             ExprKind::Template { substitutions, .. } => {
                 substitutions.iter().map(|e| e.depth).max().unwrap_or(0)
@@ -558,9 +561,41 @@ impl Parser {
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
         let mut left = self.prefix()?;
         loop {
+            if minimum <= 17 && (self.at(".") || self.at("[")) {
+                if !member_base(&left) {
+                    // 12.10.1: a completed UpdateExpression cannot continue as
+                    // a MemberExpression. A line break can therefore allow ASI.
+                    if self.current().newline {
+                        break;
+                    }
+                    return Err(self.error("property access requires a left-hand-side expression"));
+                }
+                let property = if self.eat(".") {
+                    let token = self.bump();
+                    let name = match token.kind {
+                        Kind::Word(name) => JsString::from(name.as_str()),
+                        Kind::Literal(Literal::Null) => JsString::from("null"),
+                        Kind::Literal(Literal::Boolean(value)) => {
+                            JsString::from(if value { "true" } else { "false" })
+                        }
+                        _ => {
+                            return Err(early(token.span, "expected an identifier name after dot"));
+                        }
+                    };
+                    PropertyName::Literal(Literal::String(name))
+                } else {
+                    self.expect("[")?;
+                    let key = self.expression(1)?;
+                    self.expect("]")?;
+                    PropertyName::Computed(Box::new(key))
+                };
+                let span = Span::new(left.span.start, self.tokens[self.index - 1].span.end);
+                left = self.make_expr(ExprKind::Member(Box::new(left), property), span)?;
+                continue;
+            }
             // ECMA-262 13.4: a postfix update cannot cross a line terminator.
             if minimum <= 16 && !self.current().newline && (self.at("++") || self.at("--")) {
-                if assignment_name(&left).is_none() {
+                if !assignment_target(&left) {
                     return Err(early(left.span, "invalid update target"));
                 }
                 let token = self.bump();
@@ -583,16 +618,15 @@ impl Parser {
             let assignment_op = compound_assignment(&self.current().kind);
             if minimum <= 2 && (self.at("=") || assignment_op.is_some()) {
                 self.bump();
-                let Some(name) = assignment_name(&left) else {
+                if !assignment_target(&left) {
                     return Err(self.error("invalid assignment target"));
-                };
-                let name = name.to_owned();
+                }
                 let right = self.expression(2)?;
                 let span = Span::new(left.span.start, right.span.end);
                 let kind = if let Some(op) = assignment_op {
-                    ExprKind::CompoundAssign(op, name, Box::new(right))
+                    ExprKind::CompoundAssign(op, Box::new(left), Box::new(right))
                 } else {
-                    ExprKind::Assign(name, Box::new(right))
+                    ExprKind::Assign(Box::new(left), Box::new(right))
                 };
                 left = self.make_expr(kind, span)?;
                 continue;
@@ -630,9 +664,17 @@ impl Parser {
             left = self.make_expr(ExprKind::Binary(op, Box::new(left), Box::new(right)), span)?;
         }
         // These tokens continue an expression even across a newline. ASI cannot
-        // make a call or property access into a separate expression statement.
-        if matches!(self.current().kind, Kind::Punct("(" | "[" | "." | "?.")) {
-            return Err(self.unsupported("calls and property access are not implemented"));
+        // make a call or optional chain into a separate expression statement.
+        if matches!(self.current().kind, Kind::Punct("(" | "?.")) {
+            if !member_base(&left) {
+                if self.current().newline {
+                    return Ok(left);
+                }
+                return Err(
+                    self.error("call or optional chain requires a left-hand-side expression")
+                );
+            }
+            return Err(self.unsupported("calls and optional chaining are not implemented"));
         }
         if matches!(
             self.current().kind,
@@ -641,6 +683,12 @@ impl Parser {
                 ..
             }
         ) {
+            if !member_base(&left) {
+                if self.current().newline {
+                    return Ok(left);
+                }
+                return Err(self.error("tagged template requires a left-hand-side expression"));
+            }
             return Err(self.unsupported("tagged templates are not implemented"));
         }
         Ok(left)
@@ -650,7 +698,7 @@ impl Parser {
         let span = token.span;
         if matches!(token.kind, Kind::Punct("++" | "--")) {
             let argument = self.expression(15)?;
-            if assignment_name(&argument).is_none() {
+            if !assignment_target(&argument) {
                 return Err(early(argument.span, "invalid update target"));
             }
             let op = if token.kind == Kind::Punct("++") {
@@ -853,6 +901,26 @@ fn assignment_name(expr: &Expr) -> Option<&str> {
         ExprKind::Parenthesized(inner) => assignment_name(inner),
         _ => None,
     }
+}
+
+fn assignment_target(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::Identifier(_) | ExprKind::Member(..) => true,
+        ExprKind::Parenthesized(inner) => assignment_target(inner),
+        _ => false,
+    }
+}
+
+fn member_base(expr: &Expr) -> bool {
+    matches!(
+        expr.kind,
+        ExprKind::Identifier(_)
+            | ExprKind::Literal(_)
+            | ExprKind::Object(_)
+            | ExprKind::Template { .. }
+            | ExprKind::Parenthesized(_)
+            | ExprKind::Member(..)
+    )
 }
 
 fn binary(kind: &Kind) -> Option<(BinaryOp, u8)> {
@@ -1291,15 +1359,29 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Identifier(name) if strict && strict_reserved(name) => {
             return Err(early(expr.span, "reserved identifier in strict mode"));
         }
-        ExprKind::Assign(name, value) | ExprKind::CompoundAssign(_, name, value) => {
-            if strict && (strict_reserved(name) || matches!(name.as_str(), "eval" | "arguments")) {
+        ExprKind::Assign(target, value) | ExprKind::CompoundAssign(_, target, value) => {
+            if strict
+                && assignment_name(target).is_some_and(|name| {
+                    strict_reserved(name) || matches!(name, "eval" | "arguments")
+                })
+            {
                 return Err(early(expr.span, "invalid assignment in strict mode"));
             }
+            validate_expr(target, strict)?;
             validate_expr(value, strict)?;
         }
+        ExprKind::Member(base, name) => {
+            validate_expr(base, strict)?;
+            if let PropertyName::Computed(key) = name {
+                validate_expr(key, strict)?;
+            }
+        }
         ExprKind::Update { argument, .. } => {
-            let name = assignment_name(argument).expect("parser checked update target");
-            if strict && (strict_reserved(name) || matches!(name, "eval" | "arguments")) {
+            if strict
+                && assignment_name(argument).is_some_and(|name| {
+                    strict_reserved(name) || matches!(name, "eval" | "arguments")
+                })
+            {
                 return Err(early(argument.span, "invalid update target in strict mode"));
             }
             validate_expr(argument, strict)?;

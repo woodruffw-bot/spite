@@ -1,0 +1,240 @@
+---
+source: crates/spite-parser/tests/members.rs
+expression: "parse_script(\"a.b[c].if += ++d[e]; delete (a.x); a[k] ??= 4;\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 5,
+                    kind: CompoundAssign(
+                        Add,
+                        Expr {
+                            depth: 4,
+                            kind: Member(
+                                Expr {
+                                    depth: 3,
+                                    kind: Member(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Member(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "a",
+                                                    ),
+                                                    span: Span {
+                                                        start: 0,
+                                                        end: 1,
+                                                    },
+                                                },
+                                                Literal(
+                                                    String(
+                                                        "b",
+                                                    ),
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 0,
+                                                end: 3,
+                                            },
+                                        },
+                                        Computed(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "c",
+                                                ),
+                                                span: Span {
+                                                    start: 4,
+                                                    end: 5,
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 0,
+                                        end: 6,
+                                    },
+                                },
+                                Literal(
+                                    String(
+                                        "if",
+                                    ),
+                                ),
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 9,
+                            },
+                        },
+                        Expr {
+                            depth: 3,
+                            kind: Update {
+                                op: Increment,
+                                argument: Expr {
+                                    depth: 2,
+                                    kind: Member(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "d",
+                                            ),
+                                            span: Span {
+                                                start: 15,
+                                                end: 16,
+                                            },
+                                        },
+                                        Computed(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "e",
+                                                ),
+                                                span: Span {
+                                                    start: 17,
+                                                    end: 18,
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 15,
+                                        end: 19,
+                                    },
+                                },
+                                prefix: true,
+                            },
+                            span: Span {
+                                start: 13,
+                                end: 19,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 19,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 20,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: Unary(
+                        Delete,
+                        Expr {
+                            depth: 3,
+                            kind: Parenthesized(
+                                Expr {
+                                    depth: 2,
+                                    kind: Member(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "a",
+                                            ),
+                                            span: Span {
+                                                start: 29,
+                                                end: 30,
+                                            },
+                                        },
+                                        Literal(
+                                            String(
+                                                "x",
+                                            ),
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 29,
+                                        end: 32,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 28,
+                                end: 33,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 21,
+                        end: 33,
+                    },
+                },
+            ),
+            span: Span {
+                start: 21,
+                end: 34,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: CompoundAssign(
+                        Nullish,
+                        Expr {
+                            depth: 2,
+                            kind: Member(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "a",
+                                    ),
+                                    span: Span {
+                                        start: 35,
+                                        end: 36,
+                                    },
+                                },
+                                Computed(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "k",
+                                        ),
+                                        span: Span {
+                                            start: 37,
+                                            end: 38,
+                                        },
+                                    },
+                                ),
+                            ),
+                            span: Span {
+                                start: 35,
+                                end: 39,
+                            },
+                        },
+                        Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    4.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 44,
+                                end: 45,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 35,
+                        end: 45,
+                    },
+                },
+            ),
+            span: Span {
+                start: 35,
+                end: 46,
+            },
+        },
+    ],
+    strict: false,
+}

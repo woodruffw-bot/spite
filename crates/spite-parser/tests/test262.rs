@@ -50,7 +50,7 @@ fn pinned_let_statement_lookahead() {
             );
         } else {
             assert!(
-                matches!(&script.statements()[1].kind, StatementKind::Expression(Expr { kind: ExprKind::Assign(name, _), .. }) if name == "x")
+                matches!(&script.statements()[1].kind, StatementKind::Expression(Expr { kind: ExprKind::Assign(target, _), .. }) if matches!(&target.kind, ExprKind::Identifier(name) if name == "x"))
             );
         }
     }

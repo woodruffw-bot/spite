@@ -57,7 +57,16 @@ Script {
                                                 depth: 2,
                                                 kind: CompoundAssign(
                                                     Add,
-                                                    "e",
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "e",
+                                                        ),
+                                                        span: Span {
+                                                            start: 34,
+                                                            end: 35,
+                                                        },
+                                                    },
                                                     Expr {
                                                         depth: 1,
                                                         kind: Literal(

@@ -833,6 +833,17 @@ impl Realm {
             Reference::Unresolvable(name)
         }
     }
+    fn reference<'a>(&mut self, target: &'a Expr) -> Result<Reference<'a>, Error> {
+        match &target.kind {
+            ExprKind::Identifier(name) => Ok(self.resolve(name)),
+            ExprKind::Parenthesized(inner) => self.reference(inner),
+            ExprKind::Member(..) => Err(Self::unsupported(
+                target.span,
+                "property reference evaluation is not implemented",
+            )),
+            _ => unreachable!("parser validated reference target"),
+        }
+    }
     fn get(&self, reference: &Reference<'_>, span: Span) -> Result<Value, Error> {
         match reference {
             Reference::Lexical(index, name) => {
@@ -976,16 +987,22 @@ impl Realm {
             ExprKind::Literal(literal) => self.literal_value(literal, expr.span)?,
             ExprKind::Identifier(name) => self.get(&self.resolve(name), expr.span)?,
             ExprKind::Parenthesized(inner) => self.expression(inner)?,
-            ExprKind::Assign(name, right) => {
-                let reference = self.resolve(name);
+            ExprKind::Member(..) => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "property reference evaluation is not implemented",
+                ));
+            }
+            ExprKind::Assign(target, right) => {
+                let reference = self.reference(target)?;
                 let value = self.expression(right)?;
                 self.put(reference, value.clone(), expr.span)?;
                 value
             }
-            ExprKind::CompoundAssign(op, name, right) => {
+            ExprKind::CompoundAssign(op, target, right) => {
                 // ECMA-262 13.15.2: read the reference before the RHS. Logical
                 // assignments that short-circuit perform neither RHS nor PutValue.
-                let reference = self.resolve(name);
+                let reference = self.reference(target)?;
                 let left = self.get(&reference, expr.span)?;
                 match op {
                     BinaryOp::And if !left.to_boolean() => left,
@@ -1006,8 +1023,7 @@ impl Realm {
             } => {
                 // ECMA-262 13.4.2–13.4.5: GetValue and ToNumeric precede
                 // PutValue. Postfix returns the numeric old value, not its input.
-                let name = identifier(argument).expect("parser checked update target");
-                let reference = self.resolve(name);
+                let reference = self.reference(argument)?;
                 let old = Self::numeric(self.get(&reference, argument.span)?, argument.span)?;
                 let one = if matches!(old, Value::BigInt(_)) {
                     Value::BigInt(BigInt::from(1))

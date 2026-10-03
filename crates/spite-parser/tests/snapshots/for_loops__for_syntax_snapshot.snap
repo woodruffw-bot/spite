@@ -11,7 +11,16 @@ Script {
                         Expr {
                             depth: 2,
                             kind: Assign(
-                                "i",
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "i",
+                                    ),
+                                    span: Span {
+                                        start: 5,
+                                        end: 6,
+                                    },
+                                },
                                 Expr {
                                     depth: 1,
                                     kind: Literal(
@@ -70,7 +79,16 @@ Script {
                     Expr {
                         depth: 3,
                         kind: Assign(
-                            "i",
+                            Expr {
+                                depth: 1,
+                                kind: Identifier(
+                                    "i",
+                                ),
+                                span: Span {
+                                    start: 19,
+                                    end: 20,
+                                },
+                            },
                             Expr {
                                 depth: 2,
                                 kind: Binary(
