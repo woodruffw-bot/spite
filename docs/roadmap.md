@@ -6,16 +6,20 @@ coverage. No milestone implies full conformance until the final audit passes.
 ## 0. Foundation
 
 - [x] Specify scope, architecture, safety policy, and conformance criteria.
-- [ ] Create the workspace, shared lints, dependency checks, and GitHub Actions.
-- [ ] Add UTF-16 strings and source diagnostics.
+- [x] Create the workspace, shared lints, dependency checks, and GitHub Actions.
+- [x] Add UTF-16 strings and source diagnostics.
 
 ## 1. First executable subset
 
-- [ ] Implement primitive literals, comments, identifiers, operators, and ASI.
-- [ ] Parse expression statements and lexical declarations with source spans.
-- [ ] Evaluate primitive expressions and lexical bindings with correct errors.
-- [ ] Add parser snapshots, runtime integration tests, and a command-line host.
-- [ ] Bound parser nesting and execution resources.
+- [x] Implement Number, String, Boolean, and null literals, comments, ASCII
+  identifiers, core operators, and ASI for the supported statements.
+- [x] Parse expression statements and lexical declarations with source spans.
+- [x] Evaluate primitive expressions and lexical bindings with correct errors.
+- [x] Add parser snapshots, runtime integration tests, and a command-line host.
+- [x] Bound parser nesting, evaluation steps, and individual string lengths.
+- [x] Add a pinned Test262 lexical smoke suite with reviewed expectations.
+
+Milestones 0 and 1 are implemented. See [coverage](coverage.md) for exact limits.
 
 This slice is deliberately incomplete. Unsupported syntax and operations must not
 silently acquire substitute semantics. The coverage document must list gaps.
