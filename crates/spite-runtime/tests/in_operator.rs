@@ -82,10 +82,10 @@ fn nonobject_rhs_throws_before_key_conversion_after_both_operands_evaluate() {
         })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
-    assert!(matches!(
+    assert_eq!(
         realm.eval("({}) in (flag = 4, {})"),
-        Err(Error::Unsupported { .. })
-    ));
+        Ok(Value::Boolean(false))
+    );
     assert_eq!(realm.eval("flag"), Ok(Value::Number(4.0)));
 }
 

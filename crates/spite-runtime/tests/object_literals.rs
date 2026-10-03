@@ -1,7 +1,7 @@
 //! Object-literal evaluation, identity, key order, and resource failures.
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, ObjectHandle, Realm, Value};
+use spite_runtime::{Error, ExceptionKind, Limits, ObjectHandle, Realm, Value};
 
 fn object(realm: &mut Realm, source: &str) -> ObjectHandle {
     let Value::Object(handle) = realm.eval(source).unwrap() else {
@@ -82,8 +82,11 @@ fn key_conversion_precedes_value_evaluation_and_next_property() {
     assert_eq!(own(&realm, &handle, "123"), Value::Number(1234.0));
     assert_eq!(realm.eval("x"), Ok(Value::Number(1234.0)));
     assert!(matches!(
-        realm.eval("({[{}]: x = 9})"),
-        Err(Error::Unsupported { .. })
+        realm.eval("({[{__proto__: null}]: x = 9})"),
+        Err(Error::Exception {
+            kind: ExceptionKind::TypeError,
+            ..
+        })
     ));
     assert_eq!(realm.eval("x"), Ok(Value::Number(1234.0)));
     assert!(matches!(
@@ -170,12 +173,12 @@ fn early_errors_precede_all_effects_and_object_conversion_stays_explicit() {
     ));
     assert_eq!(realm.eval("effect"), Ok(Value::Number(0.0)));
     for source in [
-        "+{}",
-        "({}) + 1",
-        "1n - {}",
-        "({}) == 1",
-        "`${{}}`",
-        "({}) < 1",
+        "+({}).toString",
+        "({}).toString + 1",
+        "1n - ({}).toString",
+        "({}).toString == 1",
+        "`${({}).toString}`",
+        "({}).toString < 1",
     ] {
         assert!(
             matches!(realm.eval(source), Err(Error::Unsupported { .. })),
@@ -213,13 +216,13 @@ fn allocation_property_and_key_limits_are_host_failures() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_properties: 1,
+        max_properties: 2,
         ..Limits::default()
     });
     let handle = object(&mut realm, "({a: 1, a: 2})");
     assert_eq!(own(&realm, &handle, "a"), Value::Number(2.0));
     assert!(matches!(
-        realm.eval("({a: 1, b: 2})"),
+        realm.eval("({a: 1, b: 2, c: 3})"),
         Err(Error::Limit { .. })
     ));
 }

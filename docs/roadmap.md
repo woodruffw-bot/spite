@@ -88,7 +88,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Route coercion through realms and reject ordinary objects without callable conversion methods.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
-- [ ] Add builtin function objects and Object.prototype conversion methods.
+- [x] Add builtin function objects and Object.prototype conversion methods.
+- [ ] Add Function.prototype methods and mandatory restricted accessors.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [ ] Run the upstream Test262 harness and grow a supported regression set.

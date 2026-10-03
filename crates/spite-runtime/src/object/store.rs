@@ -2,6 +2,7 @@
 
 use super::{DataDescriptor, DataProperty, OrdinaryObject};
 use crate::Value;
+use crate::function::{Builtin, Callable};
 use spite_core::JsString;
 use spite_heap::{Collection, Handle, Heap};
 use std::{
@@ -131,6 +132,23 @@ impl Objects {
             .insert(OrdinaryObject::new(prototype.cloned(), self.max_properties))?)
     }
 
+    pub(crate) fn create_builtin(
+        &mut self,
+        prototype: &Handle,
+        builtin: Builtin,
+    ) -> Result<Handle, Error> {
+        self.heap.get(prototype)?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        object.callable = Some(Callable::Builtin(builtin));
+        Ok(self.heap.insert(object)?)
+    }
+
+    pub(crate) fn create_object_prototype(&mut self) -> Result<Handle, Error> {
+        let mut object = OrdinaryObject::new(None, self.max_properties);
+        object.immutable_prototype = true;
+        Ok(self.heap.insert(object)?)
+    }
+
     /// Borrows a record for host inspection without traversing prototypes.
     pub fn inspect(&self, object: &Handle) -> Result<&OrdinaryObject, Error> {
         Ok(self.heap.get(object)?)
@@ -188,7 +206,7 @@ impl Objects {
         if current.prototype() == prototype {
             return Ok(true);
         }
-        if !current.is_extensible() {
+        if !current.is_extensible() || current.immutable_prototype {
             return Ok(false);
         }
         let mut next = prototype;

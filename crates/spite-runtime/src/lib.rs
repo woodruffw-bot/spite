@@ -1,5 +1,6 @@
 //! A tree-walking interpreter for the implemented ECMAScript subset.
 
+mod function;
 pub mod object;
 mod realm_object;
 mod value;
@@ -208,7 +209,7 @@ pub struct Realm {
     remaining_steps: usize,
     strict: bool,
     objects: object::Objects,
-    object_prototype: Option<ObjectHandle>,
+    intrinsics: Option<function::Intrinsics>,
 }
 
 impl Default for Realm {
@@ -243,7 +244,7 @@ impl Realm {
             remaining_steps: 0,
             strict: false,
             objects: object::Objects::new(limits.max_objects, limits.max_properties),
-            object_prototype: None,
+            intrinsics: None,
         }
     }
 
@@ -1151,7 +1152,13 @@ impl Realm {
                         _ => unreachable!("ToNumeric returns a numeric value"),
                     },
                     UnaryOp::Void => Value::Undefined,
-                    UnaryOp::Typeof => Value::String(JsString::from(value.type_name())),
+                    UnaryOp::Typeof => {
+                        Value::String(JsString::from(if self.is_callable(&value, expr.span)? {
+                            "function"
+                        } else {
+                            value.type_name()
+                        }))
+                    }
                     UnaryOp::Delete => Value::Boolean(true),
                 }
             }
@@ -1170,23 +1177,6 @@ impl Realm {
         };
         self.check_string(&result, expr.span)?;
         Ok(result)
-    }
-
-    fn call(
-        &mut self,
-        _function: Value,
-        _this: Value,
-        _arguments: Vec<Value>,
-        span: Span,
-    ) -> Result<Value, Error> {
-        // 13.3.6.2 checks IsCallable after ArgumentListEvaluation. All currently
-        // materialized values are non-callable; missing intrinsics fail earlier
-        // during GetValue rather than reaching this language TypeError.
-        Err(Self::exception(
-            ExceptionKind::TypeError,
-            span,
-            "value is not callable",
-        ))
     }
 
     fn binary(

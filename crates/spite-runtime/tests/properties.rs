@@ -34,7 +34,7 @@ fn own_and_inherited_properties_support_dotted_and_computed_reads() {
     boolean("({x: undefined}).x === undefined", true);
     boolean("({}).missing === undefined", true);
     boolean("({__proto__: null}).toString === undefined", true);
-    boolean("({}).__proto__ === undefined", true); // optional Annex B accessor is disabled
+    boolean("({}).__proto__ === undefined", true); // optional legacy accessor is disabled
     boolean("({toString: undefined}).toString === undefined", true);
 }
 
@@ -103,7 +103,7 @@ fn deletion_avoids_getvalue_and_removes_only_own_properties() {
         "let base = {x: 1}; let o = {__proto__: base, x: 2}; delete o.x && o.x === 1 && base.x === 1",
         true,
     );
-    boolean("let o = {}; delete o.toString", true); // reading the missing intrinsic would be Unsupported
+    boolean("let o = {}; delete o.toString", true); // inherited properties are not deleted
     boolean(
         "'use strict'; let o = {x: 1}; delete (o.x) && o.x === undefined",
         true,
@@ -163,10 +163,10 @@ fn nullish_bases_fail_at_get_put_or_delete_after_key_expression_evaluation() {
             ..
         })
     ));
-    // ToObject precedes ToPropertyKey, so the unimplemented object-key coercion
+    // ToObject precedes ToPropertyKey, so failed object-key coercion
     // cannot mask the required null-base TypeError.
     assert!(matches!(
-        Realm::default().eval("null[{}]"),
+        Realm::default().eval("null[{__proto__: null}]"),
         Err(Error::Exception {
             kind: ExceptionKind::TypeError,
             ..
@@ -179,8 +179,14 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
     for (operator, expected) in [("=", 1.0), ("+=", 0.0), ("??=", 0.0)] {
         let mut realm = Realm::default();
         realm.eval("let flag = 0; let o = {};").unwrap();
-        let result = realm.eval(&format!("o[{{}}] {operator} (flag = 1)"));
-        assert!(matches!(result, Err(Error::Unsupported { .. })));
+        let result = realm.eval(&format!("o[{{__proto__: null}}] {operator} (flag = 1)"));
+        assert!(matches!(
+            result,
+            Err(Error::Exception {
+                kind: ExceptionKind::TypeError,
+                ..
+            })
+        ));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(expected)));
     }
 }
@@ -189,8 +195,6 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 fn incomplete_intrinsic_methods_report_unsupported() {
     for name in [
         "constructor",
-        "toString",
-        "valueOf",
         "hasOwnProperty",
         "isPrototypeOf",
         "propertyIsEnumerable",
@@ -227,7 +231,7 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
             .eval("let o = {}; o.self = o; try { throw o; } catch (e) { e.flag = 7; } o.self.flag"),
         Ok(Value::Number(7.0))
     );
-    assert_eq!(realm.collect(1000).unwrap().live, 2);
+    assert_eq!(realm.collect(1000).unwrap().live, 5);
     assert_eq!(realm.eval("o === o.self"), Ok(Value::Boolean(true)));
     realm.eval("o = null").unwrap();
     assert_eq!(realm.collect(1000).unwrap().reclaimed, 1);
@@ -236,11 +240,11 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
 #[test]
 fn long_prototype_reads_are_bounded_and_host_failures_skip_finalizers() {
     let mut realm = Realm::new(Limits {
-        max_steps: 64,
+        max_steps: 128,
         ..Limits::default()
     });
     realm.eval("let p = null; let flag = 0").unwrap();
-    for _ in 0..30 {
+    for _ in 0..60 {
         realm.eval("p = {__proto__: p}").unwrap();
     }
     assert!(matches!(

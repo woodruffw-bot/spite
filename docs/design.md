@@ -16,6 +16,8 @@ The edition-17 `Legacy` label does not itself mean optional. In particular,
 leading-zero numeric literals and octal/decimal string escapes are required by
 12.9.3–4 in non-strict code and rejected as early errors in strict code. Preserve
 their lexical metadata until the entire directive prologue establishes strictness.
+The optional legacy Object.prototype accessor/helpers in 20.1.3.8–9 are disabled;
+these clauses are explicitly Normative Optional, separately from Annex B.
 
 Production crates use Rust's standard library and workspace crates. Two direct
 external production dependencies are approved when needed: `regex` for regular
@@ -188,10 +190,10 @@ object is truthy, and property tracing visits object-valued edges. Heap-context
 definitions validate these edges before mutation. Context-free conversion APIs
 return a distinct `ConversionError::ObjectNeedsContext`, rather than inventing
 a primitive or JavaScript exception. Realm-level OrdinaryToPrimitive performs
-ordered method lookups using the requested hint. Every currently materialized
-heap object is non-callable, so ordinary objects without callable methods throw
-TypeError. Missing callable intrinsics remain Unsupported. Add IsCallable/Call
-dispatch before exposing function objects, and Symbol hooks before Symbol keys.
+ordered method lookups and calls using the requested hint and original receiver.
+Objects without a method yielding a primitive throw TypeError. Object.prototype
+toString and valueOf provide ordinary default conversion. Missing intrinsics
+remain Unsupported. Add Symbol hooks before exposing Symbol keys.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; templates and property names use the string hint.
 
@@ -219,7 +221,8 @@ attributes. Canonical numeric index names exclude string `-0`, leading zeros,
 fractions, and out-of-range indices. Writes retain the primitive receiver and
 fail without persisting a property; strict mode throws. Missing standard prototype
 methods report Unsupported, while absent properties produce undefined. The
-optional Annex B String methods and prototype accessor are not installed.
+optional Annex B String methods and optional legacy Object.prototype accessor
+are not installed.
 
 The `in` operator checks that its RHS is an Object before converting the key,
 then searches own and inherited properties. Presence checks can report standard
@@ -238,10 +241,17 @@ inside evaluation, temporary and pending-completion lifetimes still need roots.
 Function support begins with call syntax and reference-aware callee evaluation.
 GetValue of the callee precedes arguments; argument evaluation precedes the
 IsCallable check. Member calls retain their base as the receiver, including through
-parentheses. Spread arguments and optional calls remain unsupported. Add builtin
-function objects first, then captured environment storage and user functions.
-All currently materialized values are non-callable; unavailable standard functions
-report Unsupported during lookup rather than reaching a false TypeError result.
+parentheses. Spread arguments and optional calls remain unsupported. Builtin
+function objects carry explicit callable metadata, inherit Function.prototype,
+and have standard name/length descriptors. Function.prototype itself is callable
+and returns undefined. Object.prototype has an immutable null prototype
+(20.1.3, 10.4.7.1). The four intrinsic objects are published atomically after lazy
+initialization and retained as roots; failed initialization leaves only unreachable
+allocations for explicit collection. Unavailable standard methods and mandatory
+Function.prototype restricted accessors remain Unsupported, including accessor
+writes. Native Object.prototype.valueOf still reports Unsupported when it would
+return a primitive wrapper. Captured environment storage and user functions follow
+this callable-object foundation.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later

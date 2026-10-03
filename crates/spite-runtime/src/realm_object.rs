@@ -39,17 +39,20 @@ impl Realm {
         let Value::Object(object) = value else {
             return Ok(value);
         };
-        // 7.1.1 / 7.1.1.1. All currently constructible heap objects are ordinary
-        // and non-callable, and no Symbol-keyed hooks can be installed yet.
-        // Keep realm lookup here so missing callable intrinsics are Unsupported,
-        // while present non-callable values are skipped as the spec requires.
+        // 7.1.1 / 7.1.1.1. Symbol-keyed hooks cannot be installed yet. Ordinary
+        // method lookup and calls retain their receiver and requested hint order.
         let names = match hint {
             Hint::String => ["toString", "valueOf"],
             Hint::Default | Hint::Number => ["valueOf", "toString"],
         };
         for name in names {
-            let _method = self.get_property(&object, &JsString::from(name), span)?;
-            // Add IsCallable/Call dispatch before exposing function objects.
+            let method = self.get_property(&object, &JsString::from(name), span)?;
+            if self.is_callable(&method, span)? {
+                let result = self.call(method, Value::Object(object.clone()), Vec::new(), span)?;
+                if !matches!(result, Value::Object(_)) {
+                    return Ok(result);
+                }
+            }
         }
         Err(Self::exception(
             crate::ExceptionKind::TypeError,
@@ -73,7 +76,7 @@ impl Realm {
         while let Some(handle) = next {
             if self.object_work(span, |objects, budget| {
                 objects.has_own(&handle, key, budget)
-            })? || self.object_prototype.as_ref() == Some(&handle) && missing_object_method(key)
+            })? || self.missing_intrinsic_property(&handle, key)
             {
                 return Ok(true);
             }
@@ -132,6 +135,12 @@ impl Realm {
         span: Span,
     ) -> Result<bool, Error> {
         if let Value::Object(object) = base {
+            if self.restricted_function_reference(object, &key, span)? {
+                return Err(Self::unsupported(
+                    span,
+                    "Function.prototype restricted accessors are not implemented",
+                ));
+            }
             return self.object_work(span, |objects, budget| {
                 objects.set(object, key, value, Some(object), budget)
             });
@@ -180,10 +189,10 @@ impl Realm {
             }
             // Missing standard methods must not appear to be absent. Until
             // callable intrinsics are implemented, accessing one is a host gap.
-            if self.object_prototype.as_ref() == Some(&handle) && missing_object_method(key) {
+            if self.missing_intrinsic_property(&handle, key) {
                 return Err(Self::unsupported(
                     span,
-                    "Object.prototype method is not implemented",
+                    "intrinsic prototype property is not implemented",
                 ));
             }
             next = self.object_work(span, |objects, _| {
@@ -231,7 +240,7 @@ impl Realm {
         let scanned = self.scopes.iter().try_fold(
             self.globals
                 .len()
-                .checked_add(1)
+                .checked_add(4)
                 .ok_or(spite_heap::Error::Limit)?,
             |count, scope| {
                 count
@@ -255,7 +264,11 @@ impl Realm {
                 Value::Object(handle) => Some(handle),
                 _ => None,
             })
-            .chain(self.object_prototype.iter());
+            .chain(
+                self.intrinsics
+                    .iter()
+                    .flat_map(|intrinsics| intrinsics.roots()),
+            );
         let mut result = self.objects.collect(roots, remaining)?;
         result.work_used += scanned;
         Ok(result)
@@ -315,15 +328,7 @@ impl Realm {
         properties: &[ObjectProperty],
         span: Span,
     ) -> Result<Value, Error> {
-        // Preserve the intrinsic's identity before its callable methods arrive.
-        // Missing intrinsic operations remain Unsupported at language boundaries.
-        let prototype = if let Some(handle) = &self.object_prototype {
-            handle.clone()
-        } else {
-            let handle = self.object_work(span, |objects, _| objects.create(None))?;
-            self.object_prototype = Some(handle.clone());
-            handle
-        };
+        let prototype = self.ensure_object_intrinsics(span)?;
         let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         for property in properties {
             self.tick(property.span)?;
@@ -368,6 +373,57 @@ impl Realm {
     }
 }
 
+impl Realm {
+    fn missing_intrinsic_property(&self, object: &ObjectHandle, key: &JsString) -> bool {
+        let Some(intrinsics) = &self.intrinsics else {
+            return false;
+        };
+        (object == &intrinsics.object_prototype && missing_object_method(key))
+            || (object == &intrinsics.function_prototype
+                && [
+                    "constructor",
+                    "apply",
+                    "bind",
+                    "call",
+                    "toString",
+                    "caller",
+                    "arguments",
+                ]
+                .iter()
+                .any(|name| key_is(key, name)))
+    }
+
+    fn restricted_function_reference(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<bool, Error> {
+        if !key_is(key, "caller") && !key_is(key, "arguments") {
+            return Ok(false);
+        }
+        let Some(intrinsics) = &self.intrinsics else {
+            return Ok(false);
+        };
+        let prototype = intrinsics.function_prototype.clone();
+        let mut next = Some(object.clone());
+        while let Some(handle) = next {
+            if self.object_work(span, |objects, budget| {
+                objects.has_own(&handle, key, budget)
+            })? {
+                return Ok(false);
+            }
+            if handle == prototype {
+                return Ok(true);
+            }
+            next = self.object_work(span, |objects, _| {
+                Ok(objects.inspect(&handle)?.prototype().cloned())
+            })?;
+        }
+        Ok(false)
+    }
+}
+
 fn missing_object_method(key: &JsString) -> bool {
     [
         "constructor",
@@ -375,8 +431,6 @@ fn missing_object_method(key: &JsString) -> bool {
         "isPrototypeOf",
         "propertyIsEnumerable",
         "toLocaleString",
-        "toString",
-        "valueOf",
     ]
     .iter()
     .any(|name| key_is(key, name))
@@ -387,7 +441,7 @@ fn key_is(key: &JsString, name: &str) -> bool {
 }
 
 fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
-    if missing_object_method(key) {
+    if missing_object_method(key) || key_is(key, "toString") || key_is(key, "valueOf") {
         return true;
     }
     let names: &[&str] = match base {

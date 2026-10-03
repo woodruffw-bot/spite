@@ -17,7 +17,8 @@ not an alternative language specification.
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
-| Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, explicit gaps for callable hooks |
+| Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
+| Calls | Builtin callable identity, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -69,8 +70,8 @@ GetValue/PutValue/delete. Primitive property operations use ephemeral wrapper
 semantics; String indices and length are read-only and non-configurable. Writes
 do not persist on primitives, and strict failures throw TypeError. Reading a
 missing standard prototype method reports Unsupported, while ordinary object
-properties can shadow it. Optional Annex B prototype accessors and String methods
-are not installed.
+properties can shadow it. Optional legacy Object.prototype accessors/helpers (20.1.3.8–9) and Annex B
+String methods are not installed.
 
 The `in` operator includes inherited and undefined-valued properties, rejects
 primitive right operands before converting the left key, and recognizes standard
@@ -78,12 +79,16 @@ Object.prototype method presence. The parser applies the In grammar parameter to
 for initializers and nested expressions. For-in/of iteration remains unsupported.
 
 Call expressions parse, retain member receivers, and evaluate callee then arguments
-in order. Non-callable values throw TypeError after argument evaluation. Callable
-function objects, spread arguments, optional calls, and user functions remain open;
-unavailable standard functions still report Unsupported during lookup.
+in order. Non-callable values throw TypeError after argument evaluation. Builtin
+function objects inherit callable Function.prototype and expose standard name/length
+descriptors. Object.prototype has an immutable null prototype, toString, and
+valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
+is atomic and the four objects remain rooted. Primitive wrappers returned by
+valueOf, Function.prototype methods/restricted accessors, spread arguments, optional
+calls, and user functions remain open; missing operations report Unsupported.
 
 Symbols, primitive wrapper constructors,
-arrays, callable functions, closures, constructors, classes, destructuring, regular
+arrays, user functions, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

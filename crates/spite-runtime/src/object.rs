@@ -1,10 +1,11 @@
-//! Ordinary data-property storage, before objects are exposed to JavaScript.
+//! Ordinary data-property storage and function call metadata.
 //!
 //! This layer implements own string-keyed data properties. Accessors, Symbols,
 //! and exotic internal methods are separate increments.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::Value;
+use crate::function::Callable;
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 use std::fmt;
@@ -62,6 +63,8 @@ pub struct OrdinaryObject {
     extensible: bool,
     properties: Vec<(JsString, DataProperty)>,
     max_properties: usize,
+    callable: Option<Callable>,
+    immutable_prototype: bool,
 }
 
 impl OrdinaryObject {
@@ -74,12 +77,23 @@ impl OrdinaryObject {
             extensible: true,
             properties: Vec::new(),
             max_properties,
+            callable: None,
+            immutable_prototype: false,
         }
     }
 
     /// Returns the unrooted prototype handle, or `None` for a null prototype.
     pub fn prototype(&self) -> Option<&Handle> {
         self.prototype.as_ref()
+    }
+
+    /// Returns whether the object has a [[Call]] internal method.
+    pub fn is_callable(&self) -> bool {
+        self.callable.is_some()
+    }
+
+    pub(crate) fn callable(&self) -> Option<&Callable> {
+        self.callable.as_ref()
     }
 
     /// Returns whether new own properties may be created.
@@ -206,11 +220,16 @@ impl OrdinaryObject {
 
 impl Trace for OrdinaryObject {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
-        std::iter::once(self.prototype.as_ref()).chain(
-            self.properties
-                .iter()
-                .flat_map(|(_, property)| property.value.trace()),
-        )
+        let callable = self.callable.as_ref().and_then(|callable| match callable {
+            Callable::Builtin(_) => None,
+        });
+        std::iter::once(self.prototype.as_ref())
+            .chain(std::iter::once(callable))
+            .chain(
+                self.properties
+                    .iter()
+                    .flat_map(|(_, property)| property.value.trace()),
+            )
     }
 }
 

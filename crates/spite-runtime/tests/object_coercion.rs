@@ -1,4 +1,4 @@
-//! Realm-level OrdinaryToPrimitive dispatch before callable objects are available.
+//! Realm-level OrdinaryToPrimitive dispatch and conversion ordering.
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
@@ -77,7 +77,8 @@ fn conversions_run_left_to_right_after_both_operand_expressions() {
     for operator in ["+", "-", "*", "/", "<", ">", "<=", ">="] {
         let mut realm = Realm::default();
         realm.eval("let flag = 0").unwrap();
-        let source = format!("(flag = 1, {{__proto__: null}}) {operator} (flag = 2, {{}})");
+        let source =
+            format!("(flag = 1, {{__proto__: null}}) {operator} (flag = 2, ({{}}).toString)");
         assert!(
             matches!(
                 realm.eval(&source),
@@ -89,7 +90,7 @@ fn conversions_run_left_to_right_after_both_operand_expressions() {
             "{operator}"
         );
         assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
-        let source = format!("({{}}) {operator} ({{__proto__: null}})");
+        let source = format!("({{}}).toString {operator} ({{__proto__: null}})");
         assert!(
             matches!(realm.eval(&source), Err(Error::Unsupported { .. })),
             "{operator}"
@@ -114,9 +115,10 @@ fn deferred_reference_conversion_observes_rhs_mutation_of_the_key_object() {
     realm.eval("key = {}; flag = 0").unwrap();
     assert!(matches!(
         realm.eval("o[key] += (key.toString = 1, key.valueOf = 2, flag = 1)"),
-        Err(Error::Unsupported { .. })
+        Ok(Value::Number(n)) if n.is_nan()
     ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
+    assert!(matches!(realm.eval("o['[object Object]']"), Ok(Value::Number(n)) if n.is_nan()));
 }
 
 #[test]
@@ -137,12 +139,7 @@ fn failed_conversion_is_catchable_and_prevents_later_values_or_writes() {
 
 #[test]
 fn missing_callable_intrinsics_remain_unsupported_and_string_hook_names_are_ordinary() {
-    for source in [
-        "+{}",
-        "`${{}}`",
-        "({valueOf: 1}) + 2",
-        "({toString: 1}) + 2",
-    ] {
+    for source in ["+({}).toString", "`${({}).toString}`"] {
         assert!(
             matches!(
                 Realm::default().eval(source),
@@ -151,5 +148,10 @@ fn missing_callable_intrinsics_remain_unsupported_and_string_hook_names_are_ordi
             "{source}"
         );
     }
+    assert_eq!(
+        Realm::default().eval("({valueOf: 1}) + 2"),
+        Ok(Value::String("[object Object]2".into()))
+    );
+    type_error("({toString: 1}) + 2");
     type_error("+({__proto__: null, '@@toPrimitive': 7})");
 }
