@@ -231,7 +231,7 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
             .eval("let o = {}; o.self = o; try { throw o; } catch (e) { e.flag = 7; } o.self.flag"),
         Ok(Value::Number(7.0))
     );
-    assert_eq!(realm.collect(1000).unwrap().live, 10);
+    assert_eq!(realm.collect(1000).unwrap().live, 11);
     assert_eq!(realm.eval("o === o.self"), Ok(Value::Boolean(true)));
     realm.eval("o = null").unwrap();
     assert_eq!(realm.collect(1000).unwrap().reclaimed, 1);

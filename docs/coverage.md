@@ -26,7 +26,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
-| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, object slots, properties per object, and call argument count |
+| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31 reviewed Test262 variants from 11 hashbang and 10 BigInt files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
@@ -63,7 +63,11 @@ unsupported. Explicit collection between evaluations retains persistent bindings
 intrinsics, and host roots. Returned/thrown object values need a host root to
 survive collection; tokens release roots when their last clone is dropped. Root
 registry storage is reused. Collection during evaluation remains disabled until
-temporary and pending-completion root lifetimes are implemented.
+temporary and pending-completion root lifetimes are implemented. Lexical
+environments now share the generational heap, carry stable identities and outer
+links, and trace object-valued bindings. Per-iteration environments preserve
+previous identities. `max_heap_entries` replaces the earlier object-only slot
+limit name; explicit collection reclaims abandoned scopes too.
 
 Dotted and computed property references parse and evaluate for ordinary objects,
 including assignment, compound assignment, update, and delete targets. Tests cover

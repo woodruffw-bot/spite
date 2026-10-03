@@ -12,6 +12,7 @@ use std::fmt;
 #[cfg(test)]
 mod accessor_tests;
 mod descriptor;
+mod entry;
 mod store;
 pub use descriptor::{
     AccessorProperty, DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor,

@@ -1,6 +1,8 @@
 //! A tree-walking interpreter for the implemented ECMAScript subset.
 
+mod environment;
 mod function;
+use environment::{BindingState, EnvironmentHandle};
 pub mod object;
 mod realm_object;
 mod value;
@@ -104,8 +106,8 @@ pub struct Limits {
     pub max_bigint_bits: usize,
     /// Maximum values in a call argument list, including apply and bound arguments.
     pub max_arguments: usize,
-    /// Maximum object heap slots, including lazily allocated intrinsics.
-    pub max_objects: usize,
+    /// Maximum heap slots shared by objects and lexical environments.
+    pub max_heap_entries: usize,
     /// Maximum own properties in each ordinary object.
     pub max_properties: usize,
 }
@@ -116,16 +118,10 @@ impl Default for Limits {
             max_string_units: 1024 * 1024,
             max_bigint_bits: 65_536,
             max_arguments: 16_384,
-            max_objects: 10_000,
+            max_heap_entries: 10_000,
             max_properties: 1024,
         }
     }
-}
-
-#[derive(Debug)]
-struct BindingState {
-    value: Option<Value>,
-    mutable: bool,
 }
 
 #[derive(Debug)]
@@ -137,7 +133,7 @@ struct GlobalBinding {
 // Resolve references before evaluating assignment RHS expressions. GetValue and
 // PutValue are separate operations, including the unresolvable typeof case.
 enum Reference<'a> {
-    Lexical(usize, &'a str),
+    Lexical(EnvironmentHandle, &'a str),
     Global(&'a str),
     Unresolvable(&'a str),
     UnsupportedGlobal(&'a str),
@@ -205,7 +201,7 @@ impl Completion {
 /// extensions are not installed. Each instance owns all of its state.
 #[derive(Debug)]
 pub struct Realm {
-    scopes: Vec<BTreeMap<String, BindingState>>,
+    scopes: Vec<EnvironmentHandle>,
     globals: BTreeMap<String, GlobalBinding>,
     unsupported_host_globals: BTreeSet<String>,
     limits: Limits,
@@ -226,7 +222,7 @@ impl Realm {
     /// Creates a realm with explicit host limits.
     pub fn new(limits: Limits) -> Self {
         Self {
-            scopes: vec![BTreeMap::new()],
+            scopes: Vec::new(),
             globals: [
                 ("undefined", Value::Undefined),
                 ("NaN", Value::Number(f64::NAN)),
@@ -248,7 +244,7 @@ impl Realm {
             remaining_steps: 0,
             call_depth: 0,
             strict: false,
-            objects: object::Objects::new(limits.max_objects, limits.max_properties),
+            objects: object::Objects::new(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
         }
     }
@@ -278,6 +274,9 @@ impl Realm {
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
+        if self.scopes.is_empty() {
+            self.push_scope(BTreeMap::new(), Span::new(0, 0))?;
+        }
         self.instantiate_global(script)?;
         let completion = self.statements(script.statements())?;
         // Validated Scripts cannot leave an unhandled control transfer.
@@ -422,15 +421,33 @@ impl Realm {
         Ok(())
     }
 
+    fn push_scope(
+        &mut self,
+        bindings: BTreeMap<String, BindingState>,
+        span: Span,
+    ) -> Result<(), Error> {
+        let outer = self.scopes.last().cloned();
+        let scope = self.object_work(span, |objects, budget| {
+            objects.create_environment(outer, bindings, budget)
+        })?;
+        self.scopes.push(scope);
+        Ok(())
+    }
+
     fn instantiate<'a>(
         &mut self,
         statements: impl Iterator<Item = &'a Statement> + Clone,
         global: bool,
     ) -> Result<(), Error> {
-        let scope = self
+        let handle = self
             .scopes
-            .last_mut()
+            .last()
             .expect("a realm always has a global scope");
+        let scope = &self
+            .objects
+            .environment(handle)
+            .expect("active environment")
+            .bindings;
         // Check all global conflicts before creating any bindings.
         for statement in statements.clone() {
             if let StatementKind::Lexical { bindings, .. } = &statement.kind {
@@ -451,6 +468,11 @@ impl Realm {
                 }
             }
         }
+        let scope = &mut self
+            .objects
+            .environment_mut(handle)
+            .expect("active environment")
+            .bindings;
         for statement in statements {
             if let StatementKind::Lexical { mutable, bindings } = &statement.kind {
                 for binding in bindings {
@@ -475,7 +497,12 @@ impl Realm {
             } else {
                 Value::Undefined
             };
-            let scope = self.scopes.last_mut().expect("a realm always has a scope");
+            let handle = self.scopes.last().expect("a realm always has a scope");
+            let scope = &mut self
+                .objects
+                .environment_mut(handle)
+                .expect("active environment")
+                .bindings;
             scope
                 .get_mut(&binding.name)
                 .expect("declaration was instantiated")
@@ -490,7 +517,13 @@ impl Realm {
         let declarations = script.var_declarations();
         for binding in &declarations {
             self.tick(binding.span)?;
-            if self.scopes[0].contains_key(&binding.name) {
+            if self
+                .objects
+                .environment(&self.scopes[0])
+                .expect("global environment")
+                .bindings
+                .contains_key(&binding.name)
+            {
                 return Err(Self::exception(
                     ExceptionKind::SyntaxError,
                     binding.span,
@@ -527,7 +560,7 @@ impl Realm {
             // ECMA-262 14.3.2.1: a declaration without an initializer does not
             // assign, and an initializer resolves its reference before the RHS.
             if let Some(expr) = &binding.initializer {
-                let reference = self.resolve(&binding.name);
+                let reference = self.resolve(&binding.name, binding.span)?;
                 let value = self.expression(expr)?;
                 self.put(reference, value, binding.span)?;
             }
@@ -594,7 +627,7 @@ impl Realm {
                 Ok(Completion::normal(None))
             }
             StatementKind::Block(body) => {
-                self.scopes.push(BTreeMap::new());
+                self.push_scope(BTreeMap::new(), statement.span)?;
                 let result = self
                     .instantiate(body.iter(), false)
                     .and_then(|()| self.statements(body));
@@ -634,7 +667,7 @@ impl Realm {
                 // ECMA-262 14.12.4 evaluates the discriminant before creating
                 // the shared case-block environment. Selectors use that new scope.
                 let input = self.expression(discriminant)?;
-                self.scopes.push(BTreeMap::new());
+                self.push_scope(BTreeMap::new(), statement.span)?;
                 let result = self
                     .instantiate(
                         clauses.iter().flat_map(|clause| clause.statements.iter()),
@@ -697,7 +730,7 @@ impl Realm {
                                 )
                             })
                             .collect();
-                        self.scopes.push(scope);
+                        self.push_scope(scope, statement.span)?;
                         let per_iteration = if *mutable { bindings.as_slice() } else { &[] };
                         let result = self.initialize_bindings(bindings).and_then(|()| {
                             self.for_body(
@@ -815,7 +848,12 @@ impl Realm {
         let mut next = BTreeMap::new();
         for binding in bindings {
             self.tick(binding.span)?;
-            let scope = self.scopes.last().expect("loop environment exists");
+            let handle = self.scopes.last().expect("loop environment exists");
+            let scope = &self
+                .objects
+                .environment(handle)
+                .expect("active environment")
+                .bindings;
             let value = scope[&binding.name]
                 .value
                 .clone()
@@ -828,27 +866,44 @@ impl Realm {
                 },
             );
         }
+        let current = self.scopes.last().expect("loop environment exists");
+        let outer = self
+            .objects
+            .environment(current)
+            .expect("active environment")
+            .outer
+            .clone();
+        let next = self.object_work(bindings[0].span, |objects, budget| {
+            objects.create_environment(outer, next, budget)
+        })?;
         *self.scopes.last_mut().expect("loop environment exists") = next;
         Ok(())
     }
 
-    fn resolve<'a>(&self, name: &'a str) -> Reference<'a> {
-        for (index, scope) in self.scopes.iter().enumerate().rev() {
-            if scope.contains_key(name) {
-                return Reference::Lexical(index, name);
+    fn resolve<'a>(&mut self, name: &'a str, span: Span) -> Result<Reference<'a>, Error> {
+        let mut next = self.scopes.last().cloned();
+        while let Some(handle) = next {
+            self.tick(span)?;
+            let scope = self
+                .objects
+                .environment(&handle)
+                .expect("active environment");
+            if scope.bindings.contains_key(name) {
+                return Ok(Reference::Lexical(handle, name));
             }
+            next = scope.outer.clone();
         }
-        if self.globals.contains_key(name) {
+        Ok(if self.globals.contains_key(name) {
             Reference::Global(name)
         } else if standard_global(name) || self.unsupported_host_globals.contains(name) {
             Reference::UnsupportedGlobal(name)
         } else {
             Reference::Unresolvable(name)
-        }
+        })
     }
     fn reference<'a>(&mut self, target: &'a Expr) -> Result<Reference<'a>, Error> {
         match &target.kind {
-            ExprKind::Identifier(name) => Ok(self.resolve(name)),
+            ExprKind::Identifier(name) => self.resolve(name, target.span),
             ExprKind::Parenthesized(inner) => self.reference(inner),
             ExprKind::Member(base, name) => {
                 let base = self.expression(base)?;
@@ -868,15 +923,20 @@ impl Realm {
                 let key = self.reference_key(key, span)?;
                 self.get_property_value(base, &key, span)
             }
-            Reference::Lexical(index, name) => {
-                self.scopes[*index][*name].value.clone().ok_or_else(|| {
+            Reference::Lexical(handle, name) => self
+                .objects
+                .environment(handle)
+                .expect("resolved environment")
+                .bindings[*name]
+                .value
+                .clone()
+                .ok_or_else(|| {
                     Self::exception(
                         ExceptionKind::ReferenceError,
                         span,
                         format!("{name} is uninitialized"),
                     )
-                })
-            }
+                }),
             Reference::Global(name) => Ok(self.globals[*name].value.clone()),
             Reference::Unresolvable(name) => Err(Self::exception(
                 ExceptionKind::ReferenceError,
@@ -903,8 +963,12 @@ impl Realm {
                     ));
                 }
             }
-            Reference::Lexical(index, name) => {
-                let binding = self.scopes[index]
+            Reference::Lexical(handle, name) => {
+                let binding = self
+                    .objects
+                    .environment_mut(&handle)
+                    .expect("resolved environment")
+                    .bindings
                     .get_mut(name)
                     .expect("resolved binding exists");
                 if binding.value.is_none() {
@@ -975,13 +1039,16 @@ impl Realm {
             _ => unreachable!("only language throws enter a catch clause"),
         };
         self.tick(parameter.span)?;
-        self.scopes.push(BTreeMap::from([(
-            parameter.name.clone(),
-            BindingState {
-                value: Some(value),
-                mutable: true,
-            },
-        )]));
+        self.push_scope(
+            BTreeMap::from([(
+                parameter.name.clone(),
+                BindingState {
+                    value: Some(value),
+                    mutable: true,
+                },
+            )]),
+            handler.span,
+        )?;
         let result = self.statement(&handler.body);
         self.scopes.pop();
         result
@@ -1037,7 +1104,10 @@ impl Realm {
                 Value::String(JsString::from_code_units(units))
             }
             ExprKind::Literal(literal) => self.literal_value(literal, expr.span)?,
-            ExprKind::Identifier(name) => self.get(&mut self.resolve(name), expr.span)?,
+            ExprKind::Identifier(name) => {
+                let mut reference = self.resolve(name, expr.span)?;
+                self.get(&mut reference, expr.span)?
+            }
             ExprKind::Parenthesized(inner) => self.expression(inner)?,
             ExprKind::Member(..) => {
                 let mut reference = self.reference(expr)?;
@@ -1133,7 +1203,7 @@ impl Realm {
                 }
                 if *op == UnaryOp::Typeof {
                     if let Some(name) = identifier(inner) {
-                        if matches!(self.resolve(name), Reference::Unresolvable(_)) {
+                        if matches!(self.resolve(name, expr.span)?, Reference::Unresolvable(_)) {
                             let value = Value::String(JsString::from("undefined"));
                             self.check_string(&value, expr.span)?;
                             return Ok(value);

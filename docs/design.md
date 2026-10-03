@@ -132,6 +132,23 @@ Lexical bindings distinguish uninitialized from undefined and preserve mutabilit
 Declarations are instantiated before evaluation. Closures retain environment
 identities. Global object bindings and lexical bindings have distinct semantics.
 
+Declarative environments now occupy entries in the same generational heap as
+objects. Each has an explicit outer handle and a binding map. Active scope stacks
+hold handles; lexical references retain the resolved environment identity instead
+of a stack index. Name lookup follows outer links with bounded work, preparing for
+closures that execute under a different caller. Per-iteration let environments
+copy bindings into a fresh identity with the same outer link (14.7.4.4).
+
+The global lexical environment is allocated lazily on first evaluation. The host
+slot limit is named `max_heap_entries` and counts both objects and environments.
+Temporary scopes remain allocated until explicit collection; scope restoration
+changes active roots on every normal or abrupt exit. The collector traces outer
+links and every binding, charging scans even for uninitialized/primitive values.
+Checked object access rejects an environment handle and vice versa. User function
+records will capture these environment handles; function syntax and calls follow
+this storage migration. Global object/var bindings remain a separate realm map
+until the observable global object model is implemented.
+
 Object support starts with a separately tested `spite-heap` foundation before
 object values become visible to JavaScript. Objects use opaque arena handles,
 not unsafe pointers or reference-counted object cycles. A handle carries a slot,
@@ -197,7 +214,7 @@ remain Unsupported. Add Symbol hooks before exposing Symbol keys.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; templates and property names use the string hint.
 
-Realm allocation is bounded by object slots and per-object property counts. Object
+Realm allocation is bounded by shared heap slots and per-object property counts. Object
 literals create data properties in source order, convert computed keys before
 evaluating values, and implement the required non-computed `__proto__` initializer.
 The intrinsic Object prototype has a stable, retained identity; its callable

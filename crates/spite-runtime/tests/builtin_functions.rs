@@ -226,11 +226,11 @@ fn builtin_graphs_and_host_roots_survive_collection() {
     let value = realm.eval("({}).toString").unwrap();
     let root = realm.root_value(value.clone(), 100).unwrap();
     let result = realm.collect(1000).unwrap();
-    assert_eq!(result.live, 9);
+    assert_eq!(result.live, 10);
     assert_eq!(result.reclaimed, 1);
     assert_eq!(realm.eval("({}).toString"), Ok(value));
     drop(root);
-    assert_eq!(realm.collect(1000).unwrap().live, 9);
+    assert_eq!(realm.collect(1000).unwrap().live, 10);
     string("({}).toString()", "[object Object]");
 }
 
@@ -246,14 +246,17 @@ fn partial_intrinsic_initialization_is_never_published() {
             Ok(Value::Object(_)) | Err(Error::Limit { .. })
         ));
         let live = realm.collect(1000).unwrap().live;
-        assert!(live == 0 || live == 9, "work={work}, live={live}");
+        assert!(
+            live == 0 || live == 1 || live == 10,
+            "work={work}, live={live}"
+        );
     }
-    for slots in 0..9 {
+    for slots in 0..10 {
         let mut realm = Realm::new(Limits {
-            max_objects: slots,
+            max_heap_entries: slots,
             ..Limits::default()
         });
         assert!(matches!(realm.eval("({})"), Err(Error::Limit { .. })));
-        assert_eq!(realm.collect(1000).unwrap().live, 0);
+        assert_eq!(realm.collect(1000).unwrap().live, usize::from(slots > 0));
     }
 }

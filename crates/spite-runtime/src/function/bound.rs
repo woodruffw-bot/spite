@@ -274,7 +274,7 @@ mod tests {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
         let result = realm.collect(20000).unwrap();
         assert!(result.reclaimed > 0);
-        assert_eq!(result.live, 9);
+        assert_eq!(result.live, 10);
         replace(&mut realm, &target, "length", Value::Number(0.0));
         assert_eq!(
             realm.eval("target.bind(null)()"),
@@ -285,7 +285,7 @@ mod tests {
     #[test]
     fn deep_bound_chains_dispatch_and_trace_iteratively() {
         let mut realm = Realm::new(Limits {
-            max_objects: 11_000,
+            max_heap_entries: 11_000,
             ..Limits::default()
         });
         let mut function = target(&mut realm);
@@ -304,7 +304,7 @@ mod tests {
         }
         let value = Value::Object(function);
         let root = realm.root_value(value.clone(), 100).unwrap();
-        assert_eq!(realm.collect(200_000).unwrap().live, 10_009);
+        assert_eq!(realm.collect(200_000).unwrap().live, 10010);
         assert_eq!(
             realm.call(value, Value::Undefined, Vec::new(), Span::new(0, 0)),
             Ok(Value::String(JsString::from("[object Null]")))

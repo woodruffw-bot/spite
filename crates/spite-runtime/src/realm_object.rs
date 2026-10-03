@@ -250,37 +250,30 @@ impl Realm {
     /// allocation never call the collector, so live evaluation temporaries cannot
     /// be collected. Environment scans consume the supplied work budget too.
     pub fn collect(&mut self, max_work: usize) -> Result<Collection, spite_heap::Error> {
-        let scanned = self.scopes.iter().try_fold(
-            self.globals
-                .len()
-                .checked_add(
+        let scanned = self
+            .globals
+            .len()
+            .checked_add(self.scopes.len())
+            .and_then(|count| {
+                count.checked_add(
                     self.intrinsics
                         .as_ref()
                         .map_or(1, |intrinsics| intrinsics.roots().count()),
                 )
-                .ok_or(spite_heap::Error::Limit)?,
-            |count, scope| {
-                count
-                    .checked_add(scope.len())
-                    .and_then(|n| n.checked_add(1))
-                    .ok_or(spite_heap::Error::Limit)
-            },
-        )?;
+            })
+            .ok_or(spite_heap::Error::Limit)?;
         let remaining = max_work
             .checked_sub(scanned)
             .ok_or(spite_heap::Error::Limit)?;
-        let bindings = self
-            .scopes
-            .iter()
-            .flat_map(|scope| scope.values())
-            .filter_map(|binding| binding.value.as_ref());
-        let globals = self.globals.values().map(|binding| &binding.value);
-        let roots = bindings
-            .chain(globals)
-            .filter_map(|value| match value {
+        let globals = self
+            .globals
+            .values()
+            .filter_map(|binding| match &binding.value {
                 Value::Object(handle) => Some(handle),
                 _ => None,
-            })
+            });
+        let roots = globals
+            .chain(self.scopes.iter().map(|scope| &scope.0))
             .chain(
                 self.intrinsics
                     .iter()
@@ -309,7 +302,7 @@ impl Realm {
                     message: error.to_string(),
                 }
             }
-            object::Error::NotCallable => {
+            object::Error::NotCallable | object::Error::WrongKind => {
                 unreachable!("realm operations validate function callability before storage")
             }
             object::Error::Heap(

@@ -1,10 +1,15 @@
 //! Heap context for ordinary internal methods with bounded prototype traversal.
 
+use super::entry::Entry;
 use super::{DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor};
-use crate::Value;
 use crate::function::{BoundFunction, Builtin, Callable};
+use crate::{
+    Value,
+    environment::{BindingState, Environment, EnvironmentHandle},
+};
 use spite_core::JsString;
 use spite_heap::{Collection, Handle, Heap};
+use std::collections::BTreeMap;
 use std::{
     fmt,
     rc::{Rc, Weak},
@@ -38,6 +43,8 @@ pub enum Error {
     PropertyLimit,
     /// A supplied function handle does not refer to a callable object.
     NotCallable,
+    /// A valid handle refers to a different kind of runtime heap entry.
+    WrongKind,
 }
 
 impl fmt::Display for Error {
@@ -47,6 +54,7 @@ impl fmt::Display for Error {
             Self::WorkLimit => f.write_str("object work limit exceeded"),
             Self::PropertyLimit => f.write_str("object property limit exceeded"),
             Self::NotCallable => f.write_str("function handle must be callable"),
+            Self::WrongKind => f.write_str("heap entry has the wrong kind"),
         }
     }
 }
@@ -129,16 +137,16 @@ pub enum SetAction {
 /// the evaluator; storage never executes JavaScript under a heap borrow.
 #[derive(Debug)]
 pub struct Objects {
-    heap: Heap<OrdinaryObject>,
+    heap: Heap<Entry>,
     max_properties: usize,
     roots: Vec<Weak<Handle>>,
 }
 
 impl Objects {
     /// Creates an empty heap with slot and per-object property limits.
-    pub fn new(max_objects: usize, max_properties: usize) -> Self {
+    pub fn new(max_entries: usize, max_properties: usize) -> Self {
         Self {
-            heap: Heap::new(max_objects),
+            heap: Heap::new(max_entries),
             max_properties,
             roots: Vec::new(),
         }
@@ -147,11 +155,12 @@ impl Objects {
     /// Allocates an extensible object after validating its prototype.
     pub fn create(&mut self, prototype: Option<&Handle>) -> Result<Handle, Error> {
         if let Some(prototype) = prototype {
-            self.heap.get(prototype)?;
+            self.inspect(prototype)?;
         }
-        Ok(self
-            .heap
-            .insert(OrdinaryObject::new(prototype.cloned(), self.max_properties))?)
+        Ok(self.heap.insert(Entry::Object(OrdinaryObject::new(
+            prototype.cloned(),
+            self.max_properties,
+        )))?)
     }
 
     pub(crate) fn create_builtin(
@@ -159,10 +168,10 @@ impl Objects {
         prototype: &Handle,
         builtin: Builtin,
     ) -> Result<Handle, Error> {
-        self.heap.get(prototype)?;
+        self.inspect(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Builtin(builtin));
-        Ok(self.heap.insert(object)?)
+        Ok(self.heap.insert(Entry::Object(object))?)
     }
 
     pub(crate) fn create_bound(
@@ -171,7 +180,7 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<Handle, Error> {
         budget.charge(1)?;
-        let target = self.heap.get(&bound.target)?;
+        let target = self.inspect(&bound.target)?;
         if !target.is_callable() {
             return Err(Error::NotCallable);
         }
@@ -179,23 +188,70 @@ impl Objects {
         for value in std::iter::once(&bound.this).chain(&bound.arguments) {
             budget.charge(1)?;
             if let Value::Object(handle) = value {
-                self.heap.get(handle)?;
+                self.inspect(handle)?;
             }
         }
         let mut object = OrdinaryObject::new(prototype, self.max_properties);
         object.callable = Some(Callable::Bound(bound));
-        Ok(self.heap.insert(object)?)
+        Ok(self.heap.insert(Entry::Object(object))?)
     }
 
     pub(crate) fn create_object_prototype(&mut self) -> Result<Handle, Error> {
         let mut object = OrdinaryObject::new(None, self.max_properties);
         object.immutable_prototype = true;
-        Ok(self.heap.insert(object)?)
+        Ok(self.heap.insert(Entry::Object(object))?)
     }
 
     /// Borrows a record for host inspection without traversing prototypes.
     pub fn inspect(&self, object: &Handle) -> Result<&OrdinaryObject, Error> {
-        Ok(self.heap.get(object)?)
+        match self.heap.get(object)? {
+            Entry::Object(object) => Ok(object),
+            Entry::Environment(_) => Err(Error::WrongKind),
+        }
+    }
+
+    fn object_mut(&mut self, object: &Handle) -> Result<&mut OrdinaryObject, Error> {
+        match self.heap.get_mut(object)? {
+            Entry::Object(object) => Ok(object),
+            Entry::Environment(_) => Err(Error::WrongKind),
+        }
+    }
+
+    pub(crate) fn create_environment(
+        &mut self,
+        outer: Option<EnvironmentHandle>,
+        bindings: BTreeMap<String, BindingState>,
+        budget: &mut Budget,
+    ) -> Result<EnvironmentHandle, Error> {
+        if let Some(outer) = &outer {
+            self.environment(outer)?;
+        }
+        for binding in bindings.values() {
+            budget.charge(1)?;
+            if let Some(Value::Object(handle)) = &binding.value {
+                self.inspect(handle)?;
+            }
+        }
+        Ok(EnvironmentHandle(self.heap.insert(Entry::Environment(
+            Environment { outer, bindings },
+        ))?))
+    }
+
+    pub(crate) fn environment(&self, handle: &EnvironmentHandle) -> Result<&Environment, Error> {
+        match self.heap.get(&handle.0)? {
+            Entry::Environment(environment) => Ok(environment),
+            Entry::Object(_) => Err(Error::WrongKind),
+        }
+    }
+
+    pub(crate) fn environment_mut(
+        &mut self,
+        handle: &EnvironmentHandle,
+    ) -> Result<&mut Environment, Error> {
+        match self.heap.get_mut(&handle.0)? {
+            Entry::Environment(environment) => Ok(environment),
+            Entry::Object(_) => Err(Error::WrongKind),
+        }
     }
 
     /// Retains an object across collections, validating ownership and liveness.
@@ -204,7 +260,7 @@ impl Objects {
     /// are reused, so the registry cannot exceed the heap's slot capacity. Work
     /// exhaustion creates no root and leaves existing root lifetimes unchanged.
     pub fn root(&mut self, object: &Handle, budget: &mut Budget) -> Result<Root, Error> {
-        self.heap.get(object)?;
+        self.inspect(object)?;
         budget.charge(self.roots.len().checked_add(1).ok_or(Error::WorkLimit)?)?;
         let mut empty = None;
         for (index, entry) in self.roots.iter().enumerate() {
@@ -228,7 +284,7 @@ impl Objects {
 
     /// Disallows new own properties while preserving existing property attributes.
     pub fn prevent_extensions(&mut self, object: &Handle) -> Result<(), Error> {
-        self.heap.get_mut(object)?.prevent_extensions();
+        self.object_mut(object)?.prevent_extensions();
         Ok(())
     }
 
@@ -243,9 +299,9 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<bool, Error> {
         budget.charge(1)?;
-        let current = self.heap.get(object)?;
+        let current = self.inspect(object)?;
         if let Some(prototype) = prototype {
-            self.heap.get(prototype)?;
+            self.inspect(prototype)?;
         }
         if current.prototype() == prototype {
             return Ok(true);
@@ -259,9 +315,9 @@ impl Objects {
             if parent == object {
                 return Ok(false);
             }
-            next = self.heap.get(parent)?.prototype();
+            next = self.inspect(parent)?.prototype();
         }
-        self.heap.get_mut(object)?.prototype = prototype.cloned();
+        self.object_mut(object)?.prototype = prototype.cloned();
         Ok(true)
     }
 
@@ -274,28 +330,27 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<bool, Error> {
         let descriptor = descriptor.into().normalize();
-        budget.lookup(self.heap.get(object)?, &key)?;
+        budget.lookup(self.inspect(object)?, &key)?;
         match &descriptor.kind {
             DescriptorKind::Data {
                 value: Some(value), ..
             } => {
                 if let Value::Object(handle) = value {
-                    self.heap.get(handle)?;
+                    self.inspect(handle)?;
                 }
                 budget.value(value)?;
             }
             DescriptorKind::Accessor { get, set } => {
                 for handle in [get, set].into_iter().flatten().flatten() {
                     budget.charge(1)?;
-                    if !self.heap.get(handle)?.is_callable() {
+                    if !self.inspect(handle)?.is_callable() {
                         return Err(Error::NotCallable);
                     }
                 }
             }
             _ => {}
         }
-        self.heap
-            .get_mut(object)?
+        self.object_mut(object)?
             .define_own_property(key, descriptor)
             .map_err(|_| Error::PropertyLimit)
     }
@@ -307,7 +362,7 @@ impl Objects {
         key: &JsString,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
-        let record = self.heap.get(object)?;
+        let record = self.inspect(object)?;
         budget.lookup(record, key)?;
         Ok(record.own_property(key).is_some())
     }
@@ -319,7 +374,7 @@ impl Objects {
         key: &JsString,
         budget: &mut Budget,
     ) -> Result<Option<Property>, Error> {
-        let record = self.heap.get(object)?;
+        let record = self.inspect(object)?;
         budget.lookup(record, key)?;
         match record.own_property(key) {
             Some(property) => {
@@ -375,7 +430,7 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<SetAction, Error> {
         if let Some(receiver) = receiver {
-            self.heap.get(receiver)?;
+            self.inspect(receiver)?;
         }
         match self.find(object, &key, budget)? {
             Some(Property::Accessor(property)) => {
@@ -393,7 +448,7 @@ impl Objects {
         let Some(receiver) = receiver else {
             return Ok(SetAction::Done(false));
         };
-        let destination = self.heap.get(receiver)?;
+        let destination = self.inspect(receiver)?;
         budget.lookup(destination, &key)?;
         let descriptor = if let Some(property) = destination.own_property(&key) {
             if !matches!(property, Property::Data(data) if data.writable) {
@@ -422,11 +477,11 @@ impl Objects {
         key: &JsString,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
-        let record = self.heap.get(object)?;
+        let record = self.inspect(object)?;
         // Deletion may shift the remaining vector entries after the key scan.
         budget.charge(record.property_count())?;
         budget.lookup(record, key)?;
-        Ok(self.heap.get_mut(object)?.delete(key))
+        Ok(self.object_mut(object)?.delete(key))
     }
 
     /// Collects from live `Root` tokens and additional caller-supplied handles.
@@ -461,7 +516,7 @@ impl Objects {
     ) -> Result<Option<&Property>, Error> {
         let mut next = Some(object);
         while let Some(handle) = next {
-            let record = self.heap.get(handle)?;
+            let record = self.inspect(handle)?;
             budget.lookup(record, key)?;
             if let Some(property) = record.own_property(key) {
                 return Ok(Some(property));

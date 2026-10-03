@@ -184,11 +184,7 @@ fn early_errors_precede_all_effects() {
 fn allocation_property_and_key_limits_are_host_failures() {
     for limits in [
         Limits {
-            max_objects: 0,
-            ..Limits::default()
-        },
-        Limits {
-            max_objects: 1,
+            max_heap_entries: 1,
             ..Limits::default()
         },
         Limits {
