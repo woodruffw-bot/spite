@@ -12,7 +12,7 @@ for line in (root / "manifest.tsv").read_text().splitlines():
     if not line or line.startswith("#"):
         continue
     expectation, checksum, path = line.split("\t")
-    if expectation not in {"raw-pass", "raw-syntax-error"}:
+    if expectation not in {"raw-pass", "raw-syntax-error", "identifier-tokens", "identifier-error"}:
         raise SystemExit(f"unsupported fixture mode: {expectation}")
     relative = PurePosixPath(path)
     if relative.is_absolute() or ".." in relative.parts or relative.suffix != ".js":

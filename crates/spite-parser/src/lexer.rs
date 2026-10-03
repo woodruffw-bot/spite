@@ -376,3 +376,119 @@ impl<'a> Lexer<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{collections::BTreeSet, fs, path::PathBuf};
+
+    fn fixture_root() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262")
+    }
+
+    fn fixture_path(name: &str) -> String {
+        format!("test/language/identifiers/{name}.js")
+    }
+
+    fn fixture(name: &str) -> String {
+        fs::read_to_string(fixture_root().join("upstream").join(fixture_path(name))).unwrap()
+    }
+
+    fn inventory(mode: &str) -> BTreeSet<String> {
+        fs::read_to_string(fixture_root().join("manifest.tsv"))
+            .unwrap()
+            .lines()
+            .filter_map(|line| {
+                let fields: Vec<_> = line.split('\t').collect();
+                if fields.first() == Some(&mode) {
+                    Some(fields[2].to_owned())
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    fn tokens(source: &str) -> Result<Vec<Kind>, Diagnostic> {
+        let mut lexer = Lexer::new(source);
+        let mut tokens = Vec::new();
+        loop {
+            let token = lexer.next()?;
+            let done = token.kind == Kind::Eof;
+            tokens.push(token.kind);
+            if done {
+                return Ok(tokens);
+            }
+        }
+    }
+
+    #[test]
+    fn upstream_identifier_spellings_have_identical_tokens() {
+        let cases = [
+            ("start-unicode-16.0.0", 4302),
+            ("part-unicode-16.0.0", 1),
+            ("start-unicode-17.0.0", 4647),
+            ("part-unicode-17.0.0", 1),
+        ];
+        let mut checked = BTreeSet::new();
+        for (name, declarations) in cases {
+            let escaped = format!("{name}-escaped");
+            let literal_tokens = tokens(&fixture(name)).unwrap_or_else(|e| panic!("{name}: {e}"));
+            let escaped_tokens =
+                tokens(&fixture(&escaped)).unwrap_or_else(|e| panic!("{escaped}: {e}"));
+            // Each fixture contains only `var IdentifierName ;` declarations.
+            // This is a lexical comparison, not a full Test262 execution.
+            assert_eq!(literal_tokens.len(), declarations * 3 + 1, "{name}");
+            assert_eq!(literal_tokens, escaped_tokens, "{name}");
+            checked.insert(fixture_path(name));
+            checked.insert(fixture_path(&escaped));
+        }
+        assert_eq!(checked, inventory("identifier-tokens"));
+    }
+
+    #[test]
+    fn upstream_invalid_identifier_escapes_reject_the_expected_code_point() {
+        let cases = [
+            (
+                "start-zwj-escaped",
+                "invalid identifier start escape",
+                r"\u200D",
+            ),
+            (
+                "start-zwnj-escaped",
+                "invalid identifier start escape",
+                r"\u200C",
+            ),
+            (
+                "vertical-tilde-start-escaped",
+                "invalid identifier start escape",
+                r"\u2E2F",
+            ),
+            (
+                "vertical-tilde-continue-escaped",
+                "invalid identifier part escape",
+                r"\u2E2F",
+            ),
+            (
+                "unicode-escape-nls-err",
+                "invalid Unicode escape",
+                r"\u{00_",
+            ),
+        ];
+        let mut checked = BTreeSet::new();
+        for (name, message, fragment) in cases {
+            let source = fixture(name);
+            assert!(source.contains("\nnegative:\n  phase: parse\n  type: SyntaxError\n"));
+            let error = tokens(&source).unwrap_err();
+            assert_eq!(error.kind, DiagnosticKind::Syntax, "{name}");
+            assert_eq!(error.message, message, "{name}");
+            assert_eq!(
+                &source[error.span.start..error.span.end],
+                fragment,
+                "{name}"
+            );
+            checked.insert(fixture_path(name));
+        }
+        assert_eq!(checked, inventory("identifier-error"));
+    }
+}

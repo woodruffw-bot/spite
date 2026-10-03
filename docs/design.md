@@ -49,7 +49,8 @@ tails. Preserve whether trivia contains a line terminator. Do not approximate AS
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,
 and context-sensitive syntax. Keep parentheses where early errors depend on them.
 
-Use generated, versioned Unicode tables for identifiers. Rust's alphabetic predicate
+Use generated, versioned Unicode tables for identifiers. The current tables use
+Unicode 18.0.0, with a pinned source digest and reproducible generation. Rust's alphabetic predicate
 is not ECMAScript's ID_Start or ID_Continue. Numeric conversion, separators, escapes,
 and line terminators need focused boundary tests.
 

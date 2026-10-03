@@ -20,7 +20,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, uncaught primitive throws |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
 | Limits | 1 MiB source, depth 64, configurable evaluation steps and string code-unit limits |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures and 13 identifier lexer fixtures |
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -46,8 +46,10 @@ Recognized missing features return Unsupported. Because the grammar is incomplet
 a syntax diagnostic alone does not prove arbitrary input violates ECMA-262. The
 current parser must not be used to score general Test262 negative tests.
 
-The lexical Test262 smoke suite uses a reviewed manifest and matches the specific
-rejection point for each negative fixture. It does not run the general harness,
+The Test262 regression fixtures use a reviewed manifest and match the specific
+rejection point for each negative fixture. Identifier component tests compare
+literal and escaped spellings at the lexer boundary. They are not counted as
+Script execution passes. It does not run the general harness,
 parse arbitrary Test262 YAML, report a whole-suite pass rate, or cover all of the
 implemented semantics. A complete runner is a separate roadmap item.
 
