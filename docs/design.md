@@ -41,7 +41,7 @@ measurements identify a problem and conformance tests protect the behavior.
 | `spite-bigint` | Bounded arbitrary-precision integer arithmetic | std |
 | `spite-core` | Source locations, UTF-16 strings, shared language primitives | std |
 | `spite-parser` | Lexical grammar, AST, parsing, static semantics and early errors | core |
-| `spite-runtime` | Values, abstract operations, environments, objects, execution | core, parser |
+| `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, parser |
 | `spite` | Small embedding facade and command-line host | core, parser, runtime |
 | `spite-test262` | Test262 metadata, execution modes, harness and result accounting | engine, development tooling |
 
@@ -151,6 +151,16 @@ strict and non-strict modes, includes, and host helpers. Match negative tests by
 both phase and error type. Never treat all errors as success. Report unsupported,
 skipped, failed, timed-out, and passed cases separately. A supported subset is a
 regression gate, not a whole-suite conformance percentage.
+
+Build the runner in stages. First parse a documented subset of Test262 frontmatter
+without adding a YAML dependency, rejecting unsupported metadata forms explicitly.
+Plan strict, non-strict, module, and raw execution without rewriting test bodies;
+raw sources retain their exact bytes. Preserve harness include order. Then match
+results by phase and error type, keeping harness/setup failures separate from the
+test result. Modules, async execution, and host helpers remain explicitly unsupported
+until implemented. While the grammar is partial, parse-negative passes additionally
+require a reviewed expected diagnostic span and message; an arbitrary syntax error
+is an unverified result, not a conformance pass.
 
 Use CI for formatting, Clippy, unit tests, integration tests, documentation tests,
 snapshot review, and a dependency-policy check. Keep production crates buildable

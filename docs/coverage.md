@@ -65,7 +65,10 @@ literal and escaped spellings at the lexer boundary. Statement parser fixtures
 check contextual `let` lookahead and ASI. Neither component group is counted as
 Script execution passes. The fixture suite does not run the general harness,
 parse arbitrary Test262 YAML, report a whole-suite pass rate, or cover all of the
-implemented semantics. A complete runner is a separate roadmap item.
+implemented semantics. The new `spite-test262` crate reads a documented metadata
+subset, plans strict/non-strict/module/raw modes, and preserves harness include
+order. Unsupported metadata forms are explicit errors. Execution and phase-aware
+result accounting are the next runner increments.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion
 with ECMAScript presentation rules. Primitive numeric operations have boundary

@@ -22,8 +22,8 @@ two identifiers containing the additional ID_Continue characters. Five negative
 fixtures must reject the exact invalid identifier escape with the expected
 message and source span.
 
-These are lexer regressions, not passing Script tests. The original sources use
-syntax such as var whose execution is not implemented. They are never rewritten
+These are lexer regressions, not passing Script tests. Their assertions compare
+tokens, without evaluating the sources. The original sources are never rewritten
 to make them executable, and they do not contribute to an execution pass count.
 Unicode 18 additions are covered separately by the pinned UCD tables and local
 parser tests. Each test group checks its reviewed manifest inventory.
@@ -41,7 +41,9 @@ the Test262 harness or count as full Script execution passes.
 The manifest is not a YAML metadata parser or a general Test262 runner. These
 results do not measure whole-suite conformance. Other tests require grammar,
 objects, functions, or harness facilities that have not been implemented yet.
-The general runner remains on the roadmap.
+The `spite-test262` crate now reads a documented subset of frontmatter and plans
+execution modes and harness include order. General execution and phase-aware
+reporting remain the next roadmap increments.
 
 Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attributes
 prevent line-ending normalization of fixtures. Do not edit the source files to

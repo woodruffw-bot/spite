@@ -1,0 +1,17 @@
+---
+source: crates/spite-test262/tests/metadata.rs
+expression: meta
+---
+Metadata {
+    flags: {},
+    includes: [],
+    features: [
+        "BigInt",
+        "numeric-separator-literal",
+    ],
+    locales: [
+        "en-US",
+        "ar",
+    ],
+    negative: None,
+}
