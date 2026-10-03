@@ -24,6 +24,27 @@ impl RootedValue {
 }
 
 impl Realm {
+    pub(super) fn has_property(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<bool, Error> {
+        let mut next = Some(object.clone());
+        while let Some(handle) = next {
+            if self.object_work(span, |objects, budget| {
+                objects.has_own(&handle, key, budget)
+            })? || self.object_prototype.as_ref() == Some(&handle) && missing_object_method(key)
+            {
+                return Ok(true);
+            }
+            next = self.object_work(span, |objects, _| {
+                Ok(objects.inspect(&handle)?.prototype().cloned())
+            })?;
+        }
+        Ok(false)
+    }
+
     pub(super) fn require_object_coercible(base: &Value, span: Span) -> Result<(), Error> {
         match base {
             Value::Null | Value::Undefined => Err(Self::exception(

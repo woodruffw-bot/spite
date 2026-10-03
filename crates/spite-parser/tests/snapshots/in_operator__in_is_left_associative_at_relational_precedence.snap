@@ -1,0 +1,91 @@
+---
+source: crates/spite-parser/tests/in_operator.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: Binary(
+                        StrictEqual,
+                        Expr {
+                            depth: 3,
+                            kind: Binary(
+                                In,
+                                Expr {
+                                    depth: 2,
+                                    kind: Binary(
+                                        In,
+                                        Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                String(
+                                                    "x",
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 0,
+                                                end: 3,
+                                            },
+                                        },
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "a",
+                                            ),
+                                            span: Span {
+                                                start: 7,
+                                                end: 8,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 0,
+                                        end: 8,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "b",
+                                    ),
+                                    span: Span {
+                                        start: 12,
+                                        end: 13,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 13,
+                            },
+                        },
+                        Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Boolean(
+                                    true,
+                                ),
+                            ),
+                            span: Span {
+                                start: 18,
+                                end: 22,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 22,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 22,
+            },
+        },
+    ],
+    strict: false,
+}

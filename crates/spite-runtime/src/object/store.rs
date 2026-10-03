@@ -224,6 +224,18 @@ impl Objects {
             .map_err(|_| Error::PropertyLimit)
     }
 
+    /// Checks own property presence without copying its value or visiting prototypes.
+    pub fn has_own(
+        &self,
+        object: &Handle,
+        key: &JsString,
+        budget: &mut Budget,
+    ) -> Result<bool, Error> {
+        let record = self.heap.get(object)?;
+        budget.lookup(record, key)?;
+        Ok(record.own_property(key).is_some())
+    }
+
     /// Copies an own data descriptor with bounded key scans and value-copy work.
     pub fn get_own(
         &self,

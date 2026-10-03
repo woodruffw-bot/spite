@@ -18,7 +18,7 @@ not an alternative language specification.
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
-| Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof, void, and delete |
+| Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
@@ -70,6 +70,11 @@ do not persist on primitives, and strict failures throw TypeError. Reading a
 missing standard prototype method reports Unsupported, while ordinary object
 properties can shadow it. Optional Annex B prototype accessors and String methods
 are not installed.
+
+The `in` operator includes inherited and undefined-valued properties, rejects
+primitive right operands before converting the left key, and recognizes standard
+Object.prototype method presence. The parser applies the In grammar parameter to
+for initializers and nested expressions. For-in/of iteration remains unsupported.
 
 Symbols, primitive wrapper constructors,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular

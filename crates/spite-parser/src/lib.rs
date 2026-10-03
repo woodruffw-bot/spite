@@ -39,6 +39,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
         tokens,
         index: 0,
         depth: 0,
+        allow_in: true,
     };
     let mut statements = Vec::new();
     while parser.current().kind != Kind::Eof {
@@ -88,6 +89,7 @@ struct Parser {
     tokens: Vec<Token>,
     index: usize,
     depth: usize,
+    allow_in: bool,
 }
 
 impl Parser {
@@ -347,7 +349,9 @@ impl Parser {
                 let (mutable, bindings) = self.lexical_bindings(true)?;
                 Some(ForInitializer::Lexical { mutable, bindings })
             } else {
-                Some(ForInitializer::Expression(self.expression(1)?))
+                Some(ForInitializer::Expression(
+                    self.expression_with_in(1, false)?,
+                ))
             };
             if self.at("in") || self.at("of") {
                 return Err(self.unsupported("for-in and for-of are not implemented"));
@@ -481,7 +485,7 @@ impl Parser {
                 ));
             }
             let initializer = if self.eat("=") {
-                Some(self.expression(2)?)
+                Some(self.expression_with_in(2, !for_header)?)
             } else {
                 None
             };
@@ -558,6 +562,14 @@ impl Parser {
         self.depth -= 1;
         result
     }
+
+    fn expression_with_in(&mut self, minimum: u8, allow_in: bool) -> Result<Expr, Diagnostic> {
+        let previous = self.allow_in;
+        self.allow_in = allow_in;
+        let result = self.expression(minimum);
+        self.allow_in = previous;
+        result
+    }
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
         let mut left = self.prefix()?;
         loop {
@@ -585,7 +597,7 @@ impl Parser {
                     PropertyName::Literal(Literal::String(name))
                 } else {
                     self.expect("[")?;
-                    let key = self.expression(1)?;
+                    let key = self.expression_with_in(1, true)?;
                     self.expect("]")?;
                     PropertyName::Computed(Box::new(key))
                 };
@@ -632,7 +644,7 @@ impl Parser {
                 continue;
             }
             if minimum <= 3 && self.eat("?") {
-                let yes = self.expression(2)?;
+                let yes = self.expression_with_in(2, true)?;
                 self.expect(":")?;
                 let no = self.expression(2)?;
                 let span = Span::new(left.span.start, no.span.end);
@@ -642,7 +654,15 @@ impl Parser {
                 )?;
                 continue;
             }
-            let Some((op, power)) = binary(&self.current().kind) else {
+            if self.at("instanceof") {
+                return Err(self.unsupported("instanceof is not implemented"));
+            }
+            let operator = if self.allow_in && self.at("in") {
+                Some((BinaryOp::In, 10))
+            } else {
+                binary(&self.current().kind)
+            };
+            let Some((op, power)) = operator else {
                 break;
             };
             if power < minimum {
@@ -742,7 +762,7 @@ impl Parser {
                 let mut tail = tail;
                 let mut end = span.end;
                 while !tail {
-                    substitutions.push(self.expression(1)?);
+                    substitutions.push(self.expression_with_in(1, true)?);
                     let token = self.bump();
                     let Kind::Template {
                         element,
@@ -775,7 +795,7 @@ impl Parser {
                 self.make_expr(ExprKind::Identifier(name), span)
             }
             Kind::Punct("(") => {
-                let expr = self.expression(1)?;
+                let expr = self.expression_with_in(1, true)?;
                 self.expect(")")?;
                 let span = Span::new(span.start, self.tokens[self.index - 1].span.end);
                 self.make_expr(ExprKind::Parenthesized(Box::new(expr)), span)
@@ -830,7 +850,7 @@ impl Parser {
                 }
                 Kind::Literal(literal) => PropertyName::Literal(literal),
                 Kind::Punct("[") => {
-                    let key = self.expression(2)?;
+                    let key = self.expression_with_in(2, true)?;
                     self.expect("]")?;
                     PropertyName::Computed(Box::new(key))
                 }
@@ -851,7 +871,7 @@ impl Parser {
                     } else {
                         PropertyKind::Data
                     },
-                    self.expression(2)?,
+                    self.expression_with_in(2, true)?,
                 )
             } else {
                 if self.at("=") {

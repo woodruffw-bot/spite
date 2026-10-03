@@ -1164,6 +1164,17 @@ impl Realm {
         use BinaryOp::*;
         match op {
             And | Or | Nullish | Comma => return Ok(right),
+            In => {
+                let Value::Object(object) = right else {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "right operand of in must be an object",
+                    ));
+                };
+                let key = self.property_key(left, span)?;
+                return Ok(Value::Boolean(self.has_property(&object, &key, span)?));
+            }
             StrictEqual | StrictNotEqual => {
                 let equal = self.strictly_equal(&left, &right, span)?;
                 return Ok(Value::Boolean(if op == StrictEqual {

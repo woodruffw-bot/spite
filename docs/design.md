@@ -217,6 +217,13 @@ fail without persisting a property; strict mode throws. Missing standard prototy
 methods report Unsupported, while absent properties produce undefined. The
 optional Annex B String methods and prototype accessor are not installed.
 
+The `in` operator checks that its RHS is an Object before converting the key,
+then searches own and inherited properties. Presence checks can report standard
+intrinsic names as present even before their callable values are implemented.
+The parser carries the grammar's In parameter: for initializers exclude bare
+`in`, while parentheses, computed property names, object values, templates, and
+the conditional middle expression restore it where the grammar requires.
+
 `Realm::collect` runs only between evaluations and scans persistent lexical/global
 bindings, intrinsic handles, and host roots. Environment scans are budgeted even
 for primitive bindings. Returned and thrown values are unrooted until the embedder

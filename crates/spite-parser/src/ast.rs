@@ -413,6 +413,8 @@ pub enum BinaryOp {
     Greater,
     /// Greater than or equal.
     GreaterEqual,
+    /// Whether an object has an own or inherited property.
+    In,
     /// Logical conjunction.
     And,
     /// Logical disjunction.
