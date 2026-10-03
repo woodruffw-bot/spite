@@ -1,0 +1,38 @@
+---
+source: crates/spite-parser/tests/for_loops.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 12,
+            end: 13,
+        },
+        message: "const requires an initializer",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 16,
+            end: 17,
+        },
+        message: "duplicate lexical binding",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 23,
+            end: 27,
+        },
+        message: "invalid binding in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 15,
+            end: 20,
+        },
+        message: "expected ;",
+    },
+]

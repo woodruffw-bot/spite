@@ -227,47 +227,7 @@ impl Parser {
             if !allow_declaration {
                 return Err(self.error("lexical declaration requires a statement list"));
             }
-            let mutable = self.eat("let");
-            if !mutable {
-                self.expect("const")?;
-            }
-            let mut bindings = Vec::new();
-            loop {
-                if self.at("[") || self.at("{") {
-                    return Err(self.unsupported("binding patterns are not implemented"));
-                }
-                let token = self.bump();
-                let Kind::Word(name) = token.kind else {
-                    return Err(Diagnostic::new(
-                        DiagnosticKind::Syntax,
-                        token.span,
-                        "expected binding identifier",
-                    ));
-                };
-                if reserved(&name) || name == "let" {
-                    return Err(Diagnostic::new(
-                        DiagnosticKind::Syntax,
-                        token.span,
-                        "invalid lexical binding identifier",
-                    ));
-                }
-                let initializer = if self.eat("=") {
-                    Some(self.expression(2)?)
-                } else {
-                    None
-                };
-                if !mutable && initializer.is_none() {
-                    return Err(self.error("const requires an initializer"));
-                }
-                bindings.push(Binding {
-                    name,
-                    span: token.span,
-                    initializer,
-                });
-                if !self.eat(",") {
-                    break;
-                }
-            }
+            let (mutable, bindings) = self.lexical_bindings(false)?;
             self.semicolon()?;
             StatementKind::Lexical { mutable, bindings }
         } else if self.eat("if") {
@@ -290,20 +250,22 @@ impl Parser {
                 return Err(self.unsupported("for-await-of is not implemented"));
             }
             self.expect("(")?;
-            if self.at("var")
-                || self.at("const")
+            if self.at("var") {
+                return Err(self.unsupported("var declarations are not implemented"));
+            }
+            let initializer = if self.at(";") {
+                None
+            } else if self.at("const")
                 || (self.at("let")
                     && self
                         .tokens
                         .get(self.index + 1)
                         .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))))
             {
-                return Err(self.unsupported("for declarations are not implemented"));
-            }
-            let initializer = if self.at(";") {
-                None
+                let (mutable, bindings) = self.lexical_bindings(true)?;
+                Some(ForInitializer::Lexical { mutable, bindings })
             } else {
-                Some(self.expression(1)?)
+                Some(ForInitializer::Expression(self.expression(1)?))
             };
             if self.at("in") || self.at("of") {
                 return Err(self.unsupported("for-in and for-of are not implemented"));
@@ -399,6 +361,54 @@ impl Parser {
             kind,
             span: Span::new(start, end),
         })
+    }
+
+    fn lexical_bindings(&mut self, for_header: bool) -> Result<(bool, Vec<Binding>), Diagnostic> {
+        let mutable = self.eat("let");
+        if !mutable {
+            self.expect("const")?;
+        }
+        let mut bindings = Vec::new();
+        loop {
+            if self.at("[") || self.at("{") {
+                return Err(self.unsupported("binding patterns are not implemented"));
+            }
+            let token = self.bump();
+            let Kind::Word(name) = token.kind else {
+                return Err(Diagnostic::new(
+                    DiagnosticKind::Syntax,
+                    token.span,
+                    "expected binding identifier",
+                ));
+            };
+            if reserved(&name) || name == "let" {
+                return Err(Diagnostic::new(
+                    DiagnosticKind::Syntax,
+                    token.span,
+                    "invalid lexical binding identifier",
+                ));
+            }
+            let initializer = if self.eat("=") {
+                Some(self.expression(2)?)
+            } else {
+                None
+            };
+            if for_header && (self.at("in") || self.at("of")) {
+                return Err(self.unsupported("for-in and for-of are not implemented"));
+            }
+            if !mutable && initializer.is_none() {
+                return Err(self.error("const requires an initializer"));
+            }
+            bindings.push(Binding {
+                name,
+                span: token.span,
+                initializer,
+            });
+            if !self.eat(",") {
+                break;
+            }
+        }
+        Ok((mutable, bindings))
     }
 
     fn label_identifier(&mut self) -> Result<Label, Diagnostic> {
@@ -668,6 +678,25 @@ fn early(span: Span, message: &str) -> Diagnostic {
     Diagnostic::new(DiagnosticKind::Syntax, span, message)
 }
 
+fn validate_binding_names<'a>(
+    bindings: &'a [Binding],
+    strict: bool,
+    names: &mut BTreeSet<&'a str>,
+) -> Result<(), Diagnostic> {
+    for binding in bindings {
+        if !names.insert(binding.name.as_str()) {
+            return Err(early(binding.span, "duplicate lexical binding"));
+        }
+        if strict
+            && (strict_reserved(&binding.name)
+                || matches!(binding.name.as_str(), "eval" | "arguments"))
+        {
+            return Err(early(binding.span, "invalid binding in strict mode"));
+        }
+    }
+    Ok(())
+}
+
 fn validate_scope<'a>(
     statements: &'a [Statement],
     strict: bool,
@@ -677,17 +706,7 @@ fn validate_scope<'a>(
     let mut names = BTreeSet::new();
     for statement in statements {
         if let StatementKind::Lexical { bindings, .. } = &statement.kind {
-            for binding in bindings {
-                if !names.insert(&binding.name) {
-                    return Err(early(binding.span, "duplicate lexical binding"));
-                }
-                if strict
-                    && (strict_reserved(&binding.name)
-                        || matches!(binding.name.as_str(), "eval" | "arguments"))
-                {
-                    return Err(early(binding.span, "invalid binding in strict mode"));
-                }
-            }
+            validate_binding_names(bindings, strict, &mut names)?;
         }
         validate_statement(statement, strict, in_iteration, labels)?;
     }
@@ -721,7 +740,20 @@ fn validate_statement<'a>(
             update,
             body,
         } => {
-            for expression in [initializer, test, update].into_iter().flatten() {
+            if let Some(initializer) = initializer {
+                match initializer {
+                    ForInitializer::Expression(expr) => validate_expr(expr, strict)?,
+                    ForInitializer::Lexical { bindings, .. } => {
+                        validate_binding_names(bindings, strict, &mut BTreeSet::new())?;
+                        for binding in bindings {
+                            if let Some(expr) = &binding.initializer {
+                                validate_expr(expr, strict)?;
+                            }
+                        }
+                    }
+                }
+            }
+            for expression in [test, update].into_iter().flatten() {
                 validate_expr(expression, strict)?;
             }
             validate_statement(body, strict, true, labels)?;

@@ -281,6 +281,23 @@ impl Realm {
         Ok(())
     }
 
+    fn initialize_bindings(&mut self, bindings: &[Binding]) -> Result<(), Error> {
+        for binding in bindings {
+            self.tick(binding.span)?;
+            let value = if let Some(expr) = &binding.initializer {
+                self.expression(expr)?
+            } else {
+                Value::Undefined
+            };
+            let scope = self.scopes.last_mut().expect("a realm always has a scope");
+            scope
+                .get_mut(&binding.name)
+                .expect("declaration was instantiated")
+                .value = Some(value);
+        }
+        Ok(())
+    }
+
     fn statements(&mut self, statements: &[Statement]) -> Result<Completion, Error> {
         let mut completion = Completion::normal(None);
         for statement in statements {
@@ -331,19 +348,7 @@ impl Realm {
             }
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
             StatementKind::Lexical { bindings, .. } => {
-                for binding in bindings {
-                    self.tick(binding.span)?;
-                    let value = if let Some(expr) = &binding.initializer {
-                        self.expression(expr)?
-                    } else {
-                        Value::Undefined
-                    };
-                    let scope = self.scopes.last_mut().expect("a realm always has a scope");
-                    scope
-                        .get_mut(&binding.name)
-                        .expect("declaration was instantiated")
-                        .value = Some(value);
-                }
+                self.initialize_bindings(bindings)?;
                 Ok(Completion::normal(None))
             }
             StatementKind::Block(body) => {
@@ -387,11 +392,43 @@ impl Realm {
                 update,
                 body,
             } => {
-                // ECMA-262 14.7.4.2: the initializer's value is discarded.
-                if let Some(initializer) = initializer {
-                    self.expression(initializer)?;
+                // ECMA-262 14.7.4.2: all header bindings exist before any
+                // initializer runs, and the outer scope is restored on every exit.
+                match initializer {
+                    Some(ForInitializer::Lexical { mutable, bindings }) => {
+                        let scope = bindings
+                            .iter()
+                            .map(|binding| {
+                                (
+                                    binding.name.clone(),
+                                    BindingState {
+                                        value: None,
+                                        mutable: *mutable,
+                                    },
+                                )
+                            })
+                            .collect();
+                        self.scopes.push(scope);
+                        let per_iteration = if *mutable { bindings.as_slice() } else { &[] };
+                        let result = self.initialize_bindings(bindings).and_then(|()| {
+                            self.for_body(
+                                test.as_ref(),
+                                update.as_ref(),
+                                body,
+                                per_iteration,
+                                labels,
+                            )
+                        });
+                        self.scopes.pop();
+                        result
+                    }
+                    _ => {
+                        if let Some(ForInitializer::Expression(expr)) = initializer {
+                            self.expression(expr)?;
+                        }
+                        self.for_body(test.as_ref(), update.as_ref(), body, &[], labels)
+                    }
                 }
-                self.for_body(test.as_ref(), update.as_ref(), body, labels)
             }
             StatementKind::If {
                 test,
@@ -418,9 +455,11 @@ impl Realm {
         test: Option<&Expr>,
         update: Option<&Expr>,
         body: &Statement,
+        per_iteration: &[Binding],
         labels: &[&str],
     ) -> Result<Completion, Error> {
         let mut value = Value::Undefined;
+        self.create_per_iteration_environment(per_iteration)?;
         loop {
             if let Some(test) = test {
                 if !self.expression(test)?.to_boolean() {
@@ -433,10 +472,37 @@ impl Realm {
                 return Ok(result.consume_unlabelled_break());
             }
             value = result.value.expect("loop UpdateEmpty supplies a value");
+            self.create_per_iteration_environment(per_iteration)?;
             if let Some(update) = update {
                 self.expression(update)?;
             }
         }
+    }
+
+    // ECMA-262 14.7.4.4: copy let values into a fresh environment with the
+    // same outer environment. Const declarations do not request this operation.
+    fn create_per_iteration_environment(&mut self, bindings: &[Binding]) -> Result<(), Error> {
+        if bindings.is_empty() {
+            return Ok(());
+        }
+        let mut next = BTreeMap::new();
+        for binding in bindings {
+            self.tick(binding.span)?;
+            let scope = self.scopes.last().expect("loop environment exists");
+            let value = scope[&binding.name]
+                .value
+                .clone()
+                .expect("loop binding is initialized");
+            next.insert(
+                binding.name.clone(),
+                BindingState {
+                    value: Some(value),
+                    mutable: true,
+                },
+            );
+        }
+        *self.scopes.last_mut().expect("loop environment exists") = next;
+        Ok(())
     }
 
     fn resolve<'a>(&self, name: &'a str) -> Reference<'a> {

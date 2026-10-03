@@ -68,10 +68,10 @@ pub enum StatementKind {
         /// Condition.
         test: Expr,
     },
-    /// A three-clause for loop with an expression initializer.
+    /// A three-clause for loop.
     For {
         /// Evaluated once before the first condition.
-        initializer: Option<Expr>,
+        initializer: Option<ForInitializer>,
         /// Condition, or an unconditional loop when absent.
         test: Option<Expr>,
         /// Evaluated after each completed or continued iteration.
@@ -92,6 +92,20 @@ pub enum StatementKind {
     Continue(Option<Label>),
     /// Throw a language value.
     Throw(Expr),
+}
+
+/// The initialization clause of a three-clause for loop.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ForInitializer {
+    /// An expression whose value is discarded.
+    Expression(Expr),
+    /// A declaration in a new loop scope.
+    Lexical {
+        /// Whether bindings may be reassigned and are copied per iteration.
+        mutable: bool,
+        /// Bindings in source order.
+        bindings: Vec<Binding>,
+    },
 }
 
 /// A decoded label identifier and its source range.

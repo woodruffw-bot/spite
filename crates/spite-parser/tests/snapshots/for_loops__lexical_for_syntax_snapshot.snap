@@ -1,0 +1,122 @@
+---
+source: crates/spite-parser/tests/for_loops.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: For {
+                initializer: Some(
+                    Lexical {
+                        mutable: true,
+                        bindings: [
+                            Binding {
+                                name: "i",
+                                span: Span {
+                                    start: 9,
+                                    end: 10,
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                0.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 13,
+                                            end: 14,
+                                        },
+                                    },
+                                ),
+                            },
+                            Binding {
+                                name: "j",
+                                span: Span {
+                                    start: 16,
+                                    end: 17,
+                                },
+                                initializer: None,
+                            },
+                        ],
+                    },
+                ),
+                test: Some(
+                    Expr {
+                        depth: 1,
+                        kind: Literal(
+                            Boolean(
+                                false,
+                            ),
+                        ),
+                        span: Span {
+                            start: 19,
+                            end: 24,
+                        },
+                    },
+                ),
+                update: None,
+                body: Statement {
+                    kind: Empty,
+                    span: Span {
+                        start: 27,
+                        end: 28,
+                    },
+                },
+            },
+            span: Span {
+                start: 0,
+                end: 28,
+            },
+        },
+        Statement {
+            kind: For {
+                initializer: Some(
+                    Lexical {
+                        mutable: false,
+                        bindings: [
+                            Binding {
+                                name: "x",
+                                span: Span {
+                                    start: 40,
+                                    end: 41,
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 44,
+                                            end: 45,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    },
+                ),
+                test: None,
+                update: None,
+                body: Statement {
+                    kind: Break(
+                        None,
+                    ),
+                    span: Span {
+                        start: 49,
+                        end: 55,
+                    },
+                },
+            },
+            span: Span {
+                start: 29,
+                end: 55,
+            },
+        },
+    ],
+    strict: false,
+}
