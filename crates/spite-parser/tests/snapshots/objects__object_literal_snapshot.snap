@@ -1,0 +1,183 @@
+---
+source: crates/spite-parser/tests/objects.rs
+expression: "parse_script(\"({plain: 1, shorthand, ['x' + n]: 2, 0x10n: 3, __proto__: null,})\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: Parenthesized(
+                        Expr {
+                            depth: 3,
+                            kind: Object(
+                                [
+                                    ObjectProperty {
+                                        name: Literal(
+                                            String(
+                                                "plain",
+                                            ),
+                                        ),
+                                        value: Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Number(
+                                                    1.0,
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 9,
+                                                end: 10,
+                                            },
+                                        },
+                                        kind: Data,
+                                        span: Span {
+                                            start: 2,
+                                            end: 10,
+                                        },
+                                    },
+                                    ObjectProperty {
+                                        name: Literal(
+                                            String(
+                                                "shorthand",
+                                            ),
+                                        ),
+                                        value: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "shorthand",
+                                            ),
+                                            span: Span {
+                                                start: 12,
+                                                end: 21,
+                                            },
+                                        },
+                                        kind: Shorthand,
+                                        span: Span {
+                                            start: 12,
+                                            end: 21,
+                                        },
+                                    },
+                                    ObjectProperty {
+                                        name: Computed(
+                                            Expr {
+                                                depth: 2,
+                                                kind: Binary(
+                                                    Add,
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Literal(
+                                                            String(
+                                                                "x",
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 24,
+                                                            end: 27,
+                                                        },
+                                                    },
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "n",
+                                                        ),
+                                                        span: Span {
+                                                            start: 30,
+                                                            end: 31,
+                                                        },
+                                                    },
+                                                ),
+                                                span: Span {
+                                                    start: 24,
+                                                    end: 31,
+                                                },
+                                            },
+                                        ),
+                                        value: Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Number(
+                                                    2.0,
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 34,
+                                                end: 35,
+                                            },
+                                        },
+                                        kind: Data,
+                                        span: Span {
+                                            start: 23,
+                                            end: 35,
+                                        },
+                                    },
+                                    ObjectProperty {
+                                        name: Literal(
+                                            BigInt {
+                                                digits: "10",
+                                                radix: 16,
+                                            },
+                                        ),
+                                        value: Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Number(
+                                                    3.0,
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 44,
+                                                end: 45,
+                                            },
+                                        },
+                                        kind: Data,
+                                        span: Span {
+                                            start: 37,
+                                            end: 45,
+                                        },
+                                    },
+                                    ObjectProperty {
+                                        name: Literal(
+                                            String(
+                                                "__proto__",
+                                            ),
+                                        ),
+                                        value: Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Null,
+                                            ),
+                                            span: Span {
+                                                start: 58,
+                                                end: 62,
+                                            },
+                                        },
+                                        kind: Prototype,
+                                        span: Span {
+                                            start: 47,
+                                            end: 62,
+                                        },
+                                    },
+                                ],
+                            ),
+                            span: Span {
+                                start: 1,
+                                end: 64,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 65,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 65,
+            },
+        },
+    ],
+    strict: false,
+}

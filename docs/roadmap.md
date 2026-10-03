@@ -77,6 +77,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add ordinary data-property records, descriptor invariants, deletion, and string-key order.
 - [x] Implement prototype traversal and mutation with bounded cycle checks.
 - [x] Implement inherited data reads, presence checks, and receiver-sensitive writes.
+- [x] Parse object literals, computed keys, shorthand, and duplicate prototype-setter early errors.
+- [ ] Evaluate object literals and integrate the object heap with realms.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.

@@ -930,6 +930,12 @@ impl Realm {
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
+            ExprKind::Object(_) => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "object literal evaluation is not implemented",
+                ));
+            }
             ExprKind::Template {
                 elements,
                 substitutions,

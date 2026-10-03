@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/objects.rs
+expression: "parse_script(\"({__proto__: null, '__proto__': null})\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 19,
+        end: 30,
+    },
+    message: "duplicate prototype setter in object literal",
+}

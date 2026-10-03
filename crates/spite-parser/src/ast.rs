@@ -254,6 +254,8 @@ pub struct Expr {
 pub enum ExprKind {
     /// A primitive literal.
     Literal(Literal),
+    /// An ordinary object initializer, in source property order.
+    Object(Vec<ObjectProperty>),
     /// An untagged template literal. There is one more element than substitution.
     Template {
         /// Cooked and raw components in source order.
@@ -284,6 +286,39 @@ pub enum ExprKind {
     CompoundAssign(BinaryOp, String, Box<Expr>),
     /// A conditional expression.
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+}
+
+/// A property definition in an object initializer.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectProperty {
+    /// The literal or computed property name.
+    pub name: PropertyName,
+    /// The initializer, or identifier reference for shorthand syntax.
+    pub value: Expr,
+    /// The property definition's evaluation form.
+    pub kind: PropertyKind,
+    /// Source range of the entire definition.
+    pub span: Span,
+}
+
+/// Implemented object-initializer property forms.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PropertyKind {
+    /// A colon-separated ordinary data property.
+    Data,
+    /// An identifier reference used as both name and value.
+    Shorthand,
+    /// A non-computed `__proto__` colon definition.
+    Prototype,
+}
+
+/// A property name before runtime ToPropertyKey conversion.
+#[derive(Clone, Debug, PartialEq)]
+pub enum PropertyName {
+    /// A String, Number, or BigInt literal. Identifier names become strings.
+    Literal(Literal),
+    /// A bracketed assignment expression.
+    Computed(Box<Expr>),
 }
 
 /// A template literal component, excluding its delimiters.

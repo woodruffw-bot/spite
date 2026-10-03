@@ -48,8 +48,10 @@ properties use SameValue and preserve equivalent NaN payloads. These records
 have a host property-capacity limit. A heap context adds bounded iterative
 prototype traversal, cycle-checked mutation, inherited data reads and presence
 checks, and receiver-sensitive writes. Rust values carry object identity and
-trace object-valued property edges, including cycles. JavaScript object syntax
-and realm integration remain open. Checked host-root tokens retain objects across collection
+trace object-valued property edges, including cycles. Object literals parse with
+literal/computed keys, shorthand, trailing commas, and duplicate prototype-setter
+early errors. Their evaluation and realm integration remain open. Methods,
+accessors, and spread remain unsupported. Checked host-root tokens retain objects across collection
 until their last clone is dropped, with bounded registry reuse. Accessors, Symbol
 keys, and interpreter environment/temporary root lifetimes remain open.
 
