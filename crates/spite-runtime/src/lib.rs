@@ -363,10 +363,28 @@ impl Realm {
                 self.scopes.pop();
                 result
             }
-            StatementKind::TryFinally { .. } => Err(Self::unsupported(
-                statement.span,
-                "try-finally evaluation is not implemented",
-            )),
+            StatementKind::TryFinally { body, finalizer } => {
+                let body_result = self.statement(body);
+                if let Err(error) = &body_result {
+                    match error {
+                        Error::Thrown(_) | Error::Exception { .. } => {}
+                        // Host failures abort execution, rather than entering
+                        // JavaScript control flow that could suppress them.
+                        Error::Parse(_) | Error::Unsupported { .. } | Error::Limit { .. } => {
+                            return body_result;
+                        }
+                    }
+                }
+                // ECMA-262 14.15.3: a normal finalizer preserves the protected
+                // completion, ignoring its own value. An abrupt one replaces it.
+                let finalizer_result = self.statement(finalizer)?;
+                let result = if finalizer_result.kind == CompletionKind::Normal {
+                    body_result?
+                } else {
+                    finalizer_result
+                };
+                Ok(result.update_empty(Some(Value::Undefined)))
+            }
             StatementKind::Switch {
                 discriminant,
                 clauses,

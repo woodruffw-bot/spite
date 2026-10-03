@@ -83,6 +83,13 @@ return, throw, break, and continue completion records as those forms arrive. Kee
 engine failures such as unsupported functionality and resource exhaustion separate
 from catchable JavaScript exceptions.
 
+Try-finally evaluates the finalizer after either a normal or abrupt language
+completion. A normal finalizer preserves the protected completion; an abrupt
+finalizer replaces it (ECMA-262 14.15.3). Host failures abort evaluation without
+running further JavaScript, including pending finalizers. They cannot be caught
+or suppressed by language control flow. Ordinary lexical scopes are restored
+on every exit, including a host abort.
+
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.
 Declarations are instantiated before evaluation. Closures retain environment

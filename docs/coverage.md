@@ -14,10 +14,10 @@ not an alternative language specification.
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Expressions | Primitive literals, identifiers, parentheses, simple assignment, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
-| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, switch, labels, break/continue with optional targets, throw |
+| Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, switch, labels, break/continue with optional targets, throw, try-finally |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
-| Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, uncaught primitive throws |
+| Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive throws, finalizer preservation and overrides of language completions |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
 | Limits | 1 MiB source, depth 64, configurable evaluation steps and string code-unit limits |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures, 13 identifier lexer fixtures, and 6 statement parser fixtures |
@@ -33,12 +33,9 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
-Try-finally blocks are parsed and validated, but evaluation returns Unsupported.
-Catch clauses remain unsupported syntax.
-
 BigInt, Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
-expressions, templates, var, for-in/of, try/catch/finally, generators,
+expressions, templates, var, for-in/of, catch clauses, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and garbage collection remain open. See the roadmap for their order.
 
@@ -66,6 +63,9 @@ part of the roadmap.
 The resource limits bound specific work and value sizes. They do not provide a
 complete memory budget or an operating-system sandbox. State is not rolled back
 after runtime failure. Parsing and early errors occur before any execution.
+Host failures abort evaluation without running further JavaScript finalizers.
+Language throws and built-in exceptions do run finalizers and can be overridden
+by an abrupt finalizer, even though catch clauses are not yet implemented.
 
 ## Intentionally outside scope
 
