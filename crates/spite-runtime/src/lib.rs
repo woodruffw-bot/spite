@@ -705,6 +705,23 @@ impl Realm {
                 self.put(reference, value.clone(), expr.span)?;
                 value
             }
+            ExprKind::Update {
+                op,
+                argument,
+                prefix,
+            } => {
+                // ECMA-262 13.4.2–13.4.5: GetValue and ToNumeric precede
+                // PutValue. Postfix returns the numeric old value, not its input.
+                let name = identifier(argument).expect("parser checked update target");
+                let reference = self.resolve(name);
+                let old = self.get(&reference, argument.span)?.to_number();
+                let new = match op {
+                    UpdateOp::Increment => old + 1.0,
+                    UpdateOp::Decrement => old - 1.0,
+                };
+                self.put(reference, Value::Number(new), expr.span)?;
+                Value::Number(if *prefix { new } else { old })
+            }
             ExprKind::Conditional(test, yes, no) => {
                 if self.expression(test)?.to_boolean() {
                     self.expression(yes)?

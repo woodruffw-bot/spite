@@ -178,6 +178,15 @@ pub enum ExprKind {
     Parenthesized(Box<Expr>),
     /// A prefix unary expression.
     Unary(UnaryOp, Box<Expr>),
+    /// An increment or decrement of a reference.
+    Update {
+        /// Increment or decrement.
+        op: UpdateOp,
+        /// Assignment target.
+        argument: Box<Expr>,
+        /// Whether the operator precedes its argument.
+        prefix: bool,
+    },
     /// A binary expression, including short-circuit operators.
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     /// A simple assignment to an identifier.
@@ -197,6 +206,15 @@ pub enum Literal {
     Number(f64),
     /// UTF-16 code units, including lone surrogates.
     String(JsString),
+}
+
+/// Increment and decrement operators.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum UpdateOp {
+    /// Add one to the numeric value.
+    Increment,
+    /// Subtract one from the numeric value.
+    Decrement,
 }
 
 /// Prefix operators.

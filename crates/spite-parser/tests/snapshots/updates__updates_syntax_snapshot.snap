@@ -1,0 +1,154 @@
+---
+source: crates/spite-parser/tests/updates.rs
+expression: "parse_script(\"++x ** y--; x\\n++y; --(x);\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: Binary(
+                        Exponentiate,
+                        Expr {
+                            depth: 2,
+                            kind: Update {
+                                op: Increment,
+                                argument: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 2,
+                                        end: 3,
+                                    },
+                                },
+                                prefix: true,
+                            },
+                            span: Span {
+                                start: 0,
+                                end: 3,
+                            },
+                        },
+                        Expr {
+                            depth: 2,
+                            kind: Update {
+                                op: Decrement,
+                                argument: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "y",
+                                    ),
+                                    span: Span {
+                                        start: 7,
+                                        end: 8,
+                                    },
+                                },
+                                prefix: false,
+                            },
+                            span: Span {
+                                start: 7,
+                                end: 10,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 10,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 11,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "x",
+                    ),
+                    span: Span {
+                        start: 12,
+                        end: 13,
+                    },
+                },
+            ),
+            span: Span {
+                start: 12,
+                end: 13,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 2,
+                    kind: Update {
+                        op: Increment,
+                        argument: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "y",
+                            ),
+                            span: Span {
+                                start: 16,
+                                end: 17,
+                            },
+                        },
+                        prefix: true,
+                    },
+                    span: Span {
+                        start: 14,
+                        end: 17,
+                    },
+                },
+            ),
+            span: Span {
+                start: 14,
+                end: 18,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: Update {
+                        op: Decrement,
+                        argument: Expr {
+                            depth: 2,
+                            kind: Parenthesized(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 22,
+                                        end: 23,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 21,
+                                end: 24,
+                            },
+                        },
+                        prefix: true,
+                    },
+                    span: Span {
+                        start: 19,
+                        end: 24,
+                    },
+                },
+            ),
+            span: Span {
+                start: 19,
+                end: 25,
+            },
+        },
+    ],
+    strict: false,
+}

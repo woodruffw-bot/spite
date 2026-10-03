@@ -47,7 +47,7 @@ fn asi_observes_line_terminators_and_continuations() {
             "{source}"
         );
     }
-    for source in ["1\n(2)", "1\n[2]", "x.foo", "1 += 2", "1++"] {
+    for source in ["1\n(2)", "1\n[2]", "x.foo", "1 += 2"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

@@ -143,8 +143,6 @@ impl Parser {
                 "(" | "["
                     | "."
                     | "?."
-                    | "++"
-                    | "--"
                     | "+="
                     | "-="
                     | "*="
@@ -162,9 +160,7 @@ impl Parser {
                     | ">>>="
             )
         ) {
-            Err(self.unsupported(
-                "calls, properties, updates, and compound assignment are not implemented",
-            ))
+            Err(self.unsupported("calls, properties, and compound assignment are not implemented"))
         } else {
             Err(self.error("expected a semicolon or line terminator"))
         }
@@ -496,6 +492,7 @@ impl Parser {
     fn make_expr(&self, kind: ExprKind, span: Span) -> Result<Expr, Diagnostic> {
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) | ExprKind::Assign(_, e) => e.depth,
+            ExprKind::Update { argument, .. } => argument.depth,
             ExprKind::Binary(_, a, b) => a.depth.max(b.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
             _ => 0,
@@ -519,6 +516,28 @@ impl Parser {
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
         let mut left = self.prefix()?;
         loop {
+            // ECMA-262 13.4: a postfix update cannot cross a line terminator.
+            if minimum <= 16 && !self.current().newline && (self.at("++") || self.at("--")) {
+                if assignment_name(&left).is_none() {
+                    return Err(early(left.span, "invalid update target"));
+                }
+                let token = self.bump();
+                let op = if token.kind == Kind::Punct("++") {
+                    UpdateOp::Increment
+                } else {
+                    UpdateOp::Decrement
+                };
+                let span = Span::new(left.span.start, token.span.end);
+                left = self.make_expr(
+                    ExprKind::Update {
+                        op,
+                        argument: Box::new(left),
+                        prefix: false,
+                    },
+                    span,
+                )?;
+                continue;
+            }
             if minimum <= 2 && self.eat("=") {
                 let Some(name) = assignment_name(&left) else {
                     return Err(self.error("invalid assignment target"));
@@ -569,9 +588,7 @@ impl Parser {
         if matches!(
             self.current().kind,
             Kind::Punct(
-                "++" | "--"
-                    | "+="
-                    | "-="
+                "+=" | "-="
                     | "*="
                     | "/="
                     | "%="
@@ -587,13 +604,33 @@ impl Parser {
                     | ">>>="
             )
         ) {
-            return Err(self.unsupported("updates and compound assignment are not implemented"));
+            return Err(self.unsupported("compound assignment is not implemented"));
         }
         Ok(left)
     }
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
         let token = self.bump();
         let span = token.span;
+        if matches!(token.kind, Kind::Punct("++" | "--")) {
+            let argument = self.expression(15)?;
+            if assignment_name(&argument).is_none() {
+                return Err(early(argument.span, "invalid update target"));
+            }
+            let op = if token.kind == Kind::Punct("++") {
+                UpdateOp::Increment
+            } else {
+                UpdateOp::Decrement
+            };
+            let span = Span::new(span.start, argument.span.end);
+            return self.make_expr(
+                ExprKind::Update {
+                    op,
+                    argument: Box::new(argument),
+                    prefix: true,
+                },
+                span,
+            );
+        }
         let op = match &token.kind {
             Kind::Punct("+") => Some(UnaryOp::Plus),
             Kind::Punct("-") => Some(UnaryOp::Minus),
@@ -627,7 +664,7 @@ impl Parser {
             Kind::Word(name) if matches!(name.as_str(), "catch" | "finally") => Err(
                 Diagnostic::new(DiagnosticKind::Syntax, span, "unexpected catch or finally"),
             ),
-            Kind::Word(_) | Kind::Punct("[" | "{" | "/" | "++" | "--") => Err(Diagnostic::new(
+            Kind::Word(_) | Kind::Punct("[" | "{" | "/") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
                 "expression form is not implemented",
@@ -968,6 +1005,13 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 return Err(early(expr.span, "invalid assignment in strict mode"));
             }
             validate_expr(value, strict)?;
+        }
+        ExprKind::Update { argument, .. } => {
+            let name = assignment_name(argument).expect("parser checked update target");
+            if strict && (strict_reserved(name) || matches!(name, "eval" | "arguments")) {
+                return Err(early(argument.span, "invalid update target in strict mode"));
+            }
+            validate_expr(argument, strict)?;
         }
         ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => validate_expr(e, strict)?,
         ExprKind::Binary(_, a, b) => {

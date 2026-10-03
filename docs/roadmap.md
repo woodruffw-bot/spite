@@ -40,6 +40,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Handle optional-binding catch clauses and catch-finally completions.
 - [ ] Add remaining statements, for-in/of loops, catch parameters, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
+- [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [ ] Add arbitrary-precision BigInt and spec-correct numeric conversions.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.
