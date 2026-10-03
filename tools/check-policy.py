@@ -14,6 +14,9 @@ paths = {
     for p in metadata["packages"] if p["id"] in members
 }
 errors = []
+workspace = tomllib.loads((pathlib.Path(metadata["workspace_root"]) / "Cargo.toml").read_text())
+if workspace.get("workspace", {}).get("lints", {}).get("rust", {}).get("unsafe_code") != "forbid":
+    errors.append("workspace must forbid unsafe_code")
 for package in metadata["packages"]:
     if package["id"] not in members:
         continue

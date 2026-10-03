@@ -60,3 +60,4 @@ jobs:
       - run: cargo +stable fmt --all --check
       - run: cargo +stable clippy --workspace --all-targets --locked -- -D warnings
       - run: python3 tools/check-policy.py
+      - run: python3 tools/check-test262.py

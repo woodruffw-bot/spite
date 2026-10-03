@@ -1,0 +1,2 @@
+# Preserve Test262 source bytes, including intentional carriage returns.
+/tests/test262/upstream/** -text
