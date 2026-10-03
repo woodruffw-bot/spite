@@ -155,6 +155,13 @@ fn unknown_semantics_and_unsupported_yaml_never_default_to_a_normal_test() {
         "negative: {phase: parse, type: SyntaxError}",
         "features: [true]",
         "features: [123]",
+        "features: [1e3]",
+        "features: [2026-01-01]",
+        "features: [-1.5]",
+        "features: [.NaN]",
+        "features: [-.Inf]",
+        "features: [YES]",
+        "features: [Off]",
         "includes:\n  - one.js\n    - two.js",
         "includes:\n\t- one.js",
         "negative:\n  phase: parse\n    type: SyntaxError",
@@ -169,6 +176,10 @@ fn unknown_semantics_and_unsupported_yaml_never_default_to_a_normal_test() {
         );
     }
     assert_eq!(metadata("features: ['true']").features, ["true"]);
+    assert_eq!(
+        metadata("features: ['1e3', '2026-01-01', '.NaN', 'YES']").features,
+        ["1e3", "2026-01-01", ".NaN", "YES"]
+    );
 }
 
 #[test]

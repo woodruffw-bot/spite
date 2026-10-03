@@ -253,23 +253,20 @@ fn significant<'a>(block: &'a [&str]) -> impl Iterator<Item = &'a str> {
 fn scalar(text: &str) -> Result<String, MetadataError> {
     use MetadataErrorKind::{Invalid, Unsupported};
     let text = text.trim();
+    if text.is_empty() {
+        return Err(error(Invalid, "empty metadata value"));
+    }
+    let unsigned = text.trim_start_matches(['+', '-']);
     if !text.starts_with(['\'', '"'])
         && (matches!(
-            text,
-            "null"
-                | "Null"
-                | "NULL"
-                | "true"
-                | "True"
-                | "TRUE"
-                | "false"
-                | "False"
-                | "FALSE"
-                | "yes"
-                | "no"
-                | "on"
-                | "off"
-        ) || text.bytes().all(|b| b.is_ascii_digit()))
+            text.to_ascii_lowercase().as_str(),
+            "null" | "true" | "false" | "yes" | "no" | "on" | "off" | "y" | "n"
+        ) || matches!(unsigned.to_ascii_lowercase().as_str(), ".inf" | ".nan")
+            || unsigned
+                .trim_start_matches('.')
+                .as_bytes()
+                .first()
+                .is_some_and(u8::is_ascii_digit))
     {
         return Err(error(Unsupported, "implicit non-string YAML scalar"));
     }
