@@ -17,7 +17,7 @@ not an alternative language specification.
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | Expressions | Primitive literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof, void, and delete |
-| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch without a parameter and/or finally |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, throw, try with catch and/or finally; catch identifiers bind primitive throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive throws, finalizer preservation and overrides of language completions |
@@ -41,7 +41,7 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 Symbols, objects, properties,
 arrays, functions, calls, closures, constructors, classes, destructuring, regular
-expressions, tagged templates, for-in/of, catch parameters, generators,
+expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and garbage collection remain open. See the roadmap for their order.
 The BigInt constructor and its prototype/static methods remain part of standard
@@ -55,8 +55,10 @@ full property model yet. Built-in error categories are represented in
 Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
-Executing those parameter bindings and creating JavaScript Error objects are
-future work. Catch binding patterns remain unsupported.
+Primitive throws initialize a mutable catch binding with no coercion. The catch
+binding and block scopes are restored across every completion and host failure.
+Binding a built-in exception currently reports Unsupported because JavaScript
+Error objects are not yet implemented. Catch binding patterns remain unsupported.
 
 Recognized missing features return Unsupported. Because the grammar is incomplete,
 a syntax diagnostic alone does not prove arbitrary input violates ECMA-262. The

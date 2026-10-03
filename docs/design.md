@@ -117,6 +117,13 @@ running further JavaScript, including pending finalizers. They cannot be caught
 or suppressed by language control flow. Ordinary lexical scopes are restored
 on every exit, including a host abort.
 
+A catch parameter creates a mutable declarative binding in an environment outside
+the catch block's lexical environment. Restore both before a finalizer or outer
+handler runs. Primitive thrown values are bound without coercion. Until the object
+model supplies Error instances, binding a built-in exception reports Unsupported;
+catch clauses without a parameter can still handle those exceptions. The optional
+Annex B rule permitting var to redeclare a catch parameter is not enabled.
+
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.
 Declarations are instantiated before evaluation. Closures retain environment

@@ -547,20 +547,13 @@ impl Realm {
                 handler,
                 finalizer,
             } => {
-                let mut result = self.statement(body);
-                // ECMA-262 14.15.2/14.15.3: catch without a parameter evaluates
-                // its block only on a throw, without an extra binding environment.
-                if result.as_ref().is_err_and(|e| e.is_language_exception()) {
-                    if let Some(handler) = handler {
-                        if handler.parameter.is_some() {
-                            return Err(Self::unsupported(
-                                handler.span,
-                                "catch parameter execution is not implemented",
-                            ));
-                        }
-                        result = self.statement(&handler.body);
-                    }
-                }
+                let mut result = match self.statement(body) {
+                    Err(error) if error.is_language_exception() => match handler {
+                        Some(handler) => self.catch_clause(handler, error),
+                        None => Err(error),
+                    },
+                    other => other,
+                };
                 // Host failures cannot enter or be suppressed by language control.
                 if result.as_ref().is_err_and(|e| !e.is_language_exception()) {
                     return result;
@@ -872,6 +865,35 @@ impl Realm {
             }
         }
         Ok(())
+    }
+
+    // ECMA-262 14.15.2: the parameter environment encloses the block environment
+    // and is restored before any pending finally or outer handler executes.
+    fn catch_clause(&mut self, handler: &CatchClause, error: Error) -> Result<Completion, Error> {
+        let Some(parameter) = &handler.parameter else {
+            return self.statement(&handler.body);
+        };
+        let value = match error {
+            Error::Thrown(value) => value,
+            Error::Exception { .. } => {
+                return Err(Self::unsupported(
+                    handler.span,
+                    "binding built-in exceptions requires JavaScript Error objects",
+                ));
+            }
+            _ => unreachable!("only language throws enter a catch clause"),
+        };
+        self.tick(parameter.span)?;
+        self.scopes.push(BTreeMap::from([(
+            parameter.name.clone(),
+            BindingState {
+                value: Some(value),
+                mutable: true,
+            },
+        )]));
+        let result = self.statement(&handler.body);
+        self.scopes.pop();
+        result
     }
 
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
