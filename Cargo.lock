@@ -113,6 +113,10 @@ name = "spite-core"
 version = "0.1.0"
 
 [[package]]
+name = "spite-heap"
+version = "0.1.0"
+
+[[package]]
 name = "spite-parser"
 version = "0.1.0"
 dependencies = [

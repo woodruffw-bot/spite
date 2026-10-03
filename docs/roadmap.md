@@ -68,6 +68,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 ## 3. Objects and functions
 
 - [ ] Add the handle heap, explicit roots, tracing, and collection tests.
+- [x] Add bounded generational storage with checked heap identity and slot reuse.
+- [ ] Add iterative tracing with explicit roots and failure-before-sweep guarantees.
+- [ ] Root interpreter temporaries, environments, intrinsics, and host-held object values.
 - [ ] Implement ordinary objects, descriptors, prototypes, and property order.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.

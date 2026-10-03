@@ -39,6 +39,7 @@ measurements identify a problem and conformance tests protect the behavior.
 | Crate | Responsibility | Dependencies |
 | --- | --- | --- |
 | `spite-bigint` | Bounded arbitrary-precision integer arithmetic | std |
+| `spite-heap` | Safe generational storage, explicit roots, and bounded tracing | std |
 | `spite-core` | Source locations, UTF-16 strings, shared language primitives | std |
 | `spite-parser` | Lexical grammar, AST, parsing, static semantics and early errors | core |
 | `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, parser |
@@ -129,11 +130,27 @@ Lexical bindings distinguish uninitialized from undefined and preserve mutabilit
 Declarations are instantiated before evaluation. Closures retain environment
 identities. Global object bindings and lexical bindings have distinct semantics.
 
-Objects use opaque arena handles, not unsafe pointers or reference-counted object
-cycles. Before exposing object graphs, design explicit roots and tracing for
-objects, environments, suspended executions, and host-held values. Prefer a simple
-non-moving mark-and-sweep collector with generation-checked handles. Validate
-cross-engine and stale handles. Do not add a collector before objects need one.
+Object support starts with a separately tested `spite-heap` foundation before
+object values become visible to JavaScript. Objects use opaque arena handles,
+not unsafe pointers or reference-counted object cycles. A handle carries a slot,
+a generation, and a shared identity token. The token uses safe `Rc::ptr_eq`; it
+contains no object data or graph edges and does not make the object a GC root.
+This makes heaps single-threaded, permits moving a heap without invalidating its
+handles, and rejects cross-heap handles without a global identity counter.
+
+Slots have a fixed host-configured upper bound. Reuse increments the generation;
+a generation that cannot increment retires its slot permanently. Every access
+checks heap identity, generation, and occupancy. Heap-owned values cannot be
+reached through stale handles, including after slot reuse.
+
+Add a non-moving mark-and-sweep collector with caller-supplied roots and iterative
+edge traversal. Charge collection work before each scan or edge traversal. If
+tracing sees a foreign/stale handle or exceeds its budget, return without sweeping.
+Allocation initially never invokes collection implicitly. Before integrating
+collection into evaluation, explicitly root environment bindings, intrinsics,
+pending completions, suspended frames, expression temporaries, and host-held
+values. No allocation-triggered collection or JavaScript-visible GC hook may run
+until those root lifetimes are implemented and tested.
 
 Property descriptors, key ordering, prototypes, internal methods, and exotic
 objects are semantic requirements. Add ordinary objects first. Implement arrays,

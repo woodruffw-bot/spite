@@ -12,6 +12,7 @@ publish = false
 [workspace.dependencies]
 spite-bigint = { path = "crates/spite-bigint" }
 spite-core = { path = "crates/spite-core" }
+spite-heap = { path = "crates/spite-heap" }
 spite-parser = { path = "crates/spite-parser" }
 spite-runtime = { path = "crates/spite-runtime" }
 insta = { version = "1.43", default-features = false }
