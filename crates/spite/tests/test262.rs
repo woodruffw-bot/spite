@@ -16,9 +16,12 @@ fn pinned_test262_raw_scripts() {
         assert_eq!(fields.len(), 3, "invalid manifest entry");
         let expectation = fields[0];
         let path = fields[2];
-        // These fixtures are checked at the lexer boundary in spite-parser.
+        // These fixtures are component regressions in spite-parser.
         // They are not counted as passing Script evaluations here.
-        if matches!(expectation, "identifier-tokens" | "identifier-error") {
+        if matches!(
+            expectation,
+            "identifier-tokens" | "identifier-error" | "parser-pass"
+        ) {
             continue;
         }
         let source = fs::read_to_string(root.join("upstream").join(path)).unwrap();

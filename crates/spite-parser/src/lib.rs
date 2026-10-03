@@ -180,8 +180,21 @@ impl Parser {
         {
             return Err(self.unsupported("labelled statements are not implemented"));
         }
+        // ECMA-262 14.5 forbids an ExpressionStatement starting with `let [`,
+        // but permits `let` as an IdentifierReference in non-strict code. In a
+        // Statement position, ASI can separate it from a following name or `{`.
+        if !allow_declaration
+            && self.at("let")
+            && self
+                .tokens
+                .get(self.index + 1)
+                .is_some_and(|t| t.kind == Kind::Punct("["))
+        {
+            return Err(self.error("expression statement cannot start with let ["));
+        }
         let lexical = self.at("const")
-            || (self.at("let")
+            || (allow_declaration
+                && self.at("let")
                 && self
                     .tokens
                     .get(self.index + 1)

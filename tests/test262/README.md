@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 24 unmodified fixtures come from
+These 28 unmodified fixtures come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -26,7 +26,15 @@ These are lexer regressions, not passing Script tests. The original sources use
 syntax such as var whose execution is not implemented. They are never rewritten
 to make them executable, and they do not contribute to an execution pass count.
 Unicode 18 additions are covered separately by the pinned UCD tables and local
-parser tests. Both test groups check their reviewed manifest inventory.
+parser tests. Each test group checks its reviewed manifest inventory.
+
+## Statement parser tests
+
+Four `noStrict` fixtures cover the `let` lookahead rules in while and if bodies.
+The parser receives each complete, unchanged source. Tests check that ASI leaves
+`let` as an identifier expression and that the following block or assignment
+becomes a separate statement. These are parser regressions only; they do not run
+the Test262 harness or count as full Script execution passes.
 
 ## Scope and maintenance
 

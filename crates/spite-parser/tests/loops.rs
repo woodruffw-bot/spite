@@ -214,3 +214,50 @@ fn line_terminators_prevent_loop_control_labels() {
         DiagnosticKind::Unsupported
     );
 }
+
+#[test]
+fn let_expression_statement_and_declaration_lookahead_are_distinct() {
+    for source in [
+        "while (false) let\nx = 1;",
+        "while (false) let\n{}",
+        "if (false) let\nx = 1;",
+        "if (false) let\n{}",
+        "do let\nwhile (false)",
+    ] {
+        assert!(parse_script(source).is_ok(), "{source}");
+        assert_eq!(
+            parse_script(&format!("'use strict'; {source}"))
+                .unwrap_err()
+                .kind,
+            DiagnosticKind::Syntax
+        );
+    }
+    for source in [
+        "while (false) let\n[x] = 0;",
+        "if (false) let\n[x] = 0;",
+        "do let\n[x] = 0; while (false);",
+        "while (false) let x;",
+        "while (false) let {}",
+    ] {
+        assert_eq!(
+            parse_script(source).unwrap_err().kind,
+            DiagnosticKind::Syntax,
+            "{source}"
+        );
+    }
+    // In a StatementList, the same lookahead *does* introduce a declaration,
+    // including across line terminators. No ASI is needed for `let\nx;`.
+    let script = parse_script("let\nx;").unwrap();
+    assert_eq!(script.statements().len(), 1);
+    assert!(matches!(
+        script.statements()[0].kind,
+        StatementKind::Lexical { .. }
+    ));
+    // The `let [` lookahead restriction uses the terminal, not escaped names.
+    assert_eq!(
+        parse_script(r"while (false) l\u0065t[x];")
+            .unwrap_err()
+            .kind,
+        DiagnosticKind::Unsupported
+    );
+}

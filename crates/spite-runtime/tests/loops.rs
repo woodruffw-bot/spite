@@ -283,3 +283,20 @@ fn invalid_loop_control_is_rejected_before_execution_or_instantiation() {
         assert_eq!(realm.eval("let y = 2; y"), Ok(Value::Number(2.0)));
     }
 }
+
+#[test]
+fn let_can_be_an_expression_body_in_non_strict_code() {
+    for (source, expected) in [
+        ("let = 7; do let\nwhile (false)", 7.0),
+        ("let = 7; let i = 0; while ((i = i + 1) < 3) let\n{}", 7.0),
+        ("let = 7; if (true) let\n{}", 7.0),
+        ("while (false) let\nx = 1; x", 1.0),
+        ("if (false) let\nx = 2; x", 2.0),
+    ] {
+        assert_eq!(
+            Realm::default().eval(source),
+            Ok(Value::Number(expected)),
+            "{source}"
+        );
+    }
+}

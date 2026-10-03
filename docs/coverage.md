@@ -20,7 +20,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks and conditionals, uncaught primitive throws |
 | Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
 | Limits | 1 MiB source, depth 64, configurable evaluation steps and string code-unit limits |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures and 13 identifier lexer fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11 pinned Test262 hashbang fixtures, 13 identifier lexer fixtures, and 4 statement parser fixtures |
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -48,8 +48,9 @@ current parser must not be used to score general Test262 negative tests.
 
 The Test262 regression fixtures use a reviewed manifest and match the specific
 rejection point for each negative fixture. Identifier component tests compare
-literal and escaped spellings at the lexer boundary. They are not counted as
-Script execution passes. It does not run the general harness,
+literal and escaped spellings at the lexer boundary. Statement parser fixtures
+check contextual `let` lookahead and ASI. Neither component group is counted as
+Script execution passes. The fixture suite does not run the general harness,
 parse arbitrary Test262 YAML, report a whole-suite pass rate, or cover all of the
 implemented semantics. A complete runner is a separate roadmap item.
 
