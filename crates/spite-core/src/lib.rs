@@ -128,6 +128,70 @@ impl fmt::Debug for JsString {
     }
 }
 
+/// Returns whether a character is an ECMAScript LineTerminator.
+pub fn is_line_terminator(c: char) -> bool {
+    matches!(c, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
+/// Returns whether a character is ECMAScript WhiteSpace, excluding line terminators.
+pub fn is_whitespace(c: char) -> bool {
+    matches!(
+        c,
+        '\t' | '\u{b}' | '\u{c}' | ' ' | '\u{a0}' | '\u{feff}' | '\u{1680}' | '\u{2000}'
+            ..='\u{200a}' | '\u{202f}' | '\u{205f}' | '\u{3000}'
+    )
+}
+
+/// Converts an unsigned base-2, base-8, or base-16 integer to binary64.
+///
+/// Rejects empty or invalid digits. Rounds once, with ties to even.
+pub fn parse_radix_integer(digits: &str, radix: u32) -> Option<f64> {
+    if !matches!(radix, 2 | 8 | 16)
+        || digits.is_empty()
+        || !digits.chars().all(|c| c.is_digit(radix))
+    {
+        return None;
+    }
+    let width = radix.trailing_zeros();
+    let mut count = 0usize;
+    let mut significand = 0u64;
+    let mut guard = false;
+    let mut sticky = false;
+    for digit in digits.chars().filter_map(|c| c.to_digit(radix)) {
+        for shift in (0..width).rev() {
+            let bit = digit & (1 << shift) != 0;
+            if count == 0 && !bit {
+                continue;
+            }
+            count += 1;
+            if count <= 53 {
+                significand = (significand << 1) | u64::from(bit);
+            } else if count == 54 {
+                guard = bit;
+            } else {
+                sticky |= bit;
+            }
+        }
+    }
+    if count <= 53 {
+        return Some(significand as f64);
+    }
+    let mut exponent = count - 1;
+    if guard && (sticky || significand & 1 != 0) {
+        significand += 1;
+    }
+    if significand == 1 << 53 {
+        significand >>= 1;
+        exponent += 1;
+    }
+    if exponent > 1023 {
+        return Some(f64::INFINITY);
+    }
+    Some(f64::from_bits(
+        ((exponent as u64 + 1023) << 52) | (significand & ((1 << 52) - 1)),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

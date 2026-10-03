@@ -21,17 +21,7 @@ pub(crate) struct Lexer<'a> {
     pos: usize,
 }
 
-pub(crate) fn is_line(c: char) -> bool {
-    matches!(c, '\n' | '\r' | '\u{2028}' | '\u{2029}')
-}
-
-pub(crate) fn is_space(c: char) -> bool {
-    matches!(
-        c,
-        '\t' | '\u{b}' | '\u{c}' | ' ' | '\u{a0}' | '\u{feff}' | '\u{1680}' | '\u{2000}'
-            ..='\u{200a}' | '\u{202f}' | '\u{205f}' | '\u{3000}'
-    )
-}
+use spite_core::{is_line_terminator as is_line, is_whitespace as is_space};
 
 fn id_start(c: char) -> bool {
     c.is_ascii_alphabetic() || matches!(c, '_' | '$')
@@ -252,7 +242,8 @@ impl<'a> Lexer<'a> {
                 .parse()
                 .map_err(|_| self.syntax(start, "invalid decimal literal"))
         } else {
-            Ok(radix_number(&clean[2..], radix))
+            spite_core::parse_radix_integer(&clean[2..], radix)
+                .ok_or_else(|| self.syntax(start, "invalid integer literal"))
         }
     }
 
@@ -350,44 +341,4 @@ impl<'a> Lexer<'a> {
             units.push(unit);
         }
     }
-}
-
-// Convert power-of-two integers with one rounding step (ties to even).
-fn radix_number(digits: &str, radix: u32) -> f64 {
-    let width = radix.trailing_zeros();
-    let mut count = 0usize;
-    let mut significand = 0u64;
-    let mut guard = false;
-    let mut sticky = false;
-    for digit in digits.chars().filter_map(|c| c.to_digit(radix)) {
-        for shift in (0..width).rev() {
-            let bit = digit & (1 << shift) != 0;
-            if count == 0 && !bit {
-                continue;
-            }
-            count += 1;
-            if count <= 53 {
-                significand = (significand << 1) | u64::from(bit);
-            } else if count == 54 {
-                guard = bit;
-            } else {
-                sticky |= bit;
-            }
-        }
-    }
-    if count <= 53 {
-        return significand as f64;
-    }
-    let mut exponent = count - 1;
-    if guard && (sticky || significand & 1 != 0) {
-        significand += 1;
-    }
-    if significand == 1 << 53 {
-        significand >>= 1;
-        exponent += 1;
-    }
-    if exponent > 1023 {
-        return f64::INFINITY;
-    }
-    f64::from_bits(((exponent as u64 + 1023) << 52) | (significand & ((1 << 52) - 1)))
 }
