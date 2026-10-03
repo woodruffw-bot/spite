@@ -166,16 +166,8 @@ fn function_metadata_is_readonly_but_configurable() {
 }
 
 #[test]
-fn incomplete_function_intrinsics_are_guarded_including_restricted_writes() {
-    for key in [
-        "constructor",
-        "call",
-        "apply",
-        "bind",
-        "toString",
-        "caller",
-        "arguments",
-    ] {
+fn incomplete_function_intrinsics_are_guarded() {
+    for key in ["constructor", "call", "apply", "bind", "toString"] {
         assert_eq!(
             Realm::default().eval(&format!("'{key}' in ({{}}).toString")),
             Ok(Value::Boolean(true))
@@ -188,19 +180,48 @@ fn incomplete_function_intrinsics_are_guarded_including_restricted_writes() {
             "{key}"
         );
     }
+}
+
+#[test]
+fn restricted_function_properties_throw_in_both_modes_and_remain_shadowable() {
     for prefix in ["", "'use strict';"] {
-        let mut realm = Realm::default();
-        realm.eval("let f = ({}).toString; let flag = 0").unwrap();
-        assert!(matches!(
-            realm.eval(&format!("{prefix} f.caller = (flag = 1)")),
-            Err(Error::Unsupported { .. })
-        ));
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
-        assert_eq!(
-            realm.eval("let o = {__proto__: f, caller: 1}; o.caller = 2; o.caller"),
-            Ok(Value::Number(2.0))
-        );
-        assert_eq!(realm.eval("delete f.caller"), Ok(Value::Boolean(true)));
+        for key in ["caller", "arguments"] {
+            let mut realm = Realm::default();
+            realm.eval("let f = ({}).toString; let flag = 0").unwrap();
+            for expression in [
+                format!("f.{key}"),
+                format!("f.{key} = (flag = 1)"),
+                format!("f.{key} += (flag = 9)"),
+                format!("typeof f.{key}"),
+            ] {
+                assert!(matches!(
+                    realm.eval(&format!("{prefix} {expression}")),
+                    Err(Error::Exception {
+                        kind: ExceptionKind::TypeError,
+                        ..
+                    })
+                ));
+            }
+            assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
+            assert_eq!(
+                realm.eval(&format!(
+                    "let o = {{__proto__: f, {key}: 1}}; o.{key} = 2; o.{key}"
+                )),
+                Ok(Value::Number(2.0))
+            );
+            assert_eq!(
+                realm.eval(&format!("delete f.{key}; '{key}' in f")),
+                Ok(Value::Boolean(true))
+            );
+            assert_eq!(realm.eval(&format!("try {{ f.{key}(flag = 9); }} catch {{ flag += 2; }} finally {{ flag += 4; }} flag")), Ok(Value::Number(7.0)));
+            assert!(matches!(
+                realm.eval(&format!("delete o.{key}; o.{key}")),
+                Err(Error::Exception {
+                    kind: ExceptionKind::TypeError,
+                    ..
+                })
+            ));
+        }
     }
 }
 
@@ -210,17 +231,17 @@ fn builtin_graphs_and_host_roots_survive_collection() {
     let value = realm.eval("({}).toString").unwrap();
     let root = realm.root_value(value.clone(), 100).unwrap();
     let result = realm.collect(1000).unwrap();
-    assert_eq!(result.live, 4);
+    assert_eq!(result.live, 5);
     assert_eq!(result.reclaimed, 1);
     assert_eq!(realm.eval("({}).toString"), Ok(value));
     drop(root);
-    assert_eq!(realm.collect(1000).unwrap().live, 4);
+    assert_eq!(realm.collect(1000).unwrap().live, 5);
     string("({}).toString()", "[object Object]");
 }
 
 #[test]
 fn partial_intrinsic_initialization_is_never_published() {
-    for work in 0..160 {
+    for work in 0..400 {
         let mut realm = Realm::new(Limits {
             max_steps: work,
             ..Limits::default()
@@ -230,9 +251,9 @@ fn partial_intrinsic_initialization_is_never_published() {
             Ok(Value::Object(_)) | Err(Error::Limit { .. })
         ));
         let live = realm.collect(1000).unwrap().live;
-        assert!(live == 0 || live == 4, "work={work}, live={live}");
+        assert!(live == 0 || live == 5, "work={work}, live={live}");
     }
-    for slots in 0..4 {
+    for slots in 0..5 {
         let mut realm = Realm::new(Limits {
             max_objects: slots,
             ..Limits::default()

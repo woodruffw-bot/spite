@@ -254,11 +254,14 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The four intrinsic objects are published atomically after lazy
+(20.1.3, 10.4.7.1). The five intrinsic objects are published atomically after lazy
 initialization and retained as roots; failed initialization leaves only unreachable
-allocations for explicit collection. Unavailable standard methods and mandatory
-Function.prototype restricted accessors remain Unsupported, including accessor
-writes. Native Object.prototype.valueOf still reports Unsupported when it would
+allocations for explicit collection. Function.prototype owns configurable,
+non-enumerable caller/arguments accessors that share the realm’s non-extensible
+%ThrowTypeError% function (9.3.2, 10.2.4). Its name/length descriptors are frozen.
+Reads and writes throw TypeError in both modes, while presence and own-property
+deletion do not invoke accessors. Unavailable standard methods remain Unsupported.
+Native Object.prototype.valueOf still reports Unsupported when it would
 return a primitive wrapper. Captured environment storage and user functions follow
 this callable-object foundation.
 

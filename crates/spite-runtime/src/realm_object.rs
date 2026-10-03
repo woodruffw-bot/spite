@@ -135,12 +135,6 @@ impl Realm {
         span: Span,
     ) -> Result<bool, Error> {
         if let Value::Object(object) = base {
-            if self.restricted_function_reference(object, &key, span)? {
-                return Err(Self::unsupported(
-                    span,
-                    "Function.prototype restricted accessors are not implemented",
-                ));
-            }
             let action = self.object_work(span, |objects, budget| {
                 budget.value(&value)?;
                 objects.set(object, key, value.clone(), Some(object), budget)
@@ -259,7 +253,11 @@ impl Realm {
         let scanned = self.scopes.iter().try_fold(
             self.globals
                 .len()
-                .checked_add(4)
+                .checked_add(
+                    self.intrinsics
+                        .as_ref()
+                        .map_or(1, |intrinsics| intrinsics.roots().count()),
+                )
                 .ok_or(spite_heap::Error::Limit)?,
             |count, scope| {
                 count
@@ -402,47 +400,9 @@ impl Realm {
         };
         (object == &intrinsics.object_prototype && missing_object_method(key))
             || (object == &intrinsics.function_prototype
-                && [
-                    "constructor",
-                    "apply",
-                    "bind",
-                    "call",
-                    "toString",
-                    "caller",
-                    "arguments",
-                ]
-                .iter()
-                .any(|name| key_is(key, name)))
-    }
-
-    fn restricted_function_reference(
-        &mut self,
-        object: &ObjectHandle,
-        key: &JsString,
-        span: Span,
-    ) -> Result<bool, Error> {
-        if !key_is(key, "caller") && !key_is(key, "arguments") {
-            return Ok(false);
-        }
-        let Some(intrinsics) = &self.intrinsics else {
-            return Ok(false);
-        };
-        let prototype = intrinsics.function_prototype.clone();
-        let mut next = Some(object.clone());
-        while let Some(handle) = next {
-            if self.object_work(span, |objects, budget| {
-                objects.has_own(&handle, key, budget)
-            })? {
-                return Ok(false);
-            }
-            if handle == prototype {
-                return Ok(true);
-            }
-            next = self.object_work(span, |objects, _| {
-                Ok(objects.inspect(&handle)?.prototype().cloned())
-            })?;
-        }
-        Ok(false)
+                && ["constructor", "apply", "bind", "call", "toString"]
+                    .iter()
+                    .any(|name| key_is(key, name)))
     }
 }
 

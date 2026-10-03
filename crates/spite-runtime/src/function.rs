@@ -1,11 +1,15 @@
 //! Builtin function objects and the initial Object/Function prototype graph.
 
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::{
+    Error, ExceptionKind, ObjectHandle, Realm, Value,
+    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
+};
 use spite_core::{JsString, Span};
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
     FunctionPrototype,
+    ThrowTypeError,
     ObjectToString,
     ObjectValueOf,
 }
@@ -52,6 +56,59 @@ mod tests {
             Ok(Value::Undefined)
         );
     }
+
+    #[test]
+    fn restricted_descriptors_share_a_frozen_nonextensible_thrower() {
+        let mut realm = Realm::default();
+        realm.eval("let f = ({}).toString").unwrap();
+        let intrinsics = realm.intrinsics.as_ref().unwrap();
+        let function = intrinsics.function_prototype.clone();
+        let thrower = intrinsics.throw_type_error.clone();
+        let object = realm.objects.inspect(&thrower).unwrap();
+        assert!(object.is_callable());
+        assert!(!object.is_extensible());
+        assert_eq!(object.prototype(), Some(&function));
+        for (name, expected) in [
+            ("name", Value::String(JsString::from(""))),
+            ("length", Value::Number(0.0)),
+        ] {
+            let property = object
+                .own_property(&JsString::from(name))
+                .unwrap()
+                .as_data()
+                .unwrap();
+            assert_eq!(property.value, expected);
+            assert!(!property.writable && !property.enumerable && !property.configurable);
+        }
+        for name in ["caller", "arguments"] {
+            let crate::object::Property::Accessor(property) = realm
+                .objects
+                .inspect(&function)
+                .unwrap()
+                .own_property(&JsString::from(name))
+                .unwrap()
+            else {
+                panic!("accessor")
+            };
+            assert_eq!(property.get.as_ref(), Some(&thrower));
+            assert_eq!(property.set.as_ref(), Some(&thrower));
+            assert!(!property.enumerable && property.configurable);
+            assert!(
+                realm
+                    .objects
+                    .delete(&function, &JsString::from(name), &mut Budget::new(1000))
+                    .unwrap()
+            );
+            assert_eq!(realm.eval(&format!("f.{name}")), Ok(Value::Undefined));
+            assert_eq!(
+                realm.eval(&format!("'{name}' in f")),
+                Ok(Value::Boolean(false))
+            );
+        }
+        // The intrinsic identity is retained even after deleting all accessor edges.
+        assert_eq!(realm.collect(1000).unwrap().live, 5);
+        assert!(realm.objects.inspect(&thrower).is_ok());
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -65,6 +122,7 @@ pub(super) struct Intrinsics {
     pub function_prototype: ObjectHandle,
     pub object_to_string: ObjectHandle,
     pub object_value_of: ObjectHandle,
+    pub throw_type_error: ObjectHandle,
 }
 
 impl Intrinsics {
@@ -74,6 +132,7 @@ impl Intrinsics {
             &self.function_prototype,
             &self.object_to_string,
             &self.object_value_of,
+            &self.throw_type_error,
         ]
         .into_iter()
     }
@@ -108,6 +167,42 @@ impl Realm {
                 span,
             )?;
         }
+        // 9.3.2 / 10.2.4: Function.prototype owns the shared restricted accessors.
+        let throw_type_error =
+            self.new_builtin(&function_prototype, Builtin::ThrowTypeError, "", span)?;
+        for name in ["name", "length"] {
+            self.object_work(span, |objects, budget| {
+                objects.define(
+                    &throw_type_error,
+                    JsString::from(name),
+                    DataDescriptor {
+                        configurable: Some(false),
+                        ..Default::default()
+                    },
+                    budget,
+                )
+            })?;
+        }
+        self.object_work(span, |objects, _| {
+            objects.prevent_extensions(&throw_type_error)
+        })?;
+        for name in ["caller", "arguments"] {
+            self.object_work(span, |objects, budget| {
+                objects.define(
+                    &function_prototype,
+                    JsString::from(name),
+                    PropertyDescriptor {
+                        kind: DescriptorKind::Accessor {
+                            get: Some(Some(throw_type_error.clone())),
+                            set: Some(Some(throw_type_error.clone())),
+                        },
+                        enumerable: Some(false),
+                        configurable: Some(true),
+                    },
+                    budget,
+                )
+            })?;
+        }
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -115,6 +210,7 @@ impl Realm {
             function_prototype,
             object_to_string,
             object_value_of,
+            throw_type_error,
         });
         Ok(object_prototype)
     }
@@ -201,6 +297,11 @@ impl Realm {
         };
         match builtin {
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::ThrowTypeError => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "restricted function property",
+            )),
             Builtin::ObjectValueOf => {
                 Self::require_object_coercible(&this, span)?;
                 if matches!(this, Value::Object(_)) {
