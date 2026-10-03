@@ -1,6 +1,6 @@
 //! Heap context for ordinary internal methods with bounded prototype traversal.
 
-use super::{DataDescriptor, DataProperty, OrdinaryObject};
+use super::{DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor};
 use crate::Value;
 use crate::function::{Builtin, Callable};
 use spite_core::JsString;
@@ -36,6 +36,8 @@ pub enum Error {
     WorkLimit,
     /// A permitted new property would exceed the object's capacity.
     PropertyLimit,
+    /// A supplied accessor handle does not refer to a callable object.
+    InvalidAccessor,
 }
 
 impl fmt::Display for Error {
@@ -44,6 +46,7 @@ impl fmt::Display for Error {
             Self::Heap(error) => error.fmt(f),
             Self::WorkLimit => f.write_str("object work limit exceeded"),
             Self::PropertyLimit => f.write_str("object property limit exceeded"),
+            Self::InvalidAccessor => f.write_str("accessor must be callable or undefined"),
         }
     }
 }
@@ -86,7 +89,7 @@ impl Budget {
         self.charge(comparisons)
     }
 
-    fn value(&mut self, value: &Value) -> Result<(), Error> {
+    pub(crate) fn value(&mut self, value: &Value) -> Result<(), Error> {
         let size = match value {
             Value::String(value) => value.len(),
             Value::BigInt(value) => value.bit_length().div_ceil(32),
@@ -100,11 +103,30 @@ impl Budget {
     }
 }
 
+/// The next step of OrdinaryGet, performed after releasing storage borrows.
+#[derive(Clone, Debug, PartialEq)]
+pub enum GetAction {
+    /// Return the supplied data value (or undefined for an absent getter).
+    Value(Value),
+    /// Call this getter with the original receiver and no arguments.
+    Call(Handle),
+}
+
+/// The next step of OrdinarySet, performed after releasing storage borrows.
+#[derive(Clone, Debug, PartialEq)]
+pub enum SetAction {
+    /// The write completed or was rejected, without invoking a setter.
+    Done(bool),
+    /// Call this setter with the original receiver and assigned value, then return true.
+    Call(Handle),
+}
+
 /// An ordinary-object heap that validates prototypes and prevents their cycles.
 ///
 /// Allocation and internal methods never trigger collection. Returned handles
 /// are unrooted: retain a `Root` or include each live host/interpreter handle in
-/// the explicit collection roots. Only data properties are implemented.
+/// the explicit collection roots. Accessor calls are returned as actions for
+/// the evaluator; storage never executes JavaScript under a heap borrow.
 #[derive(Debug)]
 pub struct Objects {
     heap: Heap<OrdinaryObject>,
@@ -221,20 +243,34 @@ impl Objects {
         Ok(true)
     }
 
-    /// Applies an own data descriptor without consulting inherited properties.
+    /// Applies an own descriptor, validating value edges and accessor callability.
     pub fn define(
         &mut self,
         object: &Handle,
         key: JsString,
-        descriptor: DataDescriptor,
+        descriptor: impl Into<PropertyDescriptor>,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
+        let descriptor = descriptor.into().normalize();
         budget.lookup(self.heap.get(object)?, &key)?;
-        if let Some(value) = &descriptor.value {
-            if let Value::Object(handle) = value {
-                self.heap.get(handle)?;
+        match &descriptor.kind {
+            DescriptorKind::Data {
+                value: Some(value), ..
+            } => {
+                if let Value::Object(handle) = value {
+                    self.heap.get(handle)?;
+                }
+                budget.value(value)?;
             }
-            budget.value(value)?;
+            DescriptorKind::Accessor { get, set } => {
+                for handle in [get, set].into_iter().flatten().flatten() {
+                    budget.charge(1)?;
+                    if !self.heap.get(handle)?.is_callable() {
+                        return Err(Error::InvalidAccessor);
+                    }
+                }
+            }
+            _ => {}
         }
         self.heap
             .get_mut(object)?
@@ -254,37 +290,47 @@ impl Objects {
         Ok(record.own_property(key).is_some())
     }
 
-    /// Copies an own data descriptor with bounded key scans and value-copy work.
+    /// Copies an own complete descriptor with bounded key scans and value-copy work.
     pub fn get_own(
         &self,
         object: &Handle,
         key: &JsString,
         budget: &mut Budget,
-    ) -> Result<Option<DataProperty>, Error> {
+    ) -> Result<Option<Property>, Error> {
         let record = self.heap.get(object)?;
         budget.lookup(record, key)?;
         match record.own_property(key) {
             Some(property) => {
-                budget.value(&property.value)?;
+                match property {
+                    Property::Data(data) => budget.value(&data.value)?,
+                    Property::Accessor(_) => budget.charge(2)?,
+                }
                 Ok(Some(property.clone()))
             }
             None => Ok(None),
         }
     }
 
-    /// Implements OrdinaryGet for data properties, searching prototypes iteratively.
+    /// Finds a data result or getter call, searching prototypes iteratively.
     pub fn get(
         &self,
         object: &Handle,
         key: &JsString,
         budget: &mut Budget,
-    ) -> Result<Value, Error> {
+    ) -> Result<GetAction, Error> {
         match self.find(object, key, budget)? {
-            Some(property) => {
+            Some(Property::Data(property)) => {
                 budget.value(&property.value)?;
-                Ok(property.value.clone())
+                Ok(GetAction::Value(property.value.clone()))
             }
-            None => Ok(Value::Undefined),
+            Some(Property::Accessor(property)) => {
+                budget.charge(1)?;
+                Ok(match &property.get {
+                    Some(getter) => GetAction::Call(getter.clone()),
+                    None => GetAction::Value(Value::Undefined),
+                })
+            }
+            None => Ok(GetAction::Value(Value::Undefined)),
         }
     }
 
@@ -293,11 +339,11 @@ impl Objects {
         Ok(self.find(object, key, budget)?.is_some())
     }
 
-    /// Implements OrdinarySet for data properties with an explicit receiver.
+    /// Applies ordinary data writes or returns a setter call with an explicit receiver.
     ///
-    /// `None` represents any primitive receiver. Inherited writable data properties
-    /// write to the receiver; inherited non-writable properties reject the write.
-    /// A rejection returns false, leaving strict-mode throw handling to the caller.
+    /// `None` represents a primitive receiver. Setter calls preserve the actual
+    /// receiver in the evaluator. A completed rejection leaves strict-mode error
+    /// handling to the evaluator (10.1.9.2).
     pub fn set(
         &mut self,
         object: &Handle,
@@ -305,24 +351,31 @@ impl Objects {
         value: Value,
         receiver: Option<&Handle>,
         budget: &mut Budget,
-    ) -> Result<bool, Error> {
+    ) -> Result<SetAction, Error> {
         if let Some(receiver) = receiver {
             self.heap.get(receiver)?;
         }
-        if self
-            .find(object, &key, budget)?
-            .is_some_and(|property| !property.writable)
-        {
-            return Ok(false);
+        match self.find(object, &key, budget)? {
+            Some(Property::Accessor(property)) => {
+                budget.charge(1)?;
+                return Ok(match &property.set {
+                    Some(setter) => SetAction::Call(setter.clone()),
+                    None => SetAction::Done(false),
+                });
+            }
+            Some(Property::Data(property)) if !property.writable => {
+                return Ok(SetAction::Done(false));
+            }
+            _ => {}
         }
         let Some(receiver) = receiver else {
-            return Ok(false);
+            return Ok(SetAction::Done(false));
         };
         let destination = self.heap.get(receiver)?;
         budget.lookup(destination, &key)?;
         let descriptor = if let Some(property) = destination.own_property(&key) {
-            if !property.writable {
-                return Ok(false);
+            if !matches!(property, Property::Data(data) if data.writable) {
+                return Ok(SetAction::Done(false));
             }
             DataDescriptor {
                 value: Some(value),
@@ -337,6 +390,7 @@ impl Objects {
             }
         };
         self.define(receiver, key, descriptor, budget)
+            .map(SetAction::Done)
     }
 
     /// Deletes only an own property, with OrdinaryDelete's Boolean result.
@@ -382,7 +436,7 @@ impl Objects {
         object: &Handle,
         key: &JsString,
         budget: &mut Budget,
-    ) -> Result<Option<&DataProperty>, Error> {
+    ) -> Result<Option<&Property>, Error> {
         let mut next = Some(object);
         while let Some(handle) = next {
             let record = self.heap.get(handle)?;

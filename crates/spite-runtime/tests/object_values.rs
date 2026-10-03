@@ -5,7 +5,7 @@ use spite_core::JsString;
 use spite_heap::Error as HeapError;
 use spite_runtime::{
     ConversionError, Value,
-    object::{Budget, DataDescriptor, Error, Objects},
+    object::{Budget, DataDescriptor, Error, GetAction, Objects},
 };
 
 fn data(value: Value) -> DataDescriptor {
@@ -72,7 +72,7 @@ fn object_valued_properties_trace_cycles_without_retaining_unreachable_objects()
     assert_eq!(objects.collect([], 100).unwrap().live, 4);
     assert_eq!(
         objects.get(&a, &JsString::from("b"), &mut budget).unwrap(),
-        Value::Object(b.clone())
+        GetAction::Value(Value::Object(b.clone()))
     );
     drop(root);
     assert_eq!(objects.collect([], 100).unwrap().reclaimed, 4);
@@ -120,7 +120,7 @@ fn frozen_object_values_require_the_same_identity() {
     );
     assert_eq!(
         objects.get(&a, &key, &mut budget).unwrap(),
-        Value::Object(a.clone())
+        GetAction::Value(Value::Object(a.clone()))
     );
     assert_eq!(objects.collect([&a], 100).unwrap().reclaimed, 1);
 }
@@ -162,7 +162,10 @@ fn foreign_and_stale_value_edges_are_rejected_before_mutation() {
             ),
             Err(Error::Heap(error))
         );
-        assert_eq!(objects.get(&a, &key, &mut budget).unwrap(), Value::Null);
+        assert_eq!(
+            objects.get(&a, &key, &mut budget).unwrap(),
+            GetAction::Value(Value::Null)
+        );
     }
     assert_eq!(objects.collect([&a], 100).unwrap().live, 1);
 }

@@ -162,15 +162,15 @@ objects are semantic requirements. Add ordinary objects first. Implement arrays,
 functions, proxies, typed arrays, and other exotic objects on explicit internal
 method boundaries rather than ad hoc evaluator branches.
 
-Ordinary records start with string-keyed data properties in a creation-ordered
+Ordinary records store string-keyed properties in a creation-ordered
 vector. Partial descriptors preserve omitted fields, enforce non-configurable
 and non-writable invariants, and use SameValue. A successful equivalent-value
 definition on a frozen property preserves its stored value, including NaN bits
 (10.1.6.3). Enumeration sorts array indices numerically before other strings in
 creation order. Deletion followed by re-creation gives a string a new position.
-Property capacity failures remain distinct from descriptor rejection. Accessors,
-Symbols, inherited lookup, and prototype mutation arrive on explicit boundaries;
-the record layer does not yet expose objects to JavaScript.
+Property capacity failures remain distinct from descriptor rejection. Storage
+exposes checked internal operations; realms supply JavaScript execution and
+exception semantics. Symbol keys remain a separate implementation boundary.
 
 The `Objects` heap context validates prototype handles and prevents ordinary
 prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively
@@ -205,6 +205,15 @@ properties remain incomplete. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
 that method normally. Object coercion hooks and primitive wrapper constructors
 remain explicit implementation gaps.
+
+Ordinary properties distinguish data and accessor records. Partial descriptors
+carry mutually exclusive kind-specific fields; omitted fields preserve existing
+attributes. Configurable kind changes preserve common attributes and reset the
+new kind's omitted fields. Frozen accessors require identical getter/setter
+handles. The owning heap validates accessor callability and traces both edges.
+Storage returns getter/setter call actions so execution releases heap borrows
+before calling with the original receiver (10.1.8.1, 10.1.9.2). Accessor syntax and
+JavaScript descriptor/reflection APIs remain separate increments.
 
 Property references retain the evaluated base and the unconverted computed name.
 Edition 17's 13.3.3 defers ToPropertyKey until GetValue, PutValue, or deletion;

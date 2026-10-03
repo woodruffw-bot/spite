@@ -1,43 +1,22 @@
-//! Ordinary data-property storage and function call metadata.
+//! Ordinary property storage and function call metadata.
 //!
-//! This layer implements own string-keyed data properties. Accessors, Symbols,
-//! and exotic internal methods are separate increments.
+//! This layer implements own string-keyed data and accessor properties. Symbols
+//! and additional exotic internal methods are separate increments.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
-use crate::Value;
 use crate::function::Callable;
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 use std::fmt;
 
+#[cfg(test)]
+mod accessor_tests;
+mod descriptor;
 mod store;
-pub use store::{Budget, Error, Objects, Root};
-
-/// A complete ordinary data property.
-#[derive(Clone, Debug, PartialEq)]
-pub struct DataProperty {
-    /// The stored value.
-    pub value: Value,
-    /// Whether assignment may change the value.
-    pub writable: bool,
-    /// Whether the property participates in enumerable-key operations.
-    pub enumerable: bool,
-    /// Whether the property may be deleted or reconfigured.
-    pub configurable: bool,
-}
-
-/// A partial data or generic descriptor; omitted fields remain unspecified.
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct DataDescriptor {
-    /// A replacement value, if supplied.
-    pub value: Option<Value>,
-    /// A replacement writable attribute, if supplied.
-    pub writable: Option<bool>,
-    /// A replacement enumerable attribute, if supplied.
-    pub enumerable: Option<bool>,
-    /// A replacement configurable attribute, if supplied.
-    pub configurable: Option<bool>,
-}
+pub use descriptor::{
+    AccessorProperty, DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor,
+};
+pub use store::{Budget, Error, GetAction, Objects, Root, SetAction};
 
 /// The host-configured property capacity was exhausted.
 ///
@@ -52,7 +31,7 @@ impl fmt::Display for PropertyLimit {
 }
 impl std::error::Error for PropertyLimit {}
 
-/// An ordinary object's prototype, extensibility, and ordered data properties.
+/// An ordinary object's prototype, extensibility, and ordered properties.
 ///
 /// Lookup is linear and keys compare exact UTF-16 code units. The property limit
 /// bounds storage; callers must account for lookup and enumeration work when
@@ -61,7 +40,7 @@ impl std::error::Error for PropertyLimit {}
 pub struct OrdinaryObject {
     prototype: Option<Handle>,
     extensible: bool,
-    properties: Vec<(JsString, DataProperty)>,
+    properties: Vec<(JsString, Property)>,
     max_properties: usize,
     callable: Option<Callable>,
     immutable_prototype: bool,
@@ -112,73 +91,34 @@ impl OrdinaryObject {
     }
 
     /// Looks up an own property without consulting the prototype.
-    pub fn own_property(&self, key: &JsString) -> Option<&DataProperty> {
+    pub fn own_property(&self, key: &JsString) -> Option<&Property> {
         self.properties
             .iter()
             .find(|(k, _)| k == key)
             .map(|(_, p)| p)
     }
 
-    /// Applies an ordinary data descriptor (ECMA-262 10.1.6.3).
+    /// Applies an ordinary descriptor (ECMA-262 10.1.6.3).
     ///
-    /// `false` means descriptor validation rejected the change. A capacity error
-    /// occurs only when a permitted new property would exceed the host limit.
-    /// Neither failure changes the object. New properties default to undefined
-    /// and false attributes; existing properties preserve omitted fields.
+    /// Descriptor rejection or capacity failure leaves this record unchanged.
+    /// New attributes default to undefined/false; omitted fields are preserved
+    /// on existing properties. Heap callers must validate getter/setter handles.
     pub fn define_own_property(
         &mut self,
         key: JsString,
-        descriptor: DataDescriptor,
+        descriptor: impl Into<PropertyDescriptor>,
     ) -> Result<bool, PropertyLimit> {
-        let Some((_, current)) = self.properties.iter_mut().find(|(k, _)| *k == key) else {
-            if !self.extensible {
-                return Ok(false);
-            }
-            if self.properties.len() >= self.max_properties {
-                return Err(PropertyLimit);
-            }
-            self.properties.push((
-                key,
-                DataProperty {
-                    value: descriptor.value.unwrap_or(Value::Undefined),
-                    writable: descriptor.writable.unwrap_or(false),
-                    enumerable: descriptor.enumerable.unwrap_or(false),
-                    configurable: descriptor.configurable.unwrap_or(false),
-                },
-            ));
-            return Ok(true);
-        };
-        if !current.configurable {
-            if descriptor.configurable == Some(true)
-                || descriptor
-                    .enumerable
-                    .is_some_and(|v| v != current.enumerable)
-            {
-                return Ok(false);
-            }
-            if !current.writable {
-                if descriptor.writable == Some(true) {
-                    return Ok(false);
-                }
-                if let Some(value) = &descriptor.value {
-                    // Return immediately, including on success. Edition 17
-                    // preserves the existing value's distinguishable NaN bits.
-                    return Ok(value.same_value(&current.value));
-                }
-            }
+        let descriptor = descriptor.into().normalize();
+        if let Some((_, current)) = self.properties.iter_mut().find(|(k, _)| *k == key) {
+            return Ok(current.apply(descriptor));
         }
-        if let Some(value) = descriptor.value {
-            current.value = value;
+        if !self.extensible {
+            return Ok(false);
         }
-        if let Some(writable) = descriptor.writable {
-            current.writable = writable;
+        if self.properties.len() >= self.max_properties {
+            return Err(PropertyLimit);
         }
-        if let Some(enumerable) = descriptor.enumerable {
-            current.enumerable = enumerable;
-        }
-        if let Some(configurable) = descriptor.configurable {
-            current.configurable = configurable;
-        }
+        self.properties.push((key, descriptor.complete()));
         Ok(true)
     }
 
@@ -187,7 +127,7 @@ impl OrdinaryObject {
         let Some(index) = self.properties.iter().position(|(k, _)| k == key) else {
             return true;
         };
-        if !self.properties[index].1.configurable {
+        if !self.properties[index].1.configurable() {
             return false;
         }
         self.properties.remove(index);
@@ -225,11 +165,15 @@ impl Trace for OrdinaryObject {
         });
         std::iter::once(self.prototype.as_ref())
             .chain(std::iter::once(callable))
-            .chain(
-                self.properties
-                    .iter()
-                    .flat_map(|(_, property)| property.value.trace()),
-            )
+            .chain(self.properties.iter().flat_map(|(_, property)| {
+                let (first, second) = match property {
+                    Property::Data(data) => (data.value.trace().next().flatten(), None),
+                    Property::Accessor(accessor) => {
+                        (accessor.get.as_ref(), Some(accessor.set.as_ref()))
+                    }
+                };
+                std::iter::once(first).chain(second)
+            }))
     }
 }
 

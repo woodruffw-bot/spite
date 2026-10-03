@@ -75,6 +75,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add object identity values and trace object-valued data properties, including cycles.
 - [ ] Implement ordinary objects, descriptors, prototypes, and property order.
 - [x] Add ordinary data-property records, descriptor invariants, deletion, and string-key order.
+- [x] Add accessor descriptors, kind transitions, callable validation/tracing, and receiver-aware calls.
 - [x] Implement prototype traversal and mutation with bounded cycle checks.
 - [x] Implement inherited data reads, presence checks, and receiver-sensitive writes.
 - [x] Parse object literals, computed keys, shorthand, and duplicate prototype-setter early errors.

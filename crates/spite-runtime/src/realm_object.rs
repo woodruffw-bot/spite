@@ -2,7 +2,7 @@
 
 use crate::{
     Collection, Error, ObjectHandle, Realm, Value,
-    object::{self, DataDescriptor, OrdinaryObject},
+    object::{self, DataDescriptor, OrdinaryObject, Property, SetAction},
 };
 use spite_bigint::BigInt;
 use spite_core::{JsString, Span};
@@ -141,9 +141,17 @@ impl Realm {
                     "Function.prototype restricted accessors are not implemented",
                 ));
             }
-            return self.object_work(span, |objects, budget| {
-                objects.set(object, key, value, Some(object), budget)
-            });
+            let action = self.object_work(span, |objects, budget| {
+                budget.value(&value)?;
+                objects.set(object, key, value.clone(), Some(object), budget)
+            })?;
+            return match action {
+                SetAction::Done(result) => Ok(result),
+                SetAction::Call(setter) => {
+                    self.call(Value::Object(setter), base.clone(), vec![value], span)?;
+                    Ok(true)
+                }
+            };
         }
         // GetThisValue retains the primitive receiver. String own properties
         // reject writes; ordinary inherited data properties reject non-objects
@@ -185,7 +193,18 @@ impl Realm {
                 objects.get_own(&handle, key, budget)
             })?;
             if let Some(property) = own {
-                return Ok(property.value);
+                return match property {
+                    Property::Data(data) => Ok(data.value),
+                    Property::Accessor(accessor) => match accessor.get {
+                        Some(getter) => self.call(
+                            Value::Object(getter),
+                            Value::Object(object.clone()),
+                            Vec::new(),
+                            span,
+                        ),
+                        None => Ok(Value::Undefined),
+                    },
+                };
             }
             // Missing standard methods must not appear to be absent. Until
             // callable intrinsics are implemented, accessing one is a host gap.
@@ -291,6 +310,9 @@ impl Realm {
                     span,
                     message: error.to_string(),
                 }
+            }
+            object::Error::InvalidAccessor => {
+                unreachable!("realm descriptors validate accessor callability before storage")
             }
             object::Error::Heap(
                 spite_heap::Error::ForeignHandle | spite_heap::Error::StaleHandle,
@@ -506,4 +528,77 @@ fn string_index(string: &JsString, key: &JsString) -> Option<usize> {
         return None;
     }
     Some(index)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        ExceptionKind,
+        object::{Budget, DescriptorKind, PropertyDescriptor},
+    };
+
+    #[test]
+    fn inherited_accessors_receive_the_original_object_and_do_not_create_data_properties() {
+        let mut realm = Realm::default();
+        let Value::Object(base) = realm
+            .eval("let base = {}; let child = {__proto__: base}; base")
+            .unwrap()
+        else {
+            panic!("object")
+        };
+        let value_of = realm.intrinsics.as_ref().unwrap().object_value_of.clone();
+        for (name, get, set) in [
+            ("both", Some(value_of.clone()), Some(value_of)),
+            ("empty", None, None),
+        ] {
+            realm
+                .objects
+                .define(
+                    &base,
+                    JsString::from(name),
+                    PropertyDescriptor {
+                        kind: DescriptorKind::Accessor {
+                            get: Some(get),
+                            set: Some(set),
+                        },
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    },
+                    &mut Budget::new(1000),
+                )
+                .unwrap();
+        }
+        assert_eq!(
+            realm.eval("child.both === child && base.both === base"),
+            Ok(Value::Boolean(true))
+        );
+        assert_eq!(
+            realm.eval("child.both = 7; child.both === child"),
+            Ok(Value::Boolean(true))
+        );
+        assert_eq!(
+            realm.eval("'empty' in child && child.empty === undefined"),
+            Ok(Value::Boolean(true))
+        );
+        assert_eq!(
+            realm.eval("child.empty = 7; child.empty"),
+            Ok(Value::Undefined)
+        );
+        assert!(matches!(
+            realm.eval("'use strict'; child.empty = 7"),
+            Err(Error::Exception {
+                kind: ExceptionKind::TypeError,
+                ..
+            })
+        ));
+        assert_eq!(
+            realm.eval("delete child.both; child.both === child"),
+            Ok(Value::Boolean(true))
+        );
+        assert_eq!(
+            realm.eval("delete base.both; child.both"),
+            Ok(Value::Undefined)
+        );
+    }
 }

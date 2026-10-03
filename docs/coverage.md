@@ -46,9 +46,12 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 The `spite-heap` foundation provides capacity-bounded generational storage,
 checked cross-heap identity, stale-handle rejection, and bounded iterative
 collection from explicit roots. Handle or budget failures occur before sweeping.
-Runtime object records add string-keyed data descriptors, extensibility,
+Runtime object records add string-keyed data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
-properties use SameValue and preserve equivalent NaN payloads. These records
+properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
+validate callable handles, trace getter/setter edges, preserve omitted attributes,
+and enforce non-configurable identity and kind invariants. Reads/writes dispatch
+accessors with the original receiver after releasing storage borrows. These records
 have a host property-capacity limit. A heap context adds bounded iterative
 prototype traversal, cycle-checked mutation, inherited data reads and presence
 checks, and receiver-sensitive writes. Rust values carry object identity and

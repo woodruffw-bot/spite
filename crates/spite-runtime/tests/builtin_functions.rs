@@ -21,12 +21,18 @@ fn builtin_methods_are_callable_with_standard_names_lengths_and_attributes() {
         let function = realm.inspect_object(&handle).unwrap();
         assert!(function.is_callable());
         for key in ["name", "length"] {
-            let property = function.own_property(&JsString::from(key)).unwrap();
+            let property = function
+                .own_property(&JsString::from(key))
+                .unwrap()
+                .as_data()
+                .unwrap();
             assert!(!property.writable && !property.enumerable && property.configurable);
         }
         assert_eq!(
             function
                 .own_property(&JsString::from("name"))
+                .unwrap()
+                .as_data()
                 .unwrap()
                 .value,
             Value::String(JsString::from(name))
@@ -34,6 +40,8 @@ fn builtin_methods_are_callable_with_standard_names_lengths_and_attributes() {
         assert_eq!(
             function
                 .own_property(&JsString::from("length"))
+                .unwrap()
+                .as_data()
                 .unwrap()
                 .value,
             Value::Number(0.0)

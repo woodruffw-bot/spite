@@ -26,6 +26,8 @@ fn value(object: &OrdinaryObject, name: &str) -> Value {
     object
         .own_property(&JsString::from(name))
         .unwrap()
+        .as_data()
+        .unwrap()
         .value
         .clone()
 }
@@ -36,7 +38,11 @@ fn omitted_fields_default_on_creation_and_preserve_existing_properties() {
     assert!(object.is_extensible());
     assert!(object.prototype().is_none());
     assert!(define(&mut object, "empty", DataDescriptor::default()));
-    let property = object.own_property(&JsString::from("empty")).unwrap();
+    let property = object
+        .own_property(&JsString::from("empty"))
+        .unwrap()
+        .as_data()
+        .unwrap();
     assert_eq!(property.value, Value::Undefined);
     assert!(!property.writable && !property.enumerable && !property.configurable);
     assert!(define(&mut object, "full", data(Value::Number(3.0))));
@@ -49,7 +55,11 @@ fn omitted_fields_default_on_creation_and_preserve_existing_properties() {
         }
     ));
     assert!(define(&mut object, "full", DataDescriptor::default()));
-    let property = object.own_property(&JsString::from("full")).unwrap();
+    let property = object
+        .own_property(&JsString::from("full"))
+        .unwrap()
+        .as_data()
+        .unwrap();
     assert_eq!(property.value, Value::Null);
     assert!(property.writable && property.enumerable && property.configurable);
     assert_eq!(object.property_count(), 2);
@@ -268,7 +278,12 @@ fn keys_use_array_index_order_then_exact_string_creation_order() {
     expected.push(JsString::from("b"));
     assert_eq!(object.own_keys(), expected);
     assert_eq!(
-        object.own_property(&surrogate).unwrap().value,
+        object
+            .own_property(&surrogate)
+            .unwrap()
+            .as_data()
+            .unwrap()
+            .value,
         Value::Undefined
     );
 }

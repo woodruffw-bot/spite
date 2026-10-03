@@ -4,7 +4,7 @@ use spite_core::JsString;
 use spite_heap::Error as HeapError;
 use spite_runtime::{
     Value,
-    object::{Budget, DataDescriptor, Error, Objects},
+    object::{Budget, DataDescriptor, Error, GetAction, Objects, SetAction},
 };
 
 fn data(value: Value) -> DataDescriptor {
@@ -27,7 +27,7 @@ fn inherited_get_and_has_distinguish_absence_from_undefined() {
     assert!(!objects.has(&leaf, &key, &mut budget).unwrap());
     assert_eq!(
         objects.get(&leaf, &key, &mut budget).unwrap(),
-        Value::Undefined
+        GetAction::Value(Value::Undefined)
     );
     assert!(
         objects
@@ -37,7 +37,7 @@ fn inherited_get_and_has_distinguish_absence_from_undefined() {
     assert!(objects.has(&leaf, &key, &mut budget).unwrap());
     assert_eq!(
         objects.get(&leaf, &key, &mut budget).unwrap(),
-        Value::Undefined
+        GetAction::Value(Value::Undefined)
     );
     assert!(
         objects
@@ -46,14 +46,14 @@ fn inherited_get_and_has_distinguish_absence_from_undefined() {
     );
     assert_eq!(
         objects.get(&leaf, &key, &mut budget).unwrap(),
-        Value::Number(7.0)
+        GetAction::Value(Value::Number(7.0))
     );
     assert!(objects.delete(&leaf, &key, &mut budget).unwrap());
     assert!(objects.has(&leaf, &key, &mut budget).unwrap());
     assert!(objects.delete(&middle, &key, &mut budget).unwrap());
     assert_eq!(
         objects.get(&leaf, &key, &mut budget).unwrap(),
-        Value::Undefined
+        GetAction::Value(Value::Undefined)
     );
 }
 
@@ -89,7 +89,7 @@ fn inherited_writes_create_receiver_properties_and_preserve_existing_attributes(
             .define(&base, key.clone(), data(Value::Number(1.0)), &mut budget)
             .unwrap()
     );
-    assert!(
+    assert_eq!(
         objects
             .set(
                 &receiver,
@@ -98,16 +98,19 @@ fn inherited_writes_create_receiver_properties_and_preserve_existing_attributes(
                 Some(&receiver),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(true)
     );
     assert_eq!(
         objects.get(&base, &key, &mut budget).unwrap(),
-        Value::Number(1.0)
+        GetAction::Value(Value::Number(1.0))
     );
     let property = objects
         .inspect(&receiver)
         .unwrap()
         .own_property(&key)
+        .unwrap()
+        .as_data()
         .unwrap();
     assert_eq!(property.value, Value::Number(2.0));
     assert!(property.writable && property.enumerable && property.configurable);
@@ -125,7 +128,7 @@ fn inherited_writes_create_receiver_properties_and_preserve_existing_attributes(
             )
             .unwrap()
     );
-    assert!(
+    assert_eq!(
         objects
             .set(
                 &base,
@@ -134,16 +137,19 @@ fn inherited_writes_create_receiver_properties_and_preserve_existing_attributes(
                 Some(&receiver),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(true)
     );
     let property = objects
         .inspect(&receiver)
         .unwrap()
         .own_property(&key)
+        .unwrap()
+        .as_data()
         .unwrap();
     assert_eq!(property.value, Value::Number(3.0));
     assert!(property.writable && !property.enumerable && !property.configurable);
-    assert!(
+    assert_eq!(
         objects
             .set(
                 &base,
@@ -152,14 +158,15 @@ fn inherited_writes_create_receiver_properties_and_preserve_existing_attributes(
                 Some(&unrelated),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(true)
     );
     assert_eq!(
         objects.get(&unrelated, &key, &mut budget).unwrap(),
-        Value::Number(4.0)
+        GetAction::Value(Value::Number(4.0))
     );
     let missing = JsString::from("missing");
-    assert!(
+    assert_eq!(
         objects
             .set(
                 &base,
@@ -168,12 +175,13 @@ fn inherited_writes_create_receiver_properties_and_preserve_existing_attributes(
                 Some(&unrelated),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(true)
     );
     assert!(!objects.has(&base, &missing, &mut budget).unwrap());
     assert_eq!(
         objects.get(&unrelated, &missing, &mut budget).unwrap(),
-        Value::Null
+        GetAction::Value(Value::Null)
     );
 }
 
@@ -198,8 +206,8 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
             )
             .unwrap()
     );
-    assert!(
-        !objects
+    assert_eq!(
+        objects
             .set(
                 &receiver,
                 key.clone(),
@@ -207,7 +215,8 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
                 Some(&receiver),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(false)
     );
     assert!(
         objects
@@ -226,8 +235,8 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
             )
             .unwrap()
     );
-    assert!(
-        !objects
+    assert_eq!(
+        objects
             .set(
                 &base,
                 key.clone(),
@@ -235,14 +244,15 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
                 Some(&receiver),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(false)
     );
     assert_eq!(
         objects.get(&receiver, &key, &mut budget).unwrap(),
-        Value::Number(2.0)
+        GetAction::Value(Value::Number(2.0))
     );
-    assert!(
-        !objects
+    assert_eq!(
+        objects
             .set(
                 &unrelated,
                 key.clone(),
@@ -250,10 +260,11 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
                 Some(&base),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(false)
     );
-    assert!(
-        !objects
+    assert_eq!(
+        objects
             .set(
                 &unrelated,
                 key.clone(),
@@ -261,11 +272,12 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
                 None,
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(false)
     );
     objects.prevent_extensions(&unrelated).unwrap();
-    assert!(
-        !objects
+    assert_eq!(
+        objects
             .set(
                 &receiver,
                 key.clone(),
@@ -273,7 +285,8 @@ fn rejected_writes_leave_receiver_and_prototype_values_unchanged() {
                 Some(&unrelated),
                 &mut budget
             )
-            .unwrap()
+            .unwrap(),
+        SetAction::Done(false)
     );
     assert!(
         objects
@@ -302,7 +315,7 @@ fn deep_chains_are_iterative_and_exhaustion_never_changes_the_graph() {
     );
     assert_eq!(
         objects.get(&leaf, &key, &mut budget).unwrap(),
-        Value::Boolean(true)
+        GetAction::Value(Value::Boolean(true))
     );
     assert!(objects.has(&leaf, &key, &mut budget).unwrap());
     for work in [0, 1, 10, 100, 20_000] {
@@ -359,10 +372,12 @@ fn every_failing_write_budget_preserves_state_and_capacity_is_separate() {
                     .unwrap()
                     .own_property(&key)
                     .unwrap()
+                    .as_data()
+                    .unwrap()
                     .value,
                 Value::String(JsString::from("old"))
             ),
-            Ok(true) => {
+            Ok(SetAction::Done(true)) => {
                 succeeded = true;
                 break;
             }

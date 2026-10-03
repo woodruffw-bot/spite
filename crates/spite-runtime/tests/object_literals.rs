@@ -16,6 +16,8 @@ fn own(realm: &Realm, handle: &ObjectHandle, key: &str) -> Value {
         .unwrap()
         .own_property(&JsString::from(key))
         .unwrap()
+        .as_data()
+        .unwrap()
         .value
         .clone()
 }
@@ -65,6 +67,8 @@ fn properties_apply_in_source_order_with_ordinary_attributes() {
             .inspect_object(&handle)
             .unwrap()
             .own_property(&JsString::from(key))
+            .unwrap()
+            .as_data()
             .unwrap();
         assert_eq!(property.value, Value::Number(expected));
         assert!(property.writable && property.enumerable && property.configurable);
@@ -119,6 +123,8 @@ fn literal_and_primitive_computed_names_use_ecmascript_string_conversion() {
             .inspect_object(&handle)
             .unwrap()
             .own_property(&JsString::from_code_units(vec![0xd800]))
+            .unwrap()
+            .as_data()
             .unwrap()
             .value,
         Value::Number(7.0)
