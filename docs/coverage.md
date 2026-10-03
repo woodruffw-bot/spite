@@ -12,6 +12,7 @@ not an alternative language specification.
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
 | Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
+| Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | Expressions | Primitive literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
@@ -84,3 +85,5 @@ Node.js and browser APIs, CommonJS, ECMA-402, syntax extensions, and unstandardi
 proposals are outside the target. Annex B's optional browser compatibility
 extensions are not enabled for this non-browser host. They are standardized
 optional behavior, not evidence that Node.js compatibility is required.
+The `Legacy` numeric and string productions in edition-17 sections 12.9.3–4 are
+required language syntax, distinct from those optional Annex B features.

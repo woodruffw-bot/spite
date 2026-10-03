@@ -20,6 +20,8 @@ pub(crate) struct Token {
     pub span: Span,
     pub newline: bool,
     pub escaped: bool,
+    // ECMA-262 12.9.3.1 and 12.9.4.1 prohibit these forms in strict code.
+    pub legacy: bool,
 }
 
 pub(crate) struct Lexer<'a> {
@@ -94,9 +96,11 @@ impl<'a> Lexer<'a> {
                 span: Span::new(start, start),
                 newline,
                 escaped: false,
+                legacy: false,
             });
         };
         let mut escaped = false;
+        let mut legacy = false;
         let kind = if id_start(c) || c == '\\' {
             let (name, had_escape) = self.identifier()?;
             escaped = had_escape;
@@ -114,9 +118,13 @@ impl<'a> Lexer<'a> {
                     .get(1)
                     .is_some_and(u8::is_ascii_digit))
         {
-            Kind::Literal(self.number()?)
+            let (literal, is_legacy) = self.number()?;
+            legacy = is_legacy;
+            Kind::Literal(literal)
         } else if matches!(c, '\'' | '"') {
-            Kind::Literal(Literal::String(self.string()?))
+            let (string, is_legacy) = self.string()?;
+            legacy = is_legacy;
+            Kind::Literal(Literal::String(string))
         } else if c == '`' || (c == '}' && self.template_braces.last() == Some(&0)) {
             let continuation = c == '}';
             self.bump();
@@ -174,6 +182,7 @@ impl<'a> Lexer<'a> {
             span: Span::new(start, self.pos),
             newline,
             escaped,
+            legacy,
         })
     }
 
@@ -349,8 +358,9 @@ impl<'a> Lexer<'a> {
         Ok(())
     }
 
-    fn number(&mut self) -> Result<Literal, Diagnostic> {
+    fn number(&mut self) -> Result<(Literal, bool), Diagnostic> {
         let start = self.pos;
+        let mut digits_start = start;
         let mut radix = 10;
         let mut integer = true;
         let mut leading_zero = false;
@@ -364,6 +374,7 @@ impl<'a> Lexer<'a> {
         }
         if radix != 10 {
             self.pos += 2;
+            digits_start = self.pos;
             self.digits(radix, true)?;
         } else {
             if self.rest().starts_with("0_") {
@@ -376,13 +387,25 @@ impl<'a> Lexer<'a> {
                     .as_bytes()
                     .get(1)
                     .is_some_and(u8::is_ascii_digit);
-            self.digits(10, false)?;
-            if self.peek() == Some('.') {
+            if leading_zero {
+                while self.peek().is_some_and(|c| c.is_ascii_digit()) {
+                    self.bump();
+                }
+                // Legacy octal is an integer-only production. Leading-zero
+                // sequences containing 8 or 9 are decimal and can have a fraction
+                // or exponent, but neither form allows separators in its integer part.
+                if self.source[start..self.pos].bytes().all(|b| b <= b'7') {
+                    radix = 8;
+                }
+            } else {
+                self.digits(10, false)?;
+            }
+            if radix == 10 && self.peek() == Some('.') {
                 integer = false;
                 self.bump();
                 self.digits(10, false)?;
             }
-            if matches!(self.peek(), Some('e' | 'E')) {
+            if radix == 10 && matches!(self.peek(), Some('e' | 'E')) {
                 integer = false;
                 self.bump();
                 if matches!(self.peek(), Some('+' | '-')) {
@@ -406,32 +429,24 @@ impl<'a> Lexer<'a> {
             self.bump();
             return Err(self.syntax(start, "invalid character after numeric literal"));
         }
-        if leading_zero {
-            return Err(self.error(
-                start,
-                DiagnosticKind::Unsupported,
-                "legacy leading-zero numeric literals are not supported",
-            ));
-        }
-        let clean = self.source[start..end].replace('_', "");
+        let clean = self.source[digits_start..end].replace('_', "");
         if bigint {
-            return Ok(Literal::BigInt {
-                digits: if radix == 10 {
-                    clean
-                } else {
-                    clean[2..].into()
+            return Ok((
+                Literal::BigInt {
+                    digits: clean,
+                    radix,
                 },
-                radix,
-            });
+                false,
+            ));
         }
         if radix == 10 {
             clean
                 .parse()
-                .map(Literal::Number)
+                .map(|value| (Literal::Number(value), leading_zero))
                 .map_err(|_| self.syntax(start, "invalid decimal literal"))
         } else {
-            spite_core::parse_radix_integer(&clean[2..], radix)
-                .map(Literal::Number)
+            spite_core::parse_radix_integer(&clean, radix)
+                .map(|value| (Literal::Number(value), leading_zero))
                 .ok_or_else(|| self.syntax(start, "invalid integer literal"))
         }
     }
@@ -474,16 +489,17 @@ impl<'a> Lexer<'a> {
         Ok(value)
     }
 
-    fn string(&mut self) -> Result<JsString, Diagnostic> {
+    fn string(&mut self) -> Result<(JsString, bool), Diagnostic> {
         let start = self.pos;
         let quote = self.bump();
         let mut units = Vec::new();
+        let mut legacy = false;
         loop {
             let Some(c) = self.bump() else {
                 return Err(self.syntax(start, "unterminated string"));
             };
             if Some(c) == quote {
-                return Ok(JsString::from_code_units(units));
+                return Ok((JsString::from_code_units(units), legacy));
             }
             if matches!(c, '\r' | '\n') {
                 return Err(self.syntax(start, "line terminator in string"));
@@ -510,12 +526,22 @@ impl<'a> Lexer<'a> {
                 'f' => 12,
                 'v' => 11,
                 '0' if !self.peek().is_some_and(|c| c.is_ascii_digit()) => 0,
-                '0'..='9' => {
-                    return Err(self.error(
-                        start,
-                        DiagnosticKind::Unsupported,
-                        "legacy decimal escapes are not supported",
-                    ));
+                '0'..='7' => {
+                    legacy = true;
+                    let mut value = escape as u16 - b'0' as u16;
+                    let extra = if escape <= '3' { 2 } else { 1 };
+                    for _ in 0..extra {
+                        let Some(digit) = self.peek().and_then(|c| c.to_digit(8)) else {
+                            break;
+                        };
+                        self.bump();
+                        value = value * 8 + digit as u16;
+                    }
+                    value
+                }
+                '8' | '9' => {
+                    legacy = true;
+                    escape as u16
                 }
                 'x' => self.hex(2, start)? as u16,
                 'u' => {

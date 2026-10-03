@@ -64,6 +64,17 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
                 "\"use strict\"" | "'use strict'"
             )
         });
+    // Strictness is known only after reading the complete directive prologue.
+    // Earlier string directives are subject to the same strict lexical errors.
+    if strict {
+        if let Some(token) = parser.tokens.iter().find(|token| token.legacy) {
+            return Err(Diagnostic::new(
+                DiagnosticKind::Syntax,
+                token.span,
+                "legacy numeric literals and escapes are forbidden in strict code",
+            ));
+        }
+    }
     validate_scope(
         &statements,
         strict,

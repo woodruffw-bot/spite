@@ -12,6 +12,10 @@ Do not enable Annex B's browser compatibility extensions. Annex B is standardize
 but optional for this host. ECMA-402, Node.js, CommonJS, DOM APIs, timers, and network
 APIs are outside the target. Standard facilities such as Date, Promise, modules,
 RegExp, and shared memory remain in scope even when they need host integration.
+The edition-17 `Legacy` label does not itself mean optional. In particular,
+leading-zero numeric literals and octal/decimal string escapes are required by
+12.9.3–4 in non-strict code and rejected as early errors in strict code. Preserve
+their lexical metadata until the entire directive prologue establishes strictness.
 
 Production crates use Rust's standard library and workspace crates. Two direct
 external production dependencies are approved when needed: `regex` for regular
