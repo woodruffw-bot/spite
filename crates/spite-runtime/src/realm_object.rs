@@ -8,6 +8,12 @@ use spite_bigint::BigInt;
 use spite_core::{JsString, Span};
 use spite_parser::ast::{Literal, ObjectProperty, PropertyKind, PropertyName};
 
+pub(super) enum Hint {
+    Default,
+    Number,
+    String,
+}
+
 /// An embedding value whose object, if any, remains rooted while this token lives.
 #[derive(Clone, Debug)]
 pub struct RootedValue {
@@ -24,6 +30,39 @@ impl RootedValue {
 }
 
 impl Realm {
+    pub(super) fn primitive(
+        &mut self,
+        value: Value,
+        hint: Hint,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let Value::Object(object) = value else {
+            return Ok(value);
+        };
+        // 7.1.1 / 7.1.1.1. All currently constructible heap objects are ordinary
+        // and non-callable, and no Symbol-keyed hooks can be installed yet.
+        // Keep realm lookup here so missing callable intrinsics are Unsupported,
+        // while present non-callable values are skipped as the spec requires.
+        let names = match hint {
+            Hint::String => ["toString", "valueOf"],
+            Hint::Default | Hint::Number => ["valueOf", "toString"],
+        };
+        for name in names {
+            let _method = self.get_property(&object, &JsString::from(name), span)?;
+            // Add IsCallable/Call dispatch before exposing function objects.
+        }
+        Err(Self::exception(
+            crate::ExceptionKind::TypeError,
+            span,
+            "cannot convert object to a primitive value",
+        ))
+    }
+
+    pub(super) fn string(&mut self, value: Value, span: Span) -> Result<JsString, Error> {
+        let primitive = self.primitive(value, Hint::String, span)?;
+        self.conversion_work(span, |budget| primitive.to_js_string(budget))
+    }
+
     pub(super) fn has_property(
         &mut self,
         object: &ObjectHandle,
@@ -261,7 +300,7 @@ impl Realm {
     }
 
     pub(super) fn property_key(&mut self, value: Value, span: Span) -> Result<JsString, Error> {
-        let key = self.conversion_work(span, |budget| value.to_js_string(budget))?;
+        let key = self.string(value, span)?;
         if key.len() > self.limits.max_string_units {
             return Err(Error::Limit {
                 span,

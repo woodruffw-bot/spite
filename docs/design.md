@@ -187,9 +187,13 @@ consume explicit work budgets. Object fields must hold handles, never root token
 object is truthy, and property tracing visits object-valued edges. Heap-context
 definitions validate these edges before mutation. Context-free conversion APIs
 return a distinct `ConversionError::ObjectNeedsContext`, rather than inventing
-a primitive or JavaScript exception. Realm-level ToPrimitive must eventually
-perform the specified property lookups and calls; unsupported hooks remain an
-explicit implementation gap until that machinery is present.
+a primitive or JavaScript exception. Realm-level OrdinaryToPrimitive performs
+ordered method lookups using the requested hint. Every currently materialized
+heap object is non-callable, so ordinary objects without callable methods throw
+TypeError. Missing callable intrinsics remain Unsupported. Add IsCallable/Call
+dispatch before exposing function objects, and Symbol hooks before Symbol keys.
+Arithmetic and comparisons convert original operands from left to right after
+both expressions evaluate; templates and property names use the string hint.
 
 Realm allocation is bounded by object slots and per-object property counts. Object
 literals create data properties in source order, convert computed keys before

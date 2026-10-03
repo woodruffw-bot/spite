@@ -85,6 +85,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add the in operator and context-sensitive In grammar for for initializers.
 - [x] Implement primitive property access, String indices/length, and strict write/delete behavior.
 - [ ] Implement object coercion hooks and primitive wrapper constructors/prototypes.
+- [x] Route coercion through realms and reject ordinary objects without callable conversion methods.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.

@@ -7,6 +7,7 @@ pub use realm_object::RootedValue;
 pub use spite_heap::{Collection, Handle as ObjectHandle};
 pub use value::{ConversionError, Value};
 
+use realm_object::Hint;
 use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
 use spite_parser::{ast::*, parse_script};
@@ -354,16 +355,16 @@ impl Realm {
         }
     }
 
-    fn number(value: &Value, span: Span) -> Result<f64, Error> {
-        value
+    fn number(&mut self, value: Value, span: Span) -> Result<f64, Error> {
+        self.primitive(value, Hint::Number, span)?
             .to_number()
             .map_err(|error| Self::conversion_error(error, span))
     }
 
-    fn numeric(value: Value, span: Span) -> Result<Value, Error> {
-        match value {
-            Value::BigInt(_) | Value::Number(_) => Ok(value),
-            other => Ok(Value::Number(Self::number(&other, span)?)),
+    fn numeric(&mut self, value: Value, span: Span) -> Result<Value, Error> {
+        match self.primitive(value, Hint::Number, span)? {
+            value @ (Value::BigInt(_) | Value::Number(_)) => Ok(value),
+            other => Ok(Value::Number(self.number(other, span)?)),
         }
     }
 
@@ -1003,9 +1004,7 @@ impl Realm {
                     )?;
                     if let Some(substitution) = substitutions.get(index) {
                         let value = self.expression(substitution)?;
-                        let value = self.conversion_work(substitution.span, |budget| {
-                            value.to_js_string(budget)
-                        })?;
+                        let value = self.string(value, substitution.span)?;
                         self.append_string(&mut units, &value, substitution.span)?;
                     }
                 }
@@ -1049,7 +1048,8 @@ impl Realm {
                 // ECMA-262 13.4.2–13.4.5: GetValue and ToNumeric precede
                 // PutValue. Postfix returns the numeric old value, not its input.
                 let mut reference = self.reference(argument)?;
-                let old = Self::numeric(self.get(&mut reference, argument.span)?, argument.span)?;
+                let old = self.get(&mut reference, argument.span)?;
+                let old = self.numeric(old, argument.span)?;
                 let one = if matches!(old, Value::BigInt(_)) {
                     Value::BigInt(BigInt::from(1))
                 } else {
@@ -1116,21 +1116,21 @@ impl Realm {
                 }
                 let value = self.expression(inner)?;
                 match op {
-                    UnaryOp::Plus => Value::Number(Self::number(&value, expr.span)?),
-                    UnaryOp::Minus => match value {
+                    UnaryOp::Plus => Value::Number(self.number(value, expr.span)?),
+                    UnaryOp::Minus => match self.numeric(value, expr.span)? {
                         Value::BigInt(value) => {
                             Value::BigInt(self.integer_work(expr.span, |budget| value.neg(budget))?)
                         }
-                        other => Value::Number(-Self::number(&other, expr.span)?),
+                        Value::Number(value) => Value::Number(-value),
+                        _ => unreachable!("ToNumeric returns a numeric value"),
                     },
                     UnaryOp::Not => Value::Boolean(!value.to_boolean()),
-                    UnaryOp::BitNot => match value {
+                    UnaryOp::BitNot => match self.numeric(value, expr.span)? {
                         Value::BigInt(value) => Value::BigInt(
                             self.integer_work(expr.span, |budget| value.bitnot(budget))?,
                         ),
-                        other => Value::Number(
-                            (!(to_uint32(Self::number(&other, expr.span)?) as i32)) as f64,
-                        ),
+                        Value::Number(value) => Value::Number((!(to_uint32(value) as i32)) as f64),
+                        _ => unreachable!("ToNumeric returns a numeric value"),
                     },
                     UnaryOp::Void => Value::Undefined,
                     UnaryOp::Typeof => Value::String(JsString::from(value.type_name())),
@@ -1157,8 +1157,8 @@ impl Realm {
     fn binary(
         &mut self,
         op: BinaryOp,
-        left: Value,
-        right: Value,
+        mut left: Value,
+        mut right: Value,
         span: Span,
     ) -> Result<Value, Error> {
         use BinaryOp::*;
@@ -1184,26 +1184,49 @@ impl Realm {
                 }));
             }
             Equal | NotEqual => {
+                if matches!(
+                    (&left, &right),
+                    (
+                        Value::Object(_),
+                        Value::String(_) | Value::Number(_) | Value::BigInt(_) | Value::Boolean(_)
+                    )
+                ) {
+                    left = self.primitive(left, Hint::Default, span)?;
+                } else if matches!(
+                    (&left, &right),
+                    (
+                        Value::String(_) | Value::Number(_) | Value::BigInt(_) | Value::Boolean(_),
+                        Value::Object(_)
+                    )
+                ) {
+                    right = self.primitive(right, Hint::Default, span)?;
+                }
                 self.comparison_work(&left, &right, span)?;
                 let equal =
                     self.conversion_work(span, |budget| left.loosely_equal(&right, budget))?;
                 return Ok(Value::Boolean(if op == Equal { equal } else { !equal }));
             }
-            Add if matches!(left, Value::String(_)) || matches!(right, Value::String(_)) => {
-                let a = self.conversion_work(span, |budget| left.to_js_string(budget))?;
-                let b = self.conversion_work(span, |budget| right.to_js_string(budget))?;
-                if a.len()
-                    .checked_add(b.len())
-                    .is_none_or(|length| length > self.limits.max_string_units)
-                {
-                    return Err(Error::Limit {
-                        span,
-                        message: "string length limit exceeded".into(),
-                    });
+            Add => {
+                left = self.primitive(left, Hint::Default, span)?;
+                right = self.primitive(right, Hint::Default, span)?;
+                if matches!(left, Value::String(_)) || matches!(right, Value::String(_)) {
+                    let a = self.string(left, span)?;
+                    let b = self.string(right, span)?;
+                    if a.len()
+                        .checked_add(b.len())
+                        .is_none_or(|length| length > self.limits.max_string_units)
+                    {
+                        return Err(Error::Limit {
+                            span,
+                            message: "string length limit exceeded".into(),
+                        });
+                    }
+                    return Ok(Value::String(a.concat(&b)));
                 }
-                return Ok(Value::String(a.concat(&b)));
             }
             Less | LessEqual | Greater | GreaterEqual => {
+                left = self.primitive(left, Hint::Number, span)?;
+                right = self.primitive(right, Hint::Number, span)?;
                 self.comparison_work(&left, &right, span)?;
                 let order = self.conversion_work(span, |budget| left.compare(&right, budget))?;
                 return Ok(Value::Boolean(order.is_some_and(|order| match op {
@@ -1216,12 +1239,8 @@ impl Realm {
             }
             _ => {}
         }
-        if matches!(left, Value::Object(_)) || matches!(right, Value::Object(_)) {
-            return Err(Self::conversion_error(
-                ConversionError::ObjectNeedsContext,
-                span,
-            ));
-        }
+        let left = self.numeric(left, span)?;
+        let right = self.numeric(right, span)?;
         if let (Value::BigInt(a), Value::BigInt(b)) = (&left, &right) {
             if op == UnsignedRightShift {
                 return Err(Self::exception(
@@ -1255,8 +1274,12 @@ impl Realm {
                 "cannot mix BigInt and Number operands",
             ));
         }
-        let a = Self::number(&left, span)?;
-        let b = Self::number(&right, span)?;
+        let Value::Number(a) = left else {
+            unreachable!("numeric types checked above")
+        };
+        let Value::Number(b) = right else {
+            unreachable!("numeric types checked above")
+        };
         Ok(Value::Number(match op {
             Add => a + b,
             Subtract => a - b,
