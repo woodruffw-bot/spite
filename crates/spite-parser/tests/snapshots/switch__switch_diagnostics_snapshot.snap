@@ -1,37 +1,37 @@
 ---
-source: crates/spite-parser/tests/loops.rs
+source: crates/spite-parser/tests/switch.rs
 expression: errors
 ---
 [
     Diagnostic {
         kind: Syntax,
         span: Span {
-            start: 0,
-            end: 6,
+            start: 24,
+            end: 31,
         },
-        message: "break requires an enclosing loop or switch",
+        message: "duplicate default clause",
     },
     Diagnostic {
         kind: Syntax,
         span: Span {
-            start: 2,
-            end: 11,
+            start: 17,
+            end: 18,
         },
-        message: "continue requires an enclosing loop",
+        message: "expected an expression",
     },
     Diagnostic {
         kind: Syntax,
         span: Span {
-            start: 11,
-            end: 17,
+            start: 43,
+            end: 44,
         },
-        message: "break requires an enclosing loop or switch",
+        message: "duplicate lexical binding",
     },
     Diagnostic {
         kind: Syntax,
         span: Span {
-            start: 16,
-            end: 25,
+            start: 22,
+            end: 31,
         },
         message: "continue requires an enclosing loop",
     },

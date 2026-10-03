@@ -45,6 +45,13 @@ pub enum StatementKind {
     },
     /// A block with its own lexical environment.
     Block(Vec<Statement>),
+    /// A switch statement with a shared lexical scope for its clauses.
+    Switch {
+        /// Value matched against case expressions.
+        discriminant: Expr,
+        /// Case and default clauses in source order.
+        clauses: Vec<SwitchClause>,
+    },
     /// A conditional statement.
     If {
         /// Condition.
@@ -86,12 +93,23 @@ pub enum StatementKind {
         /// Labelled statement.
         body: Box<Statement>,
     },
-    /// Exit the target label, or the nearest loop when absent.
+    /// Exit the target label, or the nearest loop or switch when absent.
     Break(Option<Label>),
     /// Continue the target loop, or the nearest loop when absent.
     Continue(Option<Label>),
     /// Throw a language value.
     Throw(Expr),
+}
+
+/// A switch clause and its statement list.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SwitchClause {
+    /// Case expression, or None for the default clause.
+    pub test: Option<Expr>,
+    /// Statements executed when the clause is reached.
+    pub statements: Vec<Statement>,
+    /// Source range, including the case or default keyword.
+    pub span: Span,
 }
 
 /// The initialization clause of a three-clause for loop.

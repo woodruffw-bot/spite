@@ -1,0 +1,118 @@
+---
+source: crates/spite-parser/tests/switch.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Switch {
+                discriminant: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "x",
+                    ),
+                    span: Span {
+                        start: 8,
+                        end: 9,
+                    },
+                },
+                clauses: [
+                    SwitchClause {
+                        test: Some(
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        0.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 18,
+                                    end: 19,
+                                },
+                            },
+                        ),
+                        statements: [
+                            Statement {
+                                kind: Empty,
+                                span: Span {
+                                    start: 21,
+                                    end: 22,
+                                },
+                            },
+                        ],
+                        span: Span {
+                            start: 13,
+                            end: 22,
+                        },
+                    },
+                    SwitchClause {
+                        test: None,
+                        statements: [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 32,
+                                            end: 33,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 32,
+                                    end: 34,
+                                },
+                            },
+                        ],
+                        span: Span {
+                            start: 23,
+                            end: 34,
+                        },
+                    },
+                    SwitchClause {
+                        test: Some(
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        2.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 40,
+                                    end: 41,
+                                },
+                            },
+                        ),
+                        statements: [
+                            Statement {
+                                kind: Break(
+                                    None,
+                                ),
+                                span: Span {
+                                    start: 43,
+                                    end: 49,
+                                },
+                            },
+                        ],
+                        span: Span {
+                            start: 35,
+                            end: 49,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 51,
+            },
+        },
+    ],
+    strict: false,
+}

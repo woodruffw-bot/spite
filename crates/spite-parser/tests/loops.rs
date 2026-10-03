@@ -149,7 +149,11 @@ fn loop_control_requires_an_enclosing_iteration() {
             assert_eq!(error.kind, DiagnosticKind::Syntax, "{source}");
             assert_eq!(
                 error.message,
-                format!("{keyword} requires an enclosing loop")
+                if keyword == "break" {
+                    "break requires an enclosing loop or switch".to_owned()
+                } else {
+                    "continue requires an enclosing loop".to_owned()
+                }
             );
             assert_eq!(
                 &source[error.span.start..error.span.end],

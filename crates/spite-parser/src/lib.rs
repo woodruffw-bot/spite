@@ -64,7 +64,12 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
                 "\"use strict\"" | "'use strict'"
             )
         });
-    validate_scope(&statements, strict, false, &mut Vec::new())?;
+    validate_scope(
+        &statements,
+        strict,
+        ControlContext::default(),
+        &mut Vec::new(),
+    )?;
     Ok(Script { statements, strict })
 }
 
@@ -230,6 +235,47 @@ impl Parser {
             let (mutable, bindings) = self.lexical_bindings(false)?;
             self.semicolon()?;
             StatementKind::Lexical { mutable, bindings }
+        } else if self.eat("switch") {
+            self.expect("(")?;
+            let discriminant = self.expression(1)?;
+            self.expect(")")?;
+            self.expect("{")?;
+            let mut clauses = Vec::new();
+            let mut has_default = false;
+            while !self.at("}") {
+                let start = self.current().span.start;
+                let test = if self.eat("case") {
+                    Some(self.expression(1)?)
+                } else if self.at("default") {
+                    if has_default {
+                        return Err(self.error("duplicate default clause"));
+                    }
+                    self.bump();
+                    has_default = true;
+                    None
+                } else {
+                    return Err(self.error("expected case, default, or }"));
+                };
+                self.expect(":")?;
+                let mut statements = Vec::new();
+                while !self.at("case") && !self.at("default") && !self.at("}") {
+                    if self.current().kind == Kind::Eof {
+                        return Err(self.error("unterminated switch"));
+                    }
+                    statements.push(self.statement(true)?);
+                }
+                let end = self.tokens[self.index - 1].span.end;
+                clauses.push(SwitchClause {
+                    test,
+                    statements,
+                    span: Span::new(start, end),
+                });
+            }
+            self.expect("}")?;
+            StatementKind::Switch {
+                discriminant,
+                clauses,
+            }
         } else if self.eat("if") {
             self.expect("(")?;
             let test = self.expression(1)?;
@@ -341,7 +387,6 @@ impl Parser {
                             | "function"
                             | "class"
                             | "return"
-                            | "switch"
                             | "try"
                             | "with"
                             | "debugger"
@@ -697,10 +742,17 @@ fn validate_binding_names<'a>(
     Ok(())
 }
 
-fn validate_scope<'a>(
-    statements: &'a [Statement],
-    strict: bool,
+// Function and static-initialization bodies will start with a fresh context.
+#[derive(Clone, Copy, Default)]
+struct ControlContext {
     in_iteration: bool,
+    in_breakable: bool,
+}
+
+fn validate_scope<'a>(
+    statements: impl IntoIterator<Item = &'a Statement>,
+    strict: bool,
+    control: ControlContext,
     labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     let mut names = BTreeSet::new();
@@ -708,14 +760,14 @@ fn validate_scope<'a>(
         if let StatementKind::Lexical { bindings, .. } = &statement.kind {
             validate_binding_names(bindings, strict, &mut names)?;
         }
-        validate_statement(statement, strict, in_iteration, labels)?;
+        validate_statement(statement, strict, control, labels)?;
     }
     Ok(())
 }
 fn validate_statement<'a>(
     statement: &'a Statement,
     strict: bool,
-    in_iteration: bool,
+    control: ControlContext,
     labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     match &statement.kind {
@@ -729,10 +781,18 @@ fn validate_statement<'a>(
                 }
             }
         }
-        StatementKind::Block(body) => validate_scope(body, strict, in_iteration, labels)?,
+        StatementKind::Block(body) => validate_scope(body, strict, control, labels)?,
         StatementKind::While { test, body } | StatementKind::DoWhile { test, body } => {
             validate_expr(test, strict)?;
-            validate_statement(body, strict, true, labels)?;
+            validate_statement(
+                body,
+                strict,
+                ControlContext {
+                    in_iteration: true,
+                    in_breakable: true,
+                },
+                labels,
+            )?;
         }
         StatementKind::For {
             initializer,
@@ -756,14 +816,46 @@ fn validate_statement<'a>(
             for expression in [test, update].into_iter().flatten() {
                 validate_expr(expression, strict)?;
             }
-            validate_statement(body, strict, true, labels)?;
+            validate_statement(
+                body,
+                strict,
+                ControlContext {
+                    in_iteration: true,
+                    in_breakable: true,
+                },
+                labels,
+            )?;
         }
-        // ECMA-262 14.8.1/14.9.1. Switch and function bodies will need their
-        // own validation contexts when those forms are implemented.
-        StatementKind::Break(None) if !in_iteration => {
-            return Err(early(statement.span, "break requires an enclosing loop"));
+        StatementKind::Switch {
+            discriminant,
+            clauses,
+        } => {
+            validate_expr(discriminant, strict)?;
+            for clause in clauses {
+                if let Some(test) = &clause.test {
+                    validate_expr(test, strict)?;
+                }
+            }
+            // ECMA-262 14.12.1: all clauses form one scope for duplicate names.
+            // Switch permits break while preserving the enclosing loop context.
+            validate_scope(
+                clauses.iter().flat_map(|clause| &clause.statements),
+                strict,
+                ControlContext {
+                    in_breakable: true,
+                    ..control
+                },
+                labels,
+            )?;
         }
-        StatementKind::Continue(None) if !in_iteration => {
+        // ECMA-262 14.8.1/14.9.1 distinguish iterations from breakable statements.
+        StatementKind::Break(None) if !control.in_breakable => {
+            return Err(early(
+                statement.span,
+                "break requires an enclosing loop or switch",
+            ));
+        }
+        StatementKind::Continue(None) if !control.in_iteration => {
             return Err(early(statement.span, "continue requires an enclosing loop"));
         }
         StatementKind::If {
@@ -772,9 +864,9 @@ fn validate_statement<'a>(
             alternate,
         } => {
             validate_expr(test, strict)?;
-            validate_statement(consequent, strict, in_iteration, labels)?;
+            validate_statement(consequent, strict, control, labels)?;
             if let Some(alternate) = alternate {
-                validate_statement(alternate, strict, in_iteration, labels)?;
+                validate_statement(alternate, strict, control, labels)?;
             }
         }
         StatementKind::Labelled { label, body } => {
@@ -784,7 +876,7 @@ fn validate_statement<'a>(
                 return Err(early(label.span, "duplicate label"));
             }
             labels.push((&label.name, labels_iteration(body)));
-            let result = validate_statement(body, strict, in_iteration, labels);
+            let result = validate_statement(body, strict, control, labels);
             labels.pop();
             result?;
         }

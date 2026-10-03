@@ -359,6 +359,10 @@ impl Realm {
                 self.scopes.pop();
                 result
             }
+            StatementKind::Switch { .. } => Err(Self::unsupported(
+                statement.span,
+                "switch evaluation is not implemented",
+            )),
             // ECMA-262 14.7.3.2: the result is the last non-empty body value,
             // initially undefined. Condition values never replace it.
             StatementKind::While { test, body } => {

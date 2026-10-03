@@ -15,6 +15,7 @@ not an alternative language specification.
 | Expressions | Primitive literals, identifiers, parentheses, simple assignment, conditional and comma expressions |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, primitive equality and comparison, logical and nullish operators, typeof and void |
 | Statements | Empty and expression statements, let and const, blocks, if/else, while, do-while, for with expression or lexical headers, labels, break/continue with optional targets, throw |
+| Switch syntax | Case/default clauses, duplicate-default checks, shared lexical declarations, distinct break/continue contexts; evaluation remains Unsupported |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop checks, duplicate labels and control-target validation |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, break/continue propagation through blocks, conditionals, and nested loops, uncaught primitive throws |
