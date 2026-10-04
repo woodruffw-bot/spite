@@ -236,6 +236,9 @@ harness, and 72 reviewed parse negatives. Component fixtures and harness files d
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream
 assertions and exact conversions; other resource limits use the runtime defaults.
+Runtime-negative tests inspect the thrown object's constructor name through
+bounded realm property reads, including explicit Errors and rethrows. Inspection
+failures remain non-passing; the original exception category cannot mask them.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion
 with ECMAScript presentation rules. Primitive numeric operations have boundary

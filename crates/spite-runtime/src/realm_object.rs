@@ -30,6 +30,33 @@ impl RootedValue {
 }
 
 impl Realm {
+    /// Reads a string-keyed property with JavaScript Get semantics, including
+    /// inherited accessors and the original receiver. Each host call starts a
+    /// fresh evaluation work budget and may execute JavaScript getters.
+    ///
+    /// The result is unrooted; use [`Self::root_value`] across explicit collection.
+    /// Nullish values throw TypeError, and invalid object handles are rejected.
+    pub fn read_property(&mut self, value: &Value, key: &JsString) -> Result<Value, Error> {
+        if let Value::Object(handle) = value {
+            self.objects.inspect(handle).map_err(Error::InvalidObject)?;
+        }
+        self.initialize_realm()?;
+        self.remaining_steps = self.limits.max_steps;
+        let span = Span::new(0, 0);
+        self.tick(span)?;
+        Self::require_object_coercible(value, span)?;
+        if key.len() > self.limits.max_string_units {
+            return Err(Error::Limit {
+                span,
+                message: "property key length limit exceeded".into(),
+            });
+        }
+        self.object_work(span, |_, budget| budget.charge(key.len()))?;
+        let result = self.get_property_value(value, key, span)?;
+        self.check_string(&result, span)?;
+        Ok(result)
+    }
+
     pub(super) fn primitive(
         &mut self,
         value: Value,

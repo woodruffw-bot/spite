@@ -1,7 +1,7 @@
 use crate::{Metadata, MetadataError, Mode, Negative, Phase};
-use spite_core::{Diagnostic, DiagnosticKind, Span};
+use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use spite_parser::parse_script;
-use spite_runtime::{Error, ExceptionKind, Limits, Realm};
+use spite_runtime::{Error, Limits, Realm, Value};
 
 /// A runner stage, distinguishing harness setup from language phases.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -195,23 +195,64 @@ impl Runner {
                 if let Some(outcome) = host_failure(&error, Stage::Runtime) {
                     return outcome;
                 }
-                match error {
-                    Error::Exception { kind, .. } => match_exception(
-                        metadata.negative.as_ref(),
-                        Phase::Runtime,
-                        exception_name(kind),
+                if let Error::Parse(diagnostic) = error {
+                    return failed(Stage::Parse, diagnostic.to_string());
+                }
+                let Some(negative) = metadata.negative.as_ref() else {
+                    return failed(
+                        Stage::Runtime,
+                        match error {
+                            Error::Thrown(value) => format!("uncaught throw: {value}"),
+                            _ => format!("uncaught exception: {error}"),
+                        },
+                    );
+                };
+                // Test262 INTERPRETING.md defines `type` as the thrown value's
+                // constructor name. Read it through the realm so accessor
+                // effects and failures are not replaced with host heuristics.
+                match exception_constructor_name(&mut realm, &error) {
+                    Ok(Some(name))
+                        if negative.phase == Phase::Runtime
+                            && name == JsString::from(negative.error_type.as_str()) =>
+                    {
+                        Outcome::Passed
+                    }
+                    Ok(name) => failed(
+                        Stage::Runtime,
+                        format!(
+                            "runtime exception with constructor name {name:?} does not match {:?} {}",
+                            negative.phase, negative.error_type
+                        ),
                     ),
-                    Error::Thrown(value) => {
-                        failed(Stage::Runtime, format!("uncaught primitive throw: {value}"))
-                    }
-                    Error::Parse(diagnostic) => failed(Stage::Parse, diagnostic.to_string()),
-                    Error::Unsupported { .. } | Error::Limit { .. } => {
-                        unreachable!("host failures handled above")
-                    }
+                    Err(error) => host_failure(&error, Stage::Runtime).unwrap_or_else(|| {
+                        failed(
+                            Stage::Runtime,
+                            format!("exception inspection failed: {error}"),
+                        )
+                    }),
                 }
             }
         }
     }
+}
+
+fn exception_constructor_name(realm: &mut Realm, error: &Error) -> Result<Option<JsString>, Error> {
+    let Some(value) = realm.exception_value(error)? else {
+        return Ok(None);
+    };
+    if !matches!(value, Value::Object(_)) {
+        return Ok(None);
+    }
+    let constructor = realm.read_property(&value, &JsString::from("constructor"))?;
+    if !matches!(constructor, Value::Object(_)) {
+        return Ok(None);
+    }
+    let name = realm.read_property(&constructor, &JsString::from("name"))?;
+    Ok(if let Value::String(name) = name {
+        Some(name)
+    } else {
+        None
+    })
 }
 
 fn parse_result(
@@ -267,6 +308,7 @@ fn match_exception(negative: Option<&Negative>, phase: Phase, error_type: &str) 
 
 fn host_failure(error: &Error, stage: Stage) -> Option<Outcome> {
     match error {
+        Error::InvalidObject(_) => Some(Outcome::SetupFailure(error.to_string())),
         Error::Unsupported { .. } => Some(unsupported(stage, error.to_string())),
         Error::Limit { .. } => Some(Outcome::Limit {
             stage,
@@ -285,14 +327,6 @@ fn host_failure(error: &Error, stage: Stage) -> Option<Outcome> {
     }
 }
 
-fn exception_name(kind: ExceptionKind) -> &'static str {
-    match kind {
-        ExceptionKind::SyntaxError => "SyntaxError",
-        ExceptionKind::ReferenceError => "ReferenceError",
-        ExceptionKind::TypeError => "TypeError",
-        ExceptionKind::RangeError => "RangeError",
-    }
-}
 fn failed(stage: Stage, message: impl Into<String>) -> Outcome {
     Outcome::Failed {
         stage,

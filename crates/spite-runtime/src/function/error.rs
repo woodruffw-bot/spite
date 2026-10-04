@@ -70,6 +70,46 @@ impl ErrorIntrinsics {
 }
 
 impl Realm {
+    /// Obtains a JavaScript exception value with a fresh work budget.
+    ///
+    /// Thrown values retain their identity. Each conversion of a host-described
+    /// built-in exception creates a fresh Error instance with its intrinsic
+    /// prototype and diagnostic message. Parse and host failures return `None`.
+    /// The input diagnostic is preserved. Returned objects are unrooted; retain
+    /// them with [`Self::root_value`] before explicit collection.
+    pub fn exception_value(&mut self, error: &Error) -> Result<Option<Value>, Error> {
+        if !error.is_language_exception() {
+            return Ok(None);
+        }
+        self.initialize_realm()?;
+        self.remaining_steps = self.limits.max_steps;
+        match error {
+            Error::Exception {
+                kind,
+                span,
+                message,
+            } => {
+                self.object_work(*span, |_, budget| budget.charge(message.len()))?;
+                self.materialize_exception(*kind, message.clone(), *span)
+                    .map(Some)
+            }
+            Error::Thrown(value) => {
+                if let Value::Object(handle) = value {
+                    self.objects.inspect(handle).map_err(Error::InvalidObject)?;
+                }
+                self.check_string(value, Span::new(0, 0))?;
+                let work = match value {
+                    Value::String(value) => value.len(),
+                    Value::BigInt(value) => value.bit_length().div_ceil(32),
+                    _ => 1,
+                };
+                self.object_work(Span::new(0, 0), |_, budget| budget.charge(work))?;
+                Ok(Some(value.clone()))
+            }
+            _ => unreachable!("language exception checked above"),
+        }
+    }
+
     pub(crate) fn materialize_exception(
         &mut self,
         kind: ExceptionKind,

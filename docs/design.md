@@ -459,6 +459,18 @@ span for uncaught failures. Host Unsupported/Limit failures must still bypass
 JavaScript handlers. Standard Error properties are the entire exposed interface;
 stack traces and host-specific fields are outside the language baseline.
 
+Embedding hosts can obtain exception values and read properties through bounded
+realm operations. Exception conversion preserves explicit throw identity and
+creates a fresh standard Error for a Rust-described built-in failure; parse and
+host failures have no JavaScript value. Property reads preserve Get semantics,
+including accessor receivers and abrupt completions. Each operation receives a
+fresh work budget, and returned values require host roots across collection.
+Foreign/stale embedding handles are checked at the boundary and return a distinct
+InvalidObject host failure before internal evaluation can dereference them.
+The Test262 runner uses these operations to inspect constructor names for
+runtime-negative exceptions. It never treats failures during that inspection as
+the original test's expected exception.
+
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
 Function.prototype.toString emits `function NAME() { [native code] }` for builtin

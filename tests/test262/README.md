@@ -69,6 +69,10 @@ The conformance runner allows one million work units per Script evaluation so
 unchanged upstream files can combine many assertions and exact conversions.
 Other limits retain their runtime defaults. Exhaustion remains a non-passing
 `Limit` result; no test is retried with an unbounded budget.
+Runtime-negative matching reads the thrown object's constructor name as required
+by upstream `INTERPRETING.md`. These bounded host reads execute getters normally;
+inspection failures cannot satisfy the original expected exception. Primitive
+throws and missing/non-string constructor names do not pass an error expectation.
 
 The `spite-test262` command runs 274 variants from 145 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,

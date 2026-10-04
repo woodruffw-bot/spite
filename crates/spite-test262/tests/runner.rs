@@ -87,6 +87,76 @@ fn runtime_negatives_match_both_phase_and_error_type() {
 }
 
 #[test]
+fn runtime_negatives_inspect_explicit_errors_rethrows_and_current_constructor_names() {
+    for (body, name) in [
+        ("throw new Error('explicit')", "Error"),
+        ("throw new TypeError('explicit')", "TypeError"),
+        ("try{+1n;}catch(e){throw e;}", "TypeError"),
+        (
+            "TypeError.prototype.constructor=RangeError;+1n",
+            "RangeError",
+        ),
+        (
+            "TypeError.prototype.constructor={name:'Custom'};+1n",
+            "Custom",
+        ),
+        (
+            "let T=TypeError;delete globalThis.TypeError;throw T('saved')",
+            "TypeError",
+        ),
+    ] {
+        assert_eq!(negative("runtime", name, body), Outcome::Passed, "{body}");
+        assert!(
+            matches!(
+                negative("runtime", "WrongError", body),
+                Outcome::Failed {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            ),
+            "{body}"
+        );
+        assert!(
+            matches!(
+                raw(body),
+                Outcome::Failed {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            ),
+            "{body}"
+        );
+    }
+    for body in [
+        "throw 1",
+        "throw null",
+        "throw {__proto__:null,name:'TypeError'}",
+        "throw {constructor:undefined}",
+        "throw {constructor:{name:123}}",
+        "TypeError.prototype.constructor=null;+1n",
+    ] {
+        assert!(
+            matches!(
+                negative("runtime", "TypeError", body),
+                Outcome::Failed {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            ),
+            "{body}"
+        );
+    }
+    // Object.prototype.constructor is still an explicit intrinsic gap.
+    assert!(matches!(
+        negative("runtime", "TypeError", "throw {name:'TypeError'}"),
+        Outcome::Unsupported {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
+}
+
+#[test]
 fn parse_negatives_require_the_reviewed_rejection_in_every_mode() {
     let original = source("negative:\n  phase: parse\n  type: SyntaxError", "@");
     let offset = original.find('@').unwrap();

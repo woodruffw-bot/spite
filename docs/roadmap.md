@@ -65,6 +65,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Establish a pinned Test262 runner with strict modes and phase-aware results.
 - [x] Parse Test262 execution metadata and plan modes and ordered harness includes.
 - [x] Classify Test262 phases and keep unsupported, host-limit, and unverified results distinct.
+- [x] Match runtime-negative constructor names for built-in exceptions, explicit Errors, and rethrows.
 - [x] Run a reviewed pinned corpus through the runner in CI.
 
 ## 3. Objects and functions

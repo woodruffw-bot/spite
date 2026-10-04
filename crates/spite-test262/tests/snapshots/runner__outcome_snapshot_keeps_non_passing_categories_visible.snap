@@ -6,7 +6,7 @@ expression: outcomes
     Passed,
     Failed {
         stage: Runtime,
-        message: "uncaught primitive throw: 1",
+        message: "uncaught throw: 1",
     },
     Unsupported {
         stage: Runtime,

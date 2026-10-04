@@ -41,6 +41,8 @@ pub enum ExceptionKind {
 /// An evaluation failure. Host failures are distinct from JavaScript exceptions.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Error {
+    /// An embedding supplied a foreign, stale, or non-object handle.
+    InvalidObject(object::Error),
     /// Parsing failed before execution began.
     Parse(Diagnostic),
     /// An implemented operation produced a built-in JavaScript error.
@@ -74,7 +76,10 @@ impl Error {
     fn is_language_exception(&self) -> bool {
         match self {
             Self::Thrown(_) | Self::Exception { .. } => true,
-            Self::Parse(_) | Self::Unsupported { .. } | Self::Limit { .. } => false,
+            Self::InvalidObject(_)
+            | Self::Parse(_)
+            | Self::Unsupported { .. }
+            | Self::Limit { .. } => false,
         }
     }
 }
@@ -82,6 +87,7 @@ impl Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::InvalidObject(error) => write!(f, "invalid embedding object: {error}"),
             Self::Parse(diagnostic) => write!(f, "{diagnostic}"),
             Self::Exception {
                 kind,

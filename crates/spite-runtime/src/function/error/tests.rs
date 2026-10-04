@@ -220,3 +220,53 @@ fn materializing_a_builtin_exception_can_abort_without_entering_pending_handlers
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     assert_eq!(realm.eval("1+2"), Ok(Value::Number(3.0)));
 }
+
+#[test]
+fn host_property_reads_run_inherited_getters_with_bounded_work_and_restore_state() {
+    let mut realm = Realm::default();
+    let Value::Object(prototype) = realm
+        .eval("let flag=0;let parent={};let child={__proto__:parent,marker:7};parent")
+        .unwrap()
+    else {
+        panic!("prototype");
+    };
+    let child = realm.eval("child").unwrap();
+    getter(
+        &mut realm,
+        &prototype,
+        "x",
+        "(function(){flag=1;return this.marker;})",
+    );
+    assert_eq!(
+        realm.read_property(&child, &JsString::from("x")),
+        Ok(Value::Number(7.0))
+    );
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
+    getter(
+        &mut realm,
+        &prototype,
+        "x",
+        "(function(){'use strict';throw 9;})",
+    );
+    assert_eq!(
+        realm.read_property(&child, &JsString::from("x")),
+        Err(Error::Thrown(Value::Number(9.0)))
+    );
+    assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
+    getter(
+        &mut realm,
+        &prototype,
+        "x",
+        "(function(){try{while(true){}}finally{flag=2;}})",
+    );
+    realm.limits.max_steps = 1_000;
+    assert!(matches!(
+        realm.read_property(&child, &JsString::from("x")),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
+    assert_eq!(
+        realm.read_property(&child, &JsString::from("marker")),
+        Ok(Value::Number(7.0))
+    );
+}
