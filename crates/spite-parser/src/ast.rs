@@ -29,6 +29,28 @@ impl Script {
     }
 }
 
+/// A function's optional binding name and its source range.
+#[derive(Clone, Debug, PartialEq)]
+pub struct FunctionName {
+    /// Decoded binding identifier.
+    pub name: String,
+    /// Original identifier range.
+    pub span: Span,
+}
+
+/// A non-async, non-generator function expression.
+#[derive(Clone, Debug, PartialEq)]
+pub struct FunctionExpression {
+    /// Local function name, absent for anonymous expressions.
+    pub name: Option<FunctionName>,
+    /// Identifier parameters, including optional default initializers.
+    pub parameters: Rc<[Binding]>,
+    /// Shared function body syntax.
+    pub body: FunctionBody,
+    /// Exact function source text.
+    pub source: FunctionSource,
+}
+
 /// A shared function statement list, excluding its surrounding braces.
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionBody {
@@ -340,6 +362,8 @@ pub enum ExprKind {
         /// Argument expressions in source order.
         arguments: Vec<Expr>,
     },
+    /// An ordinary function expression with optional local name.
+    Function(Rc<FunctionExpression>),
     /// A non-async arrow with identifier parameters and optional defaults.
     Arrow {
         /// Parameters in source order, with optional default-value initializers.

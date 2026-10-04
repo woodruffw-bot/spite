@@ -2,6 +2,7 @@
 
 mod arrow;
 pub mod ast;
+mod function;
 mod lexer;
 
 use ast::*;
@@ -552,6 +553,12 @@ impl Parser {
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
+            ExprKind::Function(function) => function
+                .parameters
+                .iter()
+                .filter_map(|p| p.initializer.as_ref().map(|e| e.depth))
+                .max()
+                .unwrap_or(0),
             ExprKind::Arrow {
                 parameters, body, ..
             } => parameters
@@ -795,6 +802,9 @@ impl Parser {
         Ok(left)
     }
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
+        if self.at("function") {
+            return self.function_expression();
+        }
         let token = self.bump();
         let span = token.span;
         if matches!(token.kind, Kind::Punct("++" | "--")) {
@@ -1022,6 +1032,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
             | ExprKind::Call { .. }
+            | ExprKind::Function(_)
     )
 }
 
@@ -1168,10 +1179,12 @@ fn validate_binding_names<'a>(
 }
 
 fn validate_binding(binding: &Binding, strict: bool) -> Result<(), Diagnostic> {
-    if strict
-        && (strict_reserved(&binding.name) || matches!(binding.name.as_str(), "eval" | "arguments"))
-    {
-        return Err(early(binding.span, "invalid binding in strict mode"));
+    validate_binding_name(&binding.name, binding.span, strict)
+}
+
+fn validate_binding_name(name: &str, span: Span, strict: bool) -> Result<(), Diagnostic> {
+    if strict && (strict_reserved(name) || matches!(name, "eval" | "arguments")) {
+        return Err(early(span, "invalid binding in strict mode"));
     }
     Ok(())
 }
@@ -1446,49 +1459,31 @@ fn labels_iteration(mut statement: &Statement) -> bool {
 
 fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
     match &expr.kind {
+        ExprKind::Function(function) => {
+            let own_strict = function.body.is_strict();
+            let names = function::validate_parameters(
+                &function.parameters,
+                strict,
+                own_strict,
+                false,
+                expr.span,
+            )?;
+            let strict = strict || own_strict;
+            if let Some(name) = &function.name {
+                validate_binding_name(&name.name, name.span, strict)?;
+            }
+            function::validate_body(&function.body, strict, &names)?;
+        }
         ExprKind::Arrow {
             parameters, body, ..
         } => {
             let own_strict = matches!(body, ArrowBody::Block(body) if body.is_strict());
-            // ECMA-262 15.3.1: a non-simple list forbids an own Use Strict Directive.
-            if own_strict && parameters.iter().any(|p| p.initializer.is_some()) {
-                return Err(early(
-                    expr.span,
-                    "use strict directive with non-simple parameters",
-                ));
-            }
+            let names =
+                function::validate_parameters(parameters, strict, own_strict, true, expr.span)?;
             let strict = strict || own_strict;
-            for parameter in parameters.iter() {
-                if let Some(initializer) = &parameter.initializer {
-                    validate_expr(initializer, strict)?;
-                }
-            }
-            let mut names = BTreeSet::new();
-            validate_binding_names(parameters, strict, &mut names)?;
             match body {
                 ArrowBody::Expression(body) => validate_expr(body, strict)?,
-                ArrowBody::Block(body) => {
-                    // ECMA-262 15.3.1: top-level lexical names cannot be parameters.
-                    for statement in body.statements() {
-                        if let StatementKind::Lexical { bindings, .. } = &statement.kind {
-                            for binding in bindings {
-                                if names.contains(binding.name.as_str()) {
-                                    return Err(early(
-                                        binding.span,
-                                        "lexical declaration conflicts with parameter",
-                                    ));
-                                }
-                            }
-                        }
-                    }
-                    // Function boundaries reset labels and break/continue targets.
-                    validate_scope(
-                        body.statements(),
-                        strict,
-                        ControlContext::default(),
-                        &mut Vec::new(),
-                    )?;
-                }
+                ArrowBody::Block(body) => function::validate_body(body, strict, &names)?,
             }
         }
 

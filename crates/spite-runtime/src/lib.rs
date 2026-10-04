@@ -1098,6 +1098,12 @@ impl Realm {
     fn expression_inner(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
+            ExprKind::Function(_) => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "ordinary function instantiation is not implemented",
+                ));
+            }
             ExprKind::Arrow {
                 parameters,
                 body,

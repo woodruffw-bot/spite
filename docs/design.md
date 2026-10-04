@@ -95,6 +95,16 @@ lexical declarations cannot conflict with parameters (15.3.1). Rest/pattern
 parameters and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
+Ordinary function expressions share the identifier parameter and function-body
+parser with arrows (15.2). Names, parameters, bodies, and source text are retained.
+Only simple lists in non-strict ordinary functions permit duplicate parameters;
+strict or non-simple lists require unique names. A function's own strict directive
+also constrains its optional name, parameters, and nested code. Function
+expressions may appear in call/member positions, and nested bodies reset control
+targets. Their instantiation is currently an explicit runtime gap. Declarations,
+this, generators, async functions, rest parameters, and patterns remain separate
+steps.
+
 ## Runtime
 
 Start with a tree-walking evaluator. Keep evaluation order explicit. Implement

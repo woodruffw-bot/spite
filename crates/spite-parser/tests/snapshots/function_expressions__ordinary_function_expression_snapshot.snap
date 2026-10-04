@@ -1,0 +1,100 @@
+---
+source: crates/spite-parser/tests/function_expressions.rs
+expression: "parse_script(\"let f = function named(x = 1) { return x; };\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    Binding {
+                        name: "f",
+                        span: Span {
+                            start: 4,
+                            end: 5,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 2,
+                                kind: Function(
+                                    FunctionExpression {
+                                        name: Some(
+                                            FunctionName {
+                                                name: "named",
+                                                span: Span {
+                                                    start: 17,
+                                                    end: 22,
+                                                },
+                                            },
+                                        ),
+                                        parameters: [
+                                            Binding {
+                                                name: "x",
+                                                span: Span {
+                                                    start: 23,
+                                                    end: 24,
+                                                },
+                                                initializer: Some(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Literal(
+                                                            Number(
+                                                                1.0,
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 27,
+                                                            end: 28,
+                                                        },
+                                                    },
+                                                ),
+                                            },
+                                        ],
+                                        body: FunctionBody {
+                                            statements: [
+                                                Statement {
+                                                    kind: Return(
+                                                        Some(
+                                                            Expr {
+                                                                depth: 1,
+                                                                kind: Identifier(
+                                                                    "x",
+                                                                ),
+                                                                span: Span {
+                                                                    start: 39,
+                                                                    end: 40,
+                                                                },
+                                                            },
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 32,
+                                                        end: 41,
+                                                    },
+                                                },
+                                            ],
+                                            strict: false,
+                                        },
+                                        source: FunctionSource(
+                                            "function named(x = 1) { return x; }",
+                                        ),
+                                    },
+                                ),
+                                span: Span {
+                                    start: 8,
+                                    end: 43,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 44,
+            },
+        },
+    ],
+    strict: false,
+}

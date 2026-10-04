@@ -50,40 +50,11 @@ impl Parser {
             ));
         }
         let start = self.current().span.start;
-        let parenthesized = self.eat("(");
-        let mut parameters = Vec::new();
-        if !parenthesized || !self.at(")") {
-            loop {
-                if self.at("...") || self.at("[") || self.at("{") {
-                    return Err(
-                        self.unsupported("rest and binding-pattern parameters are not implemented")
-                    );
-                }
-                let token = self.bump();
-                let Kind::Word(name) = token.kind else {
-                    return Err(early(token.span, "invalid arrow parameter"));
-                };
-                if reserved(&name) {
-                    return Err(early(token.span, "invalid arrow binding identifier"));
-                }
-                let initializer = if parenthesized && self.eat("=") {
-                    Some(self.expression_with_in(2, true)?)
-                } else {
-                    None
-                };
-                parameters.push(Binding {
-                    name,
-                    span: token.span,
-                    initializer,
-                });
-                if !parenthesized || !self.eat(",") || self.at(")") {
-                    break;
-                }
-            }
-        }
-        if parenthesized {
-            self.expect(")")?;
-        }
+        let parameters = if self.at("(") {
+            self.formal_parameters("invalid arrow binding identifier")?
+        } else {
+            vec![self.formal_parameter("invalid arrow binding identifier", false)?].into()
+        };
         self.expect("=>")?;
         let (body, end) = if self.at("{") {
             let body = self.function_body()?;
@@ -100,42 +71,12 @@ impl Parser {
         };
         self.make_expr(
             ExprKind::Arrow {
-                parameters: parameters.into(),
+                parameters,
                 body,
                 source,
             },
             span,
         )
         .map(Some)
-    }
-
-    fn function_body(&mut self) -> Result<FunctionBody, Diagnostic> {
-        self.expect("{")?;
-        let token_start = self.index;
-        let previous_return = self.allow_return;
-        let previous_in = self.allow_in;
-        self.allow_return = true;
-        self.allow_in = true;
-        let result = (|| {
-            let mut statements = Vec::new();
-            while !self.at("}") {
-                if self.current().kind == Kind::Eof {
-                    return Err(self.error("unterminated function body"));
-                }
-                statements.push(self.statement(true)?);
-            }
-            let strict = has_use_strict(&statements, &self.source);
-            if strict {
-                reject_legacy_tokens(&self.tokens[token_start..self.index])?;
-            }
-            self.expect("}")?;
-            Ok(FunctionBody {
-                statements: statements.into(),
-                strict,
-            })
-        })();
-        self.allow_return = previous_return;
-        self.allow_in = previous_in;
-        result
     }
 }
