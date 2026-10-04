@@ -37,7 +37,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5308 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5434 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -944,6 +944,12 @@ Originals requiring Proxy or destructuring remain excluded without credit.
 Twelve unchanged raw JSON sources add 24 variants for primitive validation,
 null-prototype objects, slot branding, metadata, and non-construction. Serialization
 and full-inventory descriptor cases are reviewed separately; destructuring remains open.
+Sixty-three unchanged JSON serialization and reflection sources add 126 variants
+for replacers, ordered hooks, live property reads, indentation, omission, cycles,
+BigInt errors, raw embedding, surrogate quoting, and complete JSON descriptors.
+Proxy, cross-realm, RegExp, destructuring, and global-reflection originals remain
+excluded without credit. The reviewed JSON inventory is 140 sources; its existing
+pin, exact bytes, helpers, and unlimited defaults are unchanged.
 Another 53 positive for-of files and 22 reviewed for-of parse-negative files cover
 iteration, bindings, header grammar, and closing precedence. Seven rest-parameter
 positives and twelve parameter parse negatives cover Arrays, length, argument
@@ -954,7 +960,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 5308 variants are four raw positives, 5112 positives using the upstream
+Rust. Its 5434 variants are four raw positives, 5238 positives using the upstream
 harness, and 192 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
