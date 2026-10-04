@@ -2085,3 +2085,7 @@ test/built-ins/Reflect/set/set.js	-	-	-
 test/built-ins/Reflect/setPrototypeOf/length.js	-	-	-
 test/built-ins/Reflect/setPrototypeOf/name.js	-	-	-
 test/built-ins/Reflect/setPrototypeOf/setPrototypeOf.js	-	-	-
+test/built-ins/Iterator/constructor.js	-	-	-
+test/built-ins/Iterator/newtarget-or-active-function-object.js	-	-	-
+test/built-ins/Iterator/proto.js	-	-	-
+test/built-ins/Iterator/prototype/constructor/prop-desc.js	-	-	-
