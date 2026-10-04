@@ -48,6 +48,7 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::ArraySpecies => Ok(this),
             Builtin::Object => {
                 self.object_constructor(None, arguments.next().unwrap_or(Value::Undefined), span)
             }

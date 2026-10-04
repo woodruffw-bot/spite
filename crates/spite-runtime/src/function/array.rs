@@ -13,6 +13,7 @@ mod reduce;
 mod search;
 mod sort;
 mod string;
+mod symbols;
 
 use super::Builtin;
 use crate::{
@@ -28,14 +29,21 @@ pub(crate) struct ArrayIntrinsics {
     pub prototype: ObjectHandle,
     is_array: ObjectHandle,
     of: ObjectHandle,
+    unscopables: ObjectHandle,
     methods: Vec<ObjectHandle>,
 }
 
 impl ArrayIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.constructor, &self.prototype, &self.is_array, &self.of]
-            .into_iter()
-            .chain(self.methods.iter())
+        [
+            &self.constructor,
+            &self.prototype,
+            &self.is_array,
+            &self.of,
+            &self.unscopables,
+        ]
+        .into_iter()
+        .chain(self.methods.iter())
     }
 }
 
@@ -158,11 +166,15 @@ impl Realm {
             )?;
             methods.push(method);
         }
+        let (species, unscopables) =
+            self.array_symbol_properties(&constructor, &prototype, function_prototype, span)?;
+        methods.push(species);
         Ok(ArrayIntrinsics {
             constructor,
             prototype,
             is_array,
             of,
+            unscopables,
             methods,
         })
     }

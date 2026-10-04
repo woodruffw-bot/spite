@@ -171,6 +171,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Object.prototype.toString Symbol.toStringTag lookup and bounded UTF-16 formatting.
 - [x] Add Symbol wrappers, branded prototype methods, fresh intrinsic calls, and fixed well-known properties.
 - [x] Add bounded Symbol.for/keyFor interning shared across realms and host threads.
+- [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
 - [ ] Expose the Symbol global after completing remaining intrinsic symbol properties.
 - [ ] Complete Array species-dependent methods and iterator integration.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

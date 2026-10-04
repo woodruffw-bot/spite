@@ -315,6 +315,10 @@ when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
 lookup, and preserve ordered live reads. With never reads its replaced index. Other
 prototype methods, spread, and array assignment patterns remain pending.
+Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
+their standard attributes. The getter preserves its receiver; the table has a
+null prototype and all 16 specified entries. Species-dependent Array methods,
+iterator hooks, and with environments remain pending.
 
 The Symbol global, BigInt wrapper APIs, remaining String methods,
 remaining Array prototype methods, derived construction, classes, destructuring, regular
@@ -335,7 +339,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry retains at most 10,000 identities and 1,048,576
 total key code units; it never evicts entries. Work/output/capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 136 retained entries under a separate fixed work
+Realm initialization creates 138 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

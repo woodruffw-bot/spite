@@ -4,6 +4,7 @@ use crate::{
     object::{Budget, DataDescriptor},
 };
 
+mod array;
 mod hooks;
 mod instance;
 mod keys;

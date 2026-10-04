@@ -646,11 +646,8 @@ impl Realm {
             };
             return (object == &intrinsics.string.prototype
                 && symbol == &WellKnownSymbol::Iterator.symbol())
-                || (object == &intrinsics.array.constructor
-                    && symbol == &WellKnownSymbol::Species.symbol())
                 || (object == &intrinsics.array.prototype
-                    && (symbol == &WellKnownSymbol::Iterator.symbol()
-                        || symbol == &WellKnownSymbol::Unscopables.symbol()));
+                    && symbol == &WellKnownSymbol::Iterator.symbol());
         }
         let key = key.as_string().expect("string key");
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {

@@ -333,7 +333,7 @@ Symbol.for/keyFor now use this registry, and the intrinsic Symbol constructor's
 own properties can be enumerated. Finally, integrate remaining observable hooks
 before exposing the JavaScript Symbol global.
 Remaining intrinsic symbol properties must stop relying on their current
-no-symbol assumptions. Array species and iteration then build on those boundaries.
+no-symbol assumptions. Array iteration then builds on those boundaries.
 The foundation alone does not expose
 partial Symbol behavior to scripts or count as additional Test262 coverage.
 
@@ -474,6 +474,15 @@ contribute no text; holes still perform Get. Separator concatenation precedes th
 next indexed read, including output-limit checks. Cyclic arrays use the ordinary
 reentry limit; no special cycle-to-empty-string behavior is added. BigInt elements
 remain Unsupported until their prototype API exists.
+Array's Symbol.species accessor returns the original receiver, including primitives,
+without coercion (23.1.2.6). It has no setter and is configurable/non-enumerable.
+Array.prototype's Symbol.unscopables data property points to the standard mutable
+null-prototype table of 16 true-valued names (23.1.3.41). The outer property is
+non-writable, non-enumerable, and configurable; "with" is absent from the table.
+These properties are materialized independently of pending species-dependent
+Array methods, iteration, and with environments. Change-by-copy methods and
+Array.of do not consult species.
+
 Array.of (23.1.2.4) tests its receiver for [[Construct]] without coercion. It
 constructs with one numeric item-count argument or falls back to ArrayCreate.
 It defines own writable/enumerable/configurable data elements, then strictly
