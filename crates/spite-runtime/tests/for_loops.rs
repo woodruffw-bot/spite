@@ -285,7 +285,7 @@ fn lexical_loop_values_are_preserved() {
 #[test]
 fn lexical_loop_limits_and_early_errors_restore_state() {
     let mut realm = Realm::new(Limits {
-        max_steps: 40,
+        max_steps: 1_000,
         ..Limits::default()
     });
     realm.eval("let x = 7").unwrap();

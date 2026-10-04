@@ -166,6 +166,7 @@ impl Realm {
     ) -> Result<bool, Error> {
         if let Value::Object(object) = base {
             self.check_global_property_operation(object, &key, span)?;
+            self.check_missing_intrinsic_mutation(object, &key, span)?;
             let action = self.object_work(span, |objects, budget| {
                 budget.value(&value)?;
                 objects.set(object, key, value.clone(), Some(object), budget)
@@ -207,6 +208,7 @@ impl Realm {
     ) -> Result<bool, Error> {
         if let Value::Object(object) = base {
             self.check_global_property_operation(object, key, span)?;
+            self.check_missing_intrinsic_mutation(object, key, span)?;
             return self.object_work(span, |objects, budget| objects.delete(object, key, budget));
         }
         self.tick(span)?;
@@ -439,16 +441,63 @@ impl Realm {
 }
 
 impl Realm {
-    fn missing_intrinsic_property(&self, object: &ObjectHandle, key: &JsString) -> bool {
+    fn check_missing_intrinsic_mutation(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<(), Error> {
+        if self.missing_intrinsic_property(object, key)
+            && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?
+        {
+            return Err(Self::unsupported(
+                span,
+                "intrinsic property descriptor is not implemented",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(crate) fn missing_intrinsic_property(&self, object: &ObjectHandle, key: &JsString) -> bool {
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
             return true;
         }
         let Some(intrinsics) = &self.intrinsics else {
             return false;
         };
-        (object == &intrinsics.object_prototype && missing_object_method(key))
+        (object == &intrinsics.object.constructor && missing_object_static(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
     }
+}
+
+fn missing_object_static(key: &JsString) -> bool {
+    [
+        "assign",
+        "create",
+        "defineProperties",
+        "defineProperty",
+        "entries",
+        "freeze",
+        "fromEntries",
+        "getOwnPropertyDescriptor",
+        "getOwnPropertyDescriptors",
+        "getOwnPropertyNames",
+        "getOwnPropertySymbols",
+        "getPrototypeOf",
+        "groupBy",
+        "hasOwn",
+        "is",
+        "isExtensible",
+        "isFrozen",
+        "isSealed",
+        "keys",
+        "preventExtensions",
+        "seal",
+        "setPrototypeOf",
+        "values",
+    ]
+    .iter()
+    .any(|name| key_is(key, name))
 }
 
 fn missing_object_method(key: &JsString) -> bool {

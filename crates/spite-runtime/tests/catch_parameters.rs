@@ -146,7 +146,7 @@ fn rethrows_and_finalizers_observe_restored_environments() {
 fn host_abort_restores_both_catch_scopes_and_skips_pending_handlers() {
     for body in [
         "while (true) {}",
-        "Object",
+        "Array",
         "try { throw 2; } catch (inner) { while (true) {} }",
     ] {
         let mut realm = Realm::new(Limits {

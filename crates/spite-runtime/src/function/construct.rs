@@ -102,6 +102,13 @@ impl Realm {
                         this
                     });
                 }
+                Callable::Builtin(Builtin::Object) => {
+                    return self.object_constructor(
+                        Some(new_target),
+                        arguments.into_iter().next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::Error(kind)) => {
                     return self.error_constructor(
                         kind,

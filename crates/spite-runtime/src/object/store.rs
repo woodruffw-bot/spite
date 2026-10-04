@@ -175,7 +175,7 @@ impl Objects {
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
-            Builtin::Boolean | Builtin::Number | Builtin::Error(_)
+            Builtin::Boolean | Builtin::Number | Builtin::Object | Builtin::Error(_)
         );
         Ok(self.heap.insert(Entry::Object(object))?)
     }

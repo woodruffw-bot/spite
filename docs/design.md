@@ -293,8 +293,8 @@ both expressions evaluate; templates and property names use the string hint.
 Realm allocation is bounded by shared heap slots and per-object property counts. Object
 literals create data properties in source order, convert computed keys before
 evaluating values, and implement the required non-computed `__proto__` initializer.
-The intrinsic Object prototype has a stable, retained identity; its callable
-properties remain incomplete. A lookup that reaches an unimplemented intrinsic
+The intrinsic Object prototype has a stable, retained identity and its mandatory
+string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
 that method normally. Symbol coercion hooks and String, BigInt, and Symbol
 wrapper constructors remain explicit implementation gaps.
@@ -470,6 +470,15 @@ InvalidObject host failure before internal evaluation can dereference them.
 The Test262 runner uses these operations to inspect constructor names for
 runtime-negative exceptions. It never treats failures during that inspection as
 the original test's expected exception.
+
+Object implements its constructor and mandatory string-keyed prototype
+methods (20.1.1, 20.1.3). Nullish arguments create fresh ordinary objects; object
+arguments retain identity, and other primitives use the implemented ToObject
+wrappers. A distinct newTarget selects its own prototype and ignores the value
+argument. Property predicates convert their key before converting their receiver;
+isPrototypeOf tests its argument's type before receiver conversion. toLocaleString
+invokes the receiver's current toString with no arguments. Missing Object static
+methods remain explicit gaps until their descriptor/reflection algorithms land.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

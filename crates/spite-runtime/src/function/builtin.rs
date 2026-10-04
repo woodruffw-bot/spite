@@ -48,6 +48,22 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::Object => {
+                self.object_constructor(None, arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Builtin::ObjectHasOwnProperty | Builtin::ObjectPropertyIsEnumerable => self
+                .object_property_predicate(
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    matches!(builtin, Builtin::ObjectPropertyIsEnumerable),
+                    span,
+                ),
+            Builtin::ObjectIsPrototypeOf => self.object_is_prototype_of(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::ObjectToLocaleString => self.object_to_locale_string(this, span),
             Builtin::Error(kind) => self.error_constructor(kind, None, arguments, span),
             Builtin::ErrorToString => self.error_to_string(this, span),
             Builtin::ErrorIsError => {

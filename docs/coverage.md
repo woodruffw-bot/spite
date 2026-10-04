@@ -92,9 +92,9 @@ for initializers and nested expressions. For-in/of iteration remains unsupported
 Call expressions parse, retain member receivers, and evaluate callee then arguments
 in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
-descriptors. Object.prototype has an immutable null prototype, toString, and
-valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the twenty-seven objects remain rooted. Function.prototype caller/arguments
+descriptors. Object.prototype has an immutable null prototype and its mandatory
+string-keyed methods. Default ordinary-object conversion is supported. Intrinsic
+initialization is atomic and the initialized objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. String/BigInt/Symbol
 wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
@@ -178,6 +178,14 @@ property reads and conversions. Error.isError recognizes own ErrorData independe
 of prototype identity; Error prototypes do not carry that slot. Cause references
 are traced through ordinary properties. AggregateError remains unimplemented.
 
+Object calls/new preserve object identity, create fresh nullish-argument objects,
+and box Boolean/Number values. Object.prototype provides hasOwnProperty,
+propertyIsEnumerable, isPrototypeOf, toLocaleString, constructor, toString, and
+valueOf with ordered conversions and receiver handling. Own-property predicates
+read descriptors without invoking accessors. Unimplemented static methods and
+String/BigInt/Symbol boxing remain explicit gaps, including descriptor inspection
+or mutation of an unimplemented intrinsic property.
+
 Symbols, String/BigInt wrapper APIs,
 arrays, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
@@ -194,7 +202,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 47 retained entries under a separate fixed work
+Realm initialization creates 52 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

@@ -146,10 +146,10 @@ fn runtime_negatives_inspect_explicit_errors_rethrows_and_current_constructor_na
             "{body}"
         );
     }
-    // Object.prototype.constructor is still an explicit intrinsic gap.
+    // A name property on the thrown object is not its constructor's name.
     assert!(matches!(
         negative("runtime", "TypeError", "throw {name:'TypeError'}"),
-        Outcome::Unsupported {
+        Outcome::Failed {
             stage: Stage::Runtime,
             ..
         }
@@ -223,7 +223,7 @@ fn unsupported_and_limits_are_never_negative_passes() {
         }
     ));
     assert!(matches!(
-        negative("runtime", "ReferenceError", "Object"),
+        negative("runtime", "ReferenceError", "Array"),
         Outcome::Unsupported {
             stage: Stage::Runtime,
             ..

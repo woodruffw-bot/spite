@@ -155,7 +155,7 @@ fn execution_order_and_block_scopes_are_preserved() {
 
 #[test]
 fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
-    for failure in ["Object;", "for (;;) ;"] {
+    for failure in ["Array;", "for (;;) ;"] {
         for in_catch in [false, true] {
             let mut realm = Realm::new(Limits {
                 max_steps: 160,
@@ -169,7 +169,7 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
             };
             let source = format!("try {{ {inner} }} catch {{ flag = 8; }} finally {{ flag = 7; }}");
             let error = realm.eval(&source).unwrap_err();
-            if failure == "Object;" {
+            if failure == "Array;" {
                 assert!(matches!(error, Error::Unsupported { .. }));
             } else {
                 assert!(matches!(error, Error::Limit { .. }));

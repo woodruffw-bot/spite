@@ -89,7 +89,7 @@ fn explicit_collection_reuses_slots_and_allocation_never_collects_implicitly() {
             panic!("object")
         };
         assert!(realm.inspect_object(&handle).is_ok());
-        assert_eq!(realm.collect(500).unwrap().reclaimed, 1);
+        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 1);
     }
 }
 

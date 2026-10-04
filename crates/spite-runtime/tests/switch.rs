@@ -253,7 +253,7 @@ fn all_abrupt_exits_restore_the_outer_environment() {
     );
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
     assert!(matches!(
-        realm.eval("switch (0) { case Object: let x; }"),
+        realm.eval("switch (0) { case Array: let x; }"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
@@ -269,10 +269,10 @@ fn all_abrupt_exits_restore_the_outer_environment() {
 
 #[test]
 fn empty_fallthrough_clauses_consume_the_host_budget() {
-    let clauses = (1..64).map(|i| format!("case {i}:")).collect::<String>();
+    let clauses = (1..2_000).map(|i| format!("case {i}:")).collect::<String>();
     let source = format!("switch (0) {{ case 0: let x = 2; {clauses} }}");
     let mut realm = Realm::new(Limits {
-        max_steps: 40,
+        max_steps: 1_000,
         ..Limits::default()
     });
     realm.eval("let x = 1").unwrap();

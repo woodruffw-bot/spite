@@ -167,10 +167,10 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
 #[test]
 fn unavailable_standard_global_properties_remain_explicit_gaps() {
     for source in [
-        "this.Object",
-        "typeof this.Object",
-        "this.Object=7",
-        "delete this.Object",
+        "this.Array",
+        "typeof this.Array",
+        "this.Array=7",
+        "delete this.Array",
     ] {
         assert!(
             matches!(
@@ -180,6 +180,6 @@ fn unavailable_standard_global_properties_remain_explicit_gaps() {
             "{source}"
         );
     }
-    truth("'Object' in this");
-    truth("function Object(){}Object===this.Object");
+    truth("'Array' in this");
+    truth("function Array(){}Array===this.Array");
 }

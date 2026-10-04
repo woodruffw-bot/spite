@@ -165,7 +165,7 @@ fn unsupported_operations_and_limits_never_write_partial_results() {
     assert_eq!(realm.eval("x"), Ok(Value::String(JsString::from("ab"))));
     assert_eq!(realm.eval("effect"), Ok(Value::Number(0.0)));
     assert!(matches!(
-        realm.eval("Object += (effect = 1)"),
+        realm.eval("Array += (effect = 1)"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("effect"), Ok(Value::Number(0.0)));

@@ -15,6 +15,7 @@ mod construct;
 mod error;
 mod instance;
 mod number;
+mod object;
 mod ordinary;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
@@ -30,6 +31,11 @@ pub(crate) enum Builtin {
     ThrowTypeError,
     ObjectToString,
     ObjectValueOf,
+    Object,
+    ObjectHasOwnProperty,
+    ObjectPropertyIsEnumerable,
+    ObjectIsPrototypeOf,
+    ObjectToLocaleString,
     Error(error::ErrorConstructor),
     ErrorToString,
     ErrorIsError,
@@ -68,6 +74,10 @@ impl Builtin {
             | Self::NumberToString => "toString",
             Self::ObjectValueOf | Self::BooleanValueOf | Self::NumberValueOf => "valueOf",
             Self::Boolean => "Boolean",
+            Self::Object => "Object",
+            Self::ObjectHasOwnProperty => "hasOwnProperty",
+            Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
+            Self::ObjectIsPrototypeOf => "isPrototypeOf",
             Self::Number => "Number",
             Self::Error(kind) => kind.name(),
             Self::ErrorIsError => "isError",
@@ -78,7 +88,7 @@ impl Builtin {
             Self::NumberToFixed => "toFixed",
             Self::NumberToPrecision => "toPrecision",
             Self::NumberToExponential => "toExponential",
-            Self::NumberToLocaleString => "toLocaleString",
+            Self::NumberToLocaleString | Self::ObjectToLocaleString => "toLocaleString",
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
         }
@@ -89,6 +99,10 @@ impl Builtin {
             Self::FunctionCall
             | Self::FunctionBind
             | Self::Boolean
+            | Self::Object
+            | Self::ObjectHasOwnProperty
+            | Self::ObjectPropertyIsEnumerable
+            | Self::ObjectIsPrototypeOf
             | Self::Number
             | Self::Error(_)
             | Self::ErrorIsError
@@ -139,6 +153,7 @@ impl Callable {
 
 #[derive(Debug)]
 pub(super) struct Intrinsics {
+    pub object: object::ObjectIntrinsics,
     pub errors: error::ErrorIntrinsics,
     pub is_finite: ObjectHandle,
     pub is_nan: ObjectHandle,
@@ -174,6 +189,7 @@ impl Intrinsics {
         .chain(self.boolean.roots())
         .chain(self.number.roots())
         .chain(self.errors.roots())
+        .chain(self.object.roots())
     }
 }
 
@@ -262,9 +278,12 @@ impl Realm {
         let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
         let is_nan = self.new_builtin(&function_prototype, Builtin::IsNaN, span)?;
         let errors = self.error_intrinsics(&object_prototype, &function_prototype, span)?;
+        let object =
+            self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
+            object,
             errors,
             is_finite,
             is_nan,

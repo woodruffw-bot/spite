@@ -81,6 +81,14 @@ impl Realm {
         for (name, constructor) in errors {
             self.define_builtin_property(&object, name, Value::Object(constructor), true, span)?;
         }
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .object
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Object", Value::Object(constructor), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }
