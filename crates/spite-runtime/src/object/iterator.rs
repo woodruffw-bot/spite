@@ -5,7 +5,9 @@ use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 
 mod helper;
-pub(crate) use helper::{ConcatIterable, HelperStatus, IteratorHelper};
+pub(crate) use helper::{
+    CallbackIterator, CallbackKind, ConcatIterable, HelperStatus, IteratorHelper,
+};
 
 #[derive(Debug)]
 pub(super) enum IteratorState {

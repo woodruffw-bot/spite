@@ -9,6 +9,7 @@ mod for_in;
 mod for_of;
 mod function;
 mod global;
+mod iterator_count;
 use environment::{BindingState, EnvironmentHandle};
 pub mod object;
 mod realm_object;

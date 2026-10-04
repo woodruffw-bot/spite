@@ -89,28 +89,54 @@ impl Realm {
             }
             HelperStatus::SuspendedStart | HelperStatus::SuspendedYield => {}
         }
+        if return_method && previous == HelperStatus::SuspendedStart {
+            // 27.1.2.1.2: complete before IteratorCloseAll, so cleanup reentry
+            // observes completion. Concat initially has no underlying iterators;
+            // callback helpers have their captured direct iterator immediately.
+            let iterator = self.object_work(span, |objects, _| {
+                Ok(objects
+                    .inspect(&helper)?
+                    .iterator_helper()
+                    .expect("helper")
+                    .underlying()
+                    .cloned())
+            });
+            self.objects
+                .finish_iterator_helper(&helper, false)
+                .expect("validated executing helper");
+            if let Some(iterator) = iterator? {
+                self.iterator_close_direct(iterator, span)?;
+            }
+            return self.iterator_result(Value::Undefined, true, span);
+        }
         let result = (|| {
             let value = if return_method {
-                // Concat's [[UnderlyingIterators]] starts empty. Before its
-                // first next, return closes nothing and never opens a source.
-                if previous == HelperStatus::SuspendedYield {
-                    let iterator = self.object_work(span, |objects, _| {
-                        let state = objects.inspect(&helper)?.iterator_helper().expect("helper");
-                        Ok(state
-                            .concat
-                            .as_ref()
-                            .expect("active concat")
-                            .inner
-                            .as_ref()
-                            .map(|inner| inner.iterator.clone()))
-                    })?;
-                    if let Some(iterator) = iterator {
-                        self.iterator_close_direct(iterator, span)?;
-                    }
+                let iterator = self.object_work(span, |objects, _| {
+                    Ok(objects
+                        .inspect(&helper)?
+                        .iterator_helper()
+                        .expect("helper")
+                        .underlying()
+                        .cloned())
+                })?;
+                if let Some(iterator) = iterator {
+                    self.iterator_close_direct(iterator, span)?;
                 }
                 None
             } else {
-                self.concat_step(&helper, span)?
+                let callback = self.object_work(span, |objects, _| {
+                    Ok(objects
+                        .inspect(&helper)?
+                        .iterator_helper()
+                        .expect("helper")
+                        .callback()
+                        .is_some())
+                })?;
+                if callback {
+                    self.iterator_callback_step(&helper, span)?
+                } else {
+                    self.concat_step(&helper, span)?
+                }
             };
             let yielded = value.is_some();
             self.iterator_result(value.unwrap_or(Value::Undefined), !yielded, span)
@@ -134,8 +160,7 @@ impl Realm {
                     .inspect(helper)?
                     .iterator_helper()
                     .expect("helper")
-                    .concat
-                    .as_ref()
+                    .concat()
                     .expect("active concat");
                 if let Some(inner) = &state.inner {
                     budget.value(&inner.next)?;
@@ -157,8 +182,7 @@ impl Realm {
                     .inspect(helper)?
                     .iterator_helper()
                     .expect("helper")
-                    .concat
-                    .as_ref()
+                    .concat()
                     .expect("active concat");
                 Ok(state
                     .sources

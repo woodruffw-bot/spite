@@ -153,6 +153,8 @@ pub(crate) enum Builtin {
     IteratorSome,
     IteratorFind,
     IteratorReduce,
+    IteratorMap,
+    IteratorFilter,
     IteratorWrapperNext,
     IteratorWrapperReturn,
     IteratorIdentity,
@@ -365,8 +367,8 @@ impl Builtin {
             Self::ArrayForEach | Self::IteratorForEach => "forEach",
             Self::ArrayEvery | Self::IteratorEvery => "every",
             Self::ArraySome | Self::IteratorSome => "some",
-            Self::ArrayMap => "map",
-            Self::ArrayFilter => "filter",
+            Self::ArrayMap | Self::IteratorMap => "map",
+            Self::ArrayFilter | Self::IteratorFilter => "filter",
             Self::ArraySlice => "slice",
             Self::ArrayConcat | Self::IteratorConcat => "concat",
             Self::ArraySplice => "splice",
@@ -468,6 +470,8 @@ impl Builtin {
             | Self::IteratorSome
             | Self::IteratorFind
             | Self::IteratorReduce
+            | Self::IteratorMap
+            | Self::IteratorFilter
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean

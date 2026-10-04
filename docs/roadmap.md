@@ -209,6 +209,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Iterator.prototype.forEach with callback validation/closing, ordered direct iteration, and exact mathematical indices.
 - [x] Add Iterator.prototype.every/some/find with direct predicate traversal, mathematical indices, and short-circuit closing.
 - [x] Add Iterator.prototype.reduce with initial-value presence, direct accumulation, mathematical indices, and reducer-error closing.
+- [x] Add lazy Iterator.prototype.map/filter with direct capture, exact indices, source closing, and traced native suspension.
 - [ ] Add remaining shared Iterator prototype properties.
 - [x] Expose the Symbol global with standard attributes.
 - [ ] Complete Array species-dependent methods and iterator integration.

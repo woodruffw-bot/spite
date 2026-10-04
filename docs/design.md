@@ -724,6 +724,21 @@ validation/language throws close with incoming-error precedence. Acquisition,
 step, exhaustion, and host failures never close. Share the exact unbounded
 mathematical counter used by other eager consumers.
 
+Iterator.prototype.map/filter eagerly validate the callback and capture direct
+next, then suspend native helper closures (27.1.3.3.4/8). No source step or callback
+runs until next. Each callback receives undefined this and value/mathematical
+index; map yields its result, filter tests ToBoolean and yields the original value.
+Rejected filter values loop without native recursion. The exact counter advances
+after resuming a yield or skipping a value, independently of BigInt-value quotas.
+
+Helper payloads distinguish concat and callback closures. Captured source, next,
+and callback edges remain traced even while executing and are released on permanent
+completion. Return before the first next completes before closing the already
+captured direct source, so cleanup reentry observes done. Yielded return and
+callback throws close the live source; step/host failures never do. Active reentry
+throws TypeError. Finish/release work is prepaid and cannot strand an executing
+helper after a host abort. All defaults remain unlimited.
+
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
 it does not retain the original receiver. A branded String iterator stores the

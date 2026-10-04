@@ -7,6 +7,7 @@ use crate::{
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod callback;
 mod concat;
 mod consume;
 mod from;
@@ -31,6 +32,8 @@ pub(crate) struct IteratorIntrinsics {
     some: ObjectHandle,
     find: ObjectHandle,
     reduce: ObjectHandle,
+    map: ObjectHandle,
+    filter: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -61,6 +64,8 @@ impl IteratorIntrinsics {
             &self.some,
             &self.find,
             &self.reduce,
+            &self.map,
+            &self.filter,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -101,6 +106,8 @@ impl Realm {
         let some = self.new_builtin(function_prototype, Builtin::IteratorSome, span)?;
         let find = self.new_builtin(function_prototype, Builtin::IteratorFind, span)?;
         let reduce = self.new_builtin(function_prototype, Builtin::IteratorReduce, span)?;
+        let map = self.new_builtin(function_prototype, Builtin::IteratorMap, span)?;
+        let filter = self.new_builtin(function_prototype, Builtin::IteratorFilter, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
@@ -112,6 +119,8 @@ impl Realm {
             (&prototype, "some", &some),
             (&prototype, "find", &find),
             (&prototype, "reduce", &reduce),
+            (&prototype, "map", &map),
+            (&prototype, "filter", &filter),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -256,6 +265,8 @@ impl Realm {
             some,
             find,
             reduce,
+            map,
+            filter,
             array_prototype,
             string_prototype,
             identity,

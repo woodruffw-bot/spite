@@ -1,42 +1,9 @@
 //! Eager direct-iterator consumers (27.1.3.3).
 
 use super::{Builtin, operations::IteratorRecord};
-use crate::{Error, ExceptionKind, Realm, Value};
-use spite_bigint::{BigInt, Budget, Error as IntegerError};
+use crate::{Error, ExceptionKind, Realm, Value, iterator_count::Counter};
+use spite_bigint::{Budget, Error as IntegerError};
 use spite_core::Span;
-
-enum Counter {
-    Small(u64),
-    Large(BigInt),
-}
-
-impl Counter {
-    fn number(&self, budget: &mut Budget) -> Result<f64, IntegerError> {
-        match self {
-            Self::Small(value) => {
-                budget.charge(1)?;
-                Ok(*value as f64)
-            }
-            Self::Large(value) => value.to_f64(budget),
-        }
-    }
-
-    fn advance(&mut self, budget: &mut Budget) -> Result<(), IntegerError> {
-        budget.charge(1)?;
-        match self {
-            Self::Small(value) if *value != u64::MAX => *value += 1,
-            Self::Small(_) => {
-                // The first value beyond u64 is exactly representable as 2^64.
-                *self = Self::Large(
-                    BigInt::from_f64(18_446_744_073_709_551_616.0, budget)?
-                        .expect("integral Number"),
-                );
-            }
-            Self::Large(value) => *value = value.add(&BigInt::from(1), budget)?,
-        }
-        Ok(())
-    }
-}
 
 impl Realm {
     pub(crate) fn iterator_for_each(
@@ -284,6 +251,7 @@ impl Realm {
 mod tests {
     use super::*;
     use crate::Limits;
+    use spite_bigint::BigInt;
 
     fn check_indices(counter: Counter, expected: &str) {
         let mut realm = Realm::new(Limits {

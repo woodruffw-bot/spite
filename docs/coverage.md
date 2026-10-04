@@ -669,6 +669,17 @@ primitive/invalid reducer validation, incoming throw precedence, initial/later
 step errors without closing, exhaustion, ignored extra arguments, metadata and
 collection, native/helper iteration, large default inputs, and opt-in host aborts.
 
+Lazy Iterator.prototype.map/filter capture direct next once and defer source steps
+and callbacks until next. Regressions cover validation/closing order, lazy cached
+traversal, strict/sloppy callback receivers, exact indices including skipped filter
+values, arbitrary mapper results, truthiness without coercion, original filtered
+value identity, early/yielded return, completion-before-cleanup reentry, normal and
+incoming-throw closing precedence, permanent completion, step errors without
+cleanup, shared helper branding, chained helpers, capture tracing/release,
+metadata/collection, large default pipelines, and opt-in host aborts. Internal
+tests verify indices beyond u64 under a zero BigInt-value quota and reject foreign
+or noncallable captures before allocating native helper objects.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-await-of, catch patterns, generators,

@@ -22,8 +22,8 @@ mod descriptor;
 mod iterator;
 use iterator::IteratorState;
 pub(crate) use iterator::{
-    ArrayIterationKind, ArrayIterator, ConcatIterable, HelperStatus, IteratorHelper,
-    IteratorWrapper, StringIterator,
+    ArrayIterationKind, ArrayIterator, CallbackIterator, CallbackKind, ConcatIterable,
+    HelperStatus, IteratorHelper, IteratorWrapper, StringIterator,
 };
 mod entry;
 mod store;

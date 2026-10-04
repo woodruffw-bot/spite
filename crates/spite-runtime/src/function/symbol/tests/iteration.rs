@@ -23,7 +23,7 @@ fn iterator_aliases_and_prototype_descriptors_are_standard() {
         &mut realm,
         "base===Iterator.prototype && base.constructor===Iterator",
     );
-    for source in ["base.map", "Object.getOwnPropertyDescriptors(base)"] {
+    for source in ["base.flatMap", "Object.getOwnPropertyDescriptors(base)"] {
         assert!(
             matches!(realm.eval(source), Err(Error::Unsupported { .. })),
             "{source}"

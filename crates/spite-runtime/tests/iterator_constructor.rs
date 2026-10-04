@@ -172,9 +172,9 @@ fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_one
 #[test]
 fn incomplete_prototype_remains_a_host_gap_and_skips_handlers() {
     for expression in [
-        "Iterator.prototype.map",
+        "Iterator.prototype.flatMap",
         "Reflect.ownKeys(Iterator.prototype)",
-        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Iterator.prototype.map});Reflect.construct(Iterator,[],B)",
+        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Iterator.prototype.flatMap});Reflect.construct(Iterator,[],B)",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();
