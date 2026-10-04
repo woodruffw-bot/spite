@@ -199,7 +199,7 @@ fn incomplete_intrinsic_methods_report_unsupported() {
     for name in [
         "create",
         "defineProperties",
-        "getPrototypeOf",
+        "getOwnPropertyNames",
         "freeze",
         "keys",
     ] {

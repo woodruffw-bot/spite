@@ -498,15 +498,11 @@ fn missing_object_static(key: &JsString) -> bool {
         "getOwnPropertyDescriptors",
         "getOwnPropertyNames",
         "getOwnPropertySymbols",
-        "getPrototypeOf",
         "groupBy",
-        "isExtensible",
         "isFrozen",
         "isSealed",
         "keys",
-        "preventExtensions",
         "seal",
-        "setPrototypeOf",
         "values",
     ]
     .iter()

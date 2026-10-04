@@ -483,6 +483,11 @@ and getOwnPropertyDescriptor use ToPropertyDescriptor/FromPropertyDescriptor
 fields, descriptor rejection, and mapped-argument aliasing. Descriptor results
 are fresh ordinary objects with mutable enumerable fields. Object.hasOwn converts
 its target before its key; Object.is performs bounded SameValue comparisons.
+Object.getPrototypeOf uses ToObject; setPrototypeOf validates its prototype before
+returning primitive targets unchanged. Ordinary prototype changes preserve
+identity checks, immutable/non-extensible invariants, and bounded cycle rejection.
+Object.isExtensible returns false for primitives; preventExtensions returns them
+unchanged and closes objects without freezing their existing properties.
 Remaining Object static methods are explicit gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
