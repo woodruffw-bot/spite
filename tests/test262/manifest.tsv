@@ -2694,3 +2694,16 @@ script-pass	efc3fcd94a0601af715a237f9c11e6df3f03e4a85b05ccbe2cb4a088dc523aac	tes
 script-pass	3c129fc30c6254035571755df3bcc185f1577c1a139b5d7fccb13d4611934671	test/built-ins/JSON/parse/text-non-string-primitive.js
 script-pass	783e8f9b18bb08dfc28ec3402cfa79c56294b62b7d422e96954c5ccd5815d73f	test/built-ins/JSON/parse/text-object-abrupt.js
 script-pass	f14d06f1527302b1a8010c72e65988b31ffcec69072338604bf75617eeca3778	test/built-ins/JSON/parse/text-object.js
+script-pass	ff6613d829f490a8d37b0b1c1343785b27d254e6fd319be14a7cde2affa2cd4c	test/built-ins/JSON/parse/reviver-array-get-prop-from-prototype.js
+script-pass	2d6c1dd2030e0856e259d175799299784fdc140e637999ff7c0f5c91e86c2ace	test/built-ins/JSON/parse/reviver-array-non-configurable-prop-create.js
+script-pass	85e1ad418781c995809f606c314180e522274a3988f0a1d8a985c469c4defae0	test/built-ins/JSON/parse/reviver-array-non-configurable-prop-delete.js
+script-pass	4f634a900304566b5949eefea5caa939e03ddf721154be7abdf352ee822441e2	test/built-ins/JSON/parse/reviver-call-err.js
+script-pass	a93935e02c98404293788f82f15c0c73641bdac39f464645232cdf7f899a4257	test/built-ins/JSON/parse/reviver-call-order.js
+script-pass	ea84b49e993be6e1b7b8617903daa54cc19dcf8b27cc6db0a0247a358f350a84	test/built-ins/JSON/parse/reviver-context-source-array-literal.js
+script-pass	ed57958a6dde5b80e545731ddda59924b8ee3eacdef2fd18ec24f2b683fcb1ac	test/built-ins/JSON/parse/reviver-context-source-object-literal.js
+script-pass	e82dd30f25f9238152a3b67c12f192bd0a6ea0cdd32194b36b1766e76daf7b1c	test/built-ins/JSON/parse/reviver-context-source-primitive-literal.js
+script-pass	0982623e337203f59b178ad88eb77970838461b0b6c76321372f222687629c0f	test/built-ins/JSON/parse/reviver-get-name-err.js
+script-pass	fec837450824d1829be4cd79ed4d22b7f6da010fc0b838319505faf98525868c	test/built-ins/JSON/parse/reviver-object-get-prop-from-prototype.js
+script-pass	0765f5092eede7a0f6a4c9b0cd9b6b9968bae0ae44cb57f8517b82cdbf4ef5f0	test/built-ins/JSON/parse/reviver-object-non-configurable-prop-create.js
+script-pass	a09681803625617741fcb14e48cb27f6e0915d899b88bc149eb0bac52ff2b2fe	test/built-ins/JSON/parse/reviver-object-non-configurable-prop-delete.js
+script-pass	1601cebd99f56e08167fe98916934e91ca87eaa03d19ab991181f129a6c362cb	test/built-ins/JSON/parse/reviver-wrapper.js

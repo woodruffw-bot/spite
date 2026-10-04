@@ -36,7 +36,7 @@ not an alternative language specification.
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5258 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5284 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -927,6 +927,9 @@ Fifty-two unchanged JSON.parse sources add 104 variants for exact grammar,
 whitespace and escapes, text coercion, negative zero, duplicate/__proto__ keys,
 metadata, and non-construction. Whole-object reflection, callable-reviver, and
 serialization originals remain excluded while their paths are incomplete.
+Thirteen unchanged JSON reviver sources add 26 variants for callback order,
+source contexts, wrappers, inherited values, rejected updates, and abrupt errors.
+Proxy, destructuring, and stringify dependencies remain excluded without credit.
 Another 53 positive for-of files and 22 reviewed for-of parse-negative files cover
 iteration, bindings, header grammar, and closing precedence. Seven rest-parameter
 positives and twelve parameter parse negatives cover Arrays, length, argument
@@ -937,7 +940,7 @@ verify successful assertions and explicit assertion failures. Some string compar
 failure formatting still requires missing JSON and remains Unsupported;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 5258 variants are four raw positives, 5062 positives using the upstream
+Rust. Its 5284 variants are four raw positives, 5088 positives using the upstream
 harness, and 192 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
