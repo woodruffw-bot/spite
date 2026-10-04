@@ -15,7 +15,10 @@ impl Parser {
         require_name: bool,
     ) -> Result<Rc<Function>, Diagnostic> {
         self.enter()?;
+        let previous = self.allow_new_target;
+        self.allow_new_target = true;
         let result = self.ordinary_function_inner(require_name);
+        self.allow_new_target = previous;
         self.depth -= 1;
         result
     }

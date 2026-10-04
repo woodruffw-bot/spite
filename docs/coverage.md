@@ -134,9 +134,11 @@ prototype (or the realm default), run parameters/bodies, and honor object return
 Bound constructors forward arguments and newTarget while ignoring bound this and
 their own prototype property. Arrows and builtin methods remain non-constructible.
 Construction shares call nesting and argument limits; deep bound chains are iterative.
+new.target is validated in ordinary functions, binds undefined on calls or the
+constructor on construction, and is lexically captured/traced through arrows.
 
 Symbols, primitive wrapper constructors,
-arrays, boxed receivers, derived construction, new.target, classes, destructuring, regular
+arrays, boxed receivers, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

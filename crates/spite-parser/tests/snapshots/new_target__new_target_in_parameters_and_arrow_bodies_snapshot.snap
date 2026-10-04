@@ -1,0 +1,88 @@
+---
+source: crates/spite-parser/tests/new_target.rs
+expression: "parse_script(\"function F(x = new.target) { return ()=>new.target; }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    name: Some(
+                        FunctionName {
+                            name: "F",
+                            span: Span {
+                                start: 9,
+                                end: 10,
+                            },
+                        },
+                    ),
+                    parameters: [
+                        Binding {
+                            name: "x",
+                            span: Span {
+                                start: 11,
+                                end: 12,
+                            },
+                            initializer: Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: NewTarget,
+                                    span: Span {
+                                        start: 15,
+                                        end: 25,
+                                    },
+                                },
+                            ),
+                        },
+                    ],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Arrow {
+                                                parameters: [],
+                                                body: Expression(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: NewTarget,
+                                                        span: Span {
+                                                            start: 40,
+                                                            end: 50,
+                                                        },
+                                                    },
+                                                ),
+                                                source: FunctionSource(
+                                                    "()=>new.target",
+                                                ),
+                                            },
+                                            span: Span {
+                                                start: 36,
+                                                end: 50,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 29,
+                                    end: 51,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function F(x = new.target) { return ()=>new.target; }",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 53,
+            },
+        },
+    ],
+    strict: false,
+}

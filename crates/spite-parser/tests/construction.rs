@@ -76,11 +76,7 @@ fn invalid_targets_and_strict_errors_in_callees_or_arguments_are_rejected() {
             "{source}"
         );
     }
-    for source in [
-        "new F(...x)",
-        "new F(a,...x)",
-        "function f(){return new.target;}",
-    ] {
+    for source in ["new F(...x)", "new F(a,...x)"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

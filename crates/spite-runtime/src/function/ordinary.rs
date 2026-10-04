@@ -15,6 +15,7 @@ impl Realm {
         code: ScriptFunction,
         callee: ObjectHandle,
         this: Value,
+        new_target: Option<ObjectHandle>,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
@@ -91,7 +92,13 @@ impl Realm {
             BTreeMap::new()
         };
         let environment = self.object_work(span, |objects, budget| {
-            objects.create_function_environment(code.environment, bindings, this, budget)
+            objects.create_function_environment(
+                code.environment,
+                bindings,
+                this,
+                new_target,
+                budget,
+            )
         })?;
         let caller_depth = self.scopes.len();
         let caller_strict = self.strict;
@@ -150,6 +157,25 @@ impl Realm {
             next = outer;
         }
         Ok(Value::Object(self.global_object()))
+    }
+
+    pub(crate) fn new_target_value(&mut self, span: Span) -> Result<Value, Error> {
+        let mut next = self.scopes.last().cloned();
+        while let Some(environment) = next {
+            let (function, target, outer) = self.object_work(span, |objects, _| {
+                let environment = objects.environment(&environment)?;
+                Ok((
+                    environment.this.is_some(),
+                    environment.new_target.clone(),
+                    environment.outer.clone(),
+                ))
+            })?;
+            if function {
+                return Ok(target.map_or(Value::Undefined, Value::Object));
+            }
+            next = outer;
+        }
+        unreachable!("new.target is validated inside a non-arrow function")
     }
 
     pub(crate) fn ordinary_function(

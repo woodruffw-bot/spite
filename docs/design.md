@@ -110,8 +110,12 @@ New expressions retain the constructor and optional argument list (13.3.5).
 Constructor parsing consumes member access but leaves call parentheses to the new
 expression, distinguishing `new F.x(a)` from `new F(a).x`. Nested new forms bind
 inner argument lists first. Calls and construction share argument parsing with In
-enabled; spans, strict validation, and depth budgets cover all children. Spread,
-new.target and derived construction remain separate gaps.
+enabled; spans, strict validation, and depth budgets cover all children. Spread
+and derived construction remain separate gaps. NewTarget is permitted in ordinary
+function parameters/bodies and arrows nested within them; the permission crosses
+arrow boundaries but is restored after each ordinary function (16.1.1). Script
+and arrow-only occurrences are Syntax errors before execution. Escaped grammar
+terminals and assignment/update targets remain invalid.
 
 Direct function declarations are var-scoped in Scripts and function bodies;
 block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
@@ -383,7 +387,12 @@ while primitive returns preserve it. Bound construction prepends captures, ignor
 bound this, substitutes its target for a matching newTarget, and forwards iteratively
 (10.4.1.2). Its own prototype property is never read on this path. Construction shares
 call-depth, argument, allocation, and work limits; every abrupt result restores
-caller scopes/strictness/depth. Derived constructors and new.target are not yet exposed.
+caller scopes/strictness/depth. Function environments retain a traced newTarget
+handle for construction and undefined for calls (9.1.1.3). GetNewTarget finds the
+nearest non-arrow function environment, so arrows retain the original invocation
+binding through nested scopes and after return (9.4.5, 13.3.12). Bound construction
+exposes the substituted target, and nested ordinary calls reset the binding.
+Derived constructors remain unimplemented.
 
 Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
 64 until explicit frames replace Rust recursion. Every success and abrupt result

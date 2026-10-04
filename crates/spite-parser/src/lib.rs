@@ -45,6 +45,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
         depth: 0,
         allow_in: true,
         allow_return: false,
+        allow_new_target: false,
     };
     let mut statements = Vec::new();
     while parser.current().kind != Kind::Eof {
@@ -106,6 +107,7 @@ struct Parser {
     depth: usize,
     allow_in: bool,
     allow_return: bool,
+    allow_new_target: bool,
 }
 
 impl Parser {
@@ -1033,6 +1035,7 @@ fn member_base(expr: &Expr) -> bool {
         expr.kind,
         ExprKind::Identifier(_)
             | ExprKind::This
+            | ExprKind::NewTarget
             | ExprKind::Literal(_)
             | ExprKind::Object(_)
             | ExprKind::Template { .. }

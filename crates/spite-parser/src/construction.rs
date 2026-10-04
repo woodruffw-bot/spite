@@ -22,11 +22,19 @@ impl Parser {
     pub(super) fn new_expression(&mut self) -> Result<Expr, Diagnostic> {
         let start = self.bump().span.start;
         if self.eat(".") {
-            return if self.at("target") {
-                Err(self.unsupported("new.target is not implemented"))
-            } else {
-                Err(self.error("expected target after new dot"))
-            };
+            if !self.at("target") {
+                return Err(self.error("expected target after new dot"));
+            }
+            let span = Span::new(start, self.bump().span.end);
+            // Script Contains NewTarget crosses arrows but not ordinary functions
+            // (16.1.1). An ordinary function's parameters enable it as well.
+            if !self.allow_new_target {
+                return Err(early(
+                    span,
+                    "new.target requires an enclosing non-arrow function",
+                ));
+            }
+            return self.make_expr(ExprKind::NewTarget, span);
         }
         // Member access binds inside a constructor expression, but calls do not:
         // new F.x(a).y() constructs F.x before reading/calling y. Recursive new

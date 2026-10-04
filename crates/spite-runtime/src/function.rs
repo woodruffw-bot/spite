@@ -365,7 +365,7 @@ impl Realm {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
-                    return self.call_ordinary(code, callee, this, arguments, span);
+                    return self.call_ordinary(code, callee, this, None, arguments, span);
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound

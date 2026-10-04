@@ -372,6 +372,8 @@ pub enum ExprKind {
     },
     /// The this binding of the current lexical environment.
     This,
+    /// The nearest non-arrow function environment's newTarget binding.
+    NewTarget,
     /// An identifier reference.
     Identifier(String),
     /// A parenthesized expression. Retained for grammar restrictions.

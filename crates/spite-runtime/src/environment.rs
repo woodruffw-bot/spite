@@ -21,11 +21,14 @@ pub(crate) struct Environment {
     pub bindings: BTreeMap<String, BindingState>,
     // None for declarative/arrow environments; Some(undefined) is a real binding.
     pub this: Option<Value>,
+    // None means undefined for ordinary calls; declarative environments ignore it.
+    pub new_target: Option<Handle>,
 }
 
 impl Trace for Environment {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         std::iter::once(self.outer.as_ref().map(|outer| &outer.0))
+            .chain(std::iter::once(self.new_target.as_ref()))
             .chain(std::iter::once(self.this.as_ref().and_then(
                 |value| match value {
                     Value::Object(handle) => Some(handle),

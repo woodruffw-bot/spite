@@ -92,6 +92,7 @@ impl Realm {
                         code,
                         function,
                         this.clone(),
+                        Some(new_target),
                         arguments.into_iter(),
                         span,
                     )?;

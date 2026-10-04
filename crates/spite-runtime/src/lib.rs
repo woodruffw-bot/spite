@@ -1131,6 +1131,7 @@ impl Realm {
         self.tick(expr.span)?;
         let result = match &expr.kind {
             ExprKind::This => self.this_value(expr.span)?,
+            ExprKind::NewTarget => self.new_target_value(expr.span)?,
             ExprKind::Function(function) => self.ordinary_function(function, true, expr.span)?,
             ExprKind::Arrow {
                 parameters,
