@@ -2004,3 +2004,11 @@ script-pass	07ca3a05a73e01f8c705335963f86e6a36309ac5736ae5818072fa21c19f4af3	tes
 script-pass	e74120f2d4a999cb75e09584e8311b28159bb9a933f81ca762bdb4ef5c385f55	test/built-ins/Math/hypot/not-a-constructor.js
 script-pass	bff97f7d02ab0ed422ddae3a97eab388c9b2507dcd4f8c7465f672f56366c29c	test/built-ins/Math/hypot/length.js
 script-pass	def1b451d8a4e2db55f54f05be5b60e9590b724ce855589fc57d76451ebcd1ab	test/built-ins/Math/hypot/name.js
+script-pass	5409dc624369530e5789aa296420a9c4c03db0bc28b07380766c18e59d855720	test/built-ins/Math/sumPrecise/length.js
+script-pass	f0bffa4290adeb3eaa170adfc78514e052977186ea88a79622ab774a59ef3ce7	test/built-ins/Math/sumPrecise/name.js
+script-pass	0e2aea794f8c787bdba177d325b1224bf88ff51bd5b5bad083fbd9c9232bd508	test/built-ins/Math/sumPrecise/not-a-constructor.js
+script-pass	efc1daf2cf00eea32f8c70fabc77ff2ff1c8bbbf9c074ed125e585c68f60cfbb	test/built-ins/Math/sumPrecise/sum-is-NaN.js
+script-pass	09bcf3aefb646dd7b508f42abd6f0cd1d3a9d5762a6e0a5d3d38ef557569e31c	test/built-ins/Math/sumPrecise/sum-is-infinite.js
+script-pass	bb1b3d268ad90992a7219296248db02b204eefea06a0653697d5cfe6802ff01f	test/built-ins/Math/sumPrecise/sum-is-minus-zero.js
+script-pass	f542b5ceeb83301c9b527b299f96e0f6210e31bfa4881adfc41d2c95dcef7b11	test/built-ins/Math/sumPrecise/sum.js
+script-pass	957ecf16547bcc40de4fea76e20136e8cebcd212ebbb51ef79ed28e95a8b818c	test/built-ins/Math/sumPrecise/throws-on-non-number.js
