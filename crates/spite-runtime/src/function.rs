@@ -57,8 +57,10 @@ pub(crate) enum Builtin {
     MathImul,
     MathMax,
     MathMin,
+    MathPow,
     MathRound,
     MathSign,
+    MathSqrt,
     MathTrunc,
     ReflectPreventExtensions,
     FunctionBind,
@@ -237,8 +239,10 @@ impl Builtin {
             Self::MathImul => "imul",
             Self::MathMax => "max",
             Self::MathMin => "min",
+            Self::MathPow => "pow",
             Self::MathRound => "round",
             Self::MathSign => "sign",
+            Self::MathSqrt => "sqrt",
             Self::MathTrunc => "trunc",
             Self::ReflectPreventExtensions => "preventExtensions",
             Self::FunctionBind => "bind",
@@ -452,6 +456,7 @@ impl Builtin {
             | Self::MathF16round
             | Self::MathRound
             | Self::MathSign
+            | Self::MathSqrt
             | Self::MathTrunc
             | Self::ReflectPreventExtensions
             | Self::ObjectIsExtensible
@@ -487,6 +492,7 @@ impl Builtin {
             | Self::MathImul
             | Self::MathMax
             | Self::MathMin
+            | Self::MathPow
             | Self::ArraySlice
             | Self::ArraySplice
             | Self::ArrayCopyWithin

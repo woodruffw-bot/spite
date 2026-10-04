@@ -59,12 +59,18 @@ impl Realm {
             | Builtin::MathF16round
             | Builtin::MathRound
             | Builtin::MathSign
+            | Builtin::MathSqrt
             | Builtin::MathTrunc => {
                 self.math_unary(builtin, arguments.next().unwrap_or(Value::Undefined), span)
             }
             Builtin::MathMax => self.math_extremum(arguments, true, span),
             Builtin::MathMin => self.math_extremum(arguments, false, span),
             Builtin::MathImul => self.math_imul(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::MathPow => self.math_pow(
                 arguments.next().unwrap_or(Value::Undefined),
                 arguments.next().unwrap_or(Value::Undefined),
                 span,

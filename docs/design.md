@@ -1226,6 +1226,13 @@ behavior without a binary32 intermediate. Magnitudes at or above 65520 overflow
 to signed infinity; smaller underflowed results retain the input sign. No new
 numeric dependency or unstable Rust float type is required.
 
+Math pow applies ToNumber to the base and then the exponent before using the
+same Number::exponentiate algorithm as ** (sec-math.pow). Its JavaScript special
+values, signed zero, odd integral exponents, and negative fractional bases follow
+that shared implementation; BigInt arguments are rejected by ToNumber. Sqrt
+performs one conversion and uses the correctly rounded IEEE binary64 squareRoot
+operation, preserving -0 and rejecting negative numbers as NaN (sec-math.sqrt).
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

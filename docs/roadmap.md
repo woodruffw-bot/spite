@@ -210,6 +210,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Math's fixed constants, tag, abs/sign, and ceil/floor/round/trunc with exact signed-zero and halfway behavior.
 - [x] Add Math max/min with ordered argument conversion and signed-zero extrema, plus clz32 and wrapping imul.
 - [x] Add Math fround/f16round with direct ties-to-even binary32/binary16 conversion and signed underflow/overflow.
+- [x] Add Math pow using shared Number exponentiation and correctly rounded binary64 sqrt.
 - [ ] Add collections, JSON, errors, and iterator helpers.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

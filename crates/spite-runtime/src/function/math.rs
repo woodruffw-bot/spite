@@ -1,7 +1,11 @@
 //! Math object constants and basic numeric operations (21.3.1, 21.3.2).
 
 use super::Builtin;
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor, value::to_uint32};
+use crate::{
+    Error, ObjectHandle, Realm, Value,
+    object::DataDescriptor,
+    value::{exponentiate, to_uint32},
+};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]
@@ -73,8 +77,10 @@ impl Realm {
             Builtin::MathImul,
             Builtin::MathMax,
             Builtin::MathMin,
+            Builtin::MathPow,
             Builtin::MathRound,
             Builtin::MathSign,
+            Builtin::MathSqrt,
             Builtin::MathTrunc,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
@@ -115,6 +121,9 @@ impl Realm {
                 }
             }
             Builtin::MathTrunc => number.trunc(),
+            // sec-math.sqrt requires the nearest binary64 result. Rust's sqrt
+            // is the correctly rounded IEEE squareRoot operation, including -0.
+            Builtin::MathSqrt => number.sqrt(),
             _ => unreachable!("Math unary operation"),
         };
         Ok(Value::Number(result))
@@ -163,6 +172,19 @@ impl Realm {
         let left = to_uint32(self.number(left, span)?);
         let right = to_uint32(self.number(right, span)?);
         Ok(Value::Number(f64::from(left.wrapping_mul(right) as i32)))
+    }
+
+    pub(super) fn math_pow(
+        &mut self,
+        base: Value,
+        exponent: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // sec-math.pow: both ordered ToNumber conversions precede Number::
+        // exponentiate, including when NaN or a zero exponent decides its result.
+        let base = self.number(base, span)?;
+        let exponent = self.number(exponent, span)?;
+        Ok(Value::Number(exponentiate(base, exponent)))
     }
 }
 

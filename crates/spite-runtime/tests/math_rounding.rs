@@ -133,7 +133,7 @@ fn method_metadata_and_intrinsic_retention_survive_public_deletion() {
     realm.eval("let abs=Math.abs,ceil=Math.ceil,floor=Math.floor,round=Math.round,sign=Math.sign,trunc=Math.trunc;delete Math.abs;delete Math.ceil;delete Math.floor;delete Math.round;delete Math.sign;delete Math.trunc;delete globalThis.Math").unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     assert_eq!(realm.eval("abs(-1)===1 && ceil(1.1)===2 && floor(1.1)===1 && round(1.5)===2 && sign(-1)===-1 && trunc(1.9)===1 && typeof Math==='undefined'"),Ok(Value::Boolean(true)));
-    for source in ["Math.pow", "Reflect.ownKeys(Math)"] {
+    for source in ["Math.sin", "Reflect.ownKeys(Math)"] {
         assert!(
             matches!(
                 Realm::default().eval(source),
@@ -142,5 +142,5 @@ fn method_metadata_and_intrinsic_retention_survive_public_deletion() {
             "{source}"
         );
     }
-    check("Reflect.has(Math,'pow') && Reflect.has(Math,'sumPrecise')");
+    check("Reflect.has(Math,'sin') && Reflect.has(Math,'sumPrecise')");
 }

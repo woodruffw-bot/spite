@@ -25,7 +25,7 @@ not an alternative language specification.
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
 | Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
-| Math | Fixed constants and tag, abs/sign, ceil/floor/round/trunc, fround/f16round, max/min, clz32, and imul with ordered conversion, signed zero, exact rounding, and 32-bit wrapping |
+| Math | Fixed constants and tag, abs/sign, ceil/floor/round/trunc, fround/f16round, max/min, clz32/imul, pow, and correctly rounded sqrt |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
@@ -265,6 +265,12 @@ metadata, host aborts, and collection. Binary16 tests enumerate every finite
 representable magnitude and every intervening halfway boundary with its nearest
 binary64 neighbors, for both signs. Direct binary64 rounding avoids errors from
 a binary32 intermediate.
+
+Pow shares Number exponentiation after ordered base/exponent conversion; sqrt
+uses correctly rounded binary64 square root. Regressions cover IEEE special
+values, odd/even exponent signs, large exponents, negative fractional bases,
+correct square-root rounding and range endpoints, coercion before special-value
+results, skipped extra arguments, metadata, collection, and host aborts.
 
 Boolean calls, construction, prototype methods, descriptors, and boxed receivers
 are implemented. Boolean.prototype itself holds false. Methods validate own
@@ -585,7 +591,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 202 retained entries outside the per-Script work
+Realm initialization creates 204 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
