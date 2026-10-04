@@ -1,4 +1,4 @@
-//! Arrow cover grammar for simple parameters and concise bodies (15.3).
+//! Arrow cover grammar for identifier parameters and concise bodies (15.3).
 
 use super::*;
 
@@ -66,14 +66,16 @@ impl Parser {
                 if reserved(&name) {
                     return Err(early(token.span, "invalid arrow binding identifier"));
                 }
+                let initializer = if parenthesized && self.eat("=") {
+                    Some(self.expression_with_in(2, true)?)
+                } else {
+                    None
+                };
                 parameters.push(Binding {
                     name,
                     span: token.span,
-                    initializer: None,
+                    initializer,
                 });
-                if self.at("=") {
-                    return Err(self.unsupported("default parameters are not implemented"));
-                }
                 if !parenthesized || !self.eat(",") || self.at(")") {
                     break;
                 }

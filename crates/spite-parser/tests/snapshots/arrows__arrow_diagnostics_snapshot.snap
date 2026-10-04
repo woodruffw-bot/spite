@@ -30,9 +30,9 @@ expression: errors
     Diagnostic {
         kind: Unsupported,
         span: Span {
-            start: 2,
-            end: 3,
+            start: 1,
+            end: 4,
         },
-        message: "default parameters are not implemented",
+        message: "rest and binding-pattern parameters are not implemented",
     },
 ]

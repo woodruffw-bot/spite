@@ -92,6 +92,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse expression-bodied arrows with simple parameters, early errors, and exact source text.
 - [x] Execute arrow closures with shared bindings, names, metadata, and source stringification.
 - [x] Add arrow block bodies, function-local declarations, strict directives, and return completions.
+- [x] Add default arrow parameters, ordered initialization, TDZ, and separate body var environments.
 - [ ] Add ordinary functions and lexical this.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.

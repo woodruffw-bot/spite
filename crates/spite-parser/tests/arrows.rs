@@ -116,7 +116,6 @@ fn invalid_parameters_duplicate_names_and_strict_bindings_are_early_errors() {
 #[test]
 fn unimplemented_parameter_and_body_forms_remain_explicit_gaps() {
     for source in [
-        "(x=1)=>x",
         "(...xs)=>xs",
         "([x])=>x",
         "({x})=>x",
@@ -133,10 +132,15 @@ fn unimplemented_parameter_and_body_forms_remain_explicit_gaps() {
 
 #[test]
 fn arrow_diagnostics_snapshot() {
-    let errors: Vec<_> = ["(x,x)=>x", "x\n=>x", "'use strict'; eval=>eval", "(x=1)=>x"]
-        .into_iter()
-        .map(|source| parse_script(source).unwrap_err())
-        .collect();
+    let errors: Vec<_> = [
+        "(x,x)=>x",
+        "x\n=>x",
+        "'use strict'; eval=>eval",
+        "(...xs)=>xs",
+    ]
+    .into_iter()
+    .map(|source| parse_script(source).unwrap_err())
+    .collect();
     insta::assert_debug_snapshot!(errors);
 }
 

@@ -552,11 +552,18 @@ impl Parser {
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
-            ExprKind::Arrow { body, .. } => match body {
-                ArrowBody::Expression(body) => body.depth,
-                // Statement nesting is bounded while parsing the body.
-                ArrowBody::Block(_) => 0,
-            },
+            ExprKind::Arrow {
+                parameters, body, ..
+            } => parameters
+                .iter()
+                .filter_map(|p| p.initializer.as_ref().map(|e| e.depth))
+                .max()
+                .unwrap_or(0)
+                .max(match body {
+                    ArrowBody::Expression(body) => body.depth,
+                    // Statement nesting is bounded while parsing the body.
+                    ArrowBody::Block(_) => 0,
+                }),
             ExprKind::Binary(_, a, b)
             | ExprKind::Assign(a, b)
             | ExprKind::CompoundAssign(_, a, b) => a.depth.max(b.depth),
@@ -1442,7 +1449,20 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Arrow {
             parameters, body, ..
         } => {
-            let strict = strict || matches!(body, ArrowBody::Block(body) if body.is_strict());
+            let own_strict = matches!(body, ArrowBody::Block(body) if body.is_strict());
+            // ECMA-262 15.3.1: a non-simple list forbids an own Use Strict Directive.
+            if own_strict && parameters.iter().any(|p| p.initializer.is_some()) {
+                return Err(early(
+                    expr.span,
+                    "use strict directive with non-simple parameters",
+                ));
+            }
+            let strict = strict || own_strict;
+            for parameter in parameters.iter() {
+                if let Some(initializer) = &parameter.initializer {
+                    validate_expr(initializer, strict)?;
+                }
+            }
             let mut names = BTreeSet::new();
             validate_binding_names(parameters, strict, &mut names)?;
             match body {

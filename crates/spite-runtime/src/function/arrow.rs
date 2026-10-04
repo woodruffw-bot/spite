@@ -43,7 +43,12 @@ impl Realm {
         self.define_builtin_property(
             &function,
             "length",
-            Value::Number(parameters.len() as f64),
+            Value::Number(
+                parameters
+                    .iter()
+                    .take_while(|p| p.initializer.is_none())
+                    .count() as f64,
+            ),
             false,
             span,
         )?;
@@ -65,32 +70,17 @@ impl Realm {
     ) -> Result<Value, Error> {
         let mut bindings = BTreeMap::new();
         for parameter in arrow.parameters.iter() {
-            // Binding name copies are charged before allocation.
+            // All parameters begin uninitialized, including later defaults.
             self.object_work(parameter.span, |_, budget| {
                 budget.charge(parameter.name.len() + 1)
             })?;
             bindings.insert(
                 parameter.name.clone(),
                 BindingState {
-                    value: Some(arguments.next().unwrap_or(Value::Undefined)),
+                    value: None,
                     mutable: true,
                 },
             );
-        }
-        // ECMA-262 10.2.11: simple parameters and vars share an environment.
-        // Repeated vars preserve parameter values and start as undefined otherwise.
-        if let ArrowBody::Block(body) = &arrow.body {
-            for declaration in body.var_declarations() {
-                self.object_work(declaration.span, |_, budget| {
-                    budget.charge(declaration.name.len() + 1)
-                })?;
-                bindings
-                    .entry(declaration.name.clone())
-                    .or_insert(BindingState {
-                        value: Some(Value::Undefined),
-                        mutable: true,
-                    });
-            }
         }
         let environment = self.object_work(span, |objects, budget| {
             objects.create_environment(Some(arrow.environment), bindings, budget)
@@ -99,13 +89,106 @@ impl Realm {
         let caller_depth = self.scopes.len();
         self.scopes.push(environment);
         self.strict = arrow.strict;
-        let result = match &arrow.body {
-            ArrowBody::Expression(body) => self.expression(body),
-            ArrowBody::Block(body) => self.function_body(body, span),
-        };
+        let result = (|| {
+            self.initialize_parameters(&arrow.parameters, &mut arguments)?;
+            self.instantiate_function_vars(&arrow.parameters, &arrow.body, span)?;
+            match &arrow.body {
+                ArrowBody::Expression(body) => self.expression(body),
+                ArrowBody::Block(body) => self.function_body(body, span),
+            }
+        })();
         self.strict = caller_strict;
         self.scopes.truncate(caller_depth);
         result
+    }
+
+    fn initialize_parameters(
+        &mut self,
+        parameters: &[Binding],
+        arguments: &mut std::vec::IntoIter<Value>,
+    ) -> Result<(), Error> {
+        let environment = self.scopes.last().expect("parameter environment").clone();
+        for parameter in parameters {
+            self.tick(parameter.span)?;
+            let mut value = arguments.next().unwrap_or(Value::Undefined);
+            if matches!(value, Value::Undefined) {
+                if let Some(initializer) = &parameter.initializer {
+                    // ECMA-262 8.6.3: defaults are evaluated left to right and name
+                    // anonymous functions only when the initializer is selected.
+                    value = self
+                        .named_expression(initializer, JsString::from(parameter.name.as_str()))?;
+                }
+            }
+            self.objects
+                .environment_mut(&environment)
+                .expect("active environment")
+                .bindings
+                .get_mut(&parameter.name)
+                .expect("parameter exists")
+                .value = Some(value);
+        }
+        Ok(())
+    }
+
+    fn instantiate_function_vars(
+        &mut self,
+        parameters: &[Binding],
+        body: &ArrowBody,
+        span: Span,
+    ) -> Result<(), Error> {
+        let parameter_environment = self.scopes.last().expect("parameter environment").clone();
+        let separate = parameters
+            .iter()
+            .any(|parameter| parameter.initializer.is_some());
+        if separate {
+            // ECMA-262 10.2.11: defaults cannot see body vars, even through closures.
+            self.push_scope(BTreeMap::new(), span)?;
+        }
+        let environment = self.scopes.last().expect("var environment").clone();
+        if let ArrowBody::Block(body) = body {
+            for declaration in body.var_declarations() {
+                self.object_work(declaration.span, |_, budget| {
+                    budget.charge(declaration.name.len() + 1)
+                })?;
+                if self
+                    .objects
+                    .environment(&environment)
+                    .expect("active environment")
+                    .bindings
+                    .contains_key(&declaration.name)
+                {
+                    continue;
+                }
+                // Separate body vars copy a same-named initialized parameter value;
+                // otherwise they start as undefined. Simple lists share bindings.
+                let value = self.object_work(declaration.span, |objects, budget| {
+                    let value = objects
+                        .environment(&parameter_environment)?
+                        .bindings
+                        .get(&declaration.name)
+                        .and_then(|binding| binding.value.as_ref());
+                    match value {
+                        Some(value) => {
+                            budget.value(value)?;
+                            Ok(value.clone())
+                        }
+                        None => Ok(Value::Undefined),
+                    }
+                })?;
+                self.objects
+                    .environment_mut(&environment)
+                    .expect("active environment")
+                    .bindings
+                    .insert(
+                        declaration.name.clone(),
+                        BindingState {
+                            value: Some(value),
+                            mutable: true,
+                        },
+                    );
+            }
+        }
+        Ok(())
     }
 
     fn function_body(&mut self, body: &FunctionBody, span: Span) -> Result<Value, Error> {

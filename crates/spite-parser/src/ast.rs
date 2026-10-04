@@ -340,9 +340,9 @@ pub enum ExprKind {
         /// Argument expressions in source order.
         arguments: Vec<Expr>,
     },
-    /// A non-async arrow with simple identifier parameters.
+    /// A non-async arrow with identifier parameters and optional defaults.
     Arrow {
-        /// Parameters in source order; supported parameters have no initializer.
+        /// Parameters in source order, with optional default-value initializers.
         parameters: Rc<[Binding]>,
         /// Shared body syntax, evaluated when the function is called.
         body: ArrowBody,

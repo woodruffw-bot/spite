@@ -81,16 +81,18 @@ Parser depth and evaluator work limits report host resource errors, not JavaScri
 exceptions. Syntax or semantics that are not implemented must be recorded as gaps.
 Never use unsupported syntax rejection as evidence of conformance to negative tests.
 
-Arrow parsing supports non-async arrows with simple identifier parameters and
-assignment-expression or block bodies (15.3). A bounded token lookahead refines the
+Arrow parsing supports non-async arrows with identifier parameters, optional
+defaults, and assignment-expression or block bodies (15.3). A bounded token lookahead refines the
 parenthesized parameter cover without changing ordinary parenthesized expressions.
 Parameters are unique in both modes, strict binding rules are inherited, and no
 line terminator may precede the arrow. Expression bodies inherit the In grammar
 parameter; block bodies reset In and enable Return. Each function resets control
 targets and labels. Its directive prologue enables strict parameter/body checks,
-including legacy tokens before the directive and in nested functions. Top-level
-lexical declarations cannot conflict with parameters (15.3.1). Defaults,
-rest/pattern parameters, and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
+including legacy tokens before the directive and in nested functions. An own Use
+Strict Directive is forbidden with defaults, while inherited strictness is allowed.
+Defaults parse as AssignmentExpression with In enabled. Top-level
+lexical declarations cannot conflict with parameters (15.3.1). Rest/pattern
+parameters and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
 ## Runtime
@@ -334,14 +336,23 @@ Every call restores caller strictness and active scopes on success or abrupt exi
 The evaluator bounds combined statement/expression nesting across calls to 64,
 as well as call re-entry; ordinary user tail calls await explicit execution frames.
 
-Block bodies instantiate all function vars in the parameter environment before
-execution, preserving existing parameter values and initializing other vars to
+With simple parameter lists, block bodies instantiate all function vars in the
+parameter environment before execution, preserving existing parameter values
+and initializing other vars to
 undefined (10.2.11). Body lexical declarations begin uninitialized; non-strict
 bodies use a separate lexical environment. Nested functions do not contribute
 vars to their enclosing scope. A normal body completion produces undefined.
 Return completions always carry a value, including undefined for bare returns,
 and propagate through statements until invocation consumes them (14.10, 15.3.3).
 Finally may replace a language completion, but cannot intercept host failures.
+
+Parameters begin uninitialized and initialize left to right. A default runs only
+for an undefined argument, with anonymous function name inference (8.6.3).
+Parameter expressions cannot see body declarations, including through captured
+closures. When defaults are present, body vars get a separate environment and
+same-named vars copy the initialized parameter value (10.2.11). Function length
+counts parameters before the first default (15.1.5). Partial initialization and
+escaped default closures remain traced after an abrupt completion.
 
 NamedEvaluation supplies names for binding initializers, bare identifier assignment
 and logical-assignment targets, and ordinary object property values. Parenthesized
