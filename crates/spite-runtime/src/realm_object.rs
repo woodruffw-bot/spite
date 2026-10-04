@@ -734,8 +734,6 @@ fn missing_math_method(key: &JsString) -> bool {
         "cosh",
         "exp",
         "expm1",
-        "fround",
-        "f16round",
         "hypot",
         "log",
         "log1p",

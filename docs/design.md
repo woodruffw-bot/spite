@@ -1218,6 +1218,14 @@ the shared ToUint32 conversion and counts leading zero bits (sec-math.clz32).
 Imul converts left then right, uses safe wrapping u32 multiplication, interprets
 the result as i32, and converts it exactly to Number (sec-math.imul).
 
+Math fround narrows to binary32 with ties to even and widens exactly. F16round
+rounds directly from binary64 using binary16 spacing (sec-math.f16round): a fixed
+2^-24 quantum for subnormals and the exact power of two determined by the normal
+exponent. Exact scaling, round_ties_even, and exact rescaling retain halfway
+behavior without a binary32 intermediate. Magnitudes at or above 65520 overflow
+to signed infinity; smaller underflowed results retain the input sign. No new
+numeric dependency or unstable Rust float type is required.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

@@ -55,6 +55,8 @@ impl Realm {
             | Builtin::MathCeil
             | Builtin::MathClz32
             | Builtin::MathFloor
+            | Builtin::MathFround
+            | Builtin::MathF16round
             | Builtin::MathRound
             | Builtin::MathSign
             | Builtin::MathTrunc => {

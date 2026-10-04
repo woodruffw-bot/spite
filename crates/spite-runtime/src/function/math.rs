@@ -68,6 +68,8 @@ impl Realm {
             Builtin::MathCeil,
             Builtin::MathClz32,
             Builtin::MathFloor,
+            Builtin::MathFround,
+            Builtin::MathF16round,
             Builtin::MathImul,
             Builtin::MathMax,
             Builtin::MathMin,
@@ -100,6 +102,10 @@ impl Realm {
             Builtin::MathCeil => number.ceil(),
             Builtin::MathClz32 => f64::from(to_uint32(number).leading_zeros()),
             Builtin::MathFloor => number.floor(),
+            // sec-math.fround: Rust's narrowing float cast uses ties to even;
+            // widening the binary32 result back to binary64 is exact.
+            Builtin::MathFround => f64::from(number as f32),
+            Builtin::MathF16round => binary16_round(number),
             Builtin::MathRound => round(number),
             Builtin::MathSign => {
                 if number.is_nan() || number == 0.0 {
@@ -160,6 +166,33 @@ impl Realm {
     }
 }
 
+fn binary16_round(number: f64) -> f64 {
+    // sec-math.f16round: direct binary64 -> binary16 rounding, never through
+    // binary32 (which would misround values adjacent to binary16 half ties).
+    if !number.is_finite() || number == 0.0 {
+        return number;
+    }
+    let magnitude = number.abs();
+    if magnitude >= 65520.0 {
+        // Halfway between the largest finite half (65504) and 2^16 overflows
+        // under roundTiesToEven, just like larger magnitudes.
+        return f64::INFINITY.copysign(number);
+    }
+    let quantum = if magnitude < 1.0 / 16384.0 {
+        // Subnormal binary16 spacing is fixed at 2^-24.
+        1.0 / 16777216.0
+    } else {
+        // Normal spacing is 2^(floor(log2(magnitude)) - 10). The bounded
+        // magnitude has a binary64 exponent field >= 1009, so subtraction
+        // cannot underflow. Constructing this power of two is exact.
+        let exponent = (magnitude.to_bits() >> 52) & 0x7ff;
+        f64::from_bits((exponent - 10) << 52)
+    };
+    // Scaling by this power of two is exact even for the smallest
+    // binary64 subnormal. The rounded integer and rescaling are also exact.
+    ((magnitude / quantum).round_ties_even() * quantum).copysign(number)
+}
+
 fn round(number: f64) -> f64 {
     // Math.round (sec-math.round): halfway ties go toward +Infinity. Preserve -0,
     // and avoid adding 0.5 to the input: that addition can round near 0.5 or
@@ -175,5 +208,54 @@ fn round(number: f64) -> f64 {
         lower
     } else {
         lower + 1.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::binary16_round;
+
+    fn half_value(bits: u16) -> f64 {
+        let exponent = i32::from(bits >> 10);
+        let fraction = f64::from(bits & 1023);
+        if exponent == 0 {
+            fraction / 16777216.0
+        } else {
+            (1024.0 + fraction) * 2.0_f64.powi(exponent - 25)
+        }
+    }
+
+    fn check_both_signs(input: f64, expected: f64) {
+        assert_eq!(
+            binary16_round(input).to_bits(),
+            expected.to_bits(),
+            "{input}"
+        );
+        assert_eq!(
+            binary16_round(-input).to_bits(),
+            (-expected).to_bits(),
+            "{}",
+            -input
+        );
+    }
+
+    #[test]
+    fn every_finite_half_value_and_adjacent_rounding_boundary_is_exact() {
+        for bits in 0..=0x7bff {
+            let lower = half_value(bits);
+            check_both_signs(lower, lower);
+            if bits < 0x7bff {
+                let upper = half_value(bits + 1);
+                let midpoint = (lower + upper) / 2.0;
+                let even = if bits & 1 == 0 { lower } else { upper };
+                check_both_signs(f64::from_bits(midpoint.to_bits() - 1), lower);
+                check_both_signs(midpoint, even);
+                check_both_signs(f64::from_bits(midpoint.to_bits() + 1), upper);
+            }
+        }
+        check_both_signs(f64::from_bits(65520.0_f64.to_bits() - 1), 65504.0);
+        check_both_signs(65520.0, f64::INFINITY);
+        check_both_signs(f64::MAX, f64::INFINITY);
+        check_both_signs(f64::from_bits(1), 0.0);
     }
 }

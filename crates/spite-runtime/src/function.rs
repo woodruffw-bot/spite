@@ -52,6 +52,8 @@ pub(crate) enum Builtin {
     MathCeil,
     MathClz32,
     MathFloor,
+    MathFround,
+    MathF16round,
     MathImul,
     MathMax,
     MathMin,
@@ -230,6 +232,8 @@ impl Builtin {
             Self::MathCeil => "ceil",
             Self::MathClz32 => "clz32",
             Self::MathFloor => "floor",
+            Self::MathFround => "fround",
+            Self::MathF16round => "f16round",
             Self::MathImul => "imul",
             Self::MathMax => "max",
             Self::MathMin => "min",
@@ -444,6 +448,8 @@ impl Builtin {
             | Self::MathCeil
             | Self::MathClz32
             | Self::MathFloor
+            | Self::MathFround
+            | Self::MathF16round
             | Self::MathRound
             | Self::MathSign
             | Self::MathTrunc
