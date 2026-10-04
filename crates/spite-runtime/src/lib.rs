@@ -1600,7 +1600,6 @@ fn standard_global(name: &str) -> bool {
             | "FinalizationRegistry"
             | "Iterator"
             | "Promise"
-            | "Reflect"
             | "Proxy"
             | "DisposableStack"
             | "AsyncDisposableStack"

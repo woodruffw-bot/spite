@@ -22,6 +22,7 @@ pub(crate) use method::MethodFunction;
 mod number;
 mod object;
 mod ordinary;
+mod reflect;
 mod spread;
 mod string;
 mod symbol;
@@ -34,6 +35,8 @@ pub(crate) enum Builtin {
     FunctionPrototype,
     FunctionCall,
     FunctionApply,
+    ReflectApply,
+    ReflectConstruct,
     FunctionBind,
     FunctionHasInstance,
     FunctionToString,
@@ -189,6 +192,8 @@ impl Builtin {
             Self::FunctionPrototype | Self::ThrowTypeError => "",
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
+            Self::ReflectApply => "apply",
+            Self::ReflectConstruct => "construct",
             Self::FunctionBind => "bind",
             Self::FunctionHasInstance => "[Symbol.hasInstance]",
             Self::FunctionToString
@@ -429,6 +434,7 @@ impl Builtin {
             | Self::StringSplit
             | Self::StringReplace
             | Self::StringReplaceAll
+            | Self::ReflectConstruct
             | Self::ParseInt
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn
@@ -438,7 +444,7 @@ impl Builtin {
             | Self::ObjectAssign
             | Self::ObjectGroupBy
             | Self::ObjectIs => 2.0,
-            Self::ObjectDefineProperty => 3.0,
+            Self::ObjectDefineProperty | Self::ReflectApply => 3.0,
             _ => 0.0,
         }
     }
@@ -497,6 +503,7 @@ pub(super) struct Intrinsics {
     pub symbol: symbol::SymbolIntrinsics,
     pub array: array::ArrayIntrinsics,
     pub iterator: iterator::IteratorIntrinsics,
+    pub reflect: reflect::ReflectIntrinsics,
 }
 
 impl Intrinsics {
@@ -525,6 +532,7 @@ impl Intrinsics {
         .chain(self.symbol.roots())
         .chain(self.array.roots())
         .chain(self.iterator.roots())
+        .chain(self.reflect.roots())
     }
 }
 
@@ -636,6 +644,7 @@ impl Realm {
         let symbol = self.symbol_intrinsics(&object_prototype, &function_prototype, span)?;
         let iterator = self.iterator_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
+        let reflect = self.reflect_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -660,6 +669,7 @@ impl Realm {
             symbol,
             array,
             iterator,
+            reflect,
         });
         Ok(object_prototype)
     }
@@ -893,6 +903,25 @@ impl Realm {
                     };
                     function = this;
                     this = this_argument;
+                    arguments = values.into_iter();
+                    continue;
+                }
+                Builtin::ReflectApply => {
+                    // 28.1.1: check the target before CreateListFromArrayLike.
+                    // Transfer to Call as a tail call, as for Function.apply.
+                    let target = arguments.next().unwrap_or(Value::Undefined);
+                    if !self.is_callable(&target, span)? {
+                        return Err(Self::exception(
+                            ExceptionKind::TypeError,
+                            span,
+                            "Reflect.apply requires a callable target",
+                        ));
+                    }
+                    let receiver = arguments.next().unwrap_or(Value::Undefined);
+                    let list = arguments.next().unwrap_or(Value::Undefined);
+                    let values = self.argument_list_from_array_like(list, span)?;
+                    function = target;
+                    this = receiver;
                     arguments = values.into_iter();
                     continue;
                 }

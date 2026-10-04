@@ -363,7 +363,7 @@ fn unsupported_features_cannot_masquerade_as_runtime_exceptions() {
         Err(Error::Unsupported { .. })
     ));
     assert!(matches!(
-        Realm::default().eval("Reflect"),
+        Realm::default().eval("Proxy"),
         Err(Error::Unsupported { .. })
     ));
     for name in ["console", "process", "require", "setTimeout", "fetch"] {

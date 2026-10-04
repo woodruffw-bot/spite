@@ -1143,6 +1143,18 @@ binding through nested scopes and after return (9.4.5, 13.3.12). Bound construct
 exposes the substituted target, and nested ordinary calls reset the binding.
 Derived constructors remain unimplemented.
 
+Reflect is an ordinary object inheriting Object.prototype, with a configurable,
+non-writable Symbol.toStringTag and retained method roots (28.1). Reflect.apply
+checks callability before CreateListFromArrayLike and transfers to the existing
+tail-call dispatch with the original receiver (28.1.1). Reflect.construct checks
+target and present newTarget before reading the array-like list; an absent third
+argument defaults to target, while explicit undefined is rejected (28.1.2).
+Construction reuses ordinary, builtin, and iterative bound dispatch with an
+explicit newTarget, preserving prototype lookup order and bound substitution.
+Neither method reads Symbol.iterator. Argument-list copies, opted-in quotas,
+platform capacity, and native-stack guards follow existing call rules. Remaining
+Reflect methods and own-key reflection report Unsupported until implemented.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

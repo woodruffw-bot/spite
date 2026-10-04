@@ -1,7 +1,7 @@
 //! Base ordinary construction and iterative bound forwarding (10.2.2, 10.4.1.2).
 
 use super::{Builtin, Callable};
-use crate::{Error, ExceptionKind, Realm, Value};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {
@@ -11,8 +11,18 @@ impl Realm {
         arguments: Vec<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        self.construct_with_new_target(function, arguments, None, span)
+    }
+
+    pub(crate) fn construct_with_new_target(
+        &mut self,
+        function: Value,
+        arguments: Vec<Value>,
+        new_target: Option<ObjectHandle>,
+        span: Span,
+    ) -> Result<Value, Error> {
         self.enter_call(span)?;
-        let result = self.construct_inner(function, arguments, span);
+        let result = self.construct_inner(function, arguments, new_target, span);
         self.call_depth -= 1;
         result
     }
@@ -21,18 +31,12 @@ impl Realm {
         &mut self,
         function: Value,
         mut arguments: Vec<Value>,
+        new_target: Option<ObjectHandle>,
         span: Span,
     ) -> Result<Value, Error> {
         self.check_argument_count(arguments.len(), span)?;
         // EvaluateNew (13.3.5.1.1) evaluates every argument before IsConstructor.
-        let constructor = if let Value::Object(object) = &function {
-            self.object_work(span, |objects, _| {
-                Ok(objects.inspect(object)?.is_constructor())
-            })?
-        } else {
-            false
-        };
-        if !constructor {
+        if !self.is_constructor(&function, span)? {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
@@ -42,7 +46,14 @@ impl Realm {
         let Value::Object(mut function) = function else {
             unreachable!("constructor object")
         };
-        let mut new_target = function.clone();
+        let mut new_target = new_target.unwrap_or_else(|| function.clone());
+        if !self.is_constructor(&Value::Object(new_target.clone()), span)? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "newTarget is not a constructor",
+            ));
+        }
         loop {
             let callable = self.object_work(span, |objects, budget| {
                 objects
@@ -166,6 +177,16 @@ impl Realm {
                 }
                 _ => unreachable!("constructibility is enabled only for implemented constructors"),
             }
+        }
+    }
+
+    pub(crate) fn is_constructor(&mut self, value: &Value, span: Span) -> Result<bool, Error> {
+        if let Value::Object(object) = value {
+            self.object_work(span, |objects, _| {
+                Ok(objects.inspect(object)?.is_constructor())
+            })
+        } else {
+            Ok(false)
         }
     }
 }

@@ -16,7 +16,10 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
-            Builtin::FunctionCall | Builtin::FunctionApply | Builtin::FunctionBind => {
+            Builtin::FunctionCall
+            | Builtin::FunctionApply
+            | Builtin::FunctionBind
+            | Builtin::ReflectApply => {
                 unreachable!("tail transfers are handled by callable dispatch")
             }
             Builtin::FunctionToString => {
@@ -48,6 +51,12 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::ReflectConstruct => self.reflect_construct(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next(),
+                span,
+            ),
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
             Builtin::IteratorTagGet => Ok(Value::String(JsString::from("Iterator"))),
             Builtin::IteratorTagSet => {

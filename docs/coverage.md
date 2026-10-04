@@ -195,6 +195,16 @@ Construction shares call nesting and argument limits; deep bound chains are iter
 new.target is validated in ordinary functions, binds undefined on calls or the
 constructor on construction, and is lexically captured/traced through arrows.
 
+Reflect exposes apply, construct, and Symbol.toStringTag on an ordinary object.
+Apply validates callability before reading length and ordered live indices, then
+calls with the original receiver. Construct validates target and an explicitly
+present newTarget before reading arguments, preserves custom prototype selection,
+and forwards bound targets iteratively. Explicit undefined newTarget is rejected;
+an absent argument defaults to target. Tests cover sparse lists, abrupt getters,
+constructor return rules, builtin and bound construction, metadata, collection,
+large default argument lists, and opt-in host failures. Remaining Reflect methods
+and own-key reflection remain Unsupported.
+
 Boolean calls, construction, prototype methods, descriptors, and boxed receivers
 are implemented. Boolean.prototype itself holds false. Methods validate own
 BooleanData slots; ordinary objects inheriting the prototype fail that check.
@@ -514,7 +524,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 175 retained entries outside the per-Script work
+Realm initialization creates 178 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
