@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 86 unmodified test fixtures and two harness files come from
+These 105 unmodified test fixtures and two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -43,7 +43,9 @@ positive test realm. Nine positive files cover calls/construction, new.target
 whitespace/comments, lexical new.target, lexical arguments, and lexical this
 through call/apply/bind. Twelve Boolean files cover primitive conversion,
 construction, constructor links, and the fallback object tag after deleting
-Boolean.prototype.toString. Each runs in both required Script modes. The `harness`
+Boolean.prototype.toString. Nineteen Number files cover explicit BigInt
+conversion, numeric predicate boundaries, and fixed-point formatting including
+exact decimal rounding. Each runs in both required Script modes. The `harness`
 manifest mode verifies support-file bytes without counting them as test cases;
 `script-pass` selects non-raw positive tests. Harness frontmatter describes helper
 definitions and is not parsed as test execution metadata.
@@ -57,12 +59,12 @@ and agent helpers remain separate harness gaps.
 
 ## Scope and maintenance
 
-The `spite-test262` command runs 118 variants from 67 reviewed sources: the eleven
+The `spite-test262` command runs 156 variants from 86 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
-and capture tests and twelve Boolean tests. That means four raw positives,
-42 positives using the upstream harness, and 72 reviewed parse-negative variants.
+and capture tests, twelve Boolean tests, and nineteen Number tests. That means four raw positives,
+80 positives using the upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
