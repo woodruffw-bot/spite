@@ -25,7 +25,7 @@ not an alternative language specification.
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
 | Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
-| Math | Fixed constants/tag, abs/sign, integral and binary32/binary16 rounding, extrema, clz32/imul, pow/sqrt/cbrt/hypot, logarithmic/exponential, trigonometric and hyperbolic methods |
+| Math | Fixed constants/tag, abs/sign, integral and binary32/binary16 rounding, extrema, clz32/imul, pow/sqrt/cbrt/hypot, logarithmic/exponential, trigonometric/hyperbolic methods and exact iterable sumPrecise |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
@@ -305,6 +305,17 @@ avoids intermediate range failures and retains small contributions. Regressions
 cover very large/subnormal norms, many small terms, argument permutations,
 ordered abrupt conversion, primitive type errors, host aborts, standard function
 descriptors, and collection.
+
+SumPrecise validates Number elements without coercion, continues iteration after
+nonfinite results, closes on element/count errors, and leaves step failures open.
+Finite values accumulate exactly and round once with ties to even, including
+cancellation after transient overflow and sticky bits below a halfway boundary.
+Regressions cover signed zero, iterator receivers/lookup order, closing precedence,
+primitive type rejection, host failures and opt-in work limits, independence from
+BigInt magnitude quotas, metadata, and collection. The numerical suite checks
+464 independently generated Fraction references in both argument orders and
+round-trips representative significands through every normal exponent and every
+subnormal single-bit magnitude. CI verifies the reference fixture generator.
 
 Boolean calls, construction, prototype methods, descriptors, and boxed receivers
 are implemented. Boolean.prototype itself holds false. Methods validate own
@@ -625,7 +636,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 226 retained entries outside the per-Script work
+Realm initialization creates 227 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

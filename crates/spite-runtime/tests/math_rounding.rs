@@ -142,5 +142,5 @@ fn method_metadata_and_intrinsic_retention_survive_public_deletion() {
             "{source}"
         );
     }
-    check("Reflect.has(Math,'random') && Reflect.has(Math,'sumPrecise')");
+    check("Reflect.has(Math,'random') && typeof Math.sumPrecise==='function'");
 }

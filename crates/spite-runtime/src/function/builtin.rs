@@ -86,6 +86,9 @@ impl Realm {
             | Builtin::MathTrunc => {
                 self.math_unary(builtin, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::MathSumPrecise => {
+                self.math_sum_precise(arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::MathHypot => self.math_hypot(arguments, span),
             Builtin::MathMax => self.math_extremum(arguments, true, span),
             Builtin::MathMin => self.math_extremum(arguments, false, span),

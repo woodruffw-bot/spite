@@ -1,5 +1,7 @@
 //! Math object constants and basic numeric operations (21.3.1, 21.3.2).
 
+mod sum;
+
 use super::Builtin;
 use crate::{
     Error, ObjectHandle, Realm, Value,
@@ -100,6 +102,7 @@ impl Realm {
             Builtin::MathSin,
             Builtin::MathSinh,
             Builtin::MathSqrt,
+            Builtin::MathSumPrecise,
             Builtin::MathTan,
             Builtin::MathTanh,
             Builtin::MathTrunc,

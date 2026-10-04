@@ -1272,6 +1272,22 @@ square overflow/underflow and retaining small contributions beside larger ones.
 Rescaling has no observable effect and stores no second argument list. Finite
 results are implementation approximations; final overflow may return Infinity.
 
+Math sumPrecise consumes a synchronous iterable without converting its elements
+([sec-math.sumprecise](https://tc39.es/ecma262/#sec-math.sumprecise)). Non-Number
+elements throw TypeError and close the iterator; IteratorStepValue errors do not
+close. All steps continue after NaN or infinity, so later failures remain visible.
+The 2^53-1 element bound is checked after each successful step and produces a
+RangeError with iterator closing. Host failures remain outside JavaScript cleanup.
+
+Finite sums use separate positive/negative integer accumulators in units of
+2^-1074. Each has 34 u64 words: finite magnitudes below 2^1024 and the specification
+count bound keep either total below 2^2151 units, within their 2176-bit capacity.
+This is a specification-derived storage size, independent of host quotas and
+JavaScript BigInt. Subtract the exact magnitudes, then round once using retained,
+guard, and sticky bits with ties to even and signed overflow. Subnormal sums
+are exact in the accumulator unit. Empty/all-minus-zero inputs return -0;
+other exact cancellation returns +0. No external numeric dependency is needed.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

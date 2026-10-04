@@ -81,6 +81,7 @@ pub(crate) enum Builtin {
     MathSin,
     MathSinh,
     MathSqrt,
+    MathSumPrecise,
     MathTan,
     MathTanh,
     MathTrunc,
@@ -285,6 +286,7 @@ impl Builtin {
             Self::MathSin => "sin",
             Self::MathSinh => "sinh",
             Self::MathSqrt => "sqrt",
+            Self::MathSumPrecise => "sumPrecise",
             Self::MathTan => "tan",
             Self::MathTanh => "tanh",
             Self::MathTrunc => "trunc",
@@ -519,6 +521,7 @@ impl Builtin {
             | Self::MathSin
             | Self::MathSinh
             | Self::MathSqrt
+            | Self::MathSumPrecise
             | Self::MathTan
             | Self::MathTanh
             | Self::MathTrunc
