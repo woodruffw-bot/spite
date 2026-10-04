@@ -169,13 +169,17 @@ fn function_metadata_is_readonly_but_configurable() {
 }
 
 #[test]
-fn incomplete_function_intrinsics_are_guarded() {
+fn function_constructor_identity_is_exposed_while_dynamic_compilation_is_guarded() {
     assert_eq!(
         Realm::default().eval("'constructor' in ({}).toString"),
         Ok(Value::Boolean(true))
     );
+    assert_eq!(
+        Realm::default().eval("({}).toString.constructor===Function"),
+        Ok(Value::Boolean(true))
+    );
     assert!(matches!(
-        Realm::default().eval("({}).toString.constructor"),
+        Realm::default().eval("Function('return 1;')"),
         Err(Error::Unsupported { .. })
     ));
 }

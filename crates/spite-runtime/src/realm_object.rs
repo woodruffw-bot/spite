@@ -647,7 +647,6 @@ impl Realm {
     ) -> Result<Vec<PropertyKey>, Error> {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         if self.global_object.as_ref() == Some(object)
-            || object == &intrinsics.function_prototype
             || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
@@ -712,8 +711,7 @@ impl Realm {
         let Some(intrinsics) = &self.intrinsics else {
             return false;
         };
-        (object == &intrinsics.function_prototype && key_is(key, "constructor"))
-            || (object == &intrinsics.string.prototype && missing_string_method(key))
+        (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
             || (object == &intrinsics.math.object && missing_math_method(key))

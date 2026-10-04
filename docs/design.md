@@ -796,6 +796,16 @@ non-enumerable caller/arguments accessors that share the realm’s non-extensibl
 %ThrowTypeError% function (9.3.2, 10.2.4). Its name/length descriptors are frozen.
 Reads and writes throw TypeError in both modes, while presence and own-property
 deletion do not invoke accessors. Unavailable standard methods remain Unsupported.
+
+The Function global exposes the intrinsic constructor with standard name, length,
+and immutable prototype descriptors, inheriting the callable Function.prototype.
+The prototype's writable/configurable constructor link completes its own-key
+reflection and integrity operations (20.2.2.2, 20.2.3.1). The constructor has
+call/construct metadata for branding and newTarget validation, while invoking it
+returns Unsupported until dynamic global-scope compilation is implemented.
+This gap is never converted to a JavaScript TypeError or accepted as a passing
+negative. The constructor and prototype remain intrinsic roots after deletion.
+
 Native Object.prototype.valueOf returns fresh Boolean/Number/String wrappers for their primitive
 receivers; other primitive wrappers remain Unsupported. Arrow closures use the same callable dispatch with
 their captured environment identity.

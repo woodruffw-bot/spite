@@ -16,6 +16,10 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::Function => Err(Self::unsupported(
+                span,
+                "dynamic Function construction is not implemented",
+            )),
             Builtin::FunctionCall
             | Builtin::FunctionApply
             | Builtin::FunctionBind

@@ -33,6 +33,7 @@ pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
+    Function,
     FunctionPrototype,
     FunctionCall,
     FunctionApply,
@@ -229,6 +230,7 @@ impl Builtin {
     // [[InitialName]] does not change when the public name property is altered.
     fn initial_name(self) -> &'static str {
         match self {
+            Self::Function => "Function",
             Self::FunctionPrototype | Self::ThrowTypeError => "",
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
@@ -416,6 +418,7 @@ impl Builtin {
     fn length(self) -> f64 {
         match self {
             Self::FunctionCall
+            | Self::Function
             | Self::IteratorTagSet
             | Self::FunctionHasInstance
             | Self::FunctionBind
@@ -607,6 +610,7 @@ pub(super) struct Intrinsics {
     pub is_nan: ObjectHandle,
     pub object_prototype: ObjectHandle,
     pub function_prototype: ObjectHandle,
+    pub function_constructor: ObjectHandle,
     pub object_to_string: ObjectHandle,
     pub object_value_of: ObjectHandle,
     pub throw_type_error: ObjectHandle,
@@ -633,6 +637,7 @@ impl Intrinsics {
             &self.is_nan,
             &self.object_prototype,
             &self.function_prototype,
+            &self.function_constructor,
             &self.object_to_string,
             &self.object_value_of,
             &self.throw_type_error,
@@ -666,6 +671,30 @@ impl Realm {
             self.object_work(span, |objects, _| objects.create_object_prototype())?;
         let function_prototype =
             self.new_builtin(&object_prototype, Builtin::FunctionPrototype, span)?;
+        // 20.2.2.2 / 20.2.3.1: expose the intrinsic graph independently of
+        // dynamic Function compilation, which remains an explicit host gap.
+        let function_constructor =
+            self.new_builtin(&function_prototype, Builtin::Function, span)?;
+        self.object_work(span, |objects, budget| {
+            objects.define(
+                &function_constructor,
+                JsString::from("prototype"),
+                DataDescriptor {
+                    value: Some(Value::Object(function_prototype.clone())),
+                    writable: Some(false),
+                    enumerable: Some(false),
+                    configurable: Some(false),
+                },
+                budget,
+            )
+        })?;
+        self.define_builtin_property(
+            &function_prototype,
+            "constructor",
+            Value::Object(function_constructor.clone()),
+            true,
+            span,
+        )?;
         let object_to_string =
             self.new_builtin(&function_prototype, Builtin::ObjectToString, span)?;
         let object_value_of =
@@ -776,6 +805,7 @@ impl Realm {
             is_nan,
             object_prototype: object_prototype.clone(),
             function_prototype,
+            function_constructor,
             object_to_string,
             object_value_of,
             throw_type_error,

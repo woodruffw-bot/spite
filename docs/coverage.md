@@ -20,7 +20,7 @@ not an alternative language specification.
 | Arrays | Calls/new, of, from, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
-| Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
+| Calls | Builtin, arrow, and ordinary calls, standard Function intrinsic graph/metadata/branding, strict/global/boxed receivers, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default/rest parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
@@ -148,6 +148,13 @@ object edges survive collection and unreachable cycles are reclaimed. Re-entrant
 getter/coercion calls have a host nesting limit of 32; tail transfers are iterative. Embedding threads require
 at least a 2 MiB native stack, exercised by recursion regressions in CI.
 
+The Function global exposes the standard intrinsic constructor/prototype graph,
+name/length/prototype descriptors, inherited branding, and complete own reflection.
+Tests cover prototype constructor links, restricted accessors, integrity operations,
+newTarget validation, and collection after public deletion. Calling or constructing
+Function still returns Unsupported until dynamic global-scope compilation is
+implemented; catch/finally cannot disguise that gap as a JavaScript exception.
+
 Arrows with identifier parameters and expression or block bodies execute with shared lexical captures,
 fresh mutable parameter bindings, missing/extra argument handling, inherited and
 body-local strictness, unique names, source retention, and bounded nesting.
@@ -175,7 +182,7 @@ live, skips Symbols, and suppresses inherited names even when a present own key
 is non-enumerable. Deleted keys do not suppress inherited names. Values and custom
 iterator hooks are never read. Tests cover mutation, ordered Array indices,
 primitive boxing, nullish skipping, closures, TDZ, and completion values. Reaching
-incomplete String/Function/shared-Iterator prototypes remains Unsupported; fully
+incomplete String/shared-Iterator prototypes remains Unsupported; fully
 enumerating those chains awaits their missing methods. The non-strict Annex B
 initialized-var extension remains a separate unsupported feature.
 
@@ -605,7 +612,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 218 retained entries outside the per-Script work
+Realm initialization creates 219 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

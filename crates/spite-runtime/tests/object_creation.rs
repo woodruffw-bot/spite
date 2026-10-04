@@ -136,10 +136,12 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
         ));
     }
     check("Object.getPrototypeOf(Object.create(null,1n))===null");
+    check(
+        "let o={};Object.defineProperties(o,Function.prototype)===o && Object.keys(o).length===0",
+    );
     for source in [
         "Object.defineProperties({},String.prototype)",
         "Object.defineProperties({},globalThis)",
-        "Object.defineProperties({},Object.getPrototypeOf(Object))",
     ] {
         assert!(
             matches!(

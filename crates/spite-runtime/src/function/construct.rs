@@ -63,6 +63,12 @@ impl Realm {
                     .copy_with_budget(budget)
             })?;
             match callable {
+                Callable::Builtin(Builtin::Function) => {
+                    return Err(Self::unsupported(
+                        span,
+                        "dynamic Function construction is not implemented",
+                    ));
+                }
                 Callable::Bound(bound) => {
                     let count = bound
                         .arguments
@@ -175,7 +181,7 @@ impl Realm {
                         .object_work(span, |objects, _| objects.create_number(&prototype, value))
                         .map(Value::Object);
                 }
-                _ => unreachable!("constructibility is enabled only for implemented constructors"),
+                _ => unreachable!("constructibility is enabled only for known constructors"),
             }
         }
     }

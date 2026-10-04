@@ -150,6 +150,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse ordinary object methods/getters/setters with scoped early errors.
 - [x] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
+- [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.
+- [ ] Implement dynamic Function construction and global-scope compilation.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.
 - [x] Add bound callable objects, capture tracing, and Function.prototype bind.
