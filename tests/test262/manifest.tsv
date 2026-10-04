@@ -126,3 +126,8 @@ script-pass	24de3d91890f50c15f5ad882d060534727ff706c738ade38e1be4a404694f1d4	tes
 script-pass	f137231cd334afdb67c598f2aebb6e40cb09dd7f783b4dc1057d8ab6e314cf07	test/built-ins/parseInt/S15.1.2.2_A4.2_T1.js
 script-pass	745937f849d52ed034e55a39c794f614d0b4b4f8c6a30f4fe99e7962331b8686	test/built-ins/parseInt/S15.1.2.2_A5.1_T1.js
 script-pass	c6439581d33e0c455a9d3e02bc94afb66aba41625d6f60eaa71e494a5799a40e	test/built-ins/parseInt/S15.1.2.2_A5.2_T1.js
+script-pass	aaf37da7f09b3bc14aa59d832706eecb7bd700d665a66c60a8c0de6337792cc1	test/built-ins/isFinite/S15.1.2.5_A2.6.js
+script-pass	9871fa3a1432142028bc0191c11cdd0cf8486b423854dc068988645c8a76c34f	test/built-ins/isFinite/return-abrupt-from-tonumber-number.js
+script-pass	694ac0e4a9787aab12308d730167691419bfd832a3c690b01a0affcdda6503ce	test/built-ins/isFinite/return-false-on-nan-or-infinities.js
+script-pass	4cccdbb2a5cca52f5373cd5b633689c0936477c2b221dbdc2fdbc92dcdce89ba	test/built-ins/isNaN/S15.1.2.4_A2.6.js
+script-pass	27eb3f288d0cf6416f9fc6c6ab8d0cba63b355e9e3727e2dab0f939e2785a880	test/built-ins/isNaN/return-abrupt-from-tonumber-number.js

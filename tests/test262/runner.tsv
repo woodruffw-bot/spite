@@ -105,3 +105,8 @@ test/built-ins/parseInt/S15.1.2.2_A4.1_T1.js	-	-	-
 test/built-ins/parseInt/S15.1.2.2_A4.2_T1.js	-	-	-
 test/built-ins/parseInt/S15.1.2.2_A5.1_T1.js	-	-	-
 test/built-ins/parseInt/S15.1.2.2_A5.2_T1.js	-	-	-
+test/built-ins/isFinite/S15.1.2.5_A2.6.js	-	-	-
+test/built-ins/isFinite/return-abrupt-from-tonumber-number.js	-	-	-
+test/built-ins/isFinite/return-false-on-nan-or-infinities.js	-	-	-
+test/built-ins/isNaN/S15.1.2.4_A2.6.js	-	-	-
+test/built-ins/isNaN/return-abrupt-from-tonumber-number.js	-	-	-
