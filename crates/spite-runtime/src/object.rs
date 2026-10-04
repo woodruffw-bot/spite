@@ -55,6 +55,7 @@ pub struct OrdinaryObject {
     callable: Option<Callable>,
     constructible: bool,
     primitive_data: Option<PrimitiveData>,
+    error_data: bool,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -74,6 +75,7 @@ impl OrdinaryObject {
             callable: None,
             constructible: false,
             primitive_data: None,
+            error_data: false,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -93,6 +95,11 @@ impl OrdinaryObject {
     /// Returns whether the object has a [[Construct]] internal method.
     pub fn is_constructor(&self) -> bool {
         self.constructible
+    }
+
+    /// Returns whether the object has the ErrorData internal slot.
+    pub fn is_error(&self) -> bool {
+        self.error_data
     }
 
     pub(crate) fn is_arguments(&self) -> bool {
@@ -216,6 +223,7 @@ impl Trace for OrdinaryObject {
         };
         std::iter::once(self.prototype.as_ref())
             .chain(self.primitive_data.iter().map(|_| None))
+            .chain(self.error_data.then_some(None))
             .chain(std::iter::once(capture))
             .chain(self.parameter_map.iter().flat_map(|map| {
                 std::iter::once(Some(&map.environment.0)).chain(map.names.values().map(|_| None))

@@ -175,10 +175,10 @@ fn restricted_global_values_follow_existing_writability_rules() {
 #[test]
 fn declaration_work_consumes_budget_even_in_unreachable_code() {
     let mut realm = Realm::new(Limits {
-        max_steps: 64,
+        max_steps: 1_000,
         ..Limits::default()
     });
-    let names = (0..128)
+    let names = (0..2_000)
         .map(|i| format!("v{i}"))
         .collect::<Vec<_>>()
         .join(",");

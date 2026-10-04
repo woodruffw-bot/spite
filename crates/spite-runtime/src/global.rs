@@ -69,6 +69,18 @@ impl Realm {
         for (name, function) in numeric_functions {
             self.define_builtin_property(&object, name, Value::Object(function), true, span)?;
         }
+        let errors: Vec<_> = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .errors
+            .entries
+            .iter()
+            .map(|entry| (entry.kind.name(), entry.constructor.clone()))
+            .collect();
+        for (name, constructor) in errors {
+            self.define_builtin_property(&object, name, Value::Object(constructor), true, span)?;
+        }
         self.global_object = Some(object);
         Ok(())
     }

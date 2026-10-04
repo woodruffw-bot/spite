@@ -443,6 +443,22 @@ objects from Number.isFinite and Number.isNaN, which never coerce their argument
 The global functions ignore their receiver and additional arguments after normal
 argument evaluation. Their intrinsic roots survive deletion of public bindings.
 
+Error objects include Error and the six NativeError constructors,
+Error.prototype.toString, Error.isError, and ordered message/cause initialization
+(20.5). Only instances carry ErrorData; prototype
+objects do not. NativeError constructors inherit Error, and their prototypes
+inherit Error.prototype. Constructor calls allocate before message conversion,
+then inspect object-valued options for an inherited or own cause property. Keep
+ErrorData private and trace cause values through ordinary properties. AggregateError
+depends on iteration and remains a separate increment.
+
+Then materialize built-in runtime exceptions as Error objects when a catch binding
+needs a JavaScript value, using intrinsic prototypes independently of replaced
+global bindings. Preserve the host-facing exception category, message, and source
+span for uncaught failures. Host Unsupported/Limit failures must still bypass
+JavaScript handlers. Standard Error properties are the entire exposed interface;
+stack traces and host-specific fields are outside the language baseline.
+
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
 Function.prototype.toString emits `function NAME() { [native code] }` for builtin

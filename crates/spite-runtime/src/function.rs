@@ -12,6 +12,7 @@ mod boolean;
 mod bound;
 mod builtin;
 mod construct;
+mod error;
 mod instance;
 mod number;
 mod ordinary;
@@ -29,6 +30,9 @@ pub(crate) enum Builtin {
     ThrowTypeError,
     ObjectToString,
     ObjectValueOf,
+    Error(error::ErrorConstructor),
+    ErrorToString,
+    ErrorIsError,
     Boolean,
     BooleanToString,
     BooleanValueOf,
@@ -60,10 +64,13 @@ impl Builtin {
             Self::FunctionToString
             | Self::ObjectToString
             | Self::BooleanToString
+            | Self::ErrorToString
             | Self::NumberToString => "toString",
             Self::ObjectValueOf | Self::BooleanValueOf | Self::NumberValueOf => "valueOf",
             Self::Boolean => "Boolean",
             Self::Number => "Number",
+            Self::Error(kind) => kind.name(),
+            Self::ErrorIsError => "isError",
             Self::NumberIsFinite | Self::IsFinite => "isFinite",
             Self::NumberIsNaN | Self::IsNaN => "isNaN",
             Self::NumberIsInteger => "isInteger",
@@ -83,6 +90,8 @@ impl Builtin {
             | Self::FunctionBind
             | Self::Boolean
             | Self::Number
+            | Self::Error(_)
+            | Self::ErrorIsError
             | Self::NumberToString
             | Self::NumberToFixed
             | Self::NumberToPrecision
@@ -130,6 +139,7 @@ impl Callable {
 
 #[derive(Debug)]
 pub(super) struct Intrinsics {
+    pub errors: error::ErrorIntrinsics,
     pub is_finite: ObjectHandle,
     pub is_nan: ObjectHandle,
     pub object_prototype: ObjectHandle,
@@ -163,6 +173,7 @@ impl Intrinsics {
         .into_iter()
         .chain(self.boolean.roots())
         .chain(self.number.roots())
+        .chain(self.errors.roots())
     }
 }
 
@@ -250,9 +261,11 @@ impl Realm {
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
         let is_nan = self.new_builtin(&function_prototype, Builtin::IsNaN, span)?;
+        let errors = self.error_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
+            errors,
             is_finite,
             is_nan,
             object_prototype: object_prototype.clone(),

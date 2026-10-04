@@ -173,7 +173,17 @@ impl Objects {
         self.inspect(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Builtin(builtin));
-        object.constructible = matches!(builtin, Builtin::Boolean | Builtin::Number);
+        object.constructible = matches!(
+            builtin,
+            Builtin::Boolean | Builtin::Number | Builtin::Error(_)
+        );
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn create_error(&mut self, prototype: &Handle) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        object.error_data = true;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

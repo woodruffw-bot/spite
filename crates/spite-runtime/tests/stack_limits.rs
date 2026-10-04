@@ -13,6 +13,11 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
         ("let o={valueOf:()=>Number(o)};", "Number(o)"),
         ("let o={valueOf:()=>isFinite(o)};", "isFinite(o)"),
         ("let o={valueOf:()=>isNaN(o)};", "isNaN(o)"),
+        ("let o={toString:()=>Error(o)};", "Error(o)"),
+        (
+            "let o={name:{toString:()=>Error.prototype.toString.call(o)}};",
+            "Error.prototype.toString.call(o)",
+        ),
     ]
     .into_iter()
     .enumerate()

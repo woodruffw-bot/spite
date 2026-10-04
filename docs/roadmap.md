@@ -44,6 +44,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse catch binding identifiers and validate catch scope conflicts.
 - [x] Execute catch binding identifiers for implemented thrown values, including objects.
 - [ ] Bind built-in exceptions as JavaScript Error objects in catch clauses.
+- [x] Add Error/NativeError constructors, causes, ErrorData identity, and standard methods.
 - [ ] Add remaining statements, for-in/of loops, catch parameters, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.

@@ -171,6 +171,13 @@ and NaN independently of the object's current prototype.
 Global isFinite/isNaN perform ordinary ToNumber coercion, propagate abrupt
 conversions, and reject BigInt. The distinct Number predicates remain non-coercing.
 
+Error and all six NativeError constructors support call/new/bound construction,
+ordered message and cause initialization, standard descriptors, and their required
+constructor/prototype inheritance. Error.prototype.toString is generic and orders
+property reads and conversions. Error.isError recognizes own ErrorData independently
+of prototype identity; Error prototypes do not carry that slot. Cause references
+are traced through ordinary properties. AggregateError remains unimplemented.
+
 Symbols, String/BigInt wrapper APIs,
 arrays, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
@@ -187,15 +194,16 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 31 retained entries under a separate fixed work
+Realm initialization creates 47 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
 Supported throws initialize a mutable catch binding without coercion, preserving object identity. The catch
 binding and block scopes are restored across every completion and host failure.
-Binding a built-in exception currently reports Unsupported because JavaScript
-Error objects are not yet implemented. Catch binding patterns remain unsupported.
+Binding a built-in exception currently reports Unsupported; these exceptions are
+not yet materialized into Error objects for catch bindings.
+Catch binding patterns remain unsupported.
 
 Recognized missing features return Unsupported. Because the grammar is incomplete,
 a syntax diagnostic alone does not prove arbitrary input violates ECMA-262. The
@@ -218,7 +226,7 @@ Number tests, ten numeric parsing tests, and five global numeric predicate tests
 in both Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing String/JSON APIs and remains Unsupported;
-arrays, built-in Error constructors, other includes, async completion, and agents
+arrays, built-in exception bindings, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 274 variants are four raw positives, 198 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do

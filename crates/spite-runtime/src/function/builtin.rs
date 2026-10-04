@@ -48,6 +48,11 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::Error(kind) => self.error_constructor(kind, None, arguments, span),
+            Builtin::ErrorToString => self.error_to_string(this, span),
+            Builtin::ErrorIsError => {
+                self.error_is_error(arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::IsFinite | Builtin::IsNaN => {
                 // 19.2.2–3 use ToNumber, unlike the non-coercing Number methods.
                 let number = self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
@@ -124,7 +129,9 @@ impl Realm {
                     Value::String(_) => "String",
                     Value::Object(handle) => self.object_work(span, |objects, _| {
                         let object = objects.inspect(handle)?;
-                        Ok(if object.boolean_data().is_some() {
+                        Ok(if object.is_error() {
+                            "Error"
+                        } else if object.boolean_data().is_some() {
                             "Boolean"
                         } else if object.number_data().is_some() {
                             "Number"
