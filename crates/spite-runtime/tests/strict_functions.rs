@@ -1,5 +1,8 @@
 //! Strict calls, unmapped arguments, receiver preservation, and lexical captures.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn number(source: &str, expected: f64) {
@@ -231,12 +234,12 @@ fn captured_this_arguments_and_named_function_cycles_survive_collection() {
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("saved()"), Ok(Value::Number(7.0)));
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
     realm.eval("let escaped;let f;{ 'unused';f=(()=>{'use strict';return function(a=(escaped=()=>this),b=missing){};})();}try{f.call({value:7});}catch{}f=null;").unwrap();
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("escaped().value"), Ok(Value::Number(7.0)));
     realm.eval("escaped=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

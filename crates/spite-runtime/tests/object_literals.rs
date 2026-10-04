@@ -1,5 +1,8 @@
 //! Object-literal evaluation, identity, key order, and resource failures.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, ObjectHandle, Realm, Value};
 
@@ -184,7 +187,7 @@ fn early_errors_precede_all_effects() {
 fn allocation_property_and_key_limits_are_host_failures() {
     for limits in [
         Limits {
-            max_heap_entries: 12,
+            max_heap_entries: REALM_ENTRIES + 1,
             ..Limits::default()
         },
         Limits {

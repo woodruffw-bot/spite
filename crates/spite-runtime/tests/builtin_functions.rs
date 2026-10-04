@@ -1,5 +1,8 @@
 //! Builtin function identity, metadata, receivers, coercion, and collection.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
@@ -226,11 +229,11 @@ fn builtin_graphs_and_host_roots_survive_collection() {
     let value = realm.eval("({}).toString").unwrap();
     let root = realm.root_value(value.clone(), 100).unwrap();
     let result = realm.collect(1000).unwrap();
-    assert_eq!(result.live, 11);
+    assert_eq!(result.live, REALM_ENTRIES);
     assert_eq!(result.reclaimed, 1);
     assert_eq!(realm.eval("({}).toString"), Ok(value));
     drop(root);
-    assert_eq!(realm.collect(1000).unwrap().live, 11);
+    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES);
     string("({}).toString()", "[object Object]");
 }
 
@@ -242,8 +245,8 @@ fn partial_intrinsic_initialization_is_never_published() {
         ..Limits::default()
     });
     assert!(matches!(realm.eval("0"), Err(Error::Limit { .. })));
-    assert_eq!(realm.collect(1000).unwrap().live, 11);
-    for slots in 0..10 {
+    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES);
+    for slots in 0..REALM_ENTRIES - 1 {
         let mut realm = Realm::new(Limits {
             max_heap_entries: slots,
             ..Limits::default()

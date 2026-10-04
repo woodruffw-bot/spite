@@ -183,7 +183,10 @@ mod tests {
         }
         let value = Value::Object(target);
         let root = realm.root_value(value.clone(), 100).unwrap();
-        assert_eq!(realm.collect(200_000).unwrap().live, 10_013);
+        assert_eq!(
+            realm.collect(200_000).unwrap().live,
+            crate::test_support::REALM_ENTRIES + 10_002
+        );
         let instance = realm.construct(value, Vec::new(), Span::new(0, 0)).unwrap();
         assert_eq!(
             realm.get_property_value(&instance, &"x".into(), Span::new(0, 0)),
@@ -191,7 +194,10 @@ mod tests {
         );
         assert_eq!(realm.call_depth, 0);
         drop(root);
-        assert_eq!(realm.collect(200_000).unwrap().live, 13);
+        assert_eq!(
+            realm.collect(200_000).unwrap().live,
+            crate::test_support::REALM_ENTRIES + 2
+        );
     }
 
     #[test]

@@ -1,5 +1,8 @@
 //! Non-strict calls with object receivers and mapped-argument aliasing.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn number(source: &str, expected: f64) {
@@ -184,7 +187,7 @@ fn escaped_arguments_keep_the_parameter_environment_alive_and_mutable() {
         Ok(Value::Undefined)
     );
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]
@@ -193,9 +196,9 @@ fn removing_the_last_alias_releases_the_invocation_environment() {
     realm
         .eval("let args;function f(a){args=arguments;}f.call({payload:{}},1);f=null;")
         .unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 17);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES + 6);
     realm.eval("delete args[0]").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 14);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES + 3);
     realm.eval("args=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }

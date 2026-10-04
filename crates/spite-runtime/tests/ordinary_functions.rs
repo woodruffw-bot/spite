@@ -1,5 +1,8 @@
 //! Function identity, declaration instantiation, standard metadata, and tracing.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn number(source: &str, expected: f64) {
@@ -218,13 +221,13 @@ fn private_names_and_captured_environments_are_traced_with_prototype_cycles() {
         .eval("{let payload={value:7};(function local(){return payload;})}")
         .unwrap();
     let root = realm.root_value(value, 10000).unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 16);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES + 5);
     let Value::Object(function) = root.value() else {
         panic!()
     };
     assert!(realm.inspect_object(function).is_ok());
     drop(root);
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
     realm
         .eval("let saved=(()=>{let payload={value:7};function f(){return payload;}return f;})();")
         .unwrap();
@@ -234,5 +237,5 @@ fn private_names_and_captured_environments_are_traced_with_prototype_cycles() {
         Ok(Value::Boolean(true))
     );
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }

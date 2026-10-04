@@ -1,5 +1,8 @@
 //! NewTarget binding on calls/construction and lexical capture through arrows.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Realm, Value};
 
 fn truth(source: &str) {
@@ -55,5 +58,5 @@ fn escaped_new_target_is_traced_even_without_a_constructor_prototype_edge() {
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("saved().name"), Ok(Value::String("F".into())));
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }

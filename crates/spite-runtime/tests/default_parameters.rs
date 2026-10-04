@@ -1,5 +1,8 @@
 //! Parameter TDZ, ordered defaults, separate variable scopes, names, and length.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn number(source: &str, expected: f64) {
@@ -164,10 +167,10 @@ fn escaped_defaults_trace_partial_initialization_and_body_var_copies() {
         })
     ));
     realm.eval("escaped=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
     realm.eval("let make=(x={value:1},g=()=>x)=>{var x={value:9};return ()=>g().value+x.value;};escaped=make();make=null").unwrap();
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("escaped()"), Ok(Value::Number(10.0)));
     realm.eval("escaped=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }

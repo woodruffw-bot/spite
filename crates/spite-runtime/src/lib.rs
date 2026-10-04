@@ -1,5 +1,9 @@
 //! A tree-walking interpreter for the implemented ECMAScript subset.
 
+#[cfg(test)]
+#[path = "../tests/common/mod.rs"]
+mod test_support;
+
 mod environment;
 mod function;
 mod global;

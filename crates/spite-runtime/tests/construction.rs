@@ -1,5 +1,8 @@
 //! EvaluateNew, ordinary base construction, and bound constructor forwarding.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn truth(source: &str) {
@@ -116,7 +119,7 @@ fn constructed_instances_and_escaped_receivers_survive_collection() {
         Ok(Value::Boolean(true))
     );
     realm.eval("saved=null;instance=null;F=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

@@ -1,5 +1,8 @@
 //! Function-local instantiation, return completions, strictness, and captures.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn number(source: &str, expected: f64) {
@@ -127,7 +130,7 @@ fn closures_capture_function_vars_lexicals_and_independent_invocations() {
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("f()+f()"), Ok(Value::Number(5.0)));
     realm.eval("f=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 11);
+    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

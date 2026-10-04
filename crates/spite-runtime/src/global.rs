@@ -480,7 +480,11 @@ mod tests {
             assert_eq!(realm.intrinsics.is_some(), result.is_ok());
             assert_eq!(
                 realm.collect(1000).unwrap().live,
-                if result.is_ok() { 9 } else { 0 }
+                if result.is_ok() {
+                    crate::test_support::REALM_ENTRIES - 2
+                } else {
+                    0
+                }
             );
         }
     }

@@ -1,5 +1,8 @@
 //! Property references and edition-17 GetValue/PutValue ordering.
 
+mod common;
+use common::REALM_ENTRIES;
+
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn number(source: &str, expected: f64) {
@@ -231,7 +234,7 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
             .eval("let o = {}; o.self = o; try { throw o; } catch (e) { e.flag = 7; } o.self.flag"),
         Ok(Value::Number(7.0))
     );
-    assert_eq!(realm.collect(1000).unwrap().live, 12);
+    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES + 1);
     assert_eq!(realm.eval("o === o.self"), Ok(Value::Boolean(true)));
     realm.eval("o = null").unwrap();
     assert_eq!(realm.collect(1000).unwrap().reclaimed, 1);
