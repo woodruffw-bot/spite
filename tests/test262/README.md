@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2242 unmodified test fixtures and six harness files come from
+These 2259 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -576,12 +576,12 @@ The pin, upstream/helper bytes, and opt-in execution limits are unchanged.
 Seven unchanged sources add fourteen Script/StrictScript variants. They cover
 function type/prototype, name/length descriptors, primitive receiver rejection
 before next lookup, non-callable next rejection, and plain direct iterators.
-Reviewed candidates using classes, generators, destructuring, or shared-prototype
-enumeration remain outside this selection. Local regressions cover captured
-next and exact receivers, done-before-value, acquisition/step failures without
-closing, fresh intrinsic results, species/setter bypass, element identities,
-collection, large default inputs, and opt-in host failures. The pin, original
-source/helper bytes, and opt-in execution limits are unchanged.
+Reviewed candidates using classes, generators, or destructuring remain outside
+this selection. Local regressions cover captured next and exact receivers,
+done-before-value, acquisition/step failures without closing, fresh intrinsic
+results, species/setter bypass, element identities, collection, large default
+inputs, and opt-in host failures. The pin, original source/helper bytes, and
+opt-in execution limits are unchanged.
 
 ## Iterator.forEach review
 
@@ -589,11 +589,11 @@ Nine unchanged sources add eighteen Script/StrictScript variants. They cover
 callback validation before next lookup, closing on validation failure, plain
 direct iterators, primitive and non-callable-next rejection, function metadata,
 and name/length descriptors through the original property helper. Reviewed
-candidates requiring classes, generators, destructuring, or shared-prototype
-enumeration remain outside this selection. Local regressions add callback/step
-error precedence, exact mathematical indices, cached next, mutation, collection,
-large default inputs, and opt-in host failures. The pin and original source/helper
-bytes are unchanged.
+candidates requiring classes, generators, or destructuring remain outside this
+selection. Local regressions add callback/step error precedence, exact
+mathematical indices, cached next, mutation, collection, large default inputs,
+and opt-in host failures. The pin and original source/helper bytes are
+unchanged.
 
 ## Iterator.every/some/find review
 
@@ -602,20 +602,20 @@ nine sources for each predicate consumer. They cover callback validation before
 next lookup, closing on validation failure, plain direct iterators, primitive
 and non-callable-next rejection, function metadata, and name/length descriptors
 through the original property helper. Reviewed candidates requiring classes,
-generators, destructuring, or shared-prototype enumeration remain outside this
-selection. Local regressions add short-circuit/throw closing precedence, exact
-indices, truthiness without coercion hooks, live next/return mutation, found-value
-identity, collection, large default inputs, and opt-in host failures. The pin and
-original source/helper bytes are unchanged.
+generators, or destructuring remain outside this selection. Local regressions
+add short-circuit/throw closing precedence, exact indices, truthiness without
+coercion hooks, live next/return mutation, found-value identity, collection,
+large default inputs, and opt-in host failures. The pin and original
+source/helper bytes are unchanged.
 
 ## Iterator.reduce review
 
-Ten unchanged sources add twenty Script/StrictScript variants. They cover reducer
-validation before next lookup, closing on validation failure, arbitrary accumulator
-types, plain direct iterators, primitive and non-callable-next rejection, function
-metadata, and name/length descriptors through the original property helper.
-Reviewed candidates requiring classes, generators, destructuring, or shared-prototype
-enumeration remain outside this selection. Local regressions add initial-value
+Ten unchanged sources add twenty Script/StrictScript variants. They cover
+reducer validation before next lookup, closing on validation failure, arbitrary
+accumulator types, plain direct iterators, primitive and non-callable-next
+rejection, function metadata, and name/length descriptors through the original
+property helper. Reviewed candidates requiring classes, generators, or
+destructuring remain outside this selection. Local regressions add initial-value
 presence, empty/singleton inputs, callback indices/receivers/argument counts,
 accumulator identity, mutation, incoming throw precedence, step errors without
 closing, collection, large default inputs, and opt-in host failures. The pin and
@@ -623,36 +623,36 @@ original source/helper bytes are unchanged.
 
 ## Lazy Iterator.map/filter review
 
-Eighteen unchanged sources add thirty-six Script/StrictScript variants, with nine
-sources for each helper. They cover callback validation before next lookup,
+Eighteen unchanged sources add thirty-six Script/StrictScript variants, with
+nine sources for each helper. They cover callback validation before next lookup,
 closing on validation failure, plain direct iterators, delayed non-callable-next
 rejection, primitive receivers, function metadata, and name/length descriptors
 through the original property helper. Reviewed candidates requiring classes,
-generators, destructuring, Array.from, or shared-prototype enumeration remain
-outside this selection. Local regressions add suspension/return ordering,
-callback and closing errors, reentry, exact indices, original filtered-value
-identity, capture tracing/release, large default pipelines, and opt-in host
-failures. The pin and original source/helper bytes are unchanged.
+generators, or destructuring remain outside this selection. Local regressions
+add suspension/return ordering, callback and closing errors, reentry, exact
+indices, original filtered-value identity, capture tracing/release, large
+default pipelines, and opt-in host failures. The pin and original source/helper
+bytes are unchanged.
 
 ## Iterator.take/drop published-edition review
 
 Twelve unchanged sources add twenty-four Script/StrictScript variants, with six
-sources for each helper. They cover function type/prototype, name/length descriptors
-through the original property helper, primitive receiver rejection before count
-conversion, and delayed non-callable-next rejection. Reviewed candidates requiring
-classes, generators, destructuring, Array.from, or shared-prototype enumeration
-remain outside this selection.
+sources for each helper. They cover function type/prototype, name/length
+descriptors through the original property helper, primitive receiver rejection
+before count conversion, and delayed non-callable-next rejection. Reviewed
+candidates requiring classes, generators, or destructuring remain outside this
+selection.
 
 The pin also includes three files for each method (`argument-effect-order.js`,
-`argument-validation-failure-closes-underlying.js`, and `limit-rangeerror.js`) that
-assert RangeError for finite counts above Number.MAX_SAFE_INTEGER. Published
-ECMAScript 2026, edition 17, has no such check in 27.1.3.3.2/11. These post-baseline
-assertions remain outside the corpus, without source rewriting or pass credit.
-Local regressions cover count conversion/closing order, fractional/signed-zero
-counts, infinity and large exact finite countdowns, discarded-value bypass,
-return/reentry, errors and completion, capture tracing/release, large default
-inputs, and opt-in host failures. The pin and original source/helper bytes are
-unchanged.
+`argument-validation-failure-closes-underlying.js`, and `limit-rangeerror.js`)
+that assert RangeError for finite counts above Number.MAX_SAFE_INTEGER.
+Published ECMAScript 2026, edition 17, has no such check in 27.1.3.3.2/11. These
+post-baseline assertions remain outside the corpus, without source rewriting or
+pass credit. Local regressions cover count conversion/closing order,
+fractional/signed-zero counts, infinity and large exact finite countdowns,
+discarded-value bypass, return/reentry, errors and completion, capture
+tracing/release, large default inputs, and opt-in host failures. The pin and
+original source/helper bytes are unchanged.
 
 ## Iterator.flatMap review
 
@@ -660,13 +660,31 @@ Nine unchanged sources add eighteen Script/StrictScript variants. They cover
 callback validation before next lookup, closing on validation failure, plain
 direct iterators, delayed non-callable-next rejection, primitive receivers,
 function metadata, and name/length descriptors through the original property
-helper. Reviewed candidates requiring classes, generators, destructuring,
-Array.from, or shared-prototype enumeration remain outside this selection.
-Local regressions cover one-level flattening, iterable/direct fallback, primitive
-rejection before hooks, exact outer indices, inner-before-outer closing, incoming
-error precedence, reentry, capture tracing/release, large default inputs, and
-host failures without JavaScript cleanup. The pin and original source/helper
-bytes are unchanged.
+helper. Reviewed candidates requiring classes, generators, or destructuring
+remain outside this selection. Local regressions cover one-level flattening,
+iterable/direct fallback, primitive rejection before hooks, exact outer indices,
+inner-before-outer closing, incoming error precedence, reentry, capture
+tracing/release, large default inputs, and host failures without JavaScript
+cleanup. The pin and original source/helper bytes are unchanged.
+
+## Shared Iterator prototype reflection review
+
+Seventeen unchanged sources add thirty-four Script/StrictScript variants. Eleven
+sources verify all shared helper method property descriptors through the
+original property helper; these were deferred by earlier helper selections while
+shared prototype enumeration was incomplete. Five sources verify
+Symbol.iterator's function type, name/length descriptors, property attributes,
+and generic receiver identity. One source verifies the Symbol.toStringTag
+accessor descriptor.
+
+The edition-17 prototype inventory now supports complete ordered reflection and
+integrity operations. Local regressions verify all fourteen properties,
+getter-free descriptor copying, sealing/freezing, protected setters, ordinary
+mutation/order, inherited iterator enumeration, and intrinsic retention.
+Reviewed constructor/tag setter originals requiring destructuring remain
+excluded. Post-baseline iterator APIs remain outside this published edition. The
+pin and source/helper bytes are unchanged; no default quota or testing allowance
+is introduced.
 
 ## Scope and maintenance
 
@@ -689,12 +707,12 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 4372 variants from 2223 reviewed sources: the eleven
+The `spite-test262` command runs 4406 variants from 2240 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 137 Iterator constructor/acquisition/sequencing/consumption tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
+object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
@@ -705,7 +723,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-4198 positives using the upstream harness, and 170 reviewed parse-negative variants.
+4232 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
