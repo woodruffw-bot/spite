@@ -7,6 +7,7 @@ use crate::{
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod concat;
 mod from;
 mod operations;
 mod tag;
@@ -19,6 +20,10 @@ pub(crate) struct IteratorIntrinsics {
     from: ObjectHandle,
     wrapper_next: ObjectHandle,
     wrapper_return: ObjectHandle,
+    helper_prototype: ObjectHandle,
+    concat: ObjectHandle,
+    helper_next: ObjectHandle,
+    helper_return: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -39,6 +44,10 @@ impl IteratorIntrinsics {
             &self.from,
             &self.wrapper_next,
             &self.wrapper_return,
+            &self.helper_prototype,
+            &self.concat,
+            &self.helper_next,
+            &self.helper_return,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -66,12 +75,22 @@ impl Realm {
         let wrapper_prototype =
             self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let from = self.new_builtin(function_prototype, Builtin::IteratorFrom, span)?;
+        let concat = self.new_builtin(function_prototype, Builtin::IteratorConcat, span)?;
+        let helper_prototype =
+            self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let helper_next =
+            self.new_builtin(function_prototype, Builtin::IteratorHelperNext, span)?;
+        let helper_return =
+            self.new_builtin(function_prototype, Builtin::IteratorHelperReturn, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperReturn, span)?;
         for (object, name, function) in [
+            (&constructor, "concat", &concat),
             (&constructor, "from", &from),
+            (&helper_prototype, "next", &helper_next),
+            (&helper_prototype, "return", &helper_return),
             (&wrapper_prototype, "next", &wrapper_next),
             (&wrapper_prototype, "return", &wrapper_return),
         ] {
@@ -112,6 +131,17 @@ impl Realm {
             span,
         )?;
         self.object_work(span, |objects, budget| {
+            objects.define(
+                &helper_prototype,
+                WellKnownSymbol::ToStringTag.symbol(),
+                DataDescriptor {
+                    value: Some(Value::String(JsString::from("Iterator Helper"))),
+                    writable: Some(false),
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )?;
             objects.define(
                 &constructor,
                 "prototype",
@@ -191,6 +221,10 @@ impl Realm {
             from,
             wrapper_next,
             wrapper_return,
+            helper_prototype,
+            concat,
+            helper_next,
+            helper_return,
             array_prototype,
             string_prototype,
             identity,

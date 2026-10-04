@@ -21,7 +21,10 @@ use arguments::ParameterMap;
 mod descriptor;
 mod iterator;
 use iterator::IteratorState;
-pub(crate) use iterator::{ArrayIterationKind, ArrayIterator, IteratorWrapper, StringIterator};
+pub(crate) use iterator::{
+    ArrayIterationKind, ArrayIterator, ConcatIterable, HelperStatus, IteratorHelper,
+    IteratorWrapper, StringIterator,
+};
 mod entry;
 mod store;
 pub use descriptor::{
@@ -143,6 +146,13 @@ impl OrdinaryObject {
     pub(crate) fn iterator_wrapper(&self) -> Option<&IteratorWrapper> {
         match &self.iterator {
             Some(IteratorState::Wrapper(state)) => Some(state),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn iterator_helper(&self) -> Option<&IteratorHelper> {
+        match &self.iterator {
+            Some(IteratorState::Helper(state)) => Some(state),
             _ => None,
         }
     }

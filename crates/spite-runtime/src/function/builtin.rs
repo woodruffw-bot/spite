@@ -179,6 +179,13 @@ impl Realm {
             Builtin::IteratorFrom => {
                 self.iterator_from(arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::IteratorConcat => self.iterator_concat(arguments, span),
+            Builtin::IteratorHelperNext | Builtin::IteratorHelperReturn => self
+                .iterator_helper_resume(
+                    this,
+                    matches!(builtin, Builtin::IteratorHelperReturn),
+                    span,
+                ),
             Builtin::IteratorWrapperNext | Builtin::IteratorWrapperReturn => self
                 .iterator_wrapper_method(
                     this,

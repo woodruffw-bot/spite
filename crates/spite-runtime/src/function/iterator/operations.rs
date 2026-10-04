@@ -71,30 +71,33 @@ impl Realm {
         debug_assert!(!record.done);
         let result = (|| {
             self.object_work(span, |_, budget| budget.value(&record.next))?;
-            let Value::Object(result) = self.call(
-                record.next.clone(),
-                Value::Object(record.iterator.clone()),
-                vec![],
-                span,
-            )?
-            else {
-                return Err(Self::exception(
-                    ExceptionKind::TypeError,
-                    span,
-                    "iterator result is not an object",
-                ));
-            };
-            let done = self.get_property(&result, &JsString::from("done"), span)?;
-            if done.to_boolean() {
-                return Ok(None);
-            }
-            self.get_property(&result, &JsString::from("value"), span)
-                .map(Some)
+            self.iterator_step_value_direct(record.iterator.clone(), record.next.clone(), span)
         })();
         if !matches!(&result, Ok(Some(_))) {
             record.done = true;
         }
         result
+    }
+
+    pub(crate) fn iterator_step_value_direct(
+        &mut self,
+        iterator: ObjectHandle,
+        next: Value,
+        span: Span,
+    ) -> Result<Option<Value>, Error> {
+        let Value::Object(result) = self.call(next, Value::Object(iterator), vec![], span)? else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "iterator result is not an object",
+            ));
+        };
+        let done = self.get_property(&result, &JsString::from("done"), span)?;
+        if done.to_boolean() {
+            return Ok(None);
+        }
+        self.get_property(&result, &JsString::from("value"), span)
+            .map(Some)
     }
 
     pub(crate) fn iterator_close_error(
@@ -130,7 +133,15 @@ impl Realm {
         record: &IteratorRecord,
         span: Span,
     ) -> Result<(), Error> {
-        let receiver = Value::Object(record.iterator.clone());
+        self.iterator_close_direct(record.iterator.clone(), span)
+    }
+
+    pub(crate) fn iterator_close_direct(
+        &mut self,
+        iterator: ObjectHandle,
+        span: Span,
+    ) -> Result<(), Error> {
+        let receiver = Value::Object(iterator);
         if let Some(method) = self.get_method(&receiver, &JsString::from("return"), span)? {
             let result = self.call(method, receiver, vec![], span)?;
             if !matches!(result, Value::Object(_)) {

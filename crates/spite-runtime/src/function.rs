@@ -144,6 +144,9 @@ pub(crate) enum Builtin {
     ArrayIteratorNext,
     Iterator,
     IteratorFrom,
+    IteratorConcat,
+    IteratorHelperNext,
+    IteratorHelperReturn,
     IteratorWrapperNext,
     IteratorWrapperReturn,
     IteratorIdentity,
@@ -328,10 +331,11 @@ impl Builtin {
             Self::ArrayKeys => "keys",
             Self::ArrayValues => "values",
             Self::ArrayEntries => "entries",
-            Self::ArrayIteratorNext | Self::StringIteratorNext | Self::IteratorWrapperNext => {
-                "next"
-            }
-            Self::IteratorWrapperReturn => "return",
+            Self::ArrayIteratorNext
+            | Self::StringIteratorNext
+            | Self::IteratorWrapperNext
+            | Self::IteratorHelperNext => "next",
+            Self::IteratorWrapperReturn | Self::IteratorHelperReturn => "return",
             Self::Iterator => "Iterator",
             Self::IteratorIdentity | Self::StringIterator => "[Symbol.iterator]",
             Self::IteratorConstructorGet => "get constructor",
@@ -357,7 +361,7 @@ impl Builtin {
             Self::ArrayMap => "map",
             Self::ArrayFilter => "filter",
             Self::ArraySlice => "slice",
-            Self::ArrayConcat => "concat",
+            Self::ArrayConcat | Self::IteratorConcat => "concat",
             Self::ArraySplice => "splice",
             Self::ArrayFlat => "flat",
             Self::ArrayFlatMap => "flatMap",

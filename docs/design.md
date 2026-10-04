@@ -633,8 +633,8 @@ intrinsic Iterator prototype otherwise. Bound construction first rewrites the
 newTarget as required by 10.4.1.2. Constructor arguments are ignored after normal
 evaluation; no next method or iterator brand is installed on the resulting object.
 The global binding and native constructor metadata retain standard attributes.
-Iterator.concat and the remaining prototype helpers are explicit
-Unsupported gaps; own enumeration remains guarded until each inventory is complete.
+The remaining prototype helpers are explicit Unsupported gaps; shared prototype
+enumeration remains guarded until that inventory is complete.
 The constructor getter returns the intrinsic Iterator independently of receiver
 or replaced globals (27.1.3.3.2). The tag getter returns "Iterator" for every
 receiver (27.1.3.3.14). Both setters share
@@ -659,6 +659,28 @@ when absent. Both methods validate their own internal slot, ignore arguments,
 and forward present-method results unchanged without inspecting done/value or
 tracking completion. Reentrancy and retries after language errors remain valid;
 host failures preserve the existing handler bypass and native-stack guards.
+
+Iterator.concat validates object inputs and captures each Symbol.iterator method
+in argument order, without opening an iterator (27.1.3.2.1). Its native closure
+opens sources lazily, captures their next once, and steps them in order. Each
+yield creates a fresh intrinsic result; done skips value and moves to the next
+source. Iterator-step/opening errors complete the helper without closing it.
+Return before first next opens/closes nothing; at a suspended yield it closes
+only the active source with no arguments, validates the close result, and returns
+undefined/done. Completion discards captures and is permanent.
+
+The helper prototype inherits Iterator.prototype and exposes native next/return
+and the fixed "Iterator Helper" tag (27.1.2.1). Native state models suspended
+start/yield, executing, and completed resumes, rejecting reentry as required by
+GeneratorValidate/Resume/ResumeAbrupt. This specialized closure does not expose
+language Generator syntax. Captures and the active iterator/next remain in the
+traced heap throughout execution. Capture release is charged at creation; the
+finish transition and active-reference release are charged before a resume
+enters user code. Cleanup always runs without allocation after it, including host
+failures; failed resumes complete without JavaScript cleanup. Completed helpers
+release their captures before the next host collection. Iterator's static
+inventory is complete, so its own reflection and integrity operations are enabled;
+the shared prototype's remaining helpers are still guarded.
 
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;

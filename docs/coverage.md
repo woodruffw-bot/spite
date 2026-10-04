@@ -611,8 +611,8 @@ throw TypeError. Distinct newTargets select an object-valued prototype or the
 intrinsic fallback without executing their bodies or coercing ignored arguments.
 Regressions cover bound forwarding, ordered prototype access and errors, generic
 constructor getters, protected setter updates and inherited-property bypass,
-global replacement, and intrinsic retention. Iterator.concat and prototype
-helpers remain Unsupported, including enumeration of either incomplete inventory.
+global replacement, and intrinsic retention. Unimplemented prototype helpers and
+shared prototype enumeration remain Unsupported.
 Symbol-keyed access is tested through native injection, Script integration tests,
 and reviewed upstream Symbol/iterator fixtures.
 
@@ -623,7 +623,17 @@ acquisition, captured next methods, live return lookups, exact result/receiver
 forwarding without arguments, no implicit completion state, reentrant calls,
 retry after throws, internal-slot validation, and cached/source retention during
 collection. Wrapper prototype reflection and integrity cover its complete two
-method inventory; constructor/prototype helper inventories remain guarded.
+method inventory; the shared prototype helper inventory remains guarded.
+
+Iterator.concat captures object iterable methods in order, then opens and steps
+sources lazily. Native helper resumes cover fresh results, done-before-value,
+permanent completion, closing only the active yielded source, strict close-result
+validation, empty-source traversal, and reentry rejection. Regressions cover
+live source mutation, captured methods/next, receiver/argument counts, closing
+precedence and failures, large default inputs, host aborts without cleanup,
+internal-slot brands, and capture retention/release during collection. The helper
+prototype's next/return/tag and Iterator's static inventory support complete own
+reflection and integrity operations. Language generators remain unimplemented.
 
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
@@ -660,7 +670,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 235 retained entries outside the per-Script work
+Realm initialization creates 239 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

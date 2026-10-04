@@ -204,6 +204,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [x] Add the abstract Iterator constructor, newTarget prototype selection, and protected prototype constructor accessor.
 - [x] Add Iterator.from with ordered iterable/direct acquisition, intrinsic instance identity, and branded next/return wrappers.
+- [x] Add lazy Iterator.concat with ordered method capture, native helper suspension/closing, reentry rejection, and complete static reflection.
 - [ ] Add remaining shared Iterator prototype properties.
 - [x] Expose the Symbol global with standard attributes.
 - [ ] Complete Array species-dependent methods and iterator integration.

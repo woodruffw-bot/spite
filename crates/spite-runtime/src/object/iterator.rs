@@ -4,24 +4,34 @@ use super::{Budget, Error, Objects, Value};
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 
+mod helper;
+pub(crate) use helper::{ConcatIterable, HelperStatus, IteratorHelper};
+
 #[derive(Debug)]
 pub(super) enum IteratorState {
     Array(ArrayIterator),
     String(StringIterator),
     Wrapper(Box<IteratorWrapper>),
+    Helper(Box<IteratorHelper>),
 }
 
 impl IteratorState {
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         let (first, second) = match self {
             Self::Array(state) => (state.array.as_ref(), None),
-            Self::String(_) => (None, None),
+            Self::String(_) | Self::Helper(_) => (None, None),
             Self::Wrapper(state) => (
                 Some(&state.iterator),
                 Some(state.next.trace().next().flatten()),
             ),
         };
-        std::iter::once(first).chain(second)
+        let helper = match self {
+            Self::Helper(state) => Some(state),
+            _ => None,
+        };
+        std::iter::once(first)
+            .chain(second)
+            .chain(helper.into_iter().flat_map(|state| state.trace()))
     }
 }
 
