@@ -2162,3 +2162,12 @@ script-pass	65cef823cfd384486403bb16c89cde31bd0e55491f10c430f44e84c0c586dac8	tes
 script-pass	0dbf72aeeb27efe005e3fa65d86f9a12c6ec4eebdb78d0b293e3a8d152e9dea6	test/built-ins/Iterator/prototype/toArray/this-non-callable-next.js
 script-pass	4924839670e3af6399641a05ad85beb55e58d80011fe7866601605c5550dd2e1	test/built-ins/Iterator/prototype/toArray/this-non-object.js
 script-pass	bd9de1bbbb35e5fd748b088cb2c8cfa4a1992df49aeb0f230b8ce6b70719ab4b	test/built-ins/Iterator/prototype/toArray/this-plain-iterator.js
+script-pass	2a969b5473e8834dfacac6f8476123dd4609dbe59ffe6691a7692ae55f292e55	test/built-ins/Iterator/prototype/forEach/argument-effect-order.js
+script-pass	11aeacf4dec7f7f7a59b4d1fd76c28f27cafdec046437ad886d166174e04ebef	test/built-ins/Iterator/prototype/forEach/argument-validation-failure-closes-underlying.js
+script-pass	d91534787565c3a3937a768a439c9e9e37790a2cc67c8e127bab2c4c160de38f	test/built-ins/Iterator/prototype/forEach/is-function.js
+script-pass	4aa0e3a7d6d1b9d54ea7361c29811384c10792c0893549d4a17a64ac0aec4093	test/built-ins/Iterator/prototype/forEach/length.js
+script-pass	6657b3d82292a83566b7021805181897878f252634b61cf766d47e5b999af260	test/built-ins/Iterator/prototype/forEach/name.js
+script-pass	f4e7715be3a5a66990663f506a176fc9e6c55aefc87be7b97b393aea3aacb5f9	test/built-ins/Iterator/prototype/forEach/proto.js
+script-pass	804fa79beb9891490fe569d9bb85ffee56f3a017ab4a96da7db63a78172bd129	test/built-ins/Iterator/prototype/forEach/this-non-callable-next.js
+script-pass	44d2d151bb044302cae269ab47494bcd93d3c90fab4447254f6c598096dcdf90	test/built-ins/Iterator/prototype/forEach/this-non-object.js
+script-pass	ef12bca5104da63439e6f7d6d2be29dd8bc5872a9384400a9614f32124650030	test/built-ins/Iterator/prototype/forEach/this-plain-iterator.js

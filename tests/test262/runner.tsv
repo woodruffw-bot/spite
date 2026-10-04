@@ -2137,3 +2137,12 @@ test/built-ins/Iterator/prototype/toArray/proto.js	-	-	-
 test/built-ins/Iterator/prototype/toArray/this-non-callable-next.js	-	-	-
 test/built-ins/Iterator/prototype/toArray/this-non-object.js	-	-	-
 test/built-ins/Iterator/prototype/toArray/this-plain-iterator.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/argument-effect-order.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/argument-validation-failure-closes-underlying.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/length.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/name.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/proto.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/this-non-callable-next.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/this-non-object.js	-	-	-
+test/built-ins/Iterator/prototype/forEach/this-plain-iterator.js	-	-	-
