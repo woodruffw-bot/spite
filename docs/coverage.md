@@ -16,7 +16,7 @@ not an alternative language specification.
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
-| Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
+| Expressions | Primitive, object, and array literals, untagged/tagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Arrays | Calls/new, of, from, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
@@ -451,7 +451,7 @@ RegExpMatcher brand fallback awaits RegExp objects. String.raw processes
 ordinary array-like templates with ordered raw/length/index reads and interleaved
 substitution conversion. All baseline String constructor static properties are
 installed, and its own-key enumeration is supported. Remaining prototype methods and enumeration of the
-incomplete String.prototype remain Unsupported; tagged template syntax is still open.
+incomplete String.prototype remain Unsupported.
 String.split uses non-overlapping UTF-16 separator matches, preserves empty parts,
 and splits code units for an empty separator. Edition 17 looks up Symbol.split
 only for object separators, passing the original receiver/limit and returning the
@@ -704,9 +704,18 @@ and u64, work-failure atomicity, and foreign-capture rejection before allocation
 At the existing pin, some upstream take/drop tests enforce a post-edition-17
 safe-integer cap; those originals remain excluded, without rewriting or pass credit.
 
+Tagged template regressions cover raw/cooked UTF-16, invalid cooked escapes,
+member/call/new precedence, chained tags, exact receivers and unconverted argument
+identity/order, tag getters and substitution errors, late callable checks, frozen
+Array/raw descriptors, constructor/species/setter bypass, repeated parse-site
+identity across functions and syntax clones, separate parses/realms, cache tracing
+through collection, and opt-in host failures without partial cached templates.
+Parser AST/diagnostic snapshots cover syntax, strict errors, and invalid targets.
+Proper tail calls, eval, and JavaScript cross-realm hooks remain separate work.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
-expressions, tagged templates, for-await-of, catch patterns, generators,
+expressions, for-await-of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral

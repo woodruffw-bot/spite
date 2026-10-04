@@ -25,6 +25,7 @@ use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fmt,
+    rc::Rc,
 };
 use value::{exponentiate, to_uint32};
 
@@ -216,6 +217,7 @@ pub struct Realm {
     strict: bool,
     objects: object::Objects,
     intrinsics: Option<function::Intrinsics>,
+    template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
 }
 
 impl Default for Realm {
@@ -238,6 +240,7 @@ impl Realm {
             strict: false,
             objects: object::Objects::with_limits(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
+            template_map: Vec::new(),
         }
     }
 
@@ -1194,6 +1197,11 @@ impl Realm {
                 let values = self.argument_list(arguments)?;
                 self.call(function, this, values, expr.span)?
             }
+            ExprKind::TaggedTemplate {
+                tag,
+                elements,
+                substitutions,
+            } => self.tagged_template(tag, elements, substitutions, expr.span)?,
             ExprKind::Template {
                 elements,
                 substitutions,

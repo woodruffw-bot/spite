@@ -27,6 +27,7 @@ mod reflect;
 mod spread;
 mod string;
 mod symbol;
+mod template;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;

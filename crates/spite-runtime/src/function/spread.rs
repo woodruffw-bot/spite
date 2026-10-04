@@ -43,7 +43,7 @@ impl Realm {
         Ok(values)
     }
 
-    fn append_argument(
+    pub(super) fn append_argument(
         &self,
         arguments: &mut Vec<Value>,
         value: Value,

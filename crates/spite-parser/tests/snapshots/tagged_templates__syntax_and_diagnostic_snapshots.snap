@@ -1,0 +1,269 @@
+---
+source: crates/spite-parser/tests/tagged_templates.rs
+expression: "parse_script(\"obj.tag`a${x}b`(y).z; new tag`constructor`(1); tag`\\\\x${nested`v`}tail`;\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 5,
+                    kind: Member(
+                        Expr {
+                            depth: 4,
+                            kind: Call {
+                                callee: Expr {
+                                    depth: 3,
+                                    kind: TaggedTemplate {
+                                        tag: Expr {
+                                            depth: 2,
+                                            kind: Member(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "obj",
+                                                    ),
+                                                    span: Span {
+                                                        start: 0,
+                                                        end: 3,
+                                                    },
+                                                },
+                                                Literal(
+                                                    String(
+                                                        "tag",
+                                                    ),
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 0,
+                                                end: 7,
+                                            },
+                                        },
+                                        elements: [
+                                            TemplateElement {
+                                                cooked: Some(
+                                                    "a",
+                                                ),
+                                                raw: "a",
+                                                span: Span {
+                                                    start: 8,
+                                                    end: 9,
+                                                },
+                                            },
+                                            TemplateElement {
+                                                cooked: Some(
+                                                    "b",
+                                                ),
+                                                raw: "b",
+                                                span: Span {
+                                                    start: 13,
+                                                    end: 14,
+                                                },
+                                            },
+                                        ],
+                                        substitutions: [
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 11,
+                                                    end: 12,
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    span: Span {
+                                        start: 0,
+                                        end: 15,
+                                    },
+                                },
+                                arguments: [
+                                    Expression(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "y",
+                                            ),
+                                            span: Span {
+                                                start: 16,
+                                                end: 17,
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                            span: Span {
+                                start: 0,
+                                end: 18,
+                            },
+                        },
+                        Literal(
+                            String(
+                                "z",
+                            ),
+                        ),
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 20,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 21,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: New {
+                        callee: Expr {
+                            depth: 2,
+                            kind: TaggedTemplate {
+                                tag: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "tag",
+                                    ),
+                                    span: Span {
+                                        start: 26,
+                                        end: 29,
+                                    },
+                                },
+                                elements: [
+                                    TemplateElement {
+                                        cooked: Some(
+                                            "constructor",
+                                        ),
+                                        raw: "constructor",
+                                        span: Span {
+                                            start: 30,
+                                            end: 41,
+                                        },
+                                    },
+                                ],
+                                substitutions: [],
+                            },
+                            span: Span {
+                                start: 26,
+                                end: 42,
+                            },
+                        },
+                        arguments: Some(
+                            [
+                                Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 43,
+                                            end: 44,
+                                        },
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                    span: Span {
+                        start: 22,
+                        end: 45,
+                    },
+                },
+            ),
+            span: Span {
+                start: 22,
+                end: 46,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: TaggedTemplate {
+                        tag: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "tag",
+                            ),
+                            span: Span {
+                                start: 47,
+                                end: 50,
+                            },
+                        },
+                        elements: [
+                            TemplateElement {
+                                cooked: None,
+                                raw: "\u005cx",
+                                span: Span {
+                                    start: 51,
+                                    end: 53,
+                                },
+                            },
+                            TemplateElement {
+                                cooked: Some(
+                                    "tail",
+                                ),
+                                raw: "tail",
+                                span: Span {
+                                    start: 65,
+                                    end: 69,
+                                },
+                            },
+                        ],
+                        substitutions: [
+                            Expr {
+                                depth: 2,
+                                kind: TaggedTemplate {
+                                    tag: Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "nested",
+                                        ),
+                                        span: Span {
+                                            start: 55,
+                                            end: 61,
+                                        },
+                                    },
+                                    elements: [
+                                        TemplateElement {
+                                            cooked: Some(
+                                                "v",
+                                            ),
+                                            raw: "v",
+                                            span: Span {
+                                                start: 62,
+                                                end: 63,
+                                            },
+                                        },
+                                    ],
+                                    substitutions: [],
+                                },
+                                span: Span {
+                                    start: 55,
+                                    end: 64,
+                                },
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 47,
+                        end: 70,
+                    },
+                },
+            ),
+            span: Span {
+                start: 47,
+                end: 71,
+            },
+        },
+    ],
+    strict: false,
+}

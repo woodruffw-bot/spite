@@ -69,6 +69,23 @@ The current eager scanner tracks braces in template substitutions. Before adding
 RegExp literals, move lexical-goal selection into the parser so braces and
 backticks inside a RegExp body cannot affect template scanning.
 
+Tagged templates parse as call/member expressions with unconverted substitution
+arguments (13.3.11). Validate each tag and substitution in its surrounding strict
+scope; invalid cooked escapes are permitted only for tagged components, represented
+as undefined. Preserve raw UTF-16 text and normalized line endings. The shared
+component allocation identifies a template Parse Node across Script/function
+syntax clones; each separate parse creates new sites, including identical source.
+
+GetTemplateObject (13.2.8.4) uses a per-realm map of these sites to frozen intrinsic
+Arrays, with a frozen raw Array and exact data descriptors. Trace cached Arrays
+through host collection, independently of user bindings or prototype links.
+Template construction bypasses public constructors, setters, and species. Cache
+only completely constructed objects; host allocation/quota failures expose no
+partial template and skip JavaScript handlers. Call evaluation reads the tag and
+its receiver before creating the template or evaluating substitutions, and checks
+callability after all arguments. Substitutions retain their original values.
+Host quotas remain opt-in; no default cache, heap, or execution limit is imposed.
+
 Use generated, versioned Unicode tables for identifiers. The current tables use
 Unicode 18.0.0, with a pinned source digest and reproducible generation. Rust's alphabetic predicate
 is not ECMAScript's ID_Start or ID_Continue. Numeric conversion, separators, escapes,
@@ -853,7 +870,7 @@ prototype tags. Deleting those tags exposes the ordinary Object fallback.
 Missing intrinsics remain Unsupported. Each new object kind must implement its
 required Symbol hooks alongside its string-keyed API.
 Arithmetic and comparisons convert original operands from left to right after
-both expressions evaluate; templates and property names use the string hint.
+both expressions evaluate; untagged templates and property names use the string hint.
 
 Realm allocation supports opt-in shared heap-slot and per-object property quotas. Object
 literals create data properties in source order, convert computed keys before
@@ -1044,7 +1061,7 @@ missing indexed literals convert undefined normally. Each iteration and copied
 unit consumes work, even for huge lengths and empty literals. This ordinary-call
 API completes the String constructor's static properties, so own-key reflection
 and integrity operations on that constructor no longer need an incomplete-intrinsic
-guard. Tagged template grammar and template object caching remain separate work.
+guard. Tagged templates use the same raw component semantics.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary

@@ -8,6 +8,7 @@ mod function;
 mod iteration;
 mod lexer;
 mod object;
+mod template;
 
 use ast::*;
 use lexer::{Kind, Lexer, Token};
@@ -564,6 +565,14 @@ impl Parser {
                 .unwrap_or(0)
                 .max(callee.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
+            ExprKind::TaggedTemplate {
+                tag, substitutions, ..
+            } => substitutions
+                .iter()
+                .map(|expression| expression.depth)
+                .max()
+                .unwrap_or(0)
+                .max(tag.depth),
             ExprKind::Template { substitutions, .. } => {
                 substitutions.iter().map(|e| e.depth).max().unwrap_or(0)
             }
@@ -673,6 +682,28 @@ impl Parser {
                 left = self.make_expr(ExprKind::Member(Box::new(left), property), span)?;
                 continue;
             }
+            if minimum <= 18
+                && matches!(
+                    self.current().kind,
+                    Kind::Template {
+                        continuation: false,
+                        ..
+                    }
+                )
+            {
+                if !member_base(&left) {
+                    if self.current().newline {
+                        break;
+                    }
+                    return Err(self.error("tagged template requires a left-hand-side expression"));
+                }
+                let token = self.bump();
+                let Kind::Template { element, tail, .. } = token.kind else {
+                    unreachable!("template head")
+                };
+                left = self.template_literal(element, tail, token.span, Some(left))?;
+                continue;
+            }
             // ECMA-262 13.4: a postfix update cannot cross a line terminator.
             if minimum <= 16 && !self.current().newline && (self.at("++") || self.at("--")) {
                 if !assignment_target(&left) {
@@ -763,21 +794,6 @@ impl Parser {
             }
             return Err(self.unsupported("optional chaining is not implemented"));
         }
-        if matches!(
-            self.current().kind,
-            Kind::Template {
-                continuation: false,
-                ..
-            }
-        ) {
-            if !member_base(&left) {
-                if self.current().newline {
-                    return Ok(left);
-                }
-                return Err(self.error("tagged template requires a left-hand-side expression"));
-            }
-            return Err(self.unsupported("tagged templates are not implemented"));
-        }
         Ok(left)
     }
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
@@ -829,39 +845,7 @@ impl Parser {
                 element,
                 tail,
                 continuation: false,
-            } => {
-                let mut elements = vec![element];
-                let mut substitutions = Vec::new();
-                let mut tail = tail;
-                let mut end = span.end;
-                while !tail {
-                    substitutions.push(self.expression_with_in(1, true)?);
-                    let token = self.bump();
-                    let Kind::Template {
-                        element,
-                        tail: is_tail,
-                        continuation: true,
-                    } = token.kind
-                    else {
-                        return Err(early(token.span, "expected template substitution tail"));
-                    };
-                    elements.push(element);
-                    tail = is_tail;
-                    end = token.span.end;
-                }
-                for element in &elements {
-                    if element.cooked.is_none() {
-                        return Err(early(element.span, "invalid escape in untagged template"));
-                    }
-                }
-                self.make_expr(
-                    ExprKind::Template {
-                        elements,
-                        substitutions,
-                    },
-                    Span::new(span.start, end),
-                )
-            }
+            } => self.template_literal(element, tail, span, None),
             Kind::Literal(lit) => self.make_expr(ExprKind::Literal(lit), span),
             Kind::Word(name) if !token.escaped && name == "this" => {
                 self.make_expr(ExprKind::This, span)
@@ -928,6 +912,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::Object(_)
             | ExprKind::Array(_)
             | ExprKind::Template { .. }
+            | ExprKind::TaggedTemplate { .. }
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
             | ExprKind::Call { .. }
@@ -1508,6 +1493,14 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 } else {
                     validate_expr(&property.value, strict)?;
                 }
+            }
+        }
+        ExprKind::TaggedTemplate {
+            tag, substitutions, ..
+        } => {
+            validate_expr(tag, strict)?;
+            for expression in substitutions {
+                validate_expr(expression, strict)?;
             }
         }
         ExprKind::Template { substitutions, .. } => {

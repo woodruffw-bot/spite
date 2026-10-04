@@ -475,6 +475,15 @@ pub enum ExprKind {
         /// Expressions interpolated between elements.
         substitutions: Vec<Expr>,
     },
+    /// A tagged template call with unconverted substitution arguments.
+    TaggedTemplate {
+        /// Expression whose value is called with the template and substitutions.
+        tag: Box<Expr>,
+        /// Shared components identify this template site across syntax clones.
+        elements: Rc<[TemplateElement]>,
+        /// Expressions evaluated between components, in source order.
+        substitutions: Vec<Expr>,
+    },
     /// The this binding of the current lexical environment.
     This,
     /// The nearest non-arrow function environment's newTarget binding.

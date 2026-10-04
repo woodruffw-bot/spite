@@ -188,7 +188,7 @@ impl<'a> Lexer<'a> {
 
     // ECMA-262 12.9.6: TV interprets escapes while TRV preserves them. Both
     // normalize CR and CRLF to LF. Invalid escapes have undefined TV so that
-    // the parser can distinguish untagged syntax errors from unsupported tags.
+    // the parser can reject invalid untagged escapes and preserve tagged ones.
     fn template_component(&mut self, start: usize) -> Result<(TemplateElement, bool), Diagnostic> {
         let content_start = self.pos;
         let mut cooked = Vec::new();

@@ -127,7 +127,7 @@ fn malformed_untagged_templates_are_syntax_errors() {
 }
 
 #[test]
-fn tagged_templates_remain_unsupported_even_with_invalid_cooked_escapes() {
+fn tagged_templates_accept_invalid_cooked_escapes() {
     for source in [
         "tag`x`",
         "tag\n`x`",
@@ -136,11 +136,7 @@ fn tagged_templates_remain_unsupported_even_with_invalid_cooked_escapes() {
         r"tag`\u{110000}`",
         "`x``y`",
     ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 

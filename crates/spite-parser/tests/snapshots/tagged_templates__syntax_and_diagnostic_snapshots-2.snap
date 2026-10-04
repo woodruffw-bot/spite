@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/tagged_templates.rs
+expression: parse_script(source).unwrap_err()
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 0,
+        end: 6,
+    },
+    message: "invalid assignment target",
+}

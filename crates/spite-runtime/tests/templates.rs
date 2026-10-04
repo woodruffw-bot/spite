@@ -100,11 +100,10 @@ fn template_limits_abort_without_exposing_partial_results() {
 }
 
 #[test]
-fn invalid_templates_and_tags_prevent_execution() {
+fn invalid_untagged_templates_prevent_execution() {
     for (template, kind) in [
         (r"`\1`", DiagnosticKind::Syntax),
         (r"`${1}\x`", DiagnosticKind::Syntax),
-        ("tag`x`", DiagnosticKind::Unsupported),
     ] {
         let mut realm = Realm::default();
         realm.eval("let x = 1;").unwrap();

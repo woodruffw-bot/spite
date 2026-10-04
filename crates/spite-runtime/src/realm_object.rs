@@ -381,12 +381,14 @@ impl Realm {
         self.objects.inspect(handle)
     }
 
-    /// Collects between evaluations, retaining bindings, intrinsics, and host roots.
+    /// Collects between evaluations, retaining bindings, intrinsics, cached templates,
+    /// and host roots.
     ///
     /// Retain returned or thrown object values with [`Self::root_value`] before
     /// calling this method. Unrooted host values may become stale. Evaluation and
     /// allocation never call the collector, so live evaluation temporaries cannot
-    /// be collected. Environment scans consume the supplied work budget too.
+    /// be collected. Environment and template-registry scans consume the supplied
+    /// work budget too.
     pub fn collect(&mut self, max_work: usize) -> Result<Collection, spite_heap::Error> {
         let scanned = self
             .scopes
@@ -399,6 +401,7 @@ impl Realm {
                         .map_or(0, |intrinsics| intrinsics.roots().count()),
                 )
             })
+            .and_then(|count| count.checked_add(self.template_map.len()))
             .ok_or(spite_heap::Error::Limit)?;
         let remaining = max_work
             .checked_sub(scanned)
@@ -412,6 +415,7 @@ impl Realm {
                     .iter()
                     .flat_map(|intrinsics| intrinsics.roots()),
             );
+        let roots = roots.chain(self.template_map.iter().map(|(_, array)| array));
         let mut result = self.objects.collect(roots, remaining)?;
         result.work_used += scanned;
         Ok(result)
