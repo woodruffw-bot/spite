@@ -31,7 +31,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 206 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 274 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -213,14 +213,14 @@ results, and matches negative tests by phase and error type. Parse-negative pass
 require a reviewed diagnostic range and message; unreviewed syntax errors remain
 unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. The unchanged pinned assert.js/sta.js harness now
-executes for nine positive function/capture tests, twelve Boolean tests, 29
+executes for nine positive function/capture tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, and five global numeric predicate tests
 in both Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing String/JSON APIs and remains Unsupported;
 arrays, built-in Error constructors, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 206 variants are four raw positives, 130 positives using the upstream
+Rust. Its 274 variants are four raw positives, 198 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream
