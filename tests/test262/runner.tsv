@@ -1968,3 +1968,14 @@ test/built-ins/Math/cosh/length.js	-	-	-
 test/built-ins/Math/cosh/name.js	-	-	-
 test/built-ins/Math/tanh/length.js	-	-	-
 test/built-ins/Math/tanh/name.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_Infinity.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_InfinityNaN.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_NaN.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_NegInfinity.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_NoArgs.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_Success_2.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_ToNumberErr.js	-	-	-
+test/built-ins/Math/hypot/Math.hypot_Zero_2.js	-	-	-
+test/built-ins/Math/hypot/not-a-constructor.js	-	-	-
+test/built-ins/Math/hypot/length.js	-	-	-
+test/built-ins/Math/hypot/name.js	-	-	-
