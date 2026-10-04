@@ -175,6 +175,8 @@ fn deliberate_assertion_failures_are_runtime_failures_in_both_modes() {
         "assert(false,'deliberate failure');",
         "assert.throws(Test262Error,()=>{},'missing throw');",
         "assert.sameValue(1,2,'deliberate mismatch');",
+        "assert.sameValue('left','right','deliberate mismatch');",
+        "assert.notSameValue('same','same','deliberate mismatch');",
         "assert.notSameValue(1n,1n,'deliberate mismatch');",
     ] {
         let outcomes = run(body);
@@ -190,24 +192,6 @@ fn deliberate_assertion_failures_are_runtime_failures_in_both_modes() {
             "{outcomes:?}"
         );
     }
-}
-
-#[test]
-fn missing_diagnostic_formatting_is_an_explicit_non_passing_gap() {
-    // String comparison diagnostics consult unimplemented JSON.stringify. They cannot
-    // be mistaken for a passing assertion or a test's expected exception.
-    let outcomes = run("assert.sameValue('left','right','deliberate mismatch');");
-    assert_eq!(outcomes.len(), 2);
-    assert!(
-        outcomes.iter().all(|outcome| matches!(
-            outcome,
-            Outcome::Unsupported {
-                stage: Stage::Runtime,
-                ..
-            }
-        )),
-        "{outcomes:?}"
-    );
 }
 
 #[test]

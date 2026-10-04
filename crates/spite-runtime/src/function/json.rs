@@ -7,6 +7,7 @@ use spite_parser::json::{JsonDocument, JsonKind, parse_json_with_work};
 
 mod raw;
 mod reviver;
+mod stringify;
 
 #[derive(Debug)]
 pub(crate) struct JsonIntrinsics {
@@ -14,11 +15,19 @@ pub(crate) struct JsonIntrinsics {
     parse: ObjectHandle,
     raw: ObjectHandle,
     is_raw: ObjectHandle,
+    stringify: ObjectHandle,
 }
 
 impl JsonIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.object, &self.parse, &self.raw, &self.is_raw].into_iter()
+        [
+            &self.object,
+            &self.parse,
+            &self.raw,
+            &self.is_raw,
+            &self.stringify,
+        ]
+        .into_iter()
     }
 }
 
@@ -42,6 +51,14 @@ impl Realm {
             true,
             span,
         )?;
+        let stringify = self.new_builtin(function_prototype, Builtin::JsonStringify, span)?;
+        self.define_builtin_property(
+            &object,
+            "stringify",
+            Value::Object(stringify.clone()),
+            true,
+            span,
+        )?;
         self.object_work(span, |objects, budget| {
             objects.define(
                 &object,
@@ -60,6 +77,7 @@ impl Realm {
             parse,
             raw,
             is_raw,
+            stringify,
         })
     }
 

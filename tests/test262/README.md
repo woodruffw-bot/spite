@@ -825,10 +825,9 @@ bytes are unchanged; no default resource quota or test allowance is introduced.
 Fifty-two unchanged JSON.parse sources add 104 Script/StrictScript variants for
 exact JSON whitespace, string delimiters and escapes, control-character rejection,
 ordered text coercion and abrupt failures, negative zero, ordinary __proto__ keys,
-duplicate names, and function metadata/non-construction. The prototype descriptor
-fixture requiring whole-object enumeration remains excluded while the JSON method
-inventory is incomplete. Callable-reviver, stringify, and raw JSON fixtures remain
-outside this selection. Local regressions additionally cover intrinsic prototype
+duplicate names, and function metadata/non-construction. This initial cohort
+omits the descriptor requiring whole-object enumeration, callable-reviver,
+stringify, and raw JSON cases; later cohorts review those implemented paths. Local regressions additionally cover intrinsic prototype
 and exception retention, own data descriptors, inherited setter bypass, binary64
 boundaries, deep default values, and opted-in host aborts. The pin, original bytes,
 harness files, and unlimited defaults remain unchanged.
@@ -841,16 +840,15 @@ rejections, getter and callback errors, the root wrapper, and primitive/array/ob
 source contexts. Native regressions cover changed values and replaced containers,
 duplicate-key lexemes, snapshot keys and array length, exact callback arguments,
 setter bypass, deep traversal, and opted-in cyclic traversal aborts. Originals
-requiring Proxy, destructuring parameters, or stringify remain excluded without
-credit. The pin, original bytes, harness files, and unlimited defaults are unchanged.
+requiring Proxy or destructuring parameters remain excluded without credit. The pin, original bytes, harness files, and unlimited defaults are unchanged.
 
 ## Raw JSON review
 
 Twelve unchanged rawJSON/isRawJSON sources add 24 Script/StrictScript variants for
 primitive validation, surrounding whitespace and empty-input errors, null-prototype
 object shape, internal-slot branding, function metadata, and non-construction.
-Sources requiring stringify, destructuring, or whole-JSON-object reflection remain
-excluded while those dependencies are incomplete. Local regressions additionally
+This initial cohort omits stringify and whole-JSON-object descriptor cases, which
+are reviewed separately. Originals requiring destructuring remain excluded. Local regressions additionally
 cover exact large-integer and surrogate text, frozen descriptors, ordered conversion,
 getter-free/inherited/copied brand checks, collection, large default inputs, and
 opt-in work aborts. The pin, original bytes, harness files, and unlimited defaults

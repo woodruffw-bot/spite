@@ -1674,7 +1674,8 @@ positive regressions. Harness files have a separate checksummed manifest mode;
 they are support code, not test cases, and their frontmatter is not interpreted as
 test metadata. Local controls check successful assertions, Test262Error identity,
 and deliberate assertion failures against those exact files. Diagnostic paths
-requiring missing JSON and other facilities stay Unsupported and never count as passes.
+requiring other missing facilities stay Unsupported and never count as passes.
+String comparison assertion diagnostics use the implemented JSON serializer.
 Additional includes and host capabilities join coverage only when their execution
 paths are implemented and reviewed.
 
@@ -1709,7 +1710,7 @@ JSON text has a dedicated ECMA-404 parser (25.5.1, ParseJSON). It accepts exactl
 JSON whitespace, decimal numbers, double-quoted strings and JSON escapes, and
 object/array/literal grammar; ECMAScript extensions are syntax errors. Keep UTF-16
 units, including raw and escaped lone surrogates. Preserve source-order duplicate
-object entries and exact code-unit ranges for future reviver source contexts.
+object entries and exact code-unit ranges for reviver source contexts.
 The flat postorder tree uses child indices and explicit container states, so parsing
 and dropping deeply nested JSON never recurse on the native stack. Every growing
 buffer reserves fallibly; a caller-supplied work callback can abort separately from
@@ -1740,7 +1741,20 @@ overflow. Returned objects have null prototypes, an internal IsRawJSON brand,
 and an enumerable frozen rawJSON data property. JSON.isRawJSON checks that slot
 without property reads or coercion; inheritance and copying cannot transfer it.
 The brand contributes one slot to shared heap accounting and survives collection.
-Stringify remains open. Until that inventory is complete,
-missing JSON methods and whole-object enumeration remain explicit host gaps.
+JSON.stringify processes callable or array replacers before space conversion.
+Deduplicate converted string/number keys while preserving their order, and apply
+that list to every ordinary object, including inherited/nonenumerable properties.
+Gap conversion uses numeric truncation/clamping or the first ten UTF-16 units.
+Serialize each property with live Get, then callable toJSON, then the replacer,
+then raw branding or wrapper conversion. BigInt throws unless a hook replaces it;
+omitted array values become null, while omitted object values are excluded.
+QuoteJSONString uses lowercase escapes for controls and lone surrogates, retaining
+valid surrogate pairs. Retained intrinsic prototypes create the root holder.
+Explicit frames snapshot object keys or array length and emit into one fallible
+UTF-16 buffer. A set of active object identities detects cycles after hooks while
+allowing repeated aliases; heap identity and slot generation are part of hashing.
+Indentation grows and shrinks with frames, preserving empty-container formatting.
+The complete JSON method inventory supports reflection and integrity operations.
+No default serialization nesting or resource quota is introduced.
 Materialization has no default nesting or resource quota; opted-in work, heap,
 and final decoded string/property-name quotas retain their host-abort behavior.

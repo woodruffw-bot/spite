@@ -650,10 +650,7 @@ impl Realm {
         span: Span,
     ) -> Result<Vec<PropertyKey>, Error> {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
-        if self.global_object.as_ref() == Some(object)
-            || object == &intrinsics.array.constructor
-            || object == &intrinsics.json.object
-        {
+        if self.global_object.as_ref() == Some(object) || object == &intrinsics.array.constructor {
             return Err(Self::unsupported(
                 span,
                 "own keys of this incomplete intrinsic are not implemented",
@@ -713,9 +710,7 @@ impl Realm {
         let Some(intrinsics) = &self.intrinsics else {
             return false;
         };
-        (object == &intrinsics.array.constructor && missing_array_static(key))
-            || (object == &intrinsics.json.object
-                && ["stringify"].iter().any(|name| key_is(key, name)))
+        object == &intrinsics.array.constructor && missing_array_static(key)
     }
 }
 

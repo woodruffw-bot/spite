@@ -65,7 +65,7 @@ fn input_conversion_precedes_syntax_and_noncallable_revivers_are_ignored() {
 }
 
 #[test]
-fn invalid_json_throws_intrinsic_syntaxerror_and_serialization_remains_a_host_gap() {
+fn invalid_json_throws_intrinsic_syntaxerror() {
     for text in ["undefined", "NaN", "01", "[1,]", "{a:1}", "'x'", "/*x*/1"] {
         assert!(
             matches!(
@@ -81,15 +81,6 @@ fn invalid_json_throws_intrinsic_syntaxerror_and_serialization_remains_a_host_ga
     check(
         "let C=SyntaxError;globalThis.SyntaxError=function(){throw 7;};let caught=false;try{JSON.parse('x');}catch(e){caught=e instanceof C && e.constructor===C;}caught",
     );
-    for source in ["JSON.stringify", "Reflect.ownKeys(JSON)"] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
 }
 
 #[test]

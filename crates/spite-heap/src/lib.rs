@@ -4,7 +4,11 @@
 //! not keep its stored value alive; collection roots are supplied explicitly.
 //! Allocation never performs implicit collection.
 
-use std::{fmt, rc::Rc};
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    rc::Rc,
+};
 
 #[derive(Debug)]
 struct Identity;
@@ -28,6 +32,14 @@ impl PartialEq for Handle {
     }
 }
 impl Eq for Handle {}
+
+impl Hash for Handle {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        Rc::as_ptr(&self.owner).hash(state);
+        self.slot.hash(state);
+        self.generation.hash(state);
+    }
+}
 
 impl fmt::Debug for Handle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -288,6 +300,25 @@ fn charge(remaining: &mut usize, work: usize) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hashed_handles_preserve_heap_identity_and_generation() {
+        let mut first = Heap::new(1);
+        let mut second = Heap::new(1);
+        let old = first.insert(1).unwrap();
+        let foreign = second.insert(1).unwrap();
+        let mut set = std::collections::HashSet::new();
+        assert!(set.insert(old.clone()));
+        assert!(!set.insert(old.clone()));
+        assert!(set.insert(foreign));
+        first.remove(&old).unwrap();
+        let reused = first.insert(2).unwrap();
+        assert_eq!(old.slot, reused.slot);
+        assert!(set.insert(reused.clone()));
+        assert!(set.contains(&old));
+        assert!(set.contains(&reused));
+        assert_eq!(set.len(), 3);
+    }
 
     #[test]
     fn exhausted_generations_retire_slots_instead_of_reviving_old_handles() {

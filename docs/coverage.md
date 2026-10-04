@@ -35,7 +35,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
-| JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, and frozen raw JSON objects with unforgeable branding; stringify remains open |
+| JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5308 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
@@ -799,8 +799,14 @@ Raw JSON regressions cover primitive validation and boundary code units, exact
 lexemes including large integers and lone surrogates, single ordered conversion,
 intrinsic SyntaxError retention, frozen/null-prototype descriptors, mutation
 rejection, getter-free branding, inheritance/copying, metadata, collection,
-100,000-character default text, and opted-in work aborts. Serialization remains
-an explicit implementation gap.
+100,000-character default text, and opted-in work aborts. Serialization regressions
+cover omissions/null substitution, property order and live reads, toJSON/replacer
+ordering and holders, wrapper conversion, replacer lists, indentation, BigInt and
+raw embedding, aliases/cycles, abrupt identity, nested serialization, complete
+reflection, collection, 10,000-level default nesting, and opt-in output/work aborts.
+Every UTF-16 unit roundtrips through quoting and the independent strict parser;
+exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
+tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring, regular
@@ -931,22 +937,21 @@ fallback/literal sources remain excluded without credit.
 The pin, original bytes, helpers, and unlimited defaults are unchanged.
 Fifty-two unchanged JSON.parse sources add 104 variants for exact grammar,
 whitespace and escapes, text coercion, negative zero, duplicate/__proto__ keys,
-metadata, and non-construction. Whole-object reflection, callable-reviver, and
-serialization originals remain excluded while their paths are incomplete.
+metadata, and non-construction. This cohort omits reviver and serialization cases, which are reviewed separately.
 Thirteen unchanged JSON reviver sources add 26 variants for callback order,
 source contexts, wrappers, inherited values, rejected updates, and abrupt errors.
-Proxy, destructuring, and stringify dependencies remain excluded without credit.
+Originals requiring Proxy or destructuring remain excluded without credit.
 Twelve unchanged raw JSON sources add 24 variants for primitive validation,
-null-prototype objects, slot branding, metadata, and non-construction. Stringify,
-destructuring, and whole-object reflection dependencies remain excluded here.
+null-prototype objects, slot branding, metadata, and non-construction. Serialization
+and full-inventory descriptor cases are reviewed separately; destructuring remains open.
 Another 53 positive for-of files and 22 reviewed for-of parse-negative files cover
 iteration, bindings, header grammar, and closing precedence. Seven rest-parameter
 positives and twelve parameter parse negatives cover Arrays, length, argument
 aliasing, call/apply, and non-simple parameter syntax. Another 36 for-in positives
 and 20 reviewed negatives cover ordered enumeration, mutation, bindings, ASI,
 control flow, and header/body early errors. Controls
-verify successful assertions and explicit assertion failures. Some string comparison
-failure formatting still requires missing JSON and remains Unsupported;
+verify successful assertions and explicit assertion failures. String comparison
+failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 5308 variants are four raw positives, 5112 positives using the upstream

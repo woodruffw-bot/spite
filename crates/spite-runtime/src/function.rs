@@ -266,6 +266,7 @@ pub(crate) enum Builtin {
     JsonParse,
     JsonRaw,
     JsonIsRaw,
+    JsonStringify,
     IsFinite,
     IsNaN,
     NumberIsFinite,
@@ -491,6 +492,7 @@ impl Builtin {
             Self::JsonParse => "parse",
             Self::JsonRaw => "rawJSON",
             Self::JsonIsRaw => "isRawJSON",
+            Self::JsonStringify => "stringify",
             Self::EncodeUri => "encodeURI",
             Self::EncodeUriComponent => "encodeURIComponent",
             Self::DecodeUri => "decodeURI",
@@ -679,6 +681,7 @@ impl Builtin {
             | Self::ObjectGroupBy
             | Self::ObjectIs => 2.0,
             Self::ObjectDefineProperty
+            | Self::JsonStringify
             | Self::ReflectApply
             | Self::ReflectDefineProperty
             | Self::ReflectSet => 3.0,
