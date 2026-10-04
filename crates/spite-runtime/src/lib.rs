@@ -1556,7 +1556,6 @@ fn standard_global(name: &str) -> bool {
             | "SyntaxError"
             | "TypeError"
             | "URIError"
-            | "Number"
             | "BigInt"
             | "Math"
             | "Date"

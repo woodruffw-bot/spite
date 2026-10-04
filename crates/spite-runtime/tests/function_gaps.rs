@@ -7,7 +7,7 @@ fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;function f(){flag=9;}").unwrap();
     for source in [
-        "f.call(1)",
+        "f.call(1n)",
         "f.call('text')",
         "f.apply(1n,{length:0})",
         "f.bind('text')()",
@@ -21,7 +21,7 @@ fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     assert!(matches!(
-        realm.eval("f.call(1,flag=3)"),
+        realm.eval("f.call(1n,flag=3)"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(3.0)));

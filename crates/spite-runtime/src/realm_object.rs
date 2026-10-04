@@ -107,14 +107,7 @@ impl Realm {
         if let Value::Object(object) = base {
             return self.get_property(object, key, span);
         }
-        if matches!(base, Value::Boolean(_)) {
-            let prototype = self
-                .intrinsics
-                .as_ref()
-                .expect("initialized realm")
-                .boolean
-                .prototype
-                .clone();
+        if let Some(prototype) = self.primitive_prototype(base) {
             return self.get_property_with_receiver(&prototype, key, base.clone(), span);
         }
         self.tick(span)?;
@@ -158,14 +151,7 @@ impl Realm {
                 }
             };
         }
-        if matches!(base, Value::Boolean(_)) {
-            let prototype = self
-                .intrinsics
-                .as_ref()
-                .expect("initialized realm")
-                .boolean
-                .prototype
-                .clone();
+        if let Some(prototype) = self.primitive_prototype(base) {
             let action = self.object_work(span, |objects, budget| {
                 budget.value(&value)?;
                 objects.set(&prototype, key, value.clone(), None, budget)
@@ -435,6 +421,14 @@ impl Realm {
         };
         (object == &intrinsics.object_prototype && missing_object_method(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
+            || (object == &intrinsics.number.prototype
+                && ["toExponential", "toFixed", "toLocaleString", "toPrecision"]
+                    .iter()
+                    .any(|name| key_is(key, name)))
+            || (object == &intrinsics.number.constructor
+                && ["parseFloat", "parseInt"]
+                    .iter()
+                    .any(|name| key_is(key, name)))
     }
 }
 

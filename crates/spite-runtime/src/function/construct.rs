@@ -120,6 +120,25 @@ impl Realm {
                         .object_work(span, |objects, _| objects.create_boolean(&prototype, value))
                         .map(Value::Object);
                 }
+                Callable::Builtin(Builtin::Number) => {
+                    let value =
+                        self.number_constructor_value(arguments.into_iter().next(), span)?;
+                    let prototype =
+                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                    let prototype = if let Value::Object(prototype) = prototype {
+                        prototype
+                    } else {
+                        self.intrinsics
+                            .as_ref()
+                            .expect("initialized realm")
+                            .number
+                            .prototype
+                            .clone()
+                    };
+                    return self
+                        .object_work(span, |objects, _| objects.create_number(&prototype, value))
+                        .map(Value::Object);
+                }
                 _ => unreachable!("constructibility is enabled only for implemented constructors"),
             }
         }

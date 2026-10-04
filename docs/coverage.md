@@ -18,11 +18,11 @@ not an alternative language specification.
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
-| Calls | Builtin, arrow, and ordinary calls with strict, object, or global receivers (boxed receivers remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
+| Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions and inherited intrinsic hooks, with ordered prototype lookup; custom Symbol.hasInstance hooks await symbols |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean receivers box; other non-strict primitive receivers remain Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean and Number receivers box; other non-strict primitive receivers remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -94,9 +94,9 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the thirteen objects remain rooted. Function.prototype caller/arguments
+is atomic and the twenty-one objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
-metadata. Their reads/writes throw catchable TypeError in both modes. Number/String/BigInt/Symbol
+metadata. Their reads/writes throw catchable TypeError in both modes. String/BigInt/Symbol
 wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
@@ -123,12 +123,12 @@ Strict ordinary functions execute with preserved receivers, shared lexical captu
 hoisting, defaults, and return completions. Unmapped arguments expose original
 indices, length, and restricted callee; indices and parameters do not alias. Arrows
 capture this and arguments from enclosing functions, including across collection.
-Non-strict functions with object, Boolean, or nullish/global receivers also execute. Simple parameter lists
+Non-strict functions with object, Boolean, Number, or nullish/global receivers also execute. Simple parameter lists
 use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
-The arguments Symbol.iterator hook and non-Boolean primitive wrappers remain unimplemented.
+The arguments Symbol.iterator hook and String/BigInt/Symbol primitive wrappers remain unimplemented.
 Ordinary new expressions create fresh receivers from the current constructor
 prototype (or the realm default), run parameters/bodies, and honor object returns.
 Bound constructors forward arguments and newTarget while ignoring bound this and
@@ -145,7 +145,16 @@ the primitive receiver for inherited accessors. Object.prototype.valueOf boxes
 Booleans, and toString recognizes Boolean wrappers. Truthiness, ordinary coercion,
 bound construction, collection, and host-limit behavior have regression coverage.
 
-Symbols, Number/String/BigInt wrapper APIs,
+Number calls/construction, NumberData wrappers, valueOf, constants, and
+isFinite/isNaN/isInteger/isSafeInteger are implemented. Explicit Number conversion
+accepts BigInt with nearest-even binary64 rounding and signed overflow; implicit
+ToNumber still rejects it. Number receivers box in non-strict calls. Decimal
+toString and radix validation are implemented; finite nonzero formatting in other
+radices reports Unsupported. Other formatting methods and parseInt/parseFloat
+remain gaps, including their callable values. NumberData preserves negative zero
+and NaN independently of the object's current prototype.
+
+Symbols, String/BigInt wrapper APIs,
 arrays, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared

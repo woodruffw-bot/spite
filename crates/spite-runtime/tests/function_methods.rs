@@ -45,9 +45,9 @@ fn call_passes_receivers_without_boxing_or_global_substitution() {
             })
         ));
     }
-    // Observable primitive wrapper allocation is still a separate roadmap step.
+    // BigInt wrapper allocation remains a separate roadmap step.
     assert!(matches!(
-        Realm::default().eval("({}).valueOf.call(1)"),
+        Realm::default().eval("({}).valueOf.call(1n)"),
         Err(Error::Unsupported { .. })
     ));
 }

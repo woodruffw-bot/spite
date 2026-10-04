@@ -101,6 +101,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute non-strict calls with object receivers and mapped arguments, including alias detachment.
 - [x] Add the ordinary global object, property-backed global bindings, globalThis, and nullish/global receivers.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.
+- [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.
+- [ ] Complete non-decimal Number formatting and the remaining Number methods.
 - [ ] Add remaining boxed receivers and the arguments iterator hook.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.
 - [x] Execute ordinary and bound construction with prototype selection and ordered arguments.

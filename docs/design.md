@@ -103,7 +103,7 @@ also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
-and non-strict calls with object, global, or Boolean receivers execute. Ordinary
+and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
 Generators, async functions, rest parameters, and patterns remain separate steps.
 
@@ -296,7 +296,7 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity; its callable
 properties remain incomplete. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. Symbol coercion hooks and Number, String, BigInt, and Symbol
+that method normally. Symbol coercion hooks and String, BigInt, and Symbol
 wrapper constructors remain explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors
@@ -321,8 +321,8 @@ as permitted by the GetValue/PutValue/delete notes. String own properties expose
 UTF-16 length and single-code-unit indices with non-writable, non-configurable
 attributes. Canonical numeric index names exclude string `-0`, leading zeros,
 fractions, and out-of-range indices. Writes retain the primitive receiver and
-fail without persisting a data property; strict mode throws. Boolean primitives
-look up the actual Boolean prototype graph, retaining the primitive receiver for
+fail without persisting a data property; strict mode throws. Boolean and Number primitives
+look up their actual prototype graphs, retaining the primitive receiver for
 inherited getter/setter calls; setters can succeed in either strictness mode. Missing standard prototype
 methods report Unsupported, while absent properties produce undefined. The
 optional Annex B String methods and optional legacy Object.prototype accessor
@@ -349,14 +349,14 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The thirteen intrinsic objects are published atomically during realm
+(20.1.3, 10.4.7.1). The twenty-one intrinsic objects are published atomically during realm
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
 %ThrowTypeError% function (9.3.2, 10.2.4). Its name/length descriptors are frozen.
 Reads and writes throw TypeError in both modes, while presence and own-property
 deletion do not invoke accessors. Unavailable standard methods remain Unsupported.
-Native Object.prototype.valueOf returns fresh Boolean wrappers for Boolean
+Native Object.prototype.valueOf returns fresh Boolean/Number wrappers for their primitive
 receivers; other primitive wrappers remain Unsupported. Arrow closures use the same callable dispatch with
 their captured environment identity.
 
@@ -374,6 +374,16 @@ allocation. Object.prototype.toString recognizes BooleanData independently of
 prototype identity. Wrapper slots consume trace work, and wrapper object edges
 use the existing heap/root machinery. Bound construction forwards through the
 same Boolean constructor algorithm and ignores the bound receiver.
+
+Number support includes construction, valueOf, constants,
+and the non-coercing isFinite/isNaN/isInteger/isSafeInteger predicates (21.1).
+Explicit Number conversion accepts BigInt, using the integer library's single
+correctly rounded conversion; ordinary ToNumber still rejects it. NumberData
+preserves negative zero and NaN. Decimal toString uses the existing Number string
+conversion after validating the receiver and radix in specification order.
+Non-decimal finite formatting remains an explicit host gap until its complete
+conversion algorithm is implemented; invalid radices still throw RangeError.
+Other Number formatting methods and parseInt/parseFloat remain separate steps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
@@ -484,7 +494,7 @@ is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
 alias indices, or vice versa. Argument values and receiver captures remain traced
 after returns or abrupt default initialization. The required Symbol.iterator hook
 is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
-recognizes the Arguments tag. Boolean non-strict receivers are boxed; other
+recognizes the Arguments tag. Boolean and Number non-strict receivers are boxed; other
 primitive receivers still report Unsupported until their wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
 
 Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps

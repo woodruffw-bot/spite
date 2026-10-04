@@ -74,28 +74,6 @@ impl Realm {
         })
     }
 
-    pub(crate) fn box_primitive(&mut self, value: Value, span: Span) -> Result<Value, Error> {
-        Self::require_object_coercible(&value, span)?;
-        match value {
-            Value::Object(_) => Ok(value),
-            Value::Boolean(value) => {
-                let prototype = self
-                    .intrinsics
-                    .as_ref()
-                    .expect("initialized realm")
-                    .boolean
-                    .prototype
-                    .clone();
-                self.object_work(span, |objects, _| objects.create_boolean(&prototype, value))
-                    .map(Value::Object)
-            }
-            _ => Err(Self::unsupported(
-                span,
-                "this primitive wrapper type is not implemented",
-            )),
-        }
-    }
-
     pub(super) fn this_boolean_value(&mut self, value: &Value, span: Span) -> Result<bool, Error> {
         let value = match value {
             Value::Boolean(value) => Some(*value),

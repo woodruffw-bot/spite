@@ -35,6 +35,12 @@ impl fmt::Display for PropertyLimit {
 }
 impl std::error::Error for PropertyLimit {}
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum PrimitiveData {
+    Boolean(bool),
+    Number(f64),
+}
+
 /// An ordinary object's prototype, extensibility, and ordered properties.
 ///
 /// Lookup is linear and keys compare exact UTF-16 code units. The property limit
@@ -48,7 +54,7 @@ pub struct OrdinaryObject {
     max_properties: usize,
     callable: Option<Callable>,
     constructible: bool,
-    boolean_data: Option<bool>,
+    primitive_data: Option<PrimitiveData>,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -67,7 +73,7 @@ impl OrdinaryObject {
             max_properties,
             callable: None,
             constructible: false,
-            boolean_data: None,
+            primitive_data: None,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -94,7 +100,17 @@ impl OrdinaryObject {
     }
 
     pub(crate) fn boolean_data(&self) -> Option<bool> {
-        self.boolean_data
+        match self.primitive_data {
+            Some(PrimitiveData::Boolean(value)) => Some(value),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn number_data(&self) -> Option<f64> {
+        match self.primitive_data {
+            Some(PrimitiveData::Number(value)) => Some(value),
+            _ => None,
+        }
     }
 
     pub(crate) fn callable(&self) -> Option<&Callable> {
@@ -199,7 +215,7 @@ impl Trace for OrdinaryObject {
             Some(Callable::Builtin(_)) | None => None,
         };
         std::iter::once(self.prototype.as_ref())
-            .chain(self.boolean_data.iter().map(|_| None))
+            .chain(self.primitive_data.iter().map(|_| None))
             .chain(std::iter::once(capture))
             .chain(self.parameter_map.iter().flat_map(|map| {
                 std::iter::once(Some(&map.environment.0)).chain(map.names.values().map(|_| None))

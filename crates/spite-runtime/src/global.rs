@@ -51,6 +51,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Boolean", Value::Object(boolean), true, span)?;
+        let number = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .number
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Number", Value::Object(number), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

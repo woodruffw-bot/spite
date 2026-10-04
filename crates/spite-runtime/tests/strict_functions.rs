@@ -263,14 +263,19 @@ fn abrupt_calls_restore_caller_state_and_host_limits_skip_finalizers() {
     ));
     assert_eq!(realm.eval("another=8"), Ok(Value::Number(8.0)));
     let mut realm = Realm::new(Limits {
-        max_properties: 8,
+        max_properties: 64,
         ..Limits::default()
     });
     realm
         .eval("let flag=0;function f(){'use strict';flag=9;}")
         .unwrap();
+    // 63 indexed arguments plus length and callee exceed the object capacity.
+    let arguments = (0..63)
+        .map(|index| index.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
     assert!(matches!(
-        realm.eval("try{f(1,2,3,4,5,6,7);}finally{flag=1;}"),
+        realm.eval(&format!("try{{f({arguments});}}finally{{flag=1;}}")),
         Err(Error::Limit { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

@@ -1,7 +1,9 @@
 //! Heap context for ordinary internal methods with bounded prototype traversal.
 
 use super::entry::Entry;
-use super::{DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor};
+use super::{
+    DataDescriptor, DescriptorKind, OrdinaryObject, PrimitiveData, Property, PropertyDescriptor,
+};
 use crate::function::{BoundFunction, Builtin, Callable, ScriptFunction};
 use crate::{
     Value,
@@ -171,7 +173,7 @@ impl Objects {
         self.inspect(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Builtin(builtin));
-        object.constructible = matches!(builtin, Builtin::Boolean);
+        object.constructible = matches!(builtin, Builtin::Boolean | Builtin::Number);
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
@@ -180,9 +182,25 @@ impl Objects {
         prototype: &Handle,
         value: bool,
     ) -> Result<Handle, Error> {
+        self.create_wrapper(prototype, PrimitiveData::Boolean(value))
+    }
+
+    pub(crate) fn create_number(
+        &mut self,
+        prototype: &Handle,
+        value: f64,
+    ) -> Result<Handle, Error> {
+        self.create_wrapper(prototype, PrimitiveData::Number(value))
+    }
+
+    fn create_wrapper(
+        &mut self,
+        prototype: &Handle,
+        value: PrimitiveData,
+    ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
-        object.boolean_data = Some(value);
+        object.primitive_data = Some(value);
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

@@ -185,13 +185,19 @@ fn early_errors_precede_all_effects() {
 
 #[test]
 fn allocation_property_and_key_limits_are_host_failures() {
+    // Leave room for intrinsic initialization, then overflow a script object.
+    let properties = (0..64)
+        .map(|index| format!("p{index}:{index}"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let source = format!("({{{properties},extra:{{}}}})");
     for limits in [
         Limits {
             max_heap_entries: REALM_ENTRIES + 1,
             ..Limits::default()
         },
         Limits {
-            max_properties: 8,
+            max_properties: 64,
             ..Limits::default()
         },
         Limits {
@@ -202,19 +208,18 @@ fn allocation_property_and_key_limits_are_host_failures() {
         let mut realm = Realm::new(limits);
         realm.eval("let flag = 0").unwrap();
         assert!(matches!(
-            realm.eval("try { ({a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:8,i:{}}); } catch { flag = 1; } finally { flag = 2; }"),
+            realm.eval(&format!(
+                "try {{ {source}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
+            )),
             Err(Error::Limit { .. })
         ));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_properties: 8,
+        max_properties: 64,
         ..Limits::default()
     });
     let handle = object(&mut realm, "({a: 1, a: 2})");
     assert_eq!(own(&realm, &handle, "a"), Value::Number(2.0));
-    assert!(matches!(
-        realm.eval("({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9})"),
-        Err(Error::Limit { .. })
-    ));
+    assert!(matches!(realm.eval(&source), Err(Error::Limit { .. })));
 }

@@ -12,7 +12,9 @@ mod boolean;
 mod bound;
 mod construct;
 mod instance;
+mod number;
 mod ordinary;
+mod wrapper;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;
 
@@ -29,6 +31,13 @@ pub(crate) enum Builtin {
     Boolean,
     BooleanToString,
     BooleanValueOf,
+    Number,
+    NumberValueOf,
+    NumberToString,
+    NumberIsFinite,
+    NumberIsNaN,
+    NumberIsInteger,
+    NumberIsSafeInteger,
 }
 
 impl Builtin {
@@ -39,15 +48,31 @@ impl Builtin {
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
             Self::FunctionBind => "bind",
-            Self::FunctionToString | Self::ObjectToString | Self::BooleanToString => "toString",
-            Self::ObjectValueOf | Self::BooleanValueOf => "valueOf",
+            Self::FunctionToString
+            | Self::ObjectToString
+            | Self::BooleanToString
+            | Self::NumberToString => "toString",
+            Self::ObjectValueOf | Self::BooleanValueOf | Self::NumberValueOf => "valueOf",
             Self::Boolean => "Boolean",
+            Self::Number => "Number",
+            Self::NumberIsFinite => "isFinite",
+            Self::NumberIsNaN => "isNaN",
+            Self::NumberIsInteger => "isInteger",
+            Self::NumberIsSafeInteger => "isSafeInteger",
         }
     }
 
     fn length(self) -> f64 {
         match self {
-            Self::FunctionCall | Self::FunctionBind | Self::Boolean => 1.0,
+            Self::FunctionCall
+            | Self::FunctionBind
+            | Self::Boolean
+            | Self::Number
+            | Self::NumberToString
+            | Self::NumberIsFinite
+            | Self::NumberIsNaN
+            | Self::NumberIsInteger
+            | Self::NumberIsSafeInteger => 1.0,
             Self::FunctionApply => 2.0,
             _ => 0.0,
         }
@@ -94,6 +119,7 @@ pub(super) struct Intrinsics {
     pub function_bind: ObjectHandle,
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
+    pub number: number::NumberIntrinsics,
 }
 
 impl Intrinsics {
@@ -111,6 +137,7 @@ impl Intrinsics {
         ]
         .into_iter()
         .chain(self.boolean.roots())
+        .chain(self.number.roots())
     }
 }
 
@@ -195,6 +222,7 @@ impl Realm {
             )?;
         }
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
+        let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -208,6 +236,7 @@ impl Realm {
             function_bind,
             function_to_string,
             boolean,
+            number,
         });
         Ok(object_prototype)
     }
@@ -463,6 +492,19 @@ impl Realm {
                     }
                 }
                 Builtin::FunctionPrototype => Ok(Value::Undefined),
+                Builtin::Number => Ok(Value::Number(
+                    self.number_constructor_value(arguments.next(), span)?,
+                )),
+                Builtin::NumberValueOf => Ok(Value::Number(self.this_number_value(&this, span)?)),
+                Builtin::NumberToString => {
+                    self.number_prototype_to_string(&this, arguments.next(), span)
+                }
+                Builtin::NumberIsFinite
+                | Builtin::NumberIsNaN
+                | Builtin::NumberIsInteger
+                | Builtin::NumberIsSafeInteger => {
+                    Ok(Value::Boolean(number::predicate(builtin, arguments.next())))
+                }
                 Builtin::Boolean => Ok(Value::Boolean(
                     arguments.next().unwrap_or(Value::Undefined).to_boolean(),
                 )),
@@ -496,6 +538,8 @@ impl Realm {
                             let object = objects.inspect(handle)?;
                             Ok(if object.boolean_data().is_some() {
                                 "Boolean"
+                            } else if object.number_data().is_some() {
+                                "Number"
                             } else if object.is_arguments() {
                                 "Arguments"
                             } else if object.is_callable() {
