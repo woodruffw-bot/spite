@@ -23,6 +23,7 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
         ("let o={toString:()=>String.prototype.trim.call(o)};", "String.prototype.trim.call(o)"),
         ("let o={valueOf:()=>''.repeat(o)};", "''.repeat(o)"),
         ("let o={toString:()=>''.padStart(1,o)};", "''.padStart(1,o)"),
+        ("let o={toString:()=>''.indexOf(o)};", "''.indexOf(o)"),
         (
             "let d={};Object.defineProperty(d,'value',{get:()=>Object.defineProperty({},'x',d)});",
             "Object.defineProperty({},'x',d)",

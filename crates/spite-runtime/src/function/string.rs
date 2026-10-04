@@ -6,6 +6,7 @@ use spite_core::{JsString, Span};
 
 mod character;
 mod repeat;
+mod search;
 mod sequence;
 #[cfg(test)]
 mod tests;
@@ -92,6 +93,8 @@ impl Realm {
             Builtin::StringRepeat,
             Builtin::StringPadStart,
             Builtin::StringPadEnd,
+            Builtin::StringIndexOf,
+            Builtin::StringLastIndexOf,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

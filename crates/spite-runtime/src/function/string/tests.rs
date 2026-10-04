@@ -249,3 +249,35 @@ fn repetition_and_padding_charge_output_work_before_allocating() {
         Err(Error::Limit { .. })
     ));
 }
+
+#[test]
+fn substring_search_bounds_repeated_candidate_comparisons() {
+    let mut realm = Realm::default();
+    let input = Value::String(JsString::from("a".repeat(100).as_str()));
+    let search = Value::String(JsString::from(format!("{}b", "a".repeat(39)).as_str()));
+    for backwards in [false, true] {
+        realm.remaining_steps = 500;
+        assert!(matches!(
+            realm.string_index_of(
+                input.clone(),
+                search.clone(),
+                Value::Undefined,
+                backwards,
+                Span::new(0, 0)
+            ),
+            Err(Error::Limit { .. })
+        ));
+        realm.remaining_steps = 500;
+        let expected = if backwards { 60.0 } else { 0.0 };
+        assert_eq!(
+            realm.string_index_of(
+                input.clone(),
+                Value::String(JsString::from("a".repeat(40).as_str())),
+                Value::Undefined,
+                backwards,
+                Span::new(0, 0)
+            ),
+            Ok(Value::Number(expected))
+        );
+    }
+}

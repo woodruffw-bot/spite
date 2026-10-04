@@ -564,8 +564,6 @@ fn missing_string_method(key: &JsString) -> bool {
     [
         "endsWith",
         "includes",
-        "indexOf",
-        "lastIndexOf",
         "localeCompare",
         "match",
         "matchAll",
