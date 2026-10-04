@@ -63,8 +63,11 @@ copying, integrity operations, and enumeration preserve both key kinds. Computed
 keys retain Symbol identity, and anonymous function names use bounded bracketed
 descriptions. ToPrimitive observes symbol-keyed hooks, exact hints, original
 receivers, and abrupt completions before ordinary conversion. Native injection
-tests this foundation; the JavaScript Symbol global, wrappers, registry, and
-remaining well-known hooks remain unavailable.
+tests this foundation. Symbol wrappers, branded methods, description access,
+fresh intrinsic calls, and the 13 fixed constructor properties are implemented.
+Symbol.prototype has no SymbolData, and new rejects the intrinsic before coercing
+the description. The JavaScript Symbol global, shared registry, and remaining
+intrinsic symbol properties remain unavailable.
 This foundation adds no Script/Test262 coverage.
 
 The `spite-heap` foundation provides capacity-bounded generational storage,
@@ -116,7 +119,7 @@ descriptors. Object.prototype has an immutable null prototype and its mandatory
 string-keyed methods. Default ordinary-object conversion is supported. Intrinsic
 initialization is atomic and the initialized objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
-metadata. Their reads/writes throw catchable TypeError in both modes. BigInt/Symbol
+metadata. Their reads/writes throw catchable TypeError in both modes. BigInt
 wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
@@ -149,7 +152,7 @@ use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
-The arguments Symbol.iterator hook and BigInt/Symbol primitive wrappers remain unimplemented.
+The arguments Symbol.iterator hook and BigInt primitive wrappers remain unimplemented.
 Ordinary new expressions create fresh receivers from the current constructor
 prototype (or the realm default), run parameters/bodies, and honor object returns.
 Bound constructors forward arguments and newTarget while ignoring bound this and
@@ -199,13 +202,13 @@ of prototype identity; Error prototypes do not carry that slot. Cause references
 are traced through ordinary properties. AggregateError remains unimplemented.
 
 Object calls/new preserve object identity, create fresh nullish-argument objects,
-and box Boolean/Number/String values. Object.prototype provides hasOwnProperty,
+and box Boolean/Number/String/Symbol values. Object.prototype provides hasOwnProperty,
 propertyIsEnumerable, isPrototypeOf, toLocaleString, constructor, toString, and
 valueOf with ordered conversions and receiver handling. Object.prototype.toString reads Symbol.toStringTag
 after selecting its fallback, accepts only String tags, and bounds UTF-16 output.
 Tag getters receive the original object or a fresh primitive wrapper. BigInt
 primitives retain their default tag while that prototype remains inaccessible;
-Symbol receivers still require the pending wrapper implementation. Own-property
+Symbol receivers use their wrappers and standard prototype tag. Own-property
 predicates inspect string/symbol descriptors without invoking accessors. Object.defineProperty converts
 inherited descriptor fields in order and applies data/accessor changes, including
 mapped-argument alias updates. Object.getOwnPropertyDescriptor returns fresh,
@@ -225,7 +228,7 @@ enumerable own values in source/key order through ordinary Get/Set, including
 getters, inherited setters, and rejected-write TypeErrors. getOwnPropertyDescriptors
 copies all own descriptors into a fresh object without invoking property getters.
 Remaining static methods and
-BigInt/Symbol boxing remain explicit gaps, including descriptor inspection
+BigInt boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
 String calls/new, StringData wrappers, and branded toString/valueOf are supported.
@@ -310,7 +313,7 @@ ToReversed/with create intrinsic arrays with dense own elements, skip constructo
 lookup, and preserve ordered live reads. With never reads its replaced index. Other
 prototype methods, spread, and array assignment patterns remain pending.
 
-Symbols, BigInt wrapper APIs, remaining String methods,
+The Symbol registry/global, BigInt wrapper APIs, remaining String methods,
 remaining Array prototype methods, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
@@ -326,7 +329,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 128 retained entries under a separate fixed work
+Realm initialization creates 134 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

@@ -10,7 +10,7 @@ use crate::{
     Value,
     environment::{BindingState, Environment, EnvironmentHandle},
 };
-use spite_core::{JsString, PropertyKey, PropertyKeyRef};
+use spite_core::{JsString, JsSymbol, PropertyKey, PropertyKeyRef};
 use spite_heap::{Collection, Handle, Heap};
 use std::collections::BTreeMap;
 use std::{
@@ -254,6 +254,14 @@ impl Objects {
         value: f64,
     ) -> Result<Handle, Error> {
         self.create_wrapper(prototype, PrimitiveData::Number(value))
+    }
+
+    pub(crate) fn create_symbol(
+        &mut self,
+        prototype: &Handle,
+        value: JsSymbol,
+    ) -> Result<Handle, Error> {
+        self.create_wrapper(prototype, PrimitiveData::Symbol(value))
     }
 
     fn create_wrapper(

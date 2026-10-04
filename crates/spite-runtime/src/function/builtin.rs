@@ -338,6 +338,18 @@ impl Realm {
             Builtin::FunctionHasInstance => self
                 .ordinary_has_instance(this, arguments.next().unwrap_or(Value::Undefined), span)
                 .map(Value::Boolean),
+            Builtin::Symbol => {
+                self.symbol_constructor(arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Builtin::SymbolToString => {
+                let symbol = self.this_symbol_value(&this, span)?;
+                self.symbol_descriptive_string(&symbol, span)
+                    .map(Value::String)
+            }
+            Builtin::SymbolValueOf | Builtin::SymbolToPrimitive => {
+                self.this_symbol_value(&this, span).map(Value::Symbol)
+            }
+            Builtin::SymbolDescription => self.symbol_description(&this, span),
             Builtin::ObjectValueOf => self.box_primitive(this, span),
             Builtin::ObjectToString => self.object_to_string(this, span),
         }

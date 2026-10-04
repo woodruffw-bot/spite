@@ -6,7 +6,7 @@
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::{Value, function::Callable};
-use spite_core::{JsString, PropertyKey, PropertyKeyRef};
+use spite_core::{JsString, JsSymbol, PropertyKey, PropertyKeyRef};
 use spite_heap::{Handle, Trace};
 use std::fmt;
 
@@ -43,6 +43,7 @@ pub(crate) enum PrimitiveData {
     Boolean(bool),
     Number(f64),
     String(JsString),
+    Symbol(JsSymbol),
 }
 
 /// Stored object properties, prototype, extensibility, and internal-slot metadata.
@@ -138,6 +139,13 @@ impl OrdinaryObject {
     pub(crate) fn string_data(&self) -> Option<&JsString> {
         match &self.primitive_data {
             Some(PrimitiveData::String(value)) => Some(value),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn symbol_data(&self) -> Option<&JsSymbol> {
+        match &self.primitive_data {
+            Some(PrimitiveData::Symbol(value)) => Some(value),
             _ => None,
         }
     }

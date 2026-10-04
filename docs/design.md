@@ -305,8 +305,19 @@ semantics: inherited accessors retain the original receiver; only null/undefined
 fall back to OrdinaryToPrimitive. Calls receive the exact default/string/number
 hint, and object results throw TypeError without falling back (7.1.1).
 
-Finally, integrate Symbol wrappers, construction, shared registry semantics,
-and remaining observable hooks before exposing the JavaScript Symbol global.
+Symbol wrappers own immutable SymbolData independently of their current prototype.
+Symbol.prototype is ordinary and has no SymbolData; branded methods and the
+description getter reject it and lookalike objects without coercion (20.4.3).
+ToObject retains symbol identity without copying descriptions. Prototype valueOf,
+toString, description, Symbol.toPrimitive, and Symbol.toStringTag have their standard
+attributes. Description and descriptive-string output are bounded before copying.
+The intrinsic Symbol callable creates fresh identities after description ToString;
+undefined preserves an absent description. It has length zero and no Construct
+method, and its 13 well-known properties are fixed identities (20.4.1–2).
+
+Finally, integrate shared registry semantics and remaining observable hooks before
+exposing the JavaScript Symbol global. Symbol.for/keyFor and enumeration of the
+incomplete constructor remain Unsupported during this native-injection stage.
 Remaining intrinsic symbol properties must stop relying on their current
 no-symbol assumptions. Array species and iteration then build on those boundaries.
 The foundation alone does not expose
@@ -491,7 +502,7 @@ String overrides the fallback; other values are never coerced. Tag concatenation
 preserves UTF-16 and checks output work/capacity before allocation. Nullish values
 skip lookup. BigInt primitives retain their default tag while their unexposed
 prototype cannot be changed; BigInt wrapper integration must replace this shortcut
-with ordinary ToObject/Get. Symbol receivers remain Unsupported until boxing exists.
+with ordinary ToObject/Get. Symbol receivers use their actual wrapper and prototype tag.
 Missing intrinsics remain Unsupported. Complete required Symbol hooks before
 exposing the Symbol global.
 Arithmetic and comparisons convert original operands from left to right after
@@ -503,7 +514,7 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity and its mandatory
 string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. BigInt/Symbol wrapper constructors and remaining well-known
+that method normally. BigInt wrapper APIs and remaining well-known
 hooks remain explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors

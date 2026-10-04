@@ -587,6 +587,7 @@ impl Realm {
             || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
             || object == &intrinsics.string.prototype
+            || object == &intrinsics.symbol.constructor
             || object == &intrinsics.array.constructor
             || object == &intrinsics.array.prototype
         {
@@ -660,6 +661,8 @@ impl Realm {
             return false;
         };
         (object == &intrinsics.object.constructor && missing_object_static(key))
+            || (object == &intrinsics.symbol.constructor
+                && (key_is(key, "for") || key_is(key, "keyFor")))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
@@ -716,10 +719,8 @@ fn missing_primitive_method(base: &Value, key: PropertyKeyRef<'_>) -> bool {
     let key = match key {
         PropertyKeyRef::String(key) => key,
         PropertyKeyRef::Symbol(symbol) => {
-            return (matches!(base, Value::Symbol(_) | Value::BigInt(_))
-                && symbol == &WellKnownSymbol::ToStringTag.symbol())
-                || (matches!(base, Value::Symbol(_))
-                    && symbol == &WellKnownSymbol::ToPrimitive.symbol());
+            return matches!(base, Value::BigInt(_))
+                && symbol == &WellKnownSymbol::ToStringTag.symbol();
         }
     };
     if missing_object_method(key) || key_is(key, "toString") || key_is(key, "valueOf") {
@@ -728,11 +729,6 @@ fn missing_primitive_method(base: &Value, key: PropertyKeyRef<'_>) -> bool {
     match base {
         Value::String(_) => missing_string_method(key),
         Value::BigInt(_) => key_is(key, "toLocaleString"),
-        Value::Symbol(_) => {
-            key_is(key, "description")
-                || key_is(key, "constructor")
-                || key_is(key, "toLocaleString")
-        }
         _ => false,
     }
 }

@@ -93,6 +93,11 @@ pub(crate) enum Builtin {
     ArrayReduceRight,
     ArrayToString,
     ArrayToLocaleString,
+    Symbol,
+    SymbolToString,
+    SymbolValueOf,
+    SymbolDescription,
+    SymbolToPrimitive,
     String,
     StringToString,
     StringValueOf,
@@ -149,12 +154,14 @@ impl Builtin {
             | Self::ArrayToString
             | Self::ObjectToString
             | Self::BooleanToString
+            | Self::SymbolToString
             | Self::StringToString
             | Self::ErrorToString
             | Self::NumberToString => "toString",
             Self::ObjectValueOf
             | Self::BooleanValueOf
             | Self::NumberValueOf
+            | Self::SymbolValueOf
             | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
             Self::Array => "Array",
@@ -182,6 +189,9 @@ impl Builtin {
             Self::ArrayFindIndex => "findIndex",
             Self::ArrayFindLast => "findLast",
             Self::ArrayFindLastIndex => "findLastIndex",
+            Self::Symbol => "Symbol",
+            Self::SymbolDescription => "get description",
+            Self::SymbolToPrimitive => "[Symbol.toPrimitive]",
             Self::String => "String",
             Self::StringFromCharCode => "fromCharCode",
             Self::StringFromCodePoint => "fromCodePoint",
@@ -271,6 +281,7 @@ impl Builtin {
             | Self::ArrayReduceRight
             | Self::ArraySort
             | Self::ArrayToSorted
+            | Self::SymbolToPrimitive
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
@@ -381,6 +392,7 @@ pub(super) struct Intrinsics {
     pub boolean: boolean::BooleanIntrinsics,
     pub number: number::NumberIntrinsics,
     pub string: string::StringIntrinsics,
+    pub symbol: symbol::SymbolIntrinsics,
     pub array: array::ArrayIntrinsics,
 }
 
@@ -406,6 +418,7 @@ impl Intrinsics {
         .chain(self.errors.roots())
         .chain(self.object.roots())
         .chain(self.string.roots())
+        .chain(self.symbol.roots())
         .chain(self.array.roots())
     }
 }
@@ -514,6 +527,7 @@ impl Realm {
         let object =
             self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
         let string = self.string_intrinsics(&object_prototype, &function_prototype, span)?;
+        let symbol = self.symbol_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
@@ -535,6 +549,7 @@ impl Realm {
             boolean,
             number,
             string,
+            symbol,
             array,
         });
         Ok(object_prototype)
