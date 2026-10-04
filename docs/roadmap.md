@@ -114,7 +114,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Bound re-entrant calls and dispatch builtin/bound tail transfers iteratively.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
-- [ ] Run the upstream Test262 harness and grow a supported regression set.
+- [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.
+- [ ] Complete remaining harness paths/includes as their language and library dependencies arrive.
 
 ## 4. Standard library
 

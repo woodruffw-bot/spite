@@ -16,11 +16,16 @@ fn pinned_test262_raw_scripts() {
         assert_eq!(fields.len(), 3, "invalid manifest entry");
         let expectation = fields[0];
         let path = fields[2];
-        // These fixtures are component regressions in spite-parser.
-        // They are not counted as passing Script evaluations here.
+        // Non-raw tests and harness files belong to spite-test262. Lexer/parser
+        // component fixtures are checked in spite-parser, outside this raw suite.
         if matches!(
             expectation,
-            "identifier-tokens" | "identifier-error" | "parser-pass" | "parse-syntax-error"
+            "identifier-tokens"
+                | "identifier-error"
+                | "parser-pass"
+                | "parse-syntax-error"
+                | "script-pass"
+                | "harness"
         ) {
             continue;
         }

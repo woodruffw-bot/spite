@@ -31,7 +31,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 76 reviewed Test262 variants from 11 hashbang, 10 BigInt, 11 arrow, and 14 new.target files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 94 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -172,19 +172,22 @@ The Test262 regression fixtures use a reviewed manifest and match the specific
 rejection point for each negative fixture. Identifier component tests compare
 literal and escaped spellings at the lexer boundary. Statement parser fixtures
 check contextual `let` lookahead and ASI. Neither component group is counted as
-Script execution passes. The fixture suite does not run the general harness,
-parse arbitrary Test262 YAML, report a whole-suite pass rate, or cover all of the
-implemented semantics. The new `spite-test262` crate reads a documented metadata
+Script execution passes. The suite does not parse arbitrary Test262 YAML, report a
+whole-suite pass rate, or cover all implemented semantics. The `spite-test262` crate reads a documented metadata
 subset, plans strict/non-strict/module/raw modes, and preserves harness include
 order. Its Script runner uses fresh realms, separates harness failures from test
 results, and matches negative tests by phase and error type. Parse-negative passes
 require a reviewed diagnostic range and message; unreviewed syntax errors remain
 unverified. Unsupported features, missing host helpers, and resource limits are
-separate non-passing results. Modules, async completion, agents, and the full
-upstream harness remain unsupported. CI runs the reviewed corpus on Linux and
-Windows with the minimum supported Rust version and stable Rust. Its 76 variants
-are four raw positive evaluations and 72 reviewed parse-negative variants, not a
-whole-suite conformance measurement. Component fixtures do not enter this count.
+separate non-passing results. The unchanged pinned assert.js/sta.js harness now
+executes for nine positive function/capture tests in both Script modes. Controls
+verify successful assertions and explicit assertion failures. Some comparison
+failure formatting still requires missing String/JSON APIs and remains Unsupported;
+arrays, built-in Error constructors, other includes, async completion, and agents
+remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
+Rust. Its 94 variants are four raw positives, eighteen positives using the upstream
+harness, and 72 reviewed parse negatives. Component fixtures and harness files do
+not enter this count; it is not a whole-suite conformance measurement.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion
 with ECMAScript presentation rules. Primitive numeric operations have boundary

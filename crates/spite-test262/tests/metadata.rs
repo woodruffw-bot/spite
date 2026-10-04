@@ -197,17 +197,27 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262");
     let manifest = fs::read_to_string(root.join("manifest.tsv")).unwrap();
     let mut count = 0;
+    let mut harness_count = 0;
     for line in manifest
         .lines()
         .filter(|line| !line.is_empty() && !line.starts_with('#'))
     {
         let fields: Vec<_> = line.split('\t').collect();
+        if fields[0] == "harness" {
+            assert!(fields[2].starts_with("harness/"));
+            harness_count += 1;
+            continue;
+        }
         let original = fs::read_to_string(root.join("upstream").join(fields[2])).unwrap();
         let meta =
             Metadata::parse(&original).unwrap_or_else(|error| panic!("{}: {error}", fields[2]));
         if fields[0].starts_with("raw-") {
             assert_eq!(meta.modes(), [Mode::Script]);
             assert!(meta.has_flag("raw"));
+        }
+        if fields[0] == "script-pass" {
+            assert!(!meta.has_flag("raw"));
+            assert!(meta.negative.is_none());
         }
         if fields[0] == "raw-syntax-error" {
             assert_eq!(
@@ -220,5 +230,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 65);
+    assert_eq!(count, 74);
+    assert_eq!(harness_count, 2);
 }

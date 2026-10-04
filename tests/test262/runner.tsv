@@ -45,3 +45,12 @@ test/language/expressions/postfix-increment/target-newtarget.js	648	658	invalid 
 test/language/expressions/postfix-increment/target-cover-newtarget.js	660	672	invalid update target
 test/language/expressions/postfix-decrement/target-newtarget.js	648	658	invalid update target
 test/language/expressions/postfix-decrement/target-cover-newtarget.js	660	672	invalid update target
+test/language/expressions/new.target/value-via-call.js	-	-	-
+test/language/expressions/new.target/value-via-new.js	-	-	-
+test/language/expressions/new.target/value-via-fpcall.js	-	-	-
+test/language/expressions/new.target/value-via-fpapply.js	-	-	-
+test/language/expressions/new.target/asi.js	-	-	-
+test/language/expressions/arrow-function/lexical-new.target.js	-	-	-
+test/language/expressions/arrow-function/lexical-new.target-closure-returned.js	-	-	-
+test/language/expressions/arrow-function/lexical-arguments.js	-	-	-
+test/language/expressions/arrow-function/lexical-this.js	-	-	-

@@ -503,6 +503,15 @@ both phase and error type. Never treat all errors as success. Report unsupported
 skipped, failed, timed-out, and passed cases separately. A supported subset is a
 regression gate, not a whole-suite conformance percentage.
 
+The pinned default assert.js and sta.js scripts are executed unchanged for non-raw
+positive regressions. Harness files have a separate checksummed manifest mode;
+they are support code, not test cases, and their frontmatter is not interpreted as
+test metadata. Local controls check successful assertions, Test262Error identity,
+and deliberate assertion failures against those exact files. Diagnostic paths
+requiring missing String/JSON facilities stay Unsupported and never count as passes.
+Additional includes and host capabilities join coverage only when their execution
+paths are implemented and reviewed.
+
 Build the runner in stages. First parse a documented subset of Test262 frontmatter
 without adding a YAML dependency, rejecting unsupported metadata forms explicitly.
 Plan strict, non-strict, module, and raw execution without rewriting test bodies;

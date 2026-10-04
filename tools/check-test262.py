@@ -14,12 +14,16 @@ for line in (root / "manifest.tsv").read_text().splitlines():
         continue
     expectation, checksum, path = line.split("\t")
     if expectation not in {
-        "raw-pass", "raw-syntax-error", "parse-syntax-error", "identifier-tokens", "identifier-error", "parser-pass"
+        "raw-pass", "raw-syntax-error", "parse-syntax-error", "identifier-tokens", "identifier-error", "parser-pass", "script-pass", "harness"
     }:
         raise SystemExit(f"unsupported fixture mode: {expectation}")
     relative = PurePosixPath(path)
     if relative.is_absolute() or ".." in relative.parts or relative.suffix != ".js":
         raise SystemExit(f"invalid fixture path: {path}")
+    if (expectation == "harness") != (relative.parts[0] == "harness"):
+        raise SystemExit(f"harness mode/path mismatch: {path}")
+    if expectation != "harness" and relative.parts[0] != "test":
+        raise SystemExit(f"test path must start with test/: {path}")
     if path in paths:
         raise SystemExit(f"duplicate fixture: {path}")
     paths.add(path)
@@ -41,7 +45,7 @@ for line in (root / "runner.tsv").read_text().splitlines():
     if path not in paths or path in reviewed:
         raise SystemExit(f"unknown or duplicate runner path: {path}")
     reviewed.add(path)
-    if modes[path] == "raw-pass":
+    if modes[path] in {"raw-pass", "script-pass"}:
         if fields[1:] != ["-", "-", "-"]:
             raise SystemExit(f"positive runner entry has an exception review: {path}")
     elif modes[path] in {"raw-syntax-error", "parse-syntax-error"}:
@@ -56,9 +60,10 @@ for line in (root / "runner.tsv").read_text().splitlines():
         if not valid:
             raise SystemExit(f"invalid reviewed diagnostic: {path}")
     else:
-        raise SystemExit(f"component fixture cannot enter the execution corpus: {path}")
-expected = {path for path, mode in modes.items() if mode in {"raw-pass", "raw-syntax-error", "parse-syntax-error"}}
+        raise SystemExit(f"non-executable fixture cannot enter the execution corpus: {path}")
+expected = {path for path, mode in modes.items() if mode in {"raw-pass", "script-pass", "raw-syntax-error", "parse-syntax-error"}}
 if reviewed != expected:
     raise SystemExit("runner inventory does not match the selected fixture modes")
-print(f"Verified {len(paths)} Test262 fixtures from {revision}.")
+harness_count = sum(mode == "harness" for mode in modes.values())
+print(f"Verified {len(paths) - harness_count} Test262 fixtures and {harness_count} harness files from {revision}.")
 print(f"Verified {len(reviewed)} reviewed runner entries.")

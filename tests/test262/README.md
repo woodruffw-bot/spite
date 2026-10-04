@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 65 unmodified fixtures come from
+These 74 unmodified test fixtures and two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -36,13 +36,31 @@ The parser receives each complete, unchanged source. Tests check that ASI leaves
 becomes a separate statement. These are parser regressions only; they do not run
 the Test262 harness or count as full Script execution passes.
 
+## Upstream harness execution
+
+The pinned, unchanged `assert.js` and `sta.js` files now execute in each non-raw
+positive test realm. Nine positive files cover calls/construction, new.target
+whitespace/comments, lexical new.target, lexical arguments, and lexical this
+through call/apply/bind. Each runs in both required Script modes. The `harness`
+manifest mode verifies support-file bytes without counting them as test cases;
+`script-pass` selects non-raw positive tests. Harness frontmatter describes helper
+definitions and is not parsed as test execution metadata.
+
+Local controls execute successful assertions and deliberately failing assertions
+against these exact harness files. Test262Error construction and catch/constructor
+checks execute normally. Formatting some failed comparisons still requires String,
+JSON, or other missing standard APIs; those paths report Unsupported and fail the
+gate. Arrays, built-in Error constructors, additional includes, async completion,
+and agent helpers remain separate harness gaps.
+
 ## Scope and maintenance
 
-The `spite-test262` command runs 76 variants from 46 reviewed sources: the eleven
+The `spite-test262` command runs 94 variants from 55 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
-new.target parse-negative files in both Script modes.
-That means four raw positive evaluations and 72 reviewed parse-negative variants.
+new.target parse-negative files in both Script modes, plus nine positive function
+and capture tests. That means four raw positives, eighteen positives using the
+upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
@@ -66,8 +84,8 @@ objects, functions, or harness facilities that have not been implemented yet.
 The `spite-test262` crate now reads a documented subset of frontmatter and plans
 execution modes and harness include order. Its Script runner now separates parse,
 harness, and runtime outcomes, requiring a reviewed diagnostic for parse-negative
-passes. The complete upstream harness, modules, async completion, and agent
-configuration remain unsupported.
+passes. Harness support is limited to the executed paths above; modules, async
+completion, and agent configuration remain unsupported.
 
 Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attributes
 prevent line-ending normalization of fixtures. Do not edit the source files to
