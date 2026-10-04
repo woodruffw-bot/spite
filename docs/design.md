@@ -1210,6 +1210,14 @@ This avoids rounding near half a unit and changing odd integral values above
 2^52. Other Math methods and incomplete own-key reflection remain Unsupported;
 the object and installed methods retain intrinsic roots.
 
+Math max/min (sec-math.max/min) convert every argument in order before deciding
+whether NaN wins. A running extremum and NaN flag avoid a second argument list;
+interleaved comparisons have no observable effect. Equal zeros select +0 for max
+and -0 for min. Empty lists retain -Infinity/+Infinity respectively. Clz32 uses
+the shared ToUint32 conversion and counts leading zero bits (sec-math.clz32).
+Imul converts left then right, uses safe wrapping u32 multiplication, interprets
+the result as i32, and converts it exactly to Number (sec-math.imul).
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

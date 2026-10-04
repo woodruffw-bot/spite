@@ -208,6 +208,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 - [ ] Complete Object, Function, Boolean, Number, BigInt, String, Symbol, and Math.
 - [x] Add Math's fixed constants, tag, abs/sign, and ceil/floor/round/trunc with exact signed-zero and halfway behavior.
+- [x] Add Math max/min with ordered argument conversion and signed-zero extrema, plus clz32 and wrapping imul.
 - [ ] Add collections, JSON, errors, and iterator helpers.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

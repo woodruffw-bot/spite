@@ -25,7 +25,7 @@ not an alternative language specification.
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
 | Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
-| Math | Fixed constants and tag, abs/sign and ceil/floor/round/trunc with ordered numeric conversion, signed zero, infinities, and halfway ties |
+| Math | Fixed constants and tag, abs/sign, ceil/floor/round/trunc, max/min, clz32, and imul with ordered conversion, signed zero, exact rounding, and 32-bit wrapping |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
@@ -242,12 +242,21 @@ freezing, copying, and for-in over its exposed ordinary prototype chain. Metadat
 deletion, collection, and host-failure regressions retain its intrinsic methods.
 
 Math exposes eight immutable constants, its standard tag, abs/sign, and
-ceil/floor/round/trunc. Each numeric method converts one argument once through
+ceil/floor/round/trunc. Each of these unary methods converts one argument once through
 ToNumber and ignores receiver and extra argument conversions. Tests cover signed
 zeros, NaN/infinities, subnormal inputs, fractional boundaries, halfway ties toward
 positive infinity, and large odd integral values without adding 0.5. Constants,
 method metadata, conversion failures, collection, and deleted public bindings are
 covered. Remaining methods and incomplete own-key reflection remain Unsupported.
+
+Math max/min convert every argument in order, including those following NaN or
+infinite extrema. Abrupt conversion stops at the failing argument; NaN wins only
+after all conversions succeed. Empty calls return opposite infinities, and zero
+ties prefer +0 for max and -0 for min. Clz32 applies ToUint32 before counting bits;
+imul performs ordered conversions and exact multiplication modulo 2^32 with a
+signed result and positive zero. Regressions cover conversion side effects and
+failures, large argument lists with default limits, integer boundaries, ignored
+extra arguments for clz32/imul, metadata, and intrinsic retention.
 
 Boolean calls, construction, prototype methods, descriptors, and boxed receivers
 are implemented. Boolean.prototype itself holds false. Methods validate own
@@ -568,7 +577,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 196 retained entries outside the per-Script work
+Realm initialization creates 200 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -599,7 +608,7 @@ require a reviewed diagnostic range and message; unreviewed syntax errors remain
 unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. The unchanged pinned assert.js/sta.js harness now
 executes for nine positive function/capture tests, 40 call/construction iterable-spread
-tests, 30 call/construction object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 40 Math constant/rounding/sign tests, twelve Boolean tests, 63
+tests, 30 call/construction object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 40 Math rounding/sign tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
 22 Error construction, conversion, and prototype tests, 48 BigInt constructor,
 width reduction, formatting, and receiver-brand tests, plus 173 Object descriptor,

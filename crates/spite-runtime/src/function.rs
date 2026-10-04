@@ -50,7 +50,11 @@ pub(crate) enum Builtin {
     ReflectSet,
     MathAbs,
     MathCeil,
+    MathClz32,
     MathFloor,
+    MathImul,
+    MathMax,
+    MathMin,
     MathRound,
     MathSign,
     MathTrunc,
@@ -224,7 +228,11 @@ impl Builtin {
             Self::ReflectSet => "set",
             Self::MathAbs => "abs",
             Self::MathCeil => "ceil",
+            Self::MathClz32 => "clz32",
             Self::MathFloor => "floor",
+            Self::MathImul => "imul",
+            Self::MathMax => "max",
+            Self::MathMin => "min",
             Self::MathRound => "round",
             Self::MathSign => "sign",
             Self::MathTrunc => "trunc",
@@ -434,6 +442,7 @@ impl Builtin {
             | Self::ReflectOwnKeys
             | Self::MathAbs
             | Self::MathCeil
+            | Self::MathClz32
             | Self::MathFloor
             | Self::MathRound
             | Self::MathSign
@@ -469,6 +478,9 @@ impl Builtin {
             Self::FunctionApply
             | Self::BigIntAsIntN
             | Self::BigIntAsUintN
+            | Self::MathImul
+            | Self::MathMax
+            | Self::MathMin
             | Self::ArraySlice
             | Self::ArraySplice
             | Self::ArrayCopyWithin

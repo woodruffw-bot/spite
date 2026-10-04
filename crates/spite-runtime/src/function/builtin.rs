@@ -53,12 +53,20 @@ impl Realm {
             Builtin::FunctionPrototype => Ok(Value::Undefined),
             Builtin::MathAbs
             | Builtin::MathCeil
+            | Builtin::MathClz32
             | Builtin::MathFloor
             | Builtin::MathRound
             | Builtin::MathSign
             | Builtin::MathTrunc => {
                 self.math_unary(builtin, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::MathMax => self.math_extremum(arguments, true, span),
+            Builtin::MathMin => self.math_extremum(arguments, false, span),
+            Builtin::MathImul => self.math_imul(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ReflectConstruct => self.reflect_construct(
                 arguments.next().unwrap_or(Value::Undefined),
                 arguments.next().unwrap_or(Value::Undefined),

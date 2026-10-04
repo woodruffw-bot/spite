@@ -1,7 +1,7 @@
 //! Math object constants and basic numeric operations (21.3.1, 21.3.2).
 
 use super::Builtin;
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor, value::to_uint32};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]
@@ -66,7 +66,11 @@ impl Realm {
         for builtin in [
             Builtin::MathAbs,
             Builtin::MathCeil,
+            Builtin::MathClz32,
             Builtin::MathFloor,
+            Builtin::MathImul,
+            Builtin::MathMax,
+            Builtin::MathMin,
             Builtin::MathRound,
             Builtin::MathSign,
             Builtin::MathTrunc,
@@ -94,6 +98,7 @@ impl Realm {
         let result = match builtin {
             Builtin::MathAbs => number.abs(),
             Builtin::MathCeil => number.ceil(),
+            Builtin::MathClz32 => f64::from(to_uint32(number).leading_zeros()),
             Builtin::MathFloor => number.floor(),
             Builtin::MathRound => round(number),
             Builtin::MathSign => {
@@ -107,6 +112,51 @@ impl Realm {
             _ => unreachable!("Math unary operation"),
         };
         Ok(Value::Number(result))
+    }
+
+    pub(super) fn math_extremum(
+        &mut self,
+        arguments: impl Iterator<Item = Value>,
+        maximum: bool,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // sec-math.max/min: every ToNumber precedes the NaN result. Folding
+        // converted numbers here is unobservable and avoids a second list.
+        let mut result = if maximum {
+            f64::NEG_INFINITY
+        } else {
+            f64::INFINITY
+        };
+        let mut nan = false;
+        for argument in arguments {
+            let number = self.number(argument, span)?;
+            nan |= number.is_nan();
+            let better = if maximum {
+                number > result
+            } else {
+                number < result
+            };
+            // +0 wins in max; -0 wins in min, in either argument order.
+            let preferred_zero =
+                number == 0.0 && result == 0.0 && number.is_sign_negative() != maximum;
+            if better || preferred_zero {
+                result = number;
+            }
+        }
+        Ok(Value::Number(if nan { f64::NAN } else { result }))
+    }
+
+    pub(super) fn math_imul(
+        &mut self,
+        left: Value,
+        right: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // sec-math.imul: ordered ToUint32, multiplication modulo 2^32, then
+        // signed interpretation. Integer zero converts back to positive zero.
+        let left = to_uint32(self.number(left, span)?);
+        let right = to_uint32(self.number(right, span)?);
+        Ok(Value::Number(f64::from(left.wrapping_mul(right) as i32)))
     }
 }
 
