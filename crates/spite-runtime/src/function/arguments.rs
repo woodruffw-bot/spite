@@ -1,15 +1,61 @@
-//! Unmapped arguments objects (10.4.4.6), before Symbol.iterator is exposed.
+//! Arguments objects (10.4.4.6–7), before Symbol.iterator is exposed.
 
 use crate::{
-    Error, Realm, Value,
+    Error, ObjectHandle, Realm, Value,
+    environment::EnvironmentHandle,
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
 use spite_core::{JsString, Span};
+use spite_parser::ast::Binding;
+use std::collections::{BTreeMap, BTreeSet};
 
 impl Realm {
     pub(super) fn unmapped_arguments(
         &mut self,
         arguments: &[Value],
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.arguments_object(arguments, None, span)
+    }
+
+    pub(super) fn mapped_arguments(
+        &mut self,
+        parameters: &[Binding],
+        arguments: &[Value],
+        callee: ObjectHandle,
+        environment: EnvironmentHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let object = self.arguments_object(arguments, Some(callee), span)?;
+        let mut mapped = BTreeSet::new();
+        let mut names = BTreeMap::new();
+        for (index, parameter) in parameters.iter().enumerate().rev() {
+            self.object_work(parameter.span, |_, budget| {
+                budget.charge(parameter.name.len() + 1)
+            })?;
+            // A later duplicate suppresses every earlier occurrence, even when
+            // the later parameter did not receive an argument (10.4.4.7).
+            if mapped.insert(parameter.name.as_str()) && index < arguments.len() {
+                let index = u32::try_from(index).map_err(|_| Error::Limit {
+                    span,
+                    message: "parameter index limit exceeded".into(),
+                })?;
+                names.insert(index, parameter.name.clone());
+            }
+        }
+        let Value::Object(handle) = &object else {
+            unreachable!("arguments object")
+        };
+        self.object_work(span, |objects, budget| {
+            objects.map_arguments(handle, environment, names, budget)
+        })?;
+        Ok(object)
+    }
+
+    fn arguments_object(
+        &mut self,
+        arguments: &[Value],
+        callee: Option<ObjectHandle>,
         span: Span,
     ) -> Result<Value, Error> {
         let intrinsics = self
@@ -44,21 +90,25 @@ impl Realm {
         }
         // The required @@iterator hook will be installed with Symbol/Array iteration;
         // no Symbol property keys or reflection operations are exposed yet.
-        self.object_work(span, |objects, budget| {
-            objects.define(
-                &object,
-                JsString::from("callee"),
-                PropertyDescriptor {
-                    kind: DescriptorKind::Accessor {
-                        get: Some(Some(thrower.clone())),
-                        set: Some(Some(thrower)),
+        if let Some(callee) = callee {
+            self.define_builtin_property(&object, "callee", Value::Object(callee), true, span)?;
+        } else {
+            self.object_work(span, |objects, budget| {
+                objects.define(
+                    &object,
+                    JsString::from("callee"),
+                    PropertyDescriptor {
+                        kind: DescriptorKind::Accessor {
+                            get: Some(Some(thrower.clone())),
+                            set: Some(Some(thrower)),
+                        },
+                        enumerable: Some(false),
+                        configurable: Some(false),
                     },
-                    enumerable: Some(false),
-                    configurable: Some(false),
-                },
-                budget,
-            )
-        })?;
+                    budget,
+                )
+            })?;
+        }
         Ok(Value::Object(object))
     }
 }

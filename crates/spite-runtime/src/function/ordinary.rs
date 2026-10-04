@@ -2,7 +2,7 @@
 
 use super::ScriptFunction;
 use crate::{
-    BindingState, Error, GlobalBinding, Realm, Value, environment::EnvironmentHandle,
+    BindingState, Error, GlobalBinding, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
     object::DataDescriptor,
 };
 use spite_core::{JsString, Span};
@@ -13,16 +13,44 @@ impl Realm {
     pub(super) fn call_ordinary(
         &mut self,
         code: ScriptFunction,
+        callee: ObjectHandle,
         this: Value,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        if !code.strict {
+        if !code.strict && !matches!(this, Value::Object(_)) {
             return Err(Self::unsupported(
                 span,
-                "non-strict ordinary calls are not implemented",
+                "non-strict global and primitive receivers are not implemented",
             ));
         }
+        let ArrowBody::Block(body) = &code.body else {
+            unreachable!("ordinary functions have block bodies")
+        };
+        let non_simple = code
+            .parameters
+            .iter()
+            .any(|parameter| parameter.initializer.is_some());
+        let parameter_arguments = code
+            .parameters
+            .iter()
+            .any(|parameter| parameter.name == "arguments");
+        let body_arguments = body
+            .statements()
+            .iter()
+            .any(|statement| match &statement.kind {
+                spite_parser::ast::StatementKind::Function(function) => function
+                    .name
+                    .as_ref()
+                    .is_some_and(|name| name.name == "arguments"),
+                spite_parser::ast::StatementKind::Lexical { bindings, .. } => {
+                    bindings.iter().any(|binding| binding.name == "arguments")
+                }
+                _ => false,
+            });
+        // 10.2.11: body lexical/function names suppress arguments only for simple
+        // parameter lists; a parameter named arguments always suppresses it.
+        let arguments_needed = !parameter_arguments && (non_simple || !body_arguments);
         let mut bindings = BTreeMap::new();
         for parameter in code.parameters.iter() {
             self.object_work(parameter.span, |_, budget| {
@@ -37,36 +65,57 @@ impl Realm {
                 },
             );
         }
-        // Strict early errors exclude an arguments parameter or body declaration.
-        bindings.insert(
-            "arguments".into(),
-            BindingState {
-                value: None,
-                mutable: false,
-                strict: true,
-            },
-        );
+        if arguments_needed {
+            bindings.insert(
+                "arguments".into(),
+                BindingState {
+                    value: None,
+                    mutable: !code.strict,
+                    strict: code.strict,
+                },
+            );
+        }
+        // Sloppy parameter expressions get their own environment outside body vars.
+        let separate_parameters = non_simple && !code.strict;
+        let parameters = if separate_parameters {
+            std::mem::take(&mut bindings)
+        } else {
+            BTreeMap::new()
+        };
         let environment = self.object_work(span, |objects, budget| {
             objects.create_function_environment(code.environment, bindings, this, budget)
         })?;
         let caller_depth = self.scopes.len();
         let caller_strict = self.strict;
-        self.scopes.push(environment.clone());
-        self.strict = true;
+        self.scopes.push(environment);
+        self.strict = code.strict;
         let result = (|| {
-            let value = self.unmapped_arguments(arguments.as_slice(), span)?;
-            self.objects
-                .environment_mut(&environment)
-                .expect("function environment")
-                .bindings
-                .get_mut("arguments")
-                .expect("arguments binding")
-                .value = Some(value);
+            if separate_parameters {
+                self.push_scope(parameters, span)?;
+            }
+            let environment = self.scopes.last().expect("parameter environment").clone();
+            if arguments_needed {
+                let value = if code.strict || non_simple {
+                    self.unmapped_arguments(arguments.as_slice(), span)?
+                } else {
+                    self.mapped_arguments(
+                        &code.parameters,
+                        arguments.as_slice(),
+                        callee,
+                        environment.clone(),
+                        span,
+                    )?
+                };
+                self.objects
+                    .environment_mut(&environment)
+                    .expect("parameter environment")
+                    .bindings
+                    .get_mut("arguments")
+                    .expect("arguments binding")
+                    .value = Some(value);
+            }
             self.initialize_parameters(&code.parameters, &mut arguments)?;
             self.instantiate_function_vars(&code.parameters, &code.body, span)?;
-            let ArrowBody::Block(body) = &code.body else {
-                unreachable!("ordinary functions have block bodies");
-            };
             self.function_body(body, span)
         })();
         self.strict = caller_strict;

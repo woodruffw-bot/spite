@@ -97,7 +97,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse ordinary function declarations and validate Script/function versus block scope.
 - [x] Instantiate ordinary functions with metadata, prototype cycles, named-expression scopes, and declaration hoisting.
 - [x] Execute strict ordinary calls with unmapped arguments, preserved receivers, and arrow this capture.
-- [ ] Add non-strict calls, global/boxed receivers, mapped arguments, and the arguments iterator hook.
+- [x] Execute non-strict calls with object receivers and mapped arguments, including alias detachment.
+- [ ] Add global/boxed receivers and the arguments iterator hook.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.

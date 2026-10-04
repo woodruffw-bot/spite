@@ -102,8 +102,9 @@ strict or non-simple lists require unique names. A function's own strict directi
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
-bypass expression recursion limits. Ordinary functions instantiate and strict calls execute; non-strict calls and
-construction remain explicit runtime gaps. Global this, mapped arguments,
+bypass expression recursion limits. Ordinary functions instantiate; strict calls and non-strict calls with object
+receivers execute. Global/boxed receivers and construction remain runtime gaps.
+Global this,
 generators, async functions, rest parameters, and patterns remain separate steps.
 
 Direct function declarations are var-scoped in Scripts and function bodies;
@@ -396,8 +397,21 @@ is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
 alias indices, or vice versa. Argument values and receiver captures remain traced
 after returns or abrupt default initialization. The required Symbol.iterator hook
 is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
-recognizes the Arguments tag. Non-strict calls and global this still report
-Unsupported. Call failures restore strictness, scopes, and nesting counters.
+recognizes the Arguments tag. Global and primitive non-strict receivers still
+report Unsupported. Call failures restore strictness, scopes, and nesting counters.
+
+Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps
+store checked environment handles and parameter names instead of exposing hidden
+getter/setter objects. Only the last duplicate occurrence maps, even when it has
+no corresponding argument. Reads and complete descriptors consult the current
+binding. Writes update the same cell; successful deletion, accessor conversion,
+or a non-writable descriptor detaches it. Freezing without a value snapshots the
+current parameter value first. Failed descriptors and work limits leave both
+storage and aliases unchanged. Writes through other receivers preserve the
+original alias, and removing the final alias releases the environment edge.
+Non-simple lists use unmapped arguments and a separate parameter environment in
+non-strict code. Parameter/body names decide whether an arguments binding is
+created; non-strict arguments bindings remain mutable (10.2.11).
 
 NamedEvaluation supplies names for binding initializers, bare identifier assignment
 and logical-assignment targets, and ordinary object property values. Parenthesized

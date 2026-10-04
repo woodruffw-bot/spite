@@ -18,9 +18,9 @@ not an alternative language specification.
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
-| Calls | Builtin, arrow, and strict ordinary calls (non-strict ordinary calls remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
+| Calls | Builtin, arrow, and ordinary calls with strict or object receivers (global/boxed receivers remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; non-strict ordinary calls remain Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; global/boxed non-strict receivers remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -96,7 +96,7 @@ is atomic and the nine objects remain rooted. Function.prototype caller/argument
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
 wrappers returned by valueOf, spread arguments, optional calls, and
-non-strict ordinary calls remain open; missing operations report Unsupported. Function.prototype
+global/boxed non-strict receivers remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -122,11 +122,16 @@ Strict ordinary functions execute with preserved receivers, shared lexical captu
 hoisting, defaults, and return completions. Unmapped arguments expose original
 indices, length, and restricted callee; indices and parameters do not alias. Arrows
 capture this and arguments from enclosing functions, including across collection.
-The arguments Symbol.iterator hook, mapped arguments, non-strict receiver handling,
-and the global this binding remain unimplemented.
+Non-strict functions with object receivers also execute. Simple parameter lists
+use mapped arguments, including last-duplicate rules, live descriptor values,
+receiver-sensitive writes, and detachment on deletion, accessor conversion, or
+non-writable changes. Default parameters use unmapped arguments. Parameter/body
+arguments declarations shadow or suppress the implicit binding as specified.
+The arguments Symbol.iterator hook, global/boxed non-strict receivers, and the
+global this binding remain unimplemented.
 
 Symbols, primitive wrapper constructors,
-arrays, non-strict ordinary calls, construction, classes, destructuring, regular
+arrays, global/boxed receivers, construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

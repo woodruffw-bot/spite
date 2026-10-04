@@ -1,7 +1,8 @@
 //! Ordinary property storage and function call metadata.
 //!
 //! This layer implements own string-keyed data and accessor properties. Symbols
-//! and additional exotic internal methods are separate increments.
+//! and additional exotic internal methods are separate increments. Mapped arguments
+//! synchronize indexed properties with traced parameter environments.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::{Value, function::Callable};
@@ -11,6 +12,8 @@ use std::fmt;
 
 #[cfg(test)]
 mod accessor_tests;
+mod arguments;
+use arguments::ParameterMap;
 mod descriptor;
 mod entry;
 mod store;
@@ -45,8 +48,9 @@ pub struct OrdinaryObject {
     max_properties: usize,
     callable: Option<Callable>,
     immutable_prototype: bool,
-    // Presence of [[ParameterMap]], currently only the unmapped form.
+    // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
+    parameter_map: Option<ParameterMap>,
 }
 
 impl OrdinaryObject {
@@ -62,6 +66,7 @@ impl OrdinaryObject {
             callable: None,
             immutable_prototype: false,
             arguments: false,
+            parameter_map: None,
         }
     }
 
@@ -98,7 +103,8 @@ impl OrdinaryObject {
         self.properties.len()
     }
 
-    /// Looks up an own property without consulting the prototype.
+    /// Looks up a stored own property without consulting the prototype.
+    /// Use [`Objects::get_own`] to observe current mapped-argument values.
     pub fn own_property(&self, key: &JsString) -> Option<&Property> {
         self.properties
             .iter()
@@ -181,6 +187,9 @@ impl Trace for OrdinaryObject {
         };
         std::iter::once(self.prototype.as_ref())
             .chain(std::iter::once(capture))
+            .chain(self.parameter_map.iter().flat_map(|map| {
+                std::iter::once(Some(&map.environment.0)).chain(map.names.values().map(|_| None))
+            }))
             .chain(bound.into_iter().flat_map(|bound| {
                 std::iter::once(&bound.this)
                     .chain(&bound.arguments)

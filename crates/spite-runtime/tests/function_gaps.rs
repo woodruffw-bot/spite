@@ -1,9 +1,9 @@
-//! Non-strict calls and construction remain explicit host gaps.
+//! Global/primitive non-strict receivers and construction remain host gaps.
 
 use spite_runtime::{Error, Realm, Value};
 
 #[test]
-fn non_strict_calls_remain_uncatchable_host_gaps_and_never_execute_the_body() {
+fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;function f(){flag=9;}").unwrap();
     for source in [

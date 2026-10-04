@@ -87,7 +87,7 @@ impl Budget {
         Ok(())
     }
 
-    fn lookup(&mut self, object: &OrdinaryObject, key: &JsString) -> Result<(), Error> {
+    pub(super) fn lookup(&mut self, object: &OrdinaryObject, key: &JsString) -> Result<(), Error> {
         let comparisons = key
             .len()
             .checked_add(1)
@@ -234,7 +234,7 @@ impl Objects {
         }
     }
 
-    fn object_mut(&mut self, object: &Handle) -> Result<&mut OrdinaryObject, Error> {
+    pub(super) fn object_mut(&mut self, object: &Handle) -> Result<&mut OrdinaryObject, Error> {
         match self.heap.get_mut(object)? {
             Entry::Object(object) => Ok(object),
             Entry::Environment(_) => Err(Error::WrongKind),
@@ -380,8 +380,49 @@ impl Objects {
         descriptor: impl Into<PropertyDescriptor>,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
-        let descriptor = descriptor.into().normalize();
+        let mut descriptor = descriptor.into().normalize();
         budget.lookup(self.inspect(object)?, &key)?;
+        let mapping = self.mapped_target(object, &key, budget)?;
+        // Prepare copies and charge all work before changing either the ordinary
+        // descriptor or its aliased environment cell (10.4.4.2).
+        let mapped_value = if mapping.is_some() {
+            if let DescriptorKind::Data {
+                value: Some(value), ..
+            } = &descriptor.kind
+            {
+                budget.value(value)?;
+                Some(value.clone())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        let detach = mapping.is_some()
+            && matches!(
+                descriptor.kind,
+                DescriptorKind::Accessor { .. }
+                    | DescriptorKind::Data {
+                        writable: Some(false),
+                        ..
+                    }
+            );
+        if mapping.is_some() {
+            if let DescriptorKind::Data {
+                value: None,
+                writable: Some(false),
+            } = &descriptor.kind
+            {
+                let value = self
+                    .mapped_value(object, &key, budget)?
+                    .expect("existing mapping");
+                budget.value(value)?;
+                descriptor.kind = DescriptorKind::Data {
+                    value: Some(value.clone()),
+                    writable: Some(false),
+                };
+            }
+        }
         match &descriptor.kind {
             DescriptorKind::Data {
                 value: Some(value), ..
@@ -401,9 +442,30 @@ impl Objects {
             }
             _ => {}
         }
-        self.object_mut(object)?
+        let allowed = self
+            .object_mut(object)?
             .define_own_property(key, descriptor)
-            .map_err(|_| Error::PropertyLimit)
+            .map_err(|_| Error::PropertyLimit)?;
+        if allowed {
+            if let Some((environment, name, index)) = mapping {
+                if let Some(value) = mapped_value {
+                    self.environment_mut(&environment)?
+                        .bindings
+                        .get_mut(&name)
+                        .ok_or(Error::WrongKind)?
+                        .value = Some(value);
+                }
+                if detach {
+                    let record = self.object_mut(object)?;
+                    let map = record.parameter_map.as_mut().expect("existing map");
+                    map.names.remove(&index);
+                    if map.names.is_empty() {
+                        record.parameter_map = None;
+                    }
+                }
+            }
+        }
+        Ok(allowed)
     }
 
     /// Checks own property presence without copying its value or visiting prototypes.
@@ -428,11 +490,20 @@ impl Objects {
         let record = self.inspect(object)?;
         budget.lookup(record, key)?;
         match record.own_property(key) {
+            Some(Property::Data(data)) => {
+                let value = self
+                    .mapped_value(object, key, budget)?
+                    .unwrap_or(&data.value);
+                budget.value(value)?;
+                Ok(Some(Property::Data(super::DataProperty {
+                    value: value.clone(),
+                    writable: data.writable,
+                    enumerable: data.enumerable,
+                    configurable: data.configurable,
+                })))
+            }
             Some(property) => {
-                match property {
-                    Property::Data(data) => budget.value(&data.value)?,
-                    Property::Accessor(_) => budget.charge(2)?,
-                }
+                budget.charge(2)?;
                 Ok(Some(property.clone()))
             }
             None => Ok(None),
@@ -447,11 +518,14 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<GetAction, Error> {
         match self.find(object, key, budget)? {
-            Some(Property::Data(property)) => {
-                budget.value(&property.value)?;
-                Ok(GetAction::Value(property.value.clone()))
+            Some((owner, Property::Data(property))) => {
+                let value = self
+                    .mapped_value(&owner, key, budget)?
+                    .unwrap_or(&property.value);
+                budget.value(value)?;
+                Ok(GetAction::Value(value.clone()))
             }
-            Some(Property::Accessor(property)) => {
+            Some((_, Property::Accessor(property))) => {
                 budget.charge(1)?;
                 Ok(match &property.get {
                     Some(getter) => GetAction::Call(getter.clone()),
@@ -484,14 +558,14 @@ impl Objects {
             self.inspect(receiver)?;
         }
         match self.find(object, &key, budget)? {
-            Some(Property::Accessor(property)) => {
+            Some((_, Property::Accessor(property))) => {
                 budget.charge(1)?;
                 return Ok(match &property.set {
                     Some(setter) => SetAction::Call(setter.clone()),
                     None => SetAction::Done(false),
                 });
             }
-            Some(Property::Data(property)) if !property.writable => {
+            Some((_, Property::Data(property))) if !property.writable => {
                 return Ok(SetAction::Done(false));
             }
             _ => {}
@@ -532,7 +606,18 @@ impl Objects {
         // Deletion may shift the remaining vector entries after the key scan.
         budget.charge(record.property_count())?;
         budget.lookup(record, key)?;
-        Ok(self.object_mut(object)?.delete(key))
+        let index = super::array_index(key);
+        let record = self.object_mut(object)?;
+        let deleted = record.delete(key);
+        if deleted {
+            if let (Some(map), Some(index)) = (&mut record.parameter_map, index) {
+                map.names.remove(&index);
+                if map.names.is_empty() {
+                    record.parameter_map = None;
+                }
+            }
+        }
+        Ok(deleted)
     }
 
     /// Collects from live `Root` tokens and additional caller-supplied handles.
@@ -564,13 +649,13 @@ impl Objects {
         object: &Handle,
         key: &JsString,
         budget: &mut Budget,
-    ) -> Result<Option<&Property>, Error> {
+    ) -> Result<Option<(Handle, &Property)>, Error> {
         let mut next = Some(object);
         while let Some(handle) = next {
             let record = self.inspect(handle)?;
             budget.lookup(record, key)?;
             if let Some(property) = record.own_property(key) {
-                return Ok(Some(property));
+                return Ok(Some((handle.clone(), property)));
             }
             next = record.prototype();
         }

@@ -341,10 +341,10 @@ impl Realm {
         let mut arguments = arguments.into_iter();
         loop {
             // 13.3.6.2: callers evaluate arguments before entering this callable check.
-            let callable = if let Value::Object(object) = function {
+            let callable = if let Value::Object(object) = &function {
                 self.object_work(span, |objects, budget| {
                     objects
-                        .inspect(&object)?
+                        .inspect(object)?
                         .callable()
                         .map(|callable| callable.copy_with_budget(budget))
                         .transpose()
@@ -356,7 +356,10 @@ impl Realm {
                 Some(Callable::Builtin(builtin)) => builtin,
                 Some(Callable::Arrow(arrow)) => return self.call_arrow(arrow, arguments, span),
                 Some(Callable::Ordinary(code)) => {
-                    return self.call_ordinary(code, this, arguments, span);
+                    let Value::Object(callee) = function else {
+                        unreachable!("callable object")
+                    };
+                    return self.call_ordinary(code, callee, this, arguments, span);
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound
