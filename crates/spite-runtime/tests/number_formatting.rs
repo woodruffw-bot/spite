@@ -151,7 +151,12 @@ fn receiver_validation_precedes_fraction_coercion_and_special_values_do_not_skip
 
 #[test]
 fn decimal_method_metadata_is_standard_and_methods_are_not_constructors() {
-    for method in ["toFixed", "toPrecision", "toExponential"] {
+    for (method, length) in [
+        ("toFixed", 1.0),
+        ("toPrecision", 1.0),
+        ("toExponential", 1.0),
+        ("toLocaleString", 0.0),
+    ] {
         let mut realm = Realm::default();
         let Value::Object(handle) = realm.eval(&format!("Number.prototype.{method}")).unwrap()
         else {
@@ -162,7 +167,7 @@ fn decimal_method_metadata_is_standard_and_methods_are_not_constructors() {
         assert!(!object.is_constructor());
         for (key, value) in [
             ("name", Value::String(JsString::from(method))),
-            ("length", Value::Number(1.0)),
+            ("length", Value::Number(length)),
         ] {
             let property = object
                 .own_property(&JsString::from(key))
@@ -406,4 +411,52 @@ fn exponential_supports_one_hundred_fraction_digits_at_binary64_extremes() {
         "Number.MAX_VALUE.toExponential(100)",
         "1.7976931348623157081452742373170435679807056752584499659891747680315726078002853876058955863276687817e+308",
     );
+}
+
+#[test]
+fn locale_string_uses_the_documented_ecma262_fallback_without_interpreting_reserved_arguments() {
+    for (value, expected) in [
+        ("1234.5", "1234.5"),
+        ("-0", "0"),
+        ("NaN", "NaN"),
+        ("Infinity", "Infinity"),
+        ("-Infinity", "-Infinity"),
+        ("1e21", "1e+21"),
+    ] {
+        string(&format!("({value}).toLocaleString()"), expected);
+        string(&format!("new Number({value}).toLocaleString()"), expected);
+    }
+    string("Number.prototype.toLocaleString()", "0");
+    string(
+        "(1234.5).toLocaleString({toString:()=>{throw 1;}},{valueOf:()=>{throw 2;}})",
+        "1234.5",
+    );
+    string(
+        "Number.prototype.toString=()=>{throw 1;};(1234.5).toLocaleString()",
+        "1234.5",
+    );
+    assert_eq!(
+        Realm::default().eval("let flag=0;(1).toLocaleString(flag=1,flag=2);flag"),
+        Ok(Value::Number(2.0))
+    );
+    for receiver in [
+        "undefined",
+        "null",
+        "false",
+        "'1'",
+        "1n",
+        "{}",
+        "({__proto__:Number.prototype})",
+    ] {
+        assert!(
+            matches!(
+                Realm::default().eval(&format!("Number.prototype.toLocaleString.call({receiver})")),
+                Err(Error::Exception {
+                    kind: ExceptionKind::TypeError,
+                    ..
+                })
+            ),
+            "{receiver}"
+        );
+    }
 }

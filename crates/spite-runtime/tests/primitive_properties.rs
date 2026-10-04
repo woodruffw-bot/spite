@@ -190,7 +190,6 @@ fn missing_standard_methods_are_distinct_from_absent_and_annex_b_properties() {
         "'s'.toWellFormed",
         "'s'.trimStart",
         "'s'.replaceAll",
-        "(1).toLocaleString",
         "true.hasOwnProperty",
         "1n.toLocaleString",
         "'s'.hasOwnProperty",

@@ -94,7 +94,7 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the twenty-four objects remain rooted. Function.prototype caller/arguments
+is atomic and the twenty-five objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. String/BigInt/Symbol
 wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
@@ -155,8 +155,10 @@ binary values and rounds ties to the larger magnitude for 0–100 fraction digit
 toPrecision retains 1–100 significant digits and uses exact exponent correction
 and rounding before selecting fixed or exponential notation. toExponential uses
 the same rounding for explicit 0–100 fraction digits and shortest scientific
-notation when the argument is undefined. toLocaleString and parseInt/parseFloat
-remain gaps, including their callable values. NumberData preserves negative zero
+notation when the argument is undefined. toLocaleString uses the explicitly
+permitted ECMA-262 fallback of ordinary numeric formatting, ignores reserved
+locale/options arguments, and provides no ECMA-402 locale services.
+parseInt/parseFloat remain gaps, including their callable values. NumberData preserves negative zero
 and NaN independently of the object's current prototype.
 
 Symbols, String/BigInt wrapper APIs,

@@ -318,8 +318,6 @@ fn incomplete_formatting_paths_remain_visible_host_gaps() {
         "new Number(0.5).toString(16)",
         "Number.parseInt",
         "Number.parseFloat",
-        "Number.prototype.toLocaleString",
-        "(1).toLocaleString",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

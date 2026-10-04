@@ -37,6 +37,7 @@ pub(crate) enum Builtin {
     NumberToFixed,
     NumberToPrecision,
     NumberToExponential,
+    NumberToLocaleString,
     NumberIsFinite,
     NumberIsNaN,
     NumberIsInteger,
@@ -65,6 +66,7 @@ impl Builtin {
             Self::NumberToFixed => "toFixed",
             Self::NumberToPrecision => "toPrecision",
             Self::NumberToExponential => "toExponential",
+            Self::NumberToLocaleString => "toLocaleString",
         }
     }
 
@@ -516,6 +518,14 @@ impl Realm {
                 }
                 Builtin::NumberToExponential => {
                     self.number_prototype_to_exponential(&this, arguments.next(), span)
+                }
+                Builtin::NumberToLocaleString => {
+                    // 21.1.3.4 explicitly permits ordinary numeric formatting
+                    // without ECMA-402. Reserved arguments remain unused.
+                    let number = self.this_number_value(&this, span)?;
+                    Ok(Value::String(JsString::from(
+                        crate::value::number_to_string(number).as_str(),
+                    )))
                 }
                 Builtin::NumberIsFinite
                 | Builtin::NumberIsNaN
