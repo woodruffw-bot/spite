@@ -123,6 +123,7 @@ impl Realm {
             Builtin::ArrayUnshift,
             Builtin::ArrayReverse,
             Builtin::ArrayToReversed,
+            Builtin::ArrayToSpliced,
             Builtin::ArrayWith,
             Builtin::ArrayFill,
             Builtin::ArrayCopyWithin,

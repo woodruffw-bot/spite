@@ -366,6 +366,13 @@ descending order; with converts and validates its index before ArrayCreate and
 reads other indices in ascending order, never reading the replaced property.
 The replacement value moves into the output once. ArrayCreate rejects lengths
 above 2^32 - 1 before element access; host allocation/work limits remain distinct.
+ToSpliced (23.1.3.35) distinguishes omitted start/skip arguments from explicit
+undefined. It snapshots length, converts start then skip, and checks the resulting
+safe-integer length before ArrayCreate. It copies the retained prefix, inserts
+arguments without coercion, then copies the retained suffix; discarded indices
+are never read. Source cursors retain the full ToLength range, so a huge array-like
+input can shrink to a small valid array. Output is dense, uses the intrinsic
+prototype, and never assigns to the input. All three loops consume work budget.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

@@ -196,6 +196,7 @@ impl Realm {
             Builtin::ArrayUnshift => self.array_unshift(this, arguments, span),
             Builtin::ArrayReverse => self.array_reverse(this, span),
             Builtin::ArrayToReversed => self.array_to_reversed(this, span),
+            Builtin::ArrayToSpliced => self.array_to_spliced(this, arguments, span),
             Builtin::ArrayWith => self.array_with(
                 this,
                 arguments.next().unwrap_or(Value::Undefined),

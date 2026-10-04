@@ -775,6 +775,15 @@ fn recursive_copy_getters_and_index_conversions_stop_on_a_two_mebibyte_stack() {
                     "a.with(1,7)",
                 ),
                 ("let a=[1],i={valueOf:()=>a.with(i,7)}", "a.with(i,7)"),
+                (
+                    "let a=[1];Object.defineProperty(a,'0',{get:()=>a.toSpliced()})",
+                    "a.toSpliced()",
+                ),
+                ("let a=[1],i={valueOf:()=>a.toSpliced(i)}", "a.toSpliced(i)"),
+                (
+                    "let a=[1],i={valueOf:()=>a.toSpliced(0,i)}",
+                    "a.toSpliced(0,i)",
+                ),
             ] {
                 let mut realm = Realm::default();
                 realm.eval(setup).unwrap();
@@ -793,7 +802,7 @@ fn recursive_copy_getters_and_index_conversions_stop_on_a_two_mebibyte_stack() {
 
 #[test]
 fn array_copies_bound_dense_output_and_preserve_the_receiver_on_host_abort() {
-    for call in ["toReversed()", "with(0,7)"] {
+    for call in ["toReversed()", "with(0,7)", "toSpliced(0,0)"] {
         let mut realm = Realm::default();
         realm.eval("let a=Array(4294967295),flag=0").unwrap();
         realm.limits.max_steps = 500;

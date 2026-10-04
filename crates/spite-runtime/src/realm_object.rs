@@ -607,7 +607,6 @@ fn missing_array_method(key: &JsString) -> bool {
         "splice",
         "toLocaleString",
         "toSorted",
-        "toSpliced",
         "values",
     ]
     .iter()

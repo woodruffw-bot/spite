@@ -70,6 +70,7 @@ pub(crate) enum Builtin {
     ArrayUnshift,
     ArrayReverse,
     ArrayToReversed,
+    ArrayToSpliced,
     ArrayWith,
     ArrayFill,
     ArrayCopyWithin,
@@ -158,6 +159,7 @@ impl Builtin {
             Self::ArrayUnshift => "unshift",
             Self::ArrayReverse => "reverse",
             Self::ArrayToReversed => "toReversed",
+            Self::ArrayToSpliced => "toSpliced",
             Self::ArrayWith => "with",
             Self::ArrayFill => "fill",
             Self::ArrayCopyWithin => "copyWithin",
@@ -300,6 +302,7 @@ impl Builtin {
             Self::FunctionApply
             | Self::ArrayCopyWithin
             | Self::ArrayWith
+            | Self::ArrayToSpliced
             | Self::StringSlice
             | Self::StringSubstring
             | Self::ParseInt

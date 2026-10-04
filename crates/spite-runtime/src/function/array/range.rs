@@ -71,7 +71,7 @@ impl Realm {
         Ok(Value::Object(object))
     }
 
-    fn array_relative_index(
+    pub(super) fn array_relative_index(
         &mut self,
         value: Value,
         length: u64,
