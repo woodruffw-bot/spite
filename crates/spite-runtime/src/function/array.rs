@@ -6,6 +6,7 @@ mod concat;
 mod copy;
 mod factory;
 mod find;
+mod flatten;
 mod front;
 mod iteration;
 mod literal;
@@ -188,6 +189,8 @@ impl Realm {
             Builtin::ArrayFilter,
             Builtin::ArraySlice,
             Builtin::ArrayConcat,
+            Builtin::ArrayFlat,
+            Builtin::ArrayFlatMap,
             Builtin::ArrayFind,
             Builtin::ArrayFindIndex,
             Builtin::ArrayFindLast,

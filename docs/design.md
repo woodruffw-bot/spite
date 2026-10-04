@@ -507,6 +507,17 @@ with the initial source length and defines only present indices. Filter creates
 with zero length, retains the pre-callback value with a charged clone, and packs
 truthy selections. Both use CreateDataPropertyOrThrow, bypassing setters and
 preserving earlier definitions after failure. Neither sets a final custom length.
+Flat/flatMap (23.1.3.13–14) share FlattenIntoArray with an explicit frame vector,
+avoiding native recursion for nested Arrays. Each frame snapshots its source length
+and visits present indices with live HasProperty/Get. Flat converts depth after source
+length and before zero-length species construction. FlatMap validates its mapper
+before species construction and calls it only for original-source elements, with
+the value, index, and original object. Flatten only branded Arrays, independently of
+Symbol.isConcatSpreadable. Compact holes at each entered level. Define own data
+properties, checking the safe-integer index boundary after reading/mapping each
+non-flattened element. Do not set a final length on custom results. Checked frame
+allocation reports platform capacity failures; no default flattening-depth quota
+applies. Infinite depth stays infinite, and cyclic sources consume opted-in work.
 Slice (23.1.3.28) converts start/end after length, then creates the species result
 with the nonnegative range count. Visit HasProperty/Get live in ascending order
 and define present elements at their relative positions. Missing source indices

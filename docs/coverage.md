@@ -357,10 +357,18 @@ the final strict length write follows traversal. Large sparse scans consume an
 opted-in work budget, and custom results can alias inputs without hiding subsequent mutations.
 The pinned 4,000-hole sparse-object concat fixture runs unchanged in both Script
 modes under the default runtime configuration, with host resource quotas disabled.
+Flat/flatMap use an explicit traversal stack, snapshot each entered Array's length,
+and read presence and values live. Only branded Arrays flatten; holes compact at
+each flattened level. Depth conversion follows source length conversion and precedes
+species construction. FlatMap validates its callback before species lookup and maps
+only original-source elements. Custom results receive own data properties without a
+final length assignment; failed definitions retain earlier effects. Regressions cover
+safe-integer index overflow, species aliasing, and 4,000 nested Arrays on a 2 MiB
+native stack. Cyclic infinite flattening can be stopped with an opted-in work quota.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
-null prototype and all 16 specified entries. Other species-dependent Array methods
-and with environments remain pending.
+null prototype and all 16 specified entries. Splice and with environments remain
+pending.
 Array keys/values/entries create branded iterators that read live lengths and
 advance their index before reading values. Keys skip element reads; entries
 create intrinsic two-element arrays. Length errors retry the current index,
@@ -398,7 +406,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 159 retained entries outside the per-Script work
+Realm initialization creates 161 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
