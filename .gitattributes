@@ -1,2 +1,2 @@
 # Preserve Test262 source bytes, including carriage returns and trailing blanks.
-/tests/test262/upstream/** -text whitespace=-blank-at-eol
+/tests/test262/upstream/** -text whitespace=-blank-at-eol,-blank-at-eof
