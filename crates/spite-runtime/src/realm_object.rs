@@ -606,11 +606,9 @@ fn missing_array_method(key: &JsString) -> bool {
         "sort",
         "splice",
         "toLocaleString",
-        "toReversed",
         "toSorted",
         "toSpliced",
         "values",
-        "with",
     ]
     .iter()
     .any(|name| key_is(key, name))

@@ -759,3 +759,62 @@ fn front_movement_bounds_huge_ranges_and_retains_completed_effects_on_host_abort
         check(&mut realm, &format!("flag===0 && ({expected})"));
     }
 }
+
+#[test]
+fn recursive_copy_getters_and_index_conversions_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for (setup, call) in [
+                (
+                    "let a=[1];Object.defineProperty(a,'0',{get:()=>a.toReversed()})",
+                    "a.toReversed()",
+                ),
+                (
+                    "let a=[1,2];Object.defineProperty(a,'0',{get:()=>a.with(1,7)})",
+                    "a.with(1,7)",
+                ),
+                ("let a=[1],i={valueOf:()=>a.with(i,7)}", "a.with(i,7)"),
+            ] {
+                let mut realm = Realm::default();
+                realm.eval(setup).unwrap();
+                realm.eval("let flag=0").unwrap();
+                assert!(matches!(
+                    realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1].with(0,7)[0]===7");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn array_copies_bound_dense_output_and_preserve_the_receiver_on_host_abort() {
+    for call in ["toReversed()", "with(0,7)"] {
+        let mut realm = Realm::default();
+        realm.eval("let a=Array(4294967295),flag=0").unwrap();
+        realm.limits.max_steps = 500;
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{a.{call};}}catch{{flag=1;}}finally{{flag=2;}}"
+            )),
+            Err(Error::Limit { .. })
+        ));
+        realm.limits.max_steps = 100_000;
+        check(
+            &mut realm,
+            "flag===0 && a.length===4294967295 && !Object.hasOwn(a,'0')",
+        );
+        realm.collect(10_000).unwrap();
+    }
+    let mut realm = Realm::default();
+    let receiver = realm.eval("['x'.repeat(1000)]").unwrap();
+    realm.remaining_steps = 500;
+    assert!(matches!(
+        realm.array_to_reversed(receiver, Span::new(0, 0)),
+        Err(Error::Limit { .. })
+    ));
+}

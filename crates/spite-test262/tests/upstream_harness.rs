@@ -5,7 +5,7 @@ use std::{fs, path::Path};
 
 fn run(body: &str) -> Vec<Outcome> {
     let source = format!(
-        "/*---\ndescription: Local control for the pinned assertion harness\n---*/\n{body}"
+        "/*---\ndescription: Local control for the pinned assertion harness\nincludes: [compareArray.js]\n---*/\n{body}"
     );
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262/upstream/harness");
     Runner::default()
@@ -74,6 +74,29 @@ fn missing_diagnostic_formatting_is_an_explicit_non_passing_gap() {
     // be mistaken for a passing assertion or a test's expected exception.
     let outcomes = run("assert.sameValue('left','right','deliberate mismatch');");
     assert_eq!(outcomes.len(), 2);
+    assert!(
+        outcomes.iter().all(|outcome| matches!(
+            outcome,
+            Outcome::Unsupported {
+                stage: Stage::Runtime,
+                ..
+            }
+        )),
+        "{outcomes:?}"
+    );
+}
+
+#[test]
+fn original_array_comparisons_preserve_same_value_semantics() {
+    assert_eq!(
+        run(
+            "let o={};assert.compareArray([NaN,-0,1n,o],[NaN,-0,1n,o]);assert.sameValue(compareArray([0],[-0]),false);assert.sameValue(compareArray([1],[2]),false);assert.sameValue(compareArray([],[1]),false);"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    let outcomes = run("assert.compareArray([1],[2],'deliberate mismatch');");
+    assert_eq!(outcomes.len(), 2);
+    // compareArray.format still needs map. That gap must never pass a test.
     assert!(
         outcomes.iter().all(|outcome| matches!(
             outcome,

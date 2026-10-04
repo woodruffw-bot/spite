@@ -359,6 +359,13 @@ moves left, deletes the last property, then assigns length. Unshift validates
 the safe-integer length bound before moving right, inserts arguments in order,
 and finally assigns length. Zero arguments skip movement but still assign
 length. Earlier writes/deletions remain visible after any later failure.
+ToReversed/with (23.1.3.33/39) use ArrayCreate with the intrinsic prototype,
+without consulting constructor or species. They define dense own elements via
+CreateDataPropertyOrThrow, bypassing inherited setters. ToReversed reads in
+descending order; with converts and validates its index before ArrayCreate and
+reads other indices in ascending order, never reading the replaced property.
+The replacement value moves into the output once. ArrayCreate rejects lengths
+above 2^32 - 1 before element access; host allocation/work limits remain distinct.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

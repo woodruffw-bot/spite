@@ -10,16 +10,7 @@ impl Realm {
         elements: &[Option<Expr>],
         span: Span,
     ) -> Result<Value, Error> {
-        let prototype = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .array
-            .prototype
-            .clone();
-        let array = self.object_work(span, |objects, budget| {
-            objects.create_array(Some(&prototype), 0, budget)
-        })?;
+        let array = self.create_intrinsic_array(0, span)?;
         // Source and parser limits normally bound this well below u32::MAX.
         u32::try_from(elements.len()).map_err(|_| {
             Self::exception(ExceptionKind::RangeError, span, "invalid Array length")

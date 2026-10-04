@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 694 unmodified test fixtures and two harness files come from
+These 713 unmodified test fixtures and three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -69,10 +69,10 @@ standard APIs; those paths report Unsupported and fail the
 gate. Remaining Array methods, additional includes, async completion,
 and agent helpers remain separate harness gaps.
 
-The 278 Array files cover call/new construction, branding, literal elisions,
+The 297 Array files cover call/new construction, branding, literal elisions,
 indexed growth, truncation, generic at/join/push/pop, toString, and ordered
 forEach/every/some callback traversal, find/findIndex/findLast/findLastIndex,
-includes/indexOf/lastIndexOf searches, reduce/reduceRight accumulators, sparse reverse, fill/copyWithin range mutations, and shift/unshift front mutations. All run unchanged with
+includes/indexOf/lastIndexOf searches, reduce/reduceRight accumulators, sparse reverse, fill/copyWithin range mutations, shift/unshift front mutations, and toReversed/with copies. All run unchanged with
 the upstream harness in both default and strict Script modes.
 
 ## Scope and maintenance
@@ -86,15 +86,15 @@ by upstream `INTERPRETING.md`. These bounded host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 1324 variants from 675 reviewed sources: the eleven
+The `spite-test262` command runs 1362 variants from 694 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 83 Object tests,
-147 String tests, and 278 Array tests.
+147 String tests, and 297 Array tests.
 That means four raw positives,
-1248 positives using the upstream harness, and 72 reviewed parse-negative variants.
+1286 positives using the upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
@@ -125,3 +125,8 @@ Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attribute
 prevent line-ending normalization of fixtures. Do not edit the source files to
 make the engine pass. When updating the pin, copy the selected files unchanged,
 review their metadata, update hashes and expectations, and rerun the checks.
+
+The pinned `compareArray.js` include is a compatibility file; its assertions
+are defined in `assert.js`. Successful comparisons execute unchanged. Mismatch
+formatting currently needs the missing Array.prototype.map method and is
+reported as Unsupported, never Passed. Local controls cover both paths.

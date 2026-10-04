@@ -183,7 +183,7 @@ fn missing_array_intrinsics_remain_explicit_host_gaps() {
         "Array().map",
         "Array().toLocaleString",
         "Array().values",
-        "Array().with",
+        "Array().toSorted",
         "Object.getOwnPropertyDescriptor(Array.prototype,'map')",
         "Object.defineProperty(Array,'from',{})",
         "Object.freeze(Array.prototype)",

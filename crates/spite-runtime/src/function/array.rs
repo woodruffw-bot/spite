@@ -2,6 +2,7 @@
 
 mod access;
 mod callback;
+mod copy;
 mod find;
 mod front;
 mod literal;
@@ -36,6 +37,23 @@ impl ArrayIntrinsics {
 }
 
 impl Realm {
+    // ArrayCreate with its default intrinsic prototype (10.4.2.2).
+    fn create_intrinsic_array(&mut self, length: u64, span: Span) -> Result<ObjectHandle, Error> {
+        let length = u32::try_from(length).map_err(|_| {
+            Self::exception(ExceptionKind::RangeError, span, "invalid Array length")
+        })?;
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .array
+            .prototype
+            .clone();
+        self.object_work(span, |objects, budget| {
+            objects.create_array(Some(&prototype), length, budget)
+        })
+    }
+
     // Shared by copyWithin, shift, and unshift. Only own target properties are
     // deleted for source holes; inherited source values are read and copied.
     fn copy_array_element(
@@ -104,6 +122,8 @@ impl Realm {
             Builtin::ArrayShift,
             Builtin::ArrayUnshift,
             Builtin::ArrayReverse,
+            Builtin::ArrayToReversed,
+            Builtin::ArrayWith,
             Builtin::ArrayFill,
             Builtin::ArrayCopyWithin,
             Builtin::ArrayForEach,
