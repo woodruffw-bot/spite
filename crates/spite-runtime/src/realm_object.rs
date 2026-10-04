@@ -507,10 +507,8 @@ impl Realm {
 
 fn missing_object_static(key: &JsString) -> bool {
     [
-        "assign",
         "entries",
         "fromEntries",
-        "getOwnPropertyDescriptors",
         "getOwnPropertyNames",
         "getOwnPropertySymbols",
         "groupBy",

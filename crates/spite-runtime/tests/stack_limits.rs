@@ -23,6 +23,10 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
             "Object.defineProperties({},d)",
         ),
         (
+            "let o={};Object.defineProperty(o,'x',{enumerable:true,get:()=>Object.assign({},o)});",
+            "Object.assign({},o)",
+        ),
+        (
             "let o={name:{toString:()=>Error.prototype.toString.call(o)}};",
             "Error.prototype.toString.call(o)",
         ),

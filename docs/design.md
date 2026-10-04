@@ -499,8 +499,12 @@ Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
 and use mapped-argument descriptor rules when freezing indexed properties.
-Extensible objects fail integrity predicates before key enumeration. Remaining
-Object static methods are explicit gaps.
+Extensible objects fail integrity predicates before key enumeration.
+Object.assign snapshots each source's keys and then rechecks enumerability before
+ordinary Get/Set, retaining getter/setter effects and earlier copies on abrupt
+completion. Object.getOwnPropertyDescriptors creates ordinary own data properties
+containing fresh descriptor objects, preserving accessors without invoking them.
+Remaining Object static methods are explicit gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

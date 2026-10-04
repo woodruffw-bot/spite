@@ -215,7 +215,7 @@ impl Realm {
         ))
     }
 
-    fn descriptor_object(
+    pub(super) fn descriptor_object(
         &mut self,
         property: Option<Property>,
         span: Span,

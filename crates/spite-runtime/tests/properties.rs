@@ -197,8 +197,8 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 #[test]
 fn incomplete_intrinsic_methods_report_unsupported() {
     for name in [
-        "assign",
-        "getOwnPropertyDescriptors",
+        "entries",
+        "getOwnPropertySymbols",
         "getOwnPropertyNames",
         "values",
         "keys",

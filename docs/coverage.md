@@ -196,7 +196,11 @@ if a later definition is rejected. Enumeration of incomplete Object/Function/glo
 intrinsics remains Unsupported. Object.freeze/seal close extensibility and tighten
 own descriptors without invoking accessors or recursively freezing values.
 isFrozen/isSealed inspect integrity, with primitive and empty-object special cases;
-freezing mapped arguments detaches their parameter aliases. Remaining static methods and
+freezing mapped arguments detaches their parameter aliases. Object.assign copies
+enumerable own values in source/key order through ordinary Get/Set, including
+getters, inherited setters, and rejected-write TypeErrors. getOwnPropertyDescriptors
+copies all own descriptors into a fresh object without invoking property getters.
+Remaining static methods and
 String/BigInt/Symbol boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
@@ -216,7 +220,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 66 retained entries under a separate fixed work
+Realm initialization creates 68 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

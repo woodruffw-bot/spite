@@ -50,6 +50,8 @@ pub(crate) enum Builtin {
     ObjectSeal,
     ObjectIsFrozen,
     ObjectIsSealed,
+    ObjectAssign,
+    ObjectGetOwnPropertyDescriptors,
     Error(error::ErrorConstructor),
     ErrorToString,
     ErrorIsError,
@@ -106,6 +108,8 @@ impl Builtin {
             Self::ObjectSeal => "seal",
             Self::ObjectIsFrozen => "isFrozen",
             Self::ObjectIsSealed => "isSealed",
+            Self::ObjectAssign => "assign",
+            Self::ObjectGetOwnPropertyDescriptors => "getOwnPropertyDescriptors",
             Self::Number => "Number",
             Self::Error(kind) => kind.name(),
             Self::ErrorIsError => "isError",
@@ -138,6 +142,7 @@ impl Builtin {
             | Self::ObjectSeal
             | Self::ObjectIsFrozen
             | Self::ObjectIsSealed
+            | Self::ObjectGetOwnPropertyDescriptors
             | Self::Number
             | Self::Error(_)
             | Self::ErrorIsError
@@ -159,6 +164,7 @@ impl Builtin {
             | Self::ObjectSetPrototypeOf
             | Self::ObjectCreate
             | Self::ObjectDefineProperties
+            | Self::ObjectAssign
             | Self::ObjectIs => 2.0,
             Self::ObjectDefineProperty => 3.0,
             _ => 0.0,
