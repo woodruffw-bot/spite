@@ -192,7 +192,7 @@ changes; isExtensible/preventExtensions retain their primitive special cases.
 Object.create selects an object/null prototype and optionally defines properties.
 Object.defineProperties snapshots own keys in specification order, converts every
 enumerable descriptor before defining properties, and retains earlier definitions
-if a later definition is rejected. Enumeration of incomplete Object/Function/String/global
+if a later definition is rejected. Enumeration of incomplete Object/Function/String/Array/global
 intrinsics remains Unsupported. Object.freeze/seal close extensibility and tighten
 own descriptors without invoking accessors or recursively freezing values.
 isFrozen/isSealed inspect integrity, with primitive and empty-object special cases;
@@ -236,11 +236,13 @@ Sparse Array storage now enforces indexed length growth, read-only length, and
 descending partial truncation behind the low-level Objects API. Numeric length
 descriptors must be preconverted there; work checks precede any truncation.
 Realm definitions now perform both ArraySetLength conversions, and assignments
-defer them until after receiver/writability checks. Array construction, literal syntax, and prototype methods remain
-unavailable to JavaScript until the next integration increments.
+defer them until after receiver/writability checks. Array calls/new and Array.isArray
+are implemented, including Array.prototype identity, sparse numeric construction,
+and non-coercing single-element construction. Array literal syntax and prototype
+methods remain unavailable until the next integration increments.
 
 Symbols, BigInt wrapper APIs, remaining String methods,
-JavaScript arrays, derived construction, classes, destructuring, regular
+Array literal syntax/methods, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -255,7 +257,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 95 retained entries under a separate fixed work
+Realm initialization creates 98 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

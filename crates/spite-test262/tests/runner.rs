@@ -223,7 +223,7 @@ fn unsupported_and_limits_are_never_negative_passes() {
         }
     ));
     assert!(matches!(
-        negative("runtime", "ReferenceError", "Array"),
+        negative("runtime", "ReferenceError", "Math"),
         Outcome::Unsupported {
             stage: Stage::Runtime,
             ..

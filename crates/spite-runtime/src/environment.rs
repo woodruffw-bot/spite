@@ -92,13 +92,13 @@ mod tests {
         realm.scopes.push(nested);
         assert_eq!(realm.eval("x"), Ok(Value::Number(7.0)));
         assert_eq!(
-            realm.collect(1000).unwrap().live,
+            realm.collect(10_000).unwrap().live,
             crate::test_support::REALM_ENTRIES + 3
         );
         realm.scopes.pop();
         realm.scopes.pop();
         assert_eq!(realm.eval("x"), Ok(Value::Number(0.0)));
-        assert_eq!(realm.collect(1000).unwrap().reclaimed, 3);
+        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 3);
     }
 
     #[test]
@@ -137,7 +137,7 @@ mod tests {
         );
         assert_eq!(realm.eval("i + outer"), Ok(Value::Number(11.0)));
         realm.scopes.pop();
-        assert_eq!(realm.collect(1000).unwrap().reclaimed, 2);
+        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 2);
     }
 
     #[test]
@@ -255,7 +255,7 @@ mod tests {
             realm.eval("typeof transient"),
             Ok(Value::String(JsString::from("undefined")))
         );
-        let result = realm.collect(1000).unwrap();
+        let result = realm.collect(10_000).unwrap();
         assert_eq!(result.live, crate::test_support::REALM_ENTRIES);
         assert_eq!(result.reclaimed, 2);
         realm.eval("{ let transient = 2; }").unwrap();

@@ -204,7 +204,7 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
         "delete Object.entries",
         "Object.hasOwnProperty('entries')",
         "Object.propertyIsEnumerable('keys')",
-        "globalThis.hasOwnProperty('Array')",
+        "globalThis.hasOwnProperty('Math')",
     ] {
         assert!(
             matches!(

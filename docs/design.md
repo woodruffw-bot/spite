@@ -274,8 +274,8 @@ length checks, and descending-index truncation independently of parser syntax.
 The low-level Objects API accepts only preconverted integral Number length
 descriptors; UnnormalizedArrayLength reports a violated storage precondition,
 not a JavaScript exception. Realm descriptor definitions and deferred length
-assignments now supply these conversions. Array construction/literal syntax is
-not yet exposed to Script execution.
+assignments now supply these conversions. Array calls/new and Array.isArray now expose these objects to Scripts;
+literal syntax and prototype methods remain pending.
 
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
@@ -298,6 +298,12 @@ length coercions, array literal grammar/evaluation, then prototype methods and
 additional Test262 coverage. Array.prototype is itself an empty Array exotic
 object (23.1.3). Missing constructor/prototype methods, Symbol.iterator, species,
 and unscopables remain explicit gaps until their dependencies are implemented.
+Array calls and construction observe newTarget.prototype before validating
+the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
+other single value becomes an element without coercion. Element creation uses
+own data definitions, bypassing inherited setters. IsArray uses the internal
+identity independently of prototypes; Proxy forwarding will join it when Proxy
+objects exist. All Array intrinsics remain rooted after global properties change.
 Array literals must distinguish elisions from explicit undefined and preserve
 trailing-comma lengths; spread remains Unsupported until iterator semantics exist.
 
@@ -593,7 +599,7 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of incomplete Object/Function/String/global intrinsics reports
+bounded work. Enumeration of incomplete Object/Function/String/Array/global intrinsics reports
 Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,

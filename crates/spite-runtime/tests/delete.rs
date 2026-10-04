@@ -92,7 +92,7 @@ fn strict_delete_is_an_early_error_before_any_side_effects() {
 #[test]
 fn missing_standard_objects_stay_unsupported_when_deleted() {
     assert!(matches!(
-        Realm::default().eval("try { delete Array; } catch { 1; }"),
+        Realm::default().eval("try { delete Math; } catch { 1; }"),
         Err(Error::Unsupported { .. })
     ));
 }

@@ -97,6 +97,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "String", Value::Object(constructor), true, span)?;
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .array
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Array", Value::Object(constructor), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }
@@ -533,7 +541,7 @@ mod tests {
             assert!(result.is_ok() || matches!(result, Err(Error::Limit { .. })));
             assert_eq!(realm.intrinsics.is_some(), result.is_ok());
             assert_eq!(
-                realm.collect(1000).unwrap().live,
+                realm.collect(10_000).unwrap().live,
                 if result.is_ok() {
                     crate::test_support::REALM_ENTRIES - 2
                 } else {

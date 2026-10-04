@@ -476,6 +476,8 @@ impl Realm {
             || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
             || object == &intrinsics.string.prototype
+            || object == &intrinsics.array.constructor
+            || object == &intrinsics.array.prototype
         {
             return Err(Self::unsupported(
                 span,
@@ -529,7 +531,60 @@ impl Realm {
         (object == &intrinsics.object.constructor && missing_object_static(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
+            || (object == &intrinsics.array.constructor && missing_array_static(key))
+            || (object == &intrinsics.array.prototype && missing_array_method(key))
     }
+}
+
+fn missing_array_static(key: &JsString) -> bool {
+    ["from", "fromAsync", "of"]
+        .iter()
+        .any(|name| key_is(key, name))
+}
+
+fn missing_array_method(key: &JsString) -> bool {
+    [
+        "at",
+        "concat",
+        "copyWithin",
+        "entries",
+        "every",
+        "fill",
+        "filter",
+        "find",
+        "findIndex",
+        "findLast",
+        "findLastIndex",
+        "flat",
+        "flatMap",
+        "forEach",
+        "includes",
+        "indexOf",
+        "join",
+        "keys",
+        "lastIndexOf",
+        "map",
+        "pop",
+        "push",
+        "reduce",
+        "reduceRight",
+        "reverse",
+        "shift",
+        "slice",
+        "some",
+        "sort",
+        "splice",
+        "toLocaleString",
+        "toReversed",
+        "toSorted",
+        "toSpliced",
+        "toString",
+        "unshift",
+        "values",
+        "with",
+    ]
+    .iter()
+    .any(|name| key_is(key, name))
 }
 
 fn missing_object_static(key: &JsString) -> bool {

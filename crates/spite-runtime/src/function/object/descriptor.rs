@@ -28,7 +28,7 @@ impl Realm {
         Ok(Value::Object(object))
     }
 
-    pub(super) fn define_property_or_throw(
+    pub(crate) fn define_property_or_throw(
         &mut self,
         object: &ObjectHandle,
         key: JsString,

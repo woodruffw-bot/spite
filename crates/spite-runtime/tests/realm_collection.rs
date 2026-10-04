@@ -12,7 +12,7 @@ fn persistent_lexical_var_and_sloppy_global_bindings_are_roots() {
     realm
         .eval("let lexical = {}; var variable = {}; sloppy = {}; { let local = {}; } ({})")
         .unwrap();
-    let result = realm.collect(1000).unwrap();
+    let result = realm.collect(10_000).unwrap();
     assert_eq!(result.live, REALM_ENTRIES + 3); // global environment, global object, nine intrinsics, three persistent objects
     assert_eq!(result.reclaimed, 3);
     for name in ["lexical", "variable", "sloppy"] {
@@ -24,8 +24,8 @@ fn persistent_lexical_var_and_sloppy_global_bindings_are_roots() {
     realm
         .eval("lexical = null; variable = null; delete sloppy;")
         .unwrap();
-    assert_eq!(realm.collect(1000).unwrap().reclaimed, 3);
-    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(10_000).unwrap().reclaimed, 3);
+    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]
@@ -38,14 +38,14 @@ fn rooted_returned_and_thrown_values_survive_until_their_last_clone_drops() {
         panic!("throw")
     };
     let thrown = realm.root_value(thrown, 100).unwrap();
-    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES + 3);
+    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 3);
     drop(root);
     assert_eq!(clone.value(), &value);
-    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES + 3);
+    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 3);
     drop(clone);
-    assert_eq!(realm.collect(1000).unwrap().reclaimed, 2);
+    assert_eq!(realm.collect(10_000).unwrap().reclaimed, 2);
     drop(thrown);
-    assert_eq!(realm.collect(1000).unwrap().reclaimed, 1);
+    assert_eq!(realm.collect(10_000).unwrap().reclaimed, 1);
     let Value::Object(handle) = value else {
         panic!("object")
     };
@@ -71,7 +71,7 @@ fn foreign_values_are_rejected_and_failed_collection_preserves_state() {
         assert_eq!(realm.collect(work), Err(HeapError::Limit));
         assert!(realm.inspect_object(&handle).is_ok());
     }
-    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES + 2);
+    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 2);
     let primitive = realm.root_value(Value::Number(7.0), 0).unwrap();
     assert_eq!(primitive.value(), &Value::Number(7.0));
 }
@@ -105,6 +105,6 @@ fn abrupt_evaluation_restores_scopes_and_pending_completions_preserve_identity()
         realm.eval("{ let temporary = {}; throw {thrown: temporary}; }"),
         Err(Error::Thrown(_))
     ));
-    assert_eq!(realm.collect(1000).unwrap().live, REALM_ENTRIES + 1);
+    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 1);
     assert_eq!(realm.eval("saved === same"), Ok(Value::Boolean(true)));
 }

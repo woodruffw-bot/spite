@@ -253,7 +253,7 @@ fn all_abrupt_exits_restore_the_outer_environment() {
     );
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
     assert!(matches!(
-        realm.eval("switch (0) { case Array: let x; }"),
+        realm.eval("switch (0) { case Math: let x; }"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));

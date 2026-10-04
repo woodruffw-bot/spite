@@ -218,6 +218,7 @@ impl Objects {
             builtin,
             Builtin::Boolean
                 | Builtin::Number
+                | Builtin::Array
                 | Builtin::String
                 | Builtin::Object
                 | Builtin::Error(_)

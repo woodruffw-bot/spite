@@ -167,7 +167,7 @@ fn restricted_global_values_follow_existing_writability_rules() {
         })
     ));
     assert!(matches!(
-        Realm::default().eval("var Array;"),
+        Realm::default().eval("var Math;"),
         Err(Error::Unsupported { .. })
     ));
 }

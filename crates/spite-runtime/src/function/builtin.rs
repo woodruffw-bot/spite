@@ -184,6 +184,8 @@ impl Realm {
             Builtin::Boolean => Ok(Value::Boolean(
                 arguments.next().unwrap_or(Value::Undefined).to_boolean(),
             )),
+            Builtin::Array => self.array_constructor(None, arguments, span),
+            Builtin::ArrayIsArray => self.array_is_array(arguments.next(), span),
             Builtin::String => self.string_constructor(None, arguments.next(), span),
             Builtin::StringRaw => {
                 let template = arguments.next().unwrap_or(Value::Undefined);
@@ -271,7 +273,9 @@ impl Realm {
                     Value::String(_) => "String",
                     Value::Object(handle) => self.object_work(span, |objects, _| {
                         let object = objects.inspect(handle)?;
-                        Ok(if object.is_error() {
+                        Ok(if object.is_array() {
+                            "Array"
+                        } else if object.is_error() {
                             "Error"
                         } else if object.boolean_data().is_some() {
                             "Boolean"

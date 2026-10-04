@@ -109,6 +109,9 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::Array) => {
+                    return self.array_constructor(Some(new_target), arguments.into_iter(), span);
+                }
                 Callable::Builtin(Builtin::String) => {
                     return self.string_constructor(
                         Some(new_target),

@@ -60,6 +60,8 @@ pub(crate) enum Builtin {
     Boolean,
     BooleanToString,
     BooleanValueOf,
+    Array,
+    ArrayIsArray,
     String,
     StringToString,
     StringValueOf,
@@ -122,6 +124,8 @@ impl Builtin {
             | Self::NumberValueOf
             | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
+            Self::Array => "Array",
+            Self::ArrayIsArray => "isArray",
             Self::String => "String",
             Self::StringFromCharCode => "fromCharCode",
             Self::StringFromCodePoint => "fromCodePoint",
@@ -187,6 +191,8 @@ impl Builtin {
             Self::FunctionCall
             | Self::FunctionBind
             | Self::Boolean
+            | Self::Array
+            | Self::ArrayIsArray
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
@@ -293,6 +299,7 @@ pub(super) struct Intrinsics {
     pub boolean: boolean::BooleanIntrinsics,
     pub number: number::NumberIntrinsics,
     pub string: string::StringIntrinsics,
+    pub array: array::ArrayIntrinsics,
 }
 
 impl Intrinsics {
@@ -316,6 +323,7 @@ impl Intrinsics {
         .chain(self.errors.roots())
         .chain(self.object.roots())
         .chain(self.string.roots())
+        .chain(self.array.roots())
     }
 }
 
@@ -407,6 +415,7 @@ impl Realm {
         let object =
             self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
         let string = self.string_intrinsics(&object_prototype, &function_prototype, span)?;
+        let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -426,6 +435,7 @@ impl Realm {
             boolean,
             number,
             string,
+            array,
         });
         Ok(object_prototype)
     }

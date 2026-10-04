@@ -227,8 +227,8 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
         "Object.getOwnPropertyDescriptor(Object,'entries')",
         "Object.hasOwn(Object,'entries')",
         "Object.defineProperty(Object,'entries',{})",
-        "Object.defineProperty(globalThis,'Array',{})",
-        "Object.getOwnPropertyDescriptor(globalThis,'Array')",
+        "Object.defineProperty(globalThis,'Math',{})",
+        "Object.getOwnPropertyDescriptor(globalThis,'Math')",
     ] {
         assert!(
             matches!(

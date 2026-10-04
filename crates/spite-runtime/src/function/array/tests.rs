@@ -1,20 +1,8 @@
 use super::*;
-use crate::object::Budget;
-
-// Arrays are not exposed by a constructor yet. Install a storage-created array
-// only for these Realm tests, exercising actual Script operations on the value.
+// Exercise the public constructor and real Script operations on its result.
 fn realm_with_array(length: u32) -> Realm {
     let mut realm = Realm::default();
-    realm.eval("").unwrap();
-    let prototype = realm.intrinsics.as_ref().unwrap().object_prototype.clone();
-    let array = realm
-        .objects
-        .create_array(Some(&prototype), length, &mut Budget::new(1000))
-        .unwrap();
-    let global = realm.global_object.as_ref().unwrap().clone();
-    realm
-        .define_builtin_property(&global, "a", Value::Object(array), true, Span::new(0, 0))
-        .unwrap();
+    realm.eval(&format!("let a=Array({length})")).unwrap();
     realm
 }
 
@@ -260,4 +248,61 @@ fn recursive_length_conversion_is_bounded_on_a_two_mebibyte_stack() {
         .unwrap()
         .join()
         .unwrap();
+}
+
+#[test]
+fn construction_observes_new_target_prototype_before_length_validation() {
+    let mut realm = Realm::default();
+    let Value::Object(target) = realm.eval("let n=0,p={},F=(function(){}).bind(null);Object.defineProperty(F,'prototype',{get:()=>{n++;return p;},configurable:true});F").unwrap() else { panic!("target"); };
+    let span = Span::new(0, 0);
+    let Value::Object(array) = realm
+        .array_constructor(
+            Some(target.clone()),
+            vec![Value::Number(2.0)].into_iter(),
+            span,
+        )
+        .unwrap()
+    else {
+        panic!("array");
+    };
+    let Value::Object(prototype) = realm.eval("p").unwrap() else {
+        panic!("prototype");
+    };
+    assert_eq!(
+        realm.inspect_object(&array).unwrap().prototype(),
+        Some(&prototype)
+    );
+    assert!(realm.inspect_object(&array).unwrap().is_array());
+    assert!(matches!(
+        realm.array_constructor(
+            Some(target.clone()),
+            vec![Value::Number(-1.0)].into_iter(),
+            span
+        ),
+        Err(Error::Exception {
+            kind: ExceptionKind::RangeError,
+            ..
+        })
+    ));
+    check(&mut realm, "n===2");
+    realm
+        .eval("Object.defineProperty(F,'prototype',{value:null})")
+        .unwrap();
+    let Value::Object(array) = realm
+        .array_constructor(Some(target.clone()), vec![].into_iter(), span)
+        .unwrap()
+    else {
+        panic!("array");
+    };
+    assert_eq!(
+        realm.inspect_object(&array).unwrap().prototype(),
+        Some(&realm.intrinsics.as_ref().unwrap().array.prototype)
+    );
+    realm
+        .eval("Object.defineProperty(F,'prototype',{get:()=>{throw 9;}})")
+        .unwrap();
+    assert_eq!(
+        realm.array_constructor(Some(target), vec![Value::Number(-1.0)].into_iter(), span),
+        Err(Error::Thrown(Value::Number(9.0)))
+    );
 }

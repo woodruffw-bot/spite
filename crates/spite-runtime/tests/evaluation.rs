@@ -220,7 +220,7 @@ fn typeof_special_cases_only_unresolvable_references() {
     exception("typeof x; let x", ExceptionKind::ReferenceError);
     exception("typeof (0, missing)", ExceptionKind::ReferenceError);
     assert!(matches!(
-        Realm::default().eval("typeof Array"),
+        Realm::default().eval("typeof Math"),
         Err(Error::Unsupported { .. })
     ));
 }
@@ -332,7 +332,7 @@ fn resource_failures_are_host_errors_and_restore_scopes() {
 #[test]
 fn unsupported_features_cannot_masquerade_as_runtime_exceptions() {
     assert!(matches!(
-        Realm::default().eval("Array"),
+        Realm::default().eval("Math"),
         Err(Error::Unsupported { .. })
     ));
     assert!(matches!(

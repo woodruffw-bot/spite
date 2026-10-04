@@ -206,7 +206,7 @@ mod tests {
             Ok(Value::String(JsString::from("[object Null]")))
         );
         assert_eq!(realm.eval("bound.caller"), Ok(Value::Undefined));
-        realm.collect(1000).unwrap();
+        realm.collect(10_000).unwrap();
         let thrower = realm.intrinsics.as_ref().unwrap().throw_type_error.clone();
         realm
             .objects
@@ -230,7 +230,7 @@ mod tests {
                 ..
             })
         ));
-        assert_eq!(realm.collect(1000).unwrap().reclaimed, 1);
+        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 1);
     }
 
     #[test]
@@ -238,7 +238,7 @@ mod tests {
         let mut realm = Realm::default();
         let target = target(&mut realm);
         realm.eval("let flag = 0").unwrap();
-        realm.collect(1000).unwrap();
+        realm.collect(10_000).unwrap();
         let bind = realm.intrinsics.as_ref().unwrap().function_bind.clone();
         realm
             .objects
