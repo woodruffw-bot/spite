@@ -10,6 +10,7 @@ use crate::{
     Value,
     environment::{BindingState, Environment, EnvironmentHandle},
 };
+use spite_bigint::BigInt;
 use spite_core::{JsString, JsSymbol, PropertyKey, PropertyKeyRef};
 use spite_heap::{Collection, Handle, Heap};
 use std::collections::BTreeMap;
@@ -283,6 +284,14 @@ impl Objects {
         value: JsSymbol,
     ) -> Result<Handle, Error> {
         self.create_wrapper(prototype, PrimitiveData::Symbol(value))
+    }
+
+    pub(crate) fn create_bigint(
+        &mut self,
+        prototype: &Handle,
+        value: BigInt,
+    ) -> Result<Handle, Error> {
+        self.create_wrapper(prototype, PrimitiveData::BigInt(value))
     }
 
     fn create_wrapper(

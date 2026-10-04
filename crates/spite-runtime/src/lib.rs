@@ -28,7 +28,7 @@ use value::{exponentiate, to_uint32};
 /// Built-in error categories produced by implemented runtime operations.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ExceptionKind {
-    /// Invalid declaration instantiation.
+    /// A runtime syntax failure, such as an invalid declaration or integer string.
     SyntaxError,
     /// An unresolvable or uninitialized binding.
     ReferenceError,
@@ -1570,7 +1570,6 @@ fn standard_global(name: &str) -> bool {
             | "encodeURIComponent"
             | "Function"
             | "AggregateError"
-            | "BigInt"
             | "Math"
             | "Date"
             | "RegExp"

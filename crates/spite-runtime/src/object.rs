@@ -6,6 +6,7 @@
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::{Value, function::Callable};
+use spite_bigint::BigInt;
 use spite_core::{JsString, JsSymbol, PropertyKey, PropertyKeyRef};
 use spite_heap::{Handle, Trace};
 use std::fmt;
@@ -47,6 +48,7 @@ pub(crate) enum PrimitiveData {
     Number(f64),
     String(JsString),
     Symbol(JsSymbol),
+    BigInt(BigInt),
 }
 
 /// Stored object properties, prototype, extensibility, and internal-slot metadata.
@@ -170,6 +172,13 @@ impl OrdinaryObject {
     pub(crate) fn symbol_data(&self) -> Option<&JsSymbol> {
         match &self.primitive_data {
             Some(PrimitiveData::Symbol(value)) => Some(value),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn bigint_data(&self) -> Option<&BigInt> {
+        match &self.primitive_data {
+            Some(PrimitiveData::BigInt(value)) => Some(value),
             _ => None,
         }
     }

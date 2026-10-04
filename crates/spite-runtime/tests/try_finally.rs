@@ -330,7 +330,8 @@ fn host_failures_abort_without_running_or_being_overridden_by_finalizers() {
             max_string_units: Some(1),
             ..Limits::default()
         });
-        realm.eval("let x = 1; let flag = 0;").unwrap();
+        realm.eval("let x = 1;").unwrap();
+        realm.eval("let flag = 0;").unwrap();
         let source = format!(
             "a: {{ try {{
             try {{ let x = 2; {body} }} finally {{ flag = 1; break a; }}
@@ -354,7 +355,8 @@ fn host_failure_in_a_finalizer_stops_outer_finalizers() {
             max_steps: Some(160),
             ..Limits::default()
         });
-        realm.eval("let x = 1; let flag = 0;").unwrap();
+        realm.eval("let x = 1;").unwrap();
+        realm.eval("let flag = 0;").unwrap();
         let source = format!(
             "a: {{ try {{
             try {{ throw 8; }} finally {{ let x = 2; flag = 1; {finalizer} }}

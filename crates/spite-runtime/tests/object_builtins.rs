@@ -24,13 +24,9 @@ fn construction_distinguishes_nullish_object_and_primitive_arguments() {
     );
     check("let effect=0;Object(null,effect=1);effect===1");
     for source in ["Object(1n)", "new Object(1n)"] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
+        check(&format!(
+            "let b={source};b instanceof BigInt && b.valueOf()===1n"
+        ));
     }
 }
 

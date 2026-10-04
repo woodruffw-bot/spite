@@ -161,6 +161,21 @@ ToNumber is fallible; it rejects BigInt with TypeError. Language ToString produc
 decimal digits. Host value display uses exact hexadecimal BigInt notation to keep
 diagnostic formatting linear and independent of the evaluator's remaining budget.
 
+BigInt (21.2.1.1) rejects construction before argument coercion, then performs
+ToPrimitive with the number hint. Integral finite Numbers use exact significand/
+exponent decoding (NumberToBigInt, 21.2.1.1.1); other values use ToBigInt (7.1.13).
+ToBigInt accepts BigInt, Boolean, and integer strings, rejects Numbers and other
+incompatible primitives with TypeError, and rejects malformed strings with
+SyntaxError. Share StringToBigInt with equality/ordering conversion.
+BigInt.prototype is ordinary with no BigIntData and a configurable, non-writable
+BigInt tag. Wrappers retain an immutable integer slot, independently of their
+current prototype. ToObject and non-strict calls box BigInts through that intrinsic.
+Branded valueOf/toString/toLocaleString reject impostors without coercion.
+ToString validates the brand before radix conversion, uses exact integer formatting,
+and checks opted-in output quotas. ToLocaleString follows the non-ECMA-402 decimal
+fallback, ignoring reserved arguments. Keep constructor enumeration unavailable
+until both width conversions are materialized.
+
 Model references separately from values. Model normal completion with an optional
 value so an empty completion cannot be confused with JavaScript undefined. Add
 return, throw, break, and continue completion records as those forms arrive. Keep
@@ -487,7 +502,7 @@ receiver and no arguments, then converts the result to a String. Nullish element
 contribute no text; holes still perform Get. Separator concatenation precedes the
 next indexed read, including output-limit checks. Cyclic arrays use the ordinary
 reentry limit; no special cycle-to-empty-string behavior is added. BigInt elements
-remain Unsupported until their prototype API exists.
+use their branded non-ECMA-402 decimal locale fallback.
 Array's Symbol.species accessor returns the original receiver, including primitives,
 without coercion (23.1.2.6). It has no setter and is configurable/non-enumerable.
 Array.prototype's Symbol.unscopables data property points to the standard mutable
@@ -629,9 +644,8 @@ boxes implemented primitive kinds, selects the internal-slot fallback, then read
 Symbol.toStringTag with the boxed/original object as receiver (20.1.3.6). Only a
 String overrides the fallback; other values are never coerced. Tag concatenation
 preserves UTF-16 and checks output work/capacity before allocation. Nullish values
-skip lookup. BigInt primitives retain their default tag while their unexposed
-prototype cannot be changed; BigInt wrapper integration must replace this shortcut
-with ordinary ToObject/Get. Symbol receivers use their actual wrapper and prototype tag.
+skip lookup. Symbol and BigInt receivers use their actual wrappers and observable
+prototype tags. Deleting those tags exposes the ordinary Object fallback.
 Missing intrinsics remain Unsupported. Each new object kind must implement its
 required Symbol hooks alongside its string-keyed API.
 Arithmetic and comparisons convert original operands from left to right after
@@ -643,8 +657,8 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity and its mandatory
 string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. BigInt wrapper APIs and remaining well-known
-hooks remain explicit implementation gaps.
+that method normally. BigInt width conversions and remaining well-known hooks
+remain explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors
 carry mutually exclusive kind-specific fields; omitted fields preserve existing

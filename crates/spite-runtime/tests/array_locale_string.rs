@@ -111,10 +111,10 @@ fn generic_receivers_and_abrupt_operations_follow_the_specification() {
             "{source}"
         );
     }
-    assert!(matches!(
+    assert_eq!(
         Realm::default().eval("[1n].toLocaleString()"),
-        Err(Error::Unsupported { .. })
-    ));
+        Ok(Value::String("1".into()))
+    );
 }
 
 #[test]

@@ -1,0 +1,5 @@
+---
+source: crates/spite/tests/cli.rs
+expression: "String::from_utf8(output.stderr).unwrap()"
+---
+SyntaxError at 0..13: String is not a valid BigInt integer

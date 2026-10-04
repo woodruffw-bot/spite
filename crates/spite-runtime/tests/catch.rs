@@ -161,7 +161,8 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
                 max_steps: Some(160),
                 ..Limits::default()
             });
-            realm.eval("let x = 1; let flag = 0;").unwrap();
+            realm.eval("let x = 1;").unwrap();
+            realm.eval("let flag = 0;").unwrap();
             let inner = if in_catch {
                 format!("try {{ throw 1; }} catch {{ let x = 2; {failure} }}")
             } else {

@@ -14,6 +14,7 @@ impl Realm {
             Value::Number(_) => Some(intrinsics.number.prototype.clone()),
             Value::String(_) => Some(intrinsics.string.prototype.clone()),
             Value::Symbol(_) => Some(intrinsics.symbol.prototype.clone()),
+            Value::BigInt(_) => Some(intrinsics.bigint.prototype.clone()),
             _ => None,
         }
     }
@@ -34,6 +35,7 @@ impl Realm {
             Value::Number(value) => objects.create_number(&prototype, value),
             Value::String(value) => objects.create_string(&prototype, value, budget),
             Value::Symbol(value) => objects.create_symbol(&prototype, value),
+            Value::BigInt(value) => objects.create_bigint(&prototype, value),
             _ => unreachable!("primitive with an implemented prototype"),
         })
         .map(Value::Object)

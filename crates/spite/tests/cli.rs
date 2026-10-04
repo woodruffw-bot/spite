@@ -64,7 +64,7 @@ fn execution_work_limit_is_optional() {
 fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),
-        ("BigInt", "Unsupported"),
+        ("Math", "Unsupported"),
         ("1n + 1", "TypeError"),
         ("1n / 0n", "RangeError"),
         ("throw 7", "uncaught 7"),
@@ -143,4 +143,15 @@ fn help_and_usage() {
     );
     let output = Command::new(env!("CARGO_BIN_EXE_spite")).output().unwrap();
     assert_eq!(output.status.code(), Some(2));
+}
+
+#[test]
+fn bigint_invalid_integer_string_diagnostic() {
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args(["--eval", "BigInt('1.5')"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    insta::assert_snapshot!(String::from_utf8(output.stderr).unwrap());
 }

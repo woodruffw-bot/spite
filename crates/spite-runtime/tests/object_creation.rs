@@ -130,13 +130,13 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
     for properties in ["null", "undefined"] {
         type_error(&format!("Object.defineProperties({{}},{properties})"));
     }
-    for properties in ["true", "false", "1", "NaN"] {
+    for properties in ["true", "false", "1", "NaN", "1n"] {
         check(&format!(
             "let o={{}};Object.defineProperties(o,{properties})===o && Object.isExtensible(o)"
         ));
     }
+    check("Object.getPrototypeOf(Object.create(null,1n))===null");
     for source in [
-        "Object.create(null,1n)",
         "Object.defineProperties({},Object)",
         "Object.defineProperties({},globalThis)",
         "Object.defineProperties({},Object.getPrototypeOf(Object))",

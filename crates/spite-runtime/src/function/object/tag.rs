@@ -8,10 +8,6 @@ impl Realm {
         match value {
             Value::Undefined => return self.object_tag_string(&JsString::from("Undefined"), span),
             Value::Null => return self.object_tag_string(&JsString::from("Null"), span),
-            // BigInt wrappers/prototypes remain unavailable. Their unobservable
-            // default prototype owns the "BigInt" tag, shadowing Object.prototype.
-            // Route through ToObject/Get once that prototype can be accessed.
-            Value::BigInt(_) => return self.object_tag_string(&JsString::from("BigInt"), span),
             _ => {}
         }
         let Value::Object(object) = self.box_primitive(value, span)? else {

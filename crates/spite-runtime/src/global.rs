@@ -51,6 +51,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Boolean", Value::Object(boolean), true, span)?;
+        let bigint = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .bigint
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "BigInt", Value::Object(bigint), true, span)?;
         let number = self
             .intrinsics
             .as_ref()

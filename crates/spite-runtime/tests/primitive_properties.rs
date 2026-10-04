@@ -190,7 +190,6 @@ fn missing_standard_methods_are_distinct_from_absent_and_annex_b_properties() {
         "'s'.normalize",
         "'s'.localeCompare",
         "'s'.replaceAll",
-        "1n.toLocaleString",
     ] {
         assert!(
             matches!(

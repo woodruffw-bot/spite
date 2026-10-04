@@ -118,7 +118,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add global parseFloat/parseInt and their shared Number aliases with exact prefix parsing.
 - [x] Add global isFinite/isNaN with ordered ToNumber coercion and abrupt completion propagation.
 - [x] Complete non-decimal Number formatting with exact shortest-roundtrip intervals.
-- [ ] Add remaining BigInt boxed receivers.
+- [x] Add BigInt calls, integral Number/string conversion, wrappers, and boxed receivers.
+- [x] Add branded BigInt valueOf/toString/toLocaleString methods and observable tags.
+- [ ] Add BigInt.asIntN/asUintN width conversions.
 - [x] Add the intrinsic Array values iterator hook to mapped and unmapped arguments.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.
 - [x] Execute ordinary and bound construction with prototype selection and ordered arguments.

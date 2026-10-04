@@ -15,6 +15,7 @@ not an alternative language specification.
 | Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
+| BigInt APIs | Calls with exact integral Number and integer-string conversion, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Arrays | Calls/new, of, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
@@ -23,7 +24,7 @@ not an alternative language specification.
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, and String receivers box; other non-strict primitive receivers remain Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -123,8 +124,8 @@ descriptors. Object.prototype has an immutable null prototype and its mandatory
 string-keyed methods. Default ordinary-object conversion is supported. Intrinsic
 initialization is atomic and the initialized objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
-metadata. Their reads/writes throw catchable TypeError in both modes. BigInt
-wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
+metadata. Their reads/writes throw catchable TypeError in both modes. Spread
+arguments and optional calls remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -151,13 +152,12 @@ Strict ordinary functions execute with preserved receivers, shared lexical captu
 hoisting, defaults, and return completions. Unmapped arguments expose original
 indices, length, and restricted callee; indices and parameters do not alias. Arrows
 capture this and arguments from enclosing functions, including across collection.
-Non-strict functions with object, Boolean, Number, String, or nullish/global receivers also execute. Simple parameter lists
+Non-strict functions with object, Boolean, Number, String, Symbol, BigInt, or nullish/global receivers also execute. Simple parameter lists
 use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
 Arguments objects now own the intrinsic Array values callable at Symbol.iterator.
-BigInt primitive wrappers remain unimplemented.
 Ordinary new expressions create fresh receivers from the current constructor
 prototype (or the realm default), run parameters/bodies, and honor object returns.
 Bound constructors forward arguments and newTarget while ignoring bound this and
@@ -207,13 +207,12 @@ of prototype identity; Error prototypes do not carry that slot. Cause references
 are traced through ordinary properties. AggregateError remains unimplemented.
 
 Object calls/new preserve object identity, create fresh nullish-argument objects,
-and box Boolean/Number/String/Symbol values. Object.prototype provides hasOwnProperty,
+and box Boolean/Number/String/Symbol/BigInt values. Object.prototype provides hasOwnProperty,
 propertyIsEnumerable, isPrototypeOf, toLocaleString, constructor, toString, and
 valueOf with ordered conversions and receiver handling. Object.prototype.toString reads Symbol.toStringTag
 after selecting its fallback, accepts only String tags, and bounds UTF-16 output.
-Tag getters receive the original object or a fresh primitive wrapper. BigInt
-primitives retain their default tag while that prototype remains inaccessible;
-Symbol receivers use their wrappers and standard prototype tag. Own-property
+Tag getters receive the original object or a fresh primitive wrapper. BigInt and
+Symbol receivers use their wrappers and observable prototype tags. Own-property
 predicates inspect string/symbol descriptors without invoking accessors. Object.defineProperty converts
 inherited descriptor fields in order and applies data/accessor changes, including
 mapped-argument alias updates. Object.getOwnPropertyDescriptor returns fresh,
@@ -249,7 +248,7 @@ semantics. Accessor definitions merge pairs and replace data descriptors in sour
 order. Twenty-three upstream files cover computed names, escaped/reserved method
 names, abrupt key evaluation, and setter scope. Async/generator methods, super,
 and parameter patterns/rest remain unsupported.
-Object.fromEntries/groupBy and BigInt boxing remain explicit gaps, including descriptor inspection
+Object.fromEntries/groupBy remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
 String calls/new, StringData wrappers, and branded toString/valueOf are supported.
@@ -322,7 +321,8 @@ effects. Comparison order for inconsistent comparators is implementation-defined
 Array toLocaleString uses the ECMA-262 algorithm without ECMA-402, a fixed comma
 separator, live element reads, original receivers, and zero-argument method
 calls. It ignores the reserved arguments, converts each result before the next
-read, and bounds output and recursion. BigInt prototype methods remain pending.
+read, and bounds output and recursion. BigInt elements use their exposed branded
+locale fallback.
 Array.of constructs through constructor receivers or creates an intrinsic Array
 for non-constructors. It defines own data elements before a final strict length
 assignment, including on empty results, and retains partial effects on failure.
@@ -396,17 +396,27 @@ attributes. The shared Iterator constructor and helpers remain Unsupported.
 Symbol-keyed access is tested through native injection, Script integration tests,
 and reviewed upstream Symbol/iterator fixtures.
 
-BigInt wrapper APIs, remaining String methods,
+BigInt width conversions, remaining String methods,
 Array.from/fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
-The BigInt constructor and its prototype/static methods remain part of standard
-library work. The arithmetic crate now converts finite integral binary64 values
-to exact BigInts by decoding their significand and exponent. Regressions cover
-every integral exponent, both signs, fractional/nonfinite rejection, normalized
-zero, and opted-in quotas. The command-line host displays BigInt completion values in exact
-hexadecimal notation with an `n` suffix; JavaScript string conversion is decimal.
+The BigInt constructor converts with the number hint, accepts finite integral
+Numbers exactly, and accepts Boolean/BigInt/integer-string values through ToBigInt.
+It rejects construction before coercion. Invalid integer strings throw SyntaxError;
+nonintegral/nonfinite Numbers throw RangeError; incompatible types throw TypeError.
+The arithmetic crate decodes binary64 significands/exponents exactly; regressions
+cover every integral exponent, both signs, zero, and opted-in quotas.
+BigInt wrappers have a retained internal value and the intrinsic prototype;
+non-strict calls box them freshly. BigInt.prototype itself has no BigIntData.
+ValueOf/toString/toLocaleString validate brands without coercing receivers.
+ToString validates the receiver before radix conversion and emits exact lowercase
+radix digits. ToLocaleString uses the specified non-ECMA-402 decimal fallback and
+ignores reserved arguments. Object.prototype.toString reads the observable tag
+through ToObject/Get; deleting it exposes the ordinary Object fallback. Wrapper
+brands survive prototype changes and explicit collection. BigInt.asIntN/asUintN
+and constructor enumeration remain pending. Host display stays exact hexadecimal
+with an `n` suffix; JavaScript string conversion is decimal.
 
 Global lexical bindings and Script var declarations persist between evaluations.
 New global vars are non-deletable. A var declaration for an existing global value
@@ -418,7 +428,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 162 retained entries outside the per-Script work
+Realm initialization creates 167 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

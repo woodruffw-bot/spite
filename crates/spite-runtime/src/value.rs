@@ -233,7 +233,10 @@ impl fmt::Display for Value {
 
 // ECMA-262 7.1.14: signed decimal integers, unsigned radix prefixes, and empty
 // whitespace are accepted. Separators, suffixes, fractions, and exponents are not.
-fn string_to_bigint(value: &JsString, budget: &mut Budget) -> Result<Option<BigInt>, IntegerError> {
+pub(crate) fn string_to_bigint(
+    value: &JsString,
+    budget: &mut Budget,
+) -> Result<Option<BigInt>, IntegerError> {
     budget.charge(value.len().checked_add(1).ok_or(IntegerError::Limit)?)?;
     let Ok(text) = value.to_utf8() else {
         return Ok(None);

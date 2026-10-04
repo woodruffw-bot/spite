@@ -9,6 +9,7 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 mod arguments;
 mod array;
 mod arrow;
+mod bigint;
 mod boolean;
 mod bound;
 mod builtin;
@@ -70,6 +71,10 @@ pub(crate) enum Builtin {
     Boolean,
     BooleanToString,
     BooleanValueOf,
+    BigInt,
+    BigIntToString,
+    BigIntToLocaleString,
+    BigIntValueOf,
     Array,
     ArrayIsArray,
     ArrayOf,
@@ -181,16 +186,19 @@ impl Builtin {
             | Self::ArrayToString
             | Self::ObjectToString
             | Self::BooleanToString
+            | Self::BigIntToString
             | Self::SymbolToString
             | Self::StringToString
             | Self::ErrorToString
             | Self::NumberToString => "toString",
             Self::ObjectValueOf
             | Self::BooleanValueOf
+            | Self::BigIntValueOf
             | Self::NumberValueOf
             | Self::SymbolValueOf
             | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
+            Self::BigInt => "BigInt",
             Self::Array => "Array",
             Self::ArrayIsArray => "isArray",
             Self::ArrayOf => "of",
@@ -295,9 +303,10 @@ impl Builtin {
             Self::NumberToFixed => "toFixed",
             Self::NumberToPrecision => "toPrecision",
             Self::NumberToExponential => "toExponential",
-            Self::NumberToLocaleString | Self::ObjectToLocaleString | Self::ArrayToLocaleString => {
-                "toLocaleString"
-            }
+            Self::NumberToLocaleString
+            | Self::ObjectToLocaleString
+            | Self::ArrayToLocaleString
+            | Self::BigIntToLocaleString => "toLocaleString",
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
         }
@@ -310,6 +319,8 @@ impl Builtin {
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean
+            | Self::BigInt
+            | Self::BigIntToString
             | Self::Array
             | Self::ArrayIsArray
             | Self::ArrayJoin
@@ -455,6 +466,7 @@ pub(super) struct Intrinsics {
     pub function_has_instance: ObjectHandle,
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
+    pub bigint: bigint::BigIntIntrinsics,
     pub number: number::NumberIntrinsics,
     pub string: string::StringIntrinsics,
     pub symbol: symbol::SymbolIntrinsics,
@@ -480,6 +492,7 @@ impl Intrinsics {
         ]
         .into_iter()
         .chain(self.boolean.roots())
+        .chain(self.bigint.roots())
         .chain(self.number.roots())
         .chain(self.errors.roots())
         .chain(self.object.roots())
@@ -587,6 +600,7 @@ impl Realm {
             )
         })?;
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
+        let bigint = self.bigint_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
         let is_nan = self.new_builtin(&function_prototype, Builtin::IsNaN, span)?;
@@ -615,6 +629,7 @@ impl Realm {
             function_has_instance,
             function_to_string,
             boolean,
+            bigint,
             number,
             string,
             symbol,

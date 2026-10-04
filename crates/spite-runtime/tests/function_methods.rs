@@ -45,11 +45,10 @@ fn call_passes_receivers_without_boxing_or_global_substitution() {
             })
         ));
     }
-    // BigInt wrapper allocation remains a separate roadmap step.
-    assert!(matches!(
-        Realm::default().eval("({}).valueOf.call(1n)"),
-        Err(Error::Unsupported { .. })
-    ));
+    assert_eq!(
+        Realm::default().eval("({}).valueOf.call(1n).valueOf()===1n"),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

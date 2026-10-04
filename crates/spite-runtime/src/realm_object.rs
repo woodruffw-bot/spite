@@ -198,12 +198,6 @@ impl Realm {
             return self.get_property_with_receiver(&prototype, key, base.clone(), span);
         }
         self.tick(span)?;
-        if missing_primitive_method(base, key) {
-            return Err(Self::unsupported(
-                span,
-                "primitive prototype method is not implemented",
-            ));
-        }
         Ok(Value::Undefined)
     }
 
@@ -261,10 +255,6 @@ impl Realm {
                 }
             };
         }
-        // GetThisValue retains the primitive receiver. String own properties
-        // reject writes; ordinary inherited data properties reject non-objects
-        // as receivers (10.1.9.2). The remaining primitive prototypes do not yet
-        // expose setters.
         self.tick(span)?;
         Ok(false)
     }
@@ -640,6 +630,7 @@ impl Realm {
             || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
+            || object == &intrinsics.bigint.constructor
         {
             return Err(Self::unsupported(
                 span,
@@ -704,6 +695,8 @@ impl Realm {
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
+            || (object == &intrinsics.bigint.constructor
+                && ["asIntN", "asUintN"].iter().any(|name| key_is(key, name)))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
     }
 }
@@ -737,40 +730,10 @@ fn missing_object_static(key: &JsString) -> bool {
         .any(|name| key_is(key, name))
 }
 
-fn missing_object_method(key: &JsString) -> bool {
-    [
-        "constructor",
-        "hasOwnProperty",
-        "isPrototypeOf",
-        "propertyIsEnumerable",
-        "toLocaleString",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
-}
-
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {
     key.into()
         .as_string()
         .is_some_and(|key| key.code_units().iter().copied().eq(name.encode_utf16()))
-}
-
-fn missing_primitive_method(base: &Value, key: PropertyKeyRef<'_>) -> bool {
-    let key = match key {
-        PropertyKeyRef::String(key) => key,
-        PropertyKeyRef::Symbol(symbol) => {
-            return matches!(base, Value::BigInt(_))
-                && symbol == &WellKnownSymbol::ToStringTag.symbol();
-        }
-    };
-    if missing_object_method(key) || key_is(key, "toString") || key_is(key, "valueOf") {
-        return true;
-    }
-    match base {
-        Value::String(_) => missing_string_method(key),
-        Value::BigInt(_) => key_is(key, "toLocaleString"),
-        _ => false,
-    }
 }
 
 fn missing_string_method(key: &JsString) -> bool {
