@@ -509,16 +509,12 @@ fn missing_object_static(key: &JsString) -> bool {
     [
         "assign",
         "entries",
-        "freeze",
         "fromEntries",
         "getOwnPropertyDescriptors",
         "getOwnPropertyNames",
         "getOwnPropertySymbols",
         "groupBy",
-        "isFrozen",
-        "isSealed",
         "keys",
-        "seal",
         "values",
     ]
     .iter()

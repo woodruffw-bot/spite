@@ -64,6 +64,16 @@ impl Realm {
                 span,
             ),
             Builtin::ObjectToLocaleString => self.object_to_locale_string(this, span),
+            Builtin::ObjectFreeze | Builtin::ObjectSeal => self.object_set_integrity(
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::ObjectFreeze),
+                span,
+            ),
+            Builtin::ObjectIsFrozen | Builtin::ObjectIsSealed => self.object_test_integrity(
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::ObjectIsFrozen),
+                span,
+            ),
             Builtin::ObjectCreate => self.object_create(
                 arguments.next().unwrap_or(Value::Undefined),
                 arguments.next().unwrap_or(Value::Undefined),

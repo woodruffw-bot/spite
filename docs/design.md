@@ -495,8 +495,12 @@ definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
 bounded work. Enumeration of incomplete Object/Function/global intrinsics reports
-Unsupported until their own key sets are complete. Remaining Object static methods
-are explicit gaps.
+Unsupported until their own key sets are complete. Object.freeze/seal and
+isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
+They preserve accessor identity without invoking getters, perform shallow changes,
+and use mapped-argument descriptor rules when freezing indexed properties.
+Extensible objects fail integrity predicates before key enumeration. Remaining
+Object static methods are explicit gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

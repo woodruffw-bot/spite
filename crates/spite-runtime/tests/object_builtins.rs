@@ -203,7 +203,7 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
         "Object.assign=1",
         "delete Object.assign",
         "Object.hasOwnProperty('assign')",
-        "Object.propertyIsEnumerable('freeze')",
+        "Object.propertyIsEnumerable('keys')",
         "globalThis.hasOwnProperty('Array')",
     ] {
         assert!(

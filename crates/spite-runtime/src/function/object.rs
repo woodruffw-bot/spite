@@ -5,6 +5,7 @@ use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span};
 
 mod descriptor;
+mod integrity;
 mod prototype;
 #[cfg(test)]
 mod tests;
@@ -85,6 +86,10 @@ impl Realm {
             Builtin::ObjectPreventExtensions,
             Builtin::ObjectCreate,
             Builtin::ObjectDefineProperties,
+            Builtin::ObjectFreeze,
+            Builtin::ObjectSeal,
+            Builtin::ObjectIsFrozen,
+            Builtin::ObjectIsSealed,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(

@@ -200,7 +200,7 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         "assign",
         "getOwnPropertyDescriptors",
         "getOwnPropertyNames",
-        "freeze",
+        "values",
         "keys",
     ] {
         let mut realm = Realm::default();

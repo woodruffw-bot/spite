@@ -46,6 +46,10 @@ pub(crate) enum Builtin {
     ObjectPreventExtensions,
     ObjectCreate,
     ObjectDefineProperties,
+    ObjectFreeze,
+    ObjectSeal,
+    ObjectIsFrozen,
+    ObjectIsSealed,
     Error(error::ErrorConstructor),
     ErrorToString,
     ErrorIsError,
@@ -98,6 +102,10 @@ impl Builtin {
             Self::ObjectPreventExtensions => "preventExtensions",
             Self::ObjectCreate => "create",
             Self::ObjectDefineProperties => "defineProperties",
+            Self::ObjectFreeze => "freeze",
+            Self::ObjectSeal => "seal",
+            Self::ObjectIsFrozen => "isFrozen",
+            Self::ObjectIsSealed => "isSealed",
             Self::Number => "Number",
             Self::Error(kind) => kind.name(),
             Self::ErrorIsError => "isError",
@@ -126,6 +134,10 @@ impl Builtin {
             | Self::ObjectGetPrototypeOf
             | Self::ObjectIsExtensible
             | Self::ObjectPreventExtensions
+            | Self::ObjectFreeze
+            | Self::ObjectSeal
+            | Self::ObjectIsFrozen
+            | Self::ObjectIsSealed
             | Self::Number
             | Self::Error(_)
             | Self::ErrorIsError
