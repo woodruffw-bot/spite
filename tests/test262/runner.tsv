@@ -1386,3 +1386,22 @@ test/language/statements/for-of/scope-head-lex-open.js	-	-	-
 test/language/statements/for-of/string-astral-truncated.js	-	-	-
 test/language/statements/for-of/string-astral.js	-	-	-
 test/language/statements/for-of/string-bmp.js	-	-	-
+test/language/expressions/arrow-function/dflt-params-rest.js	1565	1566	expected )
+test/language/expressions/arrow-function/rest-param-strict-body.js	5149	5183	use strict directive with non-simple parameters
+test/language/expressions/arrow-function/rest-params-trailing-comma-early-error.js	1666	1667	expected )
+test/language/expressions/function/dflt-params-rest.js	1608	1609	expected )
+test/language/expressions/function/rest-param-strict-body.js	5184	5223	use strict directive with non-simple parameters
+test/language/expressions/function/rest-params-trailing-comma-early-error.js	1709	1710	expected )
+test/language/expressions/function/use-strict-with-non-simple-param.js	562	597	use strict directive with non-simple parameters
+test/language/rest-parameters/arrow-function.js	-	-	-
+test/language/rest-parameters/expected-argument-count.js	-	-	-
+test/language/rest-parameters/no-alias-arguments.js	-	-	-
+test/language/rest-parameters/position-invalid.js	324	325	expected )
+test/language/rest-parameters/rest-index.js	-	-	-
+test/language/rest-parameters/rest-parameters-apply.js	-	-	-
+test/language/rest-parameters/rest-parameters-call.js	-	-	-
+test/language/rest-parameters/rest-parameters-produce-an-array.js	-	-	-
+test/language/statements/function/dflt-params-rest.js	1644	1645	expected )
+test/language/statements/function/rest-param-strict-body.js	5218	5259	use strict directive with non-simple parameters
+test/language/statements/function/rest-params-trailing-comma-early-error.js	1745	1746	expected )
+test/language/statements/function/use-strict-with-non-simple-param.js	554	591	use strict directive with non-simple parameters
