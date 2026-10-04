@@ -5,6 +5,7 @@ mod callback;
 mod find;
 mod literal;
 mod mutation;
+mod reduce;
 mod search;
 mod string;
 
@@ -89,6 +90,8 @@ impl Realm {
             Builtin::ArrayIncludes,
             Builtin::ArrayIndexOf,
             Builtin::ArrayLastIndexOf,
+            Builtin::ArrayReduce,
+            Builtin::ArrayReduceRight,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(

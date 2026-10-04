@@ -152,6 +152,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add generic Array forEach/every/some with live presence checks, ordered callbacks, and 42 Test262 files.
 - [x] Add Array find/findIndex/findLast/findLastIndex with ordered visits to holes and 46 Test262 files.
 - [x] Add Array includes/indexOf/lastIndexOf with distinct equality and hole handling, plus 26 Test262 files.
+- [x] Add Array reduce/reduceRight with optional accumulators, live sparse traversal, and 34 Test262 files.
 - [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

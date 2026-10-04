@@ -333,6 +333,13 @@ as undefined and compares with SameValueZero; the index methods first check
 HasProperty and use IsStrictlyEqual. Empty ranges skip fromIndex conversion.
 Only an absent fromIndex defaults to length - 1 for lastIndexOf; an explicit
 undefined becomes zero. All cursors preserve the full ToLength index range.
+Reduce/reduceRight (23.1.3.24–25) share a directional traversal with live
+HasProperty/Get operations. An optional accumulator distinguishes an omitted
+initial argument from explicit undefined. The first present value supplies an
+omitted accumulator; subsequent callbacks receive four arguments with undefined
+as thisArgument. Moving the accumulator into Call avoids extra value copies.
+A fully sparse range with no supplied initial value throws TypeError, and the
+seed search consumes the same bounded work as subsequent traversal.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

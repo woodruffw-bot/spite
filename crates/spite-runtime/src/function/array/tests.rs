@@ -560,3 +560,42 @@ fn array_search_bounds_hole_traversal_and_each_element_comparison() {
         Err(Error::Limit { .. })
     ));
 }
+
+#[test]
+fn recursive_reducers_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for method in ["reduce", "reduceRight"] {
+                let mut realm = Realm::default();
+                realm
+                    .eval(&format!("let a=[1],flag=0,f=()=>a.{method}(f,0)"))
+                    .unwrap();
+                assert!(matches!(
+                    realm.eval(&format!(
+                        "try{{a.{method}(f,0);}}catch{{flag=1;}}finally{{flag=2;}}"
+                    )),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1].reduce((p,v)=>p+v,0)===1");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn reduction_bounds_seed_search_and_callback_traversal() {
+    let mut realm = Realm::default();
+    realm.eval("let flag=0").unwrap();
+    realm.limits.max_steps = 500;
+    for method in ["reduce", "reduceRight"] {
+        for initial in ["", ",0"] {
+            assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},()=>0{initial});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+        }
+        assert!(matches!(realm.eval(&format!("try{{[1,2,3].{method}(()=>{{while(true){{}}}},0);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+    }
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0");
+}

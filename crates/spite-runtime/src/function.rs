@@ -76,6 +76,8 @@ pub(crate) enum Builtin {
     ArrayIncludes,
     ArrayIndexOf,
     ArrayLastIndexOf,
+    ArrayReduce,
+    ArrayReduceRight,
     ArrayToString,
     String,
     StringToString,
@@ -148,6 +150,8 @@ impl Builtin {
             Self::ArrayForEach => "forEach",
             Self::ArrayEvery => "every",
             Self::ArraySome => "some",
+            Self::ArrayReduce => "reduce",
+            Self::ArrayReduceRight => "reduceRight",
             Self::ArrayFind => "find",
             Self::ArrayFindIndex => "findIndex",
             Self::ArrayFindLast => "findLast",
@@ -232,6 +236,8 @@ impl Builtin {
             | Self::ArrayIncludes
             | Self::ArrayIndexOf
             | Self::ArrayLastIndexOf
+            | Self::ArrayReduce
+            | Self::ArrayReduceRight
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint

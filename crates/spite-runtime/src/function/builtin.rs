@@ -200,6 +200,13 @@ impl Realm {
                     arguments.next(),
                     span,
                 ),
+            Builtin::ArrayReduce | Builtin::ArrayReduceRight => self.array_reduce(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next(),
+                matches!(builtin, Builtin::ArrayReduceRight),
+                span,
+            ),
             Builtin::ArrayFind
             | Builtin::ArrayFindIndex
             | Builtin::ArrayFindLast
