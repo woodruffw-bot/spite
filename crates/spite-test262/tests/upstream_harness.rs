@@ -23,6 +23,67 @@ fn run_with_includes(body: &str, includes: &str) -> Vec<Outcome> {
 }
 
 #[test]
+fn original_property_helper_verifies_descriptors_restoration_and_callable_metadata() {
+    assert_eq!(
+        run_with_includes(
+            "let o={x:1};verifyProperty(o,'x',{value:1,writable:true,enumerable:true,configurable:true},{restore:true});assert.sameValue(o.x,1);let s=Symbol('s');Object.defineProperty(o,s,{value:2,writable:false,enumerable:true,configurable:false});verifyProperty(o,s,{value:2,writable:false,enumerable:true,configurable:false});verifyProperty(o,'missing',undefined);verifyCallableProperty(Reflect,'get','get',2,undefined,{restore:true});let a={get item(){return 7;},set item(v){}};verifyAccessorProperty(a,'item',{get:{},set:{},enumerable:true,configurable:true},{restore:true});assert.sameValue(a.item,7);verifyNotWritable(Math,'PI');",
+            "propertyHelper.js"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    assert_eq!(
+        run_with_includes(
+            "let o={x:1};Object.getOwnPropertyDescriptor=undefined;Object.getOwnPropertyNames=undefined;Array.prototype.join=undefined;verifyProperty(o,'x',{value:1,writable:true,enumerable:true,configurable:true},{restore:true});assert.sameValue(o.x,1);",
+            "propertyHelper.js"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+}
+
+#[test]
+fn original_property_helper_rejects_wrong_descriptors_and_preserves_host_gaps() {
+    for body in [
+        "verifyProperty({x:1},'x',{value:2});",
+        "verifyProperty({x:-0},'x',{value:0});",
+        "verifyProperty({x:1},'x',{enumerable:false});",
+        "verifyProperty({x:1},'x',{writable:false});",
+        "verifyProperty({x:1},'x',{configurable:false});",
+        "verifyProperty({},'missing',{});",
+    ] {
+        let outcomes = run_with_includes(body, "propertyHelper.js");
+        assert_eq!(outcomes.len(), 2);
+        assert!(
+            outcomes.iter().all(|outcome| matches!(
+                outcome,
+                Outcome::Failed {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            )),
+            "{body}: {outcomes:?}"
+        );
+    }
+    for body in [
+        "verifyProperty(Math,'abs',{enumerable:false});",
+        "verifyProperty({get x(){Proxy;}},'x',{value:1});",
+        "assert.throws(TypeError,()=>Function('return 1;'));",
+    ] {
+        let outcomes = run_with_includes(body, "propertyHelper.js");
+        assert_eq!(outcomes.len(), 2);
+        assert!(
+            outcomes.iter().all(|outcome| matches!(
+                outcome,
+                Outcome::Unsupported {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            )),
+            "{body}: {outcomes:?}"
+        );
+    }
+}
+
+#[test]
 fn original_byte_conversion_tables_cover_both_float_formats_and_failure_paths() {
     assert_eq!(
         run_with_includes(

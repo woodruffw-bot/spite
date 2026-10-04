@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 1897 unmodified test fixtures and five harness files come from
+These 1953 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -367,21 +367,23 @@ quotas remain unchanged.
 The forty unchanged Math sources comprise five abs, two sign, eight ceil, eight
 floor, eight round, and nine trunc fixtures. Their eighty Script/StrictScript
 variants cover special values, signed zero, fractional rounding, constructor
-rejection, values adjacent to halfway boundaries, and large odd integers.
-The eighteen reviewed metadata candidates requiring `propertyHelper.js` remain
-outside this corpus. Local regressions cover fixed constants and attributes,
-ordered single numeric conversion, ignored extra arguments, exact half ties,
-and intrinsic retention during collection. The upstream pin, harness bytes,
-and opt-in execution limits are unchanged.
+rejection, values adjacent to halfway boundaries, and large odd integers. Six
+Math-property descriptor candidates remain outside this corpus pending complete
+Math own reflection; the metadata review below adds the name/length files. Local
+regressions cover fixed constants and attributes, ordered single numeric
+conversion, ignored extra arguments, exact half ties, and intrinsic retention
+during collection. The upstream pin, harness bytes, and opt-in execution limits
+are unchanged.
 
 ## Math extrema and integer review
 
 The twenty-three unchanged sources comprise seven max, seven min, seven clz32,
 and two imul fixtures. Their forty-six Script/StrictScript variants cover empty
 calls, NaN results after argument conversion, signed-zero extrema, unsigned
-32-bit wrapping and bit counts, modular signed products, and constructor rejection.
-The twelve reviewed metadata candidates requiring `propertyHelper.js` remain
-outside this corpus. Local regressions add ordered abrupt conversions, exact
+32-bit wrapping and bit counts, modular signed products, and constructor
+rejection. Four Math-property descriptor candidates remain outside this corpus
+pending complete Math own reflection; the metadata review below adds the
+name/length files. Local regressions add ordered abrupt conversions, exact
 receiver/extra-argument behavior, large lists with default limits, integer
 boundaries, descriptors, host failures, and collection. The pin, harness bytes,
 and opt-in execution limits are unchanged.
@@ -391,50 +393,69 @@ and opt-in execution limits are unchanged.
 The eight unchanged sources comprise six fround and two f16round fixtures, with
 sixteen Script/StrictScript variants. They cover NaN, infinities, signed zero,
 binary32 halfway ties, rounding conversions, and constructor rejection. The
-unchanged `byteConversionValues.js` is the fifth harness file; its binary16 table
-covers exact normal/subnormal boundaries, midpoint neighbors, signed underflow,
-and overflow. Local controls execute both floating-point tables and deliberately
-failing assertions. Six reviewed metadata candidates requiring `propertyHelper.js`
-remain outside this corpus. Float16Array feature annotations describe this shared
-proposal; these selected tests exercise Math.f16round without constructing a
-Float16Array. Local regressions additionally enumerate every finite binary16
-value and adjacent rounding boundary for both signs. The pin and opt-in execution
-limits are unchanged.
+unchanged `byteConversionValues.js` is the fifth harness file; its binary16
+table covers exact normal/subnormal boundaries, midpoint neighbors, signed
+underflow, and overflow. Local controls execute both floating-point tables and
+deliberately failing assertions. Two Math-property descriptor candidates remain
+outside this corpus pending complete Math own reflection; the metadata review
+below adds the name/length files. Float16Array feature annotations describe this
+shared proposal; these selected tests exercise Math.f16round without
+constructing a Float16Array. Local regressions additionally enumerate every
+finite binary16 value and adjacent rounding boundary for both signs. The pin and
+opt-in execution limits are unchanged.
 
 ## Math power and square-root review
 
 The thirty-two unchanged sources comprise twenty-five pow and seven sqrt
-fixtures, with sixty-four Script/StrictScript variants. They cover exponentiation
-special values, signed zeros and infinities, odd/even integral exponents, negative
-fractional bases, very large exponents, and constructor rejection. The sqrt
-results fixture verifies one thousand exact square-root pairs over a broad
-binary64 range. Six reviewed metadata candidates requiring `propertyHelper.js`
-remain outside this corpus. Local regressions add ordered abrupt coercion before
-numeric shortcuts, receiver and extra-argument behavior, primitive type errors,
-range endpoints, descriptors, host aborts, and collection. The pin, harness bytes,
-and opt-in execution limits are unchanged.
+fixtures, with sixty-four Script/StrictScript variants. They cover
+exponentiation special values, signed zeros and infinities, odd/even integral
+exponents, negative fractional bases, very large exponents, and constructor
+rejection. The sqrt results fixture verifies one thousand exact square-root
+pairs over a broad binary64 range. Two Math-property descriptor candidates
+remain outside this corpus pending complete Math own reflection; the metadata
+review below adds the name/length files. Local regressions add ordered abrupt
+coercion before numeric shortcuts, receiver and extra-argument behavior,
+primitive type errors, range endpoints, descriptors, host aborts, and
+collection. The pin, harness bytes, and opt-in execution limits are unchanged.
 
 ## Math exponential and logarithmic review
 
 The twenty unchanged sources comprise six exp, six log, and two each of expm1,
 log1p, log2, and log10. Their forty Script/StrictScript variants cover NaN,
-infinities, signed zero, domain boundaries, exact endpoint results, representative
-logarithms, and constructor rejection. The eighteen reviewed metadata candidates
-requiring `propertyHelper.js` remain outside this corpus. Local regressions add
-the full binary64 power-of-two exponent range, small-input accuracy without
-intermediate addition/subtraction, ordered conversions, metadata, host aborts,
-and collection. The pin, harness bytes, and opt-in execution limits are unchanged.
+infinities, signed zero, domain boundaries, exact endpoint results,
+representative logarithms, and constructor rejection. Six Math-property
+descriptor candidates remain outside this corpus pending complete Math own
+reflection; the metadata review below adds the name/length files. Local
+regressions add the full binary64 power-of-two exponent range, small-input
+accuracy without intermediate addition/subtraction, ordered conversions,
+metadata, host aborts, and collection. The pin, harness bytes, and opt-in
+execution limits are unchanged.
 
 ## Math inverse-function and cube-root review
 
-The thirty-three unchanged sources comprise five acos, four acosh, six asin,
-two asinh, four atan, two atanh, eight atan2, and two cbrt fixtures. Their
-sixty-six Script/StrictScript variants cover NaN, domain endpoints, signed
-zeros/infinities, quadrant behavior, and constructor rejection. Twenty-four
-reviewed metadata candidates requiring `propertyHelper.js` remain outside this
-selection. Local regressions add every zero/infinity sign combination, ordered
-conversions before NaN results, finite approximations, large and subnormal inputs,
-metadata, host aborts, and collection. The pin, harness bytes, and opt-in execution
+The thirty-three unchanged sources comprise five acos, four acosh, six asin, two
+asinh, four atan, two atanh, eight atan2, and two cbrt fixtures. Their sixty-six
+Script/StrictScript variants cover NaN, domain endpoints, signed
+zeros/infinities, quadrant behavior, and constructor rejection. Eight
+Math-property descriptor candidates remain outside this corpus pending complete
+Math own reflection; the metadata review below adds the name/length files. Local
+regressions add every zero/infinity sign combination, ordered conversions before
+NaN results, finite approximations, large and subnormal inputs, metadata, host
+aborts, and collection. The pin, harness bytes, and opt-in execution limits are
+unchanged.
+
+## Math function metadata and property-helper review
+
+Fifty-six unchanged name/length sources for the twenty-eight installed Math
+methods add 112 Script/StrictScript variants. They verify exact values and
+read-only, non-enumerable, configurable descriptors through the unchanged
+`propertyHelper.js`, the sixth harness file. The helper retains its captured
+primordial functions and mutation/restore behavior. Local controls cover data,
+Symbol and accessor properties, callable metadata, restoration, deliberately
+wrong values/attributes, and unsupported operations that cannot become passes.
+The twenty-eight Math-property descriptor files remain outside this selection:
+their enumeration reaches Math's incomplete own reflection. Other features'
+property-helper selections await separate review. The pin and opt-in execution
 limits are unchanged.
 
 ## Scope and maintenance
@@ -458,12 +479,12 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 3682 variants from 1878 reviewed sources: the eleven
+The `spite-test262` command runs 3794 variants from 1934 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 156 Math numeric tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
+object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 212 Math numeric/metadata tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
@@ -474,7 +495,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-3508 positives using the upstream harness, and 170 reviewed parse-negative variants.
+3620 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
