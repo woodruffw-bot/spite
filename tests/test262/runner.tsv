@@ -1461,3 +1461,24 @@ test/language/statements/for-in/var-arguments-strict-init.js	362	371	invalid bin
 test/language/statements/for-in/var-arguments-strict.js	349	358	invalid binding in strict mode
 test/language/statements/for-in/var-eval-strict-init.js	349	353	invalid binding in strict mode
 test/language/statements/for-in/var-eval-strict.js	344	348	invalid binding in strict mode
+test/built-ins/Object/fromEntries/empty-iterable.js	-	-	-
+test/built-ins/Object/fromEntries/evaluation-order.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-closed-for-null-entry.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-closed-for-string-entry.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-accessor.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-tostring.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-value-accessor.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-not-closed-for-next-returning-non-object.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-not-closed-for-throwing-done-accessor.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-not-closed-for-throwing-next.js	-	-	-
+test/built-ins/Object/fromEntries/iterator-not-closed-for-uncallable-next.js	-	-	-
+test/built-ins/Object/fromEntries/key-order.js	-	-	-
+test/built-ins/Object/fromEntries/prototype.js	-	-	-
+test/built-ins/Object/fromEntries/requires-argument.js	-	-	-
+test/built-ins/Object/fromEntries/string-entry-object-succeeds.js	-	-	-
+test/built-ins/Object/fromEntries/string-entry-primitive-throws.js	-	-	-
+test/built-ins/Object/fromEntries/string-entry-string-object-succeeds.js	-	-	-
+test/built-ins/Object/fromEntries/supports-symbols.js	-	-	-
+test/built-ins/Object/fromEntries/to-property-key.js	-	-	-
+test/built-ins/Object/fromEntries/uses-define-semantics.js	-	-	-
+test/built-ins/Object/fromEntries/uses-keys-not-iterator.js	-	-	-

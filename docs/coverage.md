@@ -33,7 +33,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2850 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2892 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -516,7 +516,7 @@ executes for nine positive function/capture tests, 40 call/construction iterable
 tests, 30 call/construction object-spread tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
 22 Error construction, conversion, and prototype tests, 48 BigInt constructor,
-width reduction, formatting, and receiver-brand tests, plus 140 Object descriptor,
+width reduction, formatting, and receiver-brand tests, plus 161 Object descriptor,
 prototype, extensibility, creation, copying, key enumeration, integrity, and SameValue tests, and
 153 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
 well-formedness, conversion, and String iteration tests in both Script modes. Another 677 Array and Array iterator
@@ -536,7 +536,7 @@ verify successful assertions and explicit assertion failures. Some string compar
 failure formatting still requires missing JSON and remains Unsupported;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 2850 variants are four raw positives, 2676 positives using the upstream
+Rust. Its 2892 variants are four raw positives, 2718 positives using the upstream
 harness, and 170 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses the runtime defaults, with every host resource quota disabled.

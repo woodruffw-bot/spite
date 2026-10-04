@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 1481 unmodified test fixtures and three harness files come from
+These 1502 unmodified test fixtures and three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -54,7 +54,7 @@ construction, message conversion, prototype identity, branding, and toString.
 Forty-eight BigInt files cover construction, integer strings in all radices,
 ordered conversions, signed/unsigned width reduction, prototype identity,
 radix formatting, and branded primitive/wrapper receivers.
-The 140 Object files cover SameValue, own-property checks, descriptor conversion and
+The 161 Object files cover SameValue, own-property checks, descriptor conversion and
 reflection, prototype identity/mutation, extensibility, creation, value copying,
 key enumeration, and frozen/sealed integrity. Getter-mutation cases use accessor
 literals to exercise snapshot keys, live descriptors, and abrupt reads.
@@ -251,6 +251,17 @@ Local regressions additionally cover Symbols, getters, nullish skipping, primiti
 boxing, completion values, unsupported intrinsic chains, and opt-in host quotas.
 No source, harness, or execution quota changes are needed.
 
+## Object.fromEntries review
+
+Twenty-one unchanged files add 42 variants in both Script modes. They cover empty
+iterables, ordinary result prototypes, key order, entry-read/conversion order,
+Symbols, boxed String entries, inherited setter bypass, invalid inputs/entries,
+entry failures that close, and step failures that do not close. The four reviewed
+candidates needing `propertyHelper.js` or `isConstructor.js`/Reflect remain outside
+this selection. Local regressions cover descriptors, non-constructibility,
+cleanup precedence, mutation, collection, and opt-in quotas. Sources, harness
+files, and execution quotas are unchanged.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -272,13 +283,13 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 2850 variants from 1462 reviewed sources: the eleven
+The `spite-test262` command runs 2892 variants from 1483 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 140 Object tests,
+tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 161 Object tests,
 153 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
 34 Symbol tests, 23 object method/accessor tests, and 75 for-of files (53 positive
@@ -288,7 +299,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-2676 positives using the upstream harness, and 170 reviewed parse-negative variants.
+2718 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
