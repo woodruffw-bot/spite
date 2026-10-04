@@ -18,9 +18,9 @@ not an alternative language specification.
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
-| Calls | Builtin and arrow callable identity, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
+| Calls | Builtin, arrow, and ordinary function identity (ordinary calls remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope; instantiation remains Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; ordinary calls remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -96,7 +96,7 @@ is atomic and the nine objects remain rooted. Function.prototype caller/argument
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
 wrappers returned by valueOf, spread arguments, optional calls, and
-ordinary functions remain open; missing operations report Unsupported. Function.prototype
+ordinary function calls remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -119,7 +119,7 @@ separate body var environments, closure capture, name inference, and length. Res
 parameters, patterns, lexical this syntax, and async arrows remain gaps.
 
 Symbols, primitive wrapper constructors,
-arrays, ordinary function execution, constructors, classes, destructuring, regular
+arrays, ordinary function calls/arguments/this, construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

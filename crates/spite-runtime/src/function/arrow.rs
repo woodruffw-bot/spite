@@ -8,7 +8,7 @@ use spite_parser::ast::{
 use std::{collections::BTreeMap, rc::Rc};
 
 #[derive(Clone, Debug)]
-pub(crate) struct ArrowFunction {
+pub(crate) struct ScriptFunction {
     pub environment: EnvironmentHandle,
     pub parameters: Rc<[Binding]>,
     pub body: ArrowBody,
@@ -31,7 +31,7 @@ impl Realm {
             .expect("initialized")
             .function_prototype
             .clone();
-        let arrow = ArrowFunction {
+        let arrow = ScriptFunction {
             environment: self.scopes.last().expect("active environment").clone(),
             parameters: parameters.clone(),
             body: body.clone(),
@@ -64,7 +64,7 @@ impl Realm {
 
     pub(super) fn call_arrow(
         &mut self,
-        arrow: ArrowFunction,
+        arrow: ScriptFunction,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
@@ -79,6 +79,7 @@ impl Realm {
                 BindingState {
                     value: None,
                     mutable: true,
+                    strict: true,
                 },
             );
         }
@@ -146,44 +147,58 @@ impl Realm {
         }
         let environment = self.scopes.last().expect("var environment").clone();
         if let ArrowBody::Block(body) = body {
-            for declaration in body.var_declarations() {
-                self.object_work(declaration.span, |_, budget| {
-                    budget.charge(declaration.name.len() + 1)
-                })?;
+            let functions = body.function_declarations();
+            let function_names: std::collections::BTreeSet<_> = functions
+                .iter()
+                .map(|f| f.name.as_ref().expect("named declaration").name.as_str())
+                .collect();
+            let variables = body.var_declarations();
+            let declarations = variables
+                .iter()
+                .map(|binding| (binding.name.as_str(), binding.span))
+                .chain(functions.iter().map(|function| {
+                    let name = function.name.as_ref().expect("named declaration");
+                    (name.name.as_str(), name.span)
+                }));
+            for (name, span) in declarations {
+                self.object_work(span, |_, budget| budget.charge(name.len() + 1))?;
                 if self
                     .objects
                     .environment(&environment)
                     .expect("active environment")
                     .bindings
-                    .contains_key(&declaration.name)
+                    .contains_key(name)
                 {
                     continue;
                 }
-                // Separate body vars copy a same-named initialized parameter value;
-                // otherwise they start as undefined. Simple lists share bindings.
-                let value = self.object_work(declaration.span, |objects, budget| {
-                    let value = objects
-                        .environment(&parameter_environment)?
-                        .bindings
-                        .get(&declaration.name)
-                        .and_then(|binding| binding.value.as_ref());
-                    match value {
-                        Some(value) => {
-                            budget.value(value)?;
-                            Ok(value.clone())
+                let value = if function_names.contains(name) {
+                    Value::Undefined
+                } else {
+                    self.object_work(span, |objects, budget| {
+                        let value = objects
+                            .environment(&parameter_environment)?
+                            .bindings
+                            .get(name)
+                            .and_then(|binding| binding.value.as_ref());
+                        match value {
+                            Some(value) => {
+                                budget.value(value)?;
+                                Ok(value.clone())
+                            }
+                            None => Ok(Value::Undefined),
                         }
-                        None => Ok(Value::Undefined),
-                    }
-                })?;
+                    })?
+                };
                 self.objects
                     .environment_mut(&environment)
                     .expect("active environment")
                     .bindings
                     .insert(
-                        declaration.name.clone(),
+                        name.to_owned(),
                         BindingState {
                             value: Some(value),
                             mutable: true,
+                            strict: true,
                         },
                     );
             }
@@ -194,6 +209,7 @@ impl Realm {
     fn function_body(&mut self, body: &FunctionBody, span: Span) -> Result<Value, Error> {
         // ECMA-262 10.2.11: sloppy bodies have a separate lexical environment;
         // strict bodies reuse the parameter/var environment.
+        let var_environment = self.scopes.last().expect("var environment").clone();
         if !self.strict {
             self.push_scope(BTreeMap::new(), span)?;
         }
@@ -207,7 +223,11 @@ impl Realm {
                 }
             }
         }
-        self.instantiate(body.statements().iter(), false)?;
+        self.instantiate(body.statements().iter(), false, false)?;
+        self.initialize_functions(
+            body.function_declarations().into_iter(),
+            Some(&var_environment),
+        )?;
         let completion = self.statements(body.statements())?;
         match completion.kind {
             CompletionKind::Return => Ok(completion.value.expect("return has a value")),
@@ -252,6 +272,7 @@ impl Realm {
 fn anonymous_definition(expression: &Expr) -> bool {
     match &expression.kind {
         ExprKind::Arrow { .. } => true,
+        ExprKind::Function(function) => function.name.is_none(),
         ExprKind::Parenthesized(inner) => anonymous_definition(inner),
         _ => false,
     }

@@ -437,64 +437,71 @@ impl Realm {
         Ok(())
     }
 
-    fn instantiate<'a>(
-        &mut self,
-        statements: impl Iterator<Item = &'a Statement> + Clone,
+    fn check_lexical_conflicts<'a>(
+        &self,
+        statements: impl Iterator<Item = &'a Statement>,
         global: bool,
+        functions_lexical: bool,
     ) -> Result<(), Error> {
-        let handle = self
-            .scopes
-            .last()
-            .expect("a realm always has a global scope");
-        let scope = &self
+        let handle = self.scopes.last().expect("active environment");
+        let bindings = &self
             .objects
             .environment(handle)
             .expect("active environment")
             .bindings;
-        // Check all global conflicts before creating any bindings.
-        for statement in statements.clone() {
-            if matches!(statement.kind, StatementKind::Function(_)) {
-                return Err(Self::unsupported(
-                    statement.span,
-                    "ordinary function instantiation is not implemented",
-                ));
-            }
-
-            if let StatementKind::Lexical { bindings, .. } = &statement.kind {
-                for binding in bindings {
-                    if scope.contains_key(&binding.name)
-                        || (global
-                            && self
-                                .globals
-                                .get(&binding.name)
-                                .is_some_and(|b| !b.deletable))
-                    {
-                        return Err(Self::exception(
-                            ExceptionKind::SyntaxError,
-                            binding.span,
-                            "conflicting lexical declaration",
-                        ));
-                    }
+        for statement in statements {
+            for (name, span, _) in lexical_declarations(statement, functions_lexical) {
+                if bindings.contains_key(name)
+                    || (global
+                        && self
+                            .globals
+                            .get(name)
+                            .is_some_and(|binding| !binding.deletable))
+                {
+                    return Err(Self::exception(
+                        ExceptionKind::SyntaxError,
+                        span,
+                        "conflicting lexical declaration",
+                    ));
                 }
             }
         }
+        Ok(())
+    }
+
+    fn instantiate<'a>(
+        &mut self,
+        statements: impl DoubleEndedIterator<Item = &'a Statement> + Clone,
+        global: bool,
+        functions_lexical: bool,
+    ) -> Result<(), Error> {
+        self.check_lexical_conflicts(statements.clone(), global, functions_lexical)?;
+        let handle = self.scopes.last().expect("active environment").clone();
         let scope = &mut self
             .objects
-            .environment_mut(handle)
+            .environment_mut(&handle)
             .expect("active environment")
             .bindings;
-        for statement in statements {
-            if let StatementKind::Lexical { mutable, bindings } = &statement.kind {
-                for binding in bindings {
-                    scope.insert(
-                        binding.name.clone(),
-                        BindingState {
-                            value: None,
-                            mutable: *mutable,
-                        },
-                    );
-                }
+        for statement in statements.clone() {
+            for (name, _, mutable) in lexical_declarations(statement, functions_lexical) {
+                scope.insert(
+                    name.to_owned(),
+                    BindingState {
+                        value: None,
+                        mutable,
+                        strict: true,
+                    },
+                );
             }
+        }
+        if functions_lexical {
+            self.initialize_functions(
+                statements.filter_map(|statement| match &statement.kind {
+                    StatementKind::Function(function) => Some(function.as_ref()),
+                    _ => None,
+                }),
+                Some(&handle),
+            )?;
         }
         Ok(())
     }
@@ -524,6 +531,12 @@ impl Realm {
     fn instantiate_global(&mut self, script: &Script) -> Result<(), Error> {
         // ECMA-262 16.1.7: check conflicts before creating any new bindings.
         // All Script vars are instantiated, including vars in unreachable code.
+        self.check_lexical_conflicts(script.statements().iter(), true, false)?;
+        let functions = script.function_declarations();
+        let function_names: BTreeSet<_> = functions
+            .iter()
+            .map(|f| f.name.as_ref().expect("named declaration").name.as_str())
+            .collect();
         let declarations = script.var_declarations();
         for binding in &declarations {
             self.tick(binding.span)?;
@@ -543,6 +556,7 @@ impl Realm {
             if (standard_global(&binding.name)
                 || self.unsupported_host_globals.contains(&binding.name))
                 && !self.globals.contains_key(&binding.name)
+                && !function_names.contains(binding.name.as_str())
             {
                 return Err(Self::unsupported(
                     binding.span,
@@ -550,7 +564,35 @@ impl Realm {
                 ));
             }
         }
-        self.instantiate(script.statements().iter(), true)?;
+        for function in &functions {
+            let name = function.name.as_ref().expect("named declaration");
+            self.tick(name.span)?;
+            if self
+                .objects
+                .environment(&self.scopes[0])
+                .expect("global environment")
+                .bindings
+                .contains_key(&name.name)
+            {
+                return Err(Self::exception(
+                    ExceptionKind::SyntaxError,
+                    name.span,
+                    "function declaration conflicts with global lexical binding",
+                ));
+            }
+        }
+        for function in &functions {
+            let name = function.name.as_ref().expect("named declaration");
+            if restricted_global(&name.name) {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    name.span,
+                    "cannot declare function over restricted global",
+                ));
+            }
+        }
+        self.instantiate(script.statements().iter(), true, false)?;
+        self.initialize_functions(functions.into_iter(), None)?;
         for binding in declarations {
             // CreateGlobalVarBinding preserves existing properties. Only new
             // properties become non-deletable (ECMA-262 9.1.1.4.16).
@@ -614,10 +656,8 @@ impl Realm {
         match &statement.kind {
             // ECMA-262 14.16.1: no debugging facility is active in this host.
             StatementKind::Empty | StatementKind::Debugger => Ok(Completion::normal(None)),
-            StatementKind::Function(_) => Err(Self::unsupported(
-                statement.span,
-                "ordinary function instantiation is not implemented",
-            )),
+            // 15.2.6: declaration evaluation is empty; instantiation made the value.
+            StatementKind::Function(_) => Ok(Completion::normal(None)),
             StatementKind::Expression(expr) => Ok(Completion::normal(Some(self.expression(expr)?))),
             StatementKind::Break(target) | StatementKind::Continue(target) => Ok(Completion {
                 kind: if matches!(statement.kind, StatementKind::Break(_)) {
@@ -662,7 +702,7 @@ impl Realm {
             StatementKind::Block(body) => {
                 self.push_scope(BTreeMap::new(), statement.span)?;
                 let result = self
-                    .instantiate(body.iter(), false)
+                    .instantiate(body.iter(), false, true)
                     .and_then(|()| self.statements(body));
                 self.scopes.pop();
                 result
@@ -705,6 +745,7 @@ impl Realm {
                     .instantiate(
                         clauses.iter().flat_map(|clause| clause.statements.iter()),
                         false,
+                        true,
                     )
                     .and_then(|()| self.case_block(clauses, &input));
                 self.scopes.pop();
@@ -759,6 +800,7 @@ impl Realm {
                                     BindingState {
                                         value: None,
                                         mutable: *mutable,
+                                        strict: true,
                                     },
                                 )
                             })
@@ -896,6 +938,7 @@ impl Realm {
                 BindingState {
                     value: Some(value),
                     mutable: true,
+                    strict: true,
                 },
             );
         }
@@ -1012,6 +1055,9 @@ impl Realm {
                     ));
                 }
                 if !binding.mutable {
+                    if !binding.strict && !self.strict {
+                        return Ok(());
+                    }
                     return Err(Self::exception(
                         ExceptionKind::TypeError,
                         span,
@@ -1078,6 +1124,7 @@ impl Realm {
                 BindingState {
                     value: Some(value),
                     mutable: true,
+                    strict: true,
                 },
             )]),
             handler.span,
@@ -1109,12 +1156,7 @@ impl Realm {
     fn expression_inner(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
-            ExprKind::Function(_) => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "ordinary function instantiation is not implemented",
-                ));
-            }
+            ExprKind::Function(function) => self.ordinary_function(function, true, expr.span)?,
             ExprKind::Arrow {
                 parameters,
                 body,
@@ -1466,6 +1508,24 @@ impl Realm {
             _ => unreachable!("non-numeric operators returned above"),
         }))
     }
+}
+
+fn lexical_declarations(
+    statement: &Statement,
+    functions: bool,
+) -> impl Iterator<Item = (&str, Span, bool)> {
+    let (bindings, mutable) = match &statement.kind {
+        StatementKind::Lexical { bindings, mutable } => (bindings.as_slice(), *mutable),
+        _ => (&[][..], true),
+    };
+    let function = match &statement.kind {
+        StatementKind::Function(function) if functions => function.name.as_ref(),
+        _ => None,
+    };
+    bindings
+        .iter()
+        .map(move |binding| (binding.name.as_str(), binding.span, mutable))
+        .chain(function.map(|name| (name.name.as_str(), name.span, true)))
 }
 
 fn identifier(expr: &Expr) -> Option<&str> {

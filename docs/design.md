@@ -102,9 +102,9 @@ strict or non-simple lists require unique names. A function's own strict directi
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
-bypass expression recursion limits. Their instantiation is currently an explicit
-runtime gap. This, generators, async functions, rest parameters, and patterns
-remain separate steps.
+bypass expression recursion limits. Ordinary function objects now instantiate; their call and construct operations
+remain explicit runtime gaps. This, arguments objects, generators, async functions,
+rest parameters, and patterns remain separate steps.
 
 Direct function declarations are var-scoped in Scripts and function bodies;
 block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
@@ -112,8 +112,11 @@ function names against lexical and nested var declarations, including catch
 parameters. Duplicate block functions and functions in bare statement/label
 positions do not receive Annex B exceptions. AST inventories expose direct
 functions separately from var bindings without descending into nested functions.
-Until execution lands, entering a scope with function declarations reports the
-instantiation gap before executing its statement list.
+Entering a block initializes its function bindings before executing statements.
+Script/function bodies instantiate only the last declaration of each function
+name. Global declaration conflicts are checked before creating bindings; global
+functions cannot replace undefined, NaN, or Infinity (16.1.7). Evaluating a function
+declaration then produces an empty completion (15.2.6).
 
 ## Runtime
 
@@ -374,9 +377,18 @@ same-named vars copy the initialized parameter value (10.2.11). Function length
 counts parameters before the first default (15.1.5). Partial initialization and
 escaped default closures remain traced after an abrupt completion.
 
+Ordinary function objects share code/source and environment capture storage with
+arrows. They own name and length properties plus a writable, non-enumerable,
+non-configurable prototype property; its ordinary object owns a writable,
+non-enumerable, configurable constructor backlink (10.2.5). Named expressions
+capture an extra environment with an immutable self binding (15.2.5). This binding
+ignores non-strict writes and rejects strict writes; const bindings always reject
+writes (9.1.1.1.5). Captures, self bindings, and prototype cycles are all traced.
+Calls remain Unsupported while ordinary this/arguments execution is implemented.
+
 NamedEvaluation supplies names for binding initializers, bare identifier assignment
 and logical-assignment targets, and ordinary object property values. Parenthesized
-RHS function definitions retain inference; parenthesized LHS identifiers do not
+RHS anonymous ordinary/arrow function definitions retain inference; parenthesized LHS identifiers do not
 (IsIdentifierRef, 8.4.4). The non-computed prototype setter also excludes inference.
 Captured environments, functions, and ordinary objects form one traced graph, so
 shared bindings survive caller exit and unreachable closure cycles are reclaimed.

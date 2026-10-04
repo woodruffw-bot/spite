@@ -2,7 +2,7 @@
 
 use super::entry::Entry;
 use super::{DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor};
-use crate::function::{ArrowFunction, BoundFunction, Builtin, Callable};
+use crate::function::{BoundFunction, Builtin, Callable, ScriptFunction};
 use crate::{
     Value,
     environment::{BindingState, Environment, EnvironmentHandle},
@@ -177,12 +177,24 @@ impl Objects {
     pub(crate) fn create_arrow(
         &mut self,
         prototype: &Handle,
-        arrow: ArrowFunction,
+        arrow: ScriptFunction,
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         self.environment(&arrow.environment)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Arrow(arrow));
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn create_ordinary_function(
+        &mut self,
+        prototype: &Handle,
+        function: ScriptFunction,
+    ) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        self.environment(&function.environment)?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        object.callable = Some(Callable::Ordinary(function));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

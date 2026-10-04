@@ -11,6 +11,8 @@ pub(crate) struct EnvironmentHandle(pub(crate) Handle);
 pub(crate) struct BindingState {
     pub value: Option<Value>,
     pub mutable: bool,
+    // Immutable named-function bindings reject writes only from strict code.
+    pub strict: bool,
 }
 
 #[derive(Debug)]
@@ -47,6 +49,7 @@ mod tests {
         BindingState {
             value: Some(value),
             mutable: true,
+            strict: true,
         }
     }
 
@@ -198,6 +201,7 @@ mod tests {
                     BindingState {
                         value: None,
                         mutable: true,
+                        strict: true,
                     },
                 )
             })

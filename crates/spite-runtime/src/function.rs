@@ -8,7 +8,8 @@ use spite_core::{JsString, Span};
 
 mod arrow;
 mod bound;
-pub(crate) use arrow::ArrowFunction;
+mod ordinary;
+pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
@@ -52,7 +53,8 @@ mod tests;
 pub(crate) enum Callable {
     Builtin(Builtin),
     Bound(BoundFunction),
-    Arrow(ArrowFunction),
+    Arrow(ScriptFunction),
+    Ordinary(ScriptFunction),
 }
 
 pub(super) enum FunctionText {
@@ -65,7 +67,9 @@ impl Callable {
         match self {
             Self::Builtin(builtin) => FunctionText::Native(builtin.initial_name()),
             Self::Bound(_) => FunctionText::Native(""),
-            Self::Arrow(arrow) => FunctionText::Script(arrow.source.clone()),
+            Self::Arrow(function) | Self::Ordinary(function) => {
+                FunctionText::Script(function.source.clone())
+            }
         }
     }
 }
@@ -350,6 +354,12 @@ impl Realm {
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
                 Some(Callable::Arrow(arrow)) => return self.call_arrow(arrow, arguments, span),
+                Some(Callable::Ordinary(_)) => {
+                    return Err(Self::unsupported(
+                        span,
+                        "ordinary function calls are not implemented",
+                    ));
+                }
                 Some(Callable::Bound(bound)) => {
                     let count = bound
                         .arguments

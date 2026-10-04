@@ -252,7 +252,7 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
         .unwrap();
     assert!(matches!(cases[0].outcome, Outcome::SetupFailure(_)));
     let cases = Runner::default()
-        .run(&original, None, |_| Ok("function f() {}".into()))
+        .run(&original, None, |_| Ok("function* f() {}".into()))
         .unwrap();
     assert!(matches!(
         cases[0].outcome,
