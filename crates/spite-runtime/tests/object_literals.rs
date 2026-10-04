@@ -184,11 +184,11 @@ fn early_errors_precede_all_effects() {
 fn allocation_property_and_key_limits_are_host_failures() {
     for limits in [
         Limits {
-            max_heap_entries: 1,
+            max_heap_entries: 12,
             ..Limits::default()
         },
         Limits {
-            max_properties: 0,
+            max_properties: 8,
             ..Limits::default()
         },
         Limits {
@@ -199,7 +199,7 @@ fn allocation_property_and_key_limits_are_host_failures() {
         let mut realm = Realm::new(limits);
         realm.eval("let flag = 0").unwrap();
         assert!(matches!(
-            realm.eval("try { ({x: 1}); } catch { flag = 1; } finally { flag = 2; }"),
+            realm.eval("try { ({a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:8,i:{}}); } catch { flag = 1; } finally { flag = 2; }"),
             Err(Error::Limit { .. })
         ));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

@@ -219,7 +219,7 @@ fn closures_and_captured_cycles_survive_host_roots_and_are_reclaimed() {
     // through explicit collection, including an unreachable capture cycle later.
     realm.collect(2000).unwrap();
     realm.eval("f=null").unwrap();
-    assert_eq!(realm.collect(2000).unwrap().live, 13); // global, intrinsics, block, object, arrow
+    assert_eq!(realm.collect(2000).unwrap().live, 14); // global, intrinsics, block, object, arrow
     drop(root);
     assert_eq!(realm.collect(2000).unwrap().reclaimed, 3);
 }

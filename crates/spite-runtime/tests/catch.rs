@@ -158,7 +158,7 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
     for failure in ["Object;", "for (;;) ;"] {
         for in_catch in [false, true] {
             let mut realm = Realm::new(Limits {
-                max_steps: 64,
+                max_steps: 160,
                 ..Limits::default()
             });
             realm.eval("let x = 1; let flag = 0;").unwrap();

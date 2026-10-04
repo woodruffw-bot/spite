@@ -265,7 +265,7 @@ mod tests {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
         let result = realm.collect(20000).unwrap();
         assert!(result.reclaimed > 0);
-        assert_eq!(result.live, 10);
+        assert_eq!(result.live, 11);
         replace(&mut realm, &target, "length", Value::Number(0.0));
         assert_eq!(
             realm.eval("target.bind(null)()"),
@@ -295,7 +295,7 @@ mod tests {
         }
         let value = Value::Object(function);
         let root = realm.root_value(value.clone(), 100).unwrap();
-        assert_eq!(realm.collect(200_000).unwrap().live, 10010);
+        assert_eq!(realm.collect(200_000).unwrap().live, 10011);
         assert_eq!(
             realm.call(value, Value::Undefined, Vec::new(), Span::new(0, 0)),
             Ok(Value::String(JsString::from("[object Null]")))

@@ -2,6 +2,7 @@
 
 mod environment;
 mod function;
+mod global;
 use environment::{BindingState, EnvironmentHandle};
 pub mod object;
 mod realm_object;
@@ -99,6 +100,7 @@ impl std::error::Error for Error {}
 #[derive(Clone, Copy, Debug)]
 pub struct Limits {
     /// Maximum work per Script, including bindings, clauses, and integer arithmetic.
+    /// Fixed realm initialization has a separate bounded work budget.
     pub max_steps: usize,
     /// Maximum code units in any produced string.
     pub max_string_units: usize,
@@ -122,12 +124,6 @@ impl Default for Limits {
             max_properties: 1024,
         }
     }
-}
-
-#[derive(Debug)]
-struct GlobalBinding {
-    value: Value,
-    deletable: bool,
 }
 
 // Resolve references before evaluating assignment RHS expressions. GetValue and
@@ -198,12 +194,12 @@ impl Completion {
 
 /// An isolated execution realm with persistent global lexical bindings.
 ///
-/// Only the documented subset is implemented. Standard object globals and host
-/// extensions are not installed. Each instance owns all of its state.
+/// Only the documented subset is implemented. The ordinary global object exposes
+/// implemented standard bindings; host extensions are not installed.
 #[derive(Debug)]
 pub struct Realm {
     scopes: Vec<EnvironmentHandle>,
-    globals: BTreeMap<String, GlobalBinding>,
+    global_object: Option<ObjectHandle>,
     unsupported_host_globals: BTreeSet<String>,
     limits: Limits,
     remaining_steps: usize,
@@ -225,22 +221,7 @@ impl Realm {
     pub fn new(limits: Limits) -> Self {
         Self {
             scopes: Vec::new(),
-            globals: [
-                ("undefined", Value::Undefined),
-                ("NaN", Value::Number(f64::NAN)),
-                ("Infinity", Value::Number(f64::INFINITY)),
-            ]
-            .into_iter()
-            .map(|(name, value)| {
-                (
-                    name.into(),
-                    GlobalBinding {
-                        value,
-                        deletable: false,
-                    },
-                )
-            })
-            .collect(),
+            global_object: None,
             unsupported_host_globals: BTreeSet::new(),
             limits,
             remaining_steps: 0,
@@ -275,11 +256,9 @@ impl Realm {
 
     /// Evaluates a Script already validated by the parser.
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
+        self.initialize_realm()?;
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
-        if self.scopes.is_empty() {
-            self.push_scope(BTreeMap::new(), Span::new(0, 0))?;
-        }
         self.instantiate_global(script)?;
         let completion = self.statements(script.statements())?;
         // Validated Scripts cannot leave an unhandled control transfer.
@@ -438,25 +417,21 @@ impl Realm {
     }
 
     fn check_lexical_conflicts<'a>(
-        &self,
+        &mut self,
         statements: impl Iterator<Item = &'a Statement>,
         global: bool,
         functions_lexical: bool,
     ) -> Result<(), Error> {
-        let handle = self.scopes.last().expect("active environment");
-        let bindings = &self
-            .objects
-            .environment(handle)
-            .expect("active environment")
-            .bindings;
+        let handle = self.scopes.last().expect("active environment").clone();
         for statement in statements {
             for (name, span, _) in lexical_declarations(statement, functions_lexical) {
-                if bindings.contains_key(name)
-                    || (global
-                        && self
-                            .globals
-                            .get(name)
-                            .is_some_and(|binding| !binding.deletable))
+                if self
+                    .objects
+                    .environment(&handle)
+                    .expect("active environment")
+                    .bindings
+                    .contains_key(name)
+                    || (global && self.restricted_global_property(name, span)?)
                 {
                     return Err(Self::exception(
                         ExceptionKind::SyntaxError,
@@ -475,7 +450,9 @@ impl Realm {
         global: bool,
         functions_lexical: bool,
     ) -> Result<(), Error> {
-        self.check_lexical_conflicts(statements.clone(), global, functions_lexical)?;
+        if !global {
+            self.check_lexical_conflicts(statements.clone(), false, functions_lexical)?;
+        }
         let handle = self.scopes.last().expect("active environment").clone();
         let scope = &mut self
             .objects
@@ -555,7 +532,7 @@ impl Realm {
             }
             if (standard_global(&binding.name)
                 || self.unsupported_host_globals.contains(&binding.name))
-                && !self.globals.contains_key(&binding.name)
+                && self.global_own(&binding.name, binding.span)?.is_none()
                 && !function_names.contains(binding.name.as_str())
             {
                 return Err(Self::unsupported(
@@ -583,7 +560,7 @@ impl Realm {
         }
         for function in &functions {
             let name = function.name.as_ref().expect("named declaration");
-            if restricted_global(&name.name) {
+            if !self.can_declare_global_function(&name.name, name.span)? {
                 return Err(Self::exception(
                     ExceptionKind::TypeError,
                     name.span,
@@ -591,17 +568,23 @@ impl Realm {
                 ));
             }
         }
+        for binding in &declarations {
+            if !function_names.contains(binding.name.as_str())
+                && !self.can_declare_global_var(&binding.name, binding.span)?
+            {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    binding.span,
+                    "cannot declare var on non-extensible global object",
+                ));
+            }
+        }
         self.instantiate(script.statements().iter(), true, false)?;
-        self.initialize_functions(functions.into_iter(), None)?;
+        self.initialize_functions(functions.iter().copied(), None)?;
         for binding in declarations {
-            // CreateGlobalVarBinding preserves existing properties. Only new
-            // properties become non-deletable (ECMA-262 9.1.1.4.16).
-            self.globals
-                .entry(binding.name.clone())
-                .or_insert(GlobalBinding {
-                    value: Value::Undefined,
-                    deletable: false,
-                });
+            if !function_names.contains(binding.name.as_str()) {
+                self.create_global_var(&binding.name, binding.span)?;
+            }
         }
         Ok(())
     }
@@ -969,14 +952,21 @@ impl Realm {
             }
             next = scope.outer.clone();
         }
-        Ok(if self.globals.contains_key(name) {
-            Reference::Global(name)
-        } else if standard_global(name) || self.unsupported_host_globals.contains(name) {
-            Reference::UnsupportedGlobal(name)
-        } else {
-            Reference::Unresolvable(name)
-        })
+        if (standard_global(name) || self.unsupported_host_globals.contains(name))
+            && self.global_own(name, span)?.is_none()
+        {
+            return Ok(Reference::UnsupportedGlobal(name));
+        }
+        let object = self.global_object();
+        Ok(
+            if self.has_property(&object, &JsString::from(name), span)? {
+                Reference::Global(name)
+            } else {
+                Reference::Unresolvable(name)
+            },
+        )
     }
+
     fn reference<'a>(&mut self, target: &'a Expr) -> Result<Reference<'a>, Error> {
         match &target.kind {
             ExprKind::Identifier(name) => self.resolve(name, target.span),
@@ -1013,7 +1003,7 @@ impl Realm {
                         format!("{name} is uninitialized"),
                     )
                 }),
-            Reference::Global(name) => Ok(self.globals[*name].value.clone()),
+            Reference::Global(name) => self.get_global(name, span),
             Reference::Unresolvable(name) => Err(Self::exception(
                 ExceptionKind::ReferenceError,
                 span,
@@ -1066,15 +1056,6 @@ impl Realm {
                 }
                 binding.value = Some(value);
             }
-            Reference::Global(name) if restricted_global(name) => {
-                if self.strict {
-                    return Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        format!("{name} is not writable"),
-                    ));
-                }
-            }
             Reference::Unresolvable(name) if self.strict => {
                 return Err(Self::exception(
                     ExceptionKind::ReferenceError,
@@ -1082,15 +1063,8 @@ impl Realm {
                     format!("{name} is not defined"),
                 ));
             }
-            Reference::Global(name) | Reference::Unresolvable(name) => {
-                self.globals
-                    .entry(name.to_owned())
-                    .or_insert(GlobalBinding {
-                        value: Value::Undefined,
-                        deletable: true,
-                    })
-                    .value = value;
-            }
+            Reference::Global(name) => self.put_global(name, value, true, span)?,
+            Reference::Unresolvable(name) => self.put_global(name, value, false, span)?,
             Reference::UnsupportedGlobal(name) => {
                 return Err(Self::unsupported(
                     span,
@@ -1297,10 +1271,9 @@ impl Realm {
                             deleted
                         }
                         Reference::Lexical(..) => false,
-                        Reference::Global(name) if !self.globals[name].deletable => false,
                         Reference::Global(name) => {
-                            self.globals.remove(name);
-                            true
+                            let object = Value::Object(self.global_object());
+                            self.delete_property_value(&object, &JsString::from(name), inner.span)?
                         }
                         Reference::Unresolvable(_) => true,
                         Reference::UnsupportedGlobal(name) => {
@@ -1544,14 +1517,10 @@ fn reference_expression(expr: &Expr) -> bool {
         _ => false,
     }
 }
-fn restricted_global(name: &str) -> bool {
-    matches!(name, "undefined" | "NaN" | "Infinity")
-}
 fn standard_global(name: &str) -> bool {
     matches!(
         name,
-        "globalThis"
-            | "eval"
+        "eval"
             | "isFinite"
             | "isNaN"
             | "parseFloat"

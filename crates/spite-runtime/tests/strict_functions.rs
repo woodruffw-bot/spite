@@ -108,10 +108,7 @@ fn strict_this_preserves_primitives_nullish_values_and_explicit_receivers() {
         1.0,
     );
     number("function f(){'use strict';return delete this;}f()?1:0", 1.0);
-    assert!(matches!(
-        Realm::default().eval("this"),
-        Err(Error::Unsupported { .. })
-    ));
+    number("'use strict';this===globalThis?1:0", 1.0);
 }
 
 #[test]
@@ -234,12 +231,12 @@ fn captured_this_arguments_and_named_function_cycles_survive_collection() {
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("saved()"), Ok(Value::Number(7.0)));
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 10);
+    assert_eq!(realm.collect(10000).unwrap().live, 11);
     realm.eval("let escaped;let f;{ 'unused';f=(()=>{'use strict';return function(a=(escaped=()=>this),b=missing){};})();}try{f.call({value:7});}catch{}f=null;").unwrap();
     realm.collect(10000).unwrap();
     assert_eq!(realm.eval("escaped().value"), Ok(Value::Number(7.0)));
     realm.eval("escaped=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 10);
+    assert_eq!(realm.collect(10000).unwrap().live, 11);
 }
 
 #[test]

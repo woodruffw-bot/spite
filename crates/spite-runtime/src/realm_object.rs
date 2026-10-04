@@ -135,6 +135,7 @@ impl Realm {
         span: Span,
     ) -> Result<bool, Error> {
         if let Value::Object(object) = base {
+            self.check_global_property_operation(object, &key, span)?;
             let action = self.object_work(span, |objects, budget| {
                 budget.value(&value)?;
                 objects.set(object, key, value.clone(), Some(object), budget)
@@ -161,6 +162,7 @@ impl Realm {
         span: Span,
     ) -> Result<bool, Error> {
         if let Value::Object(object) = base {
+            self.check_global_property_operation(object, key, span)?;
             return self.object_work(span, |objects, budget| objects.delete(object, key, budget));
         }
         self.tick(span)?;
@@ -251,28 +253,23 @@ impl Realm {
     /// be collected. Environment scans consume the supplied work budget too.
     pub fn collect(&mut self, max_work: usize) -> Result<Collection, spite_heap::Error> {
         let scanned = self
-            .globals
+            .scopes
             .len()
-            .checked_add(self.scopes.len())
+            .checked_add(1)
             .and_then(|count| {
                 count.checked_add(
                     self.intrinsics
                         .as_ref()
-                        .map_or(1, |intrinsics| intrinsics.roots().count()),
+                        .map_or(0, |intrinsics| intrinsics.roots().count()),
                 )
             })
             .ok_or(spite_heap::Error::Limit)?;
         let remaining = max_work
             .checked_sub(scanned)
             .ok_or(spite_heap::Error::Limit)?;
-        let globals = self
-            .globals
-            .values()
-            .filter_map(|binding| match &binding.value {
-                Value::Object(handle) => Some(handle),
-                _ => None,
-            });
-        let roots = globals
+        let roots = self
+            .global_object
+            .iter()
             .chain(self.scopes.iter().map(|scope| &scope.0))
             .chain(
                 self.intrinsics
@@ -392,6 +389,9 @@ impl Realm {
 
 impl Realm {
     fn missing_intrinsic_property(&self, object: &ObjectHandle, key: &JsString) -> bool {
+        if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
+            return true;
+        }
         let Some(intrinsics) = &self.intrinsics else {
             return false;
         };

@@ -99,12 +99,12 @@ fn callability_failures_follow_argument_evaluation_and_captures_are_values() {
 fn bound_targets_receivers_arguments_and_cycles_survive_collection() {
     let mut realm = Realm::default();
     realm.eval("let f; { let receiver = {}; let extra = {}; let target = ({}).valueOf.call.bind(({}).valueOf, receiver); f = target.bind(null, extra); receiver.f = f; extra.f = f; }").unwrap();
-    assert_eq!(realm.collect(2000).unwrap().live, 14); // global environment, nine intrinsics, two bound functions, two captures
+    assert_eq!(realm.collect(2000).unwrap().live, 15); // global environment, global object, nine intrinsics, two bound functions, two captures
     assert_eq!(realm.eval("f().f === f"), Ok(Value::Boolean(true)));
     let value = realm.eval("f").unwrap();
     let root = realm.root_value(value, 100).unwrap();
     realm.eval("f = null").unwrap();
-    assert_eq!(realm.collect(2000).unwrap().live, 14);
+    assert_eq!(realm.collect(2000).unwrap().live, 15);
     drop(root);
     assert_eq!(realm.collect(2000).unwrap().reclaimed, 4);
 }

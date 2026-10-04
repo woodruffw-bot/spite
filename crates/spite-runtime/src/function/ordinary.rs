@@ -2,7 +2,7 @@
 
 use super::ScriptFunction;
 use crate::{
-    BindingState, Error, GlobalBinding, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
+    BindingState, Error, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
     object::DataDescriptor,
 };
 use spite_core::{JsString, Span};
@@ -18,12 +18,20 @@ impl Realm {
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        if !code.strict && !matches!(this, Value::Object(_)) {
-            return Err(Self::unsupported(
-                span,
-                "non-strict global and primitive receivers are not implemented",
-            ));
-        }
+        let this = if code.strict {
+            this
+        } else {
+            match this {
+                Value::Undefined | Value::Null => Value::Object(self.global_object()),
+                Value::Object(_) => this,
+                _ => {
+                    return Err(Self::unsupported(
+                        span,
+                        "non-strict primitive receivers are not implemented",
+                    ));
+                }
+            }
+        };
         let ArrowBody::Block(body) = &code.body else {
             unreachable!("ordinary functions have block bodies")
         };
@@ -141,10 +149,7 @@ impl Realm {
             }
             next = outer;
         }
-        Err(Self::unsupported(
-            span,
-            "global this binding is not implemented",
-        ))
+        Ok(Value::Object(self.global_object()))
     }
 
     pub(crate) fn ordinary_function(
@@ -266,14 +271,7 @@ impl Realm {
                     .expect("function binding exists")
                     .value = Some(value);
             } else {
-                self.object_work(name.span, |_, budget| budget.charge(name.name.len() + 1))?;
-                self.globals.insert(
-                    name.name.clone(),
-                    GlobalBinding {
-                        value,
-                        deletable: false,
-                    },
-                );
+                self.create_global_function(&name.name, value, name.span)?;
             }
         }
         Ok(())

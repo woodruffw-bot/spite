@@ -103,9 +103,8 @@ also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls and non-strict calls with object
-receivers execute. Global/boxed receivers and construction remain runtime gaps.
-Global this,
-generators, async functions, rest parameters, and patterns remain separate steps.
+receivers execute. Global receivers also execute; boxed receivers and construction
+remain runtime gaps. Generators, async functions, rest parameters, and patterns remain separate steps.
 
 Direct function declarations are var-scoped in Scripts and function bodies;
 block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
@@ -177,15 +176,37 @@ of a stack index. Name lookup follows outer links with bounded work, preparing f
 closures that execute under a different caller. Per-iteration let environments
 copy bindings into a fresh identity with the same outer link (14.7.4.4).
 
-The global lexical environment is allocated lazily on first evaluation. The host
+Realm initialization runs on first evaluation, after parsing succeeds. It creates
+the global lexical environment, implemented intrinsics, and an ordinary global
+object whose prototype is Object.prototype (9.3.1). This fixed graph uses a separate
+100,000-unit initialization budget; `max_steps` applies to each Script. The host
 slot limit is named `max_heap_entries` and counts both objects and environments.
 Temporary scopes remain allocated until explicit collection; scope restoration
 changes active roots on every normal or abrupt exit. The collector traces outer
 links and every binding, charging scans even for uninitialized/primitive values.
-Checked object access rejects an environment handle and vice versa. Arrow function records capture these environment handles. Ordinary function
-syntax and remaining function forms follow this storage migration. Global
-object/var bindings remain a separate realm map
-until the observable global object model is implemented.
+Checked object access rejects an environment handle and vice versa. Function records
+capture these environment handles. Global object bindings use the actual property
+store, while global lexical bindings remain in the declarative environment.
+
+The host uses its ordinary global object as the global this value. `globalThis`
+is a writable, non-enumerable, configurable property; deleting or replacing it
+never changes the realm's this value. Script this, including strict Scripts, and
+arrows capturing global this use that identity. Non-strict ordinary calls replace
+undefined/null receivers with it; strict calls preserve their receiver (10.2.1.2).
+Global identifier reads, writes, and deletion follow property descriptors and
+prototype lookup. Accessors receive the global object. Already-resolved references
+recheck presence after RHS side effects, throwing ReferenceError in strict code if
+the property disappeared (9.1.1.2.5–6).
+
+Global declaration preflight uses HasRestrictedGlobalProperty, CanDeclareGlobalVar,
+and CanDeclareGlobalFunction before creating bindings (9.1.1.4.13–17, 16.1.7).
+New Script vars/functions are non-configurable; var preserves existing properties,
+including accessors and configurability. Function declarations reconfigure existing
+configurable properties and can replace writable enumerable fixed data properties.
+Edition 17 has no separate global declared-name list. Missing standard globals stay
+explicit host gaps on access, with known property presence; no host extensions are
+installed. The global object is a persistent collector root even after globalThis
+is deleted. A fully initialized realm currently retains eleven heap entries.
 
 Object support starts with a separately tested `spite-heap` foundation before
 object values become visible to JavaScript. Objects use opaque arena handles,
@@ -309,7 +330,7 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The nine intrinsic objects are published atomically after lazy
+(20.1.3, 10.4.7.1). The nine intrinsic objects are published atomically during realm
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
@@ -356,7 +377,7 @@ it allocates a fresh parameter environment whose outer is the captured environme
 never the caller’s scope. Missing parameters are undefined, extra arguments are
 ignored after evaluation, and parameters remain mutable. Arrows create no arguments
 binding or constructor/prototype property. Lexical this follows captured function
-environments; the global this binding remains unimplemented.
+environments and otherwise resolves to the realm's global this value.
 Every call restores caller strictness and active scopes on success or abrupt exit.
 The evaluator bounds combined statement/expression nesting across calls to 64,
 as well as call re-entry; ordinary user tail calls await explicit execution frames.
@@ -397,8 +418,8 @@ is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
 alias indices, or vice versa. Argument values and receiver captures remain traced
 after returns or abrupt default initialization. The required Symbol.iterator hook
 is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
-recognizes the Arguments tag. Global and primitive non-strict receivers still
-report Unsupported. Call failures restore strictness, scopes, and nesting counters.
+recognizes the Arguments tag. Primitive non-strict receivers still report
+Unsupported until primitive wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
 
 Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps
 store checked environment handles and parameter names instead of exposing hidden

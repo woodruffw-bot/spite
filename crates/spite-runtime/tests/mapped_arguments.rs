@@ -184,7 +184,7 @@ fn escaped_arguments_keep_the_parameter_environment_alive_and_mutable() {
         Ok(Value::Undefined)
     );
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 10);
+    assert_eq!(realm.collect(10000).unwrap().live, 11);
 }
 
 #[test]
@@ -193,9 +193,9 @@ fn removing_the_last_alias_releases_the_invocation_environment() {
     realm
         .eval("let args;function f(a){args=arguments;}f.call({payload:{}},1);f=null;")
         .unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 16);
+    assert_eq!(realm.collect(10000).unwrap().live, 17);
     realm.eval("delete args[0]").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 13);
+    assert_eq!(realm.collect(10000).unwrap().live, 14);
     realm.eval("args=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, 10);
+    assert_eq!(realm.collect(10000).unwrap().live, 11);
 }

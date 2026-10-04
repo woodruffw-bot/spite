@@ -299,12 +299,12 @@ fn bitwise_operations_use_modulo_conversion() {
 #[test]
 fn resource_failures_are_host_errors_and_restore_scopes() {
     let mut realm = Realm::new(Limits {
-        max_steps: 4,
+        max_steps: 24,
         max_string_units: 16,
         ..Limits::default()
     });
     assert!(matches!(
-        realm.eval("{ 1; 2; 3; }"),
+        realm.eval("{ let hidden = 2; while (true) {} }"),
         Err(Error::Limit { .. })
     ));
     assert_eq!(realm.eval("let x = 1"), Ok(Value::Undefined));

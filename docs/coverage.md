@@ -18,16 +18,16 @@ not an alternative language specification.
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
-| Calls | Builtin, arrow, and ordinary calls with strict or object receivers (global/boxed receivers remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
+| Calls | Builtin, arrow, and ordinary calls with strict, object, or global receivers (boxed receivers remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; global/boxed non-strict receivers remain Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; boxed non-strict receivers remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | undefined, NaN, Infinity, and simple sloppy-mode global assignment |
+| Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 48 reviewed Test262 variants from 11 hashbang, 10 BigInt, and 11 arrow files, plus 13 identifier lexer and 6 statement parser fixtures |
 
@@ -96,7 +96,7 @@ is atomic and the nine objects remain rooted. Function.prototype caller/argument
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
 wrappers returned by valueOf, spread arguments, optional calls, and
-global/boxed non-strict receivers remain open; missing operations report Unsupported. Function.prototype
+boxed non-strict receivers remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -122,16 +122,15 @@ Strict ordinary functions execute with preserved receivers, shared lexical captu
 hoisting, defaults, and return completions. Unmapped arguments expose original
 indices, length, and restricted callee; indices and parameters do not alias. Arrows
 capture this and arguments from enclosing functions, including across collection.
-Non-strict functions with object receivers also execute. Simple parameter lists
+Non-strict functions with object or nullish/global receivers also execute. Simple parameter lists
 use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
-The arguments Symbol.iterator hook, global/boxed non-strict receivers, and the
-global this binding remain unimplemented.
+The arguments Symbol.iterator hook and boxed non-strict receivers remain unimplemented.
 
 Symbols, primitive wrapper constructors,
-arrays, global/boxed receivers, construction, classes, destructuring, regular
+arrays, boxed receivers, construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -141,9 +140,14 @@ hexadecimal notation with an `n` suffix; JavaScript string conversion is decimal
 
 Global lexical bindings and Script var declarations persist between evaluations.
 New global vars are non-deletable. A var declaration for an existing global value
-preserves its value and deletability. There is no observable global object or
-full property model yet. Built-in error categories are represented in
-Rust. Catch clauses without a parameter handle language throws and built-in
+preserves its descriptor and value. Global identifiers and globalThis properties
+share storage; lexical bindings stay separate. Declaration checks use actual own
+property attributes and extensibility. Global accessors and inherited properties
+retain correct receivers, and strict assignments recheck bindings deleted by RHS
+evaluation. Replacing/deleting globalThis does not change the realm's this identity.
+Realm initialization creates eleven retained entries under a separate fixed work
+budget before Script execution; allocation/property limits still apply.
+Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
 Supported throws initialize a mutable catch binding without coercion, preserving object identity. The catch
