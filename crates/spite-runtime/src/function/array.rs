@@ -5,6 +5,7 @@ mod callback;
 mod find;
 mod literal;
 mod mutation;
+mod search;
 mod string;
 
 use super::Builtin;
@@ -85,6 +86,9 @@ impl Realm {
             Builtin::ArrayFindIndex,
             Builtin::ArrayFindLast,
             Builtin::ArrayFindLastIndex,
+            Builtin::ArrayIncludes,
+            Builtin::ArrayIndexOf,
+            Builtin::ArrayLastIndexOf,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(

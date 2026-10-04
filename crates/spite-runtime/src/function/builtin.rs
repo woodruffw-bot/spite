@@ -192,6 +192,14 @@ impl Realm {
             Builtin::ArrayToString => self.array_to_string(this, span),
             Builtin::ArrayPush => self.array_push(this, arguments, span),
             Builtin::ArrayPop => self.array_pop(this, span),
+            Builtin::ArrayIncludes | Builtin::ArrayIndexOf | Builtin::ArrayLastIndexOf => self
+                .array_search(
+                    builtin,
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next(),
+                    span,
+                ),
             Builtin::ArrayFind
             | Builtin::ArrayFindIndex
             | Builtin::ArrayFindLast

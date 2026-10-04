@@ -506,3 +506,57 @@ fn find_bounds_hole_traversal_and_copying_of_retained_values() {
         Err(Error::Limit { .. })
     ));
 }
+
+#[test]
+fn recursive_array_search_getters_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for method in ["includes", "indexOf", "lastIndexOf"] {
+                let mut realm = Realm::default();
+                realm
+                    .eval(&format!(
+                        "let a=[1],flag=0;Object.defineProperty(a,'0',{{get:()=>a.{method}(1)}})"
+                    ))
+                    .unwrap();
+                assert!(matches!(
+                    realm.eval(&format!(
+                        "try{{a.{method}(1);}}catch{{flag=1;}}finally{{flag=2;}}"
+                    )),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1].includes(1)");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn array_search_bounds_hole_traversal_and_each_element_comparison() {
+    let mut realm = Realm::default();
+    realm.eval("let flag=0").unwrap();
+    realm.limits.max_steps = 500;
+    for method in ["includes", "indexOf", "lastIndexOf"] {
+        assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},7);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+    }
+    realm.limits.max_steps = 100_000;
+    check(
+        &mut realm,
+        "flag===0 && Array.prototype.includes.call({length:Infinity},undefined)",
+    );
+    let receiver = realm.eval("['a'.repeat(1000)]").unwrap();
+    let search = realm.eval("'a'.repeat(1000)").unwrap();
+    realm.remaining_steps = 2500;
+    assert!(matches!(
+        realm.array_search(
+            Builtin::ArrayIncludes,
+            receiver,
+            search,
+            None,
+            Span::new(0, 0)
+        ),
+        Err(Error::Limit { .. })
+    ));
+}

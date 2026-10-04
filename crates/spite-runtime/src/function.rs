@@ -73,6 +73,9 @@ pub(crate) enum Builtin {
     ArrayFindIndex,
     ArrayFindLast,
     ArrayFindLastIndex,
+    ArrayIncludes,
+    ArrayIndexOf,
+    ArrayLastIndexOf,
     ArrayToString,
     String,
     StringToString,
@@ -168,9 +171,9 @@ impl Builtin {
             Self::StringRepeat => "repeat",
             Self::StringPadStart => "padStart",
             Self::StringPadEnd => "padEnd",
-            Self::StringIndexOf => "indexOf",
-            Self::StringLastIndexOf => "lastIndexOf",
-            Self::StringIncludes => "includes",
+            Self::StringIndexOf | Self::ArrayIndexOf => "indexOf",
+            Self::StringLastIndexOf | Self::ArrayLastIndexOf => "lastIndexOf",
+            Self::StringIncludes | Self::ArrayIncludes => "includes",
             Self::StringStartsWith => "startsWith",
             Self::StringEndsWith => "endsWith",
             Self::Object => "Object",
@@ -226,6 +229,9 @@ impl Builtin {
             | Self::ArrayFindIndex
             | Self::ArrayFindLast
             | Self::ArrayFindLastIndex
+            | Self::ArrayIncludes
+            | Self::ArrayIndexOf
+            | Self::ArrayLastIndexOf
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint

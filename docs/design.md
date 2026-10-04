@@ -327,6 +327,12 @@ visits every index with Get, including holes, in ascending or descending order.
 An index cursor represents the specification list without allocating it. Value
 returning methods preserve the pre-callback value even if the predicate mutates
 the source; copies of thisArg and retained values are charged before cloning.
+Includes/indexOf/lastIndexOf (23.1.3.16–17/20) share ordered range traversal,
+with per-comparison work charged for strings and BigInts. Includes reads holes
+as undefined and compares with SameValueZero; the index methods first check
+HasProperty and use IsStrictlyEqual. Empty ranges skip fromIndex conversion.
+Only an absent fromIndex defaults to length - 1 for lastIndexOf; an explicit
+undefined becomes zero. All cursors preserve the full ToLength index range.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses
