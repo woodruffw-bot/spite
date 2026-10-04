@@ -2600,3 +2600,17 @@ script-pass	2aac7c149c2f9981e1bf761988f3febbe7836cab85decb6114c577d8fac001ec	tes
 script-pass	5f8c34ae9c2d177e3fd9422bd3eaceec6127aa349b7268c9c23e6d67210ae313	test/built-ins/AggregateError/prototype/prop-desc.js
 script-pass	3e7e9ddd7ebc6f286cac2219e89e1cc9d9b5971db5c31759cdca900cfd3da99a	test/built-ins/AggregateError/prototype/proto.js
 harness	76cf933b2a7069dc22fcff70d6d4f082ab777b3485e08b79ab4d6a18aef9df9c	harness/promiseHelper.js
+script-pass	317209738ee1d92a70790847d0763370da873228e4205c2bdd4c3be5891dc1e6	test/built-ins/String/prototype/normalize/form-is-not-valid-throws.js
+script-pass	bd52f5a5cbd48183afd6c7ad8332e05e91533ff1745aa65fbb90dab210ac4527	test/built-ins/String/prototype/normalize/length.js
+script-pass	79f82a2a6c33c43295943d99d04d54492b7f89d480ebe602555201c70792b014	test/built-ins/String/prototype/normalize/name.js
+script-pass	0dd396f511f50dbb2e0a6fa581ab702e5a0fea484444085779894c3ba35c0192	test/built-ins/String/prototype/normalize/not-a-constructor.js
+script-pass	e206ea1276a25af584f7c72327d68fe1f058e0c6a52fbbfe807c011b4e015f21	test/built-ins/String/prototype/normalize/return-abrupt-from-form-as-symbol.js
+script-pass	0b1588ee0cbfd7bc3da5fd3718b348e5e89b939e4ecc9a66369b5ab3a5c191d2	test/built-ins/String/prototype/normalize/return-abrupt-from-form.js
+script-pass	8ca9cc8349aa19212b0bc804bd2907dd6adfa6bedb0699edc16a4458ce485cdf	test/built-ins/String/prototype/normalize/return-abrupt-from-this-as-symbol.js
+script-pass	f528eb75450e5ef7217cd94be5c699f6de14afe68d95888459259bf9d172bcd8	test/built-ins/String/prototype/normalize/return-abrupt-from-this.js
+script-pass	cb832a5d246be020cb83db5bab2f6ab07e580b894331dbac4985dfbf6963d470	test/built-ins/String/prototype/normalize/return-normalized-string-from-coerced-form.js
+script-pass	b09839b9a6be038e3ca07311cf88b1ffcc2e7bde5bc36fa3e160ee08e6093ffe	test/built-ins/String/prototype/normalize/return-normalized-string-using-default-parameter.js
+script-pass	5977bafdc604ceec3cb51de27ccb193756769e95a034e0eb9975ccab0965bd38	test/built-ins/String/prototype/normalize/return-normalized-string.js
+script-pass	389b803129883c1e9711d402eb886e020f924717f74b1ff826496dafb10b93a7	test/built-ins/String/prototype/normalize/this-is-null-throws.js
+script-pass	86a6a629b7a5ed29ccd4b0709ec4b32f67458f8af03acaf9d80d4a58afb4c8bb	test/built-ins/String/prototype/normalize/this-is-undefined-throws.js
+script-pass	1a41d87c9400f8c89d57814893e98daca4bff44b1ca16088e4cae2c69318f302	test/built-ins/String/prototype/normalize/normalize.js
