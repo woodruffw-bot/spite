@@ -2201,3 +2201,15 @@ test/built-ins/Iterator/prototype/filter/proto.js	-	-	-
 test/built-ins/Iterator/prototype/filter/this-non-callable-next.js	-	-	-
 test/built-ins/Iterator/prototype/filter/this-non-object.js	-	-	-
 test/built-ins/Iterator/prototype/filter/this-plain-iterator.js	-	-	-
+test/built-ins/Iterator/prototype/take/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/take/length.js	-	-	-
+test/built-ins/Iterator/prototype/take/name.js	-	-	-
+test/built-ins/Iterator/prototype/take/proto.js	-	-	-
+test/built-ins/Iterator/prototype/take/this-non-callable-next.js	-	-	-
+test/built-ins/Iterator/prototype/take/this-non-object.js	-	-	-
+test/built-ins/Iterator/prototype/drop/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/drop/length.js	-	-	-
+test/built-ins/Iterator/prototype/drop/name.js	-	-	-
+test/built-ins/Iterator/prototype/drop/proto.js	-	-	-
+test/built-ins/Iterator/prototype/drop/this-non-callable-next.js	-	-	-
+test/built-ins/Iterator/prototype/drop/this-non-object.js	-	-	-

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2221 unmodified test fixtures and six harness files come from
+These 2233 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -634,6 +634,26 @@ callback and closing errors, reentry, exact indices, original filtered-value
 identity, capture tracing/release, large default pipelines, and opt-in host
 failures. The pin and original source/helper bytes are unchanged.
 
+## Iterator.take/drop published-edition review
+
+Twelve unchanged sources add twenty-four Script/StrictScript variants, with six
+sources for each helper. They cover function type/prototype, name/length descriptors
+through the original property helper, primitive receiver rejection before count
+conversion, and delayed non-callable-next rejection. Reviewed candidates requiring
+classes, generators, destructuring, Array.from, or shared-prototype enumeration
+remain outside this selection.
+
+The pin also includes three files for each method (`argument-effect-order.js`,
+`argument-validation-failure-closes-underlying.js`, and `limit-rangeerror.js`) that
+assert RangeError for finite counts above Number.MAX_SAFE_INTEGER. Published
+ECMAScript 2026, edition 17, has no such check in 27.1.3.3.2/11. These post-baseline
+assertions remain outside the corpus, without source rewriting or pass credit.
+Local regressions cover count conversion/closing order, fractional/signed-zero
+counts, infinity and large exact finite countdowns, discarded-value bypass,
+return/reentry, errors and completion, capture tracing/release, large default
+inputs, and opt-in host failures. The pin and original source/helper bytes are
+unchanged.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -655,12 +675,12 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 4330 variants from 2202 reviewed sources: the eleven
+The `spite-test262` command runs 4354 variants from 2214 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 116 Iterator constructor/acquisition/sequencing/consumption tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
+object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 128 Iterator constructor/acquisition/sequencing/consumption tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
@@ -671,7 +691,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-4156 positives using the upstream harness, and 170 reviewed parse-negative variants.
+4180 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the

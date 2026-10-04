@@ -2226,3 +2226,15 @@ script-pass	a225d0a5ff80a143f30eff9df5b10ed7e2313d3ca0902a656e846d5bca07335d	tes
 script-pass	5d50d0277de9cbbcf22bcd80f6dae4bf948f69e2e52f14611592a29c6ac6e76a	test/built-ins/Iterator/prototype/filter/this-non-callable-next.js
 script-pass	3ff05dd8751d2eaa8a145fada3d2809a137d93b503388a54b52e2357d0c66c3c	test/built-ins/Iterator/prototype/filter/this-non-object.js
 script-pass	7e523e0d0cfffebcfe716653748f708e23c3761608c3b894cac6697704c0f73f	test/built-ins/Iterator/prototype/filter/this-plain-iterator.js
+script-pass	2fe9a0118ee81cbddca52438a8e004d0a7c5a4b522a16f6ef5d525a6f02b5a5f	test/built-ins/Iterator/prototype/take/is-function.js
+script-pass	238756eddf2f26722c28b0e3a488089eaa4f357f7d4e29f1de3d03b5a5ffb84c	test/built-ins/Iterator/prototype/take/length.js
+script-pass	9474a34479478e3f156be0dc79f42d755b5a7500d087e5ccd6aa90452076776a	test/built-ins/Iterator/prototype/take/name.js
+script-pass	4bf205103b9d9024a8f5f471b1763fed444eebbba4656bca66378975c4b2128f	test/built-ins/Iterator/prototype/take/proto.js
+script-pass	6b935c7457b44a67a3a0aa064879f2646640da10e9e121421090c51cc4e8e12d	test/built-ins/Iterator/prototype/take/this-non-callable-next.js
+script-pass	8b790964fe9a0ae9e080c5b0ffd3d95558a773adf14bec9dc13dcad538c60132	test/built-ins/Iterator/prototype/take/this-non-object.js
+script-pass	c442da691c52cce3bd272057216618df5cff353153e83492956faed5dbabed39	test/built-ins/Iterator/prototype/drop/is-function.js
+script-pass	ad113afefc1ee5ea4e14ea33b3d7a10a3e7e4af55aa6b5a46eda3eaf4729822b	test/built-ins/Iterator/prototype/drop/length.js
+script-pass	a62096a5cb927b2cd403b38b7c5124edaf9f0ac0166e8a6726a12f0c51894983	test/built-ins/Iterator/prototype/drop/name.js
+script-pass	33c8cad9191012b7b09c2bac0b5f3b2ecaae73c9a0964fc244bc6f6d2cebd783	test/built-ins/Iterator/prototype/drop/proto.js
+script-pass	810c001c03050f911c200e109a3c84b2e6704b4621546e31817104d7c57c0ce2	test/built-ins/Iterator/prototype/drop/this-non-callable-next.js
+script-pass	9f14990e67f5f4d0ead87394394b686483c1e41565194e50c8e775bc079b8e7c	test/built-ins/Iterator/prototype/drop/this-non-object.js
