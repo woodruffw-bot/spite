@@ -199,7 +199,7 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
     );
     for source in [
         "Object.create",
-        "Object.getOwnPropertyDescriptor",
+        "Object.getOwnPropertyDescriptors",
         "Object.create=1",
         "delete Object.create",
         "Object.hasOwnProperty('create')",

@@ -64,6 +64,28 @@ impl Realm {
                 span,
             ),
             Builtin::ObjectToLocaleString => self.object_to_locale_string(this, span),
+            Builtin::ObjectDefineProperty => self.object_define_property(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::ObjectGetOwnPropertyDescriptor | Builtin::ObjectHasOwn => self
+                .object_own_property(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    matches!(builtin, Builtin::ObjectHasOwn),
+                    span,
+                ),
+            Builtin::ObjectIs => {
+                let first = arguments.next().unwrap_or(Value::Undefined);
+                let second = arguments.next().unwrap_or(Value::Undefined);
+                self.object_work(span, |_, budget| {
+                    budget.value(&first)?;
+                    budget.value(&second)?;
+                    Ok(Value::Boolean(first.same_value(&second)))
+                })
+            }
             Builtin::Error(kind) => self.error_constructor(kind, None, arguments, span),
             Builtin::ErrorToString => self.error_to_string(this, span),
             Builtin::ErrorIsError => {

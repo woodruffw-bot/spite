@@ -441,7 +441,24 @@ impl Realm {
 }
 
 impl Realm {
-    fn check_missing_intrinsic_mutation(
+    pub(crate) fn own_property_descriptor(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<Option<Property>, Error> {
+        let property =
+            self.object_work(span, |objects, budget| objects.get_own(object, key, budget))?;
+        if property.is_none() && self.missing_intrinsic_property(object, key) {
+            return Err(Self::unsupported(
+                span,
+                "intrinsic property descriptor is not implemented",
+            ));
+        }
+        Ok(property)
+    }
+
+    pub(crate) fn check_missing_intrinsic_mutation(
         &mut self,
         object: &ObjectHandle,
         key: &JsString,
@@ -475,18 +492,14 @@ fn missing_object_static(key: &JsString) -> bool {
         "assign",
         "create",
         "defineProperties",
-        "defineProperty",
         "entries",
         "freeze",
         "fromEntries",
-        "getOwnPropertyDescriptor",
         "getOwnPropertyDescriptors",
         "getOwnPropertyNames",
         "getOwnPropertySymbols",
         "getPrototypeOf",
         "groupBy",
-        "hasOwn",
-        "is",
         "isExtensible",
         "isFrozen",
         "isSealed",

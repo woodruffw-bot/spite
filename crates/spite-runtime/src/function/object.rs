@@ -4,13 +4,14 @@ use super::Builtin;
 use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span};
 
+mod descriptor;
 #[cfg(test)]
 mod tests;
 
 #[derive(Debug)]
 pub(crate) struct ObjectIntrinsics {
     pub constructor: ObjectHandle,
-    methods: [ObjectHandle; 4],
+    methods: Vec<ObjectHandle>,
 }
 
 impl ObjectIntrinsics {
@@ -71,9 +72,26 @@ impl Realm {
                 span,
             )?;
         }
+        let mut methods = vec![has_own, enumerable, is_prototype, to_locale];
+        for builtin in [
+            Builtin::ObjectDefineProperty,
+            Builtin::ObjectGetOwnPropertyDescriptor,
+            Builtin::ObjectHasOwn,
+            Builtin::ObjectIs,
+        ] {
+            let method = self.new_builtin(function_prototype, builtin, span)?;
+            self.define_builtin_property(
+                &constructor,
+                builtin.initial_name(),
+                Value::Object(method.clone()),
+                true,
+                span,
+            )?;
+            methods.push(method);
+        }
         Ok(ObjectIntrinsics {
             constructor,
-            methods: [has_own, enumerable, is_prototype, to_locale],
+            methods,
         })
     }
 
@@ -115,15 +133,7 @@ impl Realm {
         let Value::Object(object) = self.box_primitive(this, span)? else {
             unreachable!("ToObject");
         };
-        let property = self.object_work(span, |objects, budget| {
-            objects.get_own(&object, &key, budget)
-        })?;
-        if property.is_none() && self.missing_intrinsic_property(&object, &key) {
-            return Err(Self::unsupported(
-                span,
-                "intrinsic property descriptor is not implemented",
-            ));
-        }
+        let property = self.own_property_descriptor(&object, &key, span)?;
         Ok(Value::Boolean(property.is_some_and(|property| {
             !enumerable || property.enumerable()
         })))

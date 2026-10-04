@@ -477,8 +477,13 @@ arguments retain identity, and other primitives use the implemented ToObject
 wrappers. A distinct newTarget selects its own prototype and ignores the value
 argument. Property predicates convert their key before converting their receiver;
 isPrototypeOf tests its argument's type before receiver conversion. toLocaleString
-invokes the receiver's current toString with no arguments. Missing Object static
-methods remain explicit gaps until their descriptor/reflection algorithms land.
+invokes the receiver's current toString with no arguments. Object.defineProperty
+and getOwnPropertyDescriptor use ToPropertyDescriptor/FromPropertyDescriptor
+(6.2.6.4–5), preserving inherited field reads, accessor validation order, omitted
+fields, descriptor rejection, and mapped-argument aliasing. Descriptor results
+are fresh ordinary objects with mutable enumerable fields. Object.hasOwn converts
+its target before its key; Object.is performs bounded SameValue comparisons.
+Remaining Object static methods are explicit gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

@@ -36,6 +36,10 @@ pub(crate) enum Builtin {
     ObjectPropertyIsEnumerable,
     ObjectIsPrototypeOf,
     ObjectToLocaleString,
+    ObjectDefineProperty,
+    ObjectGetOwnPropertyDescriptor,
+    ObjectHasOwn,
+    ObjectIs,
     Error(error::ErrorConstructor),
     ErrorToString,
     ErrorIsError,
@@ -78,6 +82,10 @@ impl Builtin {
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
             Self::ObjectIsPrototypeOf => "isPrototypeOf",
+            Self::ObjectDefineProperty => "defineProperty",
+            Self::ObjectGetOwnPropertyDescriptor => "getOwnPropertyDescriptor",
+            Self::ObjectHasOwn => "hasOwn",
+            Self::ObjectIs => "is",
             Self::Number => "Number",
             Self::Error(kind) => kind.name(),
             Self::ErrorIsError => "isError",
@@ -117,7 +125,12 @@ impl Builtin {
             | Self::IsFinite
             | Self::IsNaN
             | Self::ParseFloat => 1.0,
-            Self::FunctionApply | Self::ParseInt => 2.0,
+            Self::FunctionApply
+            | Self::ParseInt
+            | Self::ObjectGetOwnPropertyDescriptor
+            | Self::ObjectHasOwn
+            | Self::ObjectIs => 2.0,
+            Self::ObjectDefineProperty => 3.0,
             _ => 0.0,
         }
     }

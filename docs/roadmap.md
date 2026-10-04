@@ -120,6 +120,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add Object construction and mandatory string-keyed prototype methods.
+- [x] Add Object.defineProperty/getOwnPropertyDescriptor, hasOwn, and is.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.
