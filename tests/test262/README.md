@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 1226 unmodified test fixtures and three harness files come from
+These 1246 unmodified test fixtures and three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -74,7 +74,7 @@ standard APIs; those paths report Unsupported and fail the
 gate. Array.from/fromAsync, additional includes, async completion,
 and agent helpers remain separate harness gaps.
 
-The 642 Array and Array iterator files cover call/new construction, of, branding, literal elisions,
+The 662 Array and Array iterator files cover call/new construction, of, branding, literal elisions,
 indexed growth, truncation, generic at/join/push/pop, toString/toLocaleString, and ordered
 forEach/every/some callback traversal, find/findIndex/findLast/findLastIndex,
 includes/indexOf/lastIndexOf searches, reduce/reduceRight accumulators, species-aware map/filter/slice/concat/flat/flatMap/splice, sparse reverse, fill/copyWithin range mutations, shift/unshift front mutations, and sort/toSorted and toReversed/with/toSpliced copies, plus keys/values/entries
@@ -177,6 +177,17 @@ Local regressions additionally check cached next methods, done/value access orde
 iterator cleanup precedence, aliased outputs, partial effects, huge array-like
 length arguments, and host failures during traversal or cleanup.
 
+## Array literal spread review
+
+Twenty unchanged generated files add 40 variants, all in both Script modes.
+They cover empty/single/multiple spread inputs, AssignmentExpression evaluation,
+custom iterators, unresolvable operands, abrupt iterator getters/calls/steps/values,
+and exact accumulation order. Generator and nested object-spread candidates
+remain outside this corpus. Existing pinned sources and harness files are unchanged.
+Local tests also cover literal holes versus yielded undefined, strings and sparse
+Arrays, cached next calls, inherited setters, native Array length boundaries,
+and host work failures without iterator cleanup.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -198,19 +209,19 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 2364 variants from 1207 reviewed sources: the eleven
+The `spite-test262` command runs 2404 variants from 1227 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 140 Object tests,
-153 String and String iterator tests, 642 Array and Array iterator tests,
+153 String and String iterator tests, 662 Array and Array iterator tests,
 34 Symbol tests, and 23 object method/accessor tests. The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-2288 positives using the upstream harness, and 72 reviewed parse-negative variants.
+2328 positives using the upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
