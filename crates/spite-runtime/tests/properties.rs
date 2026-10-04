@@ -197,12 +197,12 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 #[test]
 fn incomplete_intrinsic_methods_report_unsupported() {
     {
-        let name = "matchAll";
+        let name = "fromAsync";
         let mut realm = Realm::default();
         realm.eval("let flag = 0").unwrap();
         assert!(matches!(
             realm.eval(&format!(
-                "try {{ String.prototype.{name}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
+                "try {{ Array.{name}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
             )),
             Err(Error::Unsupported { .. })
         ));
@@ -210,7 +210,7 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         number(&format!("({{__proto__: {{ {name}: 7 }} }}).{name}"), 7.0);
         number(&format!("let o = {{}}; o.{name} = 3; o.{name}"), 3.0);
     }
-    for source in ["'abc'.match", "'abc'.matchAll"] {
+    for source in ["'abc'.match('x')", "'abc'.matchAll('x')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

@@ -180,10 +180,10 @@ fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
     );
     type_error("new String.prototype.toString()");
     for source in [
-        "String.prototype.matchAll",
-        "String.prototype.matchAll=1",
-        "delete String.prototype.matchAll",
-        "Object.getOwnPropertyDescriptors(String.prototype)",
+        "Array.fromAsync",
+        "Array.fromAsync=1",
+        "delete Array.fromAsync",
+        "Object.getOwnPropertyDescriptors(Array)",
     ] {
         assert!(
             matches!(

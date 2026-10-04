@@ -175,10 +175,7 @@ fn reflect_metadata_collection_and_large_argument_lists_use_default_limits() {
     realm.eval("let apply=Reflect.apply,construct=Reflect.construct;delete Reflect.apply;delete Reflect.construct;delete globalThis.Reflect").unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     assert_eq!(realm.eval("apply((x)=>x+1,null,[2])===3 && construct(function(x){this.x=x;},[2]).x===2 && typeof Reflect==='undefined'"),Ok(Value::Boolean(true)));
-    for source in [
-        "String.prototype.matchAll",
-        "Object.getOwnPropertyNames(String.prototype)",
-    ] {
+    for source in ["Array.fromAsync", "Object.getOwnPropertyNames(Array)"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

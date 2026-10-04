@@ -42,6 +42,13 @@ fn original_property_helper_verifies_descriptors_restoration_and_callable_metada
 
 #[test]
 fn original_property_helper_rejects_wrong_descriptors_and_preserves_host_gaps() {
+    assert_eq!(
+        run_with_includes(
+            "verifyProperty(String.prototype,'slice',{enumerable:false});",
+            "propertyHelper.js"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
     for body in [
         "verifyProperty({x:1},'x',{value:2});",
         "verifyProperty({x:-0},'x',{value:0});",
@@ -64,7 +71,7 @@ fn original_property_helper_rejects_wrong_descriptors_and_preserves_host_gaps() 
         );
     }
     for body in [
-        "verifyProperty(String.prototype,'slice',{enumerable:false});",
+        "verifyProperty(Array,'of',{enumerable:false});",
         "verifyProperty({get x(){Proxy;}},'x',{value:1});",
         "assert.throws(TypeError,()=>Function('return 1;'));",
     ] {

@@ -650,10 +650,7 @@ impl Realm {
         span: Span,
     ) -> Result<Vec<PropertyKey>, Error> {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
-        if self.global_object.as_ref() == Some(object)
-            || object == &intrinsics.string.prototype
-            || object == &intrinsics.array.constructor
-        {
+        if self.global_object.as_ref() == Some(object) || object == &intrinsics.array.constructor {
             return Err(Self::unsupported(
                 span,
                 "own keys of this incomplete intrinsic are not implemented",
@@ -713,8 +710,7 @@ impl Realm {
         let Some(intrinsics) = &self.intrinsics else {
             return false;
         };
-        (object == &intrinsics.string.prototype && missing_string_method(key))
-            || (object == &intrinsics.array.constructor && missing_array_static(key))
+        object == &intrinsics.array.constructor && missing_array_static(key)
     }
 }
 
@@ -726,12 +722,6 @@ fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {
     key.into()
         .as_string()
         .is_some_and(|key| key.code_units().iter().copied().eq(name.encode_utf16()))
-}
-
-fn missing_string_method(key: &JsString) -> bool {
-    ["match", "matchAll", "search"]
-        .iter()
-        .any(|name| key_is(key, name))
 }
 
 // 10.4.3.5: only canonical, non-negative integral Number names below the string

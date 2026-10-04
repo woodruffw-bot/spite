@@ -539,6 +539,19 @@ impl Realm {
             Builtin::StringLocaleCompare => {
                 self.string_locale_compare(this, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::StringMatch | Builtin::StringMatchAll | Builtin::StringSearch => {
+                let symbol = match builtin {
+                    Builtin::StringMatch => WellKnownSymbol::Match,
+                    Builtin::StringMatchAll => WellKnownSymbol::MatchAll,
+                    _ => WellKnownSymbol::Search,
+                };
+                self.string_pattern_hook(
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    symbol,
+                    span,
+                )
+            }
             Builtin::StringToLowerCase
             | Builtin::StringToUpperCase
             | Builtin::StringToLocaleLowerCase

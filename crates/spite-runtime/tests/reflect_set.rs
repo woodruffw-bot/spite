@@ -166,11 +166,11 @@ fn metadata_and_saved_intrinsics_survive_deletion_and_collection() {
 #[test]
 fn missing_intrinsic_descriptors_and_unsupported_setters_skip_pending_handlers() {
     for operation in [
-        "Reflect.set(String.prototype,'matchAll',1)",
-        "Reflect.set({},'matchAll',1,String.prototype)",
+        "Reflect.set(Array,'fromAsync',1)",
+        "Reflect.set({},'fromAsync',1,Array)",
         "Reflect.set({set x(v){Proxy;}},'x',1)",
         "Reflect.set({},'length',{valueOf(){Proxy;}},[])",
-        "String.prototype.matchAll=1",
+        "Array.fromAsync=1",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

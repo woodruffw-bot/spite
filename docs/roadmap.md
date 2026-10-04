@@ -124,6 +124,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String split with UTF-16 boundaries, ToUint32 limits, and object Symbol.split delegation.
 - [x] Add String replace with first-match searches, callbacks, object Symbol.replace hooks, and uncaptured substitution.
 - [x] Add String replaceAll with non-overlapping matches, callbacks, uncaptured substitution, and global-flag checks before object hooks.
+- [x] Add String match/matchAll/search object-hook delegation with ordered receiver and global-flag checks.
+- [x] Complete the edition-17 String property inventory and enable prototype reflection, enumeration, and integrity operations.
+- [ ] Connect String match/matchAll/search fallbacks to native RegExp creation and matching.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
 - [x] Add exact Number.prototype.toPrecision with significant zeros and exponent correction.
 - [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.

@@ -64,7 +64,7 @@ fn has_checks_own_and_inherited_descriptors_without_getter_calls() {
         "let o={x:1},key={toString(){delete o.x;Object.setPrototypeOf(o,{x:7});return 'x';}};Reflect.has(o,key)",
     );
     check(
-        "Reflect.has(String.prototype,'matchAll') && Reflect.has(Reflect,'set') && Reflect.has(globalThis,'Proxy')",
+        "Reflect.has(Array,'fromAsync') && Reflect.has(Reflect,'set') && Reflect.has(globalThis,'Proxy')",
     );
 }
 
@@ -123,8 +123,8 @@ fn unsupported_keys_getters_and_intrinsic_mutations_skip_pending_handlers() {
         "Reflect.get({get x(){Proxy;}},'x')",
         "Reflect.has({},{toString(){Proxy;}})",
         "Reflect.deleteProperty({},{toString(){Proxy;}})",
-        "Reflect.get(String.prototype,'matchAll')",
-        "Reflect.deleteProperty(String.prototype,'matchAll')",
+        "Reflect.get(Array,'fromAsync')",
+        "Reflect.deleteProperty(Array,'fromAsync')",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

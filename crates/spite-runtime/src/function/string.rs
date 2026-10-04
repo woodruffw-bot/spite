@@ -8,6 +8,7 @@ mod case;
 mod character;
 mod iteration;
 mod locale;
+mod matching;
 mod normalize;
 mod raw;
 mod repeat;
@@ -98,6 +99,9 @@ impl Realm {
             Builtin::StringToLocaleUpperCase,
             Builtin::StringNormalize,
             Builtin::StringLocaleCompare,
+            Builtin::StringMatch,
+            Builtin::StringMatchAll,
+            Builtin::StringSearch,
             Builtin::StringConcat,
             Builtin::StringSlice,
             Builtin::StringSubstring,

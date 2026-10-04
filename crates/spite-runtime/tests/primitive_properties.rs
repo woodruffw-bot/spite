@@ -184,8 +184,8 @@ fn logical_assignment_can_skip_a_forbidden_primitive_write() {
 }
 
 #[test]
-fn missing_standard_methods_are_distinct_from_absent_and_annex_b_properties() {
-    for source in ["'s'.matchAll", "'s'.search", "'s'.match"] {
+fn unavailable_regexp_operations_are_distinct_from_absent_and_annex_b_properties() {
+    for source in ["'s'.matchAll('x')", "'s'.search('x')", "'s'.match('x')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

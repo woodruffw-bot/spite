@@ -165,9 +165,11 @@ fn opted_in_work_and_incomplete_intrinsics_are_host_failures() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
-    realm.eval("let flag=0,keys=[]").unwrap();
+    realm
+        .eval("let flag=0,keys=[],o=Object.create(Array);o[0]='a';o[1]='b';")
+        .unwrap();
     assert!(matches!(
-        realm.eval("try{for(let k in 'ab')keys.push(k);}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{for(let k in o)keys.push(k);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(

@@ -103,7 +103,7 @@ fn incomplete_intrinsics_cannot_be_reported_as_frozen_or_sealed() {
     check("!Object.isFrozen(Object) && !Object.isSealed(Object) && !Object.isFrozen(globalThis)");
     for operation in ["freeze", "seal"] {
         let mut realm = Realm::default();
-        realm.eval("let o=String.prototype,flag=0").unwrap();
+        realm.eval("let o=Array,flag=0").unwrap();
         assert!(matches!(
             realm.eval(&format!(
                 "try{{Object.{operation}(o);}}catch{{flag=1;}}finally{{flag=2;}}"

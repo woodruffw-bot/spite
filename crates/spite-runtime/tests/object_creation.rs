@@ -140,7 +140,7 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
         "let o={};Object.defineProperties(o,Function.prototype)===o && Object.keys(o).length===0",
     );
     for source in [
-        "Object.defineProperties({},String.prototype)",
+        "Object.defineProperties({},Array)",
         "Object.defineProperties({},globalThis)",
     ] {
         assert!(

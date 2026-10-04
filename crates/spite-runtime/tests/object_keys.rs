@@ -143,7 +143,7 @@ fn copied_symbol_keys_and_object_values_survive_collection() {
 #[test]
 fn incomplete_intrinsic_key_lists_remain_explicit_gaps() {
     for source in [
-        "Object.keys(String.prototype)",
+        "Object.keys(Array)",
         "Object.getOwnPropertySymbols(globalThis)",
         "Object.keys(Array)",
     ] {

@@ -138,7 +138,7 @@ do. No property values or user iterator hooks are read. Assignment targets follo
 key retrieval, and lexical bindings receive fresh iteration environments. RHS
 comma expressions are allowed, unlike for-of. Host quotas remain opt-in. Chains
 that reach an incomplete intrinsic report Unsupported, preserving prior effects;
-String prototype enumeration awaits its remaining APIs.
+The complete String prototype property inventory uses ordinary ordered enumeration.
 The Annex B initialized-var extension remains Unsupported in non-strict code and
 is a SyntaxError in strict code; it never changes the core binding algorithm.
 
@@ -1183,6 +1183,16 @@ for all canonically equivalent spellings. Preserve lone surrogates and compatibi
 distinctions. Ignore the reserved locale/options arguments after their evaluation,
 and invoke native normalization without consulting mutable public methods.
 
+String.match, matchAll, and search delegate to object Symbol hooks before receiver
+conversion, preserving the original receiver and returning the hook result unchanged
+(22.1.3.11–12, 21). MatchAll performs IsRegExp, reads/coerces flags, and requires a
+lowercase g before looking up Symbol.matchAll. Edition 17 ignores primitive prototype
+hooks. If no hook is available, convert the receiver before reporting the remaining
+RegExpCreate/matcher gap as Unsupported. Do not approximate regular expressions
+with literal substring matching. These native methods complete the baseline String
+property inventory, enabling ordered reflection, enumeration, copying, and integrity
+operations independently of the missing native matcher.
+
 String toLowerCase/toUpperCase use the full Unicode 18 default case mappings
 (22.1.3.29–31, 35). Generate reproducible, digest-pinned tables from UnicodeData,
 SpecialCasing, and DerivedCoreProperties; Rust toolchain Unicode versions must not
@@ -1279,7 +1289,7 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of the incomplete String prototype, Array constructor, and global
+bounded work. Enumeration of the incomplete Array constructor and global
 object reports Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,

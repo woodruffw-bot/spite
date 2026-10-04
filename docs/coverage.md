@@ -182,8 +182,8 @@ For-in snapshots own keys separately at each reached prototype, reads descriptor
 live, skips Symbols, and suppresses inherited names even when a present own key
 is non-enumerable. Deleted keys do not suppress inherited names. Values and custom
 iterator hooks are never read. Tests cover mutation, ordered Array indices,
-primitive boxing, nullish skipping, closures, TDZ, and completion values. Reaching
-the incomplete String prototype remains Unsupported; complete shared Iterator
+primitive boxing, nullish skipping, closures, TDZ, and completion values. Complete
+String and shared Iterator
 chains use ordinary ordered enumeration. The non-strict Annex B
 initialized-var extension remains a separate unsupported feature.
 
@@ -457,8 +457,9 @@ symbols test lookup order, abrupt completion, and bounded recursion. The actual
 RegExpMatcher brand fallback awaits RegExp objects. String.raw processes
 ordinary array-like templates with ordered raw/length/index reads and interleaved
 substitution conversion. All baseline String constructor static properties are
-installed, and its own-key enumeration is supported. Remaining prototype methods and enumeration of the
-incomplete String.prototype remain Unsupported.
+installed, and its own-key enumeration is supported. The baseline String prototype
+property inventory is complete; ordered reflection and integrity operations are
+supported. Native RegExp matching remains open.
 String.split uses non-overlapping UTF-16 separator matches, preserves empty parts,
 and splits code units for an empty separator. Edition 17 looks up Symbol.split
 only for object separators, passing the original receiver/limit and returning the
@@ -769,7 +770,15 @@ supplementary decompositions, antisymmetry/transitivity, ordered generic convers
 reserved argument evaluation, public normalization hooks, metadata, collection,
 large default inputs, and opted-in host aborts.
 
-Remaining String methods,
+String.match/matchAll/search support custom object Symbol hooks with original
+receivers, exact arguments, and unchanged results. MatchAll checks IsRegExp and
+global flags before hook lookup. Regressions cover coercion/getter order, abrupt
+identity, non-callable hooks, ignored primitive hooks, function metadata, collection,
+and host aborts. Receiver conversion precedes the unsupported native RegExp fallback;
+no substring approximation is counted as matching. The complete String property
+inventory supports ordered reflection, copying, enumeration, and integrity operations.
+
+Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, for-await-of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared

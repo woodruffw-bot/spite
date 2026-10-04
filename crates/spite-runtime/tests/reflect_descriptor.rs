@@ -132,9 +132,9 @@ fn metadata_and_retained_intrinsics_survive_public_deletion() {
 #[test]
 fn incomplete_intrinsics_and_host_gaps_skip_pending_handlers() {
     for operation in [
-        "Reflect.ownKeys(String.prototype)",
-        "Reflect.getOwnPropertyDescriptor(String.prototype,'matchAll')",
-        "Reflect.defineProperty(String.prototype,'matchAll',{value:7})",
+        "Reflect.ownKeys(Array)",
+        "Reflect.getOwnPropertyDescriptor(Array,'fromAsync')",
+        "Reflect.defineProperty(Array,'fromAsync',{value:7})",
         "Reflect.defineProperty({},'x',{get value(){Proxy;}})",
     ] {
         let mut realm = Realm::default();
