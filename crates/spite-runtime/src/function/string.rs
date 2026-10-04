@@ -5,6 +5,7 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescri
 use spite_core::{JsString, Span};
 
 mod character;
+mod repeat;
 mod sequence;
 #[cfg(test)]
 mod tests;
@@ -88,6 +89,9 @@ impl Realm {
             Builtin::StringTrim,
             Builtin::StringTrimStart,
             Builtin::StringTrimEnd,
+            Builtin::StringRepeat,
+            Builtin::StringPadStart,
+            Builtin::StringPadEnd,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

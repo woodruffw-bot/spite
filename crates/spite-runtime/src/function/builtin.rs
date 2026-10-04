@@ -186,6 +186,16 @@ impl Realm {
             )),
             Builtin::String => self.string_constructor(None, arguments.next(), span),
             Builtin::StringConcat => self.string_concat(this, arguments, span),
+            Builtin::StringRepeat => {
+                self.string_repeat(this, arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Builtin::StringPadStart | Builtin::StringPadEnd => self.string_pad(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::StringPadStart),
+                span,
+            ),
             Builtin::StringTrim | Builtin::StringTrimStart | Builtin::StringTrimEnd => {
                 self.string_trim(builtin, this, span)
             }

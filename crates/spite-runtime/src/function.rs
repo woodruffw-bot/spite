@@ -76,6 +76,9 @@ pub(crate) enum Builtin {
     StringTrim,
     StringTrimStart,
     StringTrimEnd,
+    StringRepeat,
+    StringPadStart,
+    StringPadEnd,
     Number,
     NumberValueOf,
     NumberToString,
@@ -127,6 +130,9 @@ impl Builtin {
             Self::StringTrim => "trim",
             Self::StringTrimStart => "trimStart",
             Self::StringTrimEnd => "trimEnd",
+            Self::StringRepeat => "repeat",
+            Self::StringPadStart => "padStart",
+            Self::StringPadEnd => "padEnd",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -176,6 +182,9 @@ impl Builtin {
             | Self::StringCharCodeAt
             | Self::StringCodePointAt
             | Self::StringConcat
+            | Self::StringRepeat
+            | Self::StringPadStart
+            | Self::StringPadEnd
             | Self::Object
             | Self::ObjectHasOwnProperty
             | Self::ObjectPropertyIsEnumerable

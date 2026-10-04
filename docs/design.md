@@ -395,6 +395,13 @@ All baseline whitespace code points lie in the BMP, so checking code units is
 equivalent to decoding code points for this membership test; surrogates cannot
 match. Scanning and copying are charged separately. Optional trimLeft/trimRight
 aliases remain disabled with other Annex B methods.
+repeat validates the converted count before returning an empty string; finite
+counts on empty input take no repetition loop (22.1.3.18). padStart/padEnd apply
+ToLength and return early before filler conversion when no padding is required
+(22.1.3.16–17). Empty fillers preserve the input even for huge target lengths.
+Both operations copy UTF-16 units directly, including truncated surrogate pairs.
+Checked arithmetic, precharged output work, and fallible capacity reservation
+keep size/capacity failures distinct from ECMAScript RangeErrors.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary

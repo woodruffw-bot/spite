@@ -215,3 +215,37 @@ fn trimming_bounds_scans_and_copies_only_the_result() {
         ));
     }
 }
+
+#[test]
+fn repetition_and_padding_charge_output_work_before_allocating() {
+    let mut realm = Realm::default();
+    let input = Value::String(JsString::from("a"));
+    let span = Span::new(0, 0);
+    realm.remaining_steps = 50;
+    assert!(matches!(
+        realm.string_repeat(input.clone(), Value::Number(100.0), span),
+        Err(Error::Limit { .. })
+    ));
+    for at_start in [false, true] {
+        realm.remaining_steps = 50;
+        assert!(matches!(
+            realm.string_pad(
+                input.clone(),
+                Value::Number(100.0),
+                Value::Undefined,
+                at_start,
+                span
+            ),
+            Err(Error::Limit { .. })
+        ));
+    }
+    // Platform capacity overflow must be a host limit, even if the embedding
+    // disables practical work/length bounds. This cannot request real storage.
+    realm.remaining_steps = usize::MAX;
+    realm.limits.max_string_units = usize::MAX;
+    let count = (usize::MAX / 2 + 1) as f64;
+    assert!(matches!(
+        realm.string_repeat(input, Value::Number(count), span),
+        Err(Error::Limit { .. })
+    ));
+}

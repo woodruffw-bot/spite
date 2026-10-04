@@ -109,6 +109,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Unicode well-formedness checks and replacement of unpaired String surrogates.
 - [x] Add generic String concatenation and UTF-16 slice/substring methods.
 - [x] Add String trim/trimStart/trimEnd with exact ECMAScript whitespace membership.
+- [x] Add String repeat/padStart/padEnd with ordered conversions and bounded output.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
 - [x] Add exact Number.prototype.toPrecision with significant zeros and exponent correction.
 - [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.
