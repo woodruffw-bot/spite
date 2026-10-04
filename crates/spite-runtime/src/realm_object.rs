@@ -422,7 +422,7 @@ impl Realm {
         (object == &intrinsics.object_prototype && missing_object_method(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.number.prototype
-                && ["toExponential", "toLocaleString", "toPrecision"]
+                && ["toExponential", "toLocaleString"]
                     .iter()
                     .any(|name| key_is(key, name)))
             || (object == &intrinsics.number.constructor
@@ -487,7 +487,7 @@ fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
             "trimEnd",
             "trimStart",
         ],
-        Value::Number(_) => &["toExponential", "toLocaleString", "toPrecision"],
+        Value::Number(_) => &["toExponential", "toLocaleString"],
         Value::BigInt(_) => &["toLocaleString"],
         _ => &[],
     };

@@ -1,4 +1,4 @@
-//! Exact fixed-point formatting from binary64 components (21.1.3.3).
+//! Exact decimal formatting from binary64 components (21.1.3.3, 21.1.3.5).
 
 use crate::{Error, ExceptionKind, Realm, Value};
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
@@ -32,7 +32,7 @@ impl Realm {
         }
         let fraction = fraction as usize;
         let digits = self.integer_work(span, |budget| {
-            scaled_integer(value.abs(), fraction, budget)?.to_radix(10, budget)
+            scaled_integer(value.abs(), fraction as i32, budget)?.to_radix(10, budget)
         })?;
         let mut result = String::new();
         if value < 0.0 {
@@ -52,32 +52,75 @@ impl Realm {
         }
         Ok(Value::String(JsString::from(result.as_str())))
     }
+
+    pub(crate) fn number_prototype_to_precision(
+        &mut self,
+        this: &Value,
+        precision: Option<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let value = self.this_number_value(this, span)?;
+        let Some(precision) = precision.filter(|value| !matches!(value, Value::Undefined)) else {
+            return Ok(Value::String(JsString::from(
+                crate::value::number_to_string(value).as_str(),
+            )));
+        };
+        let precision = self.number(precision, span)?.trunc();
+        // Unlike toFixed, nonfinite values return before the range check.
+        if !value.is_finite() {
+            return Ok(Value::String(JsString::from(
+                crate::value::number_to_string(value).as_str(),
+            )));
+        }
+        if !(1.0..=100.0).contains(&precision) {
+            return Err(Self::exception(
+                ExceptionKind::RangeError,
+                span,
+                "precision must be between 1 and 100",
+            ));
+        }
+        let precision = precision as usize;
+        let (digits, exponent) = self.integer_work(span, |budget| {
+            significant_digits(value.abs(), precision, budget)
+        })?;
+        let mut result = String::new();
+        if value < 0.0 {
+            result.push('-');
+        }
+        if exponent < -6 || exponent >= precision as i32 {
+            result.push_str(&digits[..1]);
+            if precision > 1 {
+                result.push('.');
+                result.push_str(&digits[1..]);
+            }
+            result.push('e');
+            if exponent >= 0 {
+                result.push('+');
+            }
+            result.push_str(&exponent.to_string());
+        } else if exponent < 0 {
+            result.push_str("0.");
+            result.extend(std::iter::repeat_n('0', (-exponent - 1) as usize));
+            result.push_str(&digits);
+        } else {
+            let point = exponent as usize + 1;
+            result.push_str(&digits[..point]);
+            if point < precision {
+                result.push('.');
+                result.push_str(&digits[point..]);
+            }
+        }
+        Ok(Value::String(JsString::from(result.as_str())))
+    }
 }
 
-fn scaled_integer(
-    value: f64,
-    fraction: usize,
-    budget: &mut Budget,
-) -> Result<BigInt, IntegerError> {
-    debug_assert!((0.0..1e21).contains(&value));
+fn scaled_integer(value: f64, fraction: i32, budget: &mut Budget) -> Result<BigInt, IntegerError> {
+    debug_assert!(value >= 0.0 && value.is_finite());
     if value == 0.0 {
         budget.charge(1)?;
         return Ok(BigInt::default());
     }
-    let bits = value.to_bits();
-    let biased = ((bits >> 52) & 0x7ff) as i64;
-    let significand = (bits & ((1u64 << 52) - 1)) | if biased == 0 { 0 } else { 1u64 << 52 };
-    let exponent = if biased == 0 {
-        -1074
-    } else {
-        biased - 1023 - 52
-    };
-    let scale = BigInt::from(10).pow(&BigInt::from(fraction as i64), budget)?;
-    let numerator = BigInt::from(significand as i64).mul(&scale, budget)?;
-    if exponent >= 0 {
-        return numerator.shl(&BigInt::from(exponent), budget);
-    }
-    let denominator = BigInt::from(1).shl(&BigInt::from(-exponent), budget)?;
+    let (numerator, denominator) = scaled_ratio(value, fraction, budget)?;
     let (integer, remainder) = numerator.div_rem(&denominator, budget)?;
     let twice = remainder.shl(&BigInt::from(1), budget)?;
     budget.charge(
@@ -91,6 +134,91 @@ fn scaled_integer(
     } else {
         Ok(integer)
     }
+}
+
+fn components(value: f64) -> (i64, i32) {
+    let bits = value.to_bits();
+    let biased = ((bits >> 52) & 0x7ff) as i32;
+    let significand = (bits & ((1u64 << 52) - 1)) | if biased == 0 { 0 } else { 1u64 << 52 };
+    (
+        significand as i64,
+        if biased == 0 {
+            -1074
+        } else {
+            biased - 1023 - 52
+        },
+    )
+}
+
+fn scaled_ratio(
+    value: f64,
+    fraction: i32,
+    budget: &mut Budget,
+) -> Result<(BigInt, BigInt), IntegerError> {
+    let (significand, exponent) = components(value);
+    // value * 10**fraction = significand * 5**fraction * 2**(exponent+fraction).
+    // Cancel powers of two before constructing numerator and denominator.
+    let power = BigInt::from(5).pow(&BigInt::from(i64::from(fraction.unsigned_abs())), budget)?;
+    let mut numerator = BigInt::from(significand);
+    let mut denominator = BigInt::from(1);
+    if fraction >= 0 {
+        numerator = numerator.mul(&power, budget)?;
+    } else {
+        denominator = power;
+    }
+    let binary = exponent + fraction;
+    if binary >= 0 {
+        numerator = numerator.shl(&BigInt::from(i64::from(binary)), budget)?;
+    } else {
+        denominator = denominator.shl(&BigInt::from(i64::from(-binary)), budget)?;
+    }
+    Ok((numerator, denominator))
+}
+
+fn compare_power(
+    value: f64,
+    exponent: i32,
+    budget: &mut Budget,
+) -> Result<std::cmp::Ordering, IntegerError> {
+    let (numerator, denominator) = scaled_ratio(value, -exponent, budget)?;
+    budget.charge(
+        numerator
+            .bit_length()
+            .max(denominator.bit_length())
+            .div_ceil(32),
+    )?;
+    Ok(numerator.cmp(&denominator))
+}
+
+fn significant_digits(
+    value: f64,
+    precision: usize,
+    budget: &mut Budget,
+) -> Result<(String, i32), IntegerError> {
+    if value == 0.0 {
+        budget.charge(precision)?;
+        return Ok(("0".repeat(precision), 0));
+    }
+    let (significand, binary) = components(value);
+    let binary_exponent = binary + 63 - significand.leading_zeros() as i32;
+    // 1233/4096 approximates log10(2); exact comparisons correct the estimate.
+    let mut exponent = (binary_exponent * 1233).div_euclid(4096);
+    while compare_power(value, exponent, budget)?.is_lt() {
+        exponent -= 1;
+    }
+    while !compare_power(value, exponent + 1, budget)?.is_lt() {
+        exponent += 1;
+    }
+    let integer = scaled_integer(value, precision as i32 - 1 - exponent, budget)?;
+    let mut digits = integer.to_radix(10, budget)?;
+    if digits.len() > precision {
+        debug_assert_eq!(digits.len(), precision + 1);
+        debug_assert!(digits.ends_with('0'));
+        digits.pop();
+        exponent += 1;
+    }
+    debug_assert_eq!(digits.len(), precision);
+    Ok((digits, exponent))
 }
 
 #[cfg(test)]

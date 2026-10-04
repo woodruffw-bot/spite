@@ -35,6 +35,7 @@ pub(crate) enum Builtin {
     NumberValueOf,
     NumberToString,
     NumberToFixed,
+    NumberToPrecision,
     NumberIsFinite,
     NumberIsNaN,
     NumberIsInteger,
@@ -61,6 +62,7 @@ impl Builtin {
             Self::NumberIsInteger => "isInteger",
             Self::NumberIsSafeInteger => "isSafeInteger",
             Self::NumberToFixed => "toFixed",
+            Self::NumberToPrecision => "toPrecision",
         }
     }
 
@@ -72,6 +74,7 @@ impl Builtin {
             | Self::Number
             | Self::NumberToString
             | Self::NumberToFixed
+            | Self::NumberToPrecision
             | Self::NumberIsFinite
             | Self::NumberIsNaN
             | Self::NumberIsInteger
@@ -504,6 +507,9 @@ impl Realm {
                 }
                 Builtin::NumberToFixed => {
                     self.number_prototype_to_fixed(&this, arguments.next(), span)
+                }
+                Builtin::NumberToPrecision => {
+                    self.number_prototype_to_precision(&this, arguments.next(), span)
                 }
                 Builtin::NumberIsFinite
                 | Builtin::NumberIsNaN
