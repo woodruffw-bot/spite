@@ -73,6 +73,11 @@ impl Realm {
             ("parseInt", intrinsics.number.parse_int.clone()),
             ("isFinite", intrinsics.is_finite.clone()),
             ("isNaN", intrinsics.is_nan.clone()),
+            ("decodeURI", intrinsics.decode_uri.clone()),
+            (
+                "decodeURIComponent",
+                intrinsics.decode_uri_component.clone(),
+            ),
             ("encodeURI", intrinsics.encode_uri.clone()),
             (
                 "encodeURIComponent",

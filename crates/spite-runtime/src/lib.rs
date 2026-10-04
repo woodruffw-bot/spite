@@ -1586,8 +1586,6 @@ fn standard_global(name: &str) -> bool {
     matches!(
         name,
         "eval"
-            | "decodeURI"
-            | "decodeURIComponent"
             | "AggregateError"
             | "Date"
             | "RegExp"

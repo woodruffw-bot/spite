@@ -38,6 +38,8 @@ pub(crate) enum Builtin {
     Function,
     EncodeUri,
     EncodeUriComponent,
+    DecodeUri,
+    DecodeUriComponent,
     FunctionPrototype,
     FunctionCall,
     FunctionApply,
@@ -466,6 +468,8 @@ impl Builtin {
             Self::ParseInt => "parseInt",
             Self::EncodeUri => "encodeURI",
             Self::EncodeUriComponent => "encodeURIComponent",
+            Self::DecodeUri => "decodeURI",
+            Self::DecodeUriComponent => "decodeURIComponent",
         }
     }
 
@@ -604,6 +608,8 @@ impl Builtin {
             | Self::IsNaN
             | Self::EncodeUri
             | Self::EncodeUriComponent
+            | Self::DecodeUri
+            | Self::DecodeUriComponent
             | Self::ParseFloat => 1.0,
             Self::FunctionApply
             | Self::BigIntAsIntN
@@ -686,6 +692,8 @@ pub(super) struct Intrinsics {
     pub is_nan: ObjectHandle,
     pub encode_uri: ObjectHandle,
     pub encode_uri_component: ObjectHandle,
+    pub decode_uri: ObjectHandle,
+    pub decode_uri_component: ObjectHandle,
     pub object_prototype: ObjectHandle,
     pub function_prototype: ObjectHandle,
     pub function_constructor: ObjectHandle,
@@ -715,6 +723,8 @@ impl Intrinsics {
             &self.is_nan,
             &self.encode_uri,
             &self.encode_uri_component,
+            &self.decode_uri,
+            &self.decode_uri_component,
             &self.object_prototype,
             &self.function_prototype,
             &self.function_constructor,
@@ -870,6 +880,9 @@ impl Realm {
         let encode_uri = self.new_builtin(&function_prototype, Builtin::EncodeUri, span)?;
         let encode_uri_component =
             self.new_builtin(&function_prototype, Builtin::EncodeUriComponent, span)?;
+        let decode_uri = self.new_builtin(&function_prototype, Builtin::DecodeUri, span)?;
+        let decode_uri_component =
+            self.new_builtin(&function_prototype, Builtin::DecodeUriComponent, span)?;
         let errors = self.error_intrinsics(&object_prototype, &function_prototype, span)?;
         let object =
             self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
@@ -888,6 +901,8 @@ impl Realm {
             is_nan,
             encode_uri,
             encode_uri_component,
+            decode_uri,
+            decode_uri_component,
             object_prototype: object_prototype.clone(),
             function_prototype,
             function_constructor,

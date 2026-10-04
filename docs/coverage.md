@@ -34,7 +34,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
-| URI encoding | String-hint conversion, distinct URI/component escape sets, uppercase UTF-8 octets, and URIError for unpaired surrogates |
+| URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 4586 reviewed Test262 variants, seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
@@ -729,7 +729,13 @@ catch/finally and the host exception-value API, using the retained intrinsic
 prototype even after global replacement. Regressions cover Unicode/UTF-8 boundaries,
 coercion and abrupt order, ignored receivers/extra arguments, descriptors,
 non-construction, deletion/collection, large default output, and opt-in host aborts.
-URI decoding remains separate work.
+Global decodeURI/decodeURIComponent validate ASCII percent triplets and strict
+UTF-8, preserving literal UTF-16 code units and lone surrogates. decodeURI retains
+reserved escapes with their original spelling; decodeURIComponent decodes them.
+Regressions cover UTF-8 boundaries, malformed/overlong/surrogate/out-of-range
+sequences, plus signs and non-recursive percent handling, normalization avoidance,
+once-only coercion and abrupt results, intrinsic URIError identity, metadata,
+non-construction, deletion/collection, large default inputs, and opt-in host aborts.
 
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular

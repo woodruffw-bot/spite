@@ -16,6 +16,11 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::DecodeUri | Builtin::DecodeUriComponent => self.decode_uri(
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::DecodeUriComponent),
+                span,
+            ),
             Builtin::EncodeUri | Builtin::EncodeUriComponent => self.encode_uri(
                 arguments.next().unwrap_or(Value::Undefined),
                 matches!(builtin, Builtin::EncodeUriComponent),

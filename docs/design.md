@@ -1171,7 +1171,17 @@ receiver and extra values after normal argument evaluation. Retain both intrinsi
 function roots independently of replaceable global bindings. Prepay output work
 and check optional string quotas/addressable capacity before fallible reservation;
 no default output, work, or heap quota is imposed. URIError materialization uses
-the retained native prototype. Decode remains its own increment.
+the retained native prototype.
+
+URI decoding (19.2.6.1–2, 6) performs string-hint ToString once and preserves raw
+UTF-16 code units, including lone surrogates. Validate percent triplets with ASCII
+hex digits and strict one-to-four-byte UTF-8: reject bad continuation bytes,
+overlong sequences, surrogate code points, and values above U+10FFFF with URIError.
+Only decodeURI preserves reserved `;/?:@&=+$,#` escapes, retaining the original
+hexadecimal spelling. Neither decoder rescans decoded percent signs, normalizes
+Unicode, or changes plus signs. Ignore receivers and extra values after argument
+evaluation. Retain both intrinsic roots; use the shared checked, fallible output
+accumulator and existing opt-in quotas without imposing defaults.
 
 Error objects include Error and the six NativeError constructors,
 Error.prototype.toString, Error.isError, and ordered message/cause initialization
