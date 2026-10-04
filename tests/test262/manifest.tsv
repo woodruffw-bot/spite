@@ -2238,3 +2238,12 @@ script-pass	a62096a5cb927b2cd403b38b7c5124edaf9f0ac0166e8a6726a12f0c51894983	tes
 script-pass	33c8cad9191012b7b09c2bac0b5f3b2ecaae73c9a0964fc244bc6f6d2cebd783	test/built-ins/Iterator/prototype/drop/proto.js
 script-pass	810c001c03050f911c200e109a3c84b2e6704b4621546e31817104d7c57c0ce2	test/built-ins/Iterator/prototype/drop/this-non-callable-next.js
 script-pass	9f14990e67f5f4d0ead87394394b686483c1e41565194e50c8e775bc079b8e7c	test/built-ins/Iterator/prototype/drop/this-non-object.js
+script-pass	b0f56da0402e995ee728fb286ffa29420a8229e0e61cecf717906ef33f7431c0	test/built-ins/Iterator/prototype/flatMap/argument-effect-order.js
+script-pass	0e5fd259ee89f6a09e6b830e6d1bfa655226006accb0979164c0f865fb3b023d	test/built-ins/Iterator/prototype/flatMap/argument-validation-failure-closes-underlying.js
+script-pass	d9f12725ec6f6d2dc01fdaa16659b85ff6665f4dae2cf1b3e52ffc75a3298278	test/built-ins/Iterator/prototype/flatMap/is-function.js
+script-pass	1b62571e2f76caa42b85f048733b3d601c6cacfd63b03379a819ed6817299c8c	test/built-ins/Iterator/prototype/flatMap/length.js
+script-pass	14ec8b1a8dca917d6341db01c49ff562788e14466fcb9ebd62e3dad9d1fa1289	test/built-ins/Iterator/prototype/flatMap/name.js
+script-pass	d9b08e9e2af3a6381f3e83352c51abedc06168753f0f806db10de8e9bff249e2	test/built-ins/Iterator/prototype/flatMap/proto.js
+script-pass	e2763ec2c95b822b6344c845e96f9b5b44e3be28259eb6ac25e85318a546cd3f	test/built-ins/Iterator/prototype/flatMap/this-non-callable-next.js
+script-pass	e949ced55af588429d3343388f994f934085db2f21967b85e10b31f7163c9b17	test/built-ins/Iterator/prototype/flatMap/this-non-object.js
+script-pass	45f00c20a80758fe269ddbe7f1d9563f0dbb3eb4cc58ea1e45fcc043d2b6c0e6	test/built-ins/Iterator/prototype/flatMap/this-plain-iterator.js

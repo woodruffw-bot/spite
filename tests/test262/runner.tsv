@@ -2213,3 +2213,12 @@ test/built-ins/Iterator/prototype/drop/name.js	-	-	-
 test/built-ins/Iterator/prototype/drop/proto.js	-	-	-
 test/built-ins/Iterator/prototype/drop/this-non-callable-next.js	-	-	-
 test/built-ins/Iterator/prototype/drop/this-non-object.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/argument-effect-order.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/argument-validation-failure-closes-underlying.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/length.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/name.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/proto.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/this-non-callable-next.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/this-non-object.js	-	-	-
+test/built-ins/Iterator/prototype/flatMap/this-plain-iterator.js	-	-	-
