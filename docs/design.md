@@ -1233,6 +1233,13 @@ that shared implementation; BigInt arguments are rejected by ToNumber. Sqrt
 performs one conversion and uses the correctly rounded IEEE binary64 squareRoot
 operation, preserving -0 and rejecting negative numbers as NaN (sec-math.sqrt).
 
+Math exp/expm1 and log/log1p/log2/log10 perform one ToNumber conversion
+(sec-math.exp through sec-math.log2). Domain endpoints and signed-zero results
+are explicit. Remaining finite results use the platform's approximation, with
+exp_m1 and ln_1p retaining small-input accuracy instead of subtracting one or
+adding one first. Log2 decodes every binary64 power of two exactly, including
+subnormal powers, before using the platform logarithm for other finite values.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

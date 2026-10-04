@@ -54,9 +54,15 @@ impl Realm {
             Builtin::MathAbs
             | Builtin::MathCeil
             | Builtin::MathClz32
+            | Builtin::MathExp
+            | Builtin::MathExpm1
             | Builtin::MathFloor
             | Builtin::MathFround
             | Builtin::MathF16round
+            | Builtin::MathLog
+            | Builtin::MathLog1p
+            | Builtin::MathLog2
+            | Builtin::MathLog10
             | Builtin::MathRound
             | Builtin::MathSign
             | Builtin::MathSqrt

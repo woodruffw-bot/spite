@@ -71,10 +71,16 @@ impl Realm {
             Builtin::MathAbs,
             Builtin::MathCeil,
             Builtin::MathClz32,
+            Builtin::MathExp,
+            Builtin::MathExpm1,
             Builtin::MathFloor,
             Builtin::MathFround,
             Builtin::MathF16round,
             Builtin::MathImul,
+            Builtin::MathLog,
+            Builtin::MathLog1p,
+            Builtin::MathLog2,
+            Builtin::MathLog10,
             Builtin::MathMax,
             Builtin::MathMin,
             Builtin::MathPow,
@@ -107,11 +113,41 @@ impl Realm {
             Builtin::MathAbs => number.abs(),
             Builtin::MathCeil => number.ceil(),
             Builtin::MathClz32 => f64::from(to_uint32(number).leading_zeros()),
+            Builtin::MathExp => {
+                if number == 0.0 {
+                    1.0
+                } else if number == f64::NEG_INFINITY {
+                    0.0
+                } else {
+                    number.exp()
+                }
+            }
+            Builtin::MathExpm1 => {
+                if number == 0.0 || number.is_nan() {
+                    number
+                } else if number == f64::NEG_INFINITY {
+                    -1.0
+                } else {
+                    number.exp_m1()
+                }
+            }
             Builtin::MathFloor => number.floor(),
             // sec-math.fround: Rust's narrowing float cast uses ties to even;
             // widening the binary32 result back to binary64 is exact.
             Builtin::MathFround => f64::from(number as f32),
             Builtin::MathF16round => binary16_round(number),
+            Builtin::MathLog | Builtin::MathLog2 | Builtin::MathLog10 => logarithm(number, builtin),
+            Builtin::MathLog1p => {
+                if number == 0.0 || number.is_nan() {
+                    number
+                } else if number < -1.0 {
+                    f64::NAN
+                } else if number == -1.0 {
+                    f64::NEG_INFINITY
+                } else {
+                    number.ln_1p()
+                }
+            }
             Builtin::MathRound => round(number),
             Builtin::MathSign => {
                 if number.is_nan() || number == 0.0 {
@@ -185,6 +221,42 @@ impl Realm {
         let base = self.number(base, span)?;
         let exponent = self.number(exponent, span)?;
         Ok(Value::Number(exponentiate(base, exponent)))
+    }
+}
+
+fn logarithm(number: f64, builtin: Builtin) -> f64 {
+    // sec-math.log/log2/log10: domain and endpoint results precede the
+    // implementation-approximated finite logarithm.
+    if number.is_nan() || number < 0.0 {
+        return f64::NAN;
+    }
+    if number == 0.0 {
+        return f64::NEG_INFINITY;
+    }
+    if number == 1.0 {
+        return 0.0;
+    }
+    if number == f64::INFINITY {
+        return number;
+    }
+    match builtin {
+        Builtin::MathLog => number.ln(),
+        Builtin::MathLog10 => number.log10(),
+        Builtin::MathLog2 => {
+            // Decode powers of two exactly, including subnormals, independent
+            // of the platform logarithm's approximation.
+            let bits = number.to_bits();
+            let exponent = ((bits >> 52) & 0x7ff) as i32;
+            let fraction = bits & ((1_u64 << 52) - 1);
+            if exponent != 0 && fraction == 0 {
+                f64::from(exponent - 1023)
+            } else if exponent == 0 && fraction.is_power_of_two() {
+                f64::from(fraction.trailing_zeros()) - 1074.0
+            } else {
+                number.log2()
+            }
+        }
+        _ => unreachable!("Math logarithm operation"),
     }
 }
 
