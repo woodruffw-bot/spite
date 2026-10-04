@@ -1730,3 +1730,17 @@ script-pass	098bc8f84e522ed348c9722b2a1cf66cddee9e46cb376196367f64342521f78e	tes
 script-pass	a012e60d1625ccd8e5f3136b58d7d6f151dc1c0eb6f3debd367e88d4ea471c7c	test/built-ins/Reflect/ownKeys/return-on-corresponding-order.js
 script-pass	c3de82a816907394d445fc19b5ceba709045e272efd20366fa9a9370dbcbc409	test/built-ins/Reflect/ownKeys/target-is-not-object-throws.js
 script-pass	9c9709d949c84f4624cee95286f67356b84368ba3f21409591e640c361678c18	test/built-ins/Reflect/ownKeys/target-is-symbol-throws.js
+script-pass	92537d0d9ba4742cae1f9638c5c642786a7321c8da0430abe5bb966065bc06b2	test/built-ins/Reflect/set/call-prototype-property-set.js
+script-pass	936213fce6a526d4cd6966a500f16a6ecef4261979b0572bd9c5c86c0971c471	test/built-ins/Reflect/set/different-property-descriptors.js
+script-pass	6dcff2482ad7bbabdcf85ee3620e7d989897f50cf19e52e68572f6ed4758b31f	test/built-ins/Reflect/set/not-a-constructor.js
+script-pass	1567aa1f689d028b31de6bae8b3d0f99c629eb31a7736f6e7af89a149bfac778	test/built-ins/Reflect/set/receiver-is-not-object.js
+script-pass	498bf885425791b80886da59b88b7323b0d3f422a905169a17e0831f0a7a267f	test/built-ins/Reflect/set/return-abrupt-from-property-key.js
+script-pass	bfd8b58205ad280ddb7915887aa3e44f09f20ac5a0fa4d65b5ca59807bc64ca5	test/built-ins/Reflect/set/return-abrupt-from-result.js
+script-pass	9d75b986d2bcd7a388402899dd7f857a9ab66dc0c5713f8baffc75b649528e18	test/built-ins/Reflect/set/return-false-if-receiver-is-not-writable.js
+script-pass	e948e9551981cab62ee4a9425408ae821c3c4aaae5ccd63193c742fbe00862c1	test/built-ins/Reflect/set/return-false-if-target-is-not-writable.js
+script-pass	2cbdbadc50b76f147d1d3f247256253dcb1c3fb0e2f7d8dbb80ff6f0487f24bc	test/built-ins/Reflect/set/set-value-on-accessor-descriptor-with-receiver.js
+script-pass	7a4fc4bf2dff3c3aefd3ce268e345b3cd6d9376d4b188b7c144cbb9fb7474806	test/built-ins/Reflect/set/set-value-on-accessor-descriptor.js
+script-pass	c59fa69577aebbffdf9dc9685ae29ad8d287bfec195d1864c23de658f4159b2e	test/built-ins/Reflect/set/set-value-on-data-descriptor.js
+script-pass	10053bbb1a0f6e0da4e5b33bf16b41109eb218b5ae55b8c5f58b50f98c4c8f19	test/built-ins/Reflect/set/symbol-property.js
+script-pass	ec333e272de397c567dd459d62a78eae87b3d30f6c2f4f07aef1c9f36c65f7cf	test/built-ins/Reflect/set/target-is-not-object-throws.js
+script-pass	37f2d4ff9417f110b86294fa9732161a2e3dc0ecb41ac5ee819a60a65b97f16e	test/built-ins/Reflect/set/target-is-symbol-throws.js

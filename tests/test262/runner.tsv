@@ -1707,3 +1707,17 @@ test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js	-	-	
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order.js	-	-	-
 test/built-ins/Reflect/ownKeys/target-is-not-object-throws.js	-	-	-
 test/built-ins/Reflect/ownKeys/target-is-symbol-throws.js	-	-	-
+test/built-ins/Reflect/set/call-prototype-property-set.js	-	-	-
+test/built-ins/Reflect/set/different-property-descriptors.js	-	-	-
+test/built-ins/Reflect/set/not-a-constructor.js	-	-	-
+test/built-ins/Reflect/set/receiver-is-not-object.js	-	-	-
+test/built-ins/Reflect/set/return-abrupt-from-property-key.js	-	-	-
+test/built-ins/Reflect/set/return-abrupt-from-result.js	-	-	-
+test/built-ins/Reflect/set/return-false-if-receiver-is-not-writable.js	-	-	-
+test/built-ins/Reflect/set/return-false-if-target-is-not-writable.js	-	-	-
+test/built-ins/Reflect/set/set-value-on-accessor-descriptor-with-receiver.js	-	-	-
+test/built-ins/Reflect/set/set-value-on-accessor-descriptor.js	-	-	-
+test/built-ins/Reflect/set/set-value-on-data-descriptor.js	-	-	-
+test/built-ins/Reflect/set/symbol-property.js	-	-	-
+test/built-ins/Reflect/set/target-is-not-object-throws.js	-	-	-
+test/built-ins/Reflect/set/target-is-symbol-throws.js	-	-	-
