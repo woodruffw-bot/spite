@@ -94,7 +94,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add arrow block bodies, function-local declarations, strict directives, and return completions.
 - [x] Add default arrow parameters, ordered initialization, TDZ, and separate body var environments.
 - [x] Parse ordinary function expressions with shared parameters/bodies and function-specific early errors.
-- [ ] Add ordinary function declarations, execution, and lexical this.
+- [x] Parse ordinary function declarations and validate Script/function versus block scope.
+- [ ] Add ordinary function execution and lexical this.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.

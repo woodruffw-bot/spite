@@ -5,12 +5,31 @@ use std::rc::Rc;
 
 impl Parser {
     pub(super) fn function_expression(&mut self) -> Result<Expr, Diagnostic> {
+        let function = self.ordinary_function(false)?;
+        let span = function.source.span;
+        self.make_expr(ExprKind::Function(function), span)
+    }
+
+    pub(super) fn ordinary_function(
+        &mut self,
+        require_name: bool,
+    ) -> Result<Rc<Function>, Diagnostic> {
+        self.enter()?;
+        let result = self.ordinary_function_inner(require_name);
+        self.depth -= 1;
+        result
+    }
+
+    fn ordinary_function_inner(&mut self, require_name: bool) -> Result<Rc<Function>, Diagnostic> {
         let start = self.current().span.start;
         self.expect("function")?;
         if self.at("*") {
             return Err(self.unsupported("generator functions are not implemented"));
         }
         let name = if self.at("(") {
+            if require_name {
+                return Err(self.error("function declaration requires a name"));
+            }
             None
         } else {
             let token = self.bump();
@@ -32,15 +51,12 @@ impl Parser {
             text: self.source.clone(),
             span,
         };
-        self.make_expr(
-            ExprKind::Function(Rc::new(FunctionExpression {
-                name,
-                parameters,
-                body,
-                source,
-            })),
-            span,
-        )
+        Ok(Rc::new(Function {
+            name,
+            parameters,
+            body,
+            source,
+        }))
     }
 
     pub(super) fn formal_parameters(
@@ -87,6 +103,15 @@ impl Parser {
     }
 
     pub(super) fn function_body(&mut self) -> Result<FunctionBody, Diagnostic> {
+        // Declarations can nest without any expression calls. Charge the body
+        // boundary as well as its statements before recursing into another head.
+        self.enter()?;
+        let result = self.function_body_inner();
+        self.depth -= 1;
+        result
+    }
+
+    fn function_body_inner(&mut self) -> Result<FunctionBody, Diagnostic> {
         self.expect("{")?;
         let token_start = self.index;
         let previous_return = self.allow_return;
@@ -170,5 +195,25 @@ pub(super) fn validate_body(
         strict,
         ControlContext::default(),
         &mut Vec::new(),
+        ScopeKind::Variable,
     )
+}
+
+pub(super) fn validate_function(
+    function: &Function,
+    inherited_strict: bool,
+) -> Result<(), Diagnostic> {
+    let own_strict = function.body.is_strict();
+    let names = validate_parameters(
+        &function.parameters,
+        inherited_strict,
+        own_strict,
+        false,
+        function.source.span,
+    )?;
+    let strict = inherited_strict || own_strict;
+    if let Some(name) = &function.name {
+        validate_binding_name(&name.name, name.span, strict)?;
+    }
+    validate_body(&function.body, strict, &names)
 }

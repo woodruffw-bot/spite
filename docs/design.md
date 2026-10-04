@@ -95,15 +95,25 @@ lexical declarations cannot conflict with parameters (15.3.1). Rest/pattern
 parameters and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
-Ordinary function expressions share the identifier parameter and function-body
-parser with arrows (15.2). Names, parameters, bodies, and source text are retained.
+Ordinary function expressions and declarations share the identifier parameter and
+function-body parser with arrows (15.2). Names, parameters, bodies, and source text are retained.
 Only simple lists in non-strict ordinary functions permit duplicate parameters;
 strict or non-simple lists require unique names. A function's own strict directive
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
-targets. Their instantiation is currently an explicit runtime gap. Declarations,
-this, generators, async functions, rest parameters, and patterns remain separate
-steps.
+targets. Function heads and bodies each charge parser depth; declarations cannot
+bypass expression recursion limits. Their instantiation is currently an explicit
+runtime gap. This, generators, async functions, rest parameters, and patterns
+remain separate steps.
+
+Direct function declarations are var-scoped in Scripts and function bodies;
+block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
+function names against lexical and nested var declarations, including catch
+parameters. Duplicate block functions and functions in bare statement/label
+positions do not receive Annex B exceptions. AST inventories expose direct
+functions separately from var bindings without descending into nested functions.
+Until execution lands, entering a scope with function declarations reports the
+instantiation gap before executing its statement list.
 
 ## Runtime
 

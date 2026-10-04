@@ -19,6 +19,10 @@ impl Script {
     pub fn is_strict(&self) -> bool {
         self.strict
     }
+    /// Returns direct function declarations in source order, including repeats.
+    pub fn function_declarations(&self) -> Vec<&Function> {
+        functions_in(&self.statements)
+    }
     /// Returns Script-scoped var declarations in source order, including repeats.
     pub fn var_declarations(&self) -> Vec<&Binding> {
         let mut declarations = Vec::new();
@@ -38,10 +42,10 @@ pub struct FunctionName {
     pub span: Span,
 }
 
-/// A non-async, non-generator function expression.
+/// Shared syntax for an ordinary non-async, non-generator function.
 #[derive(Clone, Debug, PartialEq)]
-pub struct FunctionExpression {
-    /// Local function name, absent for anonymous expressions.
+pub struct Function {
+    /// Binding name, absent only for anonymous expressions.
     pub name: Option<FunctionName>,
     /// Identifier parameters, including optional default initializers.
     pub parameters: Rc<[Binding]>,
@@ -67,6 +71,10 @@ impl FunctionBody {
     pub fn is_strict(&self) -> bool {
         self.strict
     }
+    /// Returns direct function declarations, excluding nested blocks/functions.
+    pub fn function_declarations(&self) -> Vec<&Function> {
+        functions_in(&self.statements)
+    }
     /// Returns function-scoped var declarations, excluding nested functions.
     pub fn var_declarations(&self) -> Vec<&Binding> {
         let mut declarations = Vec::new();
@@ -84,6 +92,16 @@ pub enum ArrowBody {
     Expression(Rc<Expr>),
     /// A function body requiring an explicit return to produce a value.
     Block(FunctionBody),
+}
+
+fn functions_in(statements: &[Statement]) -> Vec<&Function> {
+    statements
+        .iter()
+        .filter_map(|statement| match &statement.kind {
+            StatementKind::Function(function) => Some(function.as_ref()),
+            _ => None,
+        })
+        .collect()
 }
 
 /// A statement with its source range.
@@ -150,7 +168,8 @@ impl Statement {
             | StatementKind::Break(_)
             | StatementKind::Continue(_)
             | StatementKind::Throw(_)
-            | StatementKind::Return(_) => {}
+            | StatementKind::Return(_)
+            | StatementKind::Function(_) => {}
         }
     }
 }
@@ -164,6 +183,8 @@ pub enum StatementKind {
     Debugger,
     /// An expression statement.
     Expression(Expr),
+    /// An ordinary function declaration; its syntax always has a name.
+    Function(Rc<Function>),
     /// A variable declaration in the surrounding variable environment.
     Var(Vec<Binding>),
     /// A lexical declaration.
@@ -363,7 +384,7 @@ pub enum ExprKind {
         arguments: Vec<Expr>,
     },
     /// An ordinary function expression with optional local name.
-    Function(Rc<FunctionExpression>),
+    Function(Rc<Function>),
     /// A non-async arrow with identifier parameters and optional defaults.
     Arrow {
         /// Parameters in source order, with optional default-value initializers.

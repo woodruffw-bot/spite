@@ -1,0 +1,114 @@
+---
+source: crates/spite-parser/tests/function_declarations.rs
+expression: "parse_script(\"function f(x) { function g() { return x; } return g; }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    name: Some(
+                        FunctionName {
+                            name: "f",
+                            span: Span {
+                                start: 9,
+                                end: 10,
+                            },
+                        },
+                    ),
+                    parameters: [
+                        Binding {
+                            name: "x",
+                            span: Span {
+                                start: 11,
+                                end: 12,
+                            },
+                            initializer: None,
+                        },
+                    ],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Function(
+                                    Function {
+                                        name: Some(
+                                            FunctionName {
+                                                name: "g",
+                                                span: Span {
+                                                    start: 25,
+                                                    end: 26,
+                                                },
+                                            },
+                                        ),
+                                        parameters: [],
+                                        body: FunctionBody {
+                                            statements: [
+                                                Statement {
+                                                    kind: Return(
+                                                        Some(
+                                                            Expr {
+                                                                depth: 1,
+                                                                kind: Identifier(
+                                                                    "x",
+                                                                ),
+                                                                span: Span {
+                                                                    start: 38,
+                                                                    end: 39,
+                                                                },
+                                                            },
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 31,
+                                                        end: 40,
+                                                    },
+                                                },
+                                            ],
+                                            strict: false,
+                                        },
+                                        source: FunctionSource(
+                                            "function g() { return x; }",
+                                        ),
+                                    },
+                                ),
+                                span: Span {
+                                    start: 16,
+                                    end: 42,
+                                },
+                            },
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "g",
+                                            ),
+                                            span: Span {
+                                                start: 50,
+                                                end: 51,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 43,
+                                    end: 52,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function f(x) { function g() { return x; } return g; }",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 54,
+            },
+        },
+    ],
+    strict: false,
+}

@@ -58,6 +58,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
         strict,
         ControlContext::default(),
         &mut Vec::new(),
+        ScopeKind::Variable,
     )?;
     Ok(Script { statements, strict })
 }
@@ -229,6 +230,11 @@ impl Parser {
             }
             self.expect("}")?;
             StatementKind::Block(body)
+        } else if self.at("function") {
+            if !allow_declaration {
+                return Err(self.error("function declaration requires a statement list"));
+            }
+            StatementKind::Function(self.ordinary_function(true)?)
         } else if self.eat("var") {
             let bindings = self.binding_list(false, false, false)?;
             self.semicolon()?;
@@ -455,10 +461,7 @@ impl Parser {
         } else {
             if let Kind::Word(word) = &self.current().kind {
                 if !self.current().escaped
-                    && matches!(
-                        word.as_str(),
-                        "function" | "class" | "with" | "import" | "export"
-                    )
+                    && matches!(word.as_str(), "class" | "with" | "import" | "export")
                 {
                     return Err(self.unsupported("statement is not implemented"));
                 }
@@ -1206,26 +1209,59 @@ struct ControlContext {
     in_breakable: bool,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+enum ScopeKind {
+    Variable,
+    Block,
+}
+
+// LexicallyDeclaredNames of a block includes its function declarations (8.2.6).
+fn block_lexical_names(statement: &Statement) -> impl Iterator<Item = (&str, Span)> {
+    let bindings = match &statement.kind {
+        StatementKind::Lexical { bindings, .. } => bindings.as_slice(),
+        _ => &[],
+    };
+    let function_name = match &statement.kind {
+        StatementKind::Function(function) => function.name.as_ref(),
+        _ => None,
+    };
+    bindings
+        .iter()
+        .map(|b| (b.name.as_str(), b.span))
+        .chain(function_name.map(|name| (name.name.as_str(), name.span)))
+}
+
 fn validate_scope<'a>(
     statements: impl IntoIterator<Item = &'a Statement>,
     strict: bool,
     control: ControlContext,
     labels: &mut Vec<(&'a str, bool)>,
+    scope_kind: ScopeKind,
 ) -> Result<(), Diagnostic> {
     let mut names = BTreeSet::new();
     let mut var_names = BTreeSet::new();
     let mut declarations = Vec::new();
     for statement in statements {
-        if let StatementKind::Lexical { bindings, .. } = &statement.kind {
-            validate_binding_names(bindings, strict, &mut names)?;
-            for binding in bindings {
-                if var_names.contains(binding.name.as_str()) {
-                    return Err(early(
-                        binding.span,
-                        "lexical declaration conflicts with var",
-                    ));
+        if scope_kind == ScopeKind::Block || !matches!(statement.kind, StatementKind::Function(_)) {
+            for (name, span) in block_lexical_names(statement) {
+                if !names.insert(name) {
+                    return Err(early(span, "duplicate lexical binding"));
+                }
+                validate_binding_name(name, span, strict)?;
+                if var_names.contains(name) {
+                    return Err(early(span, "lexical declaration conflicts with var"));
                 }
             }
+        } else if let StatementKind::Function(function) = &statement.kind {
+            // 8.2.8: direct functions are var-scoped only in Scripts/function bodies.
+            let name = function.name.as_ref().expect("named declaration");
+            if names.contains(name.name.as_str()) {
+                return Err(early(
+                    name.span,
+                    "function declaration conflicts with lexical binding",
+                ));
+            }
+            var_names.insert(name.name.as_str());
         }
         // ECMA-262 14.2.1, 14.12.1, 16.1.1: vars in nested statements
         // cannot conflict with lexical names of an enclosing statement list.
@@ -1251,6 +1287,7 @@ fn validate_statement<'a>(
     labels: &mut Vec<(&'a str, bool)>,
 ) -> Result<(), Diagnostic> {
     match &statement.kind {
+        StatementKind::Function(function) => function::validate_function(function, strict)?,
         StatementKind::Var(bindings) => validate_var_bindings(bindings, strict)?,
         StatementKind::Expression(expr)
         | StatementKind::Throw(expr)
@@ -1262,7 +1299,9 @@ fn validate_statement<'a>(
                 }
             }
         }
-        StatementKind::Block(body) => validate_scope(body, strict, control, labels)?,
+        StatementKind::Block(body) => {
+            validate_scope(body, strict, control, labels, ScopeKind::Block)?
+        }
         StatementKind::Try {
             body,
             handler,
@@ -1278,14 +1317,12 @@ fn validate_statement<'a>(
                     // ECMA-262 14.15.1. The Annex B exception allowing var to
                     // redeclare a simple catch parameter is not enabled by this host.
                     for statement in statements {
-                        if let StatementKind::Lexical { bindings, .. } = &statement.kind {
-                            for binding in bindings {
-                                if binding.name == parameter.name {
-                                    return Err(early(
-                                        binding.span,
-                                        "catch parameter conflicts with lexical declaration",
-                                    ));
-                                }
+                        for (name, span) in block_lexical_names(statement) {
+                            if name == parameter.name {
+                                return Err(early(
+                                    span,
+                                    "catch parameter conflicts with lexical declaration",
+                                ));
                             }
                         }
                     }
@@ -1383,6 +1420,7 @@ fn validate_statement<'a>(
                     ..control
                 },
                 labels,
+                ScopeKind::Block,
             )?;
         }
         // ECMA-262 14.8.1/14.9.1 distinguish iterations from breakable statements.
@@ -1459,21 +1497,7 @@ fn labels_iteration(mut statement: &Statement) -> bool {
 
 fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
     match &expr.kind {
-        ExprKind::Function(function) => {
-            let own_strict = function.body.is_strict();
-            let names = function::validate_parameters(
-                &function.parameters,
-                strict,
-                own_strict,
-                false,
-                expr.span,
-            )?;
-            let strict = strict || own_strict;
-            if let Some(name) = &function.name {
-                validate_binding_name(&name.name, name.span, strict)?;
-            }
-            function::validate_body(&function.body, strict, &names)?;
-        }
+        ExprKind::Function(function) => function::validate_function(function, strict)?,
         ExprKind::Arrow {
             parameters, body, ..
         } => {

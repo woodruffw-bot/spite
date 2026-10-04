@@ -137,8 +137,16 @@ fn parse_negatives_require_the_reviewed_rejection_in_every_mode() {
 
 #[test]
 fn unsupported_and_limits_are_never_negative_passes() {
+    // A newly supported production must now fail a parse-negative expectation.
     assert!(matches!(
         negative("parse", "SyntaxError", "function f() {}"),
+        Outcome::Failed {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+    assert!(matches!(
+        negative("parse", "SyntaxError", "function* f() {}"),
         Outcome::Unsupported {
             stage: Stage::Parse,
             ..

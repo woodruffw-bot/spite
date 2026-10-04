@@ -453,6 +453,13 @@ impl Realm {
             .bindings;
         // Check all global conflicts before creating any bindings.
         for statement in statements.clone() {
+            if matches!(statement.kind, StatementKind::Function(_)) {
+                return Err(Self::unsupported(
+                    statement.span,
+                    "ordinary function instantiation is not implemented",
+                ));
+            }
+
             if let StatementKind::Lexical { bindings, .. } = &statement.kind {
                 for binding in bindings {
                     if scope.contains_key(&binding.name)
@@ -607,6 +614,10 @@ impl Realm {
         match &statement.kind {
             // ECMA-262 14.16.1: no debugging facility is active in this host.
             StatementKind::Empty | StatementKind::Debugger => Ok(Completion::normal(None)),
+            StatementKind::Function(_) => Err(Self::unsupported(
+                statement.span,
+                "ordinary function instantiation is not implemented",
+            )),
             StatementKind::Expression(expr) => Ok(Completion::normal(Some(self.expression(expr)?))),
             StatementKind::Break(target) | StatementKind::Continue(target) => Ok(Completion {
                 kind: if matches!(statement.kind, StatementKind::Break(_)) {
