@@ -171,6 +171,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add sparse Array slice with ordered range conversion, species results, and final strict length writes.
 - [x] Execute 73 unchanged map/filter/slice Test262 files at the existing pin.
 - [x] Add sparse Array concat with species results, ordered spreadability hooks, and strict length writes.
+- [x] Execute 46 unchanged concat Test262 files at the existing pin.
 - [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
