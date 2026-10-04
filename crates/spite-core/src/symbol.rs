@@ -10,8 +10,8 @@ use std::{
 /// An immutable ECMAScript Symbol identity with an optional UTF-16 description.
 ///
 /// Cloning preserves identity. Description text never determines equality, and
-/// an absent description is distinct from an empty description. Symbol registry
-/// lookup and well-known identities belong to the runtime, not this constructor.
+/// an absent description is distinct from an empty description. This constructor
+/// does not use the runtime registry or the shared [`crate::WellKnownSymbol`] table.
 #[derive(Clone)]
 pub struct JsSymbol(Arc<Option<JsString>>);
 

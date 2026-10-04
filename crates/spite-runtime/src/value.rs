@@ -1,5 +1,5 @@
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
-use spite_core::{JsString, is_line_terminator, is_whitespace, parse_radix_integer};
+use spite_core::{JsString, JsSymbol, is_line_terminator, is_whitespace, parse_radix_integer};
 use spite_heap::{Handle, Trace};
 use std::{cmp::Ordering, fmt};
 
@@ -8,6 +8,10 @@ use std::{cmp::Ordering, fmt};
 pub enum ConversionError {
     /// ToNumber rejects a BigInt with a JavaScript TypeError.
     BigIntToNumber,
+    /// ToNumber rejects a Symbol with a JavaScript TypeError.
+    SymbolToNumber,
+    /// Implicit ToString rejects a Symbol with a JavaScript TypeError.
+    SymbolToString,
     /// Object conversion requires ToPrimitive and callable hooks in the realm.
     ObjectNeedsContext,
     /// Integer conversion exhausted a host limit or failed arithmetic validation.
@@ -24,6 +28,8 @@ impl fmt::Display for ConversionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::BigIntToNumber => f.write_str("cannot convert BigInt to Number"),
+            Self::SymbolToNumber => f.write_str("cannot convert Symbol to Number"),
+            Self::SymbolToString => f.write_str("cannot convert Symbol to String"),
             Self::ObjectNeedsContext => f.write_str("object conversion requires realm context"),
             Self::Integer(error) => error.fmt(f),
         }
@@ -34,7 +40,7 @@ impl std::error::Error for ConversionError {}
 /// A supported ECMAScript value.
 ///
 /// Object handles are unrooted; retain a host root across explicit collection.
-/// Symbol values are not implemented yet.
+/// Symbol values preserve identity; their global API and Realm hooks are pending.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// The undefined value.
@@ -49,6 +55,8 @@ pub enum Value {
     BigInt(BigInt),
     /// A sequence of UTF-16 code units.
     String(JsString),
+    /// An immutable Symbol identity and its optional description.
+    Symbol(JsSymbol),
     /// Identity of an object owned by a realm's heap.
     Object(Handle),
 }
@@ -63,7 +71,8 @@ impl Trace for Value {
             | Self::Boolean(_)
             | Self::Number(_)
             | Self::BigInt(_)
-            | Self::String(_) => None,
+            | Self::String(_)
+            | Self::Symbol(_) => None,
             Self::Object(handle) => Some(handle),
         })
     }
@@ -78,7 +87,7 @@ impl Value {
             Self::Number(v) => *v != 0.0 && !v.is_nan(),
             Self::BigInt(v) => !v.is_zero(),
             Self::String(v) => !v.is_empty(),
-            Self::Object(_) => true,
+            Self::Object(_) | Self::Symbol(_) => true,
         }
     }
 
@@ -91,6 +100,7 @@ impl Value {
             Self::Boolean(v) => u8::from(*v) as f64,
             Self::Number(v) => *v,
             Self::BigInt(_) => return Err(ConversionError::BigIntToNumber),
+            Self::Symbol(_) => return Err(ConversionError::SymbolToNumber),
             Self::String(v) => string_to_number(v),
             Self::Object(_) => return Err(ConversionError::ObjectNeedsContext),
         })
@@ -106,6 +116,7 @@ impl Value {
             Self::Number(v) => JsString::from(number_to_string(*v).as_str()),
             Self::BigInt(v) => JsString::from(v.to_radix(10, budget)?.as_str()),
             Self::String(v) => v.clone(),
+            Self::Symbol(_) => return Err(ConversionError::SymbolToString),
             Self::Object(_) => return Err(ConversionError::ObjectNeedsContext),
         })
     }
@@ -118,6 +129,7 @@ impl Value {
             (Self::Number(a), Self::Number(b)) => a == b,
             (Self::BigInt(a), Self::BigInt(b)) => a == b,
             (Self::String(a), Self::String(b)) => a == b,
+            (Self::Symbol(a), Self::Symbol(b)) => a == b,
             (Self::Object(a), Self::Object(b)) => a == b,
             _ => false,
         }
@@ -154,8 +166,14 @@ impl Value {
             (_, Self::Boolean(b)) => {
                 self.loosely_equal(&Self::Number(u8::from(*b) as f64), budget)?
             }
-            (Self::Object(_), Self::String(_) | Self::Number(_) | Self::BigInt(_))
-            | (Self::String(_) | Self::Number(_) | Self::BigInt(_), Self::Object(_)) => {
+            (
+                Self::Object(_),
+                Self::String(_) | Self::Number(_) | Self::BigInt(_) | Self::Symbol(_),
+            )
+            | (
+                Self::String(_) | Self::Number(_) | Self::BigInt(_) | Self::Symbol(_),
+                Self::Object(_),
+            ) => {
                 return Err(ConversionError::ObjectNeedsContext);
             }
             _ => self.strictly_equal(other),
@@ -176,16 +194,9 @@ impl Value {
             (Self::BigInt(a), Self::String(b)) => string_to_bigint(b, budget)?.map(|b| a.cmp(&b)),
             (Self::String(a), Self::BigInt(b)) => string_to_bigint(a, budget)?.map(|a| a.cmp(b)),
             (Self::BigInt(a), Self::BigInt(b)) => Some(a.cmp(b)),
-            (Self::BigInt(a), b) => {
-                a.cmp_f64(b.to_number().expect("non-BigInt primitive"), budget)?
-            }
-            (a, Self::BigInt(b)) => b
-                .cmp_f64(a.to_number().expect("non-BigInt primitive"), budget)?
-                .map(Ordering::reverse),
-            (a, b) => a
-                .to_number()
-                .expect("non-BigInt primitive")
-                .partial_cmp(&b.to_number().expect("non-BigInt primitive")),
+            (Self::BigInt(a), b) => a.cmp_f64(b.to_number()?, budget)?,
+            (a, Self::BigInt(b)) => b.cmp_f64(a.to_number()?, budget)?.map(Ordering::reverse),
+            (a, b) => a.to_number()?.partial_cmp(&b.to_number()?),
         })
     }
 
@@ -197,6 +208,7 @@ impl Value {
             Self::Number(_) => "number",
             Self::BigInt(_) => "bigint",
             Self::String(_) => "string",
+            Self::Symbol(_) => "symbol",
             Self::Object(_) => "object",
         }
     }
@@ -214,6 +226,7 @@ impl fmt::Display for Value {
             Self::Null => f.write_str("null"),
             Self::Boolean(value) => write!(f, "{value}"),
             Self::Object(handle) => write!(f, "Object({handle:?})"),
+            Self::Symbol(symbol) => write!(f, "{symbol:?}"),
         }
     }
 }

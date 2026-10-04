@@ -19,6 +19,7 @@ mod number;
 mod object;
 mod ordinary;
 mod string;
+mod symbol;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;

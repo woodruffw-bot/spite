@@ -347,6 +347,16 @@ impl Realm {
                 span,
                 "cannot convert BigInt to Number",
             ),
+            ConversionError::SymbolToNumber => Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "cannot convert Symbol to Number",
+            ),
+            ConversionError::SymbolToString => Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "cannot convert Symbol to String",
+            ),
             ConversionError::ObjectNeedsContext => Self::unsupported(
                 span,
                 "object conversion requires ToPrimitive and callable hooks",
@@ -1399,14 +1409,22 @@ impl Realm {
                     (&left, &right),
                     (
                         Value::Object(_),
-                        Value::String(_) | Value::Number(_) | Value::BigInt(_) | Value::Boolean(_)
+                        Value::String(_)
+                            | Value::Number(_)
+                            | Value::BigInt(_)
+                            | Value::Boolean(_)
+                            | Value::Symbol(_)
                     )
                 ) {
                     left = self.primitive(left, Hint::Default, span)?;
                 } else if matches!(
                     (&left, &right),
                     (
-                        Value::String(_) | Value::Number(_) | Value::BigInt(_) | Value::Boolean(_),
+                        Value::String(_)
+                            | Value::Number(_)
+                            | Value::BigInt(_)
+                            | Value::Boolean(_)
+                            | Value::Symbol(_),
                         Value::Object(_)
                     )
                 ) {

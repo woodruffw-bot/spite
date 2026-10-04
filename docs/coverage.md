@@ -55,9 +55,13 @@ text. Object storage handles both key kinds, orders symbols after string keys,
 and preserves descriptor, prototype, and GC behavior. Symbols never alias Array
 length/indices, String wrapper indices, or mapped arguments by description.
 Borrowed lookup keys avoid allocation; symbol comparison/copy work is constant.
-Runtime Value integration, Symbol APIs, and observable hooks are still pending.
-Realm enumeration of host-supplied symbol keys remains explicitly Unsupported;
-this foundation adds no Script/Test262 coverage.
+Runtime Symbol values support identity equality, truthiness, typeof, and abrupt
+numeric/implicit string conversions. String(symbol) produces its descriptive
+UTF-16 string, with bounded allocation. The 13 edition-17 well-known identities
+are shared across realms and host threads. Native injection tests this foundation;
+the JavaScript Symbol global, wrappers, registry, and hooks remain unavailable.
+Realm property-key conversion/enumeration of symbols remains explicitly Unsupported.
+This foundation adds no Script/Test262 coverage.
 
 The `spite-heap` foundation provides capacity-bounded generational storage,
 checked cross-heap identity, stale-handle rejection, and bounded iterative

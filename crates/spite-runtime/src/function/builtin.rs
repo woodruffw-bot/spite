@@ -346,6 +346,12 @@ impl Realm {
                     Value::Number(_) => "Number",
                     Value::BigInt(_) => "BigInt",
                     Value::String(_) => "String",
+                    Value::Symbol(_) => {
+                        return Err(Self::unsupported(
+                            span,
+                            "Symbol wrapper and tag hooks are not implemented",
+                        ));
+                    }
                     Value::Object(handle) => self.object_work(span, |objects, _| {
                         let object = objects.inspect(handle)?;
                         Ok(if object.is_array() {

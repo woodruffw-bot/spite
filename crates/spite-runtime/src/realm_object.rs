@@ -401,6 +401,13 @@ impl Realm {
     }
 
     pub(super) fn property_key(&mut self, value: Value, span: Span) -> Result<JsString, Error> {
+        let value = self.primitive(value, Hint::String, span)?;
+        if matches!(value, Value::Symbol(_)) {
+            return Err(Self::unsupported(
+                span,
+                "symbol-keyed Realm operations are not implemented",
+            ));
+        }
         let key = self.string(value, span)?;
         if key.len() > self.limits.max_string_units {
             return Err(Error::Limit {
@@ -648,6 +655,11 @@ fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
     match base {
         Value::String(_) => missing_string_method(key),
         Value::BigInt(_) => key_is(key, "toLocaleString"),
+        Value::Symbol(_) => {
+            key_is(key, "description")
+                || key_is(key, "constructor")
+                || key_is(key, "toLocaleString")
+        }
         _ => false,
     }
 }

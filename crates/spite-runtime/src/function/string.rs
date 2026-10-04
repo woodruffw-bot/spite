@@ -135,8 +135,10 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         // 22.1.1.1 converts the value before observing newTarget.prototype.
-        // SymbolDescriptiveString joins this dispatch when Symbol values exist.
         let string = match value {
+            Some(Value::Symbol(symbol)) if new_target.is_none() => {
+                self.symbol_descriptive_string(&symbol, span)?
+            }
             Some(value) => self.string(value, span)?,
             None => JsString::from(""),
         };

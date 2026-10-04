@@ -3,10 +3,12 @@
 mod symbol;
 mod unicode;
 mod unicode_data;
+mod well_known;
 
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef};
 pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;
+pub use well_known::WellKnownSymbol;
 
 use std::fmt;
 

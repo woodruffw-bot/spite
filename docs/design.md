@@ -264,7 +264,7 @@ creation order, then symbols in creation order. Deletion followed by re-creation
 gives a non-index key a new position within its group.
 Property capacity failures remain distinct from descriptor rejection. Storage
 exposes checked internal operations; realms supply JavaScript execution and
-exception semantics. Runtime Symbol values remain a separate implementation boundary.
+exception semantics. Realm Symbol hooks remain a separate implementation boundary.
 
 Symbol integration proceeds in three layers (6.1.5, 6.1.7, 7.1.19). First,
 spite-core owns immutable JsSymbol identities and a PropertyKey enum that
@@ -288,8 +288,17 @@ callers use the same operations. The Realm enumeration boundary remains
 Unsupported for objects with symbol keys until Value and hook integration; it
 must never silently discard those keys.
 
-Finally, integrate Symbol values, wrappers, construction, shared well-known
-identities and registry semantics, ToPropertyKey, and observable hooks before
+Runtime values now preserve Symbol identity, truthiness, typeof, equality, and
+abrupt numeric/implicit string conversions. String called with a primitive Symbol
+uses bounded SymbolDescriptiveString and preserves its UTF-16 description;
+String construction still throws TypeError (20.4.3.3.1, 22.1.1.1).
+The edition-17 well-known identities live in a fixed, process-shared OnceLock
+table, separate from fresh symbols and the future registry. Initialization runs
+no user code, and each lookup clones only an Arc. Native-injected values exercise
+these algorithms while the JavaScript Symbol global stays unavailable.
+
+Finally, integrate Symbol wrappers, construction, shared registry semantics,
+ToPropertyKey, and observable hooks before
 exposing the JavaScript Symbol global. In particular, ToPrimitive, instanceof,
 Object.prototype.toString, String IsRegExp checks, and intrinsic symbol properties
 must stop relying on their current no-symbol assumptions. Array species and

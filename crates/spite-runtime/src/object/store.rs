@@ -120,6 +120,7 @@ impl Budget {
             | Value::Null
             | Value::Boolean(_)
             | Value::Number(_)
+            | Value::Symbol(_)
             | Value::Object(_) => 1,
         };
         self.charge(size)
