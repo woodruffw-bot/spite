@@ -23,6 +23,32 @@ fn run_with_includes(body: &str, includes: &str) -> Vec<Outcome> {
 }
 
 #[test]
+fn original_byte_conversion_tables_cover_both_float_formats_and_failure_paths() {
+    assert_eq!(
+        run_with_includes(
+            "let values=byteConversionValues.values;assert.sameValue(values.length,56);for(let kind of ['Float16','Float32']){let expected=byteConversionValues.expected[kind],convert=kind==='Float16'?Math.f16round:Math.fround;assert.sameValue(expected.length,values.length);values.forEach((value,i)=>assert.sameValue(convert(value),expected[i]));}",
+            "byteConversionValues.js"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    let outcomes = run_with_includes(
+        "assert.sameValue(Math.f16round(2049),2051);",
+        "byteConversionValues.js",
+    );
+    assert_eq!(outcomes.len(), 2);
+    assert!(
+        outcomes.iter().all(|outcome| matches!(
+            outcome,
+            Outcome::Failed {
+                stage: Stage::Runtime,
+                ..
+            }
+        )),
+        "{outcomes:?}"
+    );
+}
+
+#[test]
 fn original_constructor_helper_checks_constructibility_without_masking_host_gaps() {
     assert_eq!(
         run_with_includes(

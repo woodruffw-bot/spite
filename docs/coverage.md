@@ -35,7 +35,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 3496 reviewed Test262 variants, four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 3512 reviewed Test262 variants, five pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -616,7 +616,7 @@ require a reviewed diagnostic range and message; unreviewed syntax errors remain
 unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. The unchanged pinned assert.js/sta.js harness now
 executes for nine positive function/capture tests, 40 call/construction iterable-spread
-tests, 30 call/construction object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 63 Math numeric tests, twelve Boolean tests, 63
+tests, 30 call/construction object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 71 Math numeric tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
 22 Error construction, conversion, and prototype tests, 48 BigInt constructor,
 width reduction, formatting, and receiver-brand tests, plus 173 Object descriptor,
@@ -639,7 +639,7 @@ verify successful assertions and explicit assertion failures. Some string compar
 failure formatting still requires missing JSON and remains Unsupported;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 3496 variants are four raw positives, 3322 positives using the upstream
+Rust. Its 3512 variants are four raw positives, 3338 positives using the upstream
 harness, and 170 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses the runtime defaults, with every host resource quota disabled.

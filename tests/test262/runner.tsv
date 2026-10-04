@@ -1784,3 +1784,11 @@ test/built-ins/Math/clz32/nan.js	-	-	-
 test/built-ins/Math/clz32/not-a-constructor.js	-	-	-
 test/built-ins/Math/imul/not-a-constructor.js	-	-	-
 test/built-ins/Math/imul/results.js	-	-	-
+test/built-ins/Math/fround/Math.fround_Infinity.js	-	-	-
+test/built-ins/Math/fround/Math.fround_NaN.js	-	-	-
+test/built-ins/Math/fround/Math.fround_Zero.js	-	-	-
+test/built-ins/Math/fround/not-a-constructor.js	-	-	-
+test/built-ins/Math/fround/ties.js	-	-	-
+test/built-ins/Math/fround/value-convertion.js	-	-	-
+test/built-ins/Math/f16round/not-a-constructor.js	-	-	-
+test/built-ins/Math/f16round/value-conversion.js	-	-	-
