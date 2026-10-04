@@ -63,6 +63,52 @@ pub enum PropertyKey {
     Symbol(JsSymbol),
 }
 
+/// A borrowed property key, allowing lookup without copying string storage.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum PropertyKeyRef<'a> {
+    /// A borrowed UTF-16 string key.
+    String(&'a JsString),
+    /// A borrowed symbol identity.
+    Symbol(&'a JsSymbol),
+}
+
+impl<'a> PropertyKeyRef<'a> {
+    /// Borrows a string key, or returns `None` for a symbol key.
+    pub fn as_string(self) -> Option<&'a JsString> {
+        match self {
+            Self::String(value) => Some(value),
+            Self::Symbol(_) => None,
+        }
+    }
+}
+
+impl<'a> From<&'a JsString> for PropertyKeyRef<'a> {
+    fn from(value: &'a JsString) -> Self {
+        Self::String(value)
+    }
+}
+
+impl<'a> From<&'a JsSymbol> for PropertyKeyRef<'a> {
+    fn from(value: &'a JsSymbol) -> Self {
+        Self::Symbol(value)
+    }
+}
+
+impl<'a> From<&'a PropertyKey> for PropertyKeyRef<'a> {
+    fn from(value: &'a PropertyKey) -> Self {
+        match value {
+            PropertyKey::String(value) => Self::String(value),
+            PropertyKey::Symbol(value) => Self::Symbol(value),
+        }
+    }
+}
+
+impl<'a> From<&PropertyKeyRef<'a>> for PropertyKeyRef<'a> {
+    fn from(value: &PropertyKeyRef<'a>) -> Self {
+        *value
+    }
+}
+
 impl PropertyKey {
     /// Borrows a string key, or returns `None` for a symbol key.
     pub fn as_string(&self) -> Option<&JsString> {

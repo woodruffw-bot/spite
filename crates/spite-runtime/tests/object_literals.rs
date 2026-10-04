@@ -63,7 +63,7 @@ fn properties_apply_in_source_order_with_ordinary_attributes() {
     );
     assert_eq!(
         realm.inspect_object(&handle).unwrap().own_keys(),
-        ["2", "10", "b", "a", "c"].map(JsString::from)
+        ["2", "10", "b", "a", "c"].map(spite_core::PropertyKey::from)
     );
     for (key, expected) in [("a", 7.0), ("b", 4.0), ("c", 5.0), ("2", 3.0), ("10", 2.0)] {
         let property = realm

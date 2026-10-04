@@ -56,7 +56,7 @@ fn wrappers_expose_immutable_utf16_indices_length_and_exact_key_order() {
     };
     assert_eq!(
         realm.inspect_object(&object).unwrap().own_keys(),
-        ["0", "1", "2", "10", "length", "extra"].map(JsString::from)
+        ["0", "1", "2", "10", "length", "extra"].map(spite_core::PropertyKey::from)
     );
     assert_eq!(
         realm.eval(

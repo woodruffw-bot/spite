@@ -1,12 +1,12 @@
 //! Ordinary property storage and function call metadata.
 //!
-//! This layer implements own string-keyed data and accessor properties. Symbols
-//! and additional exotic internal methods are separate increments. Mapped arguments
+//! This layer implements own string/symbol data and accessor properties.
+//! Additional exotic internal methods are separate increments. Mapped arguments
 //! synchronize indexed properties with traced parameter environments.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::{Value, function::Callable};
-use spite_core::JsString;
+use spite_core::{JsString, PropertyKey, PropertyKeyRef};
 use spite_heap::{Handle, Trace};
 use std::fmt;
 
@@ -14,6 +14,8 @@ use std::fmt;
 mod accessor_tests;
 mod arguments;
 mod array;
+#[cfg(test)]
+mod symbol_tests;
 use arguments::ParameterMap;
 mod descriptor;
 mod entry;
@@ -45,14 +47,14 @@ pub(crate) enum PrimitiveData {
 
 /// Stored object properties, prototype, extensibility, and internal-slot metadata.
 ///
-/// Lookup is linear and keys compare exact UTF-16 code units. The property limit
+/// Lookup is linear. String keys compare UTF-16 units; symbols compare identity. The property limit
 /// bounds storage; callers must account for lookup and enumeration work when
 /// integrating these records into an evaluator.
 #[derive(Debug)]
 pub struct OrdinaryObject {
     prototype: Option<Handle>,
     extensible: bool,
-    properties: Vec<(JsString, Property)>,
+    properties: Vec<(PropertyKey, Property)>,
     max_properties: usize,
     callable: Option<Callable>,
     constructible: bool,
@@ -157,10 +159,11 @@ impl OrdinaryObject {
 
     /// Looks up a stored own property without consulting the prototype.
     /// Use [`Objects::get_own`] to observe current mapped-argument values.
-    pub fn own_property(&self, key: &JsString) -> Option<&Property> {
+    pub fn own_property<'key>(&self, key: impl Into<PropertyKeyRef<'key>>) -> Option<&Property> {
+        let key = key.into();
         self.properties
             .iter()
-            .find(|(k, _)| k == key)
+            .find(|(k, _)| PropertyKeyRef::from(k) == key)
             .map(|(_, p)| p)
     }
 
@@ -171,9 +174,10 @@ impl OrdinaryObject {
     /// on existing properties. Heap callers must validate getter/setter handles.
     pub fn define_own_property(
         &mut self,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         descriptor: impl Into<PropertyDescriptor>,
     ) -> Result<bool, PropertyLimit> {
+        let key = key.into();
         let descriptor = descriptor.into().normalize();
         if let Some((_, current)) = self.properties.iter_mut().find(|(k, _)| *k == key) {
             return Ok(current.apply(descriptor));
@@ -189,8 +193,13 @@ impl OrdinaryObject {
     }
 
     /// Implements OrdinaryDelete (10.1.10.1), without strict-mode throw handling.
-    pub fn delete(&mut self, key: &JsString) -> bool {
-        let Some(index) = self.properties.iter().position(|(k, _)| k == key) else {
+    pub fn delete<'key>(&mut self, key: impl Into<PropertyKeyRef<'key>>) -> bool {
+        let key = key.into();
+        let Some(index) = self
+            .properties
+            .iter()
+            .position(|(k, _)| PropertyKeyRef::from(k) == key)
+        else {
             return true;
         };
         if !self.properties[index].1.configurable() {
@@ -200,16 +209,20 @@ impl OrdinaryObject {
         true
     }
 
-    /// Returns all own string keys in OrdinaryOwnPropertyKeys order (10.1.11.1).
+    /// Returns all own keys in OrdinaryOwnPropertyKeys order (10.1.11.1).
     ///
     /// Array indices precede other strings and sort numerically. Other strings
-    /// retain creation order, including non-enumerable properties.
-    pub fn own_keys(&self) -> Vec<JsString> {
+    /// retain creation order, followed by symbols in their creation order.
+    /// Non-enumerable properties are included in each group.
+    pub fn own_keys(&self) -> Vec<PropertyKey> {
         let mut indices = Vec::new();
         let mut strings = Vec::new();
+        let mut symbols = Vec::new();
         for (key, _) in &self.properties {
             if let Some(index) = array_index(key) {
                 indices.push((index, key));
+            } else if matches!(key, PropertyKey::Symbol(_)) {
+                symbols.push(key);
             } else {
                 strings.push(key);
             }
@@ -219,6 +232,7 @@ impl OrdinaryObject {
             .into_iter()
             .map(|(_, key)| key)
             .chain(strings)
+            .chain(symbols)
             .cloned()
             .collect()
     }
@@ -263,7 +277,8 @@ impl Trace for OrdinaryObject {
 
 // Array indices are canonical decimal strings in [0, 2^32 - 2]. Checking code
 // units directly preserves non-ASCII and lone-surrogate property names.
-fn array_index(key: &JsString) -> Option<u32> {
+fn array_index<'key>(key: impl Into<PropertyKeyRef<'key>>) -> Option<u32> {
+    let key = key.into().as_string()?;
     let units = key.code_units();
     if units.is_empty() || units.len() > 10 || (units.len() > 1 && units[0] == u16::from(b'0')) {
         return None;

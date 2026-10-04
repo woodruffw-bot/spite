@@ -5,12 +5,12 @@ use super::{
     array_index,
 };
 use crate::Value;
-use spite_core::JsString;
+use spite_core::{PropertyKey, PropertyKeyRef};
 
 impl OrdinaryObject {
     pub(super) fn prepare_array_definition(
         &self,
-        key: &JsString,
+        key: &PropertyKey,
         descriptor: &PropertyDescriptor,
         budget: &mut Budget,
     ) -> Result<Option<u32>, Error> {
@@ -55,7 +55,7 @@ impl OrdinaryObject {
 
     pub(super) fn define_array_property(
         &mut self,
-        key: JsString,
+        key: PropertyKey,
         descriptor: PropertyDescriptor,
         new_length: Option<u32>,
     ) -> Result<bool, PropertyLimit> {
@@ -81,7 +81,7 @@ impl OrdinaryObject {
 
     fn set_array_length(
         &mut self,
-        key: JsString,
+        key: PropertyKey,
         mut descriptor: PropertyDescriptor,
         new_length: u32,
     ) -> Result<bool, PropertyLimit> {
@@ -161,8 +161,10 @@ impl OrdinaryObject {
     }
 }
 
-pub(super) fn is_length(key: &JsString) -> bool {
-    key.code_units() == [0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68]
+pub(super) fn is_length<'key>(key: impl Into<PropertyKeyRef<'key>>) -> bool {
+    key.into()
+        .as_string()
+        .is_some_and(|key| key.code_units() == [0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68])
 }
 
 #[cfg(test)]

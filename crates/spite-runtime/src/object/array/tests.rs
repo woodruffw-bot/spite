@@ -1,5 +1,6 @@
 use super::*;
 use crate::object::{DataDescriptor, Objects};
+use spite_core::JsString;
 use spite_heap::Handle;
 
 fn data(value: Value) -> DataDescriptor {
@@ -107,7 +108,8 @@ fn canonical_indices_grow_length_and_other_keys_do_not() {
     assert!(define_length(&mut objects, &array, 0.0, None, &mut budget).unwrap());
     assert_eq!(
         objects.inspect(&array).unwrap().own_keys(),
-        ["length", "01", "-0", "1.0", "4294967295", "4294967296"].map(JsString::from)
+        ["length", "01", "-0", "1.0", "4294967295", "4294967296"]
+            .map(spite_core::PropertyKey::from)
     );
 }
 
@@ -199,7 +201,7 @@ fn truncation_preserves_partial_deletions_and_requested_readonly_length() {
         assert_eq!(length(&objects, &array), (6, writable != Some(false)));
         assert_eq!(
             objects.inspect(&array).unwrap().own_keys(),
-            ["2", "3", "5", "length"].map(JsString::from)
+            ["2", "3", "5", "length"].map(spite_core::PropertyKey::from)
         );
     }
 }
@@ -247,7 +249,7 @@ fn successful_truncation_and_descriptor_rejection_obey_attributes() {
     assert_eq!(length(&objects, &array), (2, false));
     assert_eq!(
         objects.inspect(&array).unwrap().own_keys(),
-        ["0", "1", "length"].map(JsString::from)
+        ["0", "1", "length"].map(spite_core::PropertyKey::from)
     );
 }
 

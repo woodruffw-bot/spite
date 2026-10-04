@@ -66,7 +66,10 @@ fn kinds_switch_only_when_configurable_and_preserve_order_and_common_attributes(
     assert!(record.own_property(&x).unwrap().configurable());
     assert_eq!(
         record.own_keys(),
-        [JsString::from("x"), JsString::from("y")]
+        [
+            spite_core::PropertyKey::from("x"),
+            spite_core::PropertyKey::from("y")
+        ]
     );
     // An empty data/accessor kind is generic, not a request to change the kind.
     for kind in [

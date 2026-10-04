@@ -127,7 +127,7 @@ mod tests {
             .objects
             .define(
                 &target,
-                "prototype".into(),
+                "prototype",
                 PropertyDescriptor {
                     kind: DescriptorKind::Accessor {
                         get: Some(Some(getter)),
@@ -155,7 +155,7 @@ mod tests {
             .objects
             .define(
                 &bound,
-                "prototype".into(),
+                "prototype",
                 PropertyDescriptor {
                     kind: DescriptorKind::Accessor {
                         get: Some(Some(thrower)),

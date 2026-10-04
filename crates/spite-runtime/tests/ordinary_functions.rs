@@ -58,19 +58,19 @@ fn prototype_constructor_cycles_and_descriptors_are_standard() {
     let keys: Vec<_> = record
         .own_keys()
         .into_iter()
-        .map(|key| key.to_utf8().unwrap())
+        .map(|key| key.as_string().expect("string key").to_utf8().unwrap())
         .collect();
     assert_eq!(keys, ["length", "name", "prototype"]);
     for name in ["name", "length"] {
         let property = record
-            .own_property(&name.into())
+            .own_property(&spite_core::JsString::from(name))
             .unwrap()
             .as_data()
             .unwrap();
         assert!(!property.writable && !property.enumerable && property.configurable);
     }
     let property = record
-        .own_property(&"prototype".into())
+        .own_property(&spite_core::JsString::from("prototype"))
         .unwrap()
         .as_data()
         .unwrap();
@@ -81,7 +81,7 @@ fn prototype_constructor_cycles_and_descriptors_are_standard() {
     let constructor = realm
         .inspect_object(prototype)
         .unwrap()
-        .own_property(&"constructor".into())
+        .own_property(&spite_core::JsString::from("constructor"))
         .unwrap()
         .as_data()
         .unwrap();

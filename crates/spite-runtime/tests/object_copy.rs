@@ -1,6 +1,5 @@
 //! Observable value copying and descriptor-preserving Object reflection.
 
-use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn check(source: &str) {
@@ -60,7 +59,7 @@ fn assign_orders_getters_and_setters_and_rechecks_each_snapshotted_key() {
     };
     assert_eq!(
         realm.inspect_object(&object).unwrap().own_keys(),
-        ["2", "10", "b", "a"].map(JsString::from)
+        ["2", "10", "b", "a"].map(spite_core::PropertyKey::from)
     );
 }
 

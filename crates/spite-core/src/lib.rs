@@ -4,7 +4,7 @@ mod symbol;
 mod unicode;
 mod unicode_data;
 
-pub use symbol::{JsSymbol, PropertyKey};
+pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef};
 pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;
 

@@ -10,7 +10,7 @@ use crate::{
     Value,
     environment::{BindingState, Environment, EnvironmentHandle},
 };
-use spite_core::JsString;
+use spite_core::{JsString, PropertyKey, PropertyKeyRef};
 use spite_heap::{Collection, Handle, Heap};
 use std::collections::BTreeMap;
 use std::{
@@ -96,9 +96,15 @@ impl Budget {
         Ok(())
     }
 
-    pub(super) fn lookup(&mut self, object: &OrdinaryObject, key: &JsString) -> Result<(), Error> {
+    pub(super) fn lookup<'key>(
+        &mut self,
+        object: &OrdinaryObject,
+        key: impl Into<PropertyKeyRef<'key>>,
+    ) -> Result<(), Error> {
+        let key = key.into();
         let comparisons = key
-            .len()
+            .as_string()
+            .map_or(0, JsString::len)
             .checked_add(1)
             .and_then(|units| units.checked_mul(object.property_count()))
             .and_then(|units| units.checked_add(1))
@@ -281,7 +287,7 @@ impl Objects {
             // Fresh keys are unique. Their order also places every String
             // index before length, including indices beyond the array range.
             object.properties.push((
-                key,
+                key.into(),
                 Property::Data(DataProperty {
                     value: Value::String(JsString::from_code_units(vec![unit])),
                     writable: false,
@@ -292,7 +298,7 @@ impl Objects {
         }
         budget.charge(1)?;
         object.properties.push((
-            JsString::from("length"),
+            PropertyKey::from("length"),
             Property::Data(DataProperty {
                 value: Value::Number(value.len() as f64),
                 writable: false,
@@ -523,10 +529,11 @@ impl Objects {
     pub fn define(
         &mut self,
         object: &Handle,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         descriptor: impl Into<PropertyDescriptor>,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
+        let key = key.into();
         let mut descriptor = descriptor.into().normalize();
         budget.lookup(self.inspect(object)?, &key)?;
         let mapping = self.mapped_target(object, &key, budget)?;
@@ -620,8 +627,12 @@ impl Objects {
         Ok(allowed)
     }
 
-    /// Copies own string keys in specification order with bounded scans and sorting.
-    pub fn own_keys(&self, object: &Handle, budget: &mut Budget) -> Result<Vec<JsString>, Error> {
+    /// Copies own string/symbol keys in specification order with bounded work.
+    pub fn own_keys(
+        &self,
+        object: &Handle,
+        budget: &mut Budget,
+    ) -> Result<Vec<PropertyKey>, Error> {
         let record = self.inspect(object)?;
         let count = record.property_count();
         let sorting = count
@@ -629,31 +640,38 @@ impl Objects {
             .ok_or(Error::WorkLimit)?;
         budget.charge(sorting.checked_add(1).ok_or(Error::WorkLimit)?)?;
         for (key, _) in &record.properties {
-            // Account for index classification and copying UTF-16 key storage.
-            budget.charge(key.len().checked_mul(2).ok_or(Error::WorkLimit)?)?;
+            // Account for index classification and string copying. Symbol
+            // identity clones never scan or copy description text.
+            budget.charge(
+                key.as_string()
+                    .map_or(Some(1), |key| key.len().checked_mul(2))
+                    .ok_or(Error::WorkLimit)?,
+            )?;
         }
         Ok(record.own_keys())
     }
 
     /// Checks own property presence without copying its value or visiting prototypes.
-    pub fn has_own(
+    pub fn has_own<'key>(
         &self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
+        let key = key.into();
         let record = self.inspect(object)?;
         budget.lookup(record, key)?;
         Ok(record.own_property(key).is_some())
     }
 
     /// Copies an own complete descriptor with bounded key scans and value-copy work.
-    pub fn get_own(
+    pub fn get_own<'key>(
         &self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<Option<Property>, Error> {
+        let key = key.into();
         let record = self.inspect(object)?;
         budget.lookup(record, key)?;
         match record.own_property(key) {
@@ -678,12 +696,13 @@ impl Objects {
     }
 
     /// Finds a data result or getter call, searching prototypes iteratively.
-    pub fn get(
+    pub fn get<'key>(
         &self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<GetAction, Error> {
+        let key = key.into();
         match self.find(object, key, budget)? {
             Some((owner, Property::Data(property))) => {
                 let value = self
@@ -704,7 +723,13 @@ impl Objects {
     }
 
     /// Implements OrdinaryHasProperty, including properties whose value is undefined.
-    pub fn has(&self, object: &Handle, key: &JsString, budget: &mut Budget) -> Result<bool, Error> {
+    pub fn has<'key>(
+        &self,
+        object: &Handle,
+        key: impl Into<PropertyKeyRef<'key>>,
+        budget: &mut Budget,
+    ) -> Result<bool, Error> {
+        let key = key.into();
         Ok(self.find(object, key, budget)?.is_some())
     }
 
@@ -716,11 +741,12 @@ impl Objects {
     pub fn set(
         &mut self,
         object: &Handle,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         value: Value,
         receiver: Option<&Handle>,
         budget: &mut Budget,
     ) -> Result<SetAction, Error> {
+        let key = key.into();
         if let Some(receiver) = receiver {
             self.inspect(receiver)?;
         }
@@ -766,12 +792,13 @@ impl Objects {
     }
 
     /// Deletes only an own property, with OrdinaryDelete's Boolean result.
-    pub fn delete(
+    pub fn delete<'key>(
         &mut self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
+        let key = key.into();
         let record = self.inspect(object)?;
         // Deletion may shift the remaining vector entries after the key scan.
         budget.charge(record.property_count())?;
@@ -814,12 +841,13 @@ impl Objects {
         Ok(result)
     }
 
-    fn find(
+    fn find<'key>(
         &self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<Option<(Handle, &Property)>, Error> {
+        let key = key.into();
         let mut next = Some(object);
         while let Some(handle) = next {
             let record = self.inspect(handle)?;

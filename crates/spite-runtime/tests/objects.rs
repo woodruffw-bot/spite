@@ -232,7 +232,7 @@ fn configurable_properties_can_be_reconfigured_and_deleted_capacity_reused() {
     assert_eq!(value(&object, "x"), Value::Boolean(true));
     assert!(object.delete(&JsString::from("x")));
     assert!(define(&mut object, "y", DataDescriptor::default()));
-    assert_eq!(object.own_keys(), [JsString::from("y")]);
+    assert_eq!(object.own_keys(), [spite_core::PropertyKey::from("y")]);
 }
 
 #[test]
@@ -267,15 +267,15 @@ fn keys_use_array_index_order_then_exact_string_creation_order() {
     let expected = ["0", "1", "3", "20", "4294967294"]
         .into_iter()
         .chain(strings)
-        .map(JsString::from)
-        .chain([surrogate.clone()])
+        .map(spite_core::PropertyKey::from)
+        .chain([surrogate.clone().into()])
         .collect::<Vec<_>>();
     assert_eq!(object.own_keys(), expected);
     assert!(object.delete(&JsString::from("b")));
     assert!(define(&mut object, "b", data(Value::Undefined)));
     let mut expected = expected;
     expected.remove(5);
-    expected.push(JsString::from("b"));
+    expected.push(spite_core::PropertyKey::from("b"));
     assert_eq!(object.own_keys(), expected);
     assert_eq!(
         object

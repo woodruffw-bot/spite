@@ -1,6 +1,5 @@
 //! Object creation and the two phases of ObjectDefineProperties.
 
-use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn check(source: &str) {
@@ -56,7 +55,7 @@ fn definitions_snapshot_numeric_then_string_keys_and_ignore_inherited_or_hidden_
     let Value::Object(object)=realm.eval("let log='',props={__proto__:{inherited:null}};function add(k){Object.defineProperty(props,k,{get:()=>{log+=k+':';return {value:k};},enumerable:true});}add('b');add('10');add('2');add('a');add('0');Object.defineProperty(props,'hidden',{get:()=>{throw 1;}});let o={};Object.defineProperties(o,props)").unwrap() else {panic!("target");};
     assert_eq!(
         realm.inspect_object(&object).unwrap().own_keys(),
-        ["0", "2", "10", "b", "a"].map(JsString::from)
+        ["0", "2", "10", "b", "a"].map(spite_core::PropertyKey::from)
     );
     assert_eq!(
         realm.eval(

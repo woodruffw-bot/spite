@@ -117,7 +117,11 @@ fn constructor_static_properties_can_be_reflected_and_frozen() {
         panic!("descriptors");
     };
     let mut keys = realm.inspect_object(&descriptors).unwrap().own_keys();
-    keys.sort();
+    keys.sort_by(|a, b| {
+        a.as_string()
+            .expect("string key")
+            .cmp(b.as_string().expect("string key"))
+    });
     assert_eq!(
         keys,
         [
@@ -128,7 +132,7 @@ fn constructor_static_properties_can_be_reflected_and_frozen() {
             "prototype",
             "raw"
         ]
-        .map(JsString::from)
+        .map(spite_core::PropertyKey::from)
     );
     check(
         "Object.freeze(String)===String && Object.isFrozen(String) && String.raw({raw:'a'})==='a' && !Object.isFrozen(String.prototype)",

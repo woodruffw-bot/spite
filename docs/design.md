@@ -255,15 +255,16 @@ objects are semantic requirements. Add ordinary objects first. Implement arrays,
 functions, proxies, typed arrays, and other exotic objects on explicit internal
 method boundaries rather than ad hoc evaluator branches.
 
-Ordinary records store string-keyed properties in a creation-ordered
+Ordinary records store string/symbol properties in a creation-ordered
 vector. Partial descriptors preserve omitted fields, enforce non-configurable
 and non-writable invariants, and use SameValue. A successful equivalent-value
 definition on a frozen property preserves its stored value, including NaN bits
 (10.1.6.3). Enumeration sorts array indices numerically before other strings in
-creation order. Deletion followed by re-creation gives a string a new position.
+creation order, then symbols in creation order. Deletion followed by re-creation
+gives a non-index key a new position within its group.
 Property capacity failures remain distinct from descriptor rejection. Storage
 exposes checked internal operations; realms supply JavaScript execution and
-exception semantics. Symbol keys remain a separate implementation boundary.
+exception semantics. Runtime Symbol values remain a separate implementation boundary.
 
 Symbol integration proceeds in three layers (6.1.5, 6.1.7, 7.1.19). First,
 spite-core owns immutable JsSymbol identities and a PropertyKey enum that
@@ -274,13 +275,18 @@ created symbols remain unequal even when both descriptions are absent or equal.
 This requires no unsafe code, global counter, or new dependency. Symbols cannot
 point to objects, so reference counting cannot create a symbol/object cycle.
 
-Next, migrate ordinary/exotic storage and work accounting to PropertyKey. Own
+Ordinary/exotic storage and work accounting now use PropertyKey. Own
 keys must enumerate numeric string indices first, then other strings in creation
 order, then symbols in creation order. Symbol keys never trigger Array length,
 String index, mapped-argument, or global binding behavior merely because their
 description resembles a string key. Descriptor rules, inherited accessors, and
 tracing of property values apply to both key kinds. Charge symbol comparisons
 and clones as constant work, while string keys retain UTF-16 work accounting.
+PropertyKeyRef borrows either key kind without allocating a lookup copy. Storage
+accepts borrowed keys for reads and owned keys for mutations; existing string
+callers use the same operations. The Realm enumeration boundary remains
+Unsupported for objects with symbol keys until Value and hook integration; it
+must never silently discard those keys.
 
 Finally, integrate Symbol values, wrappers, construction, shared well-known
 identities and registry semantics, ToPropertyKey, and observable hooks before

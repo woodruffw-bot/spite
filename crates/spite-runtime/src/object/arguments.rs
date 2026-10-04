@@ -2,7 +2,7 @@
 
 use super::{Budget, Error, Objects, array_index};
 use crate::{Value, environment::EnvironmentHandle};
-use spite_core::JsString;
+use spite_core::{JsString, PropertyKeyRef};
 use spite_heap::Handle;
 use std::collections::BTreeMap;
 
@@ -42,10 +42,10 @@ impl Objects {
         Ok(())
     }
 
-    pub(super) fn mapped_value(
+    pub(super) fn mapped_value<'key>(
         &self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<Option<&Value>, Error> {
         let Some(map) = &self.inspect(object)?.parameter_map else {
@@ -64,10 +64,10 @@ impl Objects {
         Ok(Some(value))
     }
 
-    pub(super) fn mapped_target(
+    pub(super) fn mapped_target<'key>(
         &self,
         object: &Handle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
     ) -> Result<Option<(EnvironmentHandle, String, u32)>, Error> {
         let Some(map) = &self.inspect(object)?.parameter_map else {
@@ -109,7 +109,11 @@ mod tests {
     fn descriptor(realm: &Realm, arguments: &Handle) -> super::super::Property {
         realm
             .objects
-            .get_own(arguments, &"0".into(), &mut Budget::new(1000))
+            .get_own(
+                arguments,
+                &spite_core::JsString::from("0"),
+                &mut Budget::new(1000),
+            )
             .unwrap()
             .unwrap()
     }
@@ -127,7 +131,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     DataDescriptor {
                         writable: Some(false),
                         ..Default::default()
@@ -143,7 +147,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     DataDescriptor {
                         writable: Some(true),
                         value: Some(Value::Number(3.0)),
@@ -160,7 +164,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     DataDescriptor {
                         writable: Some(false),
                         value: Some(Value::Number(7.0)),
@@ -186,7 +190,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     PropertyDescriptor {
                         kind: DescriptorKind::Accessor {
                             get: Some(Some(getter)),
@@ -204,7 +208,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     DataDescriptor {
                         value: Some(Value::Number(3.0)),
                         writable: Some(true),
@@ -221,7 +225,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     DataDescriptor {
                         configurable: Some(false),
                         ..Default::default()
@@ -233,7 +237,11 @@ mod tests {
         assert!(
             !realm
                 .objects
-                .delete(&arguments, &"0".into(), &mut Budget::new(1000))
+                .delete(
+                    &arguments,
+                    &spite_core::JsString::from("0"),
+                    &mut Budget::new(1000)
+                )
                 .unwrap()
         );
         assert!(
@@ -241,7 +249,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     PropertyDescriptor {
                         kind: DescriptorKind::Accessor {
                             get: Some(None),
@@ -258,7 +266,7 @@ mod tests {
                 .objects
                 .define(
                     &arguments,
-                    "0".into(),
+                    "0",
                     DataDescriptor {
                         value: Some(Value::Number(3.0)),
                         configurable: Some(true),
@@ -279,7 +287,7 @@ mod tests {
         assert_eq!(
             realm.objects.define(
                 &arguments,
-                "0".into(),
+                "0",
                 DataDescriptor {
                     value: Some(Value::String("long replacement".into())),
                     writable: Some(false),

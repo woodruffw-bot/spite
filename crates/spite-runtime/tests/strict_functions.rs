@@ -200,25 +200,26 @@ fn arguments_descriptors_and_property_order_follow_the_unmapped_algorithm() {
     let keys: Vec<_> = record
         .own_keys()
         .iter()
-        .map(|key| key.to_utf8().unwrap())
+        .map(|key| key.as_string().expect("string key").to_utf8().unwrap())
         .collect();
     assert_eq!(keys, ["0", "1", "length", "callee"]);
     for name in ["0", "1"] {
         let property = record
-            .own_property(&name.into())
+            .own_property(&spite_core::JsString::from(name))
             .unwrap()
             .as_data()
             .unwrap();
         assert!(property.writable && property.enumerable && property.configurable);
     }
     let length = record
-        .own_property(&"length".into())
+        .own_property(&spite_core::JsString::from("length"))
         .unwrap()
         .as_data()
         .unwrap();
     assert!(length.writable && !length.enumerable && length.configurable);
-    let spite_runtime::object::Property::Accessor(callee) =
-        record.own_property(&"callee".into()).unwrap()
+    let spite_runtime::object::Property::Accessor(callee) = record
+        .own_property(&spite_core::JsString::from("callee"))
+        .unwrap()
     else {
         panic!("accessor");
     };

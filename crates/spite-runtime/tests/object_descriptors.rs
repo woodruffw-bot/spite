@@ -86,7 +86,10 @@ fn reflected_descriptors_are_fresh_ordinary_objects_with_ordered_mutable_fields(
             panic!("descriptor");
         };
         let descriptor = realm.inspect_object(&descriptor).unwrap();
-        assert_eq!(descriptor.own_keys(), fields.map(JsString::from));
+        assert_eq!(
+            descriptor.own_keys(),
+            fields.map(spite_core::PropertyKey::from)
+        );
         for field in fields {
             let property = descriptor
                 .own_property(&JsString::from(field))

@@ -130,7 +130,7 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
     let object = realm.inspect_object(&global).unwrap();
     for name in ["undefined", "NaN", "Infinity"] {
         let data = object
-            .own_property(&name.into())
+            .own_property(&spite_core::JsString::from(name))
             .unwrap()
             .as_data()
             .unwrap();
@@ -143,7 +143,7 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
         ("sloppy", true, true, true),
     ] {
         let data = object
-            .own_property(&name.into())
+            .own_property(&spite_core::JsString::from(name))
             .unwrap()
             .as_data()
             .unwrap();

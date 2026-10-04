@@ -5,7 +5,7 @@ use crate::{
     object::{self, DataDescriptor, OrdinaryObject, Property, SetAction},
 };
 use spite_bigint::BigInt;
-use spite_core::{JsString, Span};
+use spite_core::{JsString, PropertyKey, Span};
 use spite_parser::ast::{Literal, ObjectProperty, PropertyKind, PropertyName};
 
 pub(super) enum Hint {
@@ -535,7 +535,18 @@ impl Realm {
                 "own keys of this incomplete intrinsic are not implemented",
             ));
         }
-        self.object_work(span, |objects, budget| objects.own_keys(object, budget))
+        let keys = self.object_work(span, |objects, budget| objects.own_keys(object, budget))?;
+        // Storage supports symbol identities before the Realm's Value and hook
+        // integration. Never silently omit a symbol supplied by an embedding.
+        keys.into_iter()
+            .map(|key| match key {
+                PropertyKey::String(key) => Ok(key),
+                PropertyKey::Symbol(_) => Err(Self::unsupported(
+                    span,
+                    "symbol-keyed Realm enumeration is not implemented",
+                )),
+            })
+            .collect()
     }
 
     pub(crate) fn own_property_descriptor(

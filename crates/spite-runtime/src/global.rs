@@ -296,7 +296,7 @@ mod tests {
         assert!(
             realm
                 .objects
-                .define(&global, name.into(), descriptor, &mut Budget::new(1000))
+                .define(&global, name, descriptor, &mut Budget::new(1000))
                 .unwrap()
         );
     }
@@ -484,7 +484,7 @@ mod tests {
             .objects
             .define(
                 &prototype,
-                "access".into(),
+                "access",
                 PropertyDescriptor {
                     kind: DescriptorKind::Accessor {
                         get: Some(Some(getter)),

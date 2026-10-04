@@ -2,7 +2,6 @@
 
 mod common;
 use common::REALM_ENTRIES;
-use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn check(source: &str) {
@@ -154,7 +153,7 @@ fn intrinsic_names_lengths_descriptors_and_key_order_are_exact() {
     };
     assert_eq!(
         realm.inspect_object(&array).unwrap().own_keys(),
-        ["1", "10", "length", "x"].map(JsString::from)
+        ["1", "10", "length", "x"].map(spite_core::PropertyKey::from)
     );
 }
 
