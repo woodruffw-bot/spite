@@ -132,7 +132,6 @@ fn metadata_and_retained_intrinsics_survive_public_deletion() {
 #[test]
 fn incomplete_intrinsics_and_host_gaps_skip_pending_handlers() {
     for operation in [
-        "Reflect.ownKeys(Reflect)",
         "Reflect.ownKeys(String.prototype)",
         "Reflect.getOwnPropertyDescriptor(String.prototype,'normalize')",
         "Reflect.defineProperty(String.prototype,'normalize',{value:7})",

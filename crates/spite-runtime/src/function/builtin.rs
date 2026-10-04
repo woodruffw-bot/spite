@@ -58,6 +58,7 @@ impl Realm {
                 span,
             ),
             Builtin::ReflectGetPrototypeOf => {
+                // [[GetPrototypeOf]] is shared with Object after object validation.
                 let target =
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
                 self.object_get_prototype_of(Value::Object(target), span)
@@ -99,6 +100,13 @@ impl Realm {
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
                 self.object_extensibility(Value::Object(target), false, span)
             }
+            Builtin::ReflectSet => self.reflect_set(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next(),
+                span,
+            ),
             Builtin::ReflectPreventExtensions => {
                 let target =
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;

@@ -46,6 +46,7 @@ pub(crate) enum Builtin {
     ReflectSetPrototypeOf,
     ReflectIsExtensible,
     ReflectOwnKeys,
+    ReflectSet,
     ReflectPreventExtensions,
     FunctionBind,
     FunctionHasInstance,
@@ -213,6 +214,7 @@ impl Builtin {
             Self::ReflectSetPrototypeOf => "setPrototypeOf",
             Self::ReflectIsExtensible => "isExtensible",
             Self::ReflectOwnKeys => "ownKeys",
+            Self::ReflectSet => "set",
             Self::ReflectPreventExtensions => "preventExtensions",
             Self::FunctionBind => "bind",
             Self::FunctionHasInstance => "[Symbol.hasInstance]",
@@ -473,7 +475,10 @@ impl Builtin {
             | Self::ObjectAssign
             | Self::ObjectGroupBy
             | Self::ObjectIs => 2.0,
-            Self::ObjectDefineProperty | Self::ReflectApply | Self::ReflectDefineProperty => 3.0,
+            Self::ObjectDefineProperty
+            | Self::ReflectApply
+            | Self::ReflectDefineProperty
+            | Self::ReflectSet => 3.0,
             _ => 0.0,
         }
     }

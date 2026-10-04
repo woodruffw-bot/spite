@@ -2,10 +2,7 @@
 
 use crate::{
     Collection, Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{
-        self, DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor,
-        SetAction,
-    },
+    object::{self, DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor},
 };
 use spite_bigint::BigInt;
 use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span, WellKnownSymbol};
@@ -210,29 +207,7 @@ impl Realm {
     ) -> Result<bool, Error> {
         let key = key.into();
         if let Value::Object(object) = base {
-            self.check_global_property_operation(object, &key, span)?;
-            self.check_missing_intrinsic_mutation(object, &key, span)?;
-            let action = self.object_work(span, |objects, budget| {
-                budget.value(&value)?;
-                objects.set(object, key, value.clone(), Some(object), budget)
-            })?;
-            return match action {
-                SetAction::Done(result) => Ok(result),
-                SetAction::ArrayLength(receiver) => self.define_property(
-                    &receiver,
-                    JsString::from("length"),
-                    DataDescriptor {
-                        value: Some(value),
-                        ..Default::default()
-                    }
-                    .into(),
-                    span,
-                ),
-                SetAction::Call(setter) => {
-                    self.call(Value::Object(setter), base.clone(), vec![value], span)?;
-                    Ok(true)
-                }
-            };
+            return self.set_property_with_receiver(object, key, value, base.clone(), span);
         }
         if matches!(base,Value::String(string) if key_is(&key,"length") || string_index(string,&key).is_some())
         {
@@ -240,23 +215,62 @@ impl Realm {
             return Ok(false);
         }
         if let Some(prototype) = self.primitive_prototype(base) {
-            let action = self.object_work(span, |objects, budget| {
-                budget.value(&value)?;
-                objects.set(&prototype, key, value.clone(), None, budget)
-            })?;
-            return match action {
-                SetAction::Done(result) => Ok(result),
-                SetAction::ArrayLength(_) => {
-                    unreachable!("primitive receivers cannot define Array length")
-                }
-                SetAction::Call(setter) => {
-                    self.call(Value::Object(setter), base.clone(), vec![value], span)?;
-                    Ok(true)
-                }
-            };
+            return self.set_property_with_receiver(&prototype, key, value, base.clone(), span);
         }
         self.tick(span)?;
         Ok(false)
+    }
+
+    pub(super) fn set_property_with_receiver(
+        &mut self,
+        target: &ObjectHandle,
+        key: PropertyKey,
+        value: Value,
+        receiver: Value,
+        span: Span,
+    ) -> Result<bool, Error> {
+        // OrdinarySet / OrdinarySetWithOwnDescriptor (10.1.9.1–2). Descriptor
+        // reads use the Realm boundary so missing intrinsic properties cannot
+        // be treated as absent, including on a distinct write receiver.
+        let mut current = target.clone();
+        let descriptor = loop {
+            if let Some(property) = self.own_property_descriptor(&current, &key, span)? {
+                break Some(property);
+            }
+            let parent = self.object_work(span, |objects, _| {
+                Ok(objects.inspect(&current)?.prototype().cloned())
+            })?;
+            let Some(parent) = parent else { break None };
+            current = parent;
+        };
+        match descriptor {
+            Some(Property::Accessor(property)) => {
+                let Some(setter) = property.set else {
+                    return Ok(false);
+                };
+                self.call(Value::Object(setter), receiver, vec![value], span)?;
+                return Ok(true);
+            }
+            Some(Property::Data(property)) if !property.writable => return Ok(false),
+            _ => {}
+        }
+        let Value::Object(receiver) = receiver else {
+            return Ok(false);
+        };
+        let descriptor = match self.own_property_descriptor(&receiver, &key, span)? {
+            Some(Property::Data(property)) if property.writable => DataDescriptor {
+                value: Some(value),
+                ..Default::default()
+            },
+            Some(_) => return Ok(false),
+            None => DataDescriptor {
+                value: Some(value),
+                writable: Some(true),
+                enumerable: Some(true),
+                configurable: Some(true),
+            },
+        };
+        self.define_property(&receiver, key, descriptor.into(), span)
     }
 
     pub(super) fn delete_property_value<'key>(
@@ -637,7 +651,6 @@ impl Realm {
             || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
-            || object == &intrinsics.reflect.object
         {
             return Err(Self::unsupported(
                 span,
@@ -702,12 +715,7 @@ impl Realm {
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
-            || (object == &intrinsics.reflect.object && missing_reflect_method(key))
     }
-}
-
-fn missing_reflect_method(key: &JsString) -> bool {
-    ["set"].iter().any(|name| key_is(key, name))
 }
 
 fn missing_array_static(key: &JsString) -> bool {

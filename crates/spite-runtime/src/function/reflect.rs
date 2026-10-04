@@ -50,6 +50,7 @@ impl Realm {
             Builtin::ReflectIsExtensible,
             Builtin::ReflectOwnKeys,
             Builtin::ReflectPreventExtensions,
+            Builtin::ReflectSet,
             Builtin::ReflectSetPrototypeOf,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
@@ -152,6 +153,23 @@ impl Realm {
         let key = self.property_key(key, span)?;
         let descriptor = self.property_descriptor(attributes, span)?;
         self.define_property(&target, key, descriptor, span)
+            .map(Value::Boolean)
+    }
+
+    pub(super) fn reflect_set(
+        &mut self,
+        target: Value,
+        key: Value,
+        value: Value,
+        receiver: Option<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 28.1.12 preserves an explicitly supplied primitive receiver and
+        // returns [[Set]]'s boolean without strict-mode rejection handling.
+        let target = Self::reflect_object(target, span)?;
+        let key = self.property_key(key, span)?;
+        let receiver = receiver.unwrap_or_else(|| Value::Object(target.clone()));
+        self.set_property_with_receiver(&target, key, value, receiver, span)
             .map(Value::Boolean)
     }
 

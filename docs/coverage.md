@@ -24,6 +24,7 @@ not an alternative language specification.
 | Arrow functions | Expression/block bodies, identifier/default/rest parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
+| Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
@@ -202,8 +203,9 @@ present newTarget before reading arguments, preserves custom prototype selection
 and forwards bound targets iteratively. Explicit undefined newTarget is rejected;
 an absent argument defaults to target. Tests cover sparse lists, abrupt getters,
 constructor return rules, builtin and bound construction, metadata, collection,
-large default argument lists, and opt-in host failures. Remaining Reflect methods
-and own-key reflection remain Unsupported.
+large default argument lists, and opt-in host failures. All thirteen Reflect
+methods are exposed for currently implemented object kinds; Proxy traps remain
+pending.
 
 Reflect prototype and extensibility methods reject every primitive target without
 conversion. SetPrototypeOf returns false for cycles, immutable-prototype changes,
@@ -226,8 +228,17 @@ fresh objects without getter calls; own-key Arrays include symbols and
 non-enumerables without property-value reads or species/constructor hooks. Tests
 cover conversion order, SameValue redefinitions, Array partial truncation,
 String/arguments exotics, all key types, metadata, collection, and host gaps.
-Reflect's own complete key list awaits set; other incomplete intrinsic lists
-remain Unsupported.
+Other incomplete intrinsic lists remain Unsupported.
+
+Reflect.set shares checked OrdinarySet with assignments, preserving exact setter
+receivers and defining writable data on the receiver with boolean rejection.
+Receiver prototype setters are bypassed; existing own attributes are retained.
+Tests cover primitive receivers, read-only and accessor rejection, ordered key
+conversion, setters, Array length/index failures and partial truncation,
+String/arguments exotics, ordinary assignments, and missing intrinsic descriptors
+before mutation. Reflect has complete own-property reflection and supports
+freezing, copying, and for-in over its exposed ordinary prototype chain. Metadata,
+deletion, collection, and host-failure regressions retain its intrinsic methods.
 
 Boolean calls, construction, prototype methods, descriptors, and boxed receivers
 are implemented. Boolean.prototype itself holds false. Methods validate own
@@ -548,7 +559,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 188 retained entries outside the per-Script work
+Realm initialization creates 189 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

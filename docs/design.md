@@ -1152,8 +1152,9 @@ argument defaults to target, while explicit undefined is rejected (28.1.2).
 Construction reuses ordinary, builtin, and iterative bound dispatch with an
 explicit newTarget, preserving prototype lookup order and bound substitution.
 Neither method reads Symbol.iterator. Argument-list copies, opted-in quotas,
-platform capacity, and native-stack guards follow existing call rules. Remaining
-Reflect methods and own-key reflection report Unsupported until implemented.
+platform capacity, and native-stack guards follow existing call rules. All thirteen
+Reflect methods are exposed for currently implemented object kinds; Proxy traps
+remain pending.
 
 Reflect.getPrototypeOf, setPrototypeOf, isExtensible, and preventExtensions
 (28.1.7/9/11/13) require object targets without boxing or conversion. They share
@@ -1182,7 +1183,19 @@ target and reuses FromPropertyDescriptor without invoking accessors. OwnKeys
 (28.1.10) preserves all String/Symbol keys, including non-enumerables, in internal
 key order and creates a fresh intrinsic Array with own data elements. It bypasses
 species, constructors, and inherited setters. Incomplete intrinsic key lists and
-descriptors remain explicit host gaps; Reflect's own list awaits its set method.
+descriptors remain explicit host gaps.
+
+Reflect.set (28.1.12) shares checked OrdinarySet/OrdinarySetWithOwnDescriptor with
+ordinary assignments (10.1.9.1–2). Walk target descriptors before consulting an
+object receiver's own descriptor. Target accessors call their setter with the
+exact receiver and return true regardless of its result; absent setters and
+read-only data return false. Writable data defines or updates the receiver,
+bypassing its inherited setters and retaining existing attributes. Primitive
+receivers reject data writes but reach setters unchanged. Definition dispatch
+preserves Array length/index rules, String read-only characters, and mapped
+arguments. Missing intrinsic descriptors remain Unsupported before mutation,
+including on a distinct receiver. Reflect now has complete own-key/descriptor
+reflection and integrity operations; its thirteen methods and tag remain rooted.
 
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
