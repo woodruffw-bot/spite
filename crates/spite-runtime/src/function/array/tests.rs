@@ -457,3 +457,52 @@ fn recursive_array_callbacks_stop_on_a_two_mebibyte_stack() {
         .join()
         .unwrap();
 }
+
+#[test]
+fn recursive_find_predicates_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for method in ["find", "findIndex", "findLast", "findLastIndex"] {
+                let mut realm = Realm::default();
+                realm
+                    .eval(&format!("let a=[1],flag=0,f=()=>a.{method}(f)"))
+                    .unwrap();
+                assert!(matches!(
+                    realm.eval(&format!(
+                        "try{{a.{method}(f);}}catch{{flag=1;}}finally{{flag=2;}}"
+                    )),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1].find(v=>v===1)===1");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn find_bounds_hole_traversal_and_copying_of_retained_values() {
+    let mut realm = Realm::default();
+    realm.eval("let flag=0").unwrap();
+    realm.limits.max_steps = 500;
+    for method in ["find", "findIndex", "findLast", "findLastIndex"] {
+        assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},()=>false);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+    }
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0");
+    let receiver = realm.eval("['a'.repeat(1000)]").unwrap();
+    let predicate = realm.eval("()=>true").unwrap();
+    realm.remaining_steps = 1500;
+    assert!(matches!(
+        realm.array_find(
+            Builtin::ArrayFind,
+            receiver,
+            predicate,
+            Value::Undefined,
+            Span::new(0, 0)
+        ),
+        Err(Error::Limit { .. })
+    ));
+}

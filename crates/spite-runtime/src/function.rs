@@ -69,6 +69,10 @@ pub(crate) enum Builtin {
     ArrayForEach,
     ArrayEvery,
     ArraySome,
+    ArrayFind,
+    ArrayFindIndex,
+    ArrayFindLast,
+    ArrayFindLastIndex,
     ArrayToString,
     String,
     StringToString,
@@ -141,6 +145,10 @@ impl Builtin {
             Self::ArrayForEach => "forEach",
             Self::ArrayEvery => "every",
             Self::ArraySome => "some",
+            Self::ArrayFind => "find",
+            Self::ArrayFindIndex => "findIndex",
+            Self::ArrayFindLast => "findLast",
+            Self::ArrayFindLastIndex => "findLastIndex",
             Self::String => "String",
             Self::StringFromCharCode => "fromCharCode",
             Self::StringFromCodePoint => "fromCodePoint",
@@ -214,6 +222,10 @@ impl Builtin {
             | Self::ArrayForEach
             | Self::ArrayEvery
             | Self::ArraySome
+            | Self::ArrayFind
+            | Self::ArrayFindIndex
+            | Self::ArrayFindLast
+            | Self::ArrayFindLastIndex
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint

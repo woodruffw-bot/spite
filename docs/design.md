@@ -322,6 +322,11 @@ values visited. Callback arguments are value, index, and the boxed receiver.
 The supplied thisArg is preserved with copying charged before each call.
 Every/some short-circuit on ToBoolean without coercing object results. Work is
 charged per visited index, so large lengths still allow early observable exits.
+Find/findIndex/findLast/findLastIndex use FindViaPredicate (23.1.3.9–12), which
+visits every index with Get, including holes, in ascending or descending order.
+An index cursor represents the specification list without allocating it. Value
+returning methods preserve the pre-callback value even if the predicate mutates
+the source; copies of thisArg and retained values are charged before cloning.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses
