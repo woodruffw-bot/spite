@@ -2707,3 +2707,15 @@ script-pass	fec837450824d1829be4cd79ed4d22b7f6da010fc0b838319505faf98525868c	tes
 script-pass	0765f5092eede7a0f6a4c9b0cd9b6b9968bae0ae44cb57f8517b82cdbf4ef5f0	test/built-ins/JSON/parse/reviver-object-non-configurable-prop-create.js
 script-pass	a09681803625617741fcb14e48cb27f6e0915d899b88bc149eb0bac52ff2b2fe	test/built-ins/JSON/parse/reviver-object-non-configurable-prop-delete.js
 script-pass	1601cebd99f56e08167fe98916934e91ca87eaa03d19ab991181f129a6c362cb	test/built-ins/JSON/parse/reviver-wrapper.js
+script-pass	4281b9a6ca4189edcdce6418ace4a09ba002f4dda076fc3791986ed394122c8a	test/built-ins/JSON/rawJSON/builtin.js
+script-pass	763718a974a7f26f775c8b651e696adf28071169e04e3ad444833d99b73c9d43	test/built-ins/JSON/rawJSON/illegal-empty-and-start-end-chars.js
+script-pass	83dd0dd6e90368ecacac35f70588410eb537116a04e1417ec4a5895c187326ba	test/built-ins/JSON/rawJSON/invalid-JSON-text.js
+script-pass	c9dd1b31784ae98a43c5b47396bb8b7e7a8d88dff3a7075a76db0416ff48a8e7	test/built-ins/JSON/rawJSON/length.js
+script-pass	14d6ac31a774740896a45b0b71e11299074b9731e8205b1a496d8f0e6183788f	test/built-ins/JSON/rawJSON/name.js
+script-pass	d6e612fcfdbc0068e7050ef8bd1e153a2aa56460da49dfee5afb5548489cda5e	test/built-ins/JSON/rawJSON/not-a-constructor.js
+script-pass	eef6984a840d370f0b0a4954810ba5c43adbf124d5b21a962a539cbc9bd9ca67	test/built-ins/JSON/rawJSON/returns-expected-object.js
+script-pass	bd2dc990a1d1d9bc90e210680696aae8ce1f8d2cacf7df9e15da0461f57b271c	test/built-ins/JSON/isRawJSON/basic.js
+script-pass	cfdc9c3db528c1b8d32269584f9c6023c7f83b919d3c7e2c816b81bf31b2a81c	test/built-ins/JSON/isRawJSON/builtin.js
+script-pass	c96a4b0b0fe64157bd2aa446d5e854259b42f43b54ec8ffce0dcca9bfc3d628e	test/built-ins/JSON/isRawJSON/length.js
+script-pass	2219f24dcebb72ee3fc19d04c2aa396c56309b1e971af0c2dfd24cf044e24f48	test/built-ins/JSON/isRawJSON/name.js
+script-pass	9d89fa26386a81bf35dd11173767c9e59dd54d377c4f694f8bbf9e0487419f45	test/built-ins/JSON/isRawJSON/not-a-constructor.js

@@ -2680,3 +2680,15 @@ test/built-ins/JSON/parse/reviver-object-get-prop-from-prototype.js	-	-	-
 test/built-ins/JSON/parse/reviver-object-non-configurable-prop-create.js	-	-	-
 test/built-ins/JSON/parse/reviver-object-non-configurable-prop-delete.js	-	-	-
 test/built-ins/JSON/parse/reviver-wrapper.js	-	-	-
+test/built-ins/JSON/rawJSON/builtin.js	-	-	-
+test/built-ins/JSON/rawJSON/illegal-empty-and-start-end-chars.js	-	-	-
+test/built-ins/JSON/rawJSON/invalid-JSON-text.js	-	-	-
+test/built-ins/JSON/rawJSON/length.js	-	-	-
+test/built-ins/JSON/rawJSON/name.js	-	-	-
+test/built-ins/JSON/rawJSON/not-a-constructor.js	-	-	-
+test/built-ins/JSON/rawJSON/returns-expected-object.js	-	-	-
+test/built-ins/JSON/isRawJSON/basic.js	-	-	-
+test/built-ins/JSON/isRawJSON/builtin.js	-	-	-
+test/built-ins/JSON/isRawJSON/length.js	-	-	-
+test/built-ins/JSON/isRawJSON/name.js	-	-	-
+test/built-ins/JSON/isRawJSON/not-a-constructor.js	-	-	-
