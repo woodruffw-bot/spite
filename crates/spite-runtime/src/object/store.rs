@@ -521,6 +521,21 @@ impl Objects {
         Ok(allowed)
     }
 
+    /// Copies own string keys in specification order with bounded scans and sorting.
+    pub fn own_keys(&self, object: &Handle, budget: &mut Budget) -> Result<Vec<JsString>, Error> {
+        let record = self.inspect(object)?;
+        let count = record.property_count();
+        let sorting = count
+            .checked_mul(count.max(1).ilog2() as usize + 1)
+            .ok_or(Error::WorkLimit)?;
+        budget.charge(sorting.checked_add(1).ok_or(Error::WorkLimit)?)?;
+        for (key, _) in &record.properties {
+            // Account for index classification and copying UTF-16 key storage.
+            budget.charge(key.len().checked_mul(2).ok_or(Error::WorkLimit)?)?;
+        }
+        Ok(record.own_keys())
+    }
+
     /// Checks own property presence without copying its value or visiting prototypes.
     pub fn has_own(
         &self,

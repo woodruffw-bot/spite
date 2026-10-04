@@ -44,6 +44,8 @@ pub(crate) enum Builtin {
     ObjectSetPrototypeOf,
     ObjectIsExtensible,
     ObjectPreventExtensions,
+    ObjectCreate,
+    ObjectDefineProperties,
     Error(error::ErrorConstructor),
     ErrorToString,
     ErrorIsError,
@@ -94,6 +96,8 @@ impl Builtin {
             Self::ObjectSetPrototypeOf => "setPrototypeOf",
             Self::ObjectIsExtensible => "isExtensible",
             Self::ObjectPreventExtensions => "preventExtensions",
+            Self::ObjectCreate => "create",
+            Self::ObjectDefineProperties => "defineProperties",
             Self::Number => "Number",
             Self::Error(kind) => kind.name(),
             Self::ErrorIsError => "isError",
@@ -141,6 +145,8 @@ impl Builtin {
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn
             | Self::ObjectSetPrototypeOf
+            | Self::ObjectCreate
+            | Self::ObjectDefineProperties
             | Self::ObjectIs => 2.0,
             Self::ObjectDefineProperty => 3.0,
             _ => 0.0,

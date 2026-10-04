@@ -441,6 +441,24 @@ impl Realm {
 }
 
 impl Realm {
+    pub(crate) fn own_property_keys(
+        &mut self,
+        object: &ObjectHandle,
+        span: Span,
+    ) -> Result<Vec<JsString>, Error> {
+        let intrinsics = self.intrinsics.as_ref().expect("initialized");
+        if self.global_object.as_ref() == Some(object)
+            || object == &intrinsics.object.constructor
+            || object == &intrinsics.function_prototype
+        {
+            return Err(Self::unsupported(
+                span,
+                "own keys of this incomplete intrinsic are not implemented",
+            ));
+        }
+        self.object_work(span, |objects, budget| objects.own_keys(object, budget))
+    }
+
     pub(crate) fn own_property_descriptor(
         &mut self,
         object: &ObjectHandle,
@@ -490,8 +508,6 @@ impl Realm {
 fn missing_object_static(key: &JsString) -> bool {
     [
         "assign",
-        "create",
-        "defineProperties",
         "entries",
         "freeze",
         "fromEntries",

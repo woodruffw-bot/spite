@@ -488,7 +488,15 @@ returning primitive targets unchanged. Ordinary prototype changes preserve
 identity checks, immutable/non-extensible invariants, and bounded cycle rejection.
 Object.isExtensible returns false for primitives; preventExtensions returns them
 unchanged and closes objects without freezing their existing properties.
-Remaining Object static methods are explicit gaps.
+Object.create allocates with its supplied object/null prototype before optional
+property definition. Object.defineProperties snapshots own keys, rechecks each own
+descriptor's enumerability, and converts all selected descriptors before the first
+definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
+side effects remain observable. Definition failure retains earlier successful
+definitions. Key copying and sorting consume
+bounded work. Enumeration of incomplete Object/Function/global intrinsics reports
+Unsupported until their own key sets are complete. Remaining Object static methods
+are explicit gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

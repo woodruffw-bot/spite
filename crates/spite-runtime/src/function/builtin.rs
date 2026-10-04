@@ -64,6 +64,16 @@ impl Realm {
                 span,
             ),
             Builtin::ObjectToLocaleString => self.object_to_locale_string(this, span),
+            Builtin::ObjectCreate => self.object_create(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::ObjectDefineProperties => self.object_define_properties(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ObjectGetPrototypeOf => {
                 self.object_get_prototype_of(arguments.next().unwrap_or(Value::Undefined), span)
             }

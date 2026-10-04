@@ -83,6 +83,8 @@ impl Realm {
             Builtin::ObjectSetPrototypeOf,
             Builtin::ObjectIsExtensible,
             Builtin::ObjectPreventExtensions,
+            Builtin::ObjectCreate,
+            Builtin::ObjectDefineProperties,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(

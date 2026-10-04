@@ -189,7 +189,11 @@ mutable descriptor objects; Object.hasOwn boxes before key conversion, and
 Object.is uses SameValue without coercion. getPrototypeOf/setPrototypeOf expose
 prototype identity and reject cycles and immutable/non-extensible prototype
 changes; isExtensible/preventExtensions retain their primitive special cases.
-Remaining static methods and
+Object.create selects an object/null prototype and optionally defines properties.
+Object.defineProperties snapshots own keys in specification order, converts every
+enumerable descriptor before defining properties, and retains earlier definitions
+if a later definition is rejected. Enumeration of incomplete Object/Function/global
+intrinsics remains Unsupported. Remaining static methods and
 String/BigInt/Symbol boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
@@ -209,7 +213,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 60 retained entries under a separate fixed work
+Realm initialization creates 62 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

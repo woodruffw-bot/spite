@@ -198,11 +198,11 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "Object.create",
+        "Object.assign",
         "Object.getOwnPropertyDescriptors",
-        "Object.create=1",
-        "delete Object.create",
-        "Object.hasOwnProperty('create')",
+        "Object.assign=1",
+        "delete Object.assign",
+        "Object.hasOwnProperty('assign')",
         "Object.propertyIsEnumerable('freeze')",
         "globalThis.hasOwnProperty('Array')",
     ] {

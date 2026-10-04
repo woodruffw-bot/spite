@@ -122,6 +122,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Object construction and mandatory string-keyed prototype methods.
 - [x] Add Object.defineProperty/getOwnPropertyDescriptor, hasOwn, and is.
 - [x] Add Object prototype inspection/mutation and extensibility APIs.
+- [x] Add Object.create and ordered two-phase Object.defineProperties.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.

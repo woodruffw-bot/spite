@@ -24,9 +24,20 @@ impl Realm {
         };
         let key = self.property_key(key, span)?;
         let descriptor = self.property_descriptor(attributes, span)?;
-        self.check_missing_intrinsic_mutation(&object, &key, span)?;
+        self.define_property_or_throw(&object, key, descriptor, span)?;
+        Ok(Value::Object(object))
+    }
+
+    fn define_property_or_throw(
+        &mut self,
+        object: &ObjectHandle,
+        key: JsString,
+        descriptor: PropertyDescriptor,
+        span: Span,
+    ) -> Result<(), Error> {
+        self.check_missing_intrinsic_mutation(object, &key, span)?;
         let defined = self.object_work(span, |objects, budget| {
-            objects.define(&object, key, descriptor, budget)
+            objects.define(object, key, descriptor, budget)
         })?;
         if !defined {
             return Err(Self::exception(
@@ -34,6 +45,68 @@ impl Realm {
                 span,
                 "property descriptor was rejected",
             ));
+        }
+        Ok(())
+    }
+
+    pub(crate) fn object_create(
+        &mut self,
+        prototype: Value,
+        properties: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let prototype = match prototype {
+            Value::Object(object) => Some(object),
+            Value::Null => None,
+            _ => {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "Object.create requires an object or null prototype",
+                ));
+            }
+        };
+        let object = self.object_work(span, |objects, _| objects.create(prototype.as_ref()))?;
+        if matches!(properties, Value::Undefined) {
+            return Ok(Value::Object(object));
+        }
+        self.object_define_properties(Value::Object(object), properties, span)
+    }
+
+    pub(crate) fn object_define_properties(
+        &mut self,
+        target: Value,
+        properties: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let Value::Object(object) = target else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Object.defineProperties requires an object",
+            ));
+        };
+        let Value::Object(properties) = self.box_primitive(properties, span)? else {
+            unreachable!("ToObject");
+        };
+        // 20.1.2.3.1: snapshot keys, then convert every still-enumerable own
+        // descriptor before applying any definitions. Getters may mutate props.
+        let keys = self.own_property_keys(&properties, span)?;
+        let mut descriptors = Vec::new();
+        for key in keys {
+            if self
+                .own_property_descriptor(&properties, &key, span)?
+                .is_some_and(|property| property.enumerable())
+            {
+                let attributes = self.get_property(&properties, &key, span)?;
+                let descriptor = self.property_descriptor(attributes, span)?;
+                descriptors.push((key, descriptor));
+            }
+        }
+        // Rejection here preserves earlier successful definitions; it is not a
+        // transaction. A conversion failure above performs no definitions.
+        for (key, descriptor) in descriptors {
+            self.define_property_or_throw(&object, key, descriptor, span)?;
         }
         Ok(Value::Object(object))
     }
