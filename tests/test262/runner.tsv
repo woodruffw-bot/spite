@@ -1311,3 +1311,78 @@ test/language/expressions/new/spread-obj-spread-order.js	-	-	-
 test/language/expressions/new/spread-obj-symbol-property.js	-	-	-
 test/language/expressions/new/spread-obj-undefined.js	-	-	-
 test/language/expressions/new/spread-obj-with-overrides.js	-	-	-
+test/language/statements/for-of/Array.prototype.Symbol.iterator.js	-	-	-
+test/language/statements/for-of/Array.prototype.entries.js	-	-	-
+test/language/statements/for-of/Array.prototype.keys.js	-	-	-
+test/language/statements/for-of/arguments-mapped-aliasing.js	-	-	-
+test/language/statements/for-of/arguments-mapped-mutation.js	-	-	-
+test/language/statements/for-of/arguments-mapped.js	-	-	-
+test/language/statements/for-of/arguments-unmapped-aliasing.js	-	-	-
+test/language/statements/for-of/arguments-unmapped-mutation.js	-	-	-
+test/language/statements/for-of/arguments-unmapped.js	-	-	-
+test/language/statements/for-of/array-contract-expand.js	-	-	-
+test/language/statements/for-of/array-contract.js	-	-	-
+test/language/statements/for-of/array-expand-contract.js	-	-	-
+test/language/statements/for-of/array-expand.js	-	-	-
+test/language/statements/for-of/array-key-get-error.js	-	-	-
+test/language/statements/for-of/array.js	-	-	-
+test/language/statements/for-of/body-put-error.js	-	-	-
+test/language/statements/for-of/decl-const.js	361	366	lexical declaration requires a statement list
+test/language/statements/for-of/decl-fun.js	354	362	function declaration requires a statement list
+test/language/statements/for-of/decl-let.js	363	364	expected a semicolon or line terminator
+test/language/statements/for-of/escaped-of.js	806	813	expected ;
+test/language/statements/for-of/generic-iterable.js	-	-	-
+test/language/statements/for-of/head-const-bound-names-fordecl-tdz.js	-	-	-
+test/language/statements/for-of/head-const-bound-names-in-stmt.js	506	507	var declaration conflicts with lexical for binding
+test/language/statements/for-of/head-const-bound-names-let.js	447	450	invalid binding identifier
+test/language/statements/for-of/head-const-fresh-binding-per-iteration.js	-	-	-
+test/language/statements/for-of/head-const-init.js	422	423	for-of requires one binding without an initializer
+test/language/statements/for-of/head-decl-no-expr.js	418	419	expected )
+test/language/statements/for-of/head-expr-no-expr.js	429	430	expected )
+test/language/statements/for-of/head-expr-obj-iterator-method.js	-	-	-
+test/language/statements/for-of/head-expr-primitive-iterator-method.js	-	-	-
+test/language/statements/for-of/head-expr-to-obj.js	-	-	-
+test/language/statements/for-of/head-let-bound-names-fordecl-tdz.js	-	-	-
+test/language/statements/for-of/head-let-bound-names-in-stmt.js	534	535	var declaration conflicts with lexical for binding
+test/language/statements/for-of/head-let-bound-names-let.js	445	448	invalid binding identifier
+test/language/statements/for-of/head-let-fresh-binding-per-iteration.js	-	-	-
+test/language/statements/for-of/head-let-init.js	420	421	for-of requires one binding without an initializer
+test/language/statements/for-of/head-lhs-async-dot.js	-	-	-
+test/language/statements/for-of/head-lhs-async-escaped.js	-	-	-
+test/language/statements/for-of/head-lhs-async-invalid.js	386	391	invalid for-of assignment target
+test/language/statements/for-of/head-lhs-async-parens.js	-	-	-
+test/language/statements/for-of/head-lhs-cover-non-asnmt-trgt.js	821	827	invalid for-of assignment target
+test/language/statements/for-of/head-lhs-cover.js	-	-	-
+test/language/statements/for-of/head-lhs-let.js	655	656	expected ;
+test/language/statements/for-of/head-lhs-member.js	-	-	-
+test/language/statements/for-of/head-lhs-non-asnmt-trgt.js	488	492	invalid for-of assignment target
+test/language/statements/for-of/head-var-bound-names-in-stmt.js	-	-	-
+test/language/statements/for-of/head-var-bound-names-let.js	-	-	-
+test/language/statements/for-of/head-var-init.js	416	417	for-of requires one binding without an initializer
+test/language/statements/for-of/head-var-no-expr.js	418	419	expected )
+test/language/statements/for-of/iterator-close-non-object.js	-	-	-
+test/language/statements/for-of/iterator-close-non-throw-get-method-abrupt.js	-	-	-
+test/language/statements/for-of/iterator-close-non-throw-get-method-is-null.js	-	-	-
+test/language/statements/for-of/iterator-close-non-throw-get-method-non-callable.js	-	-	-
+test/language/statements/for-of/iterator-close-throw-get-method-abrupt.js	-	-	-
+test/language/statements/for-of/iterator-close-throw-get-method-non-callable.js	-	-	-
+test/language/statements/for-of/iterator-close-via-break.js	-	-	-
+test/language/statements/for-of/iterator-close-via-continue.js	-	-	-
+test/language/statements/for-of/iterator-close-via-return.js	-	-	-
+test/language/statements/for-of/iterator-close-via-throw.js	-	-	-
+test/language/statements/for-of/iterator-next-error.js	-	-	-
+test/language/statements/for-of/iterator-next-reference.js	-	-	-
+test/language/statements/for-of/iterator-next-result-done-attr.js	-	-	-
+test/language/statements/for-of/iterator-next-result-value-attr-error.js	-	-	-
+test/language/statements/for-of/iterator-next-result-value-attr.js	-	-	-
+test/language/statements/for-of/labelled-fn-stmt-const.js	583	591	labelled functions are not allowed
+test/language/statements/for-of/labelled-fn-stmt-let.js	581	589	labelled functions are not allowed
+test/language/statements/for-of/labelled-fn-stmt-lhs.js	577	585	labelled functions are not allowed
+test/language/statements/for-of/labelled-fn-stmt-var.js	581	589	labelled functions are not allowed
+test/language/statements/for-of/let-block-with-newline.js	-	-	-
+test/language/statements/for-of/let-identifier-with-newline.js	-	-	-
+test/language/statements/for-of/scope-body-lex-boundary.js	-	-	-
+test/language/statements/for-of/scope-head-lex-open.js	-	-	-
+test/language/statements/for-of/string-astral-truncated.js	-	-	-
+test/language/statements/for-of/string-astral.js	-	-	-
+test/language/statements/for-of/string-bmp.js	-	-	-

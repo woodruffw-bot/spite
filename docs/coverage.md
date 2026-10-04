@@ -33,7 +33,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2574 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2713 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -507,13 +507,15 @@ fifteen nested object-spread files), length/index boundaries,
 truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
 and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, plus sort/toSorted, toReversed/with/toSpliced copies,
 and keys/values/entries iteration, including mapped/unmapped arguments. The 34
-Symbol files and 23 object method/accessor files run in their prescribed Script modes. Controls
+Symbol files and 23 object method/accessor files run in their prescribed Script modes.
+Another 53 positive for-of files and 22 reviewed for-of parse-negative files cover
+iteration, bindings, header grammar, and closing precedence. Controls
 verify successful assertions and explicit assertion failures. Some string comparison
 failure formatting still requires missing JSON and remains Unsupported;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 2574 variants are four raw positives, 2498 positives using the upstream
-harness, and 72 reviewed parse negatives. Component fixtures and harness files do
+Rust. Its 2713 variants are four raw positives, 2595 positives using the upstream
+harness, and 114 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses the runtime defaults, with every host resource quota disabled.
 Hosts can opt into quotas with `Limits` fields such as `max_steps: Some(units)`
