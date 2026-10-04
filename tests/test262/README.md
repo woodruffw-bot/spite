@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2007 unmodified test fixtures and six harness files come from
+These 2048 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -367,13 +367,12 @@ quotas remain unchanged.
 The forty unchanged Math sources comprise five abs, two sign, eight ceil, eight
 floor, eight round, and nine trunc fixtures. Their eighty Script/StrictScript
 variants cover special values, signed zero, fractional rounding, constructor
-rejection, values adjacent to halfway boundaries, and large odd integers. Six
-Math-property descriptor candidates remain outside this corpus pending complete
-Math own reflection; the metadata review below adds the name/length files. Local
-regressions cover fixed constants and attributes, ordered single numeric
-conversion, ignored extra arguments, exact half ties, and intrinsic retention
-during collection. The upstream pin, harness bytes, and opt-in execution limits
-are unchanged.
+rejection, values adjacent to halfway boundaries, and large odd integers. The
+complete Math reflection review below adds these Math-property descriptor files;
+the metadata review adds the name/length files. Local regressions cover fixed
+constants and attributes, ordered single numeric conversion, ignored extra
+arguments, exact half ties, and intrinsic retention during collection. The
+upstream pin, harness bytes, and opt-in execution limits are unchanged.
 
 ## Math extrema and integer review
 
@@ -381,12 +380,12 @@ The twenty-three unchanged sources comprise seven max, seven min, seven clz32,
 and two imul fixtures. Their forty-six Script/StrictScript variants cover empty
 calls, NaN results after argument conversion, signed-zero extrema, unsigned
 32-bit wrapping and bit counts, modular signed products, and constructor
-rejection. Four Math-property descriptor candidates remain outside this corpus
-pending complete Math own reflection; the metadata review below adds the
-name/length files. Local regressions add ordered abrupt conversions, exact
-receiver/extra-argument behavior, large lists with default limits, integer
-boundaries, descriptors, host failures, and collection. The pin, harness bytes,
-and opt-in execution limits are unchanged.
+rejection. The complete Math reflection review below adds these Math-property
+descriptor files; the metadata review adds the name/length files. Local
+regressions add ordered abrupt conversions, exact receiver/extra-argument
+behavior, large lists with default limits, integer boundaries, descriptors, host
+failures, and collection. The pin, harness bytes, and opt-in execution limits
+are unchanged.
 
 ## Math binary32/binary16 rounding review
 
@@ -396,13 +395,13 @@ binary32 halfway ties, rounding conversions, and constructor rejection. The
 unchanged `byteConversionValues.js` is the fifth harness file; its binary16
 table covers exact normal/subnormal boundaries, midpoint neighbors, signed
 underflow, and overflow. Local controls execute both floating-point tables and
-deliberately failing assertions. Two Math-property descriptor candidates remain
-outside this corpus pending complete Math own reflection; the metadata review
-below adds the name/length files. Float16Array feature annotations describe this
-shared proposal; these selected tests exercise Math.f16round without
-constructing a Float16Array. Local regressions additionally enumerate every
-finite binary16 value and adjacent rounding boundary for both signs. The pin and
-opt-in execution limits are unchanged.
+deliberately failing assertions. The complete Math reflection review below adds
+these Math-property descriptor files; the metadata review adds the name/length
+files. Float16Array feature annotations describe this shared proposal; these
+selected tests exercise Math.f16round without constructing a Float16Array. Local
+regressions additionally enumerate every finite binary16 value and adjacent
+rounding boundary for both signs. The pin and opt-in execution limits are
+unchanged.
 
 ## Math power and square-root review
 
@@ -411,38 +410,36 @@ fixtures, with sixty-four Script/StrictScript variants. They cover
 exponentiation special values, signed zeros and infinities, odd/even integral
 exponents, negative fractional bases, very large exponents, and constructor
 rejection. The sqrt results fixture verifies one thousand exact square-root
-pairs over a broad binary64 range. Two Math-property descriptor candidates
-remain outside this corpus pending complete Math own reflection; the metadata
-review below adds the name/length files. Local regressions add ordered abrupt
-coercion before numeric shortcuts, receiver and extra-argument behavior,
-primitive type errors, range endpoints, descriptors, host aborts, and
-collection. The pin, harness bytes, and opt-in execution limits are unchanged.
+pairs over a broad binary64 range. The complete Math reflection review below
+adds these Math-property descriptor files; the metadata review adds the
+name/length files. Local regressions add ordered abrupt coercion before numeric
+shortcuts, receiver and extra-argument behavior, primitive type errors, range
+endpoints, descriptors, host aborts, and collection. The pin, harness bytes, and
+opt-in execution limits are unchanged.
 
 ## Math exponential and logarithmic review
 
 The twenty unchanged sources comprise six exp, six log, and two each of expm1,
 log1p, log2, and log10. Their forty Script/StrictScript variants cover NaN,
 infinities, signed zero, domain boundaries, exact endpoint results,
-representative logarithms, and constructor rejection. Six Math-property
-descriptor candidates remain outside this corpus pending complete Math own
-reflection; the metadata review below adds the name/length files. Local
-regressions add the full binary64 power-of-two exponent range, small-input
-accuracy without intermediate addition/subtraction, ordered conversions,
-metadata, host aborts, and collection. The pin, harness bytes, and opt-in
-execution limits are unchanged.
+representative logarithms, and constructor rejection. The complete Math
+reflection review below adds these Math-property descriptor files; the metadata
+review adds the name/length files. Local regressions add the full binary64
+power-of-two exponent range, small-input accuracy without intermediate
+addition/subtraction, ordered conversions, metadata, host aborts, and
+collection. The pin, harness bytes, and opt-in execution limits are unchanged.
 
 ## Math inverse-function and cube-root review
 
 The thirty-three unchanged sources comprise five acos, four acosh, six asin, two
 asinh, four atan, two atanh, eight atan2, and two cbrt fixtures. Their sixty-six
 Script/StrictScript variants cover NaN, domain endpoints, signed
-zeros/infinities, quadrant behavior, and constructor rejection. Eight
-Math-property descriptor candidates remain outside this corpus pending complete
-Math own reflection; the metadata review below adds the name/length files. Local
-regressions add every zero/infinity sign combination, ordered conversions before
-NaN results, finite approximations, large and subnormal inputs, metadata, host
-aborts, and collection. The pin, harness bytes, and opt-in execution limits are
-unchanged.
+zeros/infinities, quadrant behavior, and constructor rejection. The complete
+Math reflection review below adds these Math-property descriptor files; the
+metadata review adds the name/length files. Local regressions add every
+zero/infinity sign combination, ordered conversions before NaN results, finite
+approximations, large and subnormal inputs, metadata, host aborts, and
+collection. The pin, harness bytes, and opt-in execution limits are unchanged.
 
 ## Math function metadata and property-helper review
 
@@ -453,45 +450,60 @@ read-only, non-enumerable, configurable descriptors through the unchanged
 primordial functions and mutation/restore behavior. Local controls cover data,
 Symbol and accessor properties, callable metadata, restoration, deliberately
 wrong values/attributes, and unsupported operations that cannot become passes.
-The twenty-eight Math-property descriptor files remain outside this selection:
-their enumeration reaches Math's incomplete own reflection. Other features'
-property-helper selections await separate review. The pin and opt-in execution
-limits are unchanged.
+The complete Math reflection review below subsequently adds the twenty-eight
+Math-property descriptor files. Other features' property-helper selections await
+separate review. The pin and opt-in execution limits are unchanged.
 
 ## Math circular and hyperbolic review
 
-Thirty-five unchanged sources comprise seven sin, eight cos, eight tan, and
-four each of sinh, cosh, and tanh. Their seventy Script/StrictScript variants
-cover NaN, signed zeros, infinity domains, constructor rejection, and standard
+Thirty-five unchanged sources comprise seven sin, eight cos, eight tan, and four
+each of sinh, cosh, and tanh. Their seventy Script/StrictScript variants cover
+NaN, signed zeros, infinity domains, constructor rejection, and standard
 function name/length descriptors through the pinned property helper. Local
 regressions add finite approximations, large and subnormal inputs, symmetry,
-coercion order, type/host failures, ignored extra arguments, and collection.
-Six Math-property descriptor candidates await complete Math own reflection.
-The upstream pin, harness bytes, and opt-in execution limits are unchanged.
+coercion order, type/host failures, ignored extra arguments, and collection. The
+complete Math reflection review below adds the six Math-property descriptor
+files. The upstream pin, harness bytes, and opt-in execution limits are
+unchanged.
 
 ## Math hypot review
 
-Eleven unchanged hypot sources add twenty-two Script/StrictScript variants.
-They cover empty/all-zero calls, NaN/infinities, Infinity precedence over NaN,
+Eleven unchanged hypot sources add twenty-two Script/StrictScript variants. They
+cover empty/all-zero calls, NaN/infinities, Infinity precedence over NaN,
 ordered abrupt argument conversion, a 3/4/5 result, constructor rejection, and
 standard name/length descriptors. Local regressions add overflow/underflow
 avoidance, subnormal norms, compensated small contributions in both argument
-orders, primitive type errors, host aborts, and collection. The Math-property
-descriptor candidate awaits complete Math own reflection. The pin, harness bytes,
-and opt-in execution limits are unchanged.
+orders, primitive type errors, host aborts, and collection. The complete Math
+reflection review below adds the Math-property descriptor file. The pin, harness
+bytes, and opt-in execution limits are unchanged.
 
 ## Math exact summation review
 
 Eight unchanged sumPrecise sources add sixteen Script/StrictScript variants.
-They cover signed zero, infinities/NaN, exact finite summation including previously
-reported rounding bugs, element rejection without coercion, iterator closing,
-constructor rejection, and standard name/length descriptors. The generator-based
-iterable candidate remains outside this selection because generators are not
-implemented; its source is not rewritten. The Math-property descriptor candidate
-awaits complete Math own reflection. Local regressions add synchronous iterator
-ordering, closing precedence, the specification count boundary, independent exact
-rounding references, metadata, host failures, and collection. The pin, harness
-bytes, and opt-in execution limits are unchanged.
+They cover signed zero, infinities/NaN, exact finite summation including
+previously reported rounding bugs, element rejection without coercion, iterator
+closing, constructor rejection, and standard name/length descriptors. The
+generator-based iterable candidate remains outside this selection because
+generators are not implemented; its source is not rewritten. The complete Math
+reflection review below adds the Math-property descriptor file. Local
+regressions add synchronous iterator ordering, closing precedence, the
+specification count boundary, independent exact rounding references, metadata,
+host failures, and collection. The pin, harness bytes, and opt-in execution
+limits are unchanged.
+
+## Complete Math reflection and random review
+
+Forty-one unchanged sources add eighty-two Script/StrictScript variants. Five
+random sources cover repeated values in [0, 1), constructor rejection, and
+standard name/length/property descriptors. The other thirty-six sources verify
+each previously installed method's Math-property descriptor using the original
+property helper. Complete Math own reflection now supports their enumeration and
+mutation checks. All thirty-seven standard methods have name, length, and Math
+property descriptor fixtures at the existing pin. Local regressions cover exact
+random interval mapping, distinct realm sequences, identity capacity, metadata,
+collection, and Math reflection/freezing without getter calls. Other features'
+property-helper selections await separate review. The pin, harness bytes, and
+opt-in execution limits are unchanged.
 
 ## Scope and maintenance
 
@@ -514,12 +526,12 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 3902 variants from 1988 reviewed sources: the eleven
+The `spite-test262` command runs 3984 variants from 2029 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 266 Math numeric/metadata tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
+object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 307 Math numeric/metadata tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
@@ -530,7 +542,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-3728 positives using the upstream harness, and 170 reviewed parse-negative variants.
+3810 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
