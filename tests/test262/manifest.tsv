@@ -2614,3 +2614,16 @@ script-pass	5977bafdc604ceec3cb51de27ccb193756769e95a034e0eb9975ccab0965bd38	tes
 script-pass	389b803129883c1e9711d402eb886e020f924717f74b1ff826496dafb10b93a7	test/built-ins/String/prototype/normalize/this-is-null-throws.js
 script-pass	86a6a629b7a5ed29ccd4b0709ec4b32f67458f8af03acaf9d80d4a58afb4c8bb	test/built-ins/String/prototype/normalize/this-is-undefined-throws.js
 script-pass	1a41d87c9400f8c89d57814893e98daca4bff44b1ca16088e4cae2c69318f302	test/built-ins/String/prototype/normalize/normalize.js
+script-pass	742211073978ca028c9d8c60e3e2c3511b9ef2d9611c1e4e1d2f63e25bdf7177	test/built-ins/String/prototype/localeCompare/15.5.4.9_3.js
+script-pass	b61ba4f457ad63e4c0f8facf6bba1d7fc25b16851a7cd4d5c676abda55cb46c1	test/built-ins/String/prototype/localeCompare/15.5.4.9_CE.js
+script-pass	cd2e16a88e783934798946aaeb5844600e62a5c5f1f43b62aeb7fe961a24bb92	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A10.js
+script-pass	a40758791d45e259d2be5dab64df8e0b610ede2ddef740ded8469c1521785ddc	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A11.js
+script-pass	240fe2c1418539d82d6ca26b55c73fb7326bd32ebcaa48a63d5d1684f3f5ee0c	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A1_T1.js
+script-pass	d339cd5a2fab8401ec7ff83babaad5aa537f0ada18e14bc052d168a7e5e44cd5	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A1_T2.js
+script-pass	3858391d910633aaae179fb7f43e66182664e568a6df0c83db046fd65f95d378	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A6.js
+script-pass	9bb2ccc44c60a5114c709050ff94eeb065dfbc51647389e676433f9569b8a606	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A7.js
+script-pass	ab77eb3f219055ea9090e4d41082fc6988446d34488c19352d356bf58611d231	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A8.js
+script-pass	ce1cf53d7cacfa368650440b9854633fa53666e219261f4a26cf89d8e79d4d7f	test/built-ins/String/prototype/localeCompare/S15.5.4.9_A9.js
+script-pass	003366dc4dd993d4a9b0a3660f8f29d38d1be3c729341bbf9474501a02d30521	test/built-ins/String/prototype/localeCompare/name.js
+script-pass	afdb9c162a5a66dc41ec0b9bbb25cfc84c5629769f6c6dee62498bd060ab38ac	test/built-ins/String/prototype/localeCompare/not-a-constructor.js
+script-pass	f609f05f844a4701b6538e9c5df243d5e01e66e03242c09fa12fd202720778ec	test/built-ins/String/prototype/localeCompare/this-value-not-obj-coercible.js
