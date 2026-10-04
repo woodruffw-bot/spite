@@ -307,8 +307,7 @@ hint, and object results throw TypeError without falling back (7.1.1).
 
 Finally, integrate Symbol wrappers, construction, shared registry semantics,
 and remaining observable hooks before exposing the JavaScript Symbol global.
-In particular, instanceof,
-Object.prototype.toString, String IsRegExp checks, and intrinsic symbol properties
+In particular, Object.prototype.toString, String IsRegExp checks, and intrinsic symbol properties
 must stop relying on their current no-symbol assumptions. Array species and
 iteration then build on those boundaries. The foundation alone does not expose
 partial Symbol behavior to scripts or count as additional Test262 coverage.
@@ -819,12 +818,16 @@ prototype and compare its identity with ancestors. Callable arrows can participa
 without being constructors. Non-callable objects inheriting the default hook return
 false; non-callable objects without a hook throw TypeError.
 
-Until Symbol keys are exposed, hook lookup recognizes Function.prototype's fixed,
-non-writable, non-configurable @@hasInstance method along the actual prototype
-chain (20.2.3.6). This path does not expose a symbol-keyed callable or descriptor.
-Symbol support must materialize that property and implement custom-hook lookup
-before symbol properties or reflection become accessible. Prototype getter calls
-retain their receiver and abrupt completions, and traversal consumes host work.
+Function.prototype owns the fixed, non-writable, non-configurable symbol-keyed
+hasInstance callable (20.2.3.6). GetMethod reads custom/inherited hooks before
+checking target callability; calls retain the original receiver and left operand,
+and results use ToBoolean without coercion. Null/undefined hooks fall back to
+OrdinaryHasInstance. Direct intrinsic calls bypass the receiver's own hook, but
+bound targets re-enter InstanceofOperator and observe their current hook even for
+primitive left operands. Lookup of the exact intrinsic forwards iteratively to
+avoid native stack growth across deep bound chains; it still checks argument
+limits and charges property traversal. Other handlers use ordinary bounded Call.
+Native-injection tests cover symbol access while the Symbol global is pending.
 
 Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
 32 until explicit frames replace Rust recursion. Every success and abrupt result

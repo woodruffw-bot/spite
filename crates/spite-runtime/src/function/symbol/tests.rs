@@ -5,6 +5,7 @@ use crate::{
 };
 
 mod hooks;
+mod instance;
 mod keys;
 
 // The Symbol global stays unavailable until its wrappers and hooks are ready.
@@ -24,6 +25,10 @@ fn realm_with_symbols() -> Realm {
         ("lengthKey", JsSymbol::new(Some(JsString::from("length")))),
         ("globalKey", JsSymbol::new(Some(JsString::from("Symbol")))),
         ("convert", spite_core::WellKnownSymbol::ToPrimitive.symbol()),
+        (
+            "hasInstance",
+            spite_core::WellKnownSymbol::HasInstance.symbol(),
+        ),
         (
             "raw",
             JsSymbol::new(Some(JsString::from_code_units(vec![0xD800, 0, 0xDC00]))),

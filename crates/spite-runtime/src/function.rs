@@ -4,7 +4,7 @@ use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
-use spite_core::{JsString, Span};
+use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod arguments;
 mod array;
@@ -30,6 +30,7 @@ pub(crate) enum Builtin {
     FunctionCall,
     FunctionApply,
     FunctionBind,
+    FunctionHasInstance,
     FunctionToString,
     ThrowTypeError,
     ObjectToString,
@@ -143,6 +144,7 @@ impl Builtin {
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
             Self::FunctionBind => "bind",
+            Self::FunctionHasInstance => "[Symbol.hasInstance]",
             Self::FunctionToString
             | Self::ArrayToString
             | Self::ObjectToString
@@ -245,6 +247,7 @@ impl Builtin {
     fn length(self) -> f64 {
         match self {
             Self::FunctionCall
+            | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean
             | Self::Array
@@ -373,6 +376,7 @@ pub(super) struct Intrinsics {
     pub function_call: ObjectHandle,
     pub function_apply: ObjectHandle,
     pub function_bind: ObjectHandle,
+    pub function_has_instance: ObjectHandle,
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
     pub number: number::NumberIntrinsics,
@@ -393,6 +397,7 @@ impl Intrinsics {
             &self.function_call,
             &self.function_apply,
             &self.function_bind,
+            &self.function_has_instance,
             &self.function_to_string,
         ]
         .into_iter()
@@ -485,6 +490,22 @@ impl Realm {
                 span,
             )?;
         }
+        // 20.2.3.6: fixed, non-enumerable and non-constructible default hook.
+        let function_has_instance =
+            self.new_builtin(&function_prototype, Builtin::FunctionHasInstance, span)?;
+        self.object_work(span, |objects, budget| {
+            objects.define(
+                &function_prototype,
+                WellKnownSymbol::HasInstance.symbol(),
+                DataDescriptor {
+                    value: Some(Value::Object(function_has_instance.clone())),
+                    writable: Some(false),
+                    enumerable: Some(false),
+                    configurable: Some(false),
+                },
+                budget,
+            )
+        })?;
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
@@ -509,6 +530,7 @@ impl Realm {
             function_call,
             function_apply,
             function_bind,
+            function_has_instance,
             function_to_string,
             boolean,
             number,

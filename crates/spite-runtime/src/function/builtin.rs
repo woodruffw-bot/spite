@@ -335,6 +335,9 @@ impl Realm {
                 span,
                 "restricted function property",
             )),
+            Builtin::FunctionHasInstance => self
+                .ordinary_has_instance(this, arguments.next().unwrap_or(Value::Undefined), span)
+                .map(Value::Boolean),
             Builtin::ObjectValueOf => self.box_primitive(this, span),
             Builtin::ObjectToString => {
                 // 20.1.3.6. No Symbol keys or additional exotic object kinds are

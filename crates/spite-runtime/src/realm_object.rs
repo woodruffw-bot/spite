@@ -644,10 +644,8 @@ impl Realm {
             let Some(intrinsics) = &self.intrinsics else {
                 return false;
             };
-            return (object == &intrinsics.function_prototype
-                && symbol == &WellKnownSymbol::HasInstance.symbol())
-                || (object == &intrinsics.string.prototype
-                    && symbol == &WellKnownSymbol::Iterator.symbol())
+            return (object == &intrinsics.string.prototype
+                && symbol == &WellKnownSymbol::Iterator.symbol())
                 || (object == &intrinsics.array.constructor
                     && symbol == &WellKnownSymbol::Species.symbol())
                 || (object == &intrinsics.array.prototype

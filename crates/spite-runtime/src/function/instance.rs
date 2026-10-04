@@ -2,7 +2,12 @@
 
 use super::Callable;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
-use spite_core::{JsString, Span};
+use spite_core::{JsString, Span, WellKnownSymbol};
+
+enum InstanceCheck {
+    Result(bool),
+    Bound(ObjectHandle),
+}
 
 impl Realm {
     pub(crate) fn instance_of(
@@ -19,83 +24,101 @@ impl Realm {
                     "right operand of instanceof must be an object",
                 ));
             };
-            // Symbol properties cannot be installed or reflected yet. The only
-            // reachable @@hasInstance method is Function.prototype's fixed
-            // intrinsic (20.2.3.6); recognize its exact inheritance path. Symbol
-            // support must replace this lookup before custom hooks are exposed.
-            let intrinsic = self.has_instance_intrinsic(&object, span)?;
-            if intrinsic {
-                self.check_argument_count(1, span)?;
-            }
-            let (callable, bound_target) = self.object_work(span, |objects, _| {
-                let record = objects.inspect(&object)?;
-                Ok((
-                    record.is_callable(),
-                    match record.callable() {
-                        Some(Callable::Bound(bound)) => Some(bound.target.clone()),
-                        _ => None,
-                    },
-                ))
-            })?;
-            if !callable {
-                return if intrinsic {
-                    Ok(false)
+            let method =
+                self.get_property(&object, &WellKnownSymbol::HasInstance.symbol(), span)?;
+            if !matches!(method, Value::Undefined | Value::Null) {
+                // The exact intrinsic delegates directly to OrdinaryHasInstance.
+                // Keep bound-chain forwarding iterative, including inherited or
+                // aliased copies of this immutable callable. Custom hooks use Call.
+                let intrinsic = matches!(&method, Value::Object(method) if method == &self.intrinsics.as_ref().expect("initialized").function_has_instance);
+                if intrinsic {
+                    self.check_argument_count(1, span)?;
                 } else {
-                    Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        "right operand of instanceof is not callable",
-                    ))
-                };
-            }
-            // The intrinsic calls OrdinaryHasInstance; an absent hook falls
-            // back to it after IsCallable. Bound targets re-enter InstanceofOperator.
-            if let Some(bound) = bound_target {
-                target = Value::Object(bound);
-                continue;
-            }
-            let Value::Object(value) = &value else {
-                return Ok(false);
-            };
-            let prototype = self.get_property(&object, &JsString::from("prototype"), span)?;
-            let Value::Object(prototype) = prototype else {
+                    if !self.is_callable(&method, span)? {
+                        return Err(Self::exception(
+                            ExceptionKind::TypeError,
+                            span,
+                            "Symbol.hasInstance must be callable",
+                        ));
+                    }
+                    return self
+                        .call(method, Value::Object(object), vec![value], span)
+                        .map(|result| result.to_boolean());
+                }
+            } else if !self.is_callable(&Value::Object(object.clone()), span)? {
                 return Err(Self::exception(
                     ExceptionKind::TypeError,
                     span,
-                    "instanceof prototype must be an object",
+                    "right operand of instanceof is not callable",
                 ));
-            };
-            let mut next = Some(value.clone());
-            while let Some(handle) = next {
-                next = self.object_work(span, |objects, _| {
-                    Ok(objects.inspect(&handle)?.prototype().cloned())
-                })?;
-                if next.as_ref() == Some(&prototype) {
-                    return Ok(true);
-                }
             }
-            return Ok(false);
+            match self.ordinary_has_instance_step(&object, &value, span)? {
+                InstanceCheck::Result(result) => return Ok(result),
+                InstanceCheck::Bound(bound) => target = Value::Object(bound),
+            }
         }
     }
 
-    fn has_instance_intrinsic(&mut self, object: &ObjectHandle, span: Span) -> Result<bool, Error> {
-        let intrinsic = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized realm")
-            .function_prototype
-            .clone();
-        let mut next = Some(object.clone());
+    pub(crate) fn ordinary_has_instance(
+        &mut self,
+        target: Value,
+        value: Value,
+        span: Span,
+    ) -> Result<bool, Error> {
+        let Value::Object(target) = target else {
+            return Ok(false);
+        };
+        match self.ordinary_has_instance_step(&target, &value, span)? {
+            InstanceCheck::Result(result) => Ok(result),
+            InstanceCheck::Bound(bound) => self.instance_of(value, Value::Object(bound), span),
+        }
+    }
+
+    fn ordinary_has_instance_step(
+        &mut self,
+        target: &ObjectHandle,
+        value: &Value,
+        span: Span,
+    ) -> Result<InstanceCheck, Error> {
+        let (callable, bound_target) = self.object_work(span, |objects, _| {
+            let record = objects.inspect(target)?;
+            Ok((
+                record.is_callable(),
+                match record.callable() {
+                    Some(Callable::Bound(bound)) => Some(bound.target.clone()),
+                    _ => None,
+                },
+            ))
+        })?;
+        if !callable {
+            return Ok(InstanceCheck::Result(false));
+        }
+        // Bound delegation happens even for primitive left operands, because
+        // the target's custom handler can accept them (7.3.21 step 2).
+        if let Some(bound) = bound_target {
+            return Ok(InstanceCheck::Bound(bound));
+        }
+        let Value::Object(value) = value else {
+            return Ok(InstanceCheck::Result(false));
+        };
+        let prototype = self.get_property(target, &JsString::from("prototype"), span)?;
+        let Value::Object(prototype) = prototype else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "instanceof prototype must be an object",
+            ));
+        };
+        let mut next = Some(value.clone());
         while let Some(handle) = next {
-            self.tick(span)?;
-            if handle == intrinsic {
-                return Ok(true);
-            }
             next = self.object_work(span, |objects, _| {
                 Ok(objects.inspect(&handle)?.prototype().cloned())
             })?;
+            if next.as_ref() == Some(&prototype) {
+                return Ok(InstanceCheck::Result(true));
+            }
         }
-        Ok(false)
+        Ok(InstanceCheck::Result(false))
     }
 }
 
@@ -201,6 +224,8 @@ mod tests {
     fn deep_bound_instance_checks_are_iterative_and_budgeted() {
         let mut realm = Realm::new(Limits {
             max_heap_entries: 20_000,
+            // Each link now performs an actual inherited symbol-key lookup.
+            max_steps: 1_000_000,
             ..Limits::default()
         });
         let Value::Object(mut target) = realm.eval("function F(){}let instance=new F;F").unwrap()
