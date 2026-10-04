@@ -426,6 +426,12 @@ every radix and rounds once to binary64; it does not use the optional approximat
 allowances. Preserve negative zero and the specified hexadecimal prefix rules.
 Input length, scan work, and integer arithmetic remain bounded by realm limits.
 
+Global isFinite and isNaN use ordinary ToNumber (19.2.2–3), including object
+coercion with the number hint and TypeError for BigInt. They are separate builtin
+objects from Number.isFinite and Number.isNaN, which never coerce their argument.
+The global functions ignore their receiver and additional arguments after normal
+argument evaluation. Their intrinsic roots survive deletion of public bindings.
+
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
 Function.prototype.toString emits `function NAME() { [native code] }` for builtin

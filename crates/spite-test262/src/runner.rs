@@ -68,10 +68,25 @@ pub struct CaseResult {
 }
 
 /// A synchronous Script runner with explicit unsupported-capability reporting.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Runner {
-    /// Limits used for each Script evaluation in a fresh test realm.
+    /// Limits used for each Script evaluation in a fresh test realm. Defaults
+    /// to one million work units and the runtime defaults for other resources.
     pub limits: Limits,
+}
+
+impl Default for Runner {
+    fn default() -> Self {
+        Self {
+            limits: Limits {
+                // Upstream tests combine many assertions and expensive exact
+                // numeric conversions in one Script. Keep a bounded allowance
+                // separate from the smaller interactive runtime default.
+                max_steps: 1_000_000,
+                ..Limits::default()
+            },
+        }
+    }
 }
 
 impl Runner {

@@ -61,6 +61,11 @@ and agent helpers remain separate harness gaps.
 
 ## Scope and maintenance
 
+The conformance runner allows one million work units per Script evaluation so
+unchanged upstream files can combine many assertions and exact conversions.
+Other limits retain their runtime defaults. Exhaustion remains a non-passing
+`Limit` result; no test is retried with an unbounded budget.
+
 The `spite-test262` command runs 196 variants from 106 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen

@@ -59,12 +59,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Number", Value::Object(number), true, span)?;
-        let number = &self.intrinsics.as_ref().expect("initialized").number;
-        let parsers = [
-            ("parseFloat", number.parse_float.clone()),
-            ("parseInt", number.parse_int.clone()),
+        let intrinsics = self.intrinsics.as_ref().expect("initialized");
+        let numeric_functions = [
+            ("parseFloat", intrinsics.number.parse_float.clone()),
+            ("parseInt", intrinsics.number.parse_int.clone()),
+            ("isFinite", intrinsics.is_finite.clone()),
+            ("isNaN", intrinsics.is_nan.clone()),
         ];
-        for (name, function) in parsers {
+        for (name, function) in numeric_functions {
             self.define_builtin_property(&object, name, Value::Object(function), true, span)?;
         }
         self.global_object = Some(object);

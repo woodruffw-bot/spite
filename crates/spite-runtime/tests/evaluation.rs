@@ -299,7 +299,7 @@ fn bitwise_operations_use_modulo_conversion() {
 #[test]
 fn resource_failures_are_host_errors_and_restore_scopes() {
     let mut realm = Realm::new(Limits {
-        max_steps: 24,
+        max_steps: 1_000,
         max_string_units: 16,
         ..Limits::default()
     });

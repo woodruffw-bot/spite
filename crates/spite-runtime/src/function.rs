@@ -41,6 +41,8 @@ pub(crate) enum Builtin {
     NumberToLocaleString,
     ParseFloat,
     ParseInt,
+    IsFinite,
+    IsNaN,
     NumberIsFinite,
     NumberIsNaN,
     NumberIsInteger,
@@ -62,8 +64,8 @@ impl Builtin {
             Self::ObjectValueOf | Self::BooleanValueOf | Self::NumberValueOf => "valueOf",
             Self::Boolean => "Boolean",
             Self::Number => "Number",
-            Self::NumberIsFinite => "isFinite",
-            Self::NumberIsNaN => "isNaN",
+            Self::NumberIsFinite | Self::IsFinite => "isFinite",
+            Self::NumberIsNaN | Self::IsNaN => "isNaN",
             Self::NumberIsInteger => "isInteger",
             Self::NumberIsSafeInteger => "isSafeInteger",
             Self::NumberToFixed => "toFixed",
@@ -89,6 +91,8 @@ impl Builtin {
             | Self::NumberIsNaN
             | Self::NumberIsInteger
             | Self::NumberIsSafeInteger
+            | Self::IsFinite
+            | Self::IsNaN
             | Self::ParseFloat => 1.0,
             Self::FunctionApply | Self::ParseInt => 2.0,
             _ => 0.0,
@@ -126,6 +130,8 @@ impl Callable {
 
 #[derive(Debug)]
 pub(super) struct Intrinsics {
+    pub is_finite: ObjectHandle,
+    pub is_nan: ObjectHandle,
     pub object_prototype: ObjectHandle,
     pub function_prototype: ObjectHandle,
     pub object_to_string: ObjectHandle,
@@ -142,6 +148,8 @@ pub(super) struct Intrinsics {
 impl Intrinsics {
     pub fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
         [
+            &self.is_finite,
+            &self.is_nan,
             &self.object_prototype,
             &self.function_prototype,
             &self.object_to_string,
@@ -240,9 +248,13 @@ impl Realm {
         }
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
+        let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
+        let is_nan = self.new_builtin(&function_prototype, Builtin::IsNaN, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
+            is_finite,
+            is_nan,
             object_prototype: object_prototype.clone(),
             function_prototype,
             object_to_string,

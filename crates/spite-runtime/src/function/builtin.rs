@@ -48,6 +48,15 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::IsFinite | Builtin::IsNaN => {
+                // 19.2.2–3 use ToNumber, unlike the non-coercing Number methods.
+                let number = self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
+                Ok(Value::Boolean(match builtin {
+                    Builtin::IsFinite => number.is_finite(),
+                    Builtin::IsNaN => number.is_nan(),
+                    _ => unreachable!("global numeric predicate"),
+                }))
+            }
             Builtin::ParseFloat => self
                 .parse_float(arguments.next().unwrap_or(Value::Undefined), span)
                 .map(Value::Number),

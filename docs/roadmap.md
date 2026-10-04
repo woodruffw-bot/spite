@@ -107,6 +107,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.
 - [x] Add the documented ECMA-262 Number.prototype.toLocaleString fallback.
 - [x] Add global parseFloat/parseInt and their shared Number aliases with exact prefix parsing.
+- [x] Add global isFinite/isNaN with ordered ToNumber coercion and abrupt completion propagation.
 - [ ] Complete non-decimal Number formatting.
 - [ ] Add remaining boxed receivers and the arguments iterator hook.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.

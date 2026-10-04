@@ -164,6 +164,8 @@ ordered coercion and longest-prefix parsing, and preserve negative zero. Integer
 prefixes accumulate exactly in every radix before one binary64 rounding. UTF-16
 surrogate tails terminate a valid numeric prefix. NumberData preserves negative zero
 and NaN independently of the object's current prototype.
+Global isFinite/isNaN perform ordinary ToNumber coercion, propagate abrupt
+conversions, and reject BigInt. The distinct Number predicates remain non-coercing.
 
 Symbols, String/BigInt wrapper APIs,
 arrays, derived construction, classes, destructuring, regular
@@ -181,7 +183,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 29 retained entries under a separate fixed work
+Realm initialization creates 31 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -216,6 +218,8 @@ remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stab
 Rust. Its 196 variants are four raw positives, 120 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
+The runner uses one million work units per Script evaluation for combined upstream
+assertions and exact conversions; other resource limits use the runtime defaults.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion
 with ECMAScript presentation rules. Primitive numeric operations have boundary

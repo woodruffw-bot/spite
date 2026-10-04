@@ -11,6 +11,8 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
         ("function F(){new F;}", "new F"),
         ("let o={valueOf:()=>+o};", "+o"),
         ("let o={valueOf:()=>Number(o)};", "Number(o)"),
+        ("let o={valueOf:()=>isFinite(o)};", "isFinite(o)"),
+        ("let o={valueOf:()=>isNaN(o)};", "isNaN(o)"),
     ]
     .into_iter()
     .enumerate()

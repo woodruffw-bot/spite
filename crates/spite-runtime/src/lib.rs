@@ -1540,8 +1540,6 @@ fn standard_global(name: &str) -> bool {
     matches!(
         name,
         "eval"
-            | "isFinite"
-            | "isNaN"
             | "decodeURI"
             | "decodeURIComponent"
             | "encodeURI"
