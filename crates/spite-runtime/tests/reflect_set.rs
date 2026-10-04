@@ -168,8 +168,8 @@ fn missing_intrinsic_descriptors_and_unsupported_setters_skip_pending_handlers()
     for operation in [
         "Reflect.set(String.prototype,'normalize',1)",
         "Reflect.set({},'normalize',1,String.prototype)",
-        "Reflect.set({set x(v){Math;}},'x',1)",
-        "Reflect.set({},'length',{valueOf(){Math;}},[])",
+        "Reflect.set({set x(v){Proxy;}},'x',1)",
+        "Reflect.set({},'length',{valueOf(){Proxy;}},[])",
         "String.prototype.normalize=1",
     ] {
         let mut realm = Realm::default();

@@ -324,10 +324,10 @@ fn finalizer_errors_restore_the_outer_environment() {
 
 #[test]
 fn host_failures_abort_without_running_or_being_overridden_by_finalizers() {
-    for (body, is_limit) in [("Math;", false), ("'ab';", true), ("for (;;) ;", true)] {
+    for (body, is_limit) in [("Proxy;", false), ("'ab';", true), ("for (;;) ;", true)] {
         let mut realm = Realm::new(Limits {
-            max_steps: Some(160),
-            max_string_units: Some(1),
+            max_steps: (body == "for (;;) ;").then_some(160),
+            max_string_units: (body == "'ab';").then_some(1),
             ..Limits::default()
         });
         realm.eval("let x = 1;").unwrap();
@@ -350,9 +350,9 @@ fn host_failures_abort_without_running_or_being_overridden_by_finalizers() {
 
 #[test]
 fn host_failure_in_a_finalizer_stops_outer_finalizers() {
-    for (finalizer, is_limit) in [("Math;", false), ("for (;;) ;", true)] {
+    for (finalizer, is_limit) in [("Proxy;", false), ("for (;;) ;", true)] {
         let mut realm = Realm::new(Limits {
-            max_steps: Some(160),
+            max_steps: is_limit.then_some(160),
             ..Limits::default()
         });
         realm.eval("let x = 1;").unwrap();

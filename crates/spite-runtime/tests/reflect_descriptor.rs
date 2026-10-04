@@ -135,7 +135,7 @@ fn incomplete_intrinsics_and_host_gaps_skip_pending_handlers() {
         "Reflect.ownKeys(String.prototype)",
         "Reflect.getOwnPropertyDescriptor(String.prototype,'normalize')",
         "Reflect.defineProperty(String.prototype,'normalize',{value:7})",
-        "Reflect.defineProperty({},'x',{get value(){Math;}})",
+        "Reflect.defineProperty({},'x',{get value(){Proxy;}})",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

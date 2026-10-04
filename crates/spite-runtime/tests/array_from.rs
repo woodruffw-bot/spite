@@ -179,6 +179,6 @@ fn host_failures_stop_execution_without_running_iterator_cleanup() {
     );
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    assert!(matches!(realm.eval("try{Array.from({[Symbol.iterator](){return {next(){return {value:1};},return(){Math;}};}},()=>{throw 7;});}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{Array.from({[Symbol.iterator](){return {next(){return {value:1};},return(){Proxy;}};}},()=>{throw 7;});}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }

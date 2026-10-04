@@ -196,7 +196,7 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
     for source in [
         "String.prototype.normalize",
         "String.prototype.propertyIsEnumerable('normalize')",
-        "globalThis.hasOwnProperty('Math')",
+        "globalThis.hasOwnProperty('Proxy')",
     ] {
         assert!(
             matches!(

@@ -219,7 +219,7 @@ fn opt_in_argument_limits_and_unsupported_targets_skip_pending_handlers() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
     assert!(matches!(
-        realm.eval("try{Reflect.apply(()=>{Math;},null,[]);}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{Reflect.apply(()=>{Proxy;},null,[]);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

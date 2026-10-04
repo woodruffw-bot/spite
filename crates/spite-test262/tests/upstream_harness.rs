@@ -32,7 +32,7 @@ fn original_constructor_helper_checks_constructibility_without_masking_host_gaps
         [Outcome::Passed, Outcome::Passed]
     );
     let outcomes = run_with_includes(
-        "let N=(function(){}).bind(null);Object.defineProperty(N,'prototype',{get(){Math;}});isConstructor(N);",
+        "let N=(function(){}).bind(null);Object.defineProperty(N,'prototype',{get(){Proxy;}});isConstructor(N);",
         "isConstructor.js",
     );
     assert_eq!(outcomes.len(), 2);

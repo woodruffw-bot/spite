@@ -120,9 +120,9 @@ fn metadata_and_retained_methods_survive_public_deletion() {
 #[test]
 fn unsupported_keys_getters_and_intrinsic_mutations_skip_pending_handlers() {
     for operation in [
-        "Reflect.get({get x(){Math;}},'x')",
-        "Reflect.has({},{toString(){Math;}})",
-        "Reflect.deleteProperty({},{toString(){Math;}})",
+        "Reflect.get({get x(){Proxy;}},'x')",
+        "Reflect.has({},{toString(){Proxy;}})",
+        "Reflect.deleteProperty({},{toString(){Proxy;}})",
         "Reflect.get(String.prototype,'normalize')",
         "Reflect.deleteProperty(String.prototype,'normalize')",
     ] {

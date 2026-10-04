@@ -196,7 +196,7 @@ fn opted_in_limits_and_unsupported_callbacks_skip_pending_handlers() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
     assert!(matches!(
-        realm.eval("try{'aa'.replaceAll('a',()=>{Math;});}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{'aa'.replaceAll('a',()=>{Proxy;});}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

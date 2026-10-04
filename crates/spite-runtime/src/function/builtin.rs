@@ -51,6 +51,14 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::MathAbs
+            | Builtin::MathCeil
+            | Builtin::MathFloor
+            | Builtin::MathRound
+            | Builtin::MathSign
+            | Builtin::MathTrunc => {
+                self.math_unary(builtin, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::ReflectConstruct => self.reflect_construct(
                 arguments.next().unwrap_or(Value::Undefined),
                 arguments.next().unwrap_or(Value::Undefined),

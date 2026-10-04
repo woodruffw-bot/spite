@@ -17,6 +17,7 @@ mod construct;
 mod error;
 mod instance;
 mod iterator;
+mod math;
 mod method;
 pub(crate) use method::MethodFunction;
 mod number;
@@ -47,6 +48,12 @@ pub(crate) enum Builtin {
     ReflectIsExtensible,
     ReflectOwnKeys,
     ReflectSet,
+    MathAbs,
+    MathCeil,
+    MathFloor,
+    MathRound,
+    MathSign,
+    MathTrunc,
     ReflectPreventExtensions,
     FunctionBind,
     FunctionHasInstance,
@@ -215,6 +222,12 @@ impl Builtin {
             Self::ReflectIsExtensible => "isExtensible",
             Self::ReflectOwnKeys => "ownKeys",
             Self::ReflectSet => "set",
+            Self::MathAbs => "abs",
+            Self::MathCeil => "ceil",
+            Self::MathFloor => "floor",
+            Self::MathRound => "round",
+            Self::MathSign => "sign",
+            Self::MathTrunc => "trunc",
             Self::ReflectPreventExtensions => "preventExtensions",
             Self::FunctionBind => "bind",
             Self::FunctionHasInstance => "[Symbol.hasInstance]",
@@ -419,6 +432,12 @@ impl Builtin {
             | Self::ReflectGetPrototypeOf
             | Self::ReflectIsExtensible
             | Self::ReflectOwnKeys
+            | Self::MathAbs
+            | Self::MathCeil
+            | Self::MathFloor
+            | Self::MathRound
+            | Self::MathSign
+            | Self::MathTrunc
             | Self::ReflectPreventExtensions
             | Self::ObjectIsExtensible
             | Self::ObjectPreventExtensions
@@ -538,6 +557,7 @@ pub(super) struct Intrinsics {
     pub array: array::ArrayIntrinsics,
     pub iterator: iterator::IteratorIntrinsics,
     pub reflect: reflect::ReflectIntrinsics,
+    pub math: math::MathIntrinsics,
 }
 
 impl Intrinsics {
@@ -567,6 +587,7 @@ impl Intrinsics {
         .chain(self.array.roots())
         .chain(self.iterator.roots())
         .chain(self.reflect.roots())
+        .chain(self.math.roots())
     }
 }
 
@@ -679,6 +700,7 @@ impl Realm {
         let iterator = self.iterator_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
         let reflect = self.reflect_intrinsics(&object_prototype, &function_prototype, span)?;
+        let math = self.math_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -704,6 +726,7 @@ impl Realm {
             array,
             iterator,
             reflect,
+            math,
         });
         Ok(object_prototype)
     }

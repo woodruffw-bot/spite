@@ -44,7 +44,7 @@ fn explicit_throws_retain_identity_and_host_failures_have_no_javascript_value() 
     );
     for error in [
         realm.eval("let =").unwrap_err(),
-        realm.eval("Math").unwrap_err(),
+        realm.eval("Proxy").unwrap_err(),
         Error::Limit {
             span: Span::new(0, 0),
             message: "host abort".into(),

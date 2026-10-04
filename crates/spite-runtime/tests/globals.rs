@@ -167,10 +167,10 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
 #[test]
 fn unavailable_standard_global_properties_remain_explicit_gaps() {
     for source in [
-        "this.Math",
-        "typeof this.Math",
-        "this.Math=7",
-        "delete this.Math",
+        "this.Proxy",
+        "typeof this.Proxy",
+        "this.Proxy=7",
+        "delete this.Proxy",
     ] {
         assert!(
             matches!(
@@ -180,6 +180,6 @@ fn unavailable_standard_global_properties_remain_explicit_gaps() {
             "{source}"
         );
     }
-    truth("'Math' in this");
-    truth("function Math(){}Math===this.Math");
+    truth("'Proxy' in this");
+    truth("function Proxy(){}Proxy===this.Proxy");
 }

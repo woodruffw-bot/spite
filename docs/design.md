@@ -1197,6 +1197,19 @@ arguments. Missing intrinsic descriptors remain Unsupported before mutation,
 including on a distinct receiver. Reflect now has complete own-key/descriptor
 reflection and integrity operations; its thirteen methods and tag remain rooted.
 
+Math is an ordinary Object.prototype object with eight fixed, non-enumerable
+mathematical constants and a configurable, non-writable Symbol.toStringTag
+(21.3.1). Abs, sign, ceil, floor, round, and trunc perform ToNumber once, ignore
+the call receiver, and convert no extra arguments (21.3.2). Abs clears negative
+zero; sign preserves either zero and NaN. Ceil/floor/trunc use exact binary64
+integral rounding, including signed zero and infinities. Math.round
+([sec-math.round](https://tc39.es/ecma262/#sec-math.round)) chooses the nearest
+integer with halfway ties toward positive infinity, retains negative zero for
+[-0.5, 0], and compares the fractional remainder without adding 0.5 to the input.
+This avoids rounding near half a unit and changing odd integral values above
+2^52. Other Math methods and incomplete own-key reflection remain Unsupported;
+the object and installed methods retain intrinsic roots.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

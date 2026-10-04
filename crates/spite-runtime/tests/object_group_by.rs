@@ -215,13 +215,13 @@ fn host_failures_during_grouping_materialization_or_cleanup_skip_handlers() {
     let mut realm = Realm::default();
     realm.eval("let closed=0,flag=0,source={[Symbol.iterator](){return {next(){return {value:7};},return(){closed++;return {};}};}}").unwrap();
     assert!(matches!(
-        realm.eval("try{Object.groupBy(source,()=>{Math;});}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{Object.groupBy(source,()=>{Proxy;});}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(
         realm.eval("closed===0 && flag===0"),
         Ok(Value::Boolean(true))
     );
-    assert!(matches!(realm.eval("try{Object.groupBy({[Symbol.iterator](){return {next(){return {value:7};},return(){Math;}};}},()=>{throw 8;});}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{Object.groupBy({[Symbol.iterator](){return {next(){return {value:7};},return(){Proxy;}};}},()=>{throw 8;});}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }

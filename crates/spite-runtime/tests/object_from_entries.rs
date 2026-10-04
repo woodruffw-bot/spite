@@ -186,11 +186,11 @@ fn host_failures_skip_cleanup_and_pending_handlers() {
 
     let mut realm = Realm::default();
     realm.eval("let flag=0,closed=0").unwrap();
-    assert!(matches!(realm.eval("try{Object.fromEntries({[Symbol.iterator](){return {next(){return {value:{get 0(){Math;}}};},return(){closed++;return {};}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported { .. })));
+    assert!(matches!(realm.eval("try{Object.fromEntries({[Symbol.iterator](){return {next(){return {value:{get 0(){Proxy;}}};},return(){closed++;return {};}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported { .. })));
     assert_eq!(
         realm.eval("closed===0 && flag===0"),
         Ok(Value::Boolean(true))
     );
-    assert!(matches!(realm.eval("try{Object.fromEntries({[Symbol.iterator](){return {next(){return {value:null};},return(){Math;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported { .. })));
+    assert!(matches!(realm.eval("try{Object.fromEntries({[Symbol.iterator](){return {next(){return {value:null};},return(){Proxy;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported { .. })));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }

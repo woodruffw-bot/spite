@@ -178,12 +178,12 @@ fn host_failures_stop_without_cleanup_or_language_handlers() {
     let mut realm = Realm::default();
     realm.eval("let flag=0,closes=0,source={[Symbol.iterator](){return {next(){return {value:1};},return(){closes++;return {};}}}}").unwrap();
     assert!(matches!(
-        realm.eval("try{for(let x of source)Math;}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{for(let x of source)Proxy;}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag+closes"), Ok(Value::Number(0.0)));
     realm
-        .eval("source[Symbol.iterator]=()=>({next(){return {value:1};},return(){Math;}})")
+        .eval("source[Symbol.iterator]=()=>({next(){return {value:1};},return(){Proxy;}})")
         .unwrap();
     assert!(matches!(
         realm.eval("try{for(let x of source)throw 7;}catch{flag=1;}finally{flag=2;}"),

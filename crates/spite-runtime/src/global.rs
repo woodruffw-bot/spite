@@ -129,6 +129,14 @@ impl Realm {
             .object
             .clone();
         self.define_builtin_property(&object, "Reflect", Value::Object(reflect), true, span)?;
+        let math = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .math
+            .object
+            .clone();
+        self.define_builtin_property(&object, "Math", Value::Object(math), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

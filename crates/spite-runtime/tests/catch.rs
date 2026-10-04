@@ -155,10 +155,10 @@ fn execution_order_and_block_scopes_are_preserved() {
 
 #[test]
 fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
-    for failure in ["Math;", "for (;;) ;"] {
+    for failure in ["Proxy;", "for (;;) ;"] {
         for in_catch in [false, true] {
             let mut realm = Realm::new(Limits {
-                max_steps: Some(160),
+                max_steps: (failure == "for (;;) ;").then_some(160),
                 ..Limits::default()
             });
             realm.eval("let x = 1;").unwrap();
@@ -170,7 +170,7 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
             };
             let source = format!("try {{ {inner} }} catch {{ flag = 8; }} finally {{ flag = 7; }}");
             let error = realm.eval(&source).unwrap_err();
-            if failure == "Math;" {
+            if failure == "Proxy;" {
                 assert!(matches!(error, Error::Unsupported { .. }));
             } else {
                 assert!(matches!(error, Error::Limit { .. }));

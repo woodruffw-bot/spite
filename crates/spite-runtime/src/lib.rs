@@ -1572,7 +1572,6 @@ fn standard_global(name: &str) -> bool {
             | "encodeURIComponent"
             | "Function"
             | "AggregateError"
-            | "Math"
             | "Date"
             | "RegExp"
             | "Int8Array"

@@ -146,21 +146,21 @@ fn rethrows_and_finalizers_observe_restored_environments() {
 fn host_abort_restores_both_catch_scopes_and_skips_pending_handlers() {
     for body in [
         "while (true) {}",
-        "Math",
+        "Proxy",
         "try { throw 2; } catch (inner) { while (true) {} }",
     ] {
+        let is_limit = body != "Proxy";
         let mut realm = Realm::new(Limits {
-            // Leave room for global property lookup after the abort; only the
-            // deliberate infinite loops should exhaust this work allowance.
-            max_steps: Some(1_000),
+            max_steps: is_limit.then_some(1_000),
             ..Limits::default()
         });
         realm.eval("let e = 3; let flag = 0;").unwrap();
         let result = realm.eval(&format!("try {{ try {{ throw 7; }} catch (e) {{ {body} }} }} catch {{ flag = 1; }} finally {{ flag = 2; }}"));
-        assert!(
-            matches!(result, Err(Error::Limit { .. } | Error::Unsupported { .. })),
-            "{body}"
-        );
+        if is_limit {
+            assert!(matches!(result, Err(Error::Limit { .. })), "{body}");
+        } else {
+            assert!(matches!(result, Err(Error::Unsupported { .. })), "{body}");
+        }
         assert_eq!(realm.eval("e"), Ok(Value::Number(3.0)));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
         assert_eq!(

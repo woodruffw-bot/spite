@@ -230,8 +230,8 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
         "Object.getOwnPropertyDescriptor(String.prototype,'normalize')",
         "Object.hasOwn(String.prototype,'normalize')",
         "Object.defineProperty(String.prototype,'normalize',{})",
-        "Object.defineProperty(globalThis,'Math',{})",
-        "Object.getOwnPropertyDescriptor(globalThis,'Math')",
+        "Object.defineProperty(globalThis,'Proxy',{})",
+        "Object.getOwnPropertyDescriptor(globalThis,'Proxy')",
     ] {
         assert!(
             matches!(
