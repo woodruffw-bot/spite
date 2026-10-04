@@ -147,7 +147,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add sparse Array exotic storage, indexed growth, and partial length truncation.
 - [x] Add ordered Realm-level ArraySetLength coercions and deferred length assignments.
 - [x] Add Array calls/new and Array.isArray.
-- [x] Parse/evaluate array literals with holes and trailing commas; defer spread to iteration.
+- [x] Parse/evaluate array literals with holes and trailing commas.
 - [x] Add generic Array join and dynamic toString with ordered, bounded conversion.
 - [x] Add generic Array at with relative indexing and ordered conversion.
 - [x] Add generic Array push/pop with strict property operations and partial effects.
@@ -162,6 +162,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Array toSpliced with optional deletion ranges and skipped discarded reads.
 - [x] Add Array.of with constructor dispatch, ordered data definitions, and strict length writes.
 - [x] Add Array.from with iterable/array-like traversal, ordered mapping/construction, and iterator closing.
+- [x] Parse/evaluate iterable Array literal spread with ordered consumption and length writes.
 - [x] Add Array toLocaleString using the non-ECMA-402 algorithm.
 - [x] Add stable Array sort/toSorted with bounded fallible merging and sparse writeback.
 - [x] Add ArraySpeciesCreate and map/filter with ordered constructors, live sparse visits, and partial definitions.

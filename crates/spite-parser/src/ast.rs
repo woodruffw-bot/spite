@@ -356,13 +356,34 @@ impl fmt::Debug for FunctionSource {
     }
 }
 
+/// An Array initializer element (13.2.4).
+#[derive(Clone, Debug, PartialEq)]
+pub enum ArrayElement {
+    /// An elision, which grows length without defining an indexed property.
+    Elision,
+    /// A single evaluated element, without inferred function names.
+    Expression(Expr),
+    /// An iterable whose yielded values become individual elements.
+    Spread(Expr),
+}
+
+impl ArrayElement {
+    /// Returns the expression evaluated for this element, absent for an elision.
+    pub fn expression(&self) -> Option<&Expr> {
+        match self {
+            Self::Elision => None,
+            Self::Expression(expression) | Self::Spread(expression) => Some(expression),
+        }
+    }
+}
+
 /// Supported expression forms.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExprKind {
     /// A primitive literal.
     Literal(Literal),
-    /// An Array initializer in index order. None denotes an elision (a hole).
-    Array(Vec<Option<Expr>>),
+    /// An Array initializer in source order, including elisions and spread.
+    Array(Vec<ArrayElement>),
     /// An ordinary object initializer, in source property order.
     Object(Vec<ObjectProperty>),
     /// An untagged template literal. There is one more element than substitution.

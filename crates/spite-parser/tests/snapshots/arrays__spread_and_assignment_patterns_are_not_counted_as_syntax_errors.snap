@@ -1,12 +1,40 @@
 ---
 source: crates/spite-parser/tests/arrays.rs
-expression: "parse_script(\"[...x]\").unwrap_err()"
+expression: "parse_script(\"[...x]\").unwrap()"
 ---
-Diagnostic {
-    kind: Unsupported,
-    span: Span {
-        start: 1,
-        end: 4,
-    },
-    message: "array spread is not implemented",
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 2,
+                    kind: Array(
+                        [
+                            Spread(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 4,
+                                        end: 5,
+                                    },
+                                },
+                            ),
+                        ],
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 6,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 6,
+            },
+        },
+    ],
+    strict: false,
 }

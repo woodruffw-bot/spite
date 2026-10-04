@@ -10,8 +10,8 @@ Script {
                     depth: 4,
                     kind: Array(
                         [
-                            None,
-                            Some(
+                            Elision,
+                            Expression(
                                 Expr {
                                     depth: 1,
                                     kind: Literal(
@@ -25,8 +25,8 @@ Script {
                                     },
                                 },
                             ),
-                            None,
-                            Some(
+                            Elision,
+                            Expression(
                                 Expr {
                                     depth: 1,
                                     kind: Identifier(
@@ -38,12 +38,12 @@ Script {
                                     },
                                 },
                             ),
-                            Some(
+                            Expression(
                                 Expr {
                                     depth: 2,
                                     kind: Array(
                                         [
-                                            Some(
+                                            Expression(
                                                 Expr {
                                                     depth: 1,
                                                     kind: Literal(
@@ -65,7 +65,7 @@ Script {
                                     },
                                 },
                             ),
-                            Some(
+                            Expression(
                                 Expr {
                                     depth: 3,
                                     kind: Parenthesized(
@@ -106,7 +106,7 @@ Script {
                                     },
                                 },
                             ),
-                            Some(
+                            Expression(
                                 Expr {
                                     depth: 2,
                                     kind: Arrow {

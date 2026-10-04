@@ -611,7 +611,7 @@ impl Parser {
             }
             ExprKind::Array(elements) => elements
                 .iter()
-                .flatten()
+                .filter_map(ArrayElement::expression)
                 .map(|e| e.depth)
                 .max()
                 .unwrap_or(0),
@@ -1451,7 +1451,7 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         }
 
         ExprKind::Array(elements) => {
-            for element in elements.iter().flatten() {
+            for element in elements.iter().filter_map(ArrayElement::expression) {
                 validate_expr(element, strict)?;
             }
         }

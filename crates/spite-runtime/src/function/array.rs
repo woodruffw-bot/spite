@@ -323,9 +323,17 @@ impl Realm {
         value: Value,
         span: Span,
     ) -> Result<(), Error> {
+        // ArrayAccumulation uses ToString(F(nextIndex)). Other callers keep
+        // indices within the safe-integer range; very large spread indices
+        // still require Number rounding before converting the property name.
+        let key = if index <= 9_007_199_254_740_991 {
+            JsString::from(index.to_string().as_str())
+        } else {
+            self.string(Value::Number(index as f64), span)?
+        };
         self.define_property_or_throw(
             array,
-            JsString::from(index.to_string().as_str()),
+            key,
             DataDescriptor {
                 value: Some(value),
                 writable: Some(true),

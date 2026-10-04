@@ -3,7 +3,7 @@
 use spite_core::DiagnosticKind;
 use spite_parser::{
     MAX_DEPTH,
-    ast::{ExprKind, StatementKind},
+    ast::{ArrayElement, ExprKind, StatementKind},
     parse_script,
 };
 
@@ -33,7 +33,10 @@ fn elisions_and_trailing_commas_have_exact_element_counts() {
             panic!("array");
         };
         assert_eq!(
-            elements.iter().map(Option::is_none).collect::<Vec<_>>(),
+            elements
+                .iter()
+                .map(|element| matches!(element, ArrayElement::Elision))
+                .collect::<Vec<_>>(),
             holes,
             "{source}"
         );
@@ -50,18 +53,11 @@ fn elements_accept_assignments_nested_literals_and_in_grammar() {
         "[/*hole*/,/*value*/1,/*trailing*/];[\n,\n1\n,\n]",
         "[`${[1][0]}`, ...[]]",
     ] {
-        if source.contains("...") {
-            assert_eq!(
-                parse_script(source).unwrap_err().kind,
-                DiagnosticKind::Unsupported
-            );
-        } else {
-            assert!(
-                parse_script(source).is_ok(),
-                "{source}: {:?}",
-                parse_script(source)
-            );
-        }
+        assert!(
+            parse_script(source).is_ok(),
+            "{source}: {:?}",
+            parse_script(source)
+        );
     }
 }
 
@@ -85,6 +81,12 @@ fn malformed_elements_and_nested_strict_violations_are_syntax_errors() {
         "'use strict';[yield]",
         "'use strict';[010]",
         "[new.target]",
+        "[...]",
+        "[...,]",
+        "[...;]",
+        "[...x ...y]",
+        "'use strict';[...eval=1]",
+        "'use strict';[...yield]",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
@@ -97,22 +99,30 @@ fn malformed_elements_and_nested_strict_violations_are_syntax_errors() {
 
 #[test]
 fn spread_and_assignment_patterns_are_not_counted_as_syntax_errors() {
-    for source in [
-        "[...x]",
-        "[1,...x]",
-        "[, ...x,]",
-        "[x]=a",
-        "([]=a)",
-        "let [x]=a",
-        "([x])=>x",
-    ] {
+    for source in ["[x]=a", "([]=a)", "let [x]=a", "([x])=>x"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,
             "{source}"
         );
     }
-    insta::assert_debug_snapshot!(parse_script("[...x]").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("[...x]").unwrap());
+}
+
+#[test]
+fn spread_elements_preserve_assignment_grammar_and_separators() {
+    for source in [
+        "[...x]",
+        "[1,...x]",
+        "[, ...x,]",
+        "[...x,...y,,z,]",
+        "[...x=y,...(a,b)]",
+        "for(let x=[...'a' in {}];false;){}",
+    ] {
+        assert!(parse_script(source).is_ok(), "{source}");
+    }
+    insta::assert_debug_snapshot!(parse_script("[, ...items, ...make(), (a,b), ...x=y,]").unwrap());
+    insta::assert_debug_snapshot!(parse_script("[...,]").unwrap_err());
 }
 
 #[test]
@@ -124,6 +134,11 @@ fn nested_arrays_and_member_chains_obey_depth_limits() {
             "]".repeat(MAX_DEPTH * 2)
         ),
         format!("[0]{}", "[0]".repeat(MAX_DEPTH * 2)),
+        format!(
+            "{}[]{}",
+            "[...".repeat(MAX_DEPTH * 2),
+            "]".repeat(MAX_DEPTH * 2)
+        ),
     ] {
         assert_eq!(
             parse_script(&source).unwrap_err().kind,

@@ -1,0 +1,135 @@
+---
+source: crates/spite-parser/tests/arrays.rs
+expression: "parse_script(\"[, ...items, ...make(), (a,b), ...x=y,]\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: Array(
+                        [
+                            Elision,
+                            Spread(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "items",
+                                    ),
+                                    span: Span {
+                                        start: 6,
+                                        end: 11,
+                                    },
+                                },
+                            ),
+                            Spread(
+                                Expr {
+                                    depth: 2,
+                                    kind: Call {
+                                        callee: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "make",
+                                            ),
+                                            span: Span {
+                                                start: 16,
+                                                end: 20,
+                                            },
+                                        },
+                                        arguments: [],
+                                    },
+                                    span: Span {
+                                        start: 16,
+                                        end: 22,
+                                    },
+                                },
+                            ),
+                            Expression(
+                                Expr {
+                                    depth: 3,
+                                    kind: Parenthesized(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Binary(
+                                                Comma,
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "a",
+                                                    ),
+                                                    span: Span {
+                                                        start: 25,
+                                                        end: 26,
+                                                    },
+                                                },
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "b",
+                                                    ),
+                                                    span: Span {
+                                                        start: 27,
+                                                        end: 28,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 25,
+                                                end: 28,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 24,
+                                        end: 29,
+                                    },
+                                },
+                            ),
+                            Spread(
+                                Expr {
+                                    depth: 2,
+                                    kind: Assign(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "x",
+                                            ),
+                                            span: Span {
+                                                start: 34,
+                                                end: 35,
+                                            },
+                                        },
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "y",
+                                            ),
+                                            span: Span {
+                                                start: 36,
+                                                end: 37,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 34,
+                                        end: 37,
+                                    },
+                                },
+                            ),
+                        ],
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 39,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 39,
+            },
+        },
+    ],
+    strict: false,
+}

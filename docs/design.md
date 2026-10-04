@@ -632,12 +632,19 @@ an incoming throw calls return but preserves that throw over cleanup exceptions
 or non-object results. Host failures stop without running cleanup; failures in
 cleanup remain host failures. A final length failure after exhaustion does not close.
 
-Array literals retain each elision as an absent AST element, distinct from an
-explicit undefined expression. AssignmentExpression[+In] parsing separates
+Array literals distinguish elisions, ordinary expressions, and spread in the AST.
+Elisions remain distinct from an explicit undefined expression. AssignmentExpression[+In] parsing separates
 elements from comma expressions and preserves trailing-comma lengths. Evaluation
 creates an intrinsic Array before evaluating elements, grows length for holes,
-and defines own elements in source order without inferring function names. Spread
-and array assignment patterns remain Unsupported until their semantics exist.
+and defines own elements in source order without inferring function names. Array
+spread acquires a synchronous iterator, captures next once, and consumes each value
+before evaluating the next source element (ArrayAccumulation, 13.2.4.1). Iterator
+failures propagate directly without closing. Yielded undefined values are dense.
+Elisions assign length at their position; the final initializer assigns length
+after all elements, even if spreading crosses the Array index boundary. Convert
+large element indices through Number before stringifying property names. Native
+index arithmetic remains checked, with no default work or output quota. Call/object
+spread and array assignment patterns remain Unsupported until their semantics exist.
 
 The `Objects` heap context validates prototype handles and prevents ordinary
 prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively

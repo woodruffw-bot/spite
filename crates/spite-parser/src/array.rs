@@ -1,21 +1,24 @@
-//! Array literals and elisions (13.2.4); spread awaits iterator semantics.
+//! Array literals, elisions, and spread (13.2.4).
 
-use crate::{Diagnostic, Expr, ExprKind, Parser, Span};
+use crate::{ArrayElement, Diagnostic, Expr, ExprKind, Parser, Span};
 
 impl Parser {
     pub(super) fn array_literal(&mut self, start: usize) -> Result<Expr, Diagnostic> {
         let mut elements = Vec::new();
         while !self.at("]") {
             if self.eat(",") {
-                elements.push(None);
+                elements.push(ArrayElement::Elision);
                 continue;
             }
-            if self.at("...") {
-                return Err(self.unsupported("array spread is not implemented"));
-            }
+            let spread = self.eat("...");
             // ElementList permits AssignmentExpression[+In], not an ungrouped
             // comma expression. The separator after an element adds no hole.
-            elements.push(Some(self.expression_with_in(2, true)?));
+            let expression = self.expression_with_in(2, true)?;
+            elements.push(if spread {
+                ArrayElement::Spread(expression)
+            } else {
+                ArrayElement::Expression(expression)
+            });
             if !self.eat(",") {
                 break;
             }

@@ -17,7 +17,7 @@ not an alternative language specification.
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
-| Arrays | Calls/new, of, from, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
+| Arrays | Calls/new, of, from, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
@@ -335,12 +335,19 @@ close the iterator and preserve the original throw over cleanup exceptions.
 Step failures and final length failures do not close. Host failures remain distinct
 and do not trigger JavaScript cleanup. Regressions also cover custom result identity,
 source aliasing, partial effects, astral/lone-surrogate strings, and retained intrinsics.
+Array literal spread consumes each iterable before evaluating later elements,
+preserves original iterator receivers, and caches next. Yielded undefined values
+become own data properties while literal elisions remain holes. Iterator-step
+failures propagate without closing. Output always uses the intrinsic Array and
+bypasses inherited element setters. Elisions assign length immediately; the final
+length write follows all elements. Native boundary regressions verify full
+iterator exhaustion before a failing Array length write and Number-rounded keys.
 ToSpliced preserves omitted versus undefined arguments, skips discarded getters,
 and checks both safe-integer and Array length bounds before copying. It reads
 retained elements in ascending order and supports full-width source indices
 when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
-lookup, and preserve ordered live reads. With never reads its replaced index. Spread and array assignment patterns remain
+lookup, and preserve ordered live reads. With never reads its replaced index. Call/object spread and array assignment patterns remain
 pending.
 Map/filter validate callbacks before ArraySpeciesCreate, which consults constructor
 and Symbol.species only for genuine Arrays. Null/undefined species select an
