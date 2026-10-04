@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2005 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2007 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -355,8 +355,8 @@ live, preserving holes and inherited values. Definitions bypass setters and keep
 partial results. Safe-integer overflow throws TypeError before indexed reads;
 the final strict length write follows traversal. Large sparse scans consume an
 opted-in work budget, and custom results can alias inputs without hiding subsequent mutations.
-The pinned 4,000-hole sparse-object concat fixture is being reviewed again with
-heap quotas disabled by default before adding it to the passing corpus.
+The pinned 4,000-hole sparse-object concat fixture runs unchanged in both Script
+modes under the default runtime configuration, with host resource quotas disabled.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
 null prototype and all 16 specified entries. Other species-dependent Array methods
@@ -433,7 +433,7 @@ Number tests, ten numeric parsing tests, five global numeric predicate tests, an
 22 Error construction, conversion, and prototype tests, plus 140 Object descriptor,
 prototype, extensibility, creation, copying, key enumeration, integrity, and SameValue tests, and
 153 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
-well-formedness, conversion, and String iteration tests in both Script modes. Another 508 Array and Array iterator
+well-formedness, conversion, and String iteration tests in both Script modes. Another 509 Array and Array iterator
 files cover construction, of, isArray, literal elisions, length/index boundaries,
 truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
 and reduce/reduceRight callbacks, species-aware map/filter/slice/concat, plus sort/toSorted, toReversed/with/toSpliced copies,
@@ -443,7 +443,7 @@ verify successful assertions and explicit assertion failures. Some string compar
 failure formatting still requires missing JSON and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 2005 variants are four raw positives, 1929 positives using the upstream
+Rust. Its 2007 variants are four raw positives, 1931 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses the runtime defaults, with every host resource quota disabled.
