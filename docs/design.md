@@ -373,6 +373,12 @@ reads stay virtual and precede prototype access, and primitive writes to those
 indices cannot invoke inherited setters. String prototype methods and statics not
 yet implemented remain explicit gaps.
 
+String.fromCharCode and fromCodePoint perform ordered numeric conversions and
+construct UTF-16 without rejecting lone surrogates (22.1.2.1–2). Character access
+methods at/charAt/charCodeAt/codePointAt convert their receiver before the index
+(22.1.3.1–4). They retain code-unit indexing, the distinct out-of-range return
+values, relative indexing for at, and surrogate-pair decoding for codePointAt.
+
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary
 object with an own BooleanData internal slot. Boolean.prototype holds false in

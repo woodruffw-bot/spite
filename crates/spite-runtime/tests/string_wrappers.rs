@@ -180,11 +180,10 @@ fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
     );
     type_error("new String.prototype.toString()");
     for source in [
-        "String.fromCharCode",
         "String.raw",
-        "String.prototype.charAt",
-        "String.prototype.charAt=1",
-        "delete String.prototype.charAt",
+        "String.prototype.slice",
+        "String.prototype.slice=1",
+        "delete String.prototype.slice",
         "Object.getOwnPropertyDescriptors(String.prototype)",
     ] {
         assert!(

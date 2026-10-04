@@ -4,6 +4,7 @@ use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span};
 
+mod character;
 #[cfg(test)]
 mod tests;
 
@@ -13,6 +14,7 @@ pub(crate) struct StringIntrinsics {
     pub prototype: ObjectHandle,
     to_string: ObjectHandle,
     value_of: ObjectHandle,
+    character_methods: Vec<ObjectHandle>,
 }
 
 impl StringIntrinsics {
@@ -24,6 +26,7 @@ impl StringIntrinsics {
             &self.value_of,
         ]
         .into_iter()
+        .chain(self.character_methods.iter())
     }
 }
 
@@ -66,11 +69,39 @@ impl Realm {
                 span,
             )?;
         }
+        let mut character_methods = Vec::new();
+        for builtin in [
+            Builtin::StringFromCharCode,
+            Builtin::StringFromCodePoint,
+            Builtin::StringAt,
+            Builtin::StringCharAt,
+            Builtin::StringCharCodeAt,
+            Builtin::StringCodePointAt,
+        ] {
+            let method = self.new_builtin(function_prototype, builtin, span)?;
+            let target = if matches!(
+                builtin,
+                Builtin::StringFromCharCode | Builtin::StringFromCodePoint
+            ) {
+                &constructor
+            } else {
+                &prototype
+            };
+            self.define_builtin_property(
+                target,
+                builtin.initial_name(),
+                Value::Object(method.clone()),
+                true,
+                span,
+            )?;
+            character_methods.push(method);
+        }
         Ok(StringIntrinsics {
             constructor,
             prototype,
             to_string,
             value_of,
+            character_methods,
         })
     }
 

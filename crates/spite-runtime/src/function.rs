@@ -62,6 +62,12 @@ pub(crate) enum Builtin {
     String,
     StringToString,
     StringValueOf,
+    StringFromCharCode,
+    StringFromCodePoint,
+    StringAt,
+    StringCharAt,
+    StringCharCodeAt,
+    StringCodePointAt,
     Number,
     NumberValueOf,
     NumberToString,
@@ -99,6 +105,12 @@ impl Builtin {
             | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
             Self::String => "String",
+            Self::StringFromCharCode => "fromCharCode",
+            Self::StringFromCodePoint => "fromCodePoint",
+            Self::StringAt => "at",
+            Self::StringCharAt => "charAt",
+            Self::StringCharCodeAt => "charCodeAt",
+            Self::StringCodePointAt => "codePointAt",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -141,6 +153,12 @@ impl Builtin {
             | Self::FunctionBind
             | Self::Boolean
             | Self::String
+            | Self::StringFromCharCode
+            | Self::StringFromCodePoint
+            | Self::StringAt
+            | Self::StringCharAt
+            | Self::StringCharCodeAt
+            | Self::StringCodePointAt
             | Self::Object
             | Self::ObjectHasOwnProperty
             | Self::ObjectPropertyIsEnumerable

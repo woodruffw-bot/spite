@@ -76,3 +76,25 @@ fn string_output_and_work_limits_skip_language_handlers() {
         Err(Error::Limit { .. })
     ));
 }
+
+#[test]
+fn code_construction_charges_each_utf16_unit_against_output_limits() {
+    let mut realm = Realm::default();
+    realm
+        .eval("let flag=0,f=String.fromCodePoint,g=String.fromCharCode")
+        .unwrap();
+    realm.limits.max_string_units = 1;
+    for expression in ["f(0x10000)", "g(65,66)"] {
+        assert!(
+            matches!(
+                realm.eval(&format!(
+                    "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"
+                )),
+                Err(Error::Limit { .. })
+            ),
+            "{expression}"
+        );
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    }
+    assert_eq!(realm.eval("g(65)"), Ok(Value::String(JsString::from("A"))));
+}

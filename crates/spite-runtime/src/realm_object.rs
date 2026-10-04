@@ -515,9 +515,7 @@ impl Realm {
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.string.constructor
-                && ["fromCharCode", "fromCodePoint", "raw"]
-                    .iter()
-                    .any(|name| key_is(key, name)))
+                && ["raw"].iter().any(|name| key_is(key, name)))
     }
 }
 
@@ -564,10 +562,6 @@ fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
 
 fn missing_string_method(key: &JsString) -> bool {
     [
-        "at",
-        "charAt",
-        "charCodeAt",
-        "codePointAt",
         "concat",
         "endsWith",
         "includes",
