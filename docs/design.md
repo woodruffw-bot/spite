@@ -144,7 +144,7 @@ borrow, multiplication, and division algorithms. Each arithmetic operation takes
 a budget that bounds result bits and charges word operations before doing the
 work. The runtime translates budget exhaustion into a host limit, while division
 by zero and negative exponents become JavaScript RangeError exceptions.
-Conversions between BigInt and Number must compare mathematical values without
+Comparisons between BigInt and Number must compare mathematical values without
 rounding the integer first. Literal grammar, string coercion, and mixed-type
 operator rules remain in the parser and runtime rather than the arithmetic crate.
 The AST stores validated BigInt digits and their radix. Evaluation converts them
@@ -152,6 +152,11 @@ under the realm's budget, so parsing never performs unbounded integer arithmetic
 The evaluator shares its step budget with integer arithmetic and conversion and
 also bounds BigInt magnitude bits (65,536 by default). BigInt/Number comparisons
 inspect the binary64 significand and exponent without rounding the integer.
+The integer library also supplies explicit conversion to binary64 for the Number
+constructor (21.1.1.1). It retains the leading 53 bits and rounds once using guard,
+sticky, and parity bits; halfway results choose the even significand. Rounding
+can carry into the exponent or overflow to signed infinity. Conversion allocates
+no intermediate integer and charges work before examining its bits.
 ToNumber is fallible; it rejects BigInt with TypeError. Language ToString produces
 decimal digits. Host value display uses exact hexadecimal BigInt notation to keep
 diagnostic formatting linear and independent of the evaluator's remaining budget.

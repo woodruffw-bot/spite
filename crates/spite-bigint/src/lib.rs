@@ -171,6 +171,47 @@ impl BigInt {
             .flatten()
     }
 
+    /// Rounds to binary64 using nearest, ties to even, including signed overflow.
+    ///
+    /// This implements the mathematical integer-to-Number conversion used by
+    /// ECMA-262 21.1.1.1. It does not round intermediate words or allocate a copy.
+    pub fn to_f64(&self, budget: &mut Budget) -> Result<f64, Error> {
+        budget.charge(1)?;
+        let mut length = self.bit_length();
+        let sign = u64::from(self.negative) << 63;
+        if length == 0 {
+            return Ok(0.0);
+        }
+        if length > 1024 {
+            return Ok(f64::from_bits(sign | f64::INFINITY.to_bits()));
+        }
+        budget.charge(length)?;
+        let kept = length.min(53);
+        let discarded = length - kept;
+        let bit = |index: usize| (self.words[index / 32] >> (index % 32)) & 1;
+        let mut significand = 0u64;
+        for index in (discarded..length).rev() {
+            significand = (significand << 1) | u64::from(bit(index));
+        }
+        if discarded > 0 {
+            let guard = bit(discarded - 1) != 0;
+            let sticky = (0..discarded - 1).any(|index| bit(index) != 0);
+            if guard && (sticky || significand & 1 != 0) {
+                significand += 1;
+                if significand == 1u64 << 53 {
+                    significand >>= 1;
+                    length += 1;
+                }
+            }
+        }
+        if length > 1024 {
+            return Ok(f64::from_bits(sign | f64::INFINITY.to_bits()));
+        }
+        let exponent = (length as u64 - 1 + 1023) << 52;
+        let fraction = (significand << (53 - kept)) & ((1u64 << 52) - 1);
+        Ok(f64::from_bits(sign | exponent | fraction))
+    }
+
     /// Compares mathematical values exactly, without rounding this integer to binary64.
     ///
     /// NaN is unordered. Infinities and fractional finite numbers are supported.
