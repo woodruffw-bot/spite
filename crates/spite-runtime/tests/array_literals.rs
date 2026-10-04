@@ -96,7 +96,7 @@ fn arrays_work_in_member_call_new_and_function_contexts() {
 fn arrays_trace_nested_values_and_allow_sparse_holes_under_property_limits() {
     let mut realm = Realm::default();
     realm.eval("let a=[{x:1},[{y:2}]]").unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("a[0].x===1 && a[1][0].y===2"),
         Ok(Value::Boolean(true))

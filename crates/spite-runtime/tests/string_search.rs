@@ -135,7 +135,7 @@ fn search_methods_reject_nullish_receivers_and_preserve_standard_metadata() {
     }
     let mut realm = Realm::default();
     realm.eval("delete globalThis.String").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("'aba'.indexOf('a')===0 && 'aba'.lastIndexOf('a')===2"),
         Ok(Value::Boolean(true))

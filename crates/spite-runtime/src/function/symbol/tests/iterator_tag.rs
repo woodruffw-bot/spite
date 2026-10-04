@@ -129,7 +129,7 @@ fn inherited_iterator_tags_remain_live_after_overrides_and_collection() {
         &mut realm,
         "let i=[].values(),p=Object.getPrototypeOf(i);delete p[key];i[key]==='Iterator' && Object.prototype.toString.call(i)==='[object Iterator]' && (i[key]='Custom',Object.prototype.toString.call(i)==='[object Custom]')",
     );
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
         "get.call(i)==='Iterator' && set.call(i,'Other')===undefined && i[key]==='Other' && base[key]==='Iterator'",

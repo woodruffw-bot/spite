@@ -143,7 +143,7 @@ fn constructor_static_properties_can_be_reflected_and_frozen() {
     realm
         .eval("let r=String.raw;delete globalThis.String")
         .unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("r({raw:'ab'},'-')"),
         Ok(Value::String(JsString::from("a-b")))

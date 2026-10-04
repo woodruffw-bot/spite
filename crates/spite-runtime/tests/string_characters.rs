@@ -201,7 +201,7 @@ fn methods_have_standard_metadata_and_survive_global_deletion() {
     }
     let mut realm = Realm::default();
     realm.eval("let C=String;delete globalThis.String").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval(
             "C.fromCodePoint(0x1F4A9).codePointAt(0)===0x1F4A9 && C.fromCharCode(65).at(0)==='A'"

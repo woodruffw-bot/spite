@@ -207,7 +207,7 @@ fn function_metadata_and_object_edges_survive_collection() {
     realm
         .eval("let f=Array.prototype.slice,o={},a=[o].slice();delete Array.prototype.slice")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("a[0]===o && f.call([o])[0]===o"),
         Ok(Value::Boolean(true))

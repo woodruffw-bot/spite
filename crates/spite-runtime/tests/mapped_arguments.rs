@@ -173,7 +173,7 @@ fn object_receivers_sloppy_self_bindings_and_lexical_captures_work() {
 fn escaped_arguments_keep_the_parameter_environment_alive_and_mutable() {
     let mut realm = Realm::default();
     realm.eval("let saved;function f(a){saved={args:arguments,get:()=>a,set:x=>a=x};}f.call({},1);f=null;").unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("saved.set(7);saved.args[0]"),
         Ok(Value::Number(7.0))
@@ -187,7 +187,7 @@ fn escaped_arguments_keep_the_parameter_environment_alive_and_mutable() {
         Ok(Value::Undefined)
     );
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]
@@ -196,9 +196,9 @@ fn removing_the_last_alias_releases_the_invocation_environment() {
     realm
         .eval("let args;function f(a){args=arguments;}f.call({payload:{}},1);f=null;")
         .unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES + 6);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 6);
     realm.eval("delete args[0]").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES + 3);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 3);
     realm.eval("args=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }

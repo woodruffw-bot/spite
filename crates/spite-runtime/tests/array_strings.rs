@@ -165,7 +165,7 @@ fn methods_have_standard_descriptors_and_are_not_constructors() {
     }
     let mut realm = Realm::default();
     realm.eval("let j=Array.prototype.join,t=Array.prototype.toString;delete Array.prototype.join;delete Array.prototype.toString").unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("j.call([1,2])==='1,2' && t.call({join:j,0:'x',length:1})==='x'"),
         Ok(Value::Boolean(true))

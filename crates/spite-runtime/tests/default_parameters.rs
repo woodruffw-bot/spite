@@ -158,7 +158,7 @@ fn escaped_defaults_trace_partial_initialization_and_body_var_copies() {
     realm
         .eval("let escaped;let f=(a=(escaped=()=>b),b=missing)=>0;try{f();}catch{} f=null;")
         .unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert!(matches!(
         realm.eval("escaped()"),
         Err(Error::Exception {
@@ -167,10 +167,10 @@ fn escaped_defaults_trace_partial_initialization_and_body_var_copies() {
         })
     ));
     realm.eval("escaped=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     realm.eval("let make=(x={value:1},g=()=>x)=>{var x={value:9};return ()=>g().value+x.value;};escaped=make();make=null").unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("escaped()"), Ok(Value::Number(10.0)));
     realm.eval("escaped=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }

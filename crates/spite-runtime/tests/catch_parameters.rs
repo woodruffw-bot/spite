@@ -207,7 +207,7 @@ fn materialized_errors_preserve_identity_across_rethrows_and_finalizers() {
         .as_data()
         .unwrap();
     assert!(message.writable && !message.enumerable && message.configurable);
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("saved instanceof TypeError && Error.isError(saved)"),
         Ok(Value::Boolean(true))

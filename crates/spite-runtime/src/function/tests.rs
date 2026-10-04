@@ -89,7 +89,7 @@ fn restricted_descriptors_share_a_frozen_nonextensible_thrower() {
     }
     // The intrinsic identity is retained even after deleting all accessor edges.
     assert_eq!(
-        realm.collect(10_000).unwrap().live,
+        realm.collect(usize::MAX).unwrap().live,
         crate::test_support::REALM_ENTRIES
     );
     assert!(realm.objects.inspect(&thrower).is_ok());

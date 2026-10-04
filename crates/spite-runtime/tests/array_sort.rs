@@ -200,7 +200,7 @@ fn generic_receivers_and_method_metadata_are_standard() {
         ));
         let mut realm = Realm::default();
         realm.eval(&format!("let f=Array.prototype.{method};delete Array.prototype.{method};let o={{}},a=[o],b=f.call(a);delete a[0]")).unwrap();
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
         assert_eq!(
             realm.eval("f.call([2,1]).join()==='1,2'"),
             Ok(Value::Boolean(true))

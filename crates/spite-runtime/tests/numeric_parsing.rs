@@ -211,7 +211,7 @@ fn global_and_number_methods_share_identity_and_standard_metadata() {
             Ok(Value::Boolean(true))
         );
     }
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("Number.parseInt('10',2)+Number.parseFloat('1.5')"),
         Ok(Value::Number(3.5))

@@ -19,7 +19,7 @@ fn host_conversion_preserves_diagnostics_and_exposes_standard_error_values() {
     };
     assert!(realm.inspect_object(handle).unwrap().is_error());
     let root = realm.root_value(value.clone(), 1_000).unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.read_property(root.value(), &JsString::from("message")),
         Ok(Value::String(JsString::from(
@@ -77,7 +77,7 @@ fn property_reads_check_handles_and_keep_host_work_and_string_limits() {
         other.read_property(&object, &JsString::from("x")),
         Err(Error::InvalidObject(_))
     ));
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert!(matches!(
         realm.read_property(&object, &JsString::from("x")),
         Err(Error::InvalidObject(_))

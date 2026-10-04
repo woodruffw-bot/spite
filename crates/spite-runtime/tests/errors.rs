@@ -185,6 +185,6 @@ fn stringification_is_generic_and_preserves_utf16_and_empty_fields() {
 fn constructor_roots_and_cause_edges_survive_collection() {
     let mut realm = Realm::default();
     realm.eval("let saved=TypeError;let e=saved('outer',{cause:Error('inner')});delete globalThis.Error;delete globalThis.TypeError").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("e.cause.message==='inner' && saved.isError(e) && saved('next').toString()==='TypeError: next'"),Ok(Value::Boolean(true)));
 }

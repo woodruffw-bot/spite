@@ -34,7 +34,7 @@ fn detached_methods_retain_home_objects_and_unrooted_cycles_are_collected() {
     );
     // The hidden home edge survives changes to the method's public prototype.
     realm.eval("Object.setPrototypeOf(method,null)").unwrap();
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert!(realm.objects.inspect(&home).is_ok());
     assert!(realm.objects.inspect(&payload).is_ok());
     assert_eq!(
@@ -47,7 +47,7 @@ fn detached_methods_retain_home_objects_and_unrooted_cycles_are_collected() {
         Ok(Value::Object(payload.clone())),
     );
     realm.eval("method=null").unwrap();
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     for handle in [&method, &home, &payload] {
         assert!(matches!(
             realm.objects.inspect(handle),
@@ -73,7 +73,7 @@ fn method_creation_rejects_foreign_and_stale_home_objects_before_allocation() {
     let mut foreign = Realm::default();
     let foreign_home = object(foreign.eval("({})").unwrap());
     let stale_home = object(realm.eval("({})").unwrap());
-    let before = realm.collect(30_000).unwrap().live;
+    let before = realm.collect(usize::MAX).unwrap().live;
     for (home, expected) in [
         (foreign_home, spite_heap::Error::ForeignHandle),
         (stale_home, spite_heap::Error::StaleHandle),
@@ -86,7 +86,7 @@ fn method_creation_rejects_foreign_and_stale_home_objects_before_allocation() {
             },
         );
         assert_eq!(result, Err(crate::object::Error::Heap(expected)));
-        let collection = realm.collect(30_000).unwrap();
+        let collection = realm.collect(usize::MAX).unwrap();
         assert_eq!(collection.live, before);
         assert_eq!(collection.reclaimed, 0);
     }

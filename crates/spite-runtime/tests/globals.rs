@@ -155,7 +155,7 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
     realm
         .eval("this.saved={nested:{}};delete globalThis;f=null")
         .unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("this"), Ok(Value::Object(global)));
     truth("this.saved={value:7};saved.value===7");
     assert_eq!(

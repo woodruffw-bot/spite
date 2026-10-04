@@ -141,7 +141,7 @@ fn intrinsic_functions_and_frozen_accessor_edges_survive_collection() {
     }
     let mut realm = Realm::default();
     realm.eval("let C=Object;let o=C.create(null,{x:{get:()=>7}});C.freeze(o);delete globalThis.Object").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("o.x===7 && C.isFrozen(o) && C.isSealed(o) && C.seal(o)===o"),
         Ok(Value::Boolean(true))

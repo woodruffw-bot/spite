@@ -338,11 +338,11 @@ fn escaped_numeric_receivers_survive_collection_and_then_release() {
     realm
         .eval("let f=(function(){return ()=>this;}).call(-0)")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("1/f().valueOf()"),
         Ok(Value::Number(f64::NEG_INFINITY))
     );
     realm.eval("f=null").unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }

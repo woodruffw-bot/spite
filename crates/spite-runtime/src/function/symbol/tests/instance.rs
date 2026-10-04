@@ -37,7 +37,7 @@ fn intrinsic_has_instance_is_fixed_callable_and_ordinary() {
         &mut realm,
         "Object.defineProperty(F,hasInstance,{value:()=>true,configurable:true});1 instanceof F && !method.call(F,1)",
     );
-    realm.collect(20_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(&mut realm, "fp[hasInstance]===method && method.call(F,o)");
 }
 

@@ -255,7 +255,7 @@ fn standard_function_shape_and_escaped_results_survive_collection() {
     }
     let mut realm = Realm::default();
     realm.eval("let m=Array.prototype.map,f=Array.prototype.filter,o={},a=m.call([o],v=>v),b=f.call([o],()=>true);delete Array.prototype.map;delete Array.prototype.filter").unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm
             .eval("a[0]===o && b[0]===o && m.call([o],v=>v)[0]===o && f.call([o],()=>true)[0]===o"),

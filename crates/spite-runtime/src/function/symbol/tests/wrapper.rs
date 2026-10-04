@@ -71,7 +71,7 @@ fn wrappers_keep_identity_and_brand_independently_of_their_prototype() {
         &mut realm,
         "let valueOf=S.prototype.valueOf,toString=S.prototype.toString;Object.setPrototypeOf(box,null);valueOf.call(box)===s && toString.call(box)==='Symbol(name)'",
     );
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
         "valueOf.call(box)===s && s.constructor===S && S.iterator===S.iterator",

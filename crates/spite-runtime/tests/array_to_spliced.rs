@@ -156,7 +156,7 @@ fn metadata_and_gc_retain_intrinsics_and_copied_values() {
     ));
     let mut realm = Realm::default();
     realm.eval("let f=Array.prototype.toSpliced;delete Array.prototype.toSpliced;let o={},a=[o],b=f.call(a,1,0,o);delete a[0]").unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("b[0]===o && b[1]===o && b!==a && f.call(b).length===2"),
         Ok(Value::Boolean(true))

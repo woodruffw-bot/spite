@@ -194,7 +194,7 @@ fn metadata_nonconstructibility_and_collection_are_standard() {
         ));
         let mut realm = Realm::default();
         realm.eval(&format!("let f=Array.prototype.{method};delete Array.prototype.{method};let o={{}},a=[o],b=f.call(a,0,o);delete a[0]")).unwrap();
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
         assert_eq!(realm.eval("b[0]===o && b!==a"), Ok(Value::Boolean(true)));
     }
 }

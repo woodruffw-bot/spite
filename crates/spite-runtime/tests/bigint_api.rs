@@ -222,7 +222,7 @@ fn intrinsics_have_standard_descriptors_and_survive_collection() {
     realm
         .eval("let b=Object(12345678901234567890n);delete globalThis.BigInt")
         .unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 1);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 1);
     assert_eq!(realm.eval("b.valueOf()===12345678901234567890n && b.toString()==='12345678901234567890' && b instanceof b.constructor"),Ok(Value::Boolean(true)));
 }
 

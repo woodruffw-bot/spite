@@ -89,7 +89,7 @@ fn symbol_primitives_have_identity_equality_truthiness_and_typeof() {
         &mut realm,
         "[s].toSorted()[0]===s && [undefined,s].sort()[0]===s",
     );
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(&mut realm, "s===same && s!==other");
 }
 

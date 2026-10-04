@@ -173,7 +173,7 @@ fn metadata_and_copied_edges_remain_valid_after_collection() {
     }
     let mut realm = Realm::default();
     realm.eval("let C=Object;let o=C.assign({},{x:{value:7}});let ds=C.getOwnPropertyDescriptors(o);o=null;delete globalThis.Object").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval(
             "ds.x.value.value===7 && C.assign({},C.getOwnPropertyDescriptors({y:3})).y.value===3"

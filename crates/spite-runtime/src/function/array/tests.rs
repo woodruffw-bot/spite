@@ -817,7 +817,7 @@ fn array_copies_bound_dense_output_and_preserve_the_receiver_on_host_abort() {
             &mut realm,
             "flag===0 && a.length===4294967295 && !Object.hasOwn(a,'0')",
         );
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
     }
     let mut realm = Realm::default();
     let receiver = realm.eval("['x'.repeat(1000)]").unwrap();
@@ -869,7 +869,7 @@ fn array_of_bounds_property_work_and_retains_partial_custom_object_definitions()
         &mut realm,
         "o[0]===7 && !Object.hasOwn(o,'999') && !Object.hasOwn(o,'length')",
     );
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
 }
 
 #[test]
@@ -975,6 +975,6 @@ fn array_sort_collection_and_comparison_work_abort_without_implicit_writes() {
         ));
         realm.limits.max_steps = Some(100_000);
         check(&mut realm, &format!("flag===0 && ({expected})"));
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
     }
 }

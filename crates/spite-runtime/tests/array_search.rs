@@ -211,7 +211,7 @@ fn metadata_nonconstructibility_and_collection_are_standard() {
                 "let f=Array.prototype.{method};delete Array.prototype.{method}"
             ))
             .unwrap();
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
         assert_eq!(
             realm.eval("f.call([7],7)"),
             Ok(if method == "includes" {

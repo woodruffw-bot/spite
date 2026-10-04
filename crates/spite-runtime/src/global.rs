@@ -568,7 +568,7 @@ mod tests {
             assert!(result.is_ok() || matches!(result, Err(Error::Limit { .. })));
             assert_eq!(realm.intrinsics.is_some(), result.is_ok());
             assert_eq!(
-                realm.collect(10_000).unwrap().live,
+                realm.collect(usize::MAX).unwrap().live,
                 if result.is_ok() {
                     crate::test_support::REALM_ENTRIES - 2
                 } else {

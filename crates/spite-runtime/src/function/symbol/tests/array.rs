@@ -113,7 +113,7 @@ fn symbol_properties_are_configurable_and_saved_intrinsics_survive_collection() 
         &mut realm,
         "let S=s.constructor,get=Object.getOwnPropertyDescriptor(Array,S.species).get,u=Array.prototype[S.unscopables];delete Array[S.species] && delete Array.prototype[S.unscopables] && !(S.species in Array) && !(S.unscopables in Array.prototype)",
     );
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
         "get.call(Array)===Array && u.find===true && Object.getPrototypeOf(u)===null",

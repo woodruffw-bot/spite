@@ -248,7 +248,7 @@ fn methods_have_standard_metadata_and_survive_collection() {
     }
     let mut realm = Realm::default();
     realm.eval("let push=Array.prototype.push,pop=Array.prototype.pop;delete Array.prototype.push;delete Array.prototype.pop").unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("let a=[];push.call(a,7)===1 && pop.call(a)===7 && a.length===0"),
         Ok(Value::Boolean(true))

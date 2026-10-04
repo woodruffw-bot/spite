@@ -52,11 +52,11 @@ fn nested_ordinary_functions_create_their_own_new_target_binding() {
 fn escaped_new_target_is_traced_even_without_a_constructor_prototype_edge() {
     let mut realm = Realm::default();
     realm.eval("let saved,expected;function F(){return ()=>new.target;}F.prototype=null;expected=F;saved=new F();F=null;").unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("saved()===expected"), Ok(Value::Boolean(true)));
     realm.eval("expected=null").unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("saved().name"), Ok(Value::String("F".into())));
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }

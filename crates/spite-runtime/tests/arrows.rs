@@ -213,18 +213,18 @@ fn closures_and_captured_cycles_survive_host_roots_and_are_reclaimed() {
         .eval("let f; {let object={x:7}; f=()=>object; object.f=f;} f")
         .unwrap();
     let root = realm.root_value(value, 100).unwrap();
-    realm.collect(2000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("f().f===f && f().x===7"),
         Ok(Value::Boolean(true))
     );
     // The receiver of a getter/coercion and captured object both stay alive
     // through explicit collection, including an unreachable capture cycle later.
-    realm.collect(2000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     realm.eval("f=null").unwrap();
-    assert_eq!(realm.collect(2000).unwrap().live, REALM_ENTRIES + 3); // global, intrinsics, block, object, arrow
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 3); // global, intrinsics, block, object, arrow
     drop(root);
-    assert_eq!(realm.collect(2000).unwrap().reclaimed, 3);
+    assert_eq!(realm.collect(usize::MAX).unwrap().reclaimed, 3);
 }
 
 #[test]

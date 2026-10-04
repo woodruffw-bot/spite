@@ -107,7 +107,7 @@ fn reflected_descriptors_are_fresh_ordinary_objects_with_ordered_mutable_fields(
 fn accessors_preserve_receiver_identity_and_survive_kind_changes_and_collection() {
     let mut realm = Realm::default();
     realm.eval("let o={};Object.defineProperty(o,'x',{get:function(){return this;},set:function(v){this.last=v;},configurable:true});let c={__proto__:o};").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("c.x===c && (c.x=7)===7 && c.last===7 && !Object.hasOwn(c,'x')"),
         Ok(Value::Boolean(true))
@@ -224,7 +224,7 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
     }
     let mut realm = Realm::default();
     realm.eval("let C=Object;delete globalThis.Object").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("let o={};C.defineProperty(o,'x',{value:3});C.is(C.getOwnPropertyDescriptor(o,'x').value,3) && C.hasOwn(o,'x')"),Ok(Value::Boolean(true)));
     for source in [
         "Object.getOwnPropertyDescriptor(String.prototype,'normalize')",

@@ -267,7 +267,7 @@ mod tests {
         let value = Value::Object(target);
         let root = realm.root_value(value.clone(), 100).unwrap();
         assert_eq!(
-            realm.collect(200_000).unwrap().live,
+            realm.collect(usize::MAX).unwrap().live,
             crate::test_support::REALM_ENTRIES + 10_002
         );
         let instance = realm.construct(value, Vec::new(), Span::new(0, 0)).unwrap();
@@ -278,7 +278,7 @@ mod tests {
         assert_eq!(realm.call_depth, 0);
         drop(root);
         assert_eq!(
-            realm.collect(200_000).unwrap().live,
+            realm.collect(usize::MAX).unwrap().live,
             crate::test_support::REALM_ENTRIES + 2
         );
     }

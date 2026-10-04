@@ -164,7 +164,7 @@ fn metadata_nonconstructibility_and_collection_are_standard() {
     realm
         .eval("let f=Array.prototype.reverse;delete Array.prototype.reverse")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("let a=[1,2];f.call(a)===a && a[0]===2 && a[1]===1"),
         Ok(Value::Boolean(true))

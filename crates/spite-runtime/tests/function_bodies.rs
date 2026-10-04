@@ -127,10 +127,10 @@ fn closures_capture_function_vars_lexicals_and_independent_invocations() {
     );
     let mut realm = Realm::default();
     realm.eval("let make=x=>{let y={value:x};return ()=>{return ++y.value;};};let f=make(1);make=null;").unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("f()+f()"), Ok(Value::Number(5.0)));
     realm.eval("f=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

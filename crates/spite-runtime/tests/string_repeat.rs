@@ -164,7 +164,7 @@ fn methods_reject_nullish_receivers_and_have_standard_metadata() {
     }
     let mut realm = Realm::default();
     realm.eval("delete globalThis.String").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("'x'.repeat(2).padStart(3).padEnd(4)===' xx '"),
         Ok(Value::Boolean(true))

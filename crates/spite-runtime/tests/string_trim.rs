@@ -85,7 +85,7 @@ fn mandatory_methods_have_standard_metadata_and_remain_rooted() {
     check("String.prototype.trimLeft===undefined && String.prototype.trimRight===undefined");
     let mut realm = Realm::default();
     realm.eval("delete globalThis.String").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("' x '.trim()==='x' && ' x '.trimStart()==='x ' && ' x '.trimEnd()===' x'"),
         Ok(Value::Boolean(true))

@@ -163,6 +163,6 @@ fn methods_have_standard_metadata_nonconstructibility_and_root_lifetimes() {
     }
     let mut realm = Realm::default();
     realm.eval("let each=Array.prototype.forEach,every=Array.prototype.every,some=Array.prototype.some;delete Array.prototype.forEach;delete Array.prototype.every;delete Array.prototype.some").unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("let n=0;each.call([1,2],v=>{n+=v;});n===3 && every.call([1,2],v=>v>0) && some.call([1,2],v=>v===2)"),Ok(Value::Boolean(true)));
 }

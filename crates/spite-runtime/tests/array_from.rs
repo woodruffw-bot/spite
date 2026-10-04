@@ -155,7 +155,7 @@ fn standard_function_metadata_and_intrinsic_retention() {
     realm
         .eval("let from=Array.from;delete globalThis.Array")
         .unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     assert_eq!(
         realm.eval("from('ab').join(',')==='a,b'"),
         Ok(Value::Boolean(true))

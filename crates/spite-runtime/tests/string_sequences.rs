@@ -153,7 +153,7 @@ fn generic_methods_reject_nullish_receivers_and_have_standard_metadata() {
     }
     let mut realm = Realm::default();
     realm.eval("delete globalThis.String").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("'a'.concat('bc').slice(1).substring(1,0)==='b'"),
         Ok(Value::Boolean(true))

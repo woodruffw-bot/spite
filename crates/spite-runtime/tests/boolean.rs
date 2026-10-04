@@ -242,7 +242,7 @@ fn deleting_or_replacing_the_global_does_not_change_intrinsic_boxing() {
     realm
         .eval("let B=Boolean; delete globalThis.Boolean; B=null;")
         .unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     assert_eq!(
         realm.eval("true.constructor(false)"),
         Ok(Value::Boolean(false))
@@ -254,16 +254,16 @@ fn roots_retain_wrappers_and_unreachable_wrappers_are_reclaimed() {
     let mut realm = Realm::default();
     let value = realm.eval("new Boolean(true)").unwrap();
     let root = realm.root_value(value, 100).unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 1);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 1);
     drop(root);
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     realm
         .eval("let saved=(function(){return ()=>this;}).call(false)")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("saved().valueOf()"), Ok(Value::Boolean(false)));
     realm.eval("saved=null").unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

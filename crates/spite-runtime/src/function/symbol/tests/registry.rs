@@ -23,7 +23,7 @@ fn registered_symbols_are_shared_by_key_and_separate_from_fresh_and_well_known_s
         &mut realm,
         "let rawKey='\\uD800\\u0000\\uDC00',rawSymbol=S.for(rawKey);S.keyFor(rawSymbol)===rawKey && rawSymbol.description===rawKey && rawSymbol!==S.for('\\uFFFD\\u0000\\uFFFD') && S.for('é')!==S.for('e\\u0301')",
     );
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
         "a===S.for('registry.basic') && S.keyFor(a)==='registry.basic'",

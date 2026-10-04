@@ -125,7 +125,7 @@ fn static_descriptors_enumeration_deletion_and_collection_are_complete() {
     realm
         .eval("let signed=BigInt.asIntN,unsigned=BigInt.asUintN;delete globalThis.BigInt")
         .unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     assert_eq!(
         realm.eval("signed(8,255n)===-1n && unsigned(8,-1n)===255n"),
         Ok(Value::Boolean(true))

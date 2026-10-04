@@ -229,7 +229,7 @@ fn function_metadata_and_result_edges_survive_collection() {
     realm
         .eval("let f=Array.prototype.concat,o={},a=[o].concat(o);delete Array.prototype.concat")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("a[0]===o && a[1]===o && f.call([o],o)[1]===o"),
         Ok(Value::Boolean(true))

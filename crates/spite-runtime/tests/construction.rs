@@ -113,13 +113,13 @@ fn constructed_instances_and_escaped_receivers_survive_collection() {
     realm
         .eval("let saved;function F(){saved=()=>this;this.payload={x:7};}let instance=new F;")
         .unwrap();
-    realm.collect(10000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("saved()===instance && saved().payload.x===7"),
         Ok(Value::Boolean(true))
     );
     realm.eval("saved=null;instance=null;F=null").unwrap();
-    assert_eq!(realm.collect(10000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

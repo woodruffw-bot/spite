@@ -133,7 +133,7 @@ fn metadata_nonconstructibility_and_collection_preserve_the_method() {
     realm
         .eval("let f=Array.prototype.toLocaleString;delete Array.prototype.toLocaleString")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("f.call([1,2])==='1,2'"),
         Ok(Value::Boolean(true))

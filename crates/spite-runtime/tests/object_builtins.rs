@@ -186,7 +186,7 @@ fn locale_string_invokes_the_current_method_without_forwarding_reserved_argument
 fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
     let mut realm = Realm::default();
     realm.eval("let C=Object;delete globalThis.Object").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval(
             "C().constructor===C && C.prototype.hasOwnProperty('constructor') && C(1).valueOf()===1"

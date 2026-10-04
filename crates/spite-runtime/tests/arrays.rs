@@ -196,21 +196,21 @@ fn explicit_collection_traces_arrays_elements_and_intrinsic_roots() {
     let mut realm = Realm::default();
     let value = realm.eval("Array({x:1})").unwrap();
     let root = realm.root_value(value, 100).unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 2);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 2);
     drop(root);
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     realm
         .eval("let a=Array({x:1});delete globalThis.Array")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("a.constructor.isArray(a) && a[0].x===1"),
         Ok(Value::Boolean(true))
     );
     realm.eval("a.length=0").unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES + 1);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 1);
     realm.eval("a=null").unwrap();
-    assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
 }
 
 #[test]

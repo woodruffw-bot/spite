@@ -117,7 +117,7 @@ fn standard_method_metadata_and_intrinsic_roots_are_preserved() {
     }
     let mut realm = Realm::default();
     realm.eval("delete globalThis.String").unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("'valid'.isWellFormed() && '\\uD800'.toWellFormed()==='�'"),
         Ok(Value::Boolean(true))

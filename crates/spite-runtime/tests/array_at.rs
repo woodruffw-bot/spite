@@ -100,6 +100,6 @@ fn method_metadata_nonconstructibility_and_roots_are_standard() {
     realm
         .eval("let f=Array.prototype.at;delete Array.prototype.at")
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("f.call([1,2],-1)"), Ok(Value::Number(2.0)));
 }

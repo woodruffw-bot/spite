@@ -119,7 +119,7 @@ fn changing_callable_prototypes_and_descriptor_results_preserves_internal_brands
             "let c={};Object.setPrototypeOf(c,{x:{value:7}});let C=Object;delete globalThis.Object",
         )
         .unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("C.getPrototypeOf(c).x.value===7 && C.isExtensible(c) && C.preventExtensions(c)===c && !C.isExtensible(c)"),Ok(Value::Boolean(true)));
 }
 

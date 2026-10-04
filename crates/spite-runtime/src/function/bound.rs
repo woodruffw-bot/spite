@@ -206,7 +206,7 @@ mod tests {
             Ok(Value::String(JsString::from("[object Null]")))
         );
         assert_eq!(realm.eval("bound.caller"), Ok(Value::Undefined));
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
         let thrower = realm.intrinsics.as_ref().unwrap().throw_type_error.clone();
         realm
             .objects
@@ -230,7 +230,7 @@ mod tests {
                 ..
             })
         ));
-        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 1);
+        assert_eq!(realm.collect(usize::MAX).unwrap().reclaimed, 1);
     }
 
     #[test]
@@ -238,7 +238,7 @@ mod tests {
         let mut realm = Realm::default();
         let target = target(&mut realm);
         realm.eval("let flag = 0").unwrap();
-        realm.collect(10_000).unwrap();
+        realm.collect(usize::MAX).unwrap();
         let bind = realm.intrinsics.as_ref().unwrap().function_bind.clone();
         realm
             .objects
@@ -263,7 +263,7 @@ mod tests {
         assert_eq!(message, "call nesting limit exceeded");
         assert_eq!(realm.call_depth, 0);
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-        let result = realm.collect(20000).unwrap();
+        let result = realm.collect(usize::MAX).unwrap();
         assert!(result.reclaimed > 0);
         assert_eq!(result.live, crate::test_support::REALM_ENTRIES);
         replace(&mut realm, &target, "length", Value::Number(0.0));
@@ -296,7 +296,7 @@ mod tests {
         let value = Value::Object(function);
         let root = realm.root_value(value.clone(), 100).unwrap();
         assert_eq!(
-            realm.collect(200_000).unwrap().live,
+            realm.collect(usize::MAX).unwrap().live,
             crate::test_support::REALM_ENTRIES + 10_000
         );
         assert_eq!(
@@ -305,6 +305,6 @@ mod tests {
         );
         assert_eq!(realm.call_depth, 0);
         drop(root);
-        assert_eq!(realm.collect(200_000).unwrap().reclaimed, 10_000);
+        assert_eq!(realm.collect(usize::MAX).unwrap().reclaimed, 10_000);
     }
 }

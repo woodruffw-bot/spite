@@ -139,7 +139,7 @@ fn globals_have_standard_descriptors_and_differ_from_number_predicates() {
         ));
         assert_eq!(realm.eval(&format!("{name}=4;globalThis.{name}===4 && delete globalThis.{name} && typeof {name}==='undefined'")),Ok(Value::Boolean(true)));
     }
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("Number.isFinite(1) && Number.isNaN(NaN)"),
         Ok(Value::Boolean(true))

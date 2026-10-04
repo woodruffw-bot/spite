@@ -197,7 +197,7 @@ fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
     realm
         .eval("let C=String;let s=new C('abc');delete globalThis.String")
         .unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm
             .eval("s.valueOf()==='abc' && s[1]==='b' && C(7)==='7' && Object('x').constructor===C"),

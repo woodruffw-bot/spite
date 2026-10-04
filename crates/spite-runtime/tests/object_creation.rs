@@ -163,7 +163,7 @@ fn metadata_and_created_object_edges_survive_global_replacement_and_collection()
     realm
         .eval("let C=Object;let o=C.create({x:7},{y:{get:()=>8}});delete globalThis.Object")
         .unwrap();
-    realm.collect(100_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("o.x===7 && o.y===8 && C.defineProperties(o,{z:{value:9}})===o && o.z===9"),
         Ok(Value::Boolean(true))

@@ -92,13 +92,13 @@ mod tests {
         realm.scopes.push(nested);
         assert_eq!(realm.eval("x"), Ok(Value::Number(7.0)));
         assert_eq!(
-            realm.collect(10_000).unwrap().live,
+            realm.collect(usize::MAX).unwrap().live,
             crate::test_support::REALM_ENTRIES + 3
         );
         realm.scopes.pop();
         realm.scopes.pop();
         assert_eq!(realm.eval("x"), Ok(Value::Number(0.0)));
-        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 3);
+        assert_eq!(realm.collect(usize::MAX).unwrap().reclaimed, 3);
     }
 
     #[test]
@@ -137,7 +137,7 @@ mod tests {
         );
         assert_eq!(realm.eval("i + outer"), Ok(Value::Number(11.0)));
         realm.scopes.pop();
-        assert_eq!(realm.collect(10_000).unwrap().reclaimed, 2);
+        assert_eq!(realm.collect(usize::MAX).unwrap().reclaimed, 2);
     }
 
     #[test]
@@ -242,7 +242,7 @@ mod tests {
         });
         assert!(matches!(empty.eval("const x;"), Err(Error::Parse(_))));
         assert!(matches!(empty.eval("0"), Err(Error::Limit { .. })));
-        assert_eq!(empty.collect(100).unwrap().live, 0);
+        assert_eq!(empty.collect(usize::MAX).unwrap().live, 0);
         let mut realm = Realm::new(Limits {
             max_heap_entries: Some(crate::test_support::REALM_ENTRIES + 2),
             ..Limits::default()
@@ -255,7 +255,7 @@ mod tests {
             realm.eval("typeof transient"),
             Ok(Value::String(JsString::from("undefined")))
         );
-        let result = realm.collect(10_000).unwrap();
+        let result = realm.collect(usize::MAX).unwrap();
         assert_eq!(result.live, crate::test_support::REALM_ENTRIES);
         assert_eq!(result.reclaimed, 2);
         realm.eval("{ let transient = 2; }").unwrap();

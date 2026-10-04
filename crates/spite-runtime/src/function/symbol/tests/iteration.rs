@@ -68,9 +68,9 @@ fn iterators_trace_unreferenced_sources_and_release_them_at_completion() {
         .as_ref()
         .unwrap()
         .clone();
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(&mut realm, "i.next().value.x===7 && i.next().done");
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert!(matches!(
         realm.objects.inspect(&source),
         Err(crate::object::Error::Heap(spite_heap::Error::StaleHandle))

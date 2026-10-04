@@ -133,7 +133,7 @@ fn result_arrays_use_intrinsics_and_define_dense_data_elements() {
 fn copied_symbol_keys_and_object_values_survive_collection() {
     let mut realm = Realm::default();
     realm.eval("let o={[Symbol('x')]:1,a:{x:7}},symbols=Object.getOwnPropertySymbols(o),values=Object.values(o);o=null").unwrap();
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("symbols[0].description==='x' && values[0].x===7"),
         Ok(Value::Boolean(true))

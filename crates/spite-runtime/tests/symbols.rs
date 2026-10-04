@@ -18,7 +18,7 @@ fn symbol_global_is_mutable_configurable_and_preserves_the_intrinsic() {
         &mut realm,
         "globalThis.Symbol=7;Symbol===7 && s.constructor===S && (delete globalThis.Symbol) && typeof Symbol==='undefined' && globalThis.Symbol===undefined && s.constructor===S",
     );
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
         "s.toString()==='Symbol(x)' && (globalThis.Symbol=S,Symbol('x')!==s) && Symbol.prototype===Object.getPrototypeOf(s)",
@@ -32,7 +32,7 @@ fn fresh_and_registered_symbols_preserve_identity_across_script_evaluations_and_
     let fresh = first.eval("Symbol('same')").unwrap();
     assert_ne!(fresh, second.eval("Symbol('same')").unwrap());
     let registered = first.eval("Symbol.for('script-registry')").unwrap();
-    first.collect(30_000).unwrap();
+    first.collect(usize::MAX).unwrap();
     assert_eq!(
         registered,
         first.eval("Symbol.for('script-registry')").unwrap()

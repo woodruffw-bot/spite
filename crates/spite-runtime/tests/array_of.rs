@@ -134,7 +134,7 @@ fn metadata_nonconstructibility_and_intrinsic_gc_roots_are_standard() {
             "let f=Array.of,p=Array.prototype,o={},a=f(o);delete Array.of;delete globalThis.Array",
         )
         .unwrap();
-    realm.collect(10_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("a[0]===o && f(o)[0]===o && Object.getPrototypeOf(f())===p"),
         Ok(Value::Boolean(true))

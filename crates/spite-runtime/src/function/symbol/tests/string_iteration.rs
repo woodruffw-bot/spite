@@ -149,7 +149,7 @@ fn string_iterators_retain_captured_text_without_retaining_the_original_receiver
         panic!("source");
     };
     realm.eval("o=null").unwrap();
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     assert!(matches!(
         realm.objects.inspect(&source),
         Err(crate::object::Error::Heap(spite_heap::Error::StaleHandle))
@@ -158,7 +158,7 @@ fn string_iterators_retain_captured_text_without_retaining_the_original_receiver
         &mut realm,
         "i.next().value==='x' && i.next().value==='y' && i.next().done",
     );
-    realm.collect(30_000).unwrap();
+    realm.collect(usize::MAX).unwrap();
     check(&mut realm, "i.next().done");
 }
 

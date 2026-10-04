@@ -67,5 +67,5 @@ fn source_quota_precedes_parsing_and_realm_initialization_when_enabled() {
         ..Limits::default()
     });
     assert!(matches!(realm.eval(&source), Err(Error::Parse(d)) if d.kind == DiagnosticKind::Limit));
-    assert_eq!(realm.collect(100).unwrap().live, 0);
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, 0);
 }
