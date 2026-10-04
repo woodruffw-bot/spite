@@ -67,6 +67,18 @@ impl Realm {
             Builtin::Object => {
                 self.object_constructor(None, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::ObjectGetOwnPropertyNames | Builtin::ObjectGetOwnPropertySymbols => self
+                .object_get_own_property_keys(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    matches!(builtin, Builtin::ObjectGetOwnPropertySymbols),
+                    span,
+                ),
+            Builtin::ObjectKeys | Builtin::ObjectValues | Builtin::ObjectEntries => self
+                .object_enumerable_properties(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    builtin,
+                    span,
+                ),
             Builtin::ObjectHasOwnProperty | Builtin::ObjectPropertyIsEnumerable => self
                 .object_property_predicate(
                     this,

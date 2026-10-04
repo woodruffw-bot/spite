@@ -196,13 +196,7 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 
 #[test]
 fn incomplete_intrinsic_methods_report_unsupported() {
-    for name in [
-        "entries",
-        "getOwnPropertySymbols",
-        "getOwnPropertyNames",
-        "values",
-        "keys",
-    ] {
+    for name in ["fromEntries", "groupBy"] {
         let mut realm = Realm::default();
         realm.eval("let flag = 0").unwrap();
         assert!(matches!(

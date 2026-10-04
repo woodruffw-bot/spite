@@ -51,6 +51,30 @@ impl ArrayIntrinsics {
 }
 
 impl Realm {
+    /// CreateArrayFromList with own data elements (7.3.17).
+    pub(crate) fn create_array_from_list(
+        &mut self,
+        values: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let array = self.create_intrinsic_array(0, span)?;
+        for (index, value) in values.into_iter().enumerate() {
+            self.define_property_or_throw(
+                &array,
+                JsString::from(index.to_string().as_str()),
+                DataDescriptor {
+                    value: Some(value),
+                    writable: Some(true),
+                    enumerable: Some(true),
+                    configurable: Some(true),
+                }
+                .into(),
+                span,
+            )?;
+        }
+        Ok(Value::Object(array))
+    }
+
     // ArrayCreate with its default intrinsic prototype (10.4.2.2).
     fn create_intrinsic_array(&mut self, length: u64, span: Span) -> Result<ObjectHandle, Error> {
         let length = u32::try_from(length).map_err(|_| {

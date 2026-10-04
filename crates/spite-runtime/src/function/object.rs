@@ -7,6 +7,7 @@ use spite_core::{JsString, Span};
 mod copy;
 mod descriptor;
 mod integrity;
+mod keys;
 mod prototype;
 mod tag;
 #[cfg(test)]
@@ -94,6 +95,11 @@ impl Realm {
             Builtin::ObjectIsSealed,
             Builtin::ObjectAssign,
             Builtin::ObjectGetOwnPropertyDescriptors,
+            Builtin::ObjectGetOwnPropertyNames,
+            Builtin::ObjectGetOwnPropertySymbols,
+            Builtin::ObjectKeys,
+            Builtin::ObjectValues,
+            Builtin::ObjectEntries,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(

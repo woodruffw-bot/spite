@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1611 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1709 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -224,7 +224,7 @@ changes; isExtensible/preventExtensions retain their primitive special cases.
 Object.create selects an object/null prototype and optionally defines properties.
 Object.defineProperties snapshots own keys in specification order, converts every
 enumerable descriptor before defining properties, and retains earlier definitions
-if a later definition is rejected. Enumeration of incomplete Object/Function/String/Array/global
+if a later definition is rejected. Enumeration of incomplete Object/Function/String/Array/Iterator/global
 intrinsics remains Unsupported. Object.freeze/seal close extensibility and tighten
 own descriptors without invoking accessors or recursively freezing values.
 isFrozen/isSealed inspect integrity, with primitive and empty-object special cases;
@@ -232,8 +232,16 @@ freezing mapped arguments detaches their parameter aliases. Object.assign copies
 enumerable own values in source/key order through ordinary Get/Set, including
 getters, inherited setters, and rejected-write TypeErrors. getOwnPropertyDescriptors
 copies all own descriptors into a fresh object without invoking property getters.
-Remaining static methods and
-BigInt boxing remain explicit gaps, including descriptor inspection
+getOwnPropertyNames/getOwnPropertySymbols return own keys of the requested type,
+including non-enumerables, without invoking getters. Object.keys/values/entries
+snapshot string keys and recheck each own descriptor's enumerability in order.
+Keys skips value reads; values/entries perform live Get and preserve earlier
+getter effects on failure. Entries creates dense intrinsic pairs; all result
+arrays bypass public constructors, species, and inherited setters. Forty-nine
+additional upstream Object files cover key reflection, primitive wrapping,
+symbol exclusion, intrinsic arrays, and metadata. Getter-mutation regressions use
+Object.defineProperty; upstream cases using accessor literals await parser support.
+Object.fromEntries/groupBy and BigInt boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
 String calls/new, StringData wrappers, and branded toString/valueOf are supported.
@@ -358,7 +366,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry retains at most 10,000 identities and 1,048,576
 total key code units; it never evicts entries. Work/output/capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 150 retained entries under a separate fixed work
+Realm initialization creates 155 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -390,8 +398,8 @@ unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. The unchanged pinned assert.js/sta.js harness now
 executes for nine positive function/capture tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
-22 Error construction, conversion, and prototype tests, plus 83 Object descriptor,
-prototype, extensibility, creation, copying, integrity, and SameValue tests, and
+22 Error construction, conversion, and prototype tests, plus 132 Object descriptor,
+prototype, extensibility, creation, copying, key enumeration, integrity, and SameValue tests, and
 153 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
 well-formedness, conversion, and String iteration tests in both Script modes. Another 389 Array and Array iterator
 files cover construction, of, isArray, literal elisions, length/index boundaries,
@@ -403,7 +411,7 @@ verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON or Array.prototype.map and other APIs and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 1611 variants are four raw positives, 1535 positives using the upstream
+Rust. Its 1709 variants are four raw positives, 1633 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

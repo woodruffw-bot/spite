@@ -691,17 +691,9 @@ fn missing_iterator_method(key: &JsString) -> bool {
 }
 
 fn missing_object_static(key: &JsString) -> bool {
-    [
-        "entries",
-        "fromEntries",
-        "getOwnPropertyNames",
-        "getOwnPropertySymbols",
-        "groupBy",
-        "keys",
-        "values",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
+    ["fromEntries", "groupBy"]
+        .iter()
+        .any(|name| key_is(key, name))
 }
 
 fn missing_object_method(key: &JsString) -> bool {

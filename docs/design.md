@@ -842,7 +842,7 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of incomplete Object/Function/String/Array/global intrinsics reports
+bounded work. Enumeration of incomplete Object/Function/String/Array/Iterator/global intrinsics reports
 Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
@@ -852,7 +852,18 @@ Object.assign snapshots each source's keys and then rechecks enumerability befor
 ordinary Get/Set, retaining getter/setter effects and earlier copies on abrupt
 completion. Object.getOwnPropertyDescriptors creates ordinary own data properties
 containing fresh descriptor objects, preserving accessors without invoking them.
-Remaining Object static methods are explicit gaps.
+Object.getOwnPropertyNames/getOwnPropertySymbols perform ToObject, snapshot own
+keys, and filter by key type without reading descriptors or values (20.1.2.10–11).
+Object.keys/values/entries use EnumerableOwnProperties (7.3.23): snapshot once,
+skip Symbol keys, and recheck each own descriptor's enumerability immediately
+before visiting it. Keys never invokes getters. Values and entries perform live
+Get with the original object as receiver; entries create each intrinsic pair
+before proceeding. Getter additions outside the snapshot are ignored; deletions
+and descriptor changes affect later visits. Abrupt reads stop immediately.
+CreateArrayFromList (7.3.17) starts an intrinsic Array at length zero and defines
+own writable/enumerable/configurable data elements in order. Results never call
+the public Array constructor, species getters, or inherited indexed setters.
+Object.fromEntries/groupBy remain explicit gaps pending iterator consumption.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
