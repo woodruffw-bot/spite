@@ -682,6 +682,15 @@ release their captures before the next host collection. Iterator's static
 inventory is complete, so its own reflection and integrity operations are enabled;
 the shared prototype's remaining helpers are still guarded.
 
+Iterator.prototype.toArray acquires an object receiver directly, captures next,
+and consumes IteratorStepValue until done (27.1.3.3.12). It never consults
+Symbol.iterator and never closes on acquisition, step, or host failures. Collect
+owned values in a fallibly grown internal list, then materialize the intrinsic
+Array only after exhaustion through CreateArrayFromList. This preserves element
+identities and explicit undefined entries without species, constructor, or
+inherited-setter calls. Defaults impose no work, list-size, or heap quota;
+native addressable/allocation capacity remains a distinct host failure.
+
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
 it does not retain the original receiver. A branded String iterator stores the

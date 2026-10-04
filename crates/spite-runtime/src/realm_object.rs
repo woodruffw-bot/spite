@@ -723,7 +723,6 @@ fn missing_array_static(key: &JsString) -> bool {
 fn missing_iterator_method(key: &JsString) -> bool {
     [
         "drop", "every", "filter", "find", "flatMap", "forEach", "map", "reduce", "some", "take",
-        "toArray",
     ]
     .iter()
     .any(|name| key_is(key, name))

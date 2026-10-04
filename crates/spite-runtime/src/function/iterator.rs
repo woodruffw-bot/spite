@@ -8,6 +8,7 @@ use crate::{
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod concat;
+mod consume;
 mod from;
 mod operations;
 mod tag;
@@ -24,6 +25,7 @@ pub(crate) struct IteratorIntrinsics {
     concat: ObjectHandle,
     helper_next: ObjectHandle,
     helper_return: ObjectHandle,
+    to_array: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -48,6 +50,7 @@ impl IteratorIntrinsics {
             &self.concat,
             &self.helper_next,
             &self.helper_return,
+            &self.to_array,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -82,11 +85,13 @@ impl Realm {
             self.new_builtin(function_prototype, Builtin::IteratorHelperNext, span)?;
         let helper_return =
             self.new_builtin(function_prototype, Builtin::IteratorHelperReturn, span)?;
+        let to_array = self.new_builtin(function_prototype, Builtin::IteratorToArray, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperReturn, span)?;
         for (object, name, function) in [
+            (&prototype, "toArray", &to_array),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -225,6 +230,7 @@ impl Realm {
             concat,
             helper_next,
             helper_return,
+            to_array,
             array_prototype,
             string_prototype,
             identity,

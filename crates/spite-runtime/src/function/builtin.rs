@@ -180,6 +180,7 @@ impl Realm {
                 self.iterator_from(arguments.next().unwrap_or(Value::Undefined), span)
             }
             Builtin::IteratorConcat => self.iterator_concat(arguments, span),
+            Builtin::IteratorToArray => self.iterator_to_array(this, span),
             Builtin::IteratorHelperNext | Builtin::IteratorHelperReturn => self
                 .iterator_helper_resume(
                     this,

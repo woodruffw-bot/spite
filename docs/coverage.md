@@ -635,6 +635,14 @@ internal-slot brands, and capture retention/release during collection. The helpe
 prototype's next/return/tag and Iterator's static inventory support complete own
 reflection and integrity operations. Language generators remain unimplemented.
 
+Iterator.prototype.toArray consumes a generic object receiver through its cached
+next and materializes a fresh intrinsic dense Array after exhaustion. Regressions
+cover native/wrapped/helper iterators, ignored iterator hooks and extra arguments,
+primitive rejection before next lookup, done-before-value, exact receivers and
+zero arguments, error identity without closing, element identity/undefined,
+species and inherited-setter bypass, metadata, deleted-link retention, large
+default results, and opt-in host failures.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-await-of, catch patterns, generators,
@@ -670,7 +678,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 239 retained entries outside the per-Script work
+Realm initialization creates 240 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
