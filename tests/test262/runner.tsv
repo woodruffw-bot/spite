@@ -1482,3 +1482,15 @@ test/built-ins/Object/fromEntries/supports-symbols.js	-	-	-
 test/built-ins/Object/fromEntries/to-property-key.js	-	-	-
 test/built-ins/Object/fromEntries/uses-define-semantics.js	-	-	-
 test/built-ins/Object/fromEntries/uses-keys-not-iterator.js	-	-	-
+test/built-ins/Object/groupBy/callback-arg.js	-	-	-
+test/built-ins/Object/groupBy/callback-throws.js	-	-	-
+test/built-ins/Object/groupBy/emptyList.js	-	-	-
+test/built-ins/Object/groupBy/evenOdd.js	-	-	-
+test/built-ins/Object/groupBy/groupLength.js	-	-	-
+test/built-ins/Object/groupBy/invalid-callback.js	-	-	-
+test/built-ins/Object/groupBy/invalid-iterable.js	-	-	-
+test/built-ins/Object/groupBy/invalid-property-key.js	-	-	-
+test/built-ins/Object/groupBy/iterator-next-throws.js	-	-	-
+test/built-ins/Object/groupBy/null-prototype.js	-	-	-
+test/built-ins/Object/groupBy/string.js	-	-	-
+test/built-ins/Object/groupBy/toPropertyKey.js	-	-	-
