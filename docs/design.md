@@ -1155,6 +1155,15 @@ Neither method reads Symbol.iterator. Argument-list copies, opted-in quotas,
 platform capacity, and native-stack guards follow existing call rules. Remaining
 Reflect methods and own-key reflection report Unsupported until implemented.
 
+Reflect.getPrototypeOf, setPrototypeOf, isExtensible, and preventExtensions
+(28.1.7/9/11/13) require object targets without boxing or conversion. They share
+the ordinary/exotic storage operations used by Object methods. SetPrototypeOf
+validates an object-or-null prototype and returns the internal boolean rather
+than converting rejection into TypeError: equal current prototypes succeed even
+after extension prevention; cycles, immutable-prototype changes, and new
+prototypes on non-extensible objects return false. PreventExtensions returns true
+for the currently exposed object kinds. Proxies remain a separate implementation.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

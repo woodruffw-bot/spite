@@ -37,6 +37,10 @@ pub(crate) enum Builtin {
     FunctionApply,
     ReflectApply,
     ReflectConstruct,
+    ReflectGetPrototypeOf,
+    ReflectSetPrototypeOf,
+    ReflectIsExtensible,
+    ReflectPreventExtensions,
     FunctionBind,
     FunctionHasInstance,
     FunctionToString,
@@ -194,6 +198,10 @@ impl Builtin {
             Self::FunctionApply => "apply",
             Self::ReflectApply => "apply",
             Self::ReflectConstruct => "construct",
+            Self::ReflectGetPrototypeOf => "getPrototypeOf",
+            Self::ReflectSetPrototypeOf => "setPrototypeOf",
+            Self::ReflectIsExtensible => "isExtensible",
+            Self::ReflectPreventExtensions => "preventExtensions",
             Self::FunctionBind => "bind",
             Self::FunctionHasInstance => "[Symbol.hasInstance]",
             Self::FunctionToString
@@ -394,6 +402,9 @@ impl Builtin {
             | Self::ObjectPropertyIsEnumerable
             | Self::ObjectIsPrototypeOf
             | Self::ObjectGetPrototypeOf
+            | Self::ReflectGetPrototypeOf
+            | Self::ReflectIsExtensible
+            | Self::ReflectPreventExtensions
             | Self::ObjectIsExtensible
             | Self::ObjectPreventExtensions
             | Self::ObjectFreeze
@@ -435,6 +446,7 @@ impl Builtin {
             | Self::StringReplace
             | Self::StringReplaceAll
             | Self::ReflectConstruct
+            | Self::ReflectSetPrototypeOf
             | Self::ParseInt
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn

@@ -57,6 +57,27 @@ impl Realm {
                 arguments.next(),
                 span,
             ),
+            Builtin::ReflectGetPrototypeOf => {
+                let target =
+                    Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
+                self.object_get_prototype_of(Value::Object(target), span)
+            }
+            Builtin::ReflectSetPrototypeOf => self.reflect_set_prototype_of(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::ReflectIsExtensible => {
+                let target =
+                    Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
+                self.object_extensibility(Value::Object(target), false, span)
+            }
+            Builtin::ReflectPreventExtensions => {
+                let target =
+                    Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
+                self.object_work(span, |objects, _| objects.prevent_extensions(&target))?;
+                Ok(Value::Boolean(true))
+            }
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
             Builtin::IteratorTagGet => Ok(Value::String(JsString::from("Iterator"))),
             Builtin::IteratorTagSet => {

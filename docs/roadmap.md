@@ -184,6 +184,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Complete Array prototype method materialization and enable full reflection/integrity operations.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add the Reflect object, array-like apply calls, and construction with explicit newTarget and bound forwarding.
+- [x] Add Reflect prototype and extensibility operations with object-only targets and boolean rejection results.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
 - [x] Integrate symbol keys into ordinary/exotic storage, ordering, and work budgets.
 - [x] Add runtime Symbol primitives and shared well-known identities.

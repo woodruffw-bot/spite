@@ -712,13 +712,9 @@ fn missing_reflect_method(key: &JsString) -> bool {
         "deleteProperty",
         "get",
         "getOwnPropertyDescriptor",
-        "getPrototypeOf",
         "has",
-        "isExtensible",
         "ownKeys",
-        "preventExtensions",
         "set",
-        "setPrototypeOf",
     ]
     .iter()
     .any(|name| key_is(key, name))

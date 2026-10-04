@@ -1,4 +1,4 @@
-//! Reflect object, apply, and construct (28.1.1–2, 28.1.14).
+//! Reflect calls, construction, prototypes, and extensibility (28.1).
 
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
@@ -38,7 +38,14 @@ impl Realm {
             )
         })?;
         let mut methods = Vec::new();
-        for builtin in [Builtin::ReflectApply, Builtin::ReflectConstruct] {
+        for builtin in [
+            Builtin::ReflectApply,
+            Builtin::ReflectConstruct,
+            Builtin::ReflectGetPrototypeOf,
+            Builtin::ReflectIsExtensible,
+            Builtin::ReflectPreventExtensions,
+            Builtin::ReflectSetPrototypeOf,
+        ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(
                 &object,
@@ -85,5 +92,43 @@ impl Realm {
         };
         let arguments = self.argument_list_from_array_like(list, span)?;
         self.construct_with_new_target(target, arguments, new_target, span)
+    }
+
+    pub(super) fn reflect_object(target: Value, span: Span) -> Result<ObjectHandle, Error> {
+        if let Value::Object(object) = target {
+            Ok(object)
+        } else {
+            Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Reflect target must be an object",
+            ))
+        }
+    }
+
+    pub(super) fn reflect_set_prototype_of(
+        &mut self,
+        target: Value,
+        prototype: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 28.1.13 validates target before proto and returns [[SetPrototypeOf]]'s
+        // boolean, including false for cycles or a non-extensible change.
+        let target = Self::reflect_object(target, span)?;
+        let prototype = match prototype {
+            Value::Null => None,
+            Value::Object(object) => Some(object),
+            _ => {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "prototype must be an object or null",
+                ));
+            }
+        };
+        self.object_work(span, |objects, budget| {
+            objects.set_prototype(&target, prototype.as_ref(), budget)
+        })
+        .map(Value::Boolean)
     }
 }
