@@ -106,6 +106,13 @@ bypass expression recursion limits. Ordinary functions instantiate; strict calls
 receivers execute. Global receivers also execute; boxed receivers and construction
 remain runtime gaps. Generators, async functions, rest parameters, and patterns remain separate steps.
 
+New expressions retain the constructor and optional argument list (13.3.5).
+Constructor parsing consumes member access but leaves call parentheses to the new
+expression, distinguishing `new F.x(a)` from `new F(a).x`. Nested new forms bind
+inner argument lists first. Calls and construction share argument parsing with In
+enabled; spans, strict validation, and depth budgets cover all children. Spread,
+new.target, and runtime construction remain explicit gaps in this grammar step.
+
 Direct function declarations are var-scoped in Scripts and function bodies;
 block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
 function names against lexical and nested var declarations, including catch

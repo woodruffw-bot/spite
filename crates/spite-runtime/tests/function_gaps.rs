@@ -30,5 +30,8 @@ fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
         Err(Error::Parse(_))
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(3.0)));
-    assert!(matches!(realm.eval("new f()"), Err(Error::Parse(_))));
+    assert!(matches!(
+        realm.eval("new f()"),
+        Err(Error::Unsupported { .. })
+    ));
 }

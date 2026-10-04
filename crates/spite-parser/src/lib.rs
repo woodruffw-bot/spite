@@ -2,6 +2,7 @@
 
 mod arrow;
 pub mod ast;
+mod construction;
 mod function;
 mod lexer;
 
@@ -587,6 +588,13 @@ impl Parser {
                 .max()
                 .unwrap_or(0)
                 .max(callee.depth),
+            ExprKind::New { callee, arguments } => arguments
+                .iter()
+                .flatten()
+                .map(|argument| argument.depth)
+                .max()
+                .unwrap_or(0)
+                .max(callee.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
             ExprKind::Template { substitutions, .. } => {
                 substitutions.iter().map(|e| e.depth).max().unwrap_or(0)
@@ -645,18 +653,7 @@ impl Parser {
                     }
                     return Err(self.error("call requires a left-hand-side expression"));
                 }
-                self.bump();
-                let mut arguments = Vec::new();
-                while !self.at(")") {
-                    if self.at("...") {
-                        return Err(self.unsupported("spread arguments are not implemented"));
-                    }
-                    arguments.push(self.expression_with_in(2, true)?);
-                    if !self.eat(",") {
-                        break;
-                    }
-                }
-                self.expect(")")?;
+                let arguments = self.arguments()?;
                 let span = Span::new(left.span.start, self.tokens[self.index - 1].span.end);
                 left = self.make_expr(
                     ExprKind::Call {
@@ -667,7 +664,7 @@ impl Parser {
                 )?;
                 continue;
             }
-            if minimum <= 17 && (self.at(".") || self.at("[")) {
+            if minimum <= 18 && (self.at(".") || self.at("[")) {
                 if !member_base(&left) {
                     // 12.10.1: a completed UpdateExpression cannot continue as
                     // a MemberExpression. A line break can therefore allow ASI.
@@ -807,6 +804,9 @@ impl Parser {
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
         if self.at("function") {
             return self.function_expression();
+        }
+        if self.at("new") {
+            return self.new_expression();
         }
         let token = self.bump();
         let span = token.span;
@@ -1039,6 +1039,10 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
             | ExprKind::Call { .. }
+            | ExprKind::New {
+                arguments: Some(_),
+                ..
+            }
             | ExprKind::Function(_)
     )
 }
@@ -1551,6 +1555,12 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Call { callee, arguments } => {
             validate_expr(callee, strict)?;
             for argument in arguments {
+                validate_expr(argument, strict)?;
+            }
+        }
+        ExprKind::New { callee, arguments } => {
+            validate_expr(callee, strict)?;
+            for argument in arguments.iter().flatten() {
                 validate_expr(argument, strict)?;
             }
         }

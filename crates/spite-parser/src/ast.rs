@@ -385,6 +385,13 @@ pub enum ExprKind {
         /// Argument expressions in source order.
         arguments: Vec<Expr>,
     },
+    /// Construction with optional parentheses and ordered non-spread arguments.
+    New {
+        /// Expression whose value must be a constructor at runtime.
+        callee: Box<Expr>,
+        /// None for the bare new form; Some includes explicit empty parentheses.
+        arguments: Option<Vec<Expr>>,
+    },
     /// An ordinary function expression with optional local name.
     Function(Rc<Function>),
     /// A non-async arrow with identifier parameters and optional defaults.

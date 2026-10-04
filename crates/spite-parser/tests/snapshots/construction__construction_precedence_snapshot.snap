@@ -1,0 +1,386 @@
+---
+source: crates/spite-parser/tests/construction.rs
+expression: "parse_script(\"new F; new F(); new F.x(a).y(); new F(a)(b); new new F(a)(b); new (f())(x); new new F().x;\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 2,
+                    kind: New {
+                        callee: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "F",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        arguments: None,
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 5,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 6,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 2,
+                    kind: New {
+                        callee: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "F",
+                            ),
+                            span: Span {
+                                start: 11,
+                                end: 12,
+                            },
+                        },
+                        arguments: Some(
+                            [],
+                        ),
+                    },
+                    span: Span {
+                        start: 7,
+                        end: 14,
+                    },
+                },
+            ),
+            span: Span {
+                start: 7,
+                end: 15,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 5,
+                    kind: Call {
+                        callee: Expr {
+                            depth: 4,
+                            kind: Member(
+                                Expr {
+                                    depth: 3,
+                                    kind: New {
+                                        callee: Expr {
+                                            depth: 2,
+                                            kind: Member(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "F",
+                                                    ),
+                                                    span: Span {
+                                                        start: 20,
+                                                        end: 21,
+                                                    },
+                                                },
+                                                Literal(
+                                                    String(
+                                                        "x",
+                                                    ),
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 20,
+                                                end: 23,
+                                            },
+                                        },
+                                        arguments: Some(
+                                            [
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "a",
+                                                    ),
+                                                    span: Span {
+                                                        start: 24,
+                                                        end: 25,
+                                                    },
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 16,
+                                        end: 26,
+                                    },
+                                },
+                                Literal(
+                                    String(
+                                        "y",
+                                    ),
+                                ),
+                            ),
+                            span: Span {
+                                start: 16,
+                                end: 28,
+                            },
+                        },
+                        arguments: [],
+                    },
+                    span: Span {
+                        start: 16,
+                        end: 30,
+                    },
+                },
+            ),
+            span: Span {
+                start: 16,
+                end: 31,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: Call {
+                        callee: Expr {
+                            depth: 2,
+                            kind: New {
+                                callee: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "F",
+                                    ),
+                                    span: Span {
+                                        start: 36,
+                                        end: 37,
+                                    },
+                                },
+                                arguments: Some(
+                                    [
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "a",
+                                            ),
+                                            span: Span {
+                                                start: 38,
+                                                end: 39,
+                                            },
+                                        },
+                                    ],
+                                ),
+                            },
+                            span: Span {
+                                start: 32,
+                                end: 40,
+                            },
+                        },
+                        arguments: [
+                            Expr {
+                                depth: 1,
+                                kind: Identifier(
+                                    "b",
+                                ),
+                                span: Span {
+                                    start: 41,
+                                    end: 42,
+                                },
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 32,
+                        end: 43,
+                    },
+                },
+            ),
+            span: Span {
+                start: 32,
+                end: 44,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: New {
+                        callee: Expr {
+                            depth: 2,
+                            kind: New {
+                                callee: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "F",
+                                    ),
+                                    span: Span {
+                                        start: 53,
+                                        end: 54,
+                                    },
+                                },
+                                arguments: Some(
+                                    [
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "a",
+                                            ),
+                                            span: Span {
+                                                start: 55,
+                                                end: 56,
+                                            },
+                                        },
+                                    ],
+                                ),
+                            },
+                            span: Span {
+                                start: 49,
+                                end: 57,
+                            },
+                        },
+                        arguments: Some(
+                            [
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "b",
+                                    ),
+                                    span: Span {
+                                        start: 58,
+                                        end: 59,
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                    span: Span {
+                        start: 45,
+                        end: 60,
+                    },
+                },
+            ),
+            span: Span {
+                start: 45,
+                end: 61,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: New {
+                        callee: Expr {
+                            depth: 3,
+                            kind: Parenthesized(
+                                Expr {
+                                    depth: 2,
+                                    kind: Call {
+                                        callee: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "f",
+                                            ),
+                                            span: Span {
+                                                start: 67,
+                                                end: 68,
+                                            },
+                                        },
+                                        arguments: [],
+                                    },
+                                    span: Span {
+                                        start: 67,
+                                        end: 70,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 66,
+                                end: 71,
+                            },
+                        },
+                        arguments: Some(
+                            [
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 72,
+                                        end: 73,
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                    span: Span {
+                        start: 62,
+                        end: 74,
+                    },
+                },
+            ),
+            span: Span {
+                start: 62,
+                end: 75,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: New {
+                        callee: Expr {
+                            depth: 3,
+                            kind: Member(
+                                Expr {
+                                    depth: 2,
+                                    kind: New {
+                                        callee: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "F",
+                                            ),
+                                            span: Span {
+                                                start: 84,
+                                                end: 85,
+                                            },
+                                        },
+                                        arguments: Some(
+                                            [],
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 80,
+                                        end: 87,
+                                    },
+                                },
+                                Literal(
+                                    String(
+                                        "x",
+                                    ),
+                                ),
+                            ),
+                            span: Span {
+                                start: 80,
+                                end: 89,
+                            },
+                        },
+                        arguments: None,
+                    },
+                    span: Span {
+                        start: 76,
+                        end: 89,
+                    },
+                },
+            ),
+            span: Span {
+                start: 76,
+                end: 90,
+            },
+        },
+    ],
+    strict: false,
+}

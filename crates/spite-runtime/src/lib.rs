@@ -1138,6 +1138,12 @@ impl Realm {
                 source,
             } => self.arrow_function(parameters, body, source, expr.span)?,
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
+            ExprKind::New { .. } => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "construction is not implemented",
+                ));
+            }
             ExprKind::Call { callee, arguments } => {
                 let (function, this) = if reference_expression(callee) {
                     let mut reference = self.reference(callee)?;
