@@ -69,6 +69,14 @@ impl Realm {
         let mut methods = Vec::new();
         for builtin in [
             Builtin::MathAbs,
+            Builtin::MathAcos,
+            Builtin::MathAcosh,
+            Builtin::MathAsin,
+            Builtin::MathAsinh,
+            Builtin::MathAtan,
+            Builtin::MathAtanh,
+            Builtin::MathAtan2,
+            Builtin::MathCbrt,
             Builtin::MathCeil,
             Builtin::MathClz32,
             Builtin::MathExp,
@@ -111,6 +119,13 @@ impl Realm {
         let number = self.number(value, span)?;
         let result = match builtin {
             Builtin::MathAbs => number.abs(),
+            Builtin::MathAcos
+            | Builtin::MathAcosh
+            | Builtin::MathAsin
+            | Builtin::MathAsinh
+            | Builtin::MathAtan
+            | Builtin::MathAtanh
+            | Builtin::MathCbrt => inverse_unary(number, builtin),
             Builtin::MathCeil => number.ceil(),
             Builtin::MathClz32 => f64::from(to_uint32(number).leading_zeros()),
             Builtin::MathExp => {
@@ -222,6 +237,114 @@ impl Realm {
         let exponent = self.number(exponent, span)?;
         Ok(Value::Number(exponentiate(base, exponent)))
     }
+
+    pub(super) fn math_atan2(&mut self, y: Value, x: Value, span: Span) -> Result<Value, Error> {
+        // sec-math.atan2: y is converted before x; both conversions precede
+        // numeric special cases, even when y is NaN.
+        let y = self.number(y, span)?;
+        let x = self.number(x, span)?;
+        Ok(Value::Number(atan2(y, x)))
+    }
+}
+
+fn inverse_unary(number: f64, builtin: Builtin) -> f64 {
+    // sec-math.acos/acosh/asin/asinh/atan/atanh/cbrt: handle required domain
+    // and signed endpoint results before platform finite approximations.
+    use std::f64::consts::FRAC_PI_2;
+    match builtin {
+        Builtin::MathAcos => {
+            if number.abs() > 1.0 {
+                f64::NAN
+            } else if number == 1.0 {
+                0.0
+            } else {
+                number.acos()
+            }
+        }
+        Builtin::MathAcosh => {
+            if number < 1.0 {
+                f64::NAN
+            } else if number == 1.0 {
+                0.0
+            } else {
+                number.acosh()
+            }
+        }
+        Builtin::MathAsin => {
+            if number.abs() > 1.0 {
+                f64::NAN
+            } else if number == 0.0 {
+                number
+            } else if number.abs() == 1.0 {
+                FRAC_PI_2.copysign(number)
+            } else {
+                number.asin()
+            }
+        }
+        Builtin::MathAsinh | Builtin::MathCbrt => {
+            if number == 0.0 || !number.is_finite() {
+                number
+            } else if matches!(builtin, Builtin::MathAsinh) {
+                number.asinh()
+            } else {
+                number.cbrt()
+            }
+        }
+        Builtin::MathAtan => {
+            if number == 0.0 || number.is_nan() {
+                number
+            } else if number.is_infinite() {
+                FRAC_PI_2.copysign(number)
+            } else {
+                number.atan()
+            }
+        }
+        Builtin::MathAtanh => {
+            if number.abs() > 1.0 {
+                f64::NAN
+            } else if number == 0.0 || number.is_nan() {
+                number
+            } else if number.abs() == 1.0 {
+                f64::INFINITY.copysign(number)
+            } else {
+                number.atanh()
+            }
+        }
+        _ => unreachable!("Math inverse/cube-root operation"),
+    }
+}
+
+fn atan2(y: f64, x: f64) -> f64 {
+    use std::f64::consts::{FRAC_PI_2, FRAC_PI_4, PI};
+    if y.is_nan() || x.is_nan() {
+        return f64::NAN;
+    }
+    if y == 0.0 {
+        return if x.is_sign_negative() {
+            PI.copysign(y)
+        } else {
+            y
+        };
+    }
+    if x == 0.0 {
+        return FRAC_PI_2.copysign(y);
+    }
+    if y.is_infinite() {
+        let angle = if x.is_infinite() {
+            if x > 0.0 { FRAC_PI_4 } else { 3.0 * FRAC_PI_4 }
+        } else {
+            FRAC_PI_2
+        };
+        return angle.copysign(y);
+    }
+    if x.is_infinite() {
+        return if x > 0.0 {
+            0.0_f64.copysign(y)
+        } else {
+            PI.copysign(y)
+        };
+    }
+    y.atan2(x)
 }
 
 fn logarithm(number: f64, builtin: Builtin) -> f64 {

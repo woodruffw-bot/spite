@@ -52,6 +52,13 @@ impl Realm {
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
             Builtin::MathAbs
+            | Builtin::MathAcos
+            | Builtin::MathAcosh
+            | Builtin::MathAsin
+            | Builtin::MathAsinh
+            | Builtin::MathAtan
+            | Builtin::MathAtanh
+            | Builtin::MathCbrt
             | Builtin::MathCeil
             | Builtin::MathClz32
             | Builtin::MathExp
@@ -77,6 +84,11 @@ impl Realm {
                 span,
             ),
             Builtin::MathPow => self.math_pow(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::MathAtan2 => self.math_atan2(
                 arguments.next().unwrap_or(Value::Undefined),
                 arguments.next().unwrap_or(Value::Undefined),
                 span,

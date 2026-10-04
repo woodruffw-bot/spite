@@ -1240,6 +1240,13 @@ exp_m1 and ln_1p retaining small-input accuracy instead of subtracting one or
 adding one first. Log2 decodes every binary64 power of two exactly, including
 subnormal powers, before using the platform logarithm for other finite values.
 
+Math acos/acosh/asin/asinh/atan/atanh/cbrt handle their domains and signed
+endpoints before platform finite approximations (sec-math.acos through
+sec-math.cbrt). Atan2 converts y then x before any numeric shortcut
+(sec-math.atan2). NaN wins after both conversions; explicit zero and infinity
+quadrants retain the sign of y and distinguish either sign of x, including -0.
+Ordinary finite nonzero pairs use atan2 directly without forming y/x.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

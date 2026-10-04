@@ -49,6 +49,14 @@ pub(crate) enum Builtin {
     ReflectOwnKeys,
     ReflectSet,
     MathAbs,
+    MathAcos,
+    MathAcosh,
+    MathAsin,
+    MathAsinh,
+    MathAtan,
+    MathAtanh,
+    MathAtan2,
+    MathCbrt,
     MathCeil,
     MathClz32,
     MathExp,
@@ -237,6 +245,14 @@ impl Builtin {
             Self::ReflectOwnKeys => "ownKeys",
             Self::ReflectSet => "set",
             Self::MathAbs => "abs",
+            Self::MathAcos => "acos",
+            Self::MathAcosh => "acosh",
+            Self::MathAsin => "asin",
+            Self::MathAsinh => "asinh",
+            Self::MathAtan => "atan",
+            Self::MathAtanh => "atanh",
+            Self::MathAtan2 => "atan2",
+            Self::MathCbrt => "cbrt",
             Self::MathCeil => "ceil",
             Self::MathClz32 => "clz32",
             Self::MathExp => "exp",
@@ -461,6 +477,13 @@ impl Builtin {
             | Self::ReflectIsExtensible
             | Self::ReflectOwnKeys
             | Self::MathAbs
+            | Self::MathAcos
+            | Self::MathAcosh
+            | Self::MathAsin
+            | Self::MathAsinh
+            | Self::MathAtan
+            | Self::MathAtanh
+            | Self::MathCbrt
             | Self::MathCeil
             | Self::MathClz32
             | Self::MathExp
@@ -511,6 +534,7 @@ impl Builtin {
             | Self::MathMax
             | Self::MathMin
             | Self::MathPow
+            | Self::MathAtan2
             | Self::ArraySlice
             | Self::ArraySplice
             | Self::ArrayCopyWithin

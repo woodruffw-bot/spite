@@ -722,14 +722,6 @@ impl Realm {
 
 fn missing_math_method(key: &JsString) -> bool {
     [
-        "acos",
-        "acosh",
-        "asin",
-        "asinh",
-        "atan",
-        "atanh",
-        "atan2",
-        "cbrt",
         "cos",
         "cosh",
         "hypot",
