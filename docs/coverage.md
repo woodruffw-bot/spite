@@ -364,7 +364,13 @@ ordered message and cause initialization, standard descriptors, and their requir
 constructor/prototype inheritance. Error.prototype.toString is generic and orders
 property reads and conversions. Error.isError recognizes own ErrorData independently
 of prototype identity; Error prototypes do not carry that slot. Cause references
-are traced through ordinary properties. AggregateError remains unimplemented.
+are traced through ordinary properties. AggregateError adds ordered prototype,
+message, cause, and synchronous iterable processing. Its errors property is a fresh
+intrinsic dense Array, with values preserved by identity and without coercion.
+IteratorToList caches next once and leaves the iterator unclosed on step failures.
+Native regressions cover descriptors, ErrorData branding, call/new/bound/Reflect
+construction, string iteration, abrupt ordering, setter/species bypass, collection,
+unrestricted default list sizes, and opted-in host aborts.
 
 Object calls/new preserve object identity, create fresh nullish-argument objects,
 and box Boolean/Number/String/Symbol/BigInt values. Object.prototype provides hasOwnProperty,

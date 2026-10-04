@@ -1189,8 +1189,19 @@ Error.prototype.toString, Error.isError, and ordered message/cause initializatio
 objects do not. NativeError constructors inherit Error, and their prototypes
 inherit Error.prototype. Constructor calls allocate before message conversion,
 then inspect object-valued options for an inherited or own cause property. Keep
-ErrorData private and trace cause values through ordinary properties. AggregateError
-depends on iteration and remains a separate increment.
+ErrorData private and trace cause values through ordinary properties.
+
+AggregateError shares the ErrorData brand and native Error inheritance (20.5.7).
+Select the newTarget prototype and allocate first, then convert the message,
+install cause, and obtain a synchronous iterator from the errors argument.
+Cache next once and collect values without coercion. IteratorToList does not close
+the iterator on exhaustion or abrupt next/done/value access. After exhaustion,
+create a fresh intrinsic Array with own indexed data properties and install the
+writable, non-enumerable, configurable errors property. Public Array constructors,
+species hooks, and inherited setters do not participate. Trace list values through
+ordinary Array properties; retain the constructor and prototype as intrinsic roots.
+Use fallible list reservations and existing opt-in work/heap limits; impose no
+default list size or work quota. Host failures propagate without JavaScript cleanup.
 
 Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced

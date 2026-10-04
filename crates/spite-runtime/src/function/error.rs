@@ -4,6 +4,7 @@ use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span};
 
+mod aggregate;
 #[cfg(test)]
 mod tests;
 
@@ -16,10 +17,11 @@ pub(crate) enum ErrorConstructor {
     SyntaxError,
     TypeError,
     URIError,
+    AggregateError,
 }
 
 impl ErrorConstructor {
-    const ALL: [Self; 7] = [
+    const ALL: [Self; 8] = [
         Self::Error,
         Self::EvalError,
         Self::RangeError,
@@ -27,6 +29,7 @@ impl ErrorConstructor {
         Self::SyntaxError,
         Self::TypeError,
         Self::URIError,
+        Self::AggregateError,
     ];
 
     pub(crate) fn name(self) -> &'static str {
@@ -38,6 +41,7 @@ impl ErrorConstructor {
             Self::SyntaxError => "SyntaxError",
             Self::TypeError => "TypeError",
             Self::URIError => "URIError",
+            Self::AggregateError => "AggregateError",
         }
     }
 }
@@ -207,6 +211,11 @@ impl Realm {
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        let errors = if kind == ErrorConstructor::AggregateError {
+            Some(arguments.next().unwrap_or(Value::Undefined))
+        } else {
+            None
+        };
         let intrinsic = self
             .intrinsics
             .as_ref()
@@ -215,7 +224,7 @@ impl Realm {
             .get(kind);
         let new_target = new_target.unwrap_or_else(|| intrinsic.constructor.clone());
         let fallback = intrinsic.prototype.clone();
-        // 20.5.1.1 / 20.5.6.1.1: select the prototype and allocate before
+        // 20.5.1.1 / 20.5.6.1.1 / 20.5.7.1.1: select the prototype and allocate before
         // converting message, then inspect cause only on object-valued options.
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = match prototype {
@@ -234,6 +243,10 @@ impl Realm {
                 let cause = self.get_property(&options, &key, span)?;
                 self.define_builtin_property(&object, "cause", cause, true, span)?;
             }
+        }
+        if let Some(errors) = errors {
+            let array = self.aggregate_errors(errors, span)?;
+            self.define_builtin_property(&object, "errors", array, true, span)?;
         }
         Ok(Value::Object(object))
     }

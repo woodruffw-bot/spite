@@ -1586,7 +1586,6 @@ fn standard_global(name: &str) -> bool {
     matches!(
         name,
         "eval"
-            | "AggregateError"
             | "Date"
             | "RegExp"
             | "Int8Array"

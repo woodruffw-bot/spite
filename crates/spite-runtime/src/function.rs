@@ -475,6 +475,7 @@ impl Builtin {
 
     fn length(self) -> f64 {
         match self {
+            Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
             Self::FunctionCall
             | Self::Function
             | Self::IteratorTagSet
