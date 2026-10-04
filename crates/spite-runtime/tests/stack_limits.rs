@@ -1,0 +1,39 @@
+//! Recursive execution must hit host limits before exhausting a modest native stack.
+
+use spite_runtime::{Error, Realm, Value};
+
+#[test]
+fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
+    for (index, (setup, call)) in [
+        ("let f=(x=f())=>1;", "f()"),
+        ("function f(x=f()){return 1;}", "f()"),
+        ("function f(){'use strict';return f();}", "f()"),
+        ("function F(){new F;}", "new F"),
+        ("let o={valueOf:()=>+o};", "+o"),
+        ("let o={valueOf:()=>Number(o)};", "Number(o)"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        std::thread::Builder::new()
+            .name(format!("bounded-recursion-{index}"))
+            .stack_size(2 * 1024 * 1024)
+            .spawn(move || {
+                let mut realm = Realm::default();
+                realm.eval(&format!("let flag=0;{setup}")).unwrap();
+                assert!(
+                    matches!(
+                        realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
+                        Err(Error::Limit { .. })
+                    ),
+                    "{setup}"
+                );
+                assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+                assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
+                assert_eq!(realm.eval("Number('4')"), Ok(Value::Number(4.0)));
+            })
+            .unwrap()
+            .join()
+            .unwrap();
+    }
+}

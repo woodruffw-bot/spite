@@ -106,7 +106,8 @@ Argument lists have a configurable host limit shared with direct calls and bound
 arguments. Bind implements callable receiver/argument capture, target prototype
 selection, standard length/name metadata, and iterative invocation. Captured
 object edges survive collection and unreachable cycles are reclaimed. Re-entrant
-getter/coercion calls have a host nesting limit of 64; tail transfers are iterative.
+getter/coercion calls have a host nesting limit of 32; tail transfers are iterative. Embedding threads require
+at least a 2 MiB native stack, exercised by recursion regressions in CI.
 
 Arrows with identifier parameters and expression or block bodies execute with shared lexical captures,
 fresh mutable parameter bindings, missing/extra argument handling, inherited and

@@ -474,9 +474,15 @@ before symbol properties or reflection become accessible. Prototype getter calls
 retain their receiver and abrupt completions, and traversal consumes host work.
 
 Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
-64 until explicit frames replace Rust recursion. Every success and abrupt result
+32 until explicit frames replace Rust recursion. Every success and abrupt result
 restores the counter; iterative call/apply/bound transfers do not increase it.
 Host limit failures continue to bypass JavaScript catch/finally handlers.
+Native builtin algorithms use a separate non-inlined dispatcher so extending the
+standard library does not enlarge every recursive script call's native frame.
+Embedders must provide at least a 2 MiB native thread stack. Regression tests run
+recursive defaults, ordinary calls, constructors, and coercion on an explicit
+2 MiB stack in the Linux/Windows toolchain matrix. A previous 64-call bound could
+overflow Windows stable Rust debug test threads before returning a host error.
 
 Arrows share immutable parameter/body syntax and retained source
 through safe Rc values. Creating a closure captures an environment handle; invoking
