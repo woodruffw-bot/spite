@@ -4,8 +4,12 @@ use spite_test262::{Outcome, Runner, Stage};
 use std::{fs, path::Path};
 
 fn run(body: &str) -> Vec<Outcome> {
+    run_with_includes(body, "compareArray.js")
+}
+
+fn run_with_includes(body: &str, includes: &str) -> Vec<Outcome> {
     let source = format!(
-        "/*---\ndescription: Local control for the pinned assertion harness\nincludes: [compareArray.js]\n---*/\n{body}"
+        "/*---\ndescription: Local control for the pinned assertion harness\nincludes: [{includes}]\n---*/\n{body}"
     );
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262/upstream/harness");
     Runner::default()
@@ -16,6 +20,32 @@ fn run(body: &str) -> Vec<Outcome> {
         .into_iter()
         .map(|case| case.outcome)
         .collect()
+}
+
+#[test]
+fn original_constructor_helper_checks_constructibility_without_masking_host_gaps() {
+    assert_eq!(
+        run_with_includes(
+            "function F(){}assert.sameValue(isConstructor(F),true);assert.sameValue(isConstructor(F.bind(null)),true);assert.sameValue(isConstructor(Array),true);assert.sameValue(isConstructor(()=>{}),false);assert.sameValue(isConstructor(Reflect.apply),false);assert.sameValue(isConstructor(Reflect.construct),false);assert.throws(Test262Error,()=>isConstructor({}));let N=F.bind(null);Object.defineProperty(N,'prototype',{get(){throw new TypeError();}});assert.sameValue(isConstructor(N),false);",
+            "isConstructor.js"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    let outcomes = run_with_includes(
+        "let N=(function(){}).bind(null);Object.defineProperty(N,'prototype',{get(){Math;}});isConstructor(N);",
+        "isConstructor.js",
+    );
+    assert_eq!(outcomes.len(), 2);
+    assert!(
+        outcomes.iter().all(|outcome| matches!(
+            outcome,
+            Outcome::Unsupported {
+                stage: Stage::Runtime,
+                ..
+            }
+        )),
+        "{outcomes:?}"
+    );
 }
 
 #[test]

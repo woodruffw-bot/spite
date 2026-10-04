@@ -1649,3 +1649,13 @@ script-pass	dd81c5aef452720fb51c77b14b85c0eaa54832fb1fd2ad8473d34703255af021	tes
 script-pass	98fe4c511cbe15f03b2c0a931d1139e2cfdca87d521fe5858a2f3ea15d42b423	test/built-ins/String/prototype/replaceAll/this-is-undefined-throws.js
 script-pass	53079200b1b5a22ca7b9cea7f0987879d215a1ef2185b4155d45039b41c84dba	test/built-ins/String/prototype/replaceAll/this-tostring-abrupt.js
 script-pass	1578b7c5b68530b52e21af85ab114d5d30e53767008150685e2e3d8fa62e9078	test/built-ins/String/prototype/replaceAll/this-tostring.js
+script-pass	92d3a87fb642847706d2caf65e4f9e805c6b5879c5085b35b303c77b5ec6a959	test/built-ins/Reflect/apply/arguments-list-is-not-array-like.js
+script-pass	071466ecaa503686ca047b5a3ffb80bb10f1c77e9a09e84b67aa02c9259836b5	test/built-ins/Reflect/apply/call-target.js
+script-pass	fe7e3e8e38bf6da7c450f1671f3eda3afb18a0ce0b50e68f55edb624c9a31c5c	test/built-ins/Reflect/apply/not-a-constructor.js
+script-pass	8ac856d3a9029821f1f534b4a1047b71a1a50d4dd5ac970806e3601120b4248c	test/built-ins/Reflect/apply/return-target-call-result.js
+script-pass	11ecc08abab21cdb00586db9281e974c9eef9fc248233e5e62a4d0ddf729c43b	test/built-ins/Reflect/apply/target-is-not-callable-throws.js
+script-pass	2d6ffccd1b7fbd9efe6d37bfd90174898def15df0a6d7503678969f313f24373	test/built-ins/Reflect/construct/arguments-list-is-not-array-like.js
+script-pass	670e22ddebac08023671ba9cfdc1d0b92f2988011e9db9a417ab01d3fe8f36d6	test/built-ins/Reflect/construct/return-with-newtarget-argument.js
+script-pass	fd86912e603d0414bd01ef8ef5fb17168b2a662034de1ea9c63b758a43479e97	test/built-ins/Reflect/construct/return-without-newtarget-argument.js
+script-pass	8418b725c730a6142e07a7da3d282fef0db63f2203dfefee0017898fe4488d12	test/built-ins/Reflect/construct/use-arguments-list.js
+harness	68e1a3e4565a8d33ea7fc918627fbbf446bcf14d7a939777616b2b545a5e7d32	harness/isConstructor.js

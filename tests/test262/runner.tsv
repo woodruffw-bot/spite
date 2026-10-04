@@ -1627,3 +1627,12 @@ test/built-ins/String/prototype/replaceAll/this-is-null-throws.js	-	-	-
 test/built-ins/String/prototype/replaceAll/this-is-undefined-throws.js	-	-	-
 test/built-ins/String/prototype/replaceAll/this-tostring-abrupt.js	-	-	-
 test/built-ins/String/prototype/replaceAll/this-tostring.js	-	-	-
+test/built-ins/Reflect/apply/arguments-list-is-not-array-like.js	-	-	-
+test/built-ins/Reflect/apply/call-target.js	-	-	-
+test/built-ins/Reflect/apply/not-a-constructor.js	-	-	-
+test/built-ins/Reflect/apply/return-target-call-result.js	-	-	-
+test/built-ins/Reflect/apply/target-is-not-callable-throws.js	-	-	-
+test/built-ins/Reflect/construct/arguments-list-is-not-array-like.js	-	-	-
+test/built-ins/Reflect/construct/return-with-newtarget-argument.js	-	-	-
+test/built-ins/Reflect/construct/return-without-newtarget-argument.js	-	-	-
+test/built-ins/Reflect/construct/use-arguments-list.js	-	-	-
