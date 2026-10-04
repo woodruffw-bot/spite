@@ -7,6 +7,7 @@ use spite_core::{JsString, Span};
 mod character;
 #[cfg(test)]
 mod tests;
+mod well_formed;
 
 #[derive(Debug)]
 pub(crate) struct StringIntrinsics {
@@ -14,7 +15,7 @@ pub(crate) struct StringIntrinsics {
     pub prototype: ObjectHandle,
     to_string: ObjectHandle,
     value_of: ObjectHandle,
-    character_methods: Vec<ObjectHandle>,
+    methods: Vec<ObjectHandle>,
 }
 
 impl StringIntrinsics {
@@ -26,7 +27,7 @@ impl StringIntrinsics {
             &self.value_of,
         ]
         .into_iter()
-        .chain(self.character_methods.iter())
+        .chain(self.methods.iter())
     }
 }
 
@@ -69,7 +70,7 @@ impl Realm {
                 span,
             )?;
         }
-        let mut character_methods = Vec::new();
+        let mut methods = Vec::new();
         for builtin in [
             Builtin::StringFromCharCode,
             Builtin::StringFromCodePoint,
@@ -77,6 +78,8 @@ impl Realm {
             Builtin::StringCharAt,
             Builtin::StringCharCodeAt,
             Builtin::StringCodePointAt,
+            Builtin::StringIsWellFormed,
+            Builtin::StringToWellFormed,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(
@@ -94,14 +97,14 @@ impl Realm {
                 true,
                 span,
             )?;
-            character_methods.push(method);
+            methods.push(method);
         }
         Ok(StringIntrinsics {
             constructor,
             prototype,
             to_string,
             value_of,
-            character_methods,
+            methods,
         })
     }
 

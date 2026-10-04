@@ -17,6 +17,7 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
         ("let o={toString:()=>String(o)};", "String(o)"),
         ("let o={valueOf:()=>String.fromCodePoint(o)};", "String.fromCodePoint(o)"),
         ("let o={toString:()=>String.prototype.charAt.call(o)};", "String.prototype.charAt.call(o)"),
+        ("let o={toString:()=>String.prototype.toWellFormed.call(o)};", "String.prototype.toWellFormed.call(o)"),
         (
             "let d={};Object.defineProperty(d,'value',{get:()=>Object.defineProperty({},'x',d)});",
             "Object.defineProperty({},'x',d)",

@@ -378,6 +378,11 @@ construct UTF-16 without rejecting lone surrogates (22.1.2.1–2). Character acc
 methods at/charAt/charCodeAt/codePointAt convert their receiver before the index
 (22.1.3.1–4). They retain code-unit indexing, the distinct out-of-range return
 values, relative indexing for at, and surrogate-pair decoding for codePointAt.
+isWellFormed and toWellFormed perform generic receiver conversion, then decode
+UTF-16 with the standard library (22.1.3.10/31, 7.2.7). Decoding errors identify
+individual unpaired surrogates; toWellFormed replaces those units with U+FFFD and
+preserves every valid pair. Scans charge work in advance, and replacement checks
+the unchanged output length before allocation.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary

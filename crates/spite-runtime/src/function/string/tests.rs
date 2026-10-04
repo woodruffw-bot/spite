@@ -98,3 +98,27 @@ fn code_construction_charges_each_utf16_unit_against_output_limits() {
     }
     assert_eq!(realm.eval("g(65)"), Ok(Value::String(JsString::from("A"))));
 }
+
+#[test]
+fn well_formedness_bounds_scans_and_replacement_allocation() {
+    let mut realm = Realm::default();
+    let input = Value::String(JsString::from_code_units(vec![0xd800; 100]));
+    for replace in [false, true] {
+        realm.remaining_steps = 50;
+        assert!(matches!(
+            realm.string_well_formed(input.clone(), replace, Span::new(0, 0)),
+            Err(Error::Limit { .. })
+        ));
+    }
+    realm.remaining_steps = 1000;
+    realm.limits.max_string_units = 99;
+    assert!(matches!(
+        realm.string_well_formed(input.clone(), true, Span::new(0, 0)),
+        Err(Error::Limit { .. })
+    ));
+    realm.limits.max_string_units = 100;
+    assert_eq!(
+        realm.string_well_formed(input, true, Span::new(0, 0)),
+        Ok(Value::String(JsString::from_code_units(vec![0xfffd; 100])))
+    );
+}

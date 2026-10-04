@@ -202,6 +202,9 @@ impl Realm {
             Builtin::StringToString | Builtin::StringValueOf => {
                 self.this_string_value(&this, span).map(Value::String)
             }
+            Builtin::StringIsWellFormed | Builtin::StringToWellFormed => {
+                self.string_well_formed(this, matches!(builtin, Builtin::StringToWellFormed), span)
+            }
             Builtin::BooleanValueOf => Ok(Value::Boolean(self.this_boolean_value(&this, span)?)),
             Builtin::BooleanToString => Ok(Value::String(JsString::from(
                 if self.this_boolean_value(&this, span)? {
