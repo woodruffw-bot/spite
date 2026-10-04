@@ -72,7 +72,7 @@ fn language_call_failures_are_catchable_but_missing_intrinsics_are_host_gaps() {
     let mut realm = Realm::default();
     realm.eval("let flag = 0").unwrap();
     assert!(matches!(
-        realm.eval("try { Object.groupBy(flag = 1); } catch { flag = 2; } finally { flag = 3; }"),
+        realm.eval("try { String.prototype.normalize(flag = 1); } catch { flag = 2; } finally { flag = 3; }"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

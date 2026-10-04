@@ -100,6 +100,11 @@ impl Realm {
             Builtin::ObjectFromEntries => {
                 self.object_from_entries(arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::ObjectGroupBy => self.object_group_by(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ObjectGetOwnPropertyDescriptors => self.object_get_own_property_descriptors(
                 arguments.next().unwrap_or(Value::Undefined),
                 span,

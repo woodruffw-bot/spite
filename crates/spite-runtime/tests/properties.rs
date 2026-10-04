@@ -197,12 +197,12 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 #[test]
 fn incomplete_intrinsic_methods_report_unsupported() {
     {
-        let name = "groupBy";
+        let name = "normalize";
         let mut realm = Realm::default();
         realm.eval("let flag = 0").unwrap();
         assert!(matches!(
             realm.eval(&format!(
-                "try {{ Object.{name}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
+                "try {{ String.prototype.{name}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
             )),
             Err(Error::Unsupported { .. })
         ));

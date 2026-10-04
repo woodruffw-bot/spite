@@ -633,7 +633,6 @@ impl Realm {
     ) -> Result<Vec<PropertyKey>, Error> {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         if self.global_object.as_ref() == Some(object)
-            || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
             || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
@@ -698,8 +697,7 @@ impl Realm {
         let Some(intrinsics) = &self.intrinsics else {
             return false;
         };
-        (object == &intrinsics.object.constructor && missing_object_static(key))
-            || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
+        (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
@@ -727,10 +725,6 @@ fn missing_iterator_method(key: &JsString) -> bool {
     ]
     .iter()
     .any(|name| key_is(key, name))
-}
-
-fn missing_object_static(key: &JsString) -> bool {
-    key_is(key, "groupBy")
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

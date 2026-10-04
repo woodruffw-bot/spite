@@ -252,7 +252,7 @@ changes; isExtensible/preventExtensions retain their primitive special cases.
 Object.create selects an object/null prototype and optionally defines properties.
 Object.defineProperties snapshots own keys in specification order, converts every
 enumerable descriptor before defining properties, and retains earlier definitions
-if a later definition is rejected. Enumeration of incomplete Object/Function/String/Array/Iterator/global
+if a later definition is rejected. Enumeration of incomplete Function/String/Array/Iterator/global
 intrinsics remains Unsupported. Object.freeze/seal close extensibility and tighten
 own descriptors without invoking accessors or recursively freezing values.
 isFrozen/isSealed inspect integrity, with primitive and empty-object special cases;
@@ -283,8 +283,15 @@ own writable/enumerable/configurable data properties. Duplicate keys overwrite i
 place; inherited setters and entry iterator hooks are bypassed. Entry failures
 close the iterator with incoming-throw precedence; step/host failures do not close.
 Tests cover evaluation order, boxed Strings, inherited entry fields, mutation,
-metadata, collection, and opt-in quotas. Object.groupBy remains an explicit gap,
-including descriptor inspection or mutation of its unimplemented property.
+metadata, collection, and opt-in quotas.
+Object.groupBy validates callbacks before iterator lookup, groups original values
+by converted string/Symbol keys, and preserves ordered callback/coercion effects.
+It creates a null-prototype result with dense intrinsic Arrays only after iterator
+exhaustion. Callback/key failures close with original-throw precedence; step/host
+failures do not. Tests cover receivers, live mutations, sparse inputs, Strings,
+Symbols, collection, the safe-integer counter boundary, and opt-in host failures.
+All required Object constructor properties are materialized; full own-key
+reflection, copying, and freeze/seal operations on it now execute.
 
 String calls/new, StringData wrappers, and branded toString/valueOf are supported.
 Length and indices use UTF-16 code units, including lone surrogates. Wrapper index
@@ -482,7 +489,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 171 retained entries outside the per-Script work
+Realm initialization creates 172 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

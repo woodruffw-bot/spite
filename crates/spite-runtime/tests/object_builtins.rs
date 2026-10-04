@@ -194,8 +194,8 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "Object.groupBy",
-        "Object.propertyIsEnumerable('groupBy')",
+        "String.prototype.normalize",
+        "String.prototype.propertyIsEnumerable('normalize')",
         "globalThis.hasOwnProperty('Math')",
     ] {
         assert!(

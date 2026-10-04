@@ -144,7 +144,7 @@ fn descriptor_results_define_data_properties_even_over_inherited_setters_and_pro
         );
     }
     for source in [
-        "Object.assign({},Object)",
+        "Object.assign({},String.prototype)",
         "Object.getOwnPropertyDescriptors(globalThis)",
     ] {
         assert!(

@@ -137,7 +137,7 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
     }
     check("Object.getPrototypeOf(Object.create(null,1n))===null");
     for source in [
-        "Object.defineProperties({},Object)",
+        "Object.defineProperties({},String.prototype)",
         "Object.defineProperties({},globalThis)",
         "Object.defineProperties({},Object.getPrototypeOf(Object))",
     ] {

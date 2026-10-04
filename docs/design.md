@@ -1001,7 +1001,7 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of incomplete Object/Function/String/Array/Iterator/global intrinsics reports
+bounded work. Enumeration of incomplete Function/String/Array/Iterator/global intrinsics reports
 Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
@@ -1030,8 +1030,18 @@ Create writable/enumerable/configurable own data properties, preserving Symbols,
 overwriting duplicate keys in place, and bypassing inherited setters. Invalid
 entries and entry-read/conversion/definition throws close the iterator and preserve
 the original throw over cleanup language errors. Step failures and host failures
-do not close; cleanup host failures remain host failures. Object.groupBy remains
-a separate gap.
+do not close; cleanup host failures remain host failures.
+Object.groupBy uses property-key GroupBy (20.1.2.13). Validate nullish inputs and
+callability before iterator acquisition, then call with undefined this and exactly
+value/index. Convert returned keys before adding each original value to its group.
+Preserve first-key and within-group order with string code-unit and Symbol identity
+comparisons. Checked temporary storage and comparisons charge opted-in work.
+The specification's safe-integer counter bound closes before the next step.
+Callback/key-conversion throws close; step/host failures do not. After exhaustion,
+create a null-prototype object and dense intrinsic Arrays with own data properties.
+Materialization failures occur after grouping and cannot close the exhausted
+iterator. All required Object constructor properties are now materialized, so its
+own-key reflection, copying, and integrity operations are supported.
 
 Object method/accessor syntax reuses shared function bodies and source capture,
 with distinct property kinds for methods, getters, and setters (13.2.5, 15.4).

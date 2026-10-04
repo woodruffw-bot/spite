@@ -61,6 +61,7 @@ pub(crate) enum Builtin {
     ObjectIsSealed,
     ObjectAssign,
     ObjectFromEntries,
+    ObjectGroupBy,
     ObjectGetOwnPropertyDescriptors,
     ObjectGetOwnPropertyNames,
     ObjectGetOwnPropertySymbols,
@@ -296,6 +297,7 @@ impl Builtin {
             Self::ObjectIsSealed => "isSealed",
             Self::ObjectAssign => "assign",
             Self::ObjectFromEntries => "fromEntries",
+            Self::ObjectGroupBy => "groupBy",
             Self::ObjectGetOwnPropertyDescriptors => "getOwnPropertyDescriptors",
             Self::ObjectGetOwnPropertyNames => "getOwnPropertyNames",
             Self::ObjectGetOwnPropertySymbols => "getOwnPropertySymbols",
@@ -425,6 +427,7 @@ impl Builtin {
             | Self::ObjectCreate
             | Self::ObjectDefineProperties
             | Self::ObjectAssign
+            | Self::ObjectGroupBy
             | Self::ObjectIs => 2.0,
             Self::ObjectDefineProperty => 3.0,
             _ => 0.0,
