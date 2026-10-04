@@ -41,6 +41,8 @@ pub enum ExceptionKind {
     TypeError,
     /// A numeric argument is outside an operation's domain.
     RangeError,
+    /// URI encoding or decoding encountered malformed Unicode or escape syntax.
+    URIError,
 }
 
 /// An evaluation failure. Host failures are distinct from JavaScript exceptions.
@@ -1586,8 +1588,6 @@ fn standard_global(name: &str) -> bool {
         "eval"
             | "decodeURI"
             | "decodeURIComponent"
-            | "encodeURI"
-            | "encodeURIComponent"
             | "AggregateError"
             | "Date"
             | "RegExp"

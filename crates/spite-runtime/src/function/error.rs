@@ -121,6 +121,7 @@ impl Realm {
             ExceptionKind::ReferenceError => ErrorConstructor::ReferenceError,
             ExceptionKind::TypeError => ErrorConstructor::TypeError,
             ExceptionKind::RangeError => ErrorConstructor::RangeError,
+            ExceptionKind::URIError => ErrorConstructor::URIError,
         };
         // Error constructors and their fixed prototype properties are reached
         // through realm intrinsics, never mutable global bindings. No user

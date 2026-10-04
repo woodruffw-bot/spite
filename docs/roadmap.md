@@ -221,6 +221,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 ## 4. Standard library
 
 - [ ] Complete Object, Function, Boolean, Number, BigInt, String, Symbol, and Math.
+- [x] Add encodeURI/encodeURIComponent with ordered string conversion, exact UTF-8 escape sets, and malformed-surrogate URIErrors.
+- [ ] Add decodeURI/decodeURIComponent with strict UTF-8 validation and reserved-escape preservation.
 - [x] Add Math's fixed constants, tag, abs/sign, and ceil/floor/round/trunc with exact signed-zero and halfway behavior.
 - [x] Add Math max/min with ordered argument conversion and signed-zero extrema, plus clz32 and wrapping imul.
 - [x] Add Math fround/f16round with direct ties-to-even binary32/binary16 conversion and signed underflow/overflow.

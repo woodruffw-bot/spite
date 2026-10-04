@@ -1162,6 +1162,17 @@ objects from Number.isFinite and Number.isNaN, which never coerce their argument
 The global functions ignore their receiver and additional arguments after normal
 argument evaluation. Their intrinsic roots survive deletion of public bindings.
 
+URI encoding (19.2.6.3–5) first performs string-hint ToString. Traverse UTF-16
+iteratively, reject every unpaired surrogate with URIError, and encode valid code
+points into uppercase percent-encoded UTF-8 octets. Both encoders preserve ASCII
+word characters and `-.!~*'()`; only encodeURI also preserves `;/?:@&=+$,#`.
+Do not normalize Unicode or preserve existing percent escapes. Ignore the call
+receiver and extra values after normal argument evaluation. Retain both intrinsic
+function roots independently of replaceable global bindings. Prepay output work
+and check optional string quotas/addressable capacity before fallible reservation;
+no default output, work, or heap quota is imposed. URIError materialization uses
+the retained native prototype. Decode remains its own increment.
+
 Error objects include Error and the six NativeError constructors,
 Error.prototype.toString, Error.isError, and ordered message/cause initialization
 (20.5). Only instances carry ErrorData; prototype

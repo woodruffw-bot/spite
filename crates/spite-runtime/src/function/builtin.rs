@@ -16,6 +16,11 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::EncodeUri | Builtin::EncodeUriComponent => self.encode_uri(
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::EncodeUriComponent),
+                span,
+            ),
             Builtin::Function => Err(Self::unsupported(
                 span,
                 "dynamic Function construction is not implemented",

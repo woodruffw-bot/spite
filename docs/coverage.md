@@ -34,6 +34,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
+| URI encoding | String-hint conversion, distinct URI/component escape sets, uppercase UTF-8 octets, and URIError for unpaired surrogates |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 4494 reviewed Test262 variants, six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
@@ -720,6 +721,15 @@ identity across functions and syntax clones, separate parses/realms, cache traci
 through collection, and opt-in host failures without partial cached templates.
 Parser AST/diagnostic snapshots cover syntax, strict errors, and invalid targets.
 Proper tail calls, eval, and JavaScript cross-realm hooks remain separate work.
+
+Global encodeURI/encodeURIComponent use string-hint ToString once, preserve the
+specified ASCII escape sets, and emit uppercase UTF-8 percent escapes without
+Unicode normalization. Unpaired UTF-16 surrogates throw URIError, including through
+catch/finally and the host exception-value API, using the retained intrinsic
+prototype even after global replacement. Regressions cover Unicode/UTF-8 boundaries,
+coercion and abrupt order, ignored receivers/extra arguments, descriptors,
+non-construction, deletion/collection, large default output, and opt-in host aborts.
+URI decoding remains separate work.
 
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular

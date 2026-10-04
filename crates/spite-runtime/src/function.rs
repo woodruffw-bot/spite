@@ -28,6 +28,7 @@ mod spread;
 mod string;
 mod symbol;
 mod template;
+mod uri;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;
@@ -35,6 +36,8 @@ pub(crate) use bound::BoundFunction;
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
     Function,
+    EncodeUri,
+    EncodeUriComponent,
     FunctionPrototype,
     FunctionCall,
     FunctionApply,
@@ -461,6 +464,8 @@ impl Builtin {
             | Self::BigIntToLocaleString => "toLocaleString",
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
+            Self::EncodeUri => "encodeURI",
+            Self::EncodeUriComponent => "encodeURIComponent",
         }
     }
 
@@ -597,6 +602,8 @@ impl Builtin {
             | Self::NumberIsSafeInteger
             | Self::IsFinite
             | Self::IsNaN
+            | Self::EncodeUri
+            | Self::EncodeUriComponent
             | Self::ParseFloat => 1.0,
             Self::FunctionApply
             | Self::BigIntAsIntN
@@ -677,6 +684,8 @@ pub(super) struct Intrinsics {
     pub errors: error::ErrorIntrinsics,
     pub is_finite: ObjectHandle,
     pub is_nan: ObjectHandle,
+    pub encode_uri: ObjectHandle,
+    pub encode_uri_component: ObjectHandle,
     pub object_prototype: ObjectHandle,
     pub function_prototype: ObjectHandle,
     pub function_constructor: ObjectHandle,
@@ -704,6 +713,8 @@ impl Intrinsics {
         [
             &self.is_finite,
             &self.is_nan,
+            &self.encode_uri,
+            &self.encode_uri_component,
             &self.object_prototype,
             &self.function_prototype,
             &self.function_constructor,
@@ -856,6 +867,9 @@ impl Realm {
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
         let is_nan = self.new_builtin(&function_prototype, Builtin::IsNaN, span)?;
+        let encode_uri = self.new_builtin(&function_prototype, Builtin::EncodeUri, span)?;
+        let encode_uri_component =
+            self.new_builtin(&function_prototype, Builtin::EncodeUriComponent, span)?;
         let errors = self.error_intrinsics(&object_prototype, &function_prototype, span)?;
         let object =
             self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
@@ -872,6 +886,8 @@ impl Realm {
             errors,
             is_finite,
             is_nan,
+            encode_uri,
+            encode_uri_component,
             object_prototype: object_prototype.clone(),
             function_prototype,
             function_constructor,

@@ -68,13 +68,18 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Number", Value::Object(number), true, span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
-        let numeric_functions = [
+        let global_functions = [
             ("parseFloat", intrinsics.number.parse_float.clone()),
             ("parseInt", intrinsics.number.parse_int.clone()),
             ("isFinite", intrinsics.is_finite.clone()),
             ("isNaN", intrinsics.is_nan.clone()),
+            ("encodeURI", intrinsics.encode_uri.clone()),
+            (
+                "encodeURIComponent",
+                intrinsics.encode_uri_component.clone(),
+            ),
         ];
-        for (name, function) in numeric_functions {
+        for (name, function) in global_functions {
             self.define_builtin_property(&object, name, Value::Object(function), true, span)?;
         }
         let errors: Vec<_> = self
