@@ -117,3 +117,68 @@ fn work_failure_preserves_the_integer_and_conversion_needs_no_integer_capacity()
         Ok(9_007_199_254_740_996.0)
     );
 }
+
+#[test]
+fn binary64_to_integer_is_exact_across_every_integral_exponent() {
+    for exponent in 0..=1023u64 {
+        for fraction in [0, 1, (1u64 << 52) - 1] {
+            let number = f64::from_bits(((1023 + exponent) << 52) | fraction);
+            for number in [number, -number] {
+                let result = BigInt::from_f64(number, &mut budget()).unwrap();
+                if number.trunc() != number {
+                    assert_eq!(result, None);
+                    continue;
+                }
+                let result = result.unwrap();
+                assert_eq!(
+                    result.to_radix(10, &mut budget()).unwrap(),
+                    format!("{number:.0}")
+                );
+                assert_eq!(
+                    result.to_f64(&mut budget()).unwrap().to_bits(),
+                    number.to_bits()
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn number_to_integer_rejects_fractions_and_nonfinite_values_and_checks_quotas() {
+    for number in [
+        f64::NAN,
+        f64::INFINITY,
+        f64::NEG_INFINITY,
+        0.5,
+        -1.5,
+        f64::MIN_POSITIVE,
+        f64::from_bits(1),
+    ] {
+        assert_eq!(BigInt::from_f64(number, &mut budget()), Ok(None));
+    }
+    for number in [0.0, -0.0] {
+        assert_eq!(
+            BigInt::from_f64(number, &mut Budget::new(0, 1)),
+            Ok(Some(BigInt::default()))
+        );
+    }
+    assert_eq!(
+        BigInt::from_f64(1.0, &mut Budget::new(0, 100)),
+        Err(Error::Limit)
+    );
+    assert_eq!(
+        BigInt::from_f64(1.0, &mut Budget::new(1, 0)),
+        Err(Error::Limit)
+    );
+    assert_eq!(
+        BigInt::from_f64(f64::MAX, &mut Budget::new(1023, 100)),
+        Err(Error::Limit)
+    );
+    let maximum = BigInt::from_f64(f64::MAX, &mut Budget::with_limits(None, None))
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        maximum.to_radix(2, &mut budget()).unwrap(),
+        format!("{}{}", "1".repeat(53), "0".repeat(971))
+    );
+}

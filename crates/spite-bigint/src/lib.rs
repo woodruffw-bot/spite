@@ -103,6 +103,45 @@ pub struct BigInt {
 }
 
 impl BigInt {
+    /// Converts a finite, integral binary64 value to its exact integer value.
+    /// Returns `None` for nonfinite values or values with a fractional part.
+    pub fn from_f64(number: f64, budget: &mut Budget) -> Result<Option<Self>, Error> {
+        budget.charge(1)?;
+        if !number.is_finite() || number.trunc() != number {
+            return Ok(None);
+        }
+        if number == 0.0 {
+            return budget.finish(Self::default()).map(Some);
+        }
+        // Every nonzero integral binary64 value is normal, with exponent >= 0.
+        // Decode its significand directly; decimal formatting is unnecessary.
+        let bits = number.to_bits();
+        let exponent = ((bits >> 52) & 0x7ff) as usize - 1023;
+        let significand = (bits & ((1u64 << 52) - 1)) | (1u64 << 52);
+        let (significand, shift) = if exponent < 52 {
+            (significand >> (52 - exponent), 0)
+        } else {
+            (significand, exponent - 52)
+        };
+        let length = exponent + 1;
+        if budget.max_bits.is_some_and(|limit| length > limit) {
+            return Err(Error::Limit);
+        }
+        let words = length.div_ceil(32);
+        let significant_bits = (64 - significand.leading_zeros()) as usize;
+        budget.charge(words + significant_bits)?;
+        let mut magnitude = Self::zero_words(words)?;
+        for bit in 0..significant_bits {
+            if significand & (1u64 << bit) != 0 {
+                let position = bit + shift;
+                magnitude[position / 32] |= 1u32 << (position % 32);
+            }
+        }
+        budget
+            .finish(Self::normalized(number.is_sign_negative(), magnitude))
+            .map(Some)
+    }
+
     /// Parses unsigned digits without whitespace, a sign, prefixes, or separators.
     pub fn parse_digits(digits: &str, radix: u32, budget: &mut Budget) -> Result<Self, Error> {
         if !(2..=36).contains(&radix) {

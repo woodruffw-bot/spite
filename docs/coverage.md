@@ -402,7 +402,10 @@ expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor and its prototype/static methods remain part of standard
-library work. The command-line host displays BigInt completion values in exact
+library work. The arithmetic crate now converts finite integral binary64 values
+to exact BigInts by decoding their significand and exponent. Regressions cover
+every integral exponent, both signs, fractional/nonfinite rejection, normalized
+zero, and opted-in quotas. The command-line host displays BigInt completion values in exact
 hexadecimal notation with an `n` suffix; JavaScript string conversion is decimal.
 
 Global lexical bindings and Script var declarations persist between evaluations.
