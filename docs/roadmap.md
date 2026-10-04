@@ -120,7 +120,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Complete non-decimal Number formatting with exact shortest-roundtrip intervals.
 - [x] Add BigInt calls, integral Number/string conversion, wrappers, and boxed receivers.
 - [x] Add branded BigInt valueOf/toString/toLocaleString methods and observable tags.
-- [ ] Add BigInt.asIntN/asUintN width conversions.
+- [x] Add BigInt.asIntN/asUintN width conversions.
 - [x] Add the intrinsic Array values iterator hook to mapped and unmapped arguments.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.
 - [x] Execute ordinary and bound construction with prototype selection and ordered arguments.

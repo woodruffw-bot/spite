@@ -2,6 +2,8 @@
 
 use std::{cmp::Ordering, fmt};
 
+mod width;
+
 /// An arithmetic or resource failure.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Error {

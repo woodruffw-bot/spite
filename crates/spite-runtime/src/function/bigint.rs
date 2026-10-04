@@ -5,11 +5,13 @@ use crate::{Error, ExceptionKind, Hint, ObjectHandle, Realm, Value, object::Data
 use spite_bigint::BigInt;
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod width;
+
 #[derive(Debug)]
 pub(crate) struct BigIntIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
-    methods: [ObjectHandle; 3],
+    methods: [ObjectHandle; 5],
 }
 
 impl BigIntIntrinsics {
@@ -67,6 +69,8 @@ impl Realm {
         let to_locale_string =
             self.new_builtin(function_prototype, Builtin::BigIntToLocaleString, span)?;
         let value_of = self.new_builtin(function_prototype, Builtin::BigIntValueOf, span)?;
+        let as_int_n = self.new_builtin(function_prototype, Builtin::BigIntAsIntN, span)?;
+        let as_uint_n = self.new_builtin(function_prototype, Builtin::BigIntAsUintN, span)?;
         for (name, method) in [
             ("toString", &to_string),
             ("toLocaleString", &to_locale_string),
@@ -80,10 +84,19 @@ impl Realm {
                 span,
             )?;
         }
+        for (name, method) in [("asIntN", &as_int_n), ("asUintN", &as_uint_n)] {
+            self.define_builtin_property(
+                &constructor,
+                name,
+                Value::Object(method.clone()),
+                true,
+                span,
+            )?;
+        }
         Ok(BigIntIntrinsics {
             constructor,
             prototype,
-            methods: [to_string, to_locale_string, value_of],
+            methods: [to_string, to_locale_string, value_of, as_int_n, as_uint_n],
         })
     }
 

@@ -397,6 +397,12 @@ impl Realm {
             }
             Builtin::BigIntToLocaleString => self.bigint_to_string(&this, Value::Undefined, span),
             Builtin::BigIntValueOf => self.this_bigint_value(&this, span).map(Value::BigInt),
+            Builtin::BigIntAsIntN | Builtin::BigIntAsUintN => self.bigint_width(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::BigIntAsIntN),
+                span,
+            ),
             Builtin::SymbolFor => {
                 self.symbol_for(arguments.next().unwrap_or(Value::Undefined), span)
             }

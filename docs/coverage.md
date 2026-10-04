@@ -15,7 +15,7 @@ not an alternative language specification.
 | Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
-| BigInt APIs | Calls with exact integral Number and integer-string conversion, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
+| BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Arrays | Calls/new, of, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
@@ -396,7 +396,7 @@ attributes. The shared Iterator constructor and helpers remain Unsupported.
 Symbol-keyed access is tested through native injection, Script integration tests,
 and reviewed upstream Symbol/iterator fixtures.
 
-BigInt width conversions, remaining String methods,
+Remaining String methods,
 Array.from/fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
@@ -415,7 +415,10 @@ radix digits. ToLocaleString uses the specified non-ECMA-402 decimal fallback an
 ignores reserved arguments. Object.prototype.toString reads the observable tag
 through ToObject/Get; deleting it exposes the ordinary Object fallback. Wrapper
 brands survive prototype changes and explicit collection. BigInt.asIntN/asUintN
-and constructor enumeration remain pending. Host display stays exact hexadecimal
+complete ToIndex before ToBigInt, reject Number values, and reduce modulo powers
+of two with exact signed/unsigned results. Fitting values accept even the maximum
+safe-integer width without width-sized storage. Constructor enumeration and
+integrity operations now cover all standard own properties. Host display stays exact hexadecimal
 with an `n` suffix; JavaScript string conversion is decimal.
 
 Global lexical bindings and Script var declarations persist between evaluations.
@@ -428,7 +431,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 167 retained entries outside the per-Script work
+Realm initialization creates 169 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

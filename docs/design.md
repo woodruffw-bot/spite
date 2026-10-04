@@ -173,8 +173,13 @@ current prototype. ToObject and non-strict calls box BigInts through that intrin
 Branded valueOf/toString/toLocaleString reject impostors without coercion.
 ToString validates the brand before radix conversion, uses exact integer formatting,
 and checks opted-in output quotas. ToLocaleString follows the non-ECMA-402 decimal
-fallback, ignoring reserved arguments. Keep constructor enumeration unavailable
-until both width conversions are materialized.
+fallback, ignoring reserved arguments. BigInt.asIntN/asUintN (21.2.2.1–2)
+finish ToIndex on the width before ToBigInt on the value, even for zero width.
+Reduce modulo 2^bits by copying low words and masking the partial high word;
+negative inputs use two's complement, and signed outputs interpret the sign bit.
+Do not construct the modulus. Values that already fit return a checked copy
+without allocating for the requested width. Check opted-in output/work quotas
+and platform allocation capacity; impose no default width or magnitude quota.
 
 Model references separately from values. Model normal completion with an optional
 value so an empty completion cannot be confused with JavaScript undefined. Add
@@ -657,8 +662,7 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity and its mandatory
 string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. BigInt width conversions and remaining well-known hooks
-remain explicit implementation gaps.
+that method normally. Remaining well-known hooks are explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors
 carry mutually exclusive kind-specific fields; omitted fields preserve existing

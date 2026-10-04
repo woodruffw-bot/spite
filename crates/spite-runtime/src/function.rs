@@ -75,6 +75,8 @@ pub(crate) enum Builtin {
     BigIntToString,
     BigIntToLocaleString,
     BigIntValueOf,
+    BigIntAsIntN,
+    BigIntAsUintN,
     Array,
     ArrayIsArray,
     ArrayOf,
@@ -199,6 +201,8 @@ impl Builtin {
             | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
             Self::BigInt => "BigInt",
+            Self::BigIntAsIntN => "asIntN",
+            Self::BigIntAsUintN => "asUintN",
             Self::Array => "Array",
             Self::ArrayIsArray => "isArray",
             Self::ArrayOf => "of",
@@ -398,6 +402,8 @@ impl Builtin {
             | Self::IsNaN
             | Self::ParseFloat => 1.0,
             Self::FunctionApply
+            | Self::BigIntAsIntN
+            | Self::BigIntAsUintN
             | Self::ArraySlice
             | Self::ArraySplice
             | Self::ArrayCopyWithin

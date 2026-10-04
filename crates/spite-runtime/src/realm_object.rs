@@ -630,7 +630,6 @@ impl Realm {
             || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
-            || object == &intrinsics.bigint.constructor
         {
             return Err(Self::unsupported(
                 span,
@@ -695,8 +694,6 @@ impl Realm {
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
-            || (object == &intrinsics.bigint.constructor
-                && ["asIntN", "asUintN"].iter().any(|name| key_is(key, name)))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
     }
 }

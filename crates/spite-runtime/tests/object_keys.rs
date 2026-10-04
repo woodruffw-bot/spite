@@ -145,7 +145,7 @@ fn incomplete_intrinsic_key_lists_remain_explicit_gaps() {
     for source in [
         "Object.keys(Object)",
         "Object.getOwnPropertySymbols(globalThis)",
-        "Object.keys(BigInt)",
+        "Object.keys(Array)",
     ] {
         assert!(
             matches!(
