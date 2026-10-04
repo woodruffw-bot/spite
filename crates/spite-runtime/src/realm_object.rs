@@ -648,6 +648,7 @@ impl Realm {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         if self.global_object.as_ref() == Some(object)
             || object == &intrinsics.iterator.prototype
+            || object == &intrinsics.iterator.constructor
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
         {
@@ -713,6 +714,7 @@ impl Realm {
         (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
+            || (object == &intrinsics.iterator.constructor && missing_iterator_static(key))
     }
 }
 
@@ -722,21 +724,15 @@ fn missing_array_static(key: &JsString) -> bool {
 
 fn missing_iterator_method(key: &JsString) -> bool {
     [
-        "constructor",
-        "drop",
-        "every",
-        "filter",
-        "find",
-        "flatMap",
-        "forEach",
-        "map",
-        "reduce",
-        "some",
-        "take",
+        "drop", "every", "filter", "find", "flatMap", "forEach", "map", "reduce", "some", "take",
         "toArray",
     ]
     .iter()
     .any(|name| key_is(key, name))
+}
+
+fn missing_iterator_static(key: &JsString) -> bool {
+    ["from", "concat"].iter().any(|name| key_is(key, name))
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

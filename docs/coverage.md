@@ -287,7 +287,9 @@ intermediate addition/subtraction, infinity/NaN and domain failures, underflow a
 overflow, ordered coercion, ignored extra arguments, metadata, and collection.
 
 Inverse trigonometric/hyperbolic functions and cbrt preserve required domain and
-signed endpoint results before finite approximations. Atan2 converts y then x,
+signed endpoint results before finite approximations. Large acosh/asinh inputs
+avoid intermediate overflow, and atanh retains finite results at the interior
+neighbors of both domain endpoints on Rust 1.85 and stable. Atan2 converts y then x,
 even when y is NaN, and handles every zero/infinity quadrant explicitly without
 forming a ratio. Regressions cover endpoints, all zero/infinity sign combinations,
 ordinary finite values, very large and subnormal inputs, ordered conversions,
@@ -603,7 +605,14 @@ retained. Iterator prototypes supply the identity method and Array/String
 Iterator tags. The shared Iterator tag getter is generic. Its setter rejects
 primitive receivers and the intrinsic prototype, creates an own data property
 when absent, and strictly updates existing own properties without changing their
-attributes. The shared Iterator constructor and helpers remain Unsupported.
+attributes. The Iterator constructor has standard metadata and an immutable
+prototype property; ordinary calls and construction with itself as newTarget
+throw TypeError. Distinct newTargets select an object-valued prototype or the
+intrinsic fallback without executing their bodies or coercing ignored arguments.
+Regressions cover bound forwarding, ordered prototype access and errors, generic
+constructor getters, protected setter updates and inherited-property bypass,
+global replacement, and intrinsic retention. Iterator.from/concat and prototype
+helpers remain Unsupported, including enumeration of either incomplete inventory.
 Symbol-keyed access is tested through native injection, Script integration tests,
 and reviewed upstream Symbol/iterator fixtures.
 
@@ -642,7 +651,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 228 retained entries outside the per-Script work
+Realm initialization creates 231 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

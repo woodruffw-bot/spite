@@ -202,6 +202,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
 - [x] Add synchronous iterator acquisition, cached next calls, stepping, and language-completion closing.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
+- [x] Add the abstract Iterator constructor, newTarget prototype selection, and protected prototype constructor accessor.
 - [ ] Add remaining shared Iterator prototype properties.
 - [x] Expose the Symbol global with standard attributes.
 - [ ] Complete Array species-dependent methods and iterator integration.

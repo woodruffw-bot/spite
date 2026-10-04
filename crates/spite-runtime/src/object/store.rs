@@ -246,6 +246,7 @@ impl Objects {
             builtin,
             Builtin::Boolean
                 | Builtin::Function
+                | Builtin::Iterator
                 | Builtin::Number
                 | Builtin::Array
                 | Builtin::String

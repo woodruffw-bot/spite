@@ -1,12 +1,13 @@
-//! Iterator tag setter and SetterThatIgnoresPrototypeProperties (27.1.3.3.14, 7.3.37).
+//! Protected Iterator constructor/tag setters (27.1.3.3.2, 27.1.3.3.14, 7.3.37).
 
 use crate::{Error, ExceptionKind, Realm, Value, object::DataDescriptor};
-use spite_core::{Span, WellKnownSymbol};
+use spite_core::{PropertyKey, Span};
 
 impl Realm {
-    pub(crate) fn iterator_tag_setter(
+    pub(crate) fn iterator_prototype_setter(
         &mut self,
         receiver: Value,
+        key: PropertyKey,
         value: Value,
         span: Span,
     ) -> Result<Value, Error> {
@@ -14,7 +15,7 @@ impl Realm {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
-                "Iterator tag setter requires an object receiver",
+                "Iterator prototype setter requires an object receiver",
             ));
         };
         if object
@@ -28,10 +29,9 @@ impl Realm {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
-                "Iterator tag setter cannot change Iterator.prototype",
+                "Iterator prototype setter cannot change Iterator.prototype",
             ));
         }
-        let key = WellKnownSymbol::ToStringTag.symbol();
         if self.own_property_descriptor(&object, &key, span)?.is_none() {
             // Create an own property without consulting inherited descriptors.
             self.define_property_or_throw(
@@ -51,7 +51,7 @@ impl Realm {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
-                "Iterator tag assignment was rejected",
+                "Iterator property assignment was rejected",
             ));
         }
         Ok(Value::Undefined)

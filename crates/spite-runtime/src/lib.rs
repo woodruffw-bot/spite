@@ -1596,7 +1596,6 @@ fn standard_global(name: &str) -> bool {
             | "JSON"
             | "WeakRef"
             | "FinalizationRegistry"
-            | "Iterator"
             | "Promise"
             | "Proxy"
             | "DisposableStack"

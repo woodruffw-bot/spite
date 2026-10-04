@@ -625,10 +625,20 @@ abrupt Get. Native recursion remains subject to the ordinary host reentry limit.
 Iterator results are fresh ordinary objects with value/done data properties.
 Expose Array keys/values/entries together with the values alias at Symbol.iterator
 and the same intrinsic values callable on mapped/unmapped arguments. The shared
-Iterator prototype supplies its iterator identity method and Symbol.toStringTag
-accessor. Its constructor and helpers remain Unsupported until implemented.
-The tag getter returns "Iterator" for every receiver (27.1.3.3.14). The setter
-implements SetterThatIgnoresPrototypeProperties (7.3.37): reject primitives and
+Iterator prototype supplies its iterator identity method and protected constructor
+and Symbol.toStringTag accessors. Iterator has [[Construct]] but rejects ordinary
+calls and construction with itself as newTarget (27.1.3.1.1). A distinct newTarget
+creates an ordinary object with its object-valued prototype, falling back to the
+intrinsic Iterator prototype otherwise. Bound construction first rewrites the
+newTarget as required by 10.4.1.2. Constructor arguments are ignored after normal
+evaluation; no next method or iterator brand is installed on the resulting object.
+The global binding and native constructor metadata retain standard attributes.
+Iterator.from, Iterator.concat, and the remaining prototype helpers are explicit
+Unsupported gaps; own enumeration remains guarded until each inventory is complete.
+The constructor getter returns the intrinsic Iterator independently of receiver
+or replaced globals (27.1.3.3.2). The tag getter returns "Iterator" for every
+receiver (27.1.3.3.14). Both setters share
+SetterThatIgnoresPrototypeProperties (7.3.37): reject primitives and
 the intrinsic home prototype, then inspect the receiver's own descriptor. An
 absent property is created as an own writable/enumerable/configurable data
 property without inherited lookups. An existing property uses strict Set,

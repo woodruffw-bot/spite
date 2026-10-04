@@ -142,7 +142,10 @@ pub(crate) enum Builtin {
     ArrayValues,
     ArrayEntries,
     ArrayIteratorNext,
+    Iterator,
     IteratorIdentity,
+    IteratorConstructorGet,
+    IteratorConstructorSet,
     IteratorTagGet,
     IteratorTagSet,
     StringIterator,
@@ -323,7 +326,10 @@ impl Builtin {
             Self::ArrayValues => "values",
             Self::ArrayEntries => "entries",
             Self::ArrayIteratorNext | Self::StringIteratorNext => "next",
+            Self::Iterator => "Iterator",
             Self::IteratorIdentity | Self::StringIterator => "[Symbol.iterator]",
+            Self::IteratorConstructorGet => "get constructor",
+            Self::IteratorConstructorSet => "set constructor",
             Self::IteratorTagGet => "get [Symbol.toStringTag]",
             Self::IteratorTagSet => "set [Symbol.toStringTag]",
             Self::ArrayJoin => "join",
@@ -438,6 +444,7 @@ impl Builtin {
             Self::FunctionCall
             | Self::Function
             | Self::IteratorTagSet
+            | Self::IteratorConstructorSet
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean

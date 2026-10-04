@@ -19,11 +19,11 @@ fn iterator_aliases_and_prototype_descriptors_are_standard() {
         &mut realm,
         "let identity=base[key];identity.name==='[Symbol.iterator]' && identity.length===0 && identity.call(null)===null && identity.call(s)===s && identity.call(undefined)===undefined",
     );
-    for source in [
-        "base.constructor",
-        "base.map",
-        "Object.getOwnPropertyDescriptors(base)",
-    ] {
+    check(
+        &mut realm,
+        "base===Iterator.prototype && base.constructor===Iterator",
+    );
+    for source in ["base.map", "Object.getOwnPropertyDescriptors(base)"] {
         assert!(
             matches!(realm.eval(source), Err(Error::Unsupported { .. })),
             "{source}"

@@ -129,6 +129,32 @@ impl Realm {
                 Callable::Builtin(Builtin::Array) => {
                     return self.array_constructor(Some(new_target), arguments.into_iter(), span);
                 }
+                Callable::Builtin(Builtin::Iterator) => {
+                    // Iterator (27.1.3.1.1) is abstract but has [[Construct]].
+                    // Reject the active function before reading newTarget.prototype.
+                    if new_target == function {
+                        return Err(Self::exception(
+                            ExceptionKind::TypeError,
+                            span,
+                            "Iterator requires a distinct newTarget",
+                        ));
+                    }
+                    let prototype =
+                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                    let prototype = if let Value::Object(prototype) = prototype {
+                        prototype
+                    } else {
+                        self.intrinsics
+                            .as_ref()
+                            .expect("initialized realm")
+                            .iterator
+                            .prototype
+                            .clone()
+                    };
+                    return self
+                        .object_work(span, |objects, _| objects.create(Some(&prototype)))
+                        .map(Value::Object);
+                }
                 Callable::Builtin(Builtin::String) => {
                     return self.string_constructor(
                         Some(new_target),

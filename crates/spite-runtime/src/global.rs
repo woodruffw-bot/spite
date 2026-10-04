@@ -128,6 +128,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Array", Value::Object(constructor), true, span)?;
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .iterator
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Iterator", Value::Object(constructor), true, span)?;
         let reflect = self
             .intrinsics
             .as_ref()

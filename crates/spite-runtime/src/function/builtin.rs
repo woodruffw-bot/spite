@@ -2,7 +2,7 @@
 
 use super::{Builtin, Callable, FunctionText, number};
 use crate::{Error, ExceptionKind, Realm, Value};
-use spite_core::{JsString, Span};
+use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {
     // Preserve a separate frame so adding native algorithms does not enlarge
@@ -171,10 +171,32 @@ impl Realm {
                 Ok(Value::Boolean(true))
             }
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
+            Builtin::Iterator => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Iterator requires a distinct newTarget",
+            )),
+            Builtin::IteratorConstructorGet => Ok(Value::Object(
+                self.intrinsics
+                    .as_ref()
+                    .expect("initialized")
+                    .iterator
+                    .constructor
+                    .clone(),
+            )),
+            Builtin::IteratorConstructorSet => self.iterator_prototype_setter(
+                this,
+                JsString::from("constructor").into(),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::IteratorTagGet => Ok(Value::String(JsString::from("Iterator"))),
-            Builtin::IteratorTagSet => {
-                self.iterator_tag_setter(this, arguments.next().unwrap_or(Value::Undefined), span)
-            }
+            Builtin::IteratorTagSet => self.iterator_prototype_setter(
+                this,
+                WellKnownSymbol::ToStringTag.symbol().into(),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ArrayKeys | Builtin::ArrayValues | Builtin::ArrayEntries => {
                 let kind = match builtin {
                     Builtin::ArrayKeys => crate::object::ArrayIterationKind::Key,
