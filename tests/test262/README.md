@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 236 unmodified test fixtures and two harness files come from
+These 266 unmodified test fixtures and two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -51,8 +51,9 @@ numeric parsing tests cover decimal prefixes/exponents, invalid radices, and
 hexadecimal/default-decimal rules. Five global predicate tests cover function
 shape, abrupt coercion, and nonfinite values. Twenty-two Error files cover
 construction, message conversion, prototype identity, branding, and toString.
-Fifty Object files cover SameValue, own-property checks, descriptor conversion and
-reflection, prototype identity/mutation, and extensibility. Each runs in both required Script
+Eighty Object files cover SameValue, own-property checks, descriptor conversion and
+reflection, prototype identity/mutation, extensibility, creation, value copying,
+and frozen/sealed integrity. Each runs in both required Script
 modes. The `harness` manifest mode verifies support-file bytes without counting
 them as test cases;
 `script-pass` selects non-raw positive tests. Harness frontmatter describes helper
@@ -77,14 +78,14 @@ by upstream `INTERPRETING.md`. These bounded host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 418 variants from 217 reviewed sources: the eleven
+The `spite-test262` command runs 478 variants from 247 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 22 Error tests, and 50 Object tests.
+tests, five global numeric predicate tests, 22 Error tests, and 80 Object tests.
 That means four raw positives,
-342 positives using the upstream harness, and 72 reviewed parse-negative variants.
+402 positives using the upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the

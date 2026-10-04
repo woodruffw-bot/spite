@@ -230,6 +230,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 236);
+    assert_eq!(count, 266);
     assert_eq!(harness_count, 2);
 }

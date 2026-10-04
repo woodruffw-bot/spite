@@ -46,8 +46,8 @@ fn pinned_corpus_runs_all_reviewed_variants() {
     let report = run_corpus(&pinned()).unwrap();
     assert!(report.is_success(), "{report:#?}");
     assert_eq!(report.revision, "7ab7fafa0003f73fc85c1b95d88094d33f7eb8bd");
-    assert_eq!(report.tests.len(), 217);
-    assert_eq!(report.counts()["passed"], 418);
+    assert_eq!(report.tests.len(), 247);
+    assert_eq!(report.counts()["passed"], 478);
     assert!(
         report
             .counts()
@@ -57,8 +57,8 @@ fn pinned_corpus_runs_all_reviewed_variants() {
     let output = command(&pinned());
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(stdout.contains("217 source files"));
-    assert!(stdout.contains("passed=418"));
+    assert!(stdout.contains("247 source files"));
+    assert!(stdout.contains("passed=478"));
     assert!(stdout.contains("unverified=0"));
     assert!(output.stderr.is_empty());
 }
