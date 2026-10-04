@@ -70,6 +70,8 @@ pub(crate) enum Builtin {
     ArrayShift,
     ArrayUnshift,
     ArrayReverse,
+    ArraySort,
+    ArrayToSorted,
     ArrayToReversed,
     ArrayToSpliced,
     ArrayWith,
@@ -161,6 +163,8 @@ impl Builtin {
             Self::ArrayShift => "shift",
             Self::ArrayUnshift => "unshift",
             Self::ArrayReverse => "reverse",
+            Self::ArraySort => "sort",
+            Self::ArrayToSorted => "toSorted",
             Self::ArrayToReversed => "toReversed",
             Self::ArrayToSpliced => "toSpliced",
             Self::ArrayWith => "with",
@@ -261,6 +265,8 @@ impl Builtin {
             | Self::ArrayLastIndexOf
             | Self::ArrayReduce
             | Self::ArrayReduceRight
+            | Self::ArraySort
+            | Self::ArrayToSorted
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint

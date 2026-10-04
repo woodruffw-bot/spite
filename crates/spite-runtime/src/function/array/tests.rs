@@ -915,3 +915,66 @@ fn array_locale_output_limits_precede_later_gets_and_large_lengths_are_bounded()
     check(&mut realm, "flag===0 && [1].toLocaleString()==='1'");
     assert_eq!(realm.eval("Array.prototype.toLocaleString.call({0:{toLocaleString:()=>{throw 7;}},length:Infinity})"),Err(Error::Thrown(Value::Number(7.0))));
 }
+
+#[test]
+fn recursive_array_sort_getters_comparators_and_conversions_are_stack_bounded() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for method in ["sort", "toSorted"] {
+                for setup in [
+                    format!("let a=[2,1];Object.defineProperty(a,'0',{{get:()=>a.{method}()}});"),
+                    format!("let a=[{{toString:()=>a.{method}()}},1];"),
+                    format!("let a=[2,1],cmp=()=>a.{method}(cmp);"),
+                    format!("let a=[2,1],cmp=()=>({{valueOf:()=>a.{method}(cmp)}});"),
+                ] {
+                    let mut realm=Realm::default();
+                    let comparator=if setup.contains("cmp=") {"cmp"}else{""};
+                    realm.eval(&setup).unwrap();
+                    realm.eval("let flag=0").unwrap();
+                    assert!(matches!(realm.eval(&format!("try{{a.{method}({comparator});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+                    check(&mut realm,"flag===0 && [2,1].toSorted().join()==='1,2'");
+                }
+            }
+            let mut realm=Realm::default();
+            realm.eval("let a=[2,1];Object.defineProperty(a,'0',{get:()=>2,set:()=>a.sort()});let flag=0").unwrap();
+            assert!(matches!(realm.eval("try{a.sort();}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
+            check(&mut realm,"flag===0");
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn array_sort_collection_and_comparison_work_abort_without_implicit_writes() {
+    for (setup, call, expected) in [
+        (
+            "let a={0:2,1:1,length:Infinity}",
+            "Array.prototype.sort.call(a)",
+            "a[0]===2 && a[1]===1 && a.length===Infinity",
+        ),
+        (
+            "let a=Array(4294967295)",
+            "a.toSorted()",
+            "a.length===4294967295 && !Object.hasOwn(a,'0')",
+        ),
+        (
+            "let a=[2,1]",
+            "a.sort(()=>{while(true){}})",
+            "a.join()==='2,1'",
+        ),
+    ] {
+        let mut realm = Realm::default();
+        realm.eval(setup).unwrap();
+        realm.eval("let flag=0").unwrap();
+        realm.limits.max_steps = 500;
+        assert!(matches!(
+            realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
+            Err(Error::Limit { .. })
+        ));
+        realm.limits.max_steps = 100_000;
+        check(&mut realm, &format!("flag===0 && ({expected})"));
+        realm.collect(10_000).unwrap();
+    }
+}

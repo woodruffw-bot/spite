@@ -11,6 +11,7 @@ mod mutation;
 mod range;
 mod reduce;
 mod search;
+mod sort;
 mod string;
 
 use super::Builtin;
@@ -127,6 +128,8 @@ impl Realm {
             Builtin::ArrayShift,
             Builtin::ArrayUnshift,
             Builtin::ArrayReverse,
+            Builtin::ArraySort,
+            Builtin::ArrayToSorted,
             Builtin::ArrayToReversed,
             Builtin::ArrayToSpliced,
             Builtin::ArrayWith,

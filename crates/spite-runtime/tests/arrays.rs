@@ -181,7 +181,6 @@ fn missing_array_intrinsics_remain_explicit_host_gaps() {
         "Array.fromAsync",
         "Array().map",
         "Array().values",
-        "Array().toSorted",
         "Object.getOwnPropertyDescriptor(Array.prototype,'map')",
         "Object.defineProperty(Array,'from',{})",
         "Object.freeze(Array.prototype)",

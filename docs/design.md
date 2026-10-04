@@ -379,6 +379,19 @@ other single value becomes an element without coercion. Element creation uses
 own data definitions, bypassing inherited setters. IsArray uses the internal
 identity independently of prototypes; Proxy forwarding will join it when Proxy
 objects exist. All Array intrinsics remain rooted after global properties change.
+Array sort/toSorted share SortIndexedProperties and CompareArrayElements
+(23.1.3.30.1–2, 23.1.3.34). Validate the comparator before ToObject/length. Collect
+indexed values in ascending order before any comparisons; sort uses HasProperty
+to skip holes, while toSorted reads through them. ToSorted creates its intrinsic
+Array before collection. Use a bottom-up stable merge sort with two bounded
+buffers, moving values between them and selecting the left value on equality.
+Each move/comparison consumes work; checked allocation grows the input list only
+as values are read. Comparator calls use undefined this and two values; ToNumber
+normalizes NaN to equality. Undefined values sort last without invoking the
+comparator. Default comparison performs ordered ToString and UTF-16 lexicographic
+comparison. Propagate the first abrupt completion immediately. Only after sorting
+does sort strictly write values and delete the remaining range without assigning
+length; toSorted instead defines dense own elements without species lookup.
 Array.prototype.toLocaleString follows the ECMA-262 algorithm for hosts without
 ECMA-402 (23.1.3.32). This host uses a fixed locale with comma (U+002C) as its
 implementation-defined list separator, independent of operating-system settings.
