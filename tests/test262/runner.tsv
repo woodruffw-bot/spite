@@ -20,3 +20,11 @@ test/language/literals/bigint/non-octal-like-invalid-012348n.js	621	628	invalid 
 test/language/literals/bigint/mv-is-not-integer-dil-dot-dds.js	722	729	invalid BigInt literal
 test/language/literals/bigint/mv-is-not-integer-dot-dds.js	700	712	invalid BigInt literal
 test/language/literals/bigint/exponent-part.js	374	378	invalid BigInt literal
+test/language/expressions/arrow-function/syntax/early-errors/asi-restriction-invalid-parenless-parameters-expression-body.js	359	361	line terminator before arrow
+test/language/expressions/arrow-function/syntax/early-errors/asi-restriction-invalid.js	359	361	line terminator before arrow
+test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-cover-no-duplicates.js	565	566	duplicate lexical binding
+test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-no-arguments.js	380	389	invalid binding in strict mode
+test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-no-eval.js	376	380	invalid binding in strict mode
+test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-cover-no-eval.js	595	599	invalid binding in strict mode
+test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-strict-futurereservedword.js	522	529	invalid binding in strict mode
+test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-futurereservedword.js	485	489	invalid arrow binding identifier
