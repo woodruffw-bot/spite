@@ -20,7 +20,7 @@ not an alternative language specification.
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, or global receivers (boxed receivers remain Unsupported), function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
-| Construction syntax | new with optional arguments, nested/member precedence, strict validation, and bounded depth; execution remains Unsupported |
+| Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; boxed non-strict receivers remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
@@ -129,9 +129,14 @@ receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
 The arguments Symbol.iterator hook and boxed non-strict receivers remain unimplemented.
+Ordinary new expressions create fresh receivers from the current constructor
+prototype (or the realm default), run parameters/bodies, and honor object returns.
+Bound constructors forward arguments and newTarget while ignoring bound this and
+their own prototype property. Arrows and builtin methods remain non-constructible.
+Construction shares call nesting and argument limits; deep bound chains are iterative.
 
 Symbols, primitive wrapper constructors,
-arrays, boxed receivers, construction, classes, destructuring, regular
+arrays, boxed receivers, derived construction, new.target, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

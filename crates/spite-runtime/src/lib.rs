@@ -1138,11 +1138,15 @@ impl Realm {
                 source,
             } => self.arrow_function(parameters, body, source, expr.span)?,
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
-            ExprKind::New { .. } => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "construction is not implemented",
-                ));
+            ExprKind::New { callee, arguments } => {
+                let constructor = self.expression(callee)?;
+                let mut values = Vec::new();
+                for argument in arguments.iter().flatten() {
+                    let value = self.expression(argument)?;
+                    self.check_argument_count(values.len() + 1, argument.span)?;
+                    values.push(value);
+                }
+                self.construct(constructor, values, expr.span)?
             }
             ExprKind::Call { callee, arguments } => {
                 let (function, this) = if reference_expression(callee) {

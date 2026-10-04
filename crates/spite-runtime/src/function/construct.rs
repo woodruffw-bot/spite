@@ -1,0 +1,215 @@
+//! Base ordinary construction and iterative bound forwarding (10.2.2, 10.4.1.2).
+
+use super::Callable;
+use crate::{Error, ExceptionKind, Realm, Value};
+use spite_core::{JsString, Span};
+
+impl Realm {
+    pub(crate) fn construct(
+        &mut self,
+        function: Value,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.enter_call(span)?;
+        let result = self.construct_inner(function, arguments, span);
+        self.call_depth -= 1;
+        result
+    }
+
+    fn construct_inner(
+        &mut self,
+        function: Value,
+        mut arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.check_argument_count(arguments.len(), span)?;
+        // EvaluateNew (13.3.5.1.1) evaluates every argument before IsConstructor.
+        let constructor = if let Value::Object(object) = &function {
+            self.object_work(span, |objects, _| {
+                Ok(objects.inspect(object)?.is_constructor())
+            })?
+        } else {
+            false
+        };
+        if !constructor {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "value is not a constructor",
+            ));
+        }
+        let Value::Object(mut function) = function else {
+            unreachable!("constructor object")
+        };
+        let mut new_target = function.clone();
+        loop {
+            let callable = self.object_work(span, |objects, budget| {
+                objects
+                    .inspect(&function)?
+                    .callable()
+                    .expect("constructor has call metadata")
+                    .copy_with_budget(budget)
+            })?;
+            match callable {
+                Callable::Bound(bound) => {
+                    let count = bound
+                        .arguments
+                        .len()
+                        .checked_add(arguments.len())
+                        .ok_or_else(|| Error::Limit {
+                            span,
+                            message: "call argument limit exceeded".into(),
+                        })?;
+                    self.check_argument_count(count, span)?;
+                    let mut values = bound.arguments;
+                    values.extend(arguments);
+                    arguments = values;
+                    if new_target == function {
+                        new_target = bound.target.clone();
+                    }
+                    function = bound.target;
+                    // [[BoundThis]] is ignored during construction.
+                }
+                Callable::Ordinary(code) => {
+                    // GetPrototypeFromConstructor / OrdinaryCreateFromConstructor
+                    // (10.1.13–14). All exposed function objects belong to this realm.
+                    let prototype =
+                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                    let prototype = if let Value::Object(prototype) = prototype {
+                        prototype
+                    } else {
+                        self.intrinsics
+                            .as_ref()
+                            .expect("initialized realm")
+                            .object_prototype
+                            .clone()
+                    };
+                    let instance =
+                        self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+                    let this = Value::Object(instance);
+                    let result = self.call_ordinary(
+                        code,
+                        function,
+                        this.clone(),
+                        arguments.into_iter(),
+                        span,
+                    )?;
+                    return Ok(if matches!(result, Value::Object(_)) {
+                        result
+                    } else {
+                        this
+                    });
+                }
+                _ => unreachable!("only ordinary and bound functions are constructors"),
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        Limits,
+        function::BoundFunction,
+        object::{Budget, DescriptorKind, PropertyDescriptor},
+    };
+
+    #[test]
+    fn bound_prototype_getters_are_ignored_and_constructor_flags_follow_the_target() {
+        let mut realm = Realm::default();
+        let Value::Object(bound) = realm
+            .eval("function F(){this.x=7;}let B=F.bind(null);B")
+            .unwrap()
+        else {
+            panic!()
+        };
+        let thrower = realm.intrinsics.as_ref().unwrap().throw_type_error.clone();
+        realm
+            .objects
+            .define(
+                &bound,
+                "prototype".into(),
+                PropertyDescriptor {
+                    kind: DescriptorKind::Accessor {
+                        get: Some(Some(thrower)),
+                        set: Some(None),
+                    },
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                &mut Budget::new(1000),
+            )
+            .unwrap();
+        assert!(realm.inspect_object(&bound).unwrap().is_constructor());
+        assert_eq!(realm.eval("new B().x"), Ok(Value::Number(7.0)));
+        for source in [
+            "()=>1",
+            "({}).toString",
+            "(()=>1).bind(null)",
+            "({}).toString.bind(null)",
+        ] {
+            let Value::Object(object) = realm.eval(source).unwrap() else {
+                panic!()
+            };
+            assert!(realm.inspect_object(&object).unwrap().is_callable());
+            assert!(!realm.inspect_object(&object).unwrap().is_constructor());
+        }
+    }
+
+    #[test]
+    fn deep_bound_constructors_forward_and_trace_without_rust_recursion() {
+        let mut realm = Realm::new(Limits {
+            max_heap_entries: 20_000,
+            ..Limits::default()
+        });
+        let Value::Object(mut target) = realm.eval("function F(){this.x=7;}F").unwrap() else {
+            panic!()
+        };
+        for _ in 0..10_000 {
+            target = realm
+                .objects
+                .create_bound(
+                    BoundFunction {
+                        target,
+                        this: Value::Null,
+                        arguments: Vec::new(),
+                    },
+                    &mut Budget::new(10),
+                )
+                .unwrap();
+        }
+        let value = Value::Object(target);
+        let root = realm.root_value(value.clone(), 100).unwrap();
+        assert_eq!(realm.collect(200_000).unwrap().live, 10_013);
+        let instance = realm.construct(value, Vec::new(), Span::new(0, 0)).unwrap();
+        assert_eq!(
+            realm.get_property_value(&instance, &"x".into(), Span::new(0, 0)),
+            Ok(Value::Number(7.0))
+        );
+        assert_eq!(realm.call_depth, 0);
+        drop(root);
+        assert_eq!(realm.collect(200_000).unwrap().live, 13);
+    }
+
+    #[test]
+    fn constructor_abrupt_completions_restore_scope_strictness_and_depth() {
+        let mut realm = Realm::default();
+        realm
+            .eval("let effect=0;function F(){'use strict';throw 7;}")
+            .unwrap();
+        assert_eq!(realm.eval("new F"), Err(Error::Thrown(Value::Number(7.0))));
+        assert_eq!(realm.call_depth, 0);
+        assert_eq!(realm.evaluation_depth, 0);
+        assert_eq!(realm.scopes.len(), 1);
+        assert!(!realm.strict);
+        assert_eq!(realm.eval("sloppy=7;sloppy"), Ok(Value::Number(7.0)));
+        realm.eval("function G(){new G;}").unwrap();
+        assert!(matches!(realm.eval("new G"), Err(Error::Limit { .. })));
+        assert_eq!(realm.call_depth, 0);
+        assert_eq!(realm.evaluation_depth, 0);
+        assert_eq!(realm.scopes.len(), 1);
+        assert_eq!(realm.eval("effect"), Ok(Value::Number(0.0)));
+    }
+}

@@ -195,6 +195,7 @@ impl Objects {
         self.environment(&function.environment)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Ordinary(function));
+        object.constructible = true;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
@@ -209,6 +210,7 @@ impl Objects {
             return Err(Error::NotCallable);
         }
         let prototype = target.prototype().cloned();
+        let constructible = target.is_constructor();
         for value in std::iter::once(&bound.this).chain(&bound.arguments) {
             budget.charge(1)?;
             if let Value::Object(handle) = value {
@@ -217,6 +219,7 @@ impl Objects {
         }
         let mut object = OrdinaryObject::new(prototype, self.max_properties);
         object.callable = Some(Callable::Bound(bound));
+        object.constructible = constructible;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

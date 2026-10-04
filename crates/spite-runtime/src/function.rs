@@ -9,6 +9,7 @@ use spite_core::{JsString, Span};
 mod arguments;
 mod arrow;
 mod bound;
+mod construct;
 mod ordinary;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;
@@ -316,8 +317,15 @@ impl Realm {
         arguments: Vec<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        // Tail transfers stay in call_inner; only getter/coercion re-entry grows
-        // the Rust stack. Keep this bound fixed until explicit frames replace it.
+        self.enter_call(span)?;
+        let result = self.call_inner(function, this, arguments, span);
+        self.call_depth -= 1;
+        result
+    }
+
+    fn enter_call(&mut self, span: Span) -> Result<(), Error> {
+        // Calls and construction share a bound. Bound/call/apply tail transfers
+        // stay iterative; user code and getter/coercion re-entry grow the stack.
         if self.call_depth >= 64 {
             return Err(Error::Limit {
                 span,
@@ -325,9 +333,7 @@ impl Realm {
             });
         }
         self.call_depth += 1;
-        let result = self.call_inner(function, this, arguments, span);
-        self.call_depth -= 1;
-        result
+        Ok(())
     }
 
     fn call_inner(

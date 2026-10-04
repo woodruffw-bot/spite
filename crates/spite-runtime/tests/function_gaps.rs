@@ -1,4 +1,4 @@
-//! Primitive non-strict receivers and construction remain host gaps.
+//! Primitive non-strict receivers remain host gaps.
 
 use spite_runtime::{Error, Realm, Value};
 
@@ -30,8 +30,4 @@ fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
         Err(Error::Parse(_))
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(3.0)));
-    assert!(matches!(
-        realm.eval("new f()"),
-        Err(Error::Unsupported { .. })
-    ));
 }

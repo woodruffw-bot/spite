@@ -101,7 +101,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add the ordinary global object, property-backed global bindings, globalThis, and nullish/global receivers.
 - [ ] Add boxed receivers and the arguments iterator hook.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.
-- [ ] Execute ordinary and bound construction, then add new.target.
+- [x] Execute ordinary and bound construction with prototype selection and ordered arguments.
+- [ ] Add new.target and its lexical capture.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.

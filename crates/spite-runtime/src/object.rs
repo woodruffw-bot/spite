@@ -47,6 +47,7 @@ pub struct OrdinaryObject {
     properties: Vec<(JsString, Property)>,
     max_properties: usize,
     callable: Option<Callable>,
+    constructible: bool,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -64,6 +65,7 @@ impl OrdinaryObject {
             properties: Vec::new(),
             max_properties,
             callable: None,
+            constructible: false,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -78,6 +80,11 @@ impl OrdinaryObject {
     /// Returns whether the object has a [[Call]] internal method.
     pub fn is_callable(&self) -> bool {
         self.callable.is_some()
+    }
+
+    /// Returns whether the object has a [[Construct]] internal method.
+    pub fn is_constructor(&self) -> bool {
+        self.constructible
     }
 
     pub(crate) fn is_arguments(&self) -> bool {

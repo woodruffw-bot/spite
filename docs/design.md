@@ -103,15 +103,15 @@ also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls and non-strict calls with object
-receivers execute. Global receivers also execute; boxed receivers and construction
-remain runtime gaps. Generators, async functions, rest parameters, and patterns remain separate steps.
+receivers execute. Global receivers and ordinary construction also execute; boxed
+receivers remain a runtime gap. Generators, async functions, rest parameters, and patterns remain separate steps.
 
 New expressions retain the constructor and optional argument list (13.3.5).
 Constructor parsing consumes member access but leaves call parentheses to the new
 expression, distinguishing `new F.x(a)` from `new F(a).x`. Nested new forms bind
 inner argument lists first. Calls and construction share argument parsing with In
 enabled; spans, strict validation, and depth budgets cover all children. Spread,
-new.target, and runtime construction remain explicit gaps in this grammar step.
+new.target and derived construction remain separate gaps.
 
 Direct function declarations are var-scoped in Scripts and function bodies;
 block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
@@ -370,8 +370,20 @@ prepends captured arguments, checks the combined argument limit, and transfers t
 the target iteratively. Capture copies consume work before allocation. Bind copies
 the target prototype before reading length/name, uses only own Number-valued length,
 and preserves exact UTF-16 name units with the standard "bound " prefix (20.2.3.2).
-Native source for bound functions is `function () { [native code] }`. Constructor
-forwarding must be added before any constructible function kind is exposed.
+Native source for bound functions is `function () { [native code] }`. Bound objects
+inherit constructibility from their target at creation; adding a public prototype
+property cannot make an arrow or builtin method constructible.
+
+EvaluateNew evaluates the constructor and all arguments before IsConstructor
+(13.3.5.1.1). Ordinary construction reads the current newTarget.prototype after
+arguments finish, falls back to the constructor realm's Object.prototype for any
+non-object value, and creates a fresh receiver (10.1.13–14, 10.2.2). Parameter and
+body evaluation share ordinary call semantics; object returns replace the receiver,
+while primitive returns preserve it. Bound construction prepends captures, ignores
+bound this, substitutes its target for a matching newTarget, and forwards iteratively
+(10.4.1.2). Its own prototype property is never read on this path. Construction shares
+call-depth, argument, allocation, and work limits; every abrupt result restores
+caller scopes/strictness/depth. Derived constructors and new.target are not yet exposed.
 
 Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
 64 until explicit frames replace Rust recursion. Every success and abrupt result
