@@ -216,6 +216,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Math exp/expm1 and log/log1p/log2/log10 with domain endpoints, signed zero, and exact binary-power logarithms.
 - [x] Add Math inverse trigonometric/hyperbolic functions, quadrant-aware atan2, and signed cbrt.
 - [x] Add Math sin/cos/tan and sinh/cosh/tanh with explicit signed-zero and infinity endpoints.
+- [x] Add Math hypot with ordered conversions and scaled, compensated finite norms.
 - [ ] Add collections, JSON, errors, and iterator helpers.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

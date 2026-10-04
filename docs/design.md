@@ -1264,6 +1264,14 @@ as NaN; odd functions retain both zero signs. Cosh maps either infinity to
 Cos/cosh return exactly one at either zero. Other finite inputs use the platform
 approximations, including large-argument reduction and subnormal inputs.
 
+Math hypot converts all arguments in order before returning Infinity or NaN
+([sec-math.hypot](https://tc39.es/ecma262/#sec-math.hypot)). Infinity wins over
+NaN after successful conversion. Empty/all-zero calls return +0. A running
+maximum magnitude scales a compensated sum of squares, preventing intermediate
+square overflow/underflow and retaining small contributions beside larger ones.
+Rescaling has no observable effect and stores no second argument list. Finite
+results are implementation approximations; final overflow may return Infinity.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

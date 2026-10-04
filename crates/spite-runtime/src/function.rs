@@ -67,6 +67,7 @@ pub(crate) enum Builtin {
     MathFloor,
     MathFround,
     MathF16round,
+    MathHypot,
     MathImul,
     MathLog,
     MathLog1p,
@@ -270,6 +271,7 @@ impl Builtin {
             Self::MathFloor => "floor",
             Self::MathFround => "fround",
             Self::MathF16round => "f16round",
+            Self::MathHypot => "hypot",
             Self::MathImul => "imul",
             Self::MathLog => "log",
             Self::MathLog1p => "log1p",
@@ -551,6 +553,7 @@ impl Builtin {
             Self::FunctionApply
             | Self::BigIntAsIntN
             | Self::BigIntAsUintN
+            | Self::MathHypot
             | Self::MathImul
             | Self::MathMax
             | Self::MathMin

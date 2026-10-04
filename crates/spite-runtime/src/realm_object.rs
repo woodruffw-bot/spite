@@ -719,7 +719,7 @@ impl Realm {
 }
 
 fn missing_math_method(key: &JsString) -> bool {
-    ["hypot", "random", "sumPrecise"]
+    ["random", "sumPrecise"]
         .iter()
         .any(|name| key_is(key, name))
 }

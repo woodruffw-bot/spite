@@ -86,6 +86,7 @@ impl Realm {
             Builtin::MathFloor,
             Builtin::MathFround,
             Builtin::MathF16round,
+            Builtin::MathHypot,
             Builtin::MathImul,
             Builtin::MathLog,
             Builtin::MathLog1p,
@@ -222,6 +223,56 @@ impl Realm {
             }
         }
         Ok(Value::Number(if nan { f64::NAN } else { result }))
+    }
+
+    pub(super) fn math_hypot(
+        &mut self,
+        arguments: impl Iterator<Item = Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // sec-math.hypot: convert every argument before choosing Infinity or
+        // NaN. Interleaved arithmetic is unobservable; later coercion errors
+        // still win. Scale by the largest finite magnitude to avoid squaring
+        // large/tiny arguments directly, with compensated square summation.
+        let mut scale = 0.0;
+        let mut squares = 0.0;
+        let mut compensation = 0.0;
+        let mut infinite = false;
+        let mut nan = false;
+        for argument in arguments {
+            let number = self.number(argument, span)?.abs();
+            if number.is_infinite() {
+                infinite = true;
+            } else if number.is_nan() {
+                nan = true;
+            } else if number != 0.0 {
+                let square = if number > scale {
+                    let ratio = scale / number;
+                    let factor = ratio * ratio;
+                    squares *= factor;
+                    compensation *= factor;
+                    scale = number;
+                    1.0
+                } else {
+                    let ratio = number / scale;
+                    ratio * ratio
+                };
+                let corrected = square - compensation;
+                let total = squares + corrected;
+                compensation = (total - squares) - corrected;
+                squares = total;
+            }
+        }
+        let result = if infinite {
+            f64::INFINITY
+        } else if nan {
+            f64::NAN
+        } else if scale == 0.0 {
+            0.0
+        } else {
+            scale * squares.sqrt()
+        };
+        Ok(Value::Number(result))
     }
 
     pub(super) fn math_imul(
