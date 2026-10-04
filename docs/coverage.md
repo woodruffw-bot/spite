@@ -322,6 +322,14 @@ ordinary array-like templates with ordered raw/length/index reads and interleave
 substitution conversion. All baseline String constructor static properties are
 installed, and its own-key enumeration is supported. Remaining prototype methods and enumeration of the
 incomplete String.prototype remain Unsupported; tagged template syntax is still open.
+String.split uses non-overlapping UTF-16 separator matches, preserves empty parts,
+and splits code units for an empty separator. Edition 17 looks up Symbol.split
+only for object separators, passing the original receiver/limit and returning the
+hook result unchanged. Fallback conversion reads the receiver, limit, and separator
+in that order; separator conversion still runs for zero limits. Results are dense
+intrinsic Arrays with own data elements. Tests cover surrogate halves, generic
+receivers, conversion failures, uint32 wrapping, metadata, collection, and opt-in
+host failures. RegExp's split hook remains pending with RegExp objects.
 
 Sparse Array storage now enforces indexed length growth, read-only length, and
 descending partial truncation behind the low-level Objects API. Numeric length
@@ -489,7 +497,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 172 retained entries outside the per-Script work
+Realm initialization creates 173 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

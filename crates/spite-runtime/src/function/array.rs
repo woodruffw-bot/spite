@@ -85,7 +85,11 @@ impl Realm {
     }
 
     // ArrayCreate with its default intrinsic prototype (10.4.2.2).
-    fn create_intrinsic_array(&mut self, length: u64, span: Span) -> Result<ObjectHandle, Error> {
+    pub(super) fn create_intrinsic_array(
+        &mut self,
+        length: u64,
+        span: Span,
+    ) -> Result<ObjectHandle, Error> {
         let length = u32::try_from(length).map_err(|_| {
             Self::exception(ExceptionKind::RangeError, span, "invalid Array length")
         })?;
@@ -317,7 +321,7 @@ impl Realm {
         Ok(Value::Object(array))
     }
 
-    fn create_array_element(
+    pub(super) fn create_array_element(
         &mut self,
         array: &ObjectHandle,
         index: u64,

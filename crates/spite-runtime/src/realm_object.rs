@@ -742,7 +742,6 @@ fn missing_string_method(key: &JsString) -> bool {
         "replace",
         "replaceAll",
         "search",
-        "split",
         "toLocaleLowerCase",
         "toLocaleUpperCase",
         "toLowerCase",

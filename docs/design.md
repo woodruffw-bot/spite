@@ -857,6 +857,17 @@ ToBoolean without calling or converting it; truthy markers cause TypeError even
 for empty searches. Primitive searches never perform this lookup. Inherited
 getters retain the search object as receiver. The RegExpMatcher brand fallback
 remains false until RegExp objects exist; string-keyed lookalikes are not hooks.
+String.split (22.1.3.23) checks receiver coercibility, then delegates Symbol.split
+only for object separators as required by edition 17. Pass original this/limit
+values and return the hook's result without conversion. Fallback converts this
+to a String, limit through ToUint32 (undefined defaults to 2^32-1), then separator
+to a String even when the limit is zero. Undefined separators return the full
+String; empty separators split individual UTF-16 units with no extra empty parts.
+Nonempty separators use non-overlapping searches, retaining leading/trailing
+empty substrings and stopping at the limit. Checked copies and each search
+comparison charge opted-in work. Fresh intrinsic Arrays bypass constructors,
+species, and inherited setters. RegExp-specific splitting awaits RegExp objects.
+
 String.raw uses ToObject for its template and raw value, reads length once through
 LengthOfArrayLike, and interleaves each indexed literal conversion with the
 corresponding available substitution (22.1.2.4). Missing substitutions add no text;

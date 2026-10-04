@@ -162,6 +162,7 @@ pub(crate) enum Builtin {
     StringIncludes,
     StringStartsWith,
     StringEndsWith,
+    StringSplit,
     Number,
     NumberValueOf,
     NumberToString,
@@ -277,6 +278,7 @@ impl Builtin {
             Self::StringIncludes | Self::ArrayIncludes => "includes",
             Self::StringStartsWith => "startsWith",
             Self::StringEndsWith => "endsWith",
+            Self::StringSplit => "split",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -420,6 +422,7 @@ impl Builtin {
             | Self::ArrayToSpliced
             | Self::StringSlice
             | Self::StringSubstring
+            | Self::StringSplit
             | Self::ParseInt
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn

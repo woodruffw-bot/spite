@@ -95,7 +95,7 @@ impl Realm {
         Ok(false)
     }
 
-    fn find_string(
+    pub(super) fn find_string(
         &mut self,
         string: &JsString,
         search: &JsString,

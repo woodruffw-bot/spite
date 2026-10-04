@@ -10,6 +10,7 @@ mod raw;
 mod repeat;
 mod search;
 mod sequence;
+mod split;
 #[cfg(test)]
 mod tests;
 mod trim;
@@ -101,6 +102,7 @@ impl Realm {
             Builtin::StringIncludes,
             Builtin::StringStartsWith,
             Builtin::StringEndsWith,
+            Builtin::StringSplit,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

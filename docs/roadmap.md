@@ -115,6 +115,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect String search predicates to IsRegExp's Symbol.match hook.
 - [ ] Add IsRegExp's internal-brand fallback when RegExp objects are implemented.
 - [x] Add ordinary-call String.raw and complete String constructor static own properties.
+- [x] Add String split with UTF-16 boundaries, ToUint32 limits, and object Symbol.split delegation.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
 - [x] Add exact Number.prototype.toPrecision with significant zeros and exponent correction.
 - [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.

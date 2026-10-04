@@ -330,6 +330,12 @@ impl Realm {
                 self.string_raw(template, arguments, span)
             }
             Builtin::StringConcat => self.string_concat(this, arguments, span),
+            Builtin::StringSplit => self.string_split(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::StringIncludes | Builtin::StringStartsWith | Builtin::StringEndsWith => self
                 .string_search_predicate(
                     builtin,
