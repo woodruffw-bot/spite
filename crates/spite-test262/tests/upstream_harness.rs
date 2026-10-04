@@ -64,7 +64,7 @@ fn original_property_helper_rejects_wrong_descriptors_and_preserves_host_gaps() 
         );
     }
     for body in [
-        "verifyProperty(Math,'abs',{enumerable:false});",
+        "verifyProperty(String.prototype,'slice',{enumerable:false});",
         "verifyProperty({get x(){Proxy;}},'x',{value:1});",
         "assert.throws(TypeError,()=>Function('return 1;'));",
     ] {

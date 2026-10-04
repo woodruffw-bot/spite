@@ -1217,8 +1217,7 @@ integral rounding, including signed zero and infinities. Math.round
 integer with halfway ties toward positive infinity, retains negative zero for
 [-0.5, 0], and compares the fractional remainder without adding 0.5 to the input.
 This avoids rounding near half a unit and changing odd integral values above
-2^52. Other Math methods and incomplete own-key reflection remain Unsupported;
-the object and installed methods retain intrinsic roots.
+2^52. The object and all standard methods retain intrinsic roots.
 
 Math max/min (sec-math.max/min) convert every argument in order before deciding
 whether NaN wins. A running extremum and NaN flag avoid a second argument list;
@@ -1287,6 +1286,19 @@ JavaScript BigInt. Subtract the exact magnitudes, then round once using retained
 guard, and sticky bits with ties to even and signed overflow. Subnormal sums
 are exact in the accumulator unit. Empty/all-minus-zero inputs return -0;
 other exact cancellation returns +0. No external numeric dependency is needed.
+
+Math random uses a realm-specific SplitMix64 state (sec-math.random), initialized
+from the standard library's randomized RandomState and a checked process-wide
+unique sequence identity. The intentional wrapping Weyl increment and bijective
+mixer give a 2^64 state period. The projected Number sequence retains that
+period: a checked pair of outputs half a cycle apart differ, ruling out every
+proper period (which would divide 2^63). Distinct starting states therefore give
+distinct Number sequences. Taking the high 53 bits before exact scaling by
+2^-53 yields positive Numbers in [0, 1), with no chance of rounding up to one.
+Sequence identities cannot wrap or be reused; exhaustion is a platform capacity
+failure. No external dependency or default resource quota is introduced. Receiver
+and arguments are ignored. Math's complete method inventory enables ordinary
+own-key/descriptor reflection, copying, enumeration, sealing, and freezing.
 
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions

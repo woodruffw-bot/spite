@@ -218,6 +218,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Math sin/cos/tan and sinh/cosh/tanh with explicit signed-zero and infinity endpoints.
 - [x] Add Math hypot with ordered conversions and scaled, compensated finite norms.
 - [x] Add Math sumPrecise with exact finite summation, one final rounding, and ordered iterator closing.
+- [x] Complete Math with realm-specific random sequences and full own reflection/integrity operations.
 - [ ] Add collections, JSON, errors, and iterator helpers.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

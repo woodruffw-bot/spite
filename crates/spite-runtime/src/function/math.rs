@@ -1,5 +1,6 @@
 //! Math object constants and basic numeric operations (21.3.1, 21.3.2).
 
+mod random;
 mod sum;
 
 use super::Builtin;
@@ -14,6 +15,7 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 pub(crate) struct MathIntrinsics {
     pub object: ObjectHandle,
     methods: Vec<ObjectHandle>,
+    random: random::RandomSequence,
 }
 
 impl MathIntrinsics {
@@ -97,6 +99,7 @@ impl Realm {
             Builtin::MathMax,
             Builtin::MathMin,
             Builtin::MathPow,
+            Builtin::MathRandom,
             Builtin::MathRound,
             Builtin::MathSign,
             Builtin::MathSin,
@@ -117,7 +120,11 @@ impl Realm {
             )?;
             methods.push(method);
         }
-        Ok(MathIntrinsics { object, methods })
+        Ok(MathIntrinsics {
+            object,
+            methods,
+            random: random::RandomSequence::new(span)?,
+        })
     }
 
     pub(super) fn math_unary(

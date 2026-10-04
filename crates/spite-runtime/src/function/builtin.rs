@@ -86,6 +86,7 @@ impl Realm {
             | Builtin::MathTrunc => {
                 self.math_unary(builtin, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::MathRandom => Ok(self.math_random()),
             Builtin::MathSumPrecise => {
                 self.math_sum_precise(arguments.next().unwrap_or(Value::Undefined), span)
             }
