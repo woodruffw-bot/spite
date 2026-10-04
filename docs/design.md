@@ -739,6 +739,21 @@ callback throws close the live source; step/host failures never do. Active reent
 throws TypeError. Finish/release work is prepaid and cannot strand an executing
 helper after a host abort. All defaults remain unlimited.
 
+Iterator.prototype.take/drop convert the limit before direct next capture
+(27.1.3.3.2/11). Conversion throws, NaN, and negative integer counts close with
+incoming-error precedence; negative fractions truncate to zero. Edition 17 accepts
+positive infinity and finite counts beyond 2^53. Store finite counts as exact
+mathematical integers independently of BigInt-value quotas, so subtraction cannot
+stall or round. No source step runs until the helper is resumed.
+
+Take decrements before each step and closes when its count reaches zero on a later
+resume; a zero count closes without any source step. Observed source exhaustion
+never closes. Drop uses IteratorStep while discarding, bypassing value getters,
+then yields through IteratorStepValue. Both inherit helper return/reentry/tracing
+and permanent-completion rules; step and host failures never run cleanup. The
+pinned Test262 safe-integer-cap assertions describe post-baseline behavior and
+remain outside this edition's unchanged selected corpus.
+
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
 it does not retain the original receiver. A branded String iterator stores the

@@ -6,7 +6,7 @@ use spite_heap::{Handle, Trace};
 
 mod helper;
 pub(crate) use helper::{
-    CallbackIterator, CallbackKind, ConcatIterable, HelperStatus, IteratorHelper,
+    CallbackIterator, CallbackKind, ConcatIterable, HelperStatus, IteratorHelper, LimitKind,
 };
 
 #[derive(Debug)]

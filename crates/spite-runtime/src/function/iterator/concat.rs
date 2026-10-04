@@ -124,16 +124,14 @@ impl Realm {
                 }
                 None
             } else {
-                let callback = self.object_work(span, |objects, _| {
-                    Ok(objects
-                        .inspect(&helper)?
-                        .iterator_helper()
-                        .expect("helper")
-                        .callback()
-                        .is_some())
+                let (callback, limit) = self.object_work(span, |objects, _| {
+                    let state = objects.inspect(&helper)?.iterator_helper().expect("helper");
+                    Ok((state.callback().is_some(), state.limit().is_some()))
                 })?;
                 if callback {
                     self.iterator_callback_step(&helper, span)?
+                } else if limit {
+                    self.iterator_limit_step(&helper, span)?
                 } else {
                     self.concat_step(&helper, span)?
                 }

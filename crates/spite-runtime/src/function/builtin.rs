@@ -184,6 +184,12 @@ impl Realm {
             Builtin::IteratorForEach => {
                 self.iterator_for_each(this, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::IteratorTake | Builtin::IteratorDrop => self.iterator_limit_helper(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::IteratorTake),
+                span,
+            ),
             Builtin::IteratorMap | Builtin::IteratorFilter => self.iterator_callback_helper(
                 this,
                 arguments.next().unwrap_or(Value::Undefined),

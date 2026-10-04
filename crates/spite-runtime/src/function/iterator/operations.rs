@@ -95,6 +95,19 @@ impl Realm {
         next: Value,
         span: Span,
     ) -> Result<Option<Value>, Error> {
+        let Some(result) = self.iterator_step_direct(iterator, next, span)? else {
+            return Ok(None);
+        };
+        self.get_property(&result, &JsString::from("value"), span)
+            .map(Some)
+    }
+
+    pub(crate) fn iterator_step_direct(
+        &mut self,
+        iterator: ObjectHandle,
+        next: Value,
+        span: Span,
+    ) -> Result<Option<ObjectHandle>, Error> {
         let Value::Object(result) = self.call(next, Value::Object(iterator), vec![], span)? else {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
@@ -106,8 +119,7 @@ impl Realm {
         if done.to_boolean() {
             return Ok(None);
         }
-        self.get_property(&result, &JsString::from("value"), span)
-            .map(Some)
+        Ok(Some(result))
     }
 
     pub(crate) fn iterator_close_error(

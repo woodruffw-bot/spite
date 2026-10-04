@@ -155,6 +155,8 @@ pub(crate) enum Builtin {
     IteratorReduce,
     IteratorMap,
     IteratorFilter,
+    IteratorTake,
+    IteratorDrop,
     IteratorWrapperNext,
     IteratorWrapperReturn,
     IteratorIdentity,
@@ -346,6 +348,8 @@ impl Builtin {
             Self::IteratorWrapperReturn | Self::IteratorHelperReturn => "return",
             Self::Iterator => "Iterator",
             Self::IteratorToArray => "toArray",
+            Self::IteratorTake => "take",
+            Self::IteratorDrop => "drop",
             Self::IteratorIdentity | Self::StringIterator => "[Symbol.iterator]",
             Self::IteratorConstructorGet => "get constructor",
             Self::IteratorConstructorSet => "set constructor",
@@ -472,6 +476,8 @@ impl Builtin {
             | Self::IteratorReduce
             | Self::IteratorMap
             | Self::IteratorFilter
+            | Self::IteratorTake
+            | Self::IteratorDrop
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean

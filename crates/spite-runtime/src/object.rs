@@ -23,7 +23,7 @@ mod iterator;
 use iterator::IteratorState;
 pub(crate) use iterator::{
     ArrayIterationKind, ArrayIterator, CallbackIterator, CallbackKind, ConcatIterable,
-    HelperStatus, IteratorHelper, IteratorWrapper, StringIterator,
+    HelperStatus, IteratorHelper, IteratorWrapper, LimitKind, StringIterator,
 };
 mod entry;
 mod store;

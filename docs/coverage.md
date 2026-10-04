@@ -680,6 +680,18 @@ metadata/collection, large default pipelines, and opt-in host aborts. Internal
 tests verify indices beyond u64 under a zero BigInt-value quota and reject foreign
 or noncallable captures before allocating native helper objects.
 
+Lazy Iterator.prototype.take/drop validate their object receivers, convert counts
+before capturing next, and preserve exact finite countdowns. Regressions cover
+conversion/validation closing precedence, signed zero and fractional truncation,
+positive infinity and counts beyond 2^53/u64, cached next/receivers/argument counts,
+discarded-value getter bypass, take's zero/count-exhaustion closing, observed done
+without cleanup, early/yielded return, reentry, step/host failures, native pipelines,
+metadata/collection, capture tracing/release, large default inputs, and zero
+BigInt-value quotas. Internal tests verify exact decrements beyond Number precision
+and u64, work-failure atomicity, and foreign-capture rejection before allocation.
+At the existing pin, some upstream take/drop tests enforce a post-edition-17
+safe-integer cap; those originals remain excluded, without rewriting or pass credit.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-await-of, catch patterns, generators,

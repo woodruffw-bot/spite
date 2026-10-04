@@ -40,10 +40,25 @@ pub(crate) struct CallbackIterator {
     pub advance: bool,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum LimitKind {
+    Take,
+    Drop,
+}
+
+#[derive(Debug)]
+pub(crate) struct LimitIterator {
+    pub iterated: IteratorWrapper,
+    pub kind: LimitKind,
+    // None represents positive infinity; finite counts remain mathematical integers.
+    pub remaining: Option<Counter>,
+}
+
 #[derive(Debug)]
 pub(crate) enum HelperClosure {
     Concat(ConcatIterator),
     Callback(CallbackIterator),
+    Limit(LimitIterator),
 }
 
 #[derive(Debug)]
@@ -67,10 +82,18 @@ impl IteratorHelper {
         }
     }
 
+    pub(crate) fn limit(&self) -> Option<&LimitIterator> {
+        match &self.closure {
+            Some(HelperClosure::Limit(state)) => Some(state),
+            _ => None,
+        }
+    }
+
     pub(crate) fn underlying(&self) -> Option<&Handle> {
         match &self.closure {
             Some(HelperClosure::Concat(state)) => state.inner.as_ref().map(|inner| &inner.iterator),
             Some(HelperClosure::Callback(state)) => Some(&state.iterated.iterator),
+            Some(HelperClosure::Limit(state)) => Some(&state.iterated.iterator),
             None => None,
         }
     }
@@ -91,6 +114,12 @@ impl IteratorHelper {
                 [
                     Some(&state.iterated.iterator),
                     Some(&state.callback),
+                    state.iterated.next.trace().next().flatten(),
+                ]
+            }))
+            .chain(self.limit().into_iter().flat_map(|state| {
+                [
+                    Some(&state.iterated.iterator),
                     state.iterated.next.trace().next().flatten(),
                 ]
             }))
@@ -157,6 +186,44 @@ impl Objects {
                 })),
             })));
         Ok(helper)
+    }
+
+    pub(crate) fn create_limit_helper(
+        &mut self,
+        prototype: &Handle,
+        iterated: IteratorWrapper,
+        remaining: Option<Counter>,
+        kind: LimitKind,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        // Validate captures and prepay their eventual release.
+        budget.charge(4)?;
+        self.inspect(&iterated.iterator)?;
+        if let crate::Value::Object(next) = &iterated.next {
+            self.inspect(next)?;
+        }
+        let helper = self.create(Some(prototype))?;
+        self.object_mut(&helper)?.iterator =
+            Some(IteratorState::Helper(Box::new(IteratorHelper {
+                status: HelperStatus::SuspendedStart,
+                closure: Some(HelperClosure::Limit(LimitIterator {
+                    iterated,
+                    remaining,
+                    kind,
+                })),
+            })));
+        Ok(helper)
+    }
+
+    pub(crate) fn limit_mut(&mut self, helper: &Handle) -> Result<&mut LimitIterator, Error> {
+        let Some(IteratorState::Helper(state)) = &mut self.object_mut(helper)?.iterator else {
+            return Err(Error::WrongKind);
+        };
+        debug_assert_eq!(state.status, HelperStatus::Executing);
+        match &mut state.closure {
+            Some(HelperClosure::Limit(state)) => Ok(state),
+            _ => Err(Error::WrongKind),
+        }
     }
 
     pub(crate) fn begin_iterator_helper(
@@ -250,6 +317,45 @@ impl Objects {
 mod tests {
     use super::*;
     use crate::function::Builtin;
+
+    #[test]
+    fn limit_helper_rejects_foreign_captures_before_allocation() {
+        use crate::Value;
+        let mut objects = Objects::new(6, 8);
+        let prototype = objects.create(None).unwrap();
+        let source = objects.create(None).unwrap();
+        let next = objects
+            .create_builtin(&prototype, Builtin::IteratorIdentity)
+            .unwrap();
+        let mut other = Objects::new(1, 8);
+        let foreign = other.create(None).unwrap();
+        for (proto, iterator, step) in [
+            (&foreign, &source, &next),
+            (&prototype, &foreign, &next),
+            (&prototype, &source, &foreign),
+        ] {
+            assert!(matches!(
+                objects.create_limit_helper(
+                    proto,
+                    IteratorWrapper {
+                        iterator: iterator.clone(),
+                        next: Value::Object(step.clone())
+                    },
+                    Some(Counter::Small(1)),
+                    LimitKind::Take,
+                    &mut Budget::new(40)
+                ),
+                Err(Error::Heap(spite_heap::Error::ForeignHandle))
+            ));
+        }
+        assert_eq!(
+            objects
+                .collect([&prototype, &source, &next], 100)
+                .unwrap()
+                .live,
+            3
+        );
+    }
 
     #[test]
     fn callback_helper_rejects_foreign_and_noncallable_captures_before_allocation() {

@@ -11,6 +11,7 @@ mod callback;
 mod concat;
 mod consume;
 mod from;
+mod limit;
 mod operations;
 mod tag;
 
@@ -34,6 +35,8 @@ pub(crate) struct IteratorIntrinsics {
     reduce: ObjectHandle,
     map: ObjectHandle,
     filter: ObjectHandle,
+    take: ObjectHandle,
+    drop: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -66,6 +69,8 @@ impl IteratorIntrinsics {
             &self.reduce,
             &self.map,
             &self.filter,
+            &self.take,
+            &self.drop,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -108,6 +113,8 @@ impl Realm {
         let reduce = self.new_builtin(function_prototype, Builtin::IteratorReduce, span)?;
         let map = self.new_builtin(function_prototype, Builtin::IteratorMap, span)?;
         let filter = self.new_builtin(function_prototype, Builtin::IteratorFilter, span)?;
+        let take = self.new_builtin(function_prototype, Builtin::IteratorTake, span)?;
+        let drop = self.new_builtin(function_prototype, Builtin::IteratorDrop, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
@@ -121,6 +128,8 @@ impl Realm {
             (&prototype, "reduce", &reduce),
             (&prototype, "map", &map),
             (&prototype, "filter", &filter),
+            (&prototype, "take", &take),
+            (&prototype, "drop", &drop),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -267,6 +276,8 @@ impl Realm {
             reduce,
             map,
             filter,
+            take,
+            drop,
             array_prototype,
             string_prototype,
             identity,

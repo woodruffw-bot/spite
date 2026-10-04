@@ -206,7 +206,7 @@ impl Realm {
         Ok(accumulator)
     }
 
-    fn iterator_counter_work<T>(
+    pub(super) fn iterator_counter_work<T>(
         &mut self,
         span: Span,
         work: impl FnOnce(&mut Budget) -> Result<T, IntegerError>,
