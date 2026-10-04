@@ -1,5 +1,6 @@
 //! Array construction, identification, and length conversion (23.1, 10.4.2.4).
 
+mod access;
 mod literal;
 mod string;
 
@@ -68,7 +69,7 @@ impl Realm {
             span,
         )?;
         let mut methods = Vec::new();
-        for builtin in [Builtin::ArrayJoin, Builtin::ArrayToString] {
+        for builtin in [Builtin::ArrayJoin, Builtin::ArrayToString, Builtin::ArrayAt] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(
                 &prototype,

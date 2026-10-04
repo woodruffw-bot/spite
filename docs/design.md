@@ -306,7 +306,9 @@ charge work and check UTF-16 output limits before allocation. Array toString
 invokes the current callable join with no arguments, falling back to the intrinsic
 Object toString when join is not callable. Native recursive conversion, including
 cyclic arrays, is bounded by the existing host call limit. LengthOfArrayLike is
-shared with String.raw and Function.prototype.apply.
+shared with String.raw and Function.prototype.apply. Generic Array at snapshots
+length before converting its index, applies ToIntegerOrInfinity, and performs Get
+only for an in-range index. It uses u64 indices through the full ToLength range.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

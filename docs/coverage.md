@@ -16,7 +16,7 @@ not an alternative language specification.
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
-| Arrays | Calls/new, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic join, and dynamic toString |
+| Arrays | Calls/new, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join, and dynamic toString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 908 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 920 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -243,8 +243,9 @@ and non-coercing single-element construction. Array literals preserve holes,
 trailing commas, and element evaluation order, using own data definitions and
 the intrinsic prototype independently of the global binding. Join and toString
 support ordered generic conversion and intrinsic fallback; recursive conversion
-remains bounded by host limits. Other prototype methods, spread, and array
-assignment patterns remain pending.
+remains bounded by host limits. Generic at snapshots length before index
+conversion, supports relative indexing, and performs live property reads. Other
+prototype methods, spread, and array assignment patterns remain pending.
 
 Symbols, BigInt wrapper APIs, remaining String methods,
 Remaining Array prototype methods, derived construction, classes, destructuring, regular
@@ -262,7 +263,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 100 retained entries under a separate fixed work
+Realm initialization creates 101 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -297,14 +298,14 @@ Number tests, ten numeric parsing tests, five global numeric predicate tests, an
 22 Error construction, conversion, and prototype tests, plus 83 Object descriptor,
 prototype, extensibility, creation, copying, integrity, and SameValue tests, and
 147 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
-well-formedness, and conversion tests in both Script modes. Another 65 Array
+well-formedness, and conversion tests in both Script modes. Another 71 Array
 files cover construction, isArray, literal elisions, length/index boundaries,
-truncation, generic join, and toString. Controls
+truncation, generic at/join, and toString. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON and other APIs and remains Unsupported;
 Remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 908 variants are four raw positives, 832 positives using the upstream
+Rust. Its 920 variants are four raw positives, 844 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

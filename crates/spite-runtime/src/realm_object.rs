@@ -560,7 +560,6 @@ fn missing_array_static(key: &JsString) -> bool {
 
 fn missing_array_method(key: &JsString) -> bool {
     [
-        "at",
         "concat",
         "copyWithin",
         "entries",

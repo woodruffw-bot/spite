@@ -354,3 +354,23 @@ fn recursive_join_and_to_string_are_bounded_on_a_two_mebibyte_stack() {
         .join()
         .unwrap();
 }
+
+#[test]
+fn recursive_at_index_conversion_is_bounded_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            let mut realm = Realm::default();
+            realm
+                .eval("let a=[1],flag=0,i={valueOf:()=>a.at(i)}")
+                .unwrap();
+            assert!(matches!(
+                realm.eval("try{a.at(i);}catch{flag=1;}finally{flag=2;}"),
+                Err(Error::Limit { .. })
+            ));
+            check(&mut realm, "flag===0 && a.at(0)===1");
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}

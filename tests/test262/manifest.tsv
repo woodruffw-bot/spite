@@ -482,3 +482,9 @@ script-pass	c7dee80b657c32cf57beb97dc8c6bf8ee02d35735b3a1404f9484e23ea706026	tes
 script-pass	a91429a3b30bfd6d064cbd61cec34f29458392983320320770cd33030341449d	test/language/expressions/array/S11.1.4_A1.6.js
 script-pass	6c1349677b608dcf442a78faadbdfc3045f76ab3ff1068d8e25d862d4ff95c81	test/language/expressions/array/S11.1.4_A1.7.js
 script-pass	29ad822e2f0dd992a1867f3d7da09629492fb06b9768c753b39b802ccf990802	test/language/expressions/array/S11.1.4_A2.js
+script-pass	42918489c76399445351f5d42e8a51e38db81bcf6e58cee8d6fb42aadb28fddf	test/built-ins/Array/prototype/at/index-non-numeric-argument-tointeger.js
+script-pass	82b227b106694cfab22749a9634c056a7df72db41582369dbd7b1100c182cbb2	test/built-ins/Array/prototype/at/return-abrupt-from-this.js
+script-pass	71f53cf86f1387101b19b6ae9939d47ced34497d3cee12f954eef454f912ba88	test/built-ins/Array/prototype/at/returns-item-relative-index.js
+script-pass	793b0f4a94ccf54a1e43813b3fde39d8e1f216cde9e22be674ecefd6a46e8e63	test/built-ins/Array/prototype/at/returns-item.js
+script-pass	32d020ce560af714f8c429f6d168507797304f72ef340f31c725c925e38d3969	test/built-ins/Array/prototype/at/returns-undefined-for-holes-in-sparse-arrays.js
+script-pass	ad51fad4e5e759ba996c59306e49bfd355f4c9afc6f0ba4bc90a768f57e3ff63	test/built-ins/Array/prototype/at/returns-undefined-for-out-of-range-index.js
