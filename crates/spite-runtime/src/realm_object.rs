@@ -707,14 +707,7 @@ impl Realm {
 }
 
 fn missing_reflect_method(key: &JsString) -> bool {
-    [
-        "defineProperty",
-        "getOwnPropertyDescriptor",
-        "ownKeys",
-        "set",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
+    ["set"].iter().any(|name| key_is(key, name))
 }
 
 fn missing_array_static(key: &JsString) -> bool {

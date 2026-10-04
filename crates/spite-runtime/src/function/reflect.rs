@@ -2,7 +2,7 @@
 
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
-use spite_core::{JsString, Span, WellKnownSymbol};
+use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 
 #[derive(Debug)]
 pub(crate) struct ReflectIntrinsics {
@@ -41,11 +41,14 @@ impl Realm {
         for builtin in [
             Builtin::ReflectApply,
             Builtin::ReflectConstruct,
+            Builtin::ReflectDefineProperty,
             Builtin::ReflectDeleteProperty,
             Builtin::ReflectGet,
+            Builtin::ReflectGetOwnPropertyDescriptor,
             Builtin::ReflectGetPrototypeOf,
             Builtin::ReflectHas,
             Builtin::ReflectIsExtensible,
+            Builtin::ReflectOwnKeys,
             Builtin::ReflectPreventExtensions,
             Builtin::ReflectSetPrototypeOf,
         ] {
@@ -134,6 +137,36 @@ impl Realm {
                 .map(Value::Boolean),
             _ => unreachable!("Reflect property operation"),
         }
+    }
+
+    pub(super) fn reflect_define_property(
+        &mut self,
+        target: Value,
+        key: Value,
+        attributes: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 28.1.3: validate target, then convert key and attributes in order.
+        // Descriptor rejection is false; conversion failures still throw.
+        let target = Self::reflect_object(target, span)?;
+        let key = self.property_key(key, span)?;
+        let descriptor = self.property_descriptor(attributes, span)?;
+        self.define_property(&target, key, descriptor, span)
+            .map(Value::Boolean)
+    }
+
+    pub(super) fn reflect_own_keys(&mut self, target: Value, span: Span) -> Result<Value, Error> {
+        let target = Self::reflect_object(target, span)?;
+        let keys = self.own_property_keys(&target, span)?;
+        // 28.1.10 / CreateArrayFromList: preserve String/Symbol key order and
+        // include non-enumerable keys without reading any property values.
+        self.create_array_from_list(
+            keys.into_iter().map(|key| match key {
+                PropertyKey::String(key) => Value::String(key),
+                PropertyKey::Symbol(key) => Value::Symbol(key),
+            }),
+            span,
+        )
     }
 
     pub(super) fn reflect_set_prototype_of(

@@ -62,6 +62,25 @@ impl Realm {
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
                 self.object_get_prototype_of(Value::Object(target), span)
             }
+            Builtin::ReflectDefineProperty => self.reflect_define_property(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::ReflectGetOwnPropertyDescriptor => {
+                let target =
+                    Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
+                self.object_own_property(
+                    Value::Object(target),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    false,
+                    span,
+                )
+            }
+            Builtin::ReflectOwnKeys => {
+                self.reflect_own_keys(arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::ReflectDeleteProperty | Builtin::ReflectGet | Builtin::ReflectHas => self
                 .reflect_property(
                     builtin,

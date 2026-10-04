@@ -142,7 +142,7 @@ impl Realm {
         self.descriptor_object(property, span)
     }
 
-    fn property_descriptor(
+    pub(in crate::function) fn property_descriptor(
         &mut self,
         attributes: Value,
         span: Span,

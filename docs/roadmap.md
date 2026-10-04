@@ -186,6 +186,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add the Reflect object, array-like apply calls, and construction with explicit newTarget and bound forwarding.
 - [x] Add Reflect prototype and extensibility operations with object-only targets and boolean rejection results.
 - [x] Add Reflect get/has/deleteProperty with ordered property-key conversion, explicit read receivers, and boolean deletion.
+- [x] Add Reflect defineProperty/getOwnPropertyDescriptor/ownKeys with ordered conversion, boolean rejection, and complete exposed key lists.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
 - [x] Integrate symbol keys into ordinary/exotic storage, ordering, and work budgets.
 - [x] Add runtime Symbol primitives and shared well-known identities.

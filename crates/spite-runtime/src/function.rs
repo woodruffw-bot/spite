@@ -37,12 +37,15 @@ pub(crate) enum Builtin {
     FunctionApply,
     ReflectApply,
     ReflectConstruct,
+    ReflectDefineProperty,
     ReflectDeleteProperty,
     ReflectGet,
+    ReflectGetOwnPropertyDescriptor,
     ReflectHas,
     ReflectGetPrototypeOf,
     ReflectSetPrototypeOf,
     ReflectIsExtensible,
+    ReflectOwnKeys,
     ReflectPreventExtensions,
     FunctionBind,
     FunctionHasInstance,
@@ -201,12 +204,15 @@ impl Builtin {
             Self::FunctionApply => "apply",
             Self::ReflectApply => "apply",
             Self::ReflectConstruct => "construct",
+            Self::ReflectDefineProperty => "defineProperty",
             Self::ReflectDeleteProperty => "deleteProperty",
             Self::ReflectGet => "get",
+            Self::ReflectGetOwnPropertyDescriptor => "getOwnPropertyDescriptor",
             Self::ReflectHas => "has",
             Self::ReflectGetPrototypeOf => "getPrototypeOf",
             Self::ReflectSetPrototypeOf => "setPrototypeOf",
             Self::ReflectIsExtensible => "isExtensible",
+            Self::ReflectOwnKeys => "ownKeys",
             Self::ReflectPreventExtensions => "preventExtensions",
             Self::FunctionBind => "bind",
             Self::FunctionHasInstance => "[Symbol.hasInstance]",
@@ -410,6 +416,7 @@ impl Builtin {
             | Self::ObjectGetPrototypeOf
             | Self::ReflectGetPrototypeOf
             | Self::ReflectIsExtensible
+            | Self::ReflectOwnKeys
             | Self::ReflectPreventExtensions
             | Self::ObjectIsExtensible
             | Self::ObjectPreventExtensions
@@ -454,6 +461,7 @@ impl Builtin {
             | Self::ReflectConstruct
             | Self::ReflectDeleteProperty
             | Self::ReflectGet
+            | Self::ReflectGetOwnPropertyDescriptor
             | Self::ReflectHas
             | Self::ReflectSetPrototypeOf
             | Self::ParseInt
@@ -465,7 +473,7 @@ impl Builtin {
             | Self::ObjectAssign
             | Self::ObjectGroupBy
             | Self::ObjectIs => 2.0,
-            Self::ObjectDefineProperty | Self::ReflectApply => 3.0,
+            Self::ObjectDefineProperty | Self::ReflectApply | Self::ReflectDefineProperty => 3.0,
             _ => 0.0,
         }
     }

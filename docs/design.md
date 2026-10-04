@@ -1174,6 +1174,16 @@ Array, String, and arguments exotics retain their indexed/length and parameter-m
 rules. Missing intrinsic values/mutations and host failures remain Unsupported or
 Limit, so language handlers cannot conceal them.
 
+Reflect.defineProperty (28.1.3) reuses ordered ToPropertyKey/ToPropertyDescriptor
+conversion and returns the internal DefineOwnProperty boolean. Invalid descriptors
+and invalid Array lengths still throw; partial Array truncation preserves its
+specified state on false. GetOwnPropertyDescriptor (28.1.6) requires an object
+target and reuses FromPropertyDescriptor without invoking accessors. OwnKeys
+(28.1.10) preserves all String/Symbol keys, including non-enumerables, in internal
+key order and creates a fresh intrinsic Array with own data elements. It bypasses
+species, constructors, and inherited setters. Incomplete intrinsic key lists and
+descriptors remain explicit host gaps; Reflect's own list awaits its set method.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left
