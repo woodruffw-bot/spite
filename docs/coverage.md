@@ -66,8 +66,11 @@ receivers, and abrupt completions before ordinary conversion. Native injection
 tests this foundation. Symbol wrappers, branded methods, description access,
 fresh intrinsic calls, and the 13 fixed constructor properties are implemented.
 Symbol.prototype has no SymbolData, and new rejects the intrinsic before coercing
-the description. The JavaScript Symbol global, shared registry, and remaining
-intrinsic symbol properties remain unavailable.
+the description. Symbol.for/keyFor share an append-only registry across realms
+and threads, preserving exact UTF-16 keys and identity through realm destruction.
+Coercion runs before locking; copying runs after unlock. Registry operations and
+constructor enumeration are covered through native injection. The JavaScript
+Symbol global and remaining intrinsic symbol properties remain unavailable.
 This foundation adds no Script/Test262 coverage.
 
 The `spite-heap` foundation provides capacity-bounded generational storage,
@@ -313,7 +316,7 @@ ToReversed/with create intrinsic arrays with dense own elements, skip constructo
 lookup, and preserve ordered live reads. With never reads its replaced index. Other
 prototype methods, spread, and array assignment patterns remain pending.
 
-The Symbol registry/global, BigInt wrapper APIs, remaining String methods,
+The Symbol global, BigInt wrapper APIs, remaining String methods,
 remaining Array prototype methods, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
@@ -329,7 +332,10 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 134 retained entries under a separate fixed work
+The process-wide Symbol registry retains at most 10,000 identities and 1,048,576
+total key code units; it never evicts entries. Work/output/capacity failures are
+host limits and preserve prior registrations.
+Realm initialization creates 136 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

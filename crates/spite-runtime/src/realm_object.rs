@@ -587,7 +587,6 @@ impl Realm {
             || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
             || object == &intrinsics.string.prototype
-            || object == &intrinsics.symbol.constructor
             || object == &intrinsics.array.constructor
             || object == &intrinsics.array.prototype
         {
@@ -661,8 +660,6 @@ impl Realm {
             return false;
         };
         (object == &intrinsics.object.constructor && missing_object_static(key))
-            || (object == &intrinsics.symbol.constructor
-                && (key_is(key, "for") || key_is(key, "keyFor")))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))

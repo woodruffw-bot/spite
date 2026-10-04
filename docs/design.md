@@ -315,9 +315,23 @@ The intrinsic Symbol callable creates fresh identities after description ToStrin
 undefined preserves an absent description. It has length zero and no Construct
 method, and its 13 well-known properties are fixed identities (20.4.1–2).
 
-Finally, integrate shared registry semantics and remaining observable hooks before
-exposing the JavaScript Symbol global. Symbol.for/keyFor and enumeration of the
-incomplete constructor remain Unsupported during this native-injection stage.
+The append-only GlobalSymbolRegistry is shared across realms (20.4.2.2/6).
+A process-wide Mutex protects a bounded vector of registered identities. Each
+identity's immutable description is its registry key, avoiding a second text copy.
+Perform ToString before locking; lookup/insertion under the lock cannot run user
+code. This permits reentrant coercion and atomic interning across host threads.
+Charge each identity or UTF-16 comparison before inspecting it, and reserve vector
+capacity before insertion. Symbol.keyFor accepts only primitive Symbols, scans
+identity, and copies a matched key only after releasing the lock and checking output
+limits. Fresh and well-known symbols never enter this registry implicitly.
+The process registry retains at most 10,000 keys and 1,048,576 total UTF-16 units;
+these shared host limits supplement per-evaluation work/string limits. Exhaustion
+must not evict entries, change an existing identity, or become a JavaScript exception.
+Private isolated registry instances test capacity edges without filling shared state.
+
+Symbol.for/keyFor now use this registry, and the intrinsic Symbol constructor's
+own properties can be enumerated. Finally, integrate remaining observable hooks
+before exposing the JavaScript Symbol global.
 Remaining intrinsic symbol properties must stop relying on their current
 no-symbol assumptions. Array species and iteration then build on those boundaries.
 The foundation alone does not expose

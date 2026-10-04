@@ -8,10 +8,11 @@ mod hooks;
 mod instance;
 mod keys;
 mod regexp;
+mod registry;
 mod tag;
 mod wrapper;
 
-// The Symbol global stays unavailable until its registry and hooks are ready.
+// The Symbol global stays unavailable until the remaining intrinsic hooks are ready.
 // Native injection lets us verify the primitive algorithms independently.
 fn realm_with_symbols() -> Realm {
     let mut realm = Realm::default();
@@ -198,19 +199,9 @@ fn descriptive_output_is_bounded_and_symbol_copies_do_not_copy_descriptions() {
 }
 
 #[test]
-fn symbol_global_and_registry_remain_explicit_gaps() {
-    for source in [
-        "Symbol",
-        "s.constructor.for",
-        "s.constructor.keyFor",
-        "Object.getOwnPropertyDescriptors(s.constructor)",
-    ] {
-        assert!(
-            matches!(
-                realm_with_symbols().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+fn symbol_global_remains_an_explicit_gap() {
+    assert!(matches!(
+        realm_with_symbols().eval("Symbol"),
+        Err(Error::Unsupported { .. })
+    ));
 }

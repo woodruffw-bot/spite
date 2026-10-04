@@ -94,6 +94,8 @@ pub(crate) enum Builtin {
     ArrayToString,
     ArrayToLocaleString,
     Symbol,
+    SymbolFor,
+    SymbolKeyFor,
     SymbolToString,
     SymbolValueOf,
     SymbolDescription,
@@ -190,6 +192,8 @@ impl Builtin {
             Self::ArrayFindLast => "findLast",
             Self::ArrayFindLastIndex => "findLastIndex",
             Self::Symbol => "Symbol",
+            Self::SymbolFor => "for",
+            Self::SymbolKeyFor => "keyFor",
             Self::SymbolDescription => "get description",
             Self::SymbolToPrimitive => "[Symbol.toPrimitive]",
             Self::String => "String",
@@ -281,6 +285,8 @@ impl Builtin {
             | Self::ArrayReduceRight
             | Self::ArraySort
             | Self::ArrayToSorted
+            | Self::SymbolFor
+            | Self::SymbolKeyFor
             | Self::SymbolToPrimitive
             | Self::String
             | Self::StringFromCharCode

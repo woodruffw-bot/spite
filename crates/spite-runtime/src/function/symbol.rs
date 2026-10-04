@@ -1,5 +1,7 @@
 //! Symbol primitives, wrappers, and intrinsics (20.4).
 
+mod registry;
+
 use super::Builtin;
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
@@ -11,7 +13,7 @@ use spite_core::{JsString, JsSymbol, Span, WellKnownSymbol};
 pub(crate) struct SymbolIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
-    methods: [ObjectHandle; 4],
+    methods: [ObjectHandle; 6],
 }
 
 impl SymbolIntrinsics {
@@ -36,6 +38,8 @@ impl Realm {
         let to_string = self.new_builtin(function_prototype, Builtin::SymbolToString, span)?;
         let value_of = self.new_builtin(function_prototype, Builtin::SymbolValueOf, span)?;
         let description = self.new_builtin(function_prototype, Builtin::SymbolDescription, span)?;
+        let for_key = self.new_builtin(function_prototype, Builtin::SymbolFor, span)?;
+        let key_for = self.new_builtin(function_prototype, Builtin::SymbolKeyFor, span)?;
         let to_primitive =
             self.new_builtin(function_prototype, Builtin::SymbolToPrimitive, span)?;
         self.object_work(span, |objects, budget| {
@@ -113,10 +117,26 @@ impl Realm {
                 span,
             )?;
         }
+        for (name, handle) in [("for", &for_key), ("keyFor", &key_for)] {
+            self.define_builtin_property(
+                &constructor,
+                name,
+                Value::Object(handle.clone()),
+                true,
+                span,
+            )?;
+        }
         Ok(SymbolIntrinsics {
             constructor,
             prototype,
-            methods: [to_string, value_of, description, to_primitive],
+            methods: [
+                to_string,
+                value_of,
+                description,
+                to_primitive,
+                for_key,
+                key_for,
+            ],
         })
     }
 

@@ -341,6 +341,12 @@ impl Realm {
             Builtin::Symbol => {
                 self.symbol_constructor(arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::SymbolFor => {
+                self.symbol_for(arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Builtin::SymbolKeyFor => {
+                self.symbol_key_for(arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::SymbolToString => {
                 let symbol = self.this_symbol_value(&this, span)?;
                 self.symbol_descriptive_string(&symbol, span)
