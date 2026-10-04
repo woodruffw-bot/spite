@@ -277,8 +277,14 @@ semantics. Accessor definitions merge pairs and replace data descriptors in sour
 order. Twenty-three upstream files cover computed names, escaped/reserved method
 names, abrupt key evaluation, and setter scope. Async/generator methods, super,
 and parameter patterns remain unsupported.
-Object.fromEntries/groupBy remain explicit gaps, including descriptor inspection
-or mutation of an unimplemented intrinsic property.
+Object.fromEntries creates fresh ordinary objects from iterables, requires object
+entries, reads 0 then 1 before key conversion, preserves Symbol keys, and defines
+own writable/enumerable/configurable data properties. Duplicate keys overwrite in
+place; inherited setters and entry iterator hooks are bypassed. Entry failures
+close the iterator with incoming-throw precedence; step/host failures do not close.
+Tests cover evaluation order, boxed Strings, inherited entry fields, mutation,
+metadata, collection, and opt-in quotas. Object.groupBy remains an explicit gap,
+including descriptor inspection or mutation of its unimplemented property.
 
 String calls/new, StringData wrappers, and branded toString/valueOf are supported.
 Length and indices use UTF-16 code units, including lone surrogates. Wrapper index
@@ -476,7 +482,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 170 retained entries outside the per-Script work
+Realm initialization creates 171 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

@@ -227,9 +227,9 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
     realm.collect(100_000).unwrap();
     assert_eq!(realm.eval("let o={};C.defineProperty(o,'x',{value:3});C.is(C.getOwnPropertyDescriptor(o,'x').value,3) && C.hasOwn(o,'x')"),Ok(Value::Boolean(true)));
     for source in [
-        "Object.getOwnPropertyDescriptor(Object,'fromEntries')",
-        "Object.hasOwn(Object,'fromEntries')",
-        "Object.defineProperty(Object,'fromEntries',{})",
+        "Object.getOwnPropertyDescriptor(Object,'groupBy')",
+        "Object.hasOwn(Object,'groupBy')",
+        "Object.defineProperty(Object,'groupBy',{})",
         "Object.defineProperty(globalThis,'Math',{})",
         "Object.getOwnPropertyDescriptor(globalThis,'Math')",
     ] {

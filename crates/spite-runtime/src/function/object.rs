@@ -6,6 +6,7 @@ use spite_core::{JsString, Span};
 
 mod copy;
 mod descriptor;
+mod from_entries;
 mod integrity;
 mod keys;
 mod prototype;
@@ -95,6 +96,7 @@ impl Realm {
             Builtin::ObjectIsFrozen,
             Builtin::ObjectIsSealed,
             Builtin::ObjectAssign,
+            Builtin::ObjectFromEntries,
             Builtin::ObjectGetOwnPropertyDescriptors,
             Builtin::ObjectGetOwnPropertyNames,
             Builtin::ObjectGetOwnPropertySymbols,

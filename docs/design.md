@@ -1022,7 +1022,16 @@ and descriptor changes affect later visits. Abrupt reads stop immediately.
 CreateArrayFromList (7.3.17) starts an intrinsic Array at length zero and defines
 own writable/enumerable/configurable data elements in order. Results never call
 the public Array constructor, species getters, or inherited indexed setters.
-Object.fromEntries/groupBy remain explicit gaps pending iterator consumption.
+Object.fromEntries uses AddEntriesFromIterable with a private data-property adder
+(20.1.2.7, 24.1.1.2). Require a non-nullish iterable, then create an ordinary
+intrinsic-prototype object before acquiring the iterator. Read each object's
+properties 0 and 1 before ToPropertyKey; entries themselves are never iterated.
+Create writable/enumerable/configurable own data properties, preserving Symbols,
+overwriting duplicate keys in place, and bypassing inherited setters. Invalid
+entries and entry-read/conversion/definition throws close the iterator and preserve
+the original throw over cleanup language errors. Step failures and host failures
+do not close; cleanup host failures remain host failures. Object.groupBy remains
+a separate gap.
 
 Object method/accessor syntax reuses shared function bodies and source capture,
 with distinct property kinds for methods, getters, and setters (13.2.5, 15.4).

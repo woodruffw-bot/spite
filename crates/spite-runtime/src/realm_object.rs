@@ -730,9 +730,7 @@ fn missing_iterator_method(key: &JsString) -> bool {
 }
 
 fn missing_object_static(key: &JsString) -> bool {
-    ["fromEntries", "groupBy"]
-        .iter()
-        .any(|name| key_is(key, name))
+    key_is(key, "groupBy")
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

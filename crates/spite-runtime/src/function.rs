@@ -60,6 +60,7 @@ pub(crate) enum Builtin {
     ObjectIsFrozen,
     ObjectIsSealed,
     ObjectAssign,
+    ObjectFromEntries,
     ObjectGetOwnPropertyDescriptors,
     ObjectGetOwnPropertyNames,
     ObjectGetOwnPropertySymbols,
@@ -294,6 +295,7 @@ impl Builtin {
             Self::ObjectIsFrozen => "isFrozen",
             Self::ObjectIsSealed => "isSealed",
             Self::ObjectAssign => "assign",
+            Self::ObjectFromEntries => "fromEntries",
             Self::ObjectGetOwnPropertyDescriptors => "getOwnPropertyDescriptors",
             Self::ObjectGetOwnPropertyNames => "getOwnPropertyNames",
             Self::ObjectGetOwnPropertySymbols => "getOwnPropertySymbols",
@@ -391,6 +393,7 @@ impl Builtin {
             | Self::ObjectKeys
             | Self::ObjectValues
             | Self::ObjectEntries
+            | Self::ObjectFromEntries
             | Self::Number
             | Self::Error(_)
             | Self::ErrorIsError

@@ -141,6 +141,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Object.freeze/seal and frozen/sealed integrity predicates.
 - [x] Add Object.assign and complete own-descriptor copying for supported objects.
 - [x] Add Object own-name/symbol reflection and enumerable keys/values/entries.
+- [x] Add Object.fromEntries with ordered entry reads, own data definitions, and iterator closing.
 - [x] Parse ordinary object methods/getters/setters with scoped early errors.
 - [x] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
