@@ -49,17 +49,7 @@ impl Realm {
                 std::mem::swap(&mut from, &mut to);
             }
         }
-        let count = to - from;
-        if count > self.limits.max_string_units {
-            return Err(Error::Limit {
-                span,
-                message: "string length limit exceeded".into(),
-            });
-        }
-        self.object_work(span, |_, budget| budget.charge(count))?;
-        Ok(Value::String(JsString::from_code_units(
-            string.code_units()[from..to].to_vec(),
-        )))
+        self.copy_string_units(&string.code_units()[from..to], span)
     }
 }
 

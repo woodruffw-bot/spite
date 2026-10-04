@@ -187,3 +187,31 @@ fn sequence_methods_bound_copying_and_output_lengths() {
         Ok(input)
     );
 }
+
+#[test]
+fn trimming_bounds_scans_and_copies_only_the_result() {
+    let mut realm = Realm::default();
+    let span = Span::new(0, 0);
+    let input = Value::String(JsString::from(" ".repeat(100).as_str()));
+    for builtin in [
+        Builtin::StringTrim,
+        Builtin::StringTrimStart,
+        Builtin::StringTrimEnd,
+    ] {
+        realm.remaining_steps = 50;
+        assert!(matches!(
+            realm.string_trim(builtin, input.clone(), span),
+            Err(Error::Limit { .. })
+        ));
+        realm.remaining_steps = 1000;
+        realm.limits.max_string_units = 0;
+        assert_eq!(
+            realm.string_trim(builtin, input.clone(), span),
+            Ok(Value::String(JsString::from("")))
+        );
+        assert!(matches!(
+            realm.string_trim(builtin, Value::String(JsString::from(" a ")), span),
+            Err(Error::Limit { .. })
+        ));
+    }
+}

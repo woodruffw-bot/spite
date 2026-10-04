@@ -337,3 +337,17 @@ script-pass	5a14cb7ff60ceea223eb2e630e33428fe8d1275ec70ed99865f7f3ce30c58f0d	tes
 script-pass	853e8ac85659553b64324793e310c50097c2c5750c500588a3bd8ced004e050b	test/built-ins/String/prototype/substring/S15.5.4.15_A2_T9.js
 script-pass	ad1ec5e003d3652c6e20c57eb90db2d28c4ef9c152695c7c58e4db8ece1e5f5d	test/built-ins/String/prototype/substring/this-value-not-obj-coercible.js
 script-pass	8c9c746cb4aa81a37e99b90ddb8607733140db0060d0a2ca18ed12ecfbf427f1	test/built-ins/String/prototype/substring/this-value-tostring-throws-toprimitive.js
+script-pass	808114e519e118cf95bb8d26fa896df04de36d7ad3246aa877f39dcab668786e	test/built-ins/String/prototype/trimStart/this-value-boolean.js
+script-pass	fb232ff476f1fef8fd592b2e46f3a24342fb170a5d7f963ffeba704aaa879810	test/built-ins/String/prototype/trimStart/this-value-line-terminator.js
+script-pass	6d39b64618189f04f61a2c0fbb5e853d3aef8cf65d2c59456e80f85c67ea26ed	test/built-ins/String/prototype/trimStart/this-value-not-obj-coercible.js
+script-pass	d67eac30ce9f5a8b6fdbe6f554db7e67cc676b3100bc61207815033a445e0d6e	test/built-ins/String/prototype/trimStart/this-value-number.js
+script-pass	17da6e9c4b9a3bee1e770a216f50e91bf8385e9980f1556f47a9c4ef5d755b7d	test/built-ins/String/prototype/trimStart/this-value-whitespace.js
+script-pass	1d1e8b5a1c91ebc62872db86b795845ee5ba5059646d8b73b53c3c714924bca1	test/built-ins/String/prototype/trimEnd/this-value-boolean.js
+script-pass	49751428e1e49da820d542752a081aff9c24a9b7d244f47dca51437bdb809caa	test/built-ins/String/prototype/trimEnd/this-value-line-terminator.js
+script-pass	d8877919e8db53857529f896beec7f2c77be1d714321d4742b58069fa355dc0f	test/built-ins/String/prototype/trimEnd/this-value-not-obj-coercible.js
+script-pass	b7c91c500b435fb75a034a1441f7838eaa74eb63e2555e756ee7bdf9b0cc5fb7	test/built-ins/String/prototype/trimEnd/this-value-number.js
+script-pass	37e2567b8fa45fba4a26dd186f383b1f0f81c169f96b23cb97774748592a865d	test/built-ins/String/prototype/trimEnd/this-value-whitespace.js
+script-pass	6d66f265d21b744b6ae31dac6df2fbcf6862e61995aa270aef284610d5fbff7f	test/built-ins/String/prototype/trim/u180e.js
+script-pass	f2434055c69276e47fa9dcd3ad011a9d94d184037dfda4eed672e69078a6bc80	test/built-ins/String/prototype/trim/15.5.4.20-2-1.js
+script-pass	49e98c239b32d71ec8ee853a41d1df2ba4dc9619c36beb99481192a48e815d70	test/built-ins/String/prototype/trim/15.5.4.20-3-1.js
+script-pass	02d4cb958c32a193fc8a9ea1f783cae391195e110e616b716e2776db41e2dc60	test/built-ins/String/prototype/trim/15.5.4.20-4-1.js

@@ -31,7 +31,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 618 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 646 reviewed Test262 variants, two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -217,7 +217,8 @@ relative indexing, out-of-range results, and surrogate pairs. isWellFormed and
 toWellFormed detect unpaired surrogates and replace each with U+FFFD while retaining
 valid pairs and all other code units. concat converts each argument in order;
 slice and substring extract UTF-16 code units with their respective relative-index
-and endpoint-swapping rules. Missing String
+and endpoint-swapping rules. trim/trimStart/trimEnd use ECMAScript WhiteSpace and
+LineTerminator definitions, retaining other code units and internal whitespace. Missing String
 static/prototype methods and enumeration of those incomplete
 intrinsics remain Unsupported.
 
@@ -237,7 +238,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 83 retained entries under a separate fixed work
+Realm initialization creates 86 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -271,12 +272,12 @@ executes for nine positive function/capture tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
 22 Error construction, conversion, and prototype tests, plus 83 Object descriptor,
 prototype, extensibility, creation, copying, integrity, and SameValue tests, and
-67 String wrapper, character, sequence, Unicode well-formedness, and conversion tests in both Script modes. Controls
+81 String wrapper, character, sequence, trimming, Unicode well-formedness, and conversion tests in both Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON and other APIs and remains Unsupported;
 arrays, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 618 variants are four raw positives, 542 positives using the upstream
+Rust. Its 646 variants are four raw positives, 570 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

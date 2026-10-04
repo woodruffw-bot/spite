@@ -389,6 +389,12 @@ slice and substring convert the receiver, start, and end in order even for empty
 inputs (22.1.3.22/25). Their shared implementation distinguishes relative negative
 indices from clamping/swapping endpoints and slices code units without repairing
 surrogates. Output allocation and copying remain subject to host limits.
+trim/trimStart/trimEnd use the shared ECMAScript WhiteSpace and LineTerminator
+predicates (22.1.3.32–34), preserving internal whitespace and all other code units.
+All baseline whitespace code points lie in the BMP, so checking code units is
+equivalent to decoding code points for this membership test; surrogates cannot
+match. Scanning and copying are charged separately. Optional trimLeft/trimRight
+aliases remain disabled with other Annex B methods.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary

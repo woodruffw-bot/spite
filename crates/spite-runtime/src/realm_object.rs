@@ -582,9 +582,6 @@ fn missing_string_method(key: &JsString) -> bool {
         "toLocaleUpperCase",
         "toLowerCase",
         "toUpperCase",
-        "trim",
-        "trimEnd",
-        "trimStart",
     ]
     .iter()
     .any(|name| key_is(key, name))

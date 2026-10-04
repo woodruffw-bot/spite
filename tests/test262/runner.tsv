@@ -316,3 +316,17 @@ test/built-ins/String/prototype/substring/S15.5.4.15_A2_T6.js	-	-	-
 test/built-ins/String/prototype/substring/S15.5.4.15_A2_T9.js	-	-	-
 test/built-ins/String/prototype/substring/this-value-not-obj-coercible.js	-	-	-
 test/built-ins/String/prototype/substring/this-value-tostring-throws-toprimitive.js	-	-	-
+test/built-ins/String/prototype/trimStart/this-value-boolean.js	-	-	-
+test/built-ins/String/prototype/trimStart/this-value-line-terminator.js	-	-	-
+test/built-ins/String/prototype/trimStart/this-value-not-obj-coercible.js	-	-	-
+test/built-ins/String/prototype/trimStart/this-value-number.js	-	-	-
+test/built-ins/String/prototype/trimStart/this-value-whitespace.js	-	-	-
+test/built-ins/String/prototype/trimEnd/this-value-boolean.js	-	-	-
+test/built-ins/String/prototype/trimEnd/this-value-line-terminator.js	-	-	-
+test/built-ins/String/prototype/trimEnd/this-value-not-obj-coercible.js	-	-	-
+test/built-ins/String/prototype/trimEnd/this-value-number.js	-	-	-
+test/built-ins/String/prototype/trimEnd/this-value-whitespace.js	-	-	-
+test/built-ins/String/prototype/trim/u180e.js	-	-	-
+test/built-ins/String/prototype/trim/15.5.4.20-2-1.js	-	-	-
+test/built-ins/String/prototype/trim/15.5.4.20-3-1.js	-	-	-
+test/built-ins/String/prototype/trim/15.5.4.20-4-1.js	-	-	-

@@ -8,6 +8,7 @@ mod character;
 mod sequence;
 #[cfg(test)]
 mod tests;
+mod trim;
 mod well_formed;
 
 #[derive(Debug)]
@@ -84,6 +85,9 @@ impl Realm {
             Builtin::StringConcat,
             Builtin::StringSlice,
             Builtin::StringSubstring,
+            Builtin::StringTrim,
+            Builtin::StringTrimStart,
+            Builtin::StringTrimEnd,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(
@@ -175,5 +179,16 @@ impl Realm {
                 "receiver does not contain a String value",
             )
         })
+    }
+
+    fn copy_string_units(&mut self, units: &[u16], span: Span) -> Result<Value, Error> {
+        if units.len() > self.limits.max_string_units {
+            return Err(Error::Limit {
+                span,
+                message: "string length limit exceeded".into(),
+            });
+        }
+        self.object_work(span, |_, budget| budget.charge(units.len()))?;
+        Ok(Value::String(JsString::from_code_units(units.to_vec())))
     }
 }
