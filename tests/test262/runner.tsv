@@ -720,3 +720,7 @@ test/built-ins/Array/of/return-abrupt-from-contructor.js	-	-	-
 test/built-ins/Array/of/return-abrupt-from-data-property.js	-	-	-
 test/built-ins/Array/of/return-abrupt-from-setting-length.js	-	-	-
 test/built-ins/Array/of/sets-length.js	-	-	-
+test/built-ins/Array/prototype/toLocaleString/S15.4.4.3_A1_T1.js	-	-	-
+test/built-ins/Array/prototype/toLocaleString/S15.4.4.3_A3_T1.js	-	-	-
+test/built-ins/Array/prototype/toLocaleString/primitive_this_value.js	-	-	-
+test/built-ins/Array/prototype/toLocaleString/primitive_this_value_getter.js	-	-	-

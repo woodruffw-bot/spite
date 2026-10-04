@@ -742,3 +742,7 @@ script-pass	f705aabcc03f167295fae457eb4b7142cd63b6f95988cab82024cc183f9356ea	tes
 script-pass	824a6768c317d10e828c8c936c90dff27a875d099c3862f76b5795e9f3e1a681	test/built-ins/Array/of/return-abrupt-from-data-property.js
 script-pass	f0f822a123bfc4617e3be5d6c6dc08015dd5e734a106010684f157acac5a8a1a	test/built-ins/Array/of/return-abrupt-from-setting-length.js
 script-pass	4aa98facdb379a295f10bb1d57b6d898b46e46854dd8a768a92ced9156d04f2e	test/built-ins/Array/of/sets-length.js
+script-pass	a23f0e9668bd18a67a375cb70b878e1977e9bae5afc67812d8c6ba50090214ae	test/built-ins/Array/prototype/toLocaleString/S15.4.4.3_A1_T1.js
+script-pass	4ac1617b362e45598f5fb6e0b6040b87cb9768b2b55b45bbd6185a1dca13f40d	test/built-ins/Array/prototype/toLocaleString/S15.4.4.3_A3_T1.js
+script-pass	616a7b9c91272c02e23e048d9f2178f9b9a8fb3a3d2cc43993488bc501c8e12c	test/built-ins/Array/prototype/toLocaleString/primitive_this_value.js
+script-pass	bb0ab6e1abb9436514f510c89e862427e0ff5d483a5e18215379a3890d06e375	test/built-ins/Array/prototype/toLocaleString/primitive_this_value_getter.js

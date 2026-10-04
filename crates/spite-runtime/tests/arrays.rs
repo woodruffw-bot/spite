@@ -180,7 +180,6 @@ fn missing_array_intrinsics_remain_explicit_host_gaps() {
         "Array.from",
         "Array.fromAsync",
         "Array().map",
-        "Array().toLocaleString",
         "Array().values",
         "Array().toSorted",
         "Object.getOwnPropertyDescriptor(Array.prototype,'map')",

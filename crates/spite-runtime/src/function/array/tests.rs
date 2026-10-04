@@ -871,3 +871,47 @@ fn array_of_bounds_property_work_and_retains_partial_custom_object_definitions()
     );
     realm.collect(10_000).unwrap();
 }
+
+#[test]
+fn recursive_array_locale_calls_and_getters_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for setup in [
+                "let a=[];a[0]=a;",
+                "let a=[1];Object.defineProperty(a,'0',{get:()=>a.toLocaleString()});",
+                "let o={},a=[o];Object.defineProperty(o,'toLocaleString',{get:()=>a.toLocaleString()});",
+                "let a=[{toLocaleString:()=>a.toLocaleString()}];",
+                "let a=[{toLocaleString:()=>({toString:()=>a.toLocaleString()})}];",
+            ] {
+                let mut realm=Realm::default();
+                realm.eval(setup).unwrap();
+                realm.eval("let flag=0").unwrap();
+                assert!(matches!(realm.eval("try{a.toLocaleString();}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
+                check(&mut realm,"flag===0 && [1,2].toLocaleString()==='1,2'");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn array_locale_output_limits_precede_later_gets_and_large_lengths_are_bounded() {
+    let mut realm = Realm::default();
+    realm
+        .eval("let flag=0,n=0,a=['abc',2];Object.defineProperty(a,'1',{get:()=>{n++;return 2;}})")
+        .unwrap();
+    realm.limits.max_string_units = 3;
+    assert!(matches!(
+        realm.eval("try{a.toLocaleString();}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    check(&mut realm, "n===0 && flag===0");
+    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_steps = 500;
+    assert!(matches!(realm.eval("try{Array.prototype.toLocaleString.call({length:Infinity});}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0 && [1].toLocaleString()==='1'");
+    assert_eq!(realm.eval("Array.prototype.toLocaleString.call({0:{toLocaleString:()=>{throw 7;}},length:Infinity})"),Err(Error::Thrown(Value::Number(7.0))));
+}

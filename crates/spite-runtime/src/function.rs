@@ -88,6 +88,7 @@ pub(crate) enum Builtin {
     ArrayReduce,
     ArrayReduceRight,
     ArrayToString,
+    ArrayToLocaleString,
     String,
     StringToString,
     StringValueOf,
@@ -228,7 +229,9 @@ impl Builtin {
             Self::NumberToFixed => "toFixed",
             Self::NumberToPrecision => "toPrecision",
             Self::NumberToExponential => "toExponential",
-            Self::NumberToLocaleString | Self::ObjectToLocaleString => "toLocaleString",
+            Self::NumberToLocaleString | Self::ObjectToLocaleString | Self::ArrayToLocaleString => {
+                "toLocaleString"
+            }
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
         }

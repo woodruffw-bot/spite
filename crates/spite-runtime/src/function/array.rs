@@ -120,6 +120,7 @@ impl Realm {
         for builtin in [
             Builtin::ArrayJoin,
             Builtin::ArrayToString,
+            Builtin::ArrayToLocaleString,
             Builtin::ArrayAt,
             Builtin::ArrayPush,
             Builtin::ArrayPop,

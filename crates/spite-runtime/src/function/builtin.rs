@@ -191,6 +191,7 @@ impl Realm {
                 self.array_join(this, arguments.next().unwrap_or(Value::Undefined), span)
             }
             Builtin::ArrayToString => self.array_to_string(this, span),
+            Builtin::ArrayToLocaleString => self.array_to_locale_string(this, span),
             Builtin::ArrayPush => self.array_push(this, arguments, span),
             Builtin::ArrayPop => self.array_pop(this, span),
             Builtin::ArrayShift => self.array_shift(this, span),

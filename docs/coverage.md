@@ -16,7 +16,7 @@ not an alternative language specification.
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
-| Arrays | Calls/new, of, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, find/findIndex/findLast/findLastIndex, toReversed/with/toSpliced copies, and dynamic toString |
+| Arrays | Calls/new, of, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, find/findIndex/findLast/findLastIndex, toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1416 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1422 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -262,6 +262,10 @@ convert relative indices in order, including for empty ranges; fill uses strict
 writes, while copyWithin handles overlap and deletes targets for source holes.
 Shift/unshift move sparse elements in the specified direction before a final
 strict length assignment, including on empty or zero-argument paths.
+Array toLocaleString uses the ECMA-262 algorithm without ECMA-402, a fixed comma
+separator, live element reads, original receivers, and zero-argument method
+calls. It ignores the reserved arguments, converts each result before the next
+read, and bounds output and recursion. BigInt prototype methods remain pending.
 Array.of constructs through constructor receivers or creates an intrinsic Array
 for non-constructors. It defines own data elements before a final strict length
 assignment, including on empty results, and retains partial effects on failure.
@@ -289,7 +293,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 124 retained entries under a separate fixed work
+Realm initialization creates 125 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -324,15 +328,15 @@ Number tests, ten numeric parsing tests, five global numeric predicate tests, an
 22 Error construction, conversion, and prototype tests, plus 83 Object descriptor,
 prototype, extensibility, creation, copying, integrity, and SameValue tests, and
 147 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
-well-formedness, and conversion tests in both Script modes. Another 324 Array
+well-formedness, and conversion tests in both Script modes. Another 328 Array
 files cover construction, of, isArray, literal elisions, length/index boundaries,
-truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
+truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
 and reduce/reduceRight callbacks, plus toReversed/with/toSpliced copies. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON or Array.prototype.map and other APIs and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 1416 variants are four raw positives, 1340 positives using the upstream
+Rust. Its 1422 variants are four raw positives, 1346 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

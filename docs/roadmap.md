@@ -159,6 +159,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Array toReversed/with copies, 19 Test262 files, and the pinned compareArray compatibility include.
 - [x] Add Array toSpliced with optional deletion ranges, skipped discarded reads, and 19 Test262 files.
 - [x] Add Array.of with constructor dispatch, ordered data definitions, strict length writes, and eight Test262 files.
+- [x] Add Array toLocaleString using the non-ECMA-402 algorithm and four Test262 files.
 - [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

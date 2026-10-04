@@ -379,6 +379,16 @@ other single value becomes an element without coercion. Element creation uses
 own data definitions, bypassing inherited setters. IsArray uses the internal
 identity independently of prototypes; Proxy forwarding will join it when Proxy
 objects exist. All Array intrinsics remain rooted after global properties change.
+Array.prototype.toLocaleString follows the ECMA-262 algorithm for hosts without
+ECMA-402 (23.1.3.32). This host uses a fixed locale with comma (U+002C) as its
+implementation-defined list separator, independent of operating-system settings.
+The reserved arguments are ignored. After one length snapshot, it gets each
+element live, invokes the current toLocaleString with the original element as
+receiver and no arguments, then converts the result to a String. Nullish elements
+contribute no text; holes still perform Get. Separator concatenation precedes the
+next indexed read, including output-limit checks. Cyclic arrays use the ordinary
+reentry limit; no special cycle-to-empty-string behavior is added. BigInt elements
+remain Unsupported until their prototype API exists.
 Array.of (23.1.2.4) tests its receiver for [[Construct]] without coercion. It
 constructs with one numeric item-count argument or falls back to ArrayCreate.
 It defines own writable/enumerable/configurable data elements, then strictly
