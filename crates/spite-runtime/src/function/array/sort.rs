@@ -47,7 +47,7 @@ impl Realm {
             self.tick(span)?;
             if copy {
                 // ArrayCreate already established that every index fits u32.
-                self.create_array_element(&output, index as u32, value, span)?;
+                self.create_array_element(&output, index as u64, value, span)?;
             } else {
                 self.set_property_or_throw(
                     &output,

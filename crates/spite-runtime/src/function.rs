@@ -100,6 +100,8 @@ pub(crate) enum Builtin {
     ArrayForEach,
     ArrayEvery,
     ArraySome,
+    ArrayMap,
+    ArrayFilter,
     ArrayFind,
     ArrayFindIndex,
     ArrayFindLast,
@@ -211,6 +213,8 @@ impl Builtin {
             Self::ArrayForEach => "forEach",
             Self::ArrayEvery => "every",
             Self::ArraySome => "some",
+            Self::ArrayMap => "map",
+            Self::ArrayFilter => "filter",
             Self::ArrayReduce => "reduce",
             Self::ArrayReduceRight => "reduceRight",
             Self::ArrayFind => "find",
@@ -306,6 +310,8 @@ impl Builtin {
             | Self::ArrayForEach
             | Self::ArrayEvery
             | Self::ArraySome
+            | Self::ArrayMap
+            | Self::ArrayFilter
             | Self::ArrayFind
             | Self::ArrayFindIndex
             | Self::ArrayFindLast

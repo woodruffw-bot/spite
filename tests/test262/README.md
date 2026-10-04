@@ -137,6 +137,7 @@ make the engine pass. When updating the pin, copy the selected files unchanged,
 review their metadata, update hashes and expectations, and rerun the checks.
 
 The pinned `compareArray.js` include is a compatibility file; its assertions
-are defined in `assert.js`. Successful comparisons execute unchanged. Mismatch
-formatting currently needs the missing Array.prototype.map method and is
-reported as Unsupported, never Passed. Local controls cover both paths.
+are defined in `assert.js`. Successful comparisons execute unchanged. Numeric mismatch
+formatting executes map and reports the thrown Test262Error as a runtime failure.
+String SameValue mismatch formatting still requires JSON and remains Unsupported. Local
+controls cover these paths.

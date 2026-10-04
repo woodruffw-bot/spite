@@ -20,7 +20,7 @@ impl Realm {
             if let Some(expression) = element {
                 // Element evaluation does not infer a name for anonymous functions.
                 let value = self.expression(expression)?;
-                self.create_array_element(&array, index, value, expression.span)?;
+                self.create_array_element(&array, u64::from(index), value, expression.span)?;
             } else {
                 // Elisions grow length without defining an indexed property.
                 // The fresh Array owns a writable length, so this Set cannot

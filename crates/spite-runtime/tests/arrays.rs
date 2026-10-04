@@ -178,9 +178,9 @@ fn missing_array_intrinsics_remain_explicit_host_gaps() {
     for source in [
         "Array.from",
         "Array.fromAsync",
-        "Array().map",
-        "Array().filter",
-        "Object.getOwnPropertyDescriptor(Array.prototype,'map')",
+        "Array().flatMap",
+        "Array().flat",
+        "Object.getOwnPropertyDescriptor(Array.prototype,'flatMap')",
         "Object.defineProperty(Array,'from',{})",
         "Object.freeze(Array.prototype)",
         "Object.getOwnPropertyDescriptors(Array)",

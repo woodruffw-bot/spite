@@ -333,9 +333,18 @@ when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
 lookup, and preserve ordered live reads. With never reads its replaced index. Other
 prototype methods, spread, and array assignment patterns remain pending.
+Map/filter validate callbacks before ArraySpeciesCreate, which consults constructor
+and Symbol.species only for genuine Arrays. Null/undefined species select an
+intrinsic Array; custom constructors receive one Number length (source length
+for map, zero for filter). Map preserves absent indices; filter packs the values
+read before each callback. Both use live HasProperty/Get, define own data
+properties without invoking setters, retain partial results on abrupt completion,
+and do not assign a final length to custom results. Checked heaps cannot expose
+foreign-realm constructors; cross-realm normalization and Proxy traversal remain
+pending with those object kinds. Sparse scans and value copies charge host work.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
-null prototype and all 16 specified entries. Species-dependent Array methods
+null prototype and all 16 specified entries. Other species-dependent Array methods
 and with environments remain pending.
 Array keys/values/entries create branded iterators that read live lengths and
 advance their index before reading values. Keys skip element reads; entries
@@ -415,8 +424,8 @@ truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and i
 and reduce/reduceRight callbacks, plus sort/toSorted, toReversed/with/toSpliced copies,
 and keys/values/entries iteration, including mapped/unmapped arguments. The 34
 Symbol files and 23 object method/accessor files run in their prescribed Script modes. Controls
-verify successful assertions and explicit assertion failures. Some comparison
-failure formatting still requires missing JSON or Array.prototype.map and other APIs and remains Unsupported;
+verify successful assertions and explicit assertion failures. Some string comparison
+failure formatting still requires missing JSON and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 1770 variants are four raw positives, 1694 positives using the upstream

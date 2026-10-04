@@ -278,14 +278,17 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined),
                 span,
             ),
-            Builtin::ArrayForEach | Builtin::ArrayEvery | Builtin::ArraySome => self
-                .array_callback(
-                    builtin,
-                    this,
-                    arguments.next().unwrap_or(Value::Undefined),
-                    arguments.next().unwrap_or(Value::Undefined),
-                    span,
-                ),
+            Builtin::ArrayForEach
+            | Builtin::ArrayEvery
+            | Builtin::ArraySome
+            | Builtin::ArrayMap
+            | Builtin::ArrayFilter => self.array_callback(
+                builtin,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ArrayAt => {
                 self.array_at(this, arguments.next().unwrap_or(Value::Undefined), span)
             }

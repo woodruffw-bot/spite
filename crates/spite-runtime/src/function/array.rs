@@ -13,6 +13,7 @@ mod range;
 mod reduce;
 mod search;
 mod sort;
+mod species;
 mod string;
 mod symbols;
 
@@ -181,6 +182,8 @@ impl Realm {
             Builtin::ArrayForEach,
             Builtin::ArrayEvery,
             Builtin::ArraySome,
+            Builtin::ArrayMap,
+            Builtin::ArrayFilter,
             Builtin::ArrayFind,
             Builtin::ArrayFindIndex,
             Builtin::ArrayFindLast,
@@ -286,7 +289,7 @@ impl Realm {
             })?;
         } else {
             for (index, value) in arguments.enumerate() {
-                self.create_array_element(&array, index as u32, value, span)?;
+                self.create_array_element(&array, index as u64, value, span)?;
             }
         }
         Ok(Value::Object(array))
@@ -295,7 +298,7 @@ impl Realm {
     fn create_array_element(
         &mut self,
         array: &ObjectHandle,
-        index: u32,
+        index: u64,
         value: Value,
         span: Span,
     ) -> Result<(), Error> {

@@ -96,15 +96,30 @@ fn original_array_comparisons_preserve_same_value_semantics() {
     );
     let outcomes = run("assert.compareArray([1],[2],'deliberate mismatch');");
     assert_eq!(outcomes.len(), 2);
-    // compareArray.format still needs map. That gap must never pass a test.
+    // Numeric array mismatch formatting now executes and throws Test262Error.
     assert!(
         outcomes.iter().all(|outcome| matches!(
             outcome,
-            Outcome::Unsupported {
+            Outcome::Failed {
                 stage: Stage::Runtime,
                 ..
             }
         )),
         "{outcomes:?}"
     );
+    assert_eq!(
+        run(
+            "let caught=false;try{assert.compareArray([1],[2],'deliberate mismatch');}catch(e){caught=true;assert.sameValue(e.constructor,Test262Error);assert.sameValue(e.message,'Actual [1] and expected [2] should have the same contents. deliberate mismatch');}assert(caught);"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262/upstream/harness");
+    let mut realm = spite_runtime::Realm::default();
+    for name in ["assert.js", "sta.js", "compareArray.js"] {
+        realm
+            .eval(&fs::read_to_string(root.join(name)).unwrap())
+            .unwrap();
+    }
+    let message = realm.eval("let message;try{assert.compareArray([1],[2],'deliberate mismatch');}catch(e){message=e.toString();}message").unwrap();
+    insta::assert_snapshot!("array_comparison_mismatch", message);
 }

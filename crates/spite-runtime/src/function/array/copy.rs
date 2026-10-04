@@ -82,7 +82,7 @@ impl Realm {
             let value = self.get_property(&object, &from, span)?;
             // ArrayCreate has validated the u32 length bound. Get turns holes
             // into own undefined elements; inherited setters are bypassed.
-            self.create_array_element(&array, index as u32, value, span)?;
+            self.create_array_element(&array, index, value, span)?;
         }
         Ok(Value::Object(array))
     }
@@ -124,7 +124,7 @@ impl Realm {
             } else {
                 self.get_property(&object, &JsString::from(index.to_string().as_str()), span)?
             };
-            self.create_array_element(&array, index as u32, value, span)?;
+            self.create_array_element(&array, index, value, span)?;
         }
         Ok(Value::Object(array))
     }

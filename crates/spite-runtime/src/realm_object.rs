@@ -710,11 +710,9 @@ fn missing_array_static(key: &JsString) -> bool {
 }
 
 fn missing_array_method(key: &JsString) -> bool {
-    [
-        "concat", "filter", "flat", "flatMap", "map", "slice", "splice",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
+    ["concat", "flat", "flatMap", "slice", "splice"]
+        .iter()
+        .any(|name| key_is(key, name))
 }
 
 fn missing_iterator_method(key: &JsString) -> bool {

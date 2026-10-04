@@ -1,0 +1,5 @@
+---
+source: crates/spite-test262/tests/upstream_harness.rs
+expression: message
+---
+"Test262Error: Actual [1] and expected [2] should have the same contents. deliberate mismatch"

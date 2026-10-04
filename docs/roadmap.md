@@ -167,6 +167,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Array.of with constructor dispatch, ordered data definitions, strict length writes, and eight Test262 files.
 - [x] Add Array toLocaleString using the non-ECMA-402 algorithm and four Test262 files.
 - [x] Add stable Array sort/toSorted with bounded fallible merging, sparse writeback, and 33 Test262 files.
+- [x] Add ArraySpeciesCreate and map/filter with ordered constructors, live sparse visits, and partial definitions.
 - [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
