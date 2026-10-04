@@ -734,3 +734,11 @@ script-pass	7fb302689cde0f23a3d7ef1fb23e042a3d25dbeda9a2b3a06f202c5b5fde1d6b	tes
 script-pass	08f94b89e5cfdb1ed5aff06c719bf2c4674577a62ef1840bc82b5c2596d14e51	test/built-ins/Array/prototype/toSpliced/this-value-boolean.js
 script-pass	cb67916147f30ab652eccb01f97016e022aed54cd2e21c230dd76e9373659a97	test/built-ins/Array/prototype/toSpliced/this-value-nullish.js
 script-pass	95d14609a25c2d2e33288aca03d2be67704efa6a970d9525c496e1d0cadb876a	test/built-ins/Array/prototype/toSpliced/unmodified.js
+script-pass	51b1ffdef137dab789458f0cf85dddff8966ca55039e5d16655f8a389b17b737	test/built-ins/Array/of/construct-this-with-the-number-of-arguments.js
+script-pass	137159c197a9aa3a2ecc1aa38b0c453db12ba36b677a750927c70a7062c1e6ed	test/built-ins/Array/of/creates-a-new-array-from-arguments.js
+script-pass	5b72dd81cdb76ae7ae371e1213b7351fdc90824ce15bc05309468d3811e199b9	test/built-ins/Array/of/does-not-use-prototype-properties.js
+script-pass	d02b716ec45848eeca6a78d72e5f94cf1bacd4463473d9f7a1b979d497759a93	test/built-ins/Array/of/return-a-custom-instance.js
+script-pass	f705aabcc03f167295fae457eb4b7142cd63b6f95988cab82024cc183f9356ea	test/built-ins/Array/of/return-abrupt-from-contructor.js
+script-pass	824a6768c317d10e828c8c936c90dff27a875d099c3862f76b5795e9f3e1a681	test/built-ins/Array/of/return-abrupt-from-data-property.js
+script-pass	f0f822a123bfc4617e3be5d6c6dc08015dd5e734a106010684f157acac5a8a1a	test/built-ins/Array/of/return-abrupt-from-setting-length.js
+script-pass	4aa98facdb379a295f10bb1d57b6d898b46e46854dd8a768a92ced9156d04f2e	test/built-ins/Array/of/sets-length.js

@@ -3,6 +3,7 @@
 mod access;
 mod callback;
 mod copy;
+mod factory;
 mod find;
 mod front;
 mod literal;
@@ -25,12 +26,13 @@ pub(crate) struct ArrayIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
     is_array: ObjectHandle,
+    of: ObjectHandle,
     methods: Vec<ObjectHandle>,
 }
 
 impl ArrayIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.constructor, &self.prototype, &self.is_array]
+        [&self.constructor, &self.prototype, &self.is_array, &self.of]
             .into_iter()
             .chain(self.methods.iter())
     }
@@ -85,6 +87,7 @@ impl Realm {
             objects.create_array(Some(object_prototype), 0, budget)
         })?;
         let is_array = self.new_builtin(function_prototype, Builtin::ArrayIsArray, span)?;
+        let of = self.new_builtin(function_prototype, Builtin::ArrayOf, span)?;
         self.object_work(span, |objects, budget| {
             objects.define(
                 &constructor,
@@ -112,6 +115,7 @@ impl Realm {
             true,
             span,
         )?;
+        self.define_builtin_property(&constructor, "of", Value::Object(of.clone()), true, span)?;
         let mut methods = Vec::new();
         for builtin in [
             Builtin::ArrayJoin,
@@ -154,6 +158,7 @@ impl Realm {
             constructor,
             prototype,
             is_array,
+            of,
             methods,
         })
     }

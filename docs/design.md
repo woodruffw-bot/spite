@@ -379,6 +379,13 @@ other single value becomes an element without coercion. Element creation uses
 own data definitions, bypassing inherited setters. IsArray uses the internal
 identity independently of prototypes; Proxy forwarding will join it when Proxy
 objects exist. All Array intrinsics remain rooted after global properties change.
+Array.of (23.1.2.4) tests its receiver for [[Construct]] without coercion. It
+constructs with one numeric item-count argument or falls back to ArrayCreate.
+It defines own writable/enumerable/configurable data elements, then strictly
+assigns length even for zero items. Custom constructors may return arbitrary
+objects; definitions bypass inherited setters and replace configurable accessors
+or read-only properties. A later rejected definition or length write preserves
+earlier effects. Nested construction and length setters use shared reentry limits.
 Array literals retain each elision as an absent AST element, distinct from an
 explicit undefined expression. AssignmentExpression[+In] parsing separates
 elements from comma expressions and preserves trailing-comma lengths. Evaluation

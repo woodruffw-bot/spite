@@ -712,3 +712,11 @@ test/built-ins/Array/prototype/toSpliced/start-undefined-and-deleteCount-missing
 test/built-ins/Array/prototype/toSpliced/this-value-boolean.js	-	-	-
 test/built-ins/Array/prototype/toSpliced/this-value-nullish.js	-	-	-
 test/built-ins/Array/prototype/toSpliced/unmodified.js	-	-	-
+test/built-ins/Array/of/construct-this-with-the-number-of-arguments.js	-	-	-
+test/built-ins/Array/of/creates-a-new-array-from-arguments.js	-	-	-
+test/built-ins/Array/of/does-not-use-prototype-properties.js	-	-	-
+test/built-ins/Array/of/return-a-custom-instance.js	-	-	-
+test/built-ins/Array/of/return-abrupt-from-contructor.js	-	-	-
+test/built-ins/Array/of/return-abrupt-from-data-property.js	-	-	-
+test/built-ins/Array/of/return-abrupt-from-setting-length.js	-	-	-
+test/built-ins/Array/of/sets-length.js	-	-	-

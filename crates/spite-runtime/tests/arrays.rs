@@ -179,7 +179,6 @@ fn missing_array_intrinsics_remain_explicit_host_gaps() {
     for source in [
         "Array.from",
         "Array.fromAsync",
-        "Array.of",
         "Array().map",
         "Array().toLocaleString",
         "Array().values",

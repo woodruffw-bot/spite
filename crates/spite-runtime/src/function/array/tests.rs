@@ -827,3 +827,47 @@ fn array_copies_bound_dense_output_and_preserve_the_receiver_on_host_abort() {
         Err(Error::Limit { .. })
     ));
 }
+
+#[test]
+fn array_of_constructor_and_length_setter_reentry_are_bounded_on_small_stacks() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for setup in [
+                "function C(){return Array.of.call(C);}",
+                "function C(){}Object.defineProperty(C.prototype,'length',{set:()=>Array.of.call(C)});",
+            ] {
+                let mut realm = Realm::default();
+                realm.eval(setup).unwrap();
+                realm.eval("let flag=0").unwrap();
+                assert!(matches!(
+                    realm.eval("try{Array.of.call(C);}catch{flag=1;}finally{flag=2;}"),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && Array.of(7)[0]===7");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn array_of_bounds_property_work_and_retains_partial_custom_object_definitions() {
+    let mut realm = Realm::default();
+    let constructor = realm.eval("let o={};function C(){return o;}C").unwrap();
+    realm.remaining_steps = 500;
+    assert!(matches!(
+        realm.array_of(
+            constructor,
+            vec![Value::Number(7.0); 1000].into_iter(),
+            Span::new(0, 0)
+        ),
+        Err(Error::Limit { .. })
+    ));
+    check(
+        &mut realm,
+        "o[0]===7 && !Object.hasOwn(o,'999') && !Object.hasOwn(o,'length')",
+    );
+    realm.collect(10_000).unwrap();
+}
