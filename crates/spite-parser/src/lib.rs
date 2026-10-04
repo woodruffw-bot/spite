@@ -492,10 +492,10 @@ impl Parser {
             } else {
                 None
             };
-            if for_header && self.at("in") {
-                return Err(self.unsupported("for-in is not implemented"));
-            }
-            if require_initializer && initializer.is_none() && !(for_header && self.at("of")) {
+            if require_initializer
+                && initializer.is_none()
+                && !(for_header && (self.at("of") || self.at("in")))
+            {
                 return Err(self.error("const requires an initializer"));
             }
             bindings.push(Binding {
@@ -1304,9 +1304,14 @@ fn validate_statement<'a>(
             binding,
             iterable,
             body,
+        }
+        | StatementKind::ForIn {
+            binding,
+            object: iterable,
+            body,
         } => {
             match binding {
-                ForOfBinding::Assignment(target) => {
+                ForBinding::Assignment(target) => {
                     if strict
                         && assignment_name(target).is_some_and(|name| {
                             strict_reserved(name) || matches!(name, "eval" | "arguments")
@@ -1316,8 +1321,26 @@ fn validate_statement<'a>(
                     }
                     validate_expr(target, strict)?;
                 }
-                ForOfBinding::Var(binding) => validate_binding(binding, strict)?,
-                ForOfBinding::Lexical { binding, .. } => {
+                ForBinding::Var(binding) => {
+                    validate_binding(binding, strict)?;
+                    if let Some(initializer) = &binding.initializer {
+                        // Annex B's initialized for-in extension is not enabled. Keep its
+                        // non-strict extension separate from core early errors.
+                        return Err(if strict {
+                            early(
+                                initializer.span,
+                                "for-in var initializer is forbidden in strict mode",
+                            )
+                        } else {
+                            Diagnostic::new(
+                                DiagnosticKind::Unsupported,
+                                initializer.span,
+                                "initialized for-in var declarations require Annex B",
+                            )
+                        });
+                    }
+                }
+                ForBinding::Lexical { binding, .. } => {
                     validate_binding(binding, strict)?;
                     let mut declarations = Vec::new();
                     body.collect_var_declarations(&mut declarations);
@@ -1437,6 +1460,7 @@ fn labels_iteration(mut statement: &Statement) -> bool {
             | StatementKind::DoWhile { .. }
             | StatementKind::For { .. }
             | StatementKind::ForOf { .. }
+            | StatementKind::ForIn { .. }
     )
 }
 

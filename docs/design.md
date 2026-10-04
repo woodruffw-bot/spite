@@ -93,8 +93,21 @@ break, return, nonmatching control transfers, and body/assignment throws use
 IteratorClose after restoring the outer environment. Cleanup errors replace
 non-throw completions; incoming throws override cleanup language errors. Iterator
 step failures propagate without closing. Host failures stop without executing
-cleanup, and host errors during cleanup remain host errors. Destructuring,
-for-in, and async iteration remain separate steps.
+cleanup, and host errors during cleanup remain host errors. Destructuring and
+async iteration remain separate steps.
+
+For-in uses the same reference/var/lexical iteration bindings (14.7.5). Nullish
+inputs produce no iterations; box other primitives without coercion hooks. Walk
+the prototype chain iteratively, snapshotting each object's ordered own keys when
+reached. Ignore Symbols, check own descriptors live, and visit string names only
+once. Deleted own keys do not suppress inherited keys; present non-enumerable keys
+do. No property values or user iterator hooks are read. Assignment targets follow
+key retrieval, and lexical bindings receive fresh iteration environments. RHS
+comma expressions are allowed, unlike for-of. Host quotas remain opt-in. Chains
+that reach an incomplete intrinsic report Unsupported, preserving prior effects;
+String/Function/shared-Iterator prototype enumeration awaits their remaining APIs.
+The Annex B initialized-var extension remains Unsupported in non-strict code and
+is a SyntaxError in strict code; it never changes the core binding algorithm.
 
 Arrow parsing supports non-async arrows with identifier parameters, optional
 defaults, and assignment-expression or block bodies (15.3). A bounded token lookahead refines the

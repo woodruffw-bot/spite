@@ -36,6 +36,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add expression-header for loops and their completion semantics.
 - [x] Add lexical for-loop declarations and per-iteration environments.
 - [x] Parse/evaluate synchronous for-of with assignment/var/lexical bindings, fresh iteration scopes, and iterator closing.
+- [x] Parse/evaluate for-in over complete ordinary/exotic prototype chains with live descriptors and inherited-name suppression.
 - [x] Parse switch clauses and validate their lexical scope and control flow.
 - [x] Evaluate switch selection, fall-through, and completion values.
 - [x] Parse try-finally blocks and validate their scopes and control targets.
@@ -46,7 +47,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute catch binding identifiers for implemented thrown values, including objects.
 - [x] Bind built-in exceptions as JavaScript Error objects in catch clauses.
 - [x] Add Error/NativeError constructors, causes, ErrorData identity, and standard methods.
-- [ ] Add remaining statements, for-in loops, catch patterns, and completions.
+- [ ] Add remaining statements, catch patterns, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.

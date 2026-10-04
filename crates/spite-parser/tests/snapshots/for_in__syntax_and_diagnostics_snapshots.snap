@@ -1,0 +1,270 @@
+---
+source: crates/spite-parser/tests/for_in.rs
+expression: "parse_script(\"for(obj[key()] in source) ; for(var x in (a,b)) x; a:for(let y in object) continue a; for(const z in null) {z;}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: ForIn {
+                binding: Assignment(
+                    Expr {
+                        depth: 3,
+                        kind: Member(
+                            Expr {
+                                depth: 1,
+                                kind: Identifier(
+                                    "obj",
+                                ),
+                                span: Span {
+                                    start: 4,
+                                    end: 7,
+                                },
+                            },
+                            Computed(
+                                Expr {
+                                    depth: 2,
+                                    kind: Call {
+                                        callee: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "key",
+                                            ),
+                                            span: Span {
+                                                start: 8,
+                                                end: 11,
+                                            },
+                                        },
+                                        arguments: [],
+                                    },
+                                    span: Span {
+                                        start: 8,
+                                        end: 13,
+                                    },
+                                },
+                            ),
+                        ),
+                        span: Span {
+                            start: 4,
+                            end: 14,
+                        },
+                    },
+                ),
+                object: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "source",
+                    ),
+                    span: Span {
+                        start: 18,
+                        end: 24,
+                    },
+                },
+                body: Statement {
+                    kind: Empty,
+                    span: Span {
+                        start: 26,
+                        end: 27,
+                    },
+                },
+            },
+            span: Span {
+                start: 0,
+                end: 27,
+            },
+        },
+        Statement {
+            kind: ForIn {
+                binding: Var(
+                    Binding {
+                        name: "x",
+                        span: Span {
+                            start: 36,
+                            end: 37,
+                        },
+                        initializer: None,
+                    },
+                ),
+                object: Expr {
+                    depth: 3,
+                    kind: Parenthesized(
+                        Expr {
+                            depth: 2,
+                            kind: Binary(
+                                Comma,
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "a",
+                                    ),
+                                    span: Span {
+                                        start: 42,
+                                        end: 43,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "b",
+                                    ),
+                                    span: Span {
+                                        start: 44,
+                                        end: 45,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 42,
+                                end: 45,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 41,
+                        end: 46,
+                    },
+                },
+                body: Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 48,
+                                end: 49,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 48,
+                        end: 50,
+                    },
+                },
+            },
+            span: Span {
+                start: 28,
+                end: 50,
+            },
+        },
+        Statement {
+            kind: Labelled {
+                label: Label {
+                    name: "a",
+                    span: Span {
+                        start: 51,
+                        end: 52,
+                    },
+                },
+                body: Statement {
+                    kind: ForIn {
+                        binding: Lexical {
+                            mutable: true,
+                            binding: Binding {
+                                name: "y",
+                                span: Span {
+                                    start: 61,
+                                    end: 62,
+                                },
+                                initializer: None,
+                            },
+                        },
+                        object: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "object",
+                            ),
+                            span: Span {
+                                start: 66,
+                                end: 72,
+                            },
+                        },
+                        body: Statement {
+                            kind: Continue(
+                                Some(
+                                    Label {
+                                        name: "a",
+                                        span: Span {
+                                            start: 83,
+                                            end: 84,
+                                        },
+                                    },
+                                ),
+                            ),
+                            span: Span {
+                                start: 74,
+                                end: 85,
+                            },
+                        },
+                    },
+                    span: Span {
+                        start: 53,
+                        end: 85,
+                    },
+                },
+            },
+            span: Span {
+                start: 51,
+                end: 85,
+            },
+        },
+        Statement {
+            kind: ForIn {
+                binding: Lexical {
+                    mutable: false,
+                    binding: Binding {
+                        name: "z",
+                        span: Span {
+                            start: 96,
+                            end: 97,
+                        },
+                        initializer: None,
+                    },
+                },
+                object: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Null,
+                    ),
+                    span: Span {
+                        start: 101,
+                        end: 105,
+                    },
+                },
+                body: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "z",
+                                        ),
+                                        span: Span {
+                                            start: 108,
+                                            end: 109,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 108,
+                                    end: 110,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 107,
+                        end: 111,
+                    },
+                },
+            },
+            span: Span {
+                start: 86,
+                end: 111,
+            },
+        },
+    ],
+    strict: false,
+}

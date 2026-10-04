@@ -1,4 +1,4 @@
-//! Three-clause and synchronous for-of loop headers (14.7.4–5).
+//! Three-clause, for-in, and synchronous for-of loop headers (14.7.4–5).
 
 use crate::*;
 
@@ -9,8 +9,12 @@ pub(super) enum ForHeader {
         update: Option<Expr>,
     },
     Of {
-        binding: ForOfBinding,
+        binding: ForBinding,
         iterable: Expr,
+    },
+    In {
+        binding: ForBinding,
+        object: Expr,
     },
 }
 
@@ -30,6 +34,11 @@ impl ForHeader {
             Self::Of { binding, iterable } => StatementKind::ForOf {
                 binding,
                 iterable,
+                body,
+            },
+            Self::In { binding, object } => StatementKind::ForIn {
+                binding,
+                object,
                 body,
             },
         }
@@ -54,7 +63,11 @@ impl Parser {
                 && self
                     .tokens
                     .get(self.index + 1)
-                    .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))))
+                    .is_some_and(|t| match &t.kind {
+                        Kind::Word(name) => !reserved(name),
+                        Kind::Punct("[" | "{") => true,
+                        _ => false,
+                    }))
         {
             let (mutable, bindings) = self.lexical_bindings(true)?;
             Some(ForInitializer::Lexical { mutable, bindings })
@@ -63,14 +76,22 @@ impl Parser {
                 self.expression_with_in(1, false)?,
             ))
         };
-        if self.at("in") {
-            return Err(self.unsupported("for-in is not implemented"));
-        }
-        if self.eat("of") {
-            let binding = self.for_of_binding(initializer, &header_start)?;
-            let iterable = self.expression_with_in(2, true)?;
+        let is_of = self.eat("of");
+        if is_of || self.eat("in") {
+            let binding = self.iteration_binding(initializer, &header_start, is_of)?;
+            let expression = self.expression_with_in(if is_of { 2 } else { 1 }, true)?;
             self.expect(")")?;
-            Ok(Box::new(ForHeader::Of { binding, iterable }))
+            Ok(Box::new(if is_of {
+                ForHeader::Of {
+                    binding,
+                    iterable: expression,
+                }
+            } else {
+                ForHeader::In {
+                    binding,
+                    object: expression,
+                }
+            }))
         } else {
             // ECMA-262 12.10.1: ASI never supplies either header semicolon.
             self.expect(";")?;
@@ -94,26 +115,37 @@ impl Parser {
         }
     }
 
-    fn for_of_binding(
+    fn iteration_binding(
         &self,
         initializer: Option<ForInitializer>,
         header_start: &Token,
-    ) -> Result<ForOfBinding, Diagnostic> {
-        match initializer.expect("of follows a parsed header") {
+        is_of: bool,
+    ) -> Result<ForBinding, Diagnostic> {
+        let invalid_target = if is_of {
+            "invalid for-of assignment target"
+        } else {
+            "invalid for-in assignment target"
+        };
+        let invalid_binding = if is_of {
+            "for-of requires one binding without an initializer"
+        } else {
+            "for-in requires one binding without an initializer"
+        };
+        match initializer.expect("in/of follows a parsed header") {
             ForInitializer::Expression(expression) => {
                 if matches!(expression.kind, ExprKind::Array(_) | ExprKind::Object(_)) {
                     return Err(self.unsupported("assignment patterns are not implemented"));
                 }
                 // 14.7.5 grammar excludes leading let and the bare async-of form.
-                if (matches!(&header_start.kind, Kind::Word(name) if name == "let")
-                    && !header_start.escaped)
-                    || (matches!(&expression.kind, ExprKind::Identifier(name) if name == "async")
-                        && !header_start.escaped)
+                if (is_of
+                    && !header_start.escaped
+                    && (matches!(&header_start.kind, Kind::Word(name) if name == "let")
+                        || matches!(&expression.kind, ExprKind::Identifier(name) if name == "async")))
                     || !assignment_target(&expression)
                 {
-                    return Err(early(expression.span, "invalid for-of assignment target"));
+                    return Err(early(expression.span, invalid_target));
                 }
-                Ok(ForOfBinding::Assignment(expression))
+                Ok(ForBinding::Assignment(expression))
             }
             declaration => {
                 let (mutable, mut bindings) = match declaration {
@@ -122,21 +154,17 @@ impl Parser {
                     ForInitializer::Expression(_) => unreachable!(),
                 };
                 if bindings.len() != 1 {
-                    return Err(early(
-                        bindings[1].span,
-                        "for-of requires one binding without an initializer",
-                    ));
+                    return Err(early(bindings[1].span, invalid_binding));
                 }
                 if let Some(initializer) = &bindings[0].initializer {
-                    return Err(early(
-                        initializer.span,
-                        "for-of requires one binding without an initializer",
-                    ));
+                    if is_of || mutable.is_some() {
+                        return Err(early(initializer.span, invalid_binding));
+                    }
                 }
                 let binding = bindings.pop().expect("one binding");
                 Ok(match mutable {
-                    Some(mutable) => ForOfBinding::Lexical { mutable, binding },
-                    None => ForOfBinding::Var(binding),
+                    Some(mutable) => ForBinding::Lexical { mutable, binding },
+                    None => ForBinding::Var(binding),
                 })
             }
         }

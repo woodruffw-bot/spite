@@ -143,8 +143,9 @@ impl Statement {
                 }
                 body.collect_var_declarations(declarations);
             }
-            StatementKind::ForOf { binding, body, .. } => {
-                if let ForOfBinding::Var(binding) = binding {
+            StatementKind::ForOf { binding, body, .. }
+            | StatementKind::ForIn { binding, body, .. } => {
+                if let ForBinding::Var(binding) = binding {
                     declarations.push(binding);
                 }
                 body.collect_var_declarations(declarations);
@@ -255,9 +256,18 @@ pub enum StatementKind {
     /// A synchronous loop over an iterable.
     ForOf {
         /// Assignment target or single declaration initialized per iteration.
-        binding: ForOfBinding,
+        binding: ForBinding,
         /// Iterable expression evaluated once before iterator acquisition.
         iterable: Expr,
+        /// Repeated statement.
+        body: Box<Statement>,
+    },
+    /// A loop over enumerable string keys of an object and its prototypes.
+    ForIn {
+        /// Assignment target or single declaration initialized per iteration.
+        binding: ForBinding,
+        /// Object expression evaluated once before enumeration.
+        object: Expr,
         /// Repeated statement.
         body: Box<Statement>,
     },
@@ -316,9 +326,9 @@ pub enum ForInitializer {
     },
 }
 
-/// The supported binding forms of a synchronous for-of loop (14.7.5).
+/// The supported binding forms of for-in and synchronous for-of loops (14.7.5).
 #[derive(Clone, Debug, PartialEq)]
-pub enum ForOfBinding {
+pub enum ForBinding {
     /// A reference evaluated anew after each iterator value is read.
     Assignment(Expr),
     /// A var binding in the surrounding variable environment, without initializer.

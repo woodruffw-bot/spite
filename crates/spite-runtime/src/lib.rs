@@ -5,6 +5,7 @@
 mod test_support;
 
 mod environment;
+mod for_in;
 mod for_of;
 mod function;
 mod global;
@@ -838,6 +839,11 @@ impl Realm {
                 iterable,
                 body,
             } => self.for_of(binding, iterable, body, labels, statement.span),
+            StatementKind::ForIn {
+                binding,
+                object,
+                body,
+            } => self.for_in(binding, object, body, labels, statement.span),
             StatementKind::If {
                 test,
                 consequent,

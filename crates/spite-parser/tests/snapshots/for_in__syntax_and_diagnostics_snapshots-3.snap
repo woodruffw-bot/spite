@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/for_in.rs
+expression: "parse_script(\"'use strict';for(var x=1 in {}) ;\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 23,
+        end: 24,
+    },
+    message: "for-in var initializer is forbidden in strict mode",
+}

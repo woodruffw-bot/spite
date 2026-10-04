@@ -46,20 +46,24 @@ fn grammar_subexpressions_restore_in_inside_a_for_initializer() {
 }
 
 #[test]
-fn unparenthesized_for_in_and_for_of_headers_remain_unsupported() {
+fn for_in_headers_distinguish_reference_targets_from_initializers() {
     for source in [
         "for (x in o) ;",
         "for (var x in o) ;",
         "for (let x in o) ;",
         "for (const x in o) ;",
+        "for ((x) in o) ;",
+    ] {
+        assert!(parse_script(source).is_ok(), "{source}");
+    }
+    for source in [
         "for (x = 'x' in o) ;",
         "for (let x = 'x' in o) ;",
         "for (true ? false : 'x' in o) ;",
-        "for ((x) in o) ;",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
+            DiagnosticKind::Syntax,
             "{source}"
         );
     }

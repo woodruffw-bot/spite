@@ -81,7 +81,7 @@ fn var_identifiers_and_initializers_obey_strict_mode() {
             "{source}"
         );
     }
-    for source in ["var [x] = y;", "var {x} = y;", "for (var x in y) ;"] {
+    for source in ["var [x] = y;", "var {x} = y;"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

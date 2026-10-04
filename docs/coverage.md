@@ -27,7 +27,7 @@ not an alternative language specification.
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
-| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for and synchronous for-of with assignment/var/lexical bindings, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
@@ -167,6 +167,15 @@ Iterator closing handles break, return, nonmatching continue, and body/assignmen
 throws with the required cleanup precedence. Step failures and host failures do
 not close; cleanup host errors remain host errors. Completion values, labels,
 scope restoration, and captured bindings after collection have regressions.
+
+For-in snapshots own keys separately at each reached prototype, reads descriptors
+live, skips Symbols, and suppresses inherited names even when a present own key
+is non-enumerable. Deleted keys do not suppress inherited names. Values and custom
+iterator hooks are never read. Tests cover mutation, ordered Array indices,
+primitive boxing, nullish skipping, closures, TDZ, and completion values. Reaching
+incomplete String/Function/shared-Iterator prototypes remains Unsupported; fully
+enumerating those chains awaits their missing methods. The non-strict Annex B
+initialized-var extension remains a separate unsupported feature.
 
 Strict ordinary functions execute with preserved receivers, shared lexical captures,
 hoisting, defaults, and return completions. Unmapped arguments expose original
@@ -434,7 +443,7 @@ and reviewed upstream Symbol/iterator fixtures.
 
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
-expressions, tagged templates, for-in and for-await-of, catch patterns, generators,
+expressions, tagged templates, for-await-of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral

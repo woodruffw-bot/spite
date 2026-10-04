@@ -76,14 +76,13 @@ fn invalid_targets_initializers_scopes_and_controls_are_syntax_errors() {
 }
 
 #[test]
-fn pending_patterns_async_iteration_and_for_in_stay_unsupported() {
+fn pending_patterns_and_async_iteration_stay_unsupported() {
     for source in [
         "for([x] of []) ;",
         "for({x} of []) ;",
         "for(let [x] of []) ;",
         "for(const {x} of []) ;",
         "for await(x of []) ;",
-        "for(var x in obj) ;",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
