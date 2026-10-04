@@ -645,10 +645,8 @@ impl Realm {
             let Some(intrinsics) = &self.intrinsics else {
                 return false;
             };
-            return (object == &intrinsics.string.prototype
-                && symbol == &WellKnownSymbol::Iterator.symbol())
-                || (object == &intrinsics.iterator.prototype
-                    && symbol == &WellKnownSymbol::ToStringTag.symbol());
+            return object == &intrinsics.iterator.prototype
+                && symbol == &WellKnownSymbol::ToStringTag.symbol();
         }
         let key = key.as_string().expect("string key");
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {

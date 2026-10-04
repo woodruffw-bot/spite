@@ -19,7 +19,8 @@ mod symbol_tests;
 use arguments::ParameterMap;
 mod descriptor;
 mod iterator;
-pub(crate) use iterator::{ArrayIterationKind, ArrayIterator};
+use iterator::IteratorState;
+pub(crate) use iterator::{ArrayIterationKind, ArrayIterator, StringIterator};
 mod entry;
 mod store;
 pub use descriptor::{
@@ -68,7 +69,7 @@ pub struct OrdinaryObject {
     arguments: bool,
     parameter_map: Option<ParameterMap>,
     array: bool,
-    array_iterator: Option<ArrayIterator>,
+    iterator: Option<IteratorState>,
 }
 
 impl OrdinaryObject {
@@ -89,7 +90,7 @@ impl OrdinaryObject {
             arguments: false,
             parameter_map: None,
             array: false,
-            array_iterator: None,
+            iterator: None,
         }
     }
 
@@ -119,7 +120,17 @@ impl OrdinaryObject {
     }
 
     pub(crate) fn array_iterator(&self) -> Option<&ArrayIterator> {
-        self.array_iterator.as_ref()
+        match &self.iterator {
+            Some(IteratorState::Array(state)) => Some(state),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn string_iterator(&self) -> Option<&StringIterator> {
+        match &self.iterator {
+            Some(IteratorState::String(state)) => Some(state),
+            _ => None,
+        }
     }
 
     pub(crate) fn is_arguments(&self) -> bool {
@@ -269,11 +280,10 @@ impl Trace for OrdinaryObject {
         };
         std::iter::once(self.prototype.as_ref())
             .chain(self.primitive_data.iter().map(|_| None))
-            .chain(
-                self.array_iterator
-                    .iter()
-                    .map(|iterator| iterator.array.as_ref()),
-            )
+            .chain(self.iterator.iter().map(|iterator| match iterator {
+                IteratorState::Array(state) => state.array.as_ref(),
+                IteratorState::String(_) => None,
+            }))
             .chain(self.error_data.then_some(None))
             .chain(std::iter::once(capture))
             .chain(self.parameter_map.iter().flat_map(|map| {

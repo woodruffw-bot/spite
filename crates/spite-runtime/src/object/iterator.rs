@@ -1,7 +1,14 @@
-//! Array iterator internal slots and source retention (23.1.5).
+//! Built-in iterator state and source retention (22.1.3.36, 23.1.5).
 
-use super::{Error, Objects};
+use super::{Budget, Error, Objects};
+use spite_core::JsString;
 use spite_heap::Handle;
+
+#[derive(Debug)]
+pub(super) enum IteratorState {
+    Array(ArrayIterator),
+    String(StringIterator),
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ArrayIterationKind {
@@ -17,7 +24,64 @@ pub(crate) struct ArrayIterator {
     pub kind: ArrayIterationKind,
 }
 
+#[derive(Debug)]
+pub(crate) struct StringIterator {
+    string: Option<JsString>,
+    next_index: usize,
+}
+
 impl Objects {
+    pub(crate) fn create_string_iterator(
+        &mut self,
+        prototype: &Handle,
+        string: JsString,
+    ) -> Result<Handle, Error> {
+        let iterator = self.create(Some(prototype))?;
+        self.object_mut(&iterator)?.iterator = Some(IteratorState::String(StringIterator {
+            string: Some(string),
+            next_index: 0,
+        }));
+        Ok(iterator)
+    }
+
+    pub(crate) fn next_string_iterator(
+        &mut self,
+        iterator: &Handle,
+        budget: &mut Budget,
+    ) -> Result<Option<JsString>, Error> {
+        // The String iterator closure performs no user calls between resumes.
+        // Its suspended position and completed state suffice; general-purpose
+        // Generator objects will require a separate execution-state machine.
+        budget.charge(2)?;
+        let Some(IteratorState::String(state)) = &mut self.object_mut(iterator)?.iterator else {
+            return Err(Error::WrongKind);
+        };
+        let Some(string) = &state.string else {
+            return Ok(None);
+        };
+        if state.next_index >= string.len() {
+            state.string = None;
+            return Ok(None);
+        }
+        let index = state.next_index;
+        let units = string.code_units();
+        // CodePointAt (11.1.4): pair only a leading and immediately following
+        // trailing surrogate. Unpaired surrogates remain individual strings.
+        let count = if (0xd800..=0xdbff).contains(&units[index])
+            && units
+                .get(index + 1)
+                .is_some_and(|unit| (0xdc00..=0xdfff).contains(unit))
+        {
+            2
+        } else {
+            1
+        };
+        budget.charge(count)?;
+        let result = JsString::from_code_units(units[index..index + count].to_vec());
+        state.next_index += count;
+        Ok(Some(result))
+    }
+
     pub(crate) fn create_array_iterator(
         &mut self,
         prototype: &Handle,
@@ -26,11 +90,11 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(array)?;
         let iterator = self.create(Some(prototype))?;
-        self.object_mut(&iterator)?.array_iterator = Some(ArrayIterator {
+        self.object_mut(&iterator)?.iterator = Some(IteratorState::Array(ArrayIterator {
             array: Some(array.clone()),
             next_index: 0,
             kind,
-        });
+        }));
         Ok(iterator)
     }
 
@@ -39,20 +103,18 @@ impl Objects {
         iterator: &Handle,
         index: u64,
     ) -> Result<(), Error> {
-        self.object_mut(iterator)?
-            .array_iterator
-            .as_mut()
-            .ok_or(Error::WrongKind)?
-            .next_index = index;
+        let Some(IteratorState::Array(state)) = &mut self.object_mut(iterator)?.iterator else {
+            return Err(Error::WrongKind);
+        };
+        state.next_index = index;
         Ok(())
     }
 
     pub(crate) fn finish_array_iterator(&mut self, iterator: &Handle) -> Result<(), Error> {
-        self.object_mut(iterator)?
-            .array_iterator
-            .as_mut()
-            .ok_or(Error::WrongKind)?
-            .array = None;
+        let Some(IteratorState::Array(state)) = &mut self.object_mut(iterator)?.iterator else {
+            return Err(Error::WrongKind);
+        };
+        state.array = None;
         Ok(())
     }
 }
@@ -60,6 +122,55 @@ impl Objects {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn string_iterator_steps_copy_only_one_code_point_and_release_completed_input() {
+        let mut objects = Objects::new(3, 8);
+        let prototype = objects.create(None).unwrap();
+        let mut units = vec![0xd800, 0xdc00, 0xd800, 0, 0xdc00];
+        units.extend(std::iter::repeat_n(65, 10_000));
+        let iterator = objects
+            .create_string_iterator(&prototype, JsString::from_code_units(units))
+            .unwrap();
+        assert!(matches!(
+            objects.next_string_iterator(&iterator, &mut Budget::new(2)),
+            Err(Error::WorkLimit)
+        ));
+        for expected in [&[0xd800, 0xdc00][..], &[0xd800], &[0], &[0xdc00]] {
+            let next = objects
+                .next_string_iterator(&iterator, &mut Budget::new(4))
+                .unwrap()
+                .unwrap();
+            assert_eq!(next.code_units(), expected);
+        }
+        for _ in 0..10_000 {
+            assert_eq!(
+                objects
+                    .next_string_iterator(&iterator, &mut Budget::new(3))
+                    .unwrap(),
+                Some(JsString::from("A"))
+            );
+        }
+        for _ in 0..2 {
+            assert_eq!(
+                objects.next_string_iterator(&iterator, &mut Budget::new(2)),
+                Ok(None)
+            );
+            assert!(
+                objects
+                    .inspect(&iterator)
+                    .unwrap()
+                    .string_iterator()
+                    .unwrap()
+                    .string
+                    .is_none()
+            );
+        }
+        assert!(matches!(
+            objects.next_string_iterator(&prototype, &mut Budget::new(4)),
+            Err(Error::WrongKind)
+        ));
+    }
 
     #[test]
     fn iterator_slots_retain_source_until_exhaustion_and_are_not_inherited() {

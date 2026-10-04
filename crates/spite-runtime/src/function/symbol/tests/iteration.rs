@@ -99,16 +99,12 @@ fn iterator_indices_cover_the_entire_array_like_length_range() {
 }
 
 #[test]
-fn entries_ignore_species_and_remaining_hooks_stay_explicit() {
+fn entries_ignore_species() {
     let mut realm = realm_with_symbols();
     check(
         &mut realm,
         "let S=s.constructor;Object.defineProperty(Array,S.species,{get:()=>{throw 7;}});let i=[8].entries();i.next().value[1]===8",
     );
-    assert!(matches!(
-        realm.eval("''[S.iterator]"),
-        Err(Error::Unsupported { .. })
-    ));
 }
 
 #[test]

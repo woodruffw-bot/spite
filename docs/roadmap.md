@@ -174,7 +174,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add bounded Symbol.for/keyFor interning shared across realms and host threads.
 - [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
 - [x] Add Array keys/values/entries iterators, live/reentrant state tests, source tracing, and nine Test262 files.
-- [ ] Add String iteration and remaining shared Iterator prototype properties.
+- [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
+- [ ] Add remaining shared Iterator prototype properties.
 - [ ] Expose the Symbol global after completing remaining intrinsic symbol properties.
 - [ ] Complete Array species-dependent methods and iterator integration.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

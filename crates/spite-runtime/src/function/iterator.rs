@@ -8,8 +8,10 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 pub(crate) struct IteratorIntrinsics {
     pub prototype: ObjectHandle,
     pub array_prototype: ObjectHandle,
+    pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
     array_next: ObjectHandle,
+    string_next: ObjectHandle,
 }
 
 impl IteratorIntrinsics {
@@ -17,8 +19,10 @@ impl IteratorIntrinsics {
         [
             &self.prototype,
             &self.array_prototype,
+            &self.string_prototype,
             &self.identity,
             &self.array_next,
+            &self.string_next,
         ]
         .into_iter()
     }
@@ -35,8 +39,19 @@ impl Realm {
             self.object_work(span, |objects, _| objects.create(Some(object_prototype)))?;
         let array_prototype =
             self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let string_prototype =
+            self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let identity = self.new_builtin(function_prototype, Builtin::IteratorIdentity, span)?;
         let array_next = self.new_builtin(function_prototype, Builtin::ArrayIteratorNext, span)?;
+        let string_next =
+            self.new_builtin(function_prototype, Builtin::StringIteratorNext, span)?;
+        self.define_builtin_property(
+            &string_prototype,
+            "next",
+            Value::Object(string_next.clone()),
+            true,
+            span,
+        )?;
         self.define_builtin_property(
             &array_prototype,
             "next",
@@ -51,6 +66,17 @@ impl Realm {
                 DataDescriptor {
                     value: Some(Value::Object(identity.clone())),
                     writable: Some(true),
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )?;
+            objects.define(
+                &string_prototype,
+                WellKnownSymbol::ToStringTag.symbol(),
+                DataDescriptor {
+                    value: Some(Value::String(JsString::from("String Iterator"))),
+                    writable: Some(false),
                     enumerable: Some(false),
                     configurable: Some(true),
                 },
@@ -72,8 +98,10 @@ impl Realm {
         Ok(IteratorIntrinsics {
             prototype,
             array_prototype,
+            string_prototype,
             identity,
             array_next,
+            string_next,
         })
     }
 

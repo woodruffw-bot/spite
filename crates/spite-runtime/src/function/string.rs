@@ -2,9 +2,10 @@
 
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
-use spite_core::{JsString, Span};
+use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod character;
+mod iteration;
 mod raw;
 mod repeat;
 mod search;
@@ -119,6 +120,21 @@ impl Realm {
             )?;
             methods.push(method);
         }
+        let iterator = self.new_builtin(function_prototype, Builtin::StringIterator, span)?;
+        self.object_work(span, |objects, budget| {
+            objects.define(
+                &prototype,
+                WellKnownSymbol::Iterator.symbol(),
+                DataDescriptor {
+                    value: Some(Value::Object(iterator.clone())),
+                    writable: Some(true),
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )
+        })?;
+        methods.push(iterator);
         Ok(StringIntrinsics {
             constructor,
             prototype,

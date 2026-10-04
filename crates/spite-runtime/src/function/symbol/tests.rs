@@ -11,6 +11,7 @@ mod iteration;
 mod keys;
 mod regexp;
 mod registry;
+mod string_iteration;
 mod tag;
 mod wrapper;
 

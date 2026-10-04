@@ -58,6 +58,8 @@ impl Realm {
                 self.array_iterator(this, kind, span)
             }
             Builtin::ArrayIteratorNext => self.array_iterator_next(this, span),
+            Builtin::StringIterator => self.string_iterator(this, span),
+            Builtin::StringIteratorNext => self.string_iterator_next(this, span),
             Builtin::Object => {
                 self.object_constructor(None, arguments.next().unwrap_or(Value::Undefined), span)
             }

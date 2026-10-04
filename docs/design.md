@@ -501,6 +501,20 @@ and the same intrinsic values callable on mapped/unmapped arguments. The shared
 Iterator prototype initially supplies its iterator identity method; its remaining
 standard properties must be marked Unsupported until their implementation arrives.
 
+String iteration converts its receiver once, synchronously at creation, after
+RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
+it does not retain the original receiver. A branded String iterator stores the
+captured string and suspended code-unit position. Each next yields the one- or
+two-unit substring selected by CodePointAt (11.1.4), preserving lone surrogates
+and advancing before returning a fresh IteratorResult. Exhaustion releases the
+string and future calls return fresh completed results. Each step reads/copies
+at most two units instead of cloning the entire captured string. This specializes
+the closure-based GeneratorResume algorithm (22.1.5.1.1, 27.5.3.3): the String
+closure never calls user code between resumes, so no executing state can be
+observed. General generators will require their own execution-state machine.
+The String iterator prototype inherits the shared Iterator prototype, with its
+own next function and non-writable/configurable String Iterator tag.
+
 Array.of (23.1.2.4) tests its receiver for [[Construct]] without coercion. It
 constructs with one numeric item-count argument or falls back to ArrayCreate.
 It defines own writable/enumerable/configurable data elements, then strictly

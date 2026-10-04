@@ -326,8 +326,14 @@ create intrinsic two-element arrays. Length errors retry the current index,
 element errors retain the increment, and exhaustion permanently releases the
 source. Reentrant getters preserve these ordered state changes. Array and
 arguments Symbol.iterator properties alias the original values callable.
-Iterator prototypes supply the identity method and Array Iterator tag; the
-shared Iterator constructor, tag accessor, and helpers remain Unsupported.
+String iteration captures ToString's result synchronously at creation, then
+yields complete surrogate pairs or individual unpaired UTF-16 units. Each next
+copies at most two units, checks the String iterator brand, and creates a fresh
+result. Completion releases the captured text. The original receiver is not
+retained. Iterator prototypes supply the identity method and Array/String
+Iterator tags; the shared Iterator constructor, tag accessor, and helpers remain
+Unsupported. Symbol-keyed access is tested through native injection until the
+Symbol global is exposed.
 
 The Symbol global, BigInt wrapper APIs, remaining String methods,
 remaining Array prototype methods, derived construction, classes, destructuring, regular
@@ -348,7 +354,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry retains at most 10,000 identities and 1,048,576
 total key code units; it never evicts entries. Work/output/capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 145 retained entries under a separate fixed work
+Realm initialization creates 148 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
