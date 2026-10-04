@@ -28,3 +28,6 @@ test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bin
 test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-cover-no-eval.js	595	599	invalid binding in strict mode
 test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-strict-futurereservedword.js	522	529	invalid binding in strict mode
 test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-futurereservedword.js	485	489	invalid arrow binding identifier
+test/language/expressions/arrow-function/dflt-params-duplicates.js	1749	1750	duplicate lexical binding
+test/language/expressions/arrow-function/syntax/early-errors/use-strict-with-non-simple-param.js	573	603	use strict directive with non-simple parameters
+test/language/expressions/arrow-function/param-dflt-yield-id-strict.js	524	529	reserved identifier in strict mode

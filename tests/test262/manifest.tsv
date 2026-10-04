@@ -47,3 +47,6 @@ parse-syntax-error	55d722b9ef41ed9d253ffbe92a30f630d93ee76efaeb9112841bf7bc45747
 parse-syntax-error	4ceb10909b7dc70a67a42eb8b3db51ead9619afbfcae00842f2932d2b37a4b01	test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-cover-no-eval.js
 parse-syntax-error	814c4605ca9f24430b3e341ea566f816b9c21a6d1d277bdea983d7f51e4ecf20	test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-strict-futurereservedword.js
 parse-syntax-error	7b00697fe83c14b6d73f3cfbdbd2a3262f232f27235bfce68fcfa98edf0cd25c	test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-futurereservedword.js
+parse-syntax-error	4fa1625277fb71b514f03f0197970d8eb7450c13ffd79184a6139bf4b87403ff	test/language/expressions/arrow-function/dflt-params-duplicates.js
+parse-syntax-error	866a43c4099e9ca4f38170340f7eb0079770d80d6cac0283a0113d661f90bc13	test/language/expressions/arrow-function/syntax/early-errors/use-strict-with-non-simple-param.js
+parse-syntax-error	ba5eb3087e3bf05bb784aafbd6e009a5e4cde4244e612ea667cc913ea8122f27	test/language/expressions/arrow-function/param-dflt-yield-id-strict.js
