@@ -1,10 +1,13 @@
 //! Shared source locations, diagnostics, strings, symbols, and property keys.
 
+mod case;
+mod case_data;
 mod symbol;
 mod unicode;
 mod unicode_data;
 mod well_known;
 
+pub use case::{is_unicode_case_ignorable, is_unicode_cased, unicode_case_mapping};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef};
 pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;

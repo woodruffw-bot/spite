@@ -729,19 +729,9 @@ fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {
 }
 
 fn missing_string_method(key: &JsString) -> bool {
-    [
-        "localeCompare",
-        "match",
-        "matchAll",
-        "normalize",
-        "search",
-        "toLocaleLowerCase",
-        "toLocaleUpperCase",
-        "toLowerCase",
-        "toUpperCase",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
+    ["localeCompare", "match", "matchAll", "normalize", "search"]
+        .iter()
+        .any(|name| key_is(key, name))
 }
 
 // 10.4.3.5: only canonical, non-negative integral Number names below the string

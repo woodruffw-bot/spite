@@ -1162,6 +1162,18 @@ objects from Number.isFinite and Number.isNaN, which never coerce their argument
 The global functions ignore their receiver and additional arguments after normal
 argument evaluation. Their intrinsic roots survive deletion of public bindings.
 
+String toLowerCase/toUpperCase use the full Unicode 18 default case mappings
+(22.1.3.29–31, 35). Generate reproducible, digest-pinned tables from UnicodeData,
+SpecialCasing, and DerivedCoreProperties; Rust toolchain Unicode versions must not
+change results. Preserve lone UTF-16 surrogates. Apply Final_Sigma to original input,
+skipping Case_Ignorable points before considering Cased, including overlapping
+properties. Do not normalize Unicode. Context scans are iterative and use constant
+auxiliary space; checked output growth accounts for multi-point expansions before
+fallible reservation. The host's fixed locale-neutral default means
+toLocaleLowerCase/toLocaleUpperCase use the same mappings and ignore ECMA-402's
+reserved arguments. All four methods remain generic with once-only string-hint
+conversion, zero length, and separate retained function identities.
+
 URI encoding (19.2.6.3–5) first performs string-hint ToString. Traverse UTF-16
 iteratively, reject every unpaired surrogate with URIError, and encode valid code
 points into uppercase percent-encoded UTF-8 octets. Both encoders preserve ASCII

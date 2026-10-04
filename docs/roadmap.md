@@ -112,6 +112,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Unicode well-formedness checks and replacement of unpaired String surrogates.
 - [x] Add generic String concatenation and UTF-16 slice/substring methods.
 - [x] Add String trim/trimStart/trimEnd with exact ECMAScript whitespace membership.
+- [x] Add full Unicode String case conversion with original-text final-sigma contexts and fixed locale-neutral fallback methods.
 - [x] Add String repeat/padStart/padEnd with ordered conversions and bounded output.
 - [x] Add bounded UTF-16 String indexOf/lastIndexOf searches.
 - [x] Add String includes/startsWith/endsWith for currently exposed values.

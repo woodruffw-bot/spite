@@ -533,6 +533,21 @@ impl Realm {
                 self.string_raw(template, arguments, span)
             }
             Builtin::StringConcat => self.string_concat(this, arguments, span),
+            Builtin::StringToLowerCase
+            | Builtin::StringToUpperCase
+            | Builtin::StringToLocaleLowerCase
+            | Builtin::StringToLocaleUpperCase => {
+                // Without ECMA-402, the host locale is fixed to Unicode's
+                // locale-neutral default. Reserved locale arguments are ignored.
+                self.string_case(
+                    this,
+                    matches!(
+                        builtin,
+                        Builtin::StringToUpperCase | Builtin::StringToLocaleUpperCase
+                    ),
+                    span,
+                )
+            }
             Builtin::StringSplit => self.string_split(
                 this,
                 arguments.next().unwrap_or(Value::Undefined),

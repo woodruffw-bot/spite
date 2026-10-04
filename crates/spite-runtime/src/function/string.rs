@@ -4,6 +4,7 @@ use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod case;
 mod character;
 mod iteration;
 mod raw;
@@ -89,6 +90,10 @@ impl Realm {
             Builtin::StringCodePointAt,
             Builtin::StringIsWellFormed,
             Builtin::StringToWellFormed,
+            Builtin::StringToLowerCase,
+            Builtin::StringToUpperCase,
+            Builtin::StringToLocaleLowerCase,
+            Builtin::StringToLocaleUpperCase,
             Builtin::StringConcat,
             Builtin::StringSlice,
             Builtin::StringSubstring,

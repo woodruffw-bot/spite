@@ -27,7 +27,7 @@ pub fn is_identifier_part(c: char) -> bool {
     }
 }
 
-fn contains(ranges: &[(u32, u32)], cp: u32) -> bool {
+pub(crate) fn contains(ranges: &[(u32, u32)], cp: u32) -> bool {
     ranges
         .binary_search_by(|&(start, end)| {
             if cp < start {

@@ -743,6 +743,15 @@ sequences, plus signs and non-recursive percent handling, normalization avoidanc
 once-only coercion and abrupt results, intrinsic URIError identity, metadata,
 non-construction, deletion/collection, large default inputs, and opt-in host aborts.
 
+String case conversion uses full pinned Unicode 18 mappings, including expansions
+and context-sensitive final sigma against original text. Lone UTF-16 surrogates
+remain unchanged and Unicode normalization is not performed. Locale casing uses
+the documented fixed locale-neutral host fallback and ignores reserved arguments.
+Regressions cover combining and overlapping Cased/Case_Ignorable properties,
+supplementary mappings, Unicode 18 additions, generic coercion/abrupt results,
+metadata, intrinsic retention, large default output, and opted-in host failures.
+Generated tables are checked against digest-pinned UCD sources independently of Rust.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, for-await-of, catch patterns, generators,
