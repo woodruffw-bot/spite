@@ -1,5 +1,6 @@
 //! Parsing and early-error validation for the implemented ECMAScript subset.
 
+mod arrow;
 pub mod ast;
 mod lexer;
 
@@ -36,6 +37,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
         }
     }
     let mut parser = Parser {
+        source: std::rc::Rc::from(source),
         tokens,
         index: 0,
         depth: 0,
@@ -86,6 +88,7 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
 }
 
 struct Parser {
+    source: std::rc::Rc<str>,
     tokens: Vec<Token>,
     index: usize,
     depth: usize,
@@ -522,6 +525,7 @@ impl Parser {
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
+            ExprKind::Arrow { body, .. } => body.depth,
             ExprKind::Binary(_, a, b)
             | ExprKind::Assign(a, b)
             | ExprKind::CompoundAssign(_, a, b) => a.depth.max(b.depth),
@@ -577,7 +581,14 @@ impl Parser {
         result
     }
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
-        let mut left = self.prefix()?;
+        let mut left = if minimum <= 2 {
+            match self.arrow_expression()? {
+                Some(arrow) => arrow,
+                None => self.prefix()?,
+            }
+        } else {
+            self.prefix()?
+        };
         loop {
             if minimum <= 17 && self.at("(") {
                 if !member_base(&left) {
@@ -1396,6 +1407,13 @@ fn labels_iteration(mut statement: &Statement) -> bool {
 
 fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
     match &expr.kind {
+        ExprKind::Arrow {
+            parameters, body, ..
+        } => {
+            validate_binding_names(parameters, strict, &mut BTreeSet::new())?;
+            validate_expr(body, strict)?;
+        }
+
         ExprKind::Object(properties) => {
             for property in properties {
                 if let PropertyName::Computed(key) = &property.name {

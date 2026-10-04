@@ -105,6 +105,11 @@ selection, standard length/name metadata, and iterative invocation. Captured
 object edges survive collection and unreachable cycles are reclaimed. Re-entrant
 getter/coercion calls have a host nesting limit of 64; tail transfers are iterative.
 
+Simple expression-bodied arrows now parse with identifier parameters, uniqueness
+and strict early errors, source retention, and bounded nesting. Creating an arrow
+at runtime remains Unsupported until closure execution is integrated. Default/rest
+parameters, patterns, async arrows, and block bodies remain syntax gaps.
+
 Symbols, primitive wrapper constructors,
 arrays, user functions, closures, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,

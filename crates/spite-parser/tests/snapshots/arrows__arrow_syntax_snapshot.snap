@@ -1,0 +1,270 @@
+---
+source: crates/spite-parser/tests/arrows.rs
+expression: "parse_script(\"let f = (x, y,) => x + y; let g = x => y => ({x, y}); f(1, 2);\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    Binding {
+                        name: "f",
+                        span: Span {
+                            start: 4,
+                            end: 5,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 3,
+                                kind: Arrow {
+                                    parameters: [
+                                        Binding {
+                                            name: "x",
+                                            span: Span {
+                                                start: 9,
+                                                end: 10,
+                                            },
+                                            initializer: None,
+                                        },
+                                        Binding {
+                                            name: "y",
+                                            span: Span {
+                                                start: 12,
+                                                end: 13,
+                                            },
+                                            initializer: None,
+                                        },
+                                    ],
+                                    body: Expr {
+                                        depth: 2,
+                                        kind: Binary(
+                                            Add,
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 19,
+                                                    end: 20,
+                                                },
+                                            },
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "y",
+                                                ),
+                                                span: Span {
+                                                    start: 23,
+                                                    end: 24,
+                                                },
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 19,
+                                            end: 24,
+                                        },
+                                    },
+                                    source: FunctionSource(
+                                        "(x, y,) => x + y",
+                                    ),
+                                },
+                                span: Span {
+                                    start: 8,
+                                    end: 24,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 25,
+            },
+        },
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    Binding {
+                        name: "g",
+                        span: Span {
+                            start: 30,
+                            end: 31,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 5,
+                                kind: Arrow {
+                                    parameters: [
+                                        Binding {
+                                            name: "x",
+                                            span: Span {
+                                                start: 34,
+                                                end: 35,
+                                            },
+                                            initializer: None,
+                                        },
+                                    ],
+                                    body: Expr {
+                                        depth: 4,
+                                        kind: Arrow {
+                                            parameters: [
+                                                Binding {
+                                                    name: "y",
+                                                    span: Span {
+                                                        start: 39,
+                                                        end: 40,
+                                                    },
+                                                    initializer: None,
+                                                },
+                                            ],
+                                            body: Expr {
+                                                depth: 3,
+                                                kind: Parenthesized(
+                                                    Expr {
+                                                        depth: 2,
+                                                        kind: Object(
+                                                            [
+                                                                ObjectProperty {
+                                                                    name: Literal(
+                                                                        String(
+                                                                            "x",
+                                                                        ),
+                                                                    ),
+                                                                    value: Expr {
+                                                                        depth: 1,
+                                                                        kind: Identifier(
+                                                                            "x",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 46,
+                                                                            end: 47,
+                                                                        },
+                                                                    },
+                                                                    kind: Shorthand,
+                                                                    span: Span {
+                                                                        start: 46,
+                                                                        end: 47,
+                                                                    },
+                                                                },
+                                                                ObjectProperty {
+                                                                    name: Literal(
+                                                                        String(
+                                                                            "y",
+                                                                        ),
+                                                                    ),
+                                                                    value: Expr {
+                                                                        depth: 1,
+                                                                        kind: Identifier(
+                                                                            "y",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 49,
+                                                                            end: 50,
+                                                                        },
+                                                                    },
+                                                                    kind: Shorthand,
+                                                                    span: Span {
+                                                                        start: 49,
+                                                                        end: 50,
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                        span: Span {
+                                                            start: 45,
+                                                            end: 51,
+                                                        },
+                                                    },
+                                                ),
+                                                span: Span {
+                                                    start: 44,
+                                                    end: 52,
+                                                },
+                                            },
+                                            source: FunctionSource(
+                                                "y => ({x, y})",
+                                            ),
+                                        },
+                                        span: Span {
+                                            start: 39,
+                                            end: 52,
+                                        },
+                                    },
+                                    source: FunctionSource(
+                                        "x => y => ({x, y})",
+                                    ),
+                                },
+                                span: Span {
+                                    start: 34,
+                                    end: 52,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 26,
+                end: 53,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 2,
+                    kind: Call {
+                        callee: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "f",
+                            ),
+                            span: Span {
+                                start: 54,
+                                end: 55,
+                            },
+                        },
+                        arguments: [
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        1.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 56,
+                                    end: 57,
+                                },
+                            },
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        2.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 59,
+                                    end: 60,
+                                },
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 54,
+                        end: 61,
+                    },
+                },
+            ),
+            span: Span {
+                start: 54,
+                end: 62,
+            },
+        },
+    ],
+    strict: false,
+}

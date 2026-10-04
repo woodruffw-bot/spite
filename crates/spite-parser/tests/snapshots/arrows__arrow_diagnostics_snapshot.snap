@@ -1,0 +1,46 @@
+---
+source: crates/spite-parser/tests/arrows.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 3,
+            end: 4,
+        },
+        message: "duplicate lexical binding",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 2,
+            end: 4,
+        },
+        message: "line terminator before arrow",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 14,
+            end: 18,
+        },
+        message: "invalid binding in strict mode",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 2,
+            end: 3,
+        },
+        message: "default parameters are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 3,
+            end: 4,
+        },
+        message: "arrow block bodies are not implemented",
+    },
+]

@@ -1057,6 +1057,13 @@ impl Realm {
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
+            ExprKind::Arrow { .. } => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "arrow function execution is not implemented",
+                ));
+            }
+
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
             ExprKind::Call { callee, arguments } => {
                 let (function, this) = if reference_expression(callee) {

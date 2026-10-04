@@ -81,6 +81,15 @@ Parser depth and evaluator work limits report host resource errors, not JavaScri
 exceptions. Syntax or semantics that are not implemented must be recorded as gaps.
 Never use unsupported syntax rejection as evidence of conformance to negative tests.
 
+Arrow parsing begins with non-async arrows, simple identifier parameters, and
+assignment-expression bodies (15.3). A bounded token lookahead refines the
+parenthesized parameter cover without changing ordinary parenthesized expressions.
+Parameters are unique in both modes, strict binding rules are inherited, and no
+line terminator may precede the arrow. The body inherits the In grammar parameter.
+Defaults, rest/pattern parameters, async arrows, and block bodies remain explicit
+gaps. Function source ranges share an owned source allocation and preserve exact
+text for Function.prototype.toString. Runtime arrow instantiation is the next step.
+
 ## Runtime
 
 Start with a tree-walking evaluator. Keep evaluation order explicit. Implement

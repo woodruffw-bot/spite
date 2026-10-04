@@ -1,6 +1,7 @@
 //! The supported syntax tree.
 
 use spite_core::{JsString, Span};
+use std::{fmt, rc::Rc};
 
 /// A parsed and validated Script. Constructed only by the parser.
 #[derive(Clone, Debug, PartialEq)]
@@ -249,6 +250,31 @@ pub struct Expr {
     pub span: Span,
 }
 
+/// Exact function source text retained for Function.prototype.toString.
+///
+/// Multiple functions share the original source allocation. The selected range
+/// includes function parameters/body but excludes surrounding parentheses.
+#[derive(Clone, PartialEq)]
+pub struct FunctionSource {
+    pub(crate) text: Rc<str>,
+    pub(crate) span: Span,
+}
+
+impl FunctionSource {
+    /// Returns the original UTF-8 source for this function.
+    pub fn as_str(&self) -> &str {
+        &self.text[self.span.start..self.span.end]
+    }
+}
+
+impl fmt::Debug for FunctionSource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("FunctionSource")
+            .field(&self.as_str())
+            .finish()
+    }
+}
+
 /// Supported expression forms.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExprKind {
@@ -275,6 +301,15 @@ pub enum ExprKind {
         callee: Box<Expr>,
         /// Argument expressions in source order.
         arguments: Vec<Expr>,
+    },
+    /// A non-async arrow with simple identifier parameters and an expression body.
+    Arrow {
+        /// Parameters in source order; supported parameters have no initializer.
+        parameters: Rc<[Binding]>,
+        /// The shared assignment-expression body, evaluated when the function is called.
+        body: Rc<Expr>,
+        /// Exact retained source for standard function stringification.
+        source: FunctionSource,
     },
     /// A prefix unary expression.
     Unary(UnaryOp, Box<Expr>),
