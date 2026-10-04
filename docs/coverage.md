@@ -150,8 +150,12 @@ Number calls/construction, NumberData wrappers, valueOf, constants, and
 isFinite/isNaN/isInteger/isSafeInteger are implemented. Explicit Number conversion
 accepts BigInt with nearest-even binary64 rounding and signed overflow; implicit
 ToNumber still rejects it. Number receivers box in non-strict calls. Decimal
-toString, radix validation, and exact toFixed/toPrecision/toExponential formatting are implemented; finite
-nonzero formatting in other radices reports Unsupported. toFixed uses exact
+toString, radix validation, exact shortest formatting for bases 2–36, and
+toFixed/toPrecision/toExponential formatting are implemented. Non-decimal output
+uses fixed notation, exact binary64 rounding intervals, and nearest/ties-even
+selection among shortest candidates. Independent rational reference vectors cover
+all 34 non-decimal radices, subnormals, maximal values, and radix power boundaries.
+toFixed uses exact
 binary values and rounds ties to the larger magnitude for 0–100 fraction digits.
 toPrecision retains 1–100 significant digits and uses exact exponent correction
 and rounding before selecting fixed or exponential notation. toExponential uses

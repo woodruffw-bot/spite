@@ -312,22 +312,24 @@ fn constants_and_builtin_metadata_have_standard_values_and_attributes() {
 }
 
 #[test]
-fn incomplete_formatting_paths_remain_visible_host_gaps() {
-    for source in ["(1).toString(2)", "new Number(0.5).toString(16)"] {
-        let mut realm = Realm::default();
-        realm.eval("let flag=0").unwrap();
-        assert!(
-            matches!(
-                realm.eval(&format!(
-                    "try{{{source};}}catch{{flag=1;}}finally{{flag=2;}}"
-                )),
-                Err(Error::Unsupported { .. })
-            ),
+fn radix_formatting_uses_lowercase_digits_and_fixed_notation() {
+    for (source, expected) in [
+        ("(1).toString(2)", "1"),
+        ("new Number(0.5).toString(16)", "0.8"),
+        ("(255).toString(16)", "ff"),
+        ("(-255).toString(16)", "-ff"),
+        ("(35).toString(36)", "z"),
+        ("(36).toString(36)", "10"),
+        ("(0.25).toString(2)", "0.01"),
+        ("(8).toString(2.9)", "1000"),
+        ("(1e21).toString(16)", "3635c9adc5dea00000"),
+    ] {
+        assert_eq!(
+            Realm::default().eval(source),
+            Ok(Value::String(JsString::from(expected))),
             "{source}"
         );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
-    check("'toFixed' in Number.prototype && 'parseInt' in Number");
 }
 
 #[test]

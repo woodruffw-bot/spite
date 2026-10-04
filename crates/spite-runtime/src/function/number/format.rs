@@ -189,7 +189,7 @@ fn scaled_integer(value: f64, fraction: i32, budget: &mut Budget) -> Result<BigI
     }
 }
 
-fn components(value: f64) -> (i64, i32) {
+pub(super) fn components(value: f64) -> (i64, i32) {
     let bits = value.to_bits();
     let biased = ((bits >> 52) & 0x7ff) as i32;
     let significand = (bits & ((1u64 << 52) - 1)) | if biased == 0 { 0 } else { 1u64 << 52 };

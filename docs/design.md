@@ -381,9 +381,20 @@ Explicit Number conversion accepts BigInt, using the integer library's single
 correctly rounded conversion; ordinary ToNumber still rejects it. NumberData
 preserves negative zero and NaN. Decimal toString uses the existing Number string
 conversion after validating the receiver and radix in specification order.
-Non-decimal finite formatting remains an explicit host gap until its complete
-conversion algorithm is implemented; invalid radices still throw RangeError.
-Non-decimal Number formatting remains a separate step.
+Non-decimal formatting uses exact integer ratios and the binary64 rounding
+interval (6.1.6.1.20). Generate significant digits until a candidate lies inside
+that interval; this gives the shortest round-tripping representation. Account
+for the smaller lower interval at normal powers of two and include midpoint
+boundaries only when the input significand is even. If both adjacent candidates
+qualify, choose the nearest, breaking ties toward an even significand as the spec
+recommends. Normalize carries and use fixed notation in every non-decimal radix.
+An approximate exponent may seed normalization, but exact comparisons must
+correct it before digit generation. Budget integer work and result length, and
+test subnormals, exponent transitions, and maximal finite values independently
+of ordinary decimal formatting.
+Pinned reference vectors use Python's standard-library Fraction arithmetic and
+correctly rounded conversion to float, enumerating candidates by precision rather
+than duplicating runtime digit generation. CI verifies their reproducibility.
 
 Number.prototype.toFixed uses the exact binary significand/exponent to scale by
 10 to the requested power, divides with integer arithmetic, and rounds ties toward

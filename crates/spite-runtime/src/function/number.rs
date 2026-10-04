@@ -6,6 +6,7 @@ use spite_core::{JsString, Span};
 
 mod format;
 mod parse;
+mod radix;
 
 #[derive(Debug)]
 pub(crate) struct NumberIntrinsics {
@@ -259,10 +260,9 @@ impl Realm {
             ));
         }
         if radix != 10.0 && value.is_finite() && value != 0.0 {
-            return Err(Self::unsupported(
-                span,
-                "non-decimal Number formatting is not implemented",
-            ));
+            let result =
+                self.integer_work(span, |budget| radix::format(value, radix as u32, budget))?;
+            return Ok(Value::String(JsString::from(result.as_str())));
         }
         Ok(Value::String(JsString::from(
             crate::value::number_to_string(value).as_str(),
