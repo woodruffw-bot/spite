@@ -8,6 +8,7 @@ mod function;
 mod iteration;
 mod lexer;
 mod object;
+mod optional_chain;
 mod template;
 
 use ast::*;
@@ -565,6 +566,20 @@ impl Parser {
                 .unwrap_or(0)
                 .max(callee.depth),
             ExprKind::Conditional(a, b, c) => a.depth.max(b.depth).max(c.depth),
+            ExprKind::OptionalChain { base, steps } => steps
+                .iter()
+                .map(|step| match &step.kind {
+                    ChainStepKind::Property(PropertyName::Computed(expression)) => expression.depth,
+                    ChainStepKind::Property(PropertyName::Literal(_)) => 0,
+                    ChainStepKind::Call(arguments) => arguments
+                        .iter()
+                        .map(|argument| argument.expression().depth)
+                        .max()
+                        .unwrap_or(0),
+                })
+                .max()
+                .unwrap_or(0)
+                .max(base.depth),
             ExprKind::TaggedTemplate {
                 tag, substitutions, ..
             } => substitutions
@@ -641,6 +656,17 @@ impl Parser {
                 }
                 let arguments = self.arguments()?;
                 let span = Span::new(left.span.start, self.tokens[self.index - 1].span.end);
+                if matches!(left.kind, ExprKind::OptionalChain { .. }) {
+                    left = self.append_chain_step(
+                        left,
+                        ChainStep {
+                            optional: false,
+                            kind: ChainStepKind::Call(arguments),
+                            span,
+                        },
+                    )?;
+                    continue;
+                }
                 left = self.make_expr(
                     ExprKind::Call {
                         callee: Box::new(left),
@@ -679,7 +705,18 @@ impl Parser {
                     PropertyName::Computed(Box::new(key))
                 };
                 let span = Span::new(left.span.start, self.tokens[self.index - 1].span.end);
-                left = self.make_expr(ExprKind::Member(Box::new(left), property), span)?;
+                left = if matches!(left.kind, ExprKind::OptionalChain { .. }) {
+                    self.append_chain_step(
+                        left,
+                        ChainStep {
+                            optional: false,
+                            kind: ChainStepKind::Property(property),
+                            span,
+                        },
+                    )?
+                } else {
+                    self.make_expr(ExprKind::Member(Box::new(left), property), span)?
+                };
                 continue;
             }
             if minimum <= 18
@@ -697,11 +734,24 @@ impl Parser {
                     }
                     return Err(self.error("tagged template requires a left-hand-side expression"));
                 }
+                if matches!(left.kind, ExprKind::OptionalChain { .. }) {
+                    return Err(self.error("optional chains cannot be tagged templates"));
+                }
                 let token = self.bump();
                 let Kind::Template { element, tail, .. } = token.kind else {
                     unreachable!("template head")
                 };
                 left = self.template_literal(element, tail, token.span, Some(left))?;
+                continue;
+            }
+            if minimum <= 18 && self.at("?.") {
+                if !member_base(&left) {
+                    if self.current().newline {
+                        break;
+                    }
+                    return Err(self.error("optional chain requires a left-hand-side expression"));
+                }
+                left = self.optional_chain_step(left)?;
                 continue;
             }
             // ECMA-262 13.4: a postfix update cannot cross a line terminator.
@@ -783,16 +833,6 @@ impl Parser {
             }
             let span = Span::new(left.span.start, right.span.end);
             left = self.make_expr(ExprKind::Binary(op, Box::new(left), Box::new(right)), span)?;
-        }
-        // An optional chain continues a left-hand-side expression across newlines.
-        if self.at("?.") {
-            if !member_base(&left) {
-                if self.current().newline {
-                    return Ok(left);
-                }
-                return Err(self.error("optional chain requires a left-hand-side expression"));
-            }
-            return Err(self.unsupported("optional chaining is not implemented"));
         }
         Ok(left)
     }
@@ -913,6 +953,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::Array(_)
             | ExprKind::Template { .. }
             | ExprKind::TaggedTemplate { .. }
+            | ExprKind::OptionalChain { .. }
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
             | ExprKind::Call { .. }
@@ -1492,6 +1533,22 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                     function::validate_method(function, strict)?;
                 } else {
                     validate_expr(&property.value, strict)?;
+                }
+            }
+        }
+        ExprKind::OptionalChain { base, steps } => {
+            validate_expr(base, strict)?;
+            for step in steps {
+                match &step.kind {
+                    ChainStepKind::Property(PropertyName::Computed(expression)) => {
+                        validate_expr(expression, strict)?
+                    }
+                    ChainStepKind::Property(PropertyName::Literal(_)) => {}
+                    ChainStepKind::Call(arguments) => {
+                        for argument in arguments {
+                            validate_expr(argument.expression(), strict)?;
+                        }
+                    }
                 }
             }
         }

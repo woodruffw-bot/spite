@@ -43,6 +43,12 @@ impl Parser {
         // new F.x(a).y() constructs F.x before reading/calling y. Recursive new
         // expressions consume their own argument list first: new new F()().
         let callee = self.expression(18)?;
+        if matches!(callee.kind, ExprKind::OptionalChain { .. }) {
+            return Err(early(
+                callee.span,
+                "optional chain is not a constructor expression",
+            ));
+        }
         if !member_base(&callee) && !matches!(callee.kind, ExprKind::New { .. }) {
             return Err(early(callee.span, "new requires a constructor expression"));
         }

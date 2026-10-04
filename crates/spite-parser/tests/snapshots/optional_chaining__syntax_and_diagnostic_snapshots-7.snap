@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/optional_chaining.rs
+expression: parse_script(source).unwrap_err()
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 5,
+        end: 8,
+    },
+    message: "optional chains cannot be tagged templates",
+}

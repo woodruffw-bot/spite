@@ -10,6 +10,7 @@ mod for_of;
 mod function;
 mod global;
 mod iterator_count;
+mod optional_chain;
 use environment::{BindingState, EnvironmentHandle};
 pub mod object;
 mod realm_object;
@@ -135,6 +136,7 @@ pub struct Limits {
 // Resolve references before evaluating assignment RHS expressions. GetValue and
 // PutValue are separate operations, including the unresolvable typeof case.
 enum Reference<'a> {
+    Value(Value),
     Lexical(EnvironmentHandle, &'a str),
     Global(&'a str),
     Unresolvable(&'a str),
@@ -1008,6 +1010,7 @@ impl Realm {
     fn reference<'a>(&mut self, target: &'a Expr) -> Result<Reference<'a>, Error> {
         match &target.kind {
             ExprKind::Identifier(name) => self.resolve(name, target.span),
+            ExprKind::OptionalChain { base, steps } => self.optional_chain_reference(base, steps),
             ExprKind::Parenthesized(inner) => self.reference(inner),
             ExprKind::Member(base, name) => {
                 let base = self.expression(base)?;
@@ -1022,6 +1025,10 @@ impl Realm {
     }
     fn get(&mut self, reference: &mut Reference<'_>, span: Span) -> Result<Value, Error> {
         match reference {
+            Reference::Value(value) => {
+                self.object_work(span, |_, budget| budget.value(value))?;
+                Ok(value.clone())
+            }
             Reference::Property { base, key } => {
                 Self::require_object_coercible(base, span)?;
                 let key = self.reference_key(key, span)?;
@@ -1055,6 +1062,7 @@ impl Realm {
     }
     fn put(&mut self, reference: Reference<'_>, value: Value, span: Span) -> Result<(), Error> {
         match reference {
+            Reference::Value(_) => unreachable!("parser rejects optional-chain assignment targets"),
             Reference::Property { base, mut key } => {
                 Self::require_object_coercible(&base, span)?;
                 let key = self.reference_key(&mut key, span)?;
@@ -1233,7 +1241,7 @@ impl Realm {
                 self.get(&mut reference, expr.span)?
             }
             ExprKind::Parenthesized(inner) => self.expression(inner)?,
-            ExprKind::Member(..) => {
+            ExprKind::Member(..) | ExprKind::OptionalChain { .. } => {
                 let mut reference = self.reference(expr)?;
                 self.get(&mut reference, expr.span)?
             }
@@ -1301,6 +1309,7 @@ impl Realm {
                     // does not GetValue, even for an uninitialized binding.
                     let reference = self.reference(inner)?;
                     let deleted = match reference {
+                        Reference::Value(_) => true,
                         Reference::Property { base, mut key } => {
                             Self::require_object_coercible(&base, inner.span)?;
                             let key = self.reference_key(&mut key, inner.span)?;
@@ -1566,7 +1575,7 @@ fn identifier(expr: &Expr) -> Option<&str> {
 
 fn reference_expression(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::Identifier(_) | ExprKind::Member(..) => true,
+        ExprKind::Identifier(_) | ExprKind::Member(..) | ExprKind::OptionalChain { .. } => true,
         ExprKind::Parenthesized(inner) => reference_expression(inner),
         _ => false,
     }

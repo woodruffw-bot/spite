@@ -69,6 +69,22 @@ The current eager scanner tracks braces in template substitutions. Before adding
 RegExp literals, move lexical-goal selection into the parser so braces and
 backticks inside a RegExp body cannot affect template scanning.
 
+Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
+once, preserve references for method receivers, and check only explicitly optional
+steps for null or undefined. A nullish check skips the entire ungrouped suffix,
+including computed expressions and arguments; parentheses begin a separate node.
+Keep the final property reference instead of reading it, so delete bypasses its
+getter and grouped calls retain this. Edition-17 GetValue/PutValue/delete continue
+to defer coercibility/key conversion. Non-nullish optional calls evaluate arguments
+before checking callability. Identifier/TDZ/host errors are never suppressed.
+
+The parser preserves IdentifierName and computed In grammar, rejects chain write
+and update targets, rejects ungrouped optional constructors and direct tagged
+chains even across line breaks, and leaves grouped calls/construction/tags legal.
+Flat steps do not consume recursive syntax depth; runtime traversal is iterative.
+Host quotas remain opt-in, with no default chain, work, or heap allowance.
+Private fields, super, async contexts, and eval await their own implementations.
+
 Tagged templates parse as call/member expressions with unconverted substitution
 arguments (13.3.11). Validate each tag and substitution in its surrounding strict
 scope; invalid cooked escapes are permitted only for tagged components, represented

@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/optional_chaining.rs
+expression: parse_script(source).unwrap_err()
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 18,
+        end: 24,
+    },
+    message: "invalid assignment in strict mode",
+}

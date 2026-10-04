@@ -133,13 +133,9 @@ fn malformed_access_and_invalid_targets_are_syntax_errors() {
 }
 
 #[test]
-fn optional_chains_remain_unsupported() {
+fn optional_chains_parse_as_left_hand_side_expressions() {
     for source in ["a?.b", "a?.[b]"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 

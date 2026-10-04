@@ -484,6 +484,13 @@ pub enum ExprKind {
         /// Expressions evaluated between components, in source order.
         substitutions: Vec<Expr>,
     },
+    /// A property/call chain with lazy nullish checks and an ungrouped suffix.
+    OptionalChain {
+        /// Value or reference evaluated before the first optional step.
+        base: Box<Expr>,
+        /// Ordered optional and non-optional operations, evaluated iteratively.
+        steps: Vec<ChainStep>,
+    },
     /// The this binding of the current lexical environment.
     This,
     /// The nearest non-arrow function environment's newTarget binding.
@@ -586,6 +593,26 @@ pub enum PropertyName {
     Literal(Literal),
     /// A bracketed assignment expression.
     Computed(Box<Expr>),
+}
+
+/// One property access or call within an optional chain (13.3.10).
+#[derive(Clone, Debug, PartialEq)]
+pub struct ChainStep {
+    /// Short-circuit the whole chain when this step's base is null or undefined.
+    pub optional: bool,
+    /// Property or argument syntax evaluated only after its nullish check.
+    pub kind: ChainStepKind,
+    /// Source range for this operation.
+    pub span: Span,
+}
+
+/// An optional-chain operation, preserving property references for later calls.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ChainStepKind {
+    /// Property access with an identifier or computed name.
+    Property(PropertyName),
+    /// A call with ordinary or spread arguments.
+    Call(Vec<Argument>),
 }
 
 /// A template literal component, excluding its delimiters.

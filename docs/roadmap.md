@@ -30,6 +30,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse untagged template literals with cooked/raw text and nested substitutions.
 - [x] Evaluate untagged template substitutions and string conversion.
 - [x] Add tagged templates with call/member precedence, raw/cooked components, frozen per-realm template objects, and parse-site identity.
+- [x] Add optional property/call chains with lazy nullish checks, preserved references/receivers, grouping boundaries, deletion, and write/tag/constructor early errors.
 - [x] Implement edition-17 legacy numeric/string literals and strict lexical early errors.
 - [x] Add while and do-while loops, including completion values and ASI.
 - [x] Add unlabelled break and continue with completion propagation and early errors.

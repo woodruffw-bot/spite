@@ -20,6 +20,7 @@ fn spread_call_and_constructor_arguments_snapshot() {
 fn calls_chain_with_members_and_accept_assignment_expressions() {
     for source in [
         "f()",
+        "f?.()",
         "f(a, b,)",
         "f(...x)",
         "f(a,...x,b,...y,)",
@@ -78,10 +79,6 @@ fn malformed_arguments_and_call_targets_are_rejected() {
             "{source}"
         );
     }
-    assert_eq!(
-        parse_script("f?.()").unwrap_err().kind,
-        DiagnosticKind::Unsupported
-    );
 }
 
 #[test]

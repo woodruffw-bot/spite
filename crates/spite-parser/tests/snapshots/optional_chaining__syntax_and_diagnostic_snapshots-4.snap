@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/optional_chaining.rs
+expression: parse_script(source).unwrap_err()
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 2,
+        end: 6,
+    },
+    message: "invalid update target",
+}
