@@ -62,6 +62,14 @@ impl Realm {
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
                 self.object_get_prototype_of(Value::Object(target), span)
             }
+            Builtin::ReflectDeleteProperty | Builtin::ReflectGet | Builtin::ReflectHas => self
+                .reflect_property(
+                    builtin,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next(),
+                    span,
+                ),
             Builtin::ReflectSetPrototypeOf => self.reflect_set_prototype_of(
                 arguments.next().unwrap_or(Value::Undefined),
                 arguments.next().unwrap_or(Value::Undefined),

@@ -41,7 +41,10 @@ impl Realm {
         for builtin in [
             Builtin::ReflectApply,
             Builtin::ReflectConstruct,
+            Builtin::ReflectDeleteProperty,
+            Builtin::ReflectGet,
             Builtin::ReflectGetPrototypeOf,
+            Builtin::ReflectHas,
             Builtin::ReflectIsExtensible,
             Builtin::ReflectPreventExtensions,
             Builtin::ReflectSetPrototypeOf,
@@ -103,6 +106,33 @@ impl Realm {
                 span,
                 "Reflect target must be an object",
             ))
+        }
+    }
+
+    pub(super) fn reflect_property(
+        &mut self,
+        builtin: Builtin,
+        target: Value,
+        key: Value,
+        receiver: Option<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 28.1.4/5/8: reject primitive targets before ToPropertyKey. get uses
+        // target only when receiver is absent, preserving explicit undefined.
+        let target = Self::reflect_object(target, span)?;
+        let key = self.property_key(key, span)?;
+        match builtin {
+            Builtin::ReflectGet => self.get_property_with_receiver(
+                &target,
+                &key,
+                receiver.unwrap_or_else(|| Value::Object(target.clone())),
+                span,
+            ),
+            Builtin::ReflectHas => self.has_property(&target, &key, span).map(Value::Boolean),
+            Builtin::ReflectDeleteProperty => self
+                .delete_property_value(&Value::Object(target), &key, span)
+                .map(Value::Boolean),
+            _ => unreachable!("Reflect property operation"),
         }
     }
 

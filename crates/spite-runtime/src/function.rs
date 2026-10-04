@@ -37,6 +37,9 @@ pub(crate) enum Builtin {
     FunctionApply,
     ReflectApply,
     ReflectConstruct,
+    ReflectDeleteProperty,
+    ReflectGet,
+    ReflectHas,
     ReflectGetPrototypeOf,
     ReflectSetPrototypeOf,
     ReflectIsExtensible,
@@ -198,6 +201,9 @@ impl Builtin {
             Self::FunctionApply => "apply",
             Self::ReflectApply => "apply",
             Self::ReflectConstruct => "construct",
+            Self::ReflectDeleteProperty => "deleteProperty",
+            Self::ReflectGet => "get",
+            Self::ReflectHas => "has",
             Self::ReflectGetPrototypeOf => "getPrototypeOf",
             Self::ReflectSetPrototypeOf => "setPrototypeOf",
             Self::ReflectIsExtensible => "isExtensible",
@@ -446,6 +452,9 @@ impl Builtin {
             | Self::StringReplace
             | Self::StringReplaceAll
             | Self::ReflectConstruct
+            | Self::ReflectDeleteProperty
+            | Self::ReflectGet
+            | Self::ReflectHas
             | Self::ReflectSetPrototypeOf
             | Self::ParseInt
             | Self::ObjectGetOwnPropertyDescriptor

@@ -300,7 +300,7 @@ impl Realm {
         self.get_property_with_receiver(object, key, Value::Object(object.clone()), span)
     }
 
-    fn get_property_with_receiver<'key>(
+    pub(super) fn get_property_with_receiver<'key>(
         &mut self,
         object: &ObjectHandle,
         key: impl Into<PropertyKeyRef<'key>>,
@@ -709,10 +709,7 @@ impl Realm {
 fn missing_reflect_method(key: &JsString) -> bool {
     [
         "defineProperty",
-        "deleteProperty",
-        "get",
         "getOwnPropertyDescriptor",
-        "has",
         "ownKeys",
         "set",
     ]

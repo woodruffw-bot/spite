@@ -1164,6 +1164,16 @@ after extension prevention; cycles, immutable-prototype changes, and new
 prototypes on non-extensible objects return false. PreventExtensions returns true
 for the currently exposed object kinds. Proxies remain a separate implementation.
 
+Reflect.get, has, and deleteProperty (28.1.4/5/8) validate object targets before
+ToPropertyKey, then share receiver-aware reads, prototype-aware presence checks,
+and own-property deletion. Get defaults receiver only when the argument is absent;
+explicit undefined, null, and primitives reach accessors unchanged. Data reads
+ignore receiver, and has/delete do not invoke property getters. Delete returns
+false for non-configurable properties regardless of caller strictness. Exposed
+Array, String, and arguments exotics retain their indexed/length and parameter-map
+rules. Missing intrinsic values/mutations and host failures remain Unsupported or
+Limit, so language handlers cannot conceal them.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left
