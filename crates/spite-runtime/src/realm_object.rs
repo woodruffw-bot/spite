@@ -721,11 +721,9 @@ fn missing_array_static(key: &JsString) -> bool {
 }
 
 fn missing_iterator_method(key: &JsString) -> bool {
-    [
-        "drop", "every", "filter", "find", "flatMap", "map", "reduce", "some", "take",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
+    ["drop", "filter", "flatMap", "map", "reduce", "take"]
+        .iter()
+        .any(|name| key_is(key, name))
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

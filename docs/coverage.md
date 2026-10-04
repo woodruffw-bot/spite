@@ -652,6 +652,15 @@ collection, and large default inputs. Internal tests verify correctly rounded
 indices beyond 2^53 and u64 using exact counters, independently of a BigInt-value
 magnitude quota, and preserve work-failure behavior.
 
+Iterator.prototype.every/some/find consume direct iterators with exact mathematical
+indices and short-circuit closing. Regressions cover callback validation before
+next lookup, cached next and live return, strict/sloppy callback receivers,
+original found-value identity across mutation, all primitive truthiness categories,
+object results without conversion hooks, normal-close error precedence, callback
+throw preservation, exhaustion and step errors without cleanup, native/helper
+iteration, metadata/collection, large default inputs, and opt-in host aborts.
+Internal tests verify indices beyond u64 under a zero BigInt-value magnitude quota.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-await-of, catch patterns, generators,

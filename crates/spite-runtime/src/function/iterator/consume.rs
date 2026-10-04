@@ -1,6 +1,6 @@
 //! Eager direct-iterator consumers (27.1.3.3).
 
-use super::operations::IteratorRecord;
+use super::{Builtin, operations::IteratorRecord};
 use crate::{Error, ExceptionKind, Realm, Value};
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
 use spite_core::Span;
@@ -92,6 +92,87 @@ impl Realm {
         Ok(Value::Undefined)
     }
 
+    pub(crate) fn iterator_predicate(
+        &mut self,
+        builtin: Builtin,
+        receiver: Value,
+        predicate: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.iterator_predicate_counted(builtin, receiver, predicate, Counter::Small(0), span)
+    }
+
+    fn iterator_predicate_counted(
+        &mut self,
+        builtin: Builtin,
+        receiver: Value,
+        predicate: Value,
+        mut counter: Counter,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 27.1.3.3.3/5/10: validate before reading next, closing the receiver
+        // on an invalid callback; acquisition/step failures do not close.
+        let Value::Object(iterator) = receiver else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Iterator predicate requires an object receiver",
+            ));
+        };
+        if !self.is_callable(&predicate, span)? {
+            let record = IteratorRecord::uninitialized(iterator);
+            let error = Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Iterator predicate requires a callable predicate",
+            );
+            return Err(self.iterator_close_error(&record, error, span));
+        }
+        let mut record = self.get_iterator_direct(iterator, span)?;
+        while let Some(value) = self.iterator_step_value(&mut record, span)? {
+            let index = self.iterator_counter_work(span, |budget| counter.number(budget))?;
+            // Find returns the original value, even if the predicate changes
+            // the iterator's value source. Charge its owned copy before Call.
+            let retained = if matches!(builtin, Builtin::IteratorFind) {
+                self.object_work(span, |_, budget| budget.value(&value))?;
+                Some(value.clone())
+            } else {
+                None
+            };
+            let result = self.call(
+                predicate.clone(),
+                Value::Undefined,
+                vec![value, Value::Number(index)],
+                span,
+            );
+            let result = match result {
+                Ok(value) => value,
+                Err(error) => return Err(self.iterator_close_error(&record, error, span)),
+            };
+            let matched = result.to_boolean();
+            let output = match builtin {
+                Builtin::IteratorEvery if !matched => Some(Value::Boolean(false)),
+                Builtin::IteratorSome if matched => Some(Value::Boolean(true)),
+                Builtin::IteratorFind if matched => retained,
+                Builtin::IteratorEvery | Builtin::IteratorSome | Builtin::IteratorFind => None,
+                _ => unreachable!("iterator predicate consumer"),
+            };
+            if let Some(output) = output {
+                // A normal short-circuit completion is replaced by any close
+                // error, unlike an incoming callback throw.
+                self.iterator_close(&record, span)?;
+                return Ok(output);
+            }
+            self.iterator_counter_work(span, |budget| counter.advance(budget))?;
+        }
+        Ok(match builtin {
+            Builtin::IteratorEvery => Value::Boolean(true),
+            Builtin::IteratorSome => Value::Boolean(false),
+            Builtin::IteratorFind => Value::Undefined,
+            _ => unreachable!("iterator predicate consumer"),
+        })
+    }
+
     fn iterator_counter_work<T>(
         &mut self,
         span: Span,
@@ -174,6 +255,48 @@ mod tests {
             Counter::Large(integer),
             "seen[0]===18446744073709551616 && seen[1]===18446744073709551616 && seen[2]===18446744073709555712 && seen[3]===18446744073709555712",
         );
+    }
+
+    #[test]
+    fn predicate_consumers_preserve_mathematical_indices_beyond_u64() {
+        for builtin in [
+            Builtin::IteratorEvery,
+            Builtin::IteratorSome,
+            Builtin::IteratorFind,
+        ] {
+            let mut realm = Realm::new(Limits {
+                max_bigint_bits: Some(0),
+                ..Limits::default()
+            });
+            let receiver = realm
+                .eval("let n=0,seen=[],i={next:()=>({value:7,done:n++===4})};i")
+                .unwrap();
+            let continuing = matches!(builtin, Builtin::IteratorEvery);
+            let callback = realm
+                .eval(&format!(
+                    "(value,index)=>{{seen.push(index);return {continuing};}}"
+                ))
+                .unwrap();
+            let expected = match builtin {
+                Builtin::IteratorEvery => Value::Boolean(true),
+                Builtin::IteratorSome => Value::Boolean(false),
+                _ => Value::Undefined,
+            };
+            assert_eq!(
+                realm.iterator_predicate_counted(
+                    builtin,
+                    receiver,
+                    callback,
+                    Counter::Small(u64::MAX - 1),
+                    Span::new(0, 0)
+                ),
+                Ok(expected)
+            );
+            assert_eq!(
+                realm.eval("seen.length===4 && seen.every(value=>value===18446744073709551616)"),
+                Ok(Value::Boolean(true))
+            );
+        }
     }
 
     #[test]

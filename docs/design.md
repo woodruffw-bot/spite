@@ -705,6 +705,15 @@ round all callback indices, including beyond 2^53. This internal storage produce
 Number values and is independent of the host's BigInt-value magnitude quota.
 Work accounting still applies, with no default counter or execution quota.
 
+Iterator.prototype.every/some/find share direct acquisition and exact callback
+indices with forEach (27.1.3.3.3/5/10). They apply ToBoolean to each predicate
+result without invoking conversion hooks. Every short-circuits on false, some
+and find on true, then close the iterator before returning. Normal closing errors
+replace the result; predicate language throws keep incoming-error precedence.
+Find retains the original yielded value across the predicate call. Exhaustion
+returns true/false/undefined respectively and never closes. Step and host failures
+also bypass closing; internal counters have no default or BigInt-value quota.
+
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
 it does not retain the original receiver. A branded String iterator stores the

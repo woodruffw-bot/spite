@@ -27,6 +27,9 @@ pub(crate) struct IteratorIntrinsics {
     helper_return: ObjectHandle,
     to_array: ObjectHandle,
     for_each: ObjectHandle,
+    every: ObjectHandle,
+    some: ObjectHandle,
+    find: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -53,6 +56,9 @@ impl IteratorIntrinsics {
             &self.helper_return,
             &self.to_array,
             &self.for_each,
+            &self.every,
+            &self.some,
+            &self.find,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -89,6 +95,9 @@ impl Realm {
             self.new_builtin(function_prototype, Builtin::IteratorHelperReturn, span)?;
         let to_array = self.new_builtin(function_prototype, Builtin::IteratorToArray, span)?;
         let for_each = self.new_builtin(function_prototype, Builtin::IteratorForEach, span)?;
+        let every = self.new_builtin(function_prototype, Builtin::IteratorEvery, span)?;
+        let some = self.new_builtin(function_prototype, Builtin::IteratorSome, span)?;
+        let find = self.new_builtin(function_prototype, Builtin::IteratorFind, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
@@ -96,6 +105,9 @@ impl Realm {
         for (object, name, function) in [
             (&prototype, "toArray", &to_array),
             (&prototype, "forEach", &for_each),
+            (&prototype, "every", &every),
+            (&prototype, "some", &some),
+            (&prototype, "find", &find),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -236,6 +248,9 @@ impl Realm {
             helper_return,
             to_array,
             for_each,
+            every,
+            some,
+            find,
             array_prototype,
             string_prototype,
             identity,
