@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 1139 unmodified test fixtures and three harness files come from
+These 1187 unmodified test fixtures and three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -51,6 +51,9 @@ numeric parsing tests cover decimal prefixes/exponents, invalid radices, and
 hexadecimal/default-decimal rules. Five global predicate tests cover function
 shape, abrupt coercion, and nonfinite values. Twenty-two Error files cover
 construction, message conversion, prototype identity, branding, and toString.
+Forty-eight BigInt files cover construction, integer strings in all radices,
+ordered conversions, signed/unsigned width reduction, prototype identity,
+radix formatting, and branded primitive/wrapper receivers.
 The 140 Object files cover SameValue, own-property checks, descriptor conversion and
 reflection, prototype identity/mutation, extensibility, creation, value copying,
 key enumeration, and frozen/sealed integrity. Getter-mutation cases use accessor
@@ -145,6 +148,20 @@ this corpus. Sources are unchanged; no default quotas or test allowances are
 introduced. Local runtime regressions also cover species aliasing, partial
 mutations on failure, and complete Array prototype reflection/integrity operations.
 
+## BigInt API review
+
+The 48 files added at the existing pin add 96 variants, all in both Script modes:
+16 constructor files, ten each for asIntN/asUintN, eight for toString, three for
+valueOf, and one for the prototype's prototype. They exercise exact Number and
+integer-string conversion, invalid inputs, abrupt hooks, ToIndex/ToBigInt order,
+multiword reductions, lowercase radix digits, and receiver brands.
+
+Reviewed candidates needing the Function constructor, Date, for-of, foreign
+realms, `isConstructor.js`/Reflect, or `propertyHelper.js` remain outside the
+corpus. The proposed parseInt directory is outside the edition-17 target. No
+fixture source or execution quota changes. Local regressions cover descriptors,
+non-constructibility, observable tags, huge fitting widths, and opted-in failures.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -166,19 +183,19 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 2194 variants from 1120 reviewed sources: the eleven
+The `spite-test262` command runs 2290 variants from 1168 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 22 Error tests, 140 Object tests,
+tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 140 Object tests,
 153 String and String iterator tests, 603 Array and Array iterator tests,
 34 Symbol tests, and 23 object method/accessor tests. The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-2118 positives using the upstream harness, and 72 reviewed parse-negative variants.
+2214 positives using the upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
