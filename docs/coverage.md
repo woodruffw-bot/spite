@@ -36,7 +36,7 @@ not an alternative language specification.
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5028 reviewed Test262 variants, seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5070 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -846,7 +846,7 @@ separate non-passing results. The unchanged pinned assert.js/sta.js harness now
 executes for nine positive function/capture tests, 40 call/construction iterable-spread
 tests, 30 call/construction object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, and
-22 Error construction, conversion, and prototype tests, 48 BigInt constructor,
+43 Error and AggregateError construction, conversion, and prototype tests, 48 BigInt constructor,
 width reduction, formatting, and receiver-brand tests, plus 173 Object descriptor,
 prototype, extensibility, creation, copying, key enumeration, integrity, and SameValue tests, and
 388 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
@@ -886,6 +886,12 @@ all four methods, covering full/contextual mappings, generic and abrupt conversi
 unnormalized Unicode text, and metadata. Eight eval/RegExp sources remain excluded
 and receive no credit. The existing pin, helper bytes, and runtime defaults remain
 unchanged.
+Twenty-one unchanged AggregateError sources add 42 variants for constructor,
+prototype, ordered arguments/iterators, abrupt results, and errors Array descriptors.
+The complete original promiseHelper.js brings the harness inventory to eight; the
+selected order test calls its synchronous sequence helper, without Promise support.
+Four Proxy/dynamic Function/cross-realm/global reflection sources remain excluded
+and receive no credit. The pin and original bytes are unchanged.
 Another 53 positive for-of files and 22 reviewed for-of parse-negative files cover
 iteration, bindings, header grammar, and closing precedence. Seven rest-parameter
 positives and twelve parameter parse negatives cover Arrays, length, argument
@@ -896,7 +902,7 @@ verify successful assertions and explicit assertion failures. Some string compar
 failure formatting still requires missing JSON and remains Unsupported;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 5028 variants are four raw positives, 4832 positives using the upstream
+Rust. Its 5070 variants are four raw positives, 4874 positives using the upstream
 harness, and 192 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
