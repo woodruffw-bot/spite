@@ -173,6 +173,72 @@ impl Realm {
         })
     }
 
+    pub(crate) fn iterator_reduce(
+        &mut self,
+        receiver: Value,
+        reducer: Value,
+        initial: Option<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 27.1.3.3.9: validate the reducer before next lookup, closing only
+        // for callback validation/call failures. Presence of initial matters.
+        let Value::Object(iterator) = receiver else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Iterator.reduce requires an object receiver",
+            ));
+        };
+        if !self.is_callable(&reducer, span)? {
+            let record = IteratorRecord::uninitialized(iterator);
+            let error = Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Iterator.reduce requires a callable reducer",
+            );
+            return Err(self.iterator_close_error(&record, error, span));
+        }
+        let mut record = self.get_iterator_direct(iterator, span)?;
+        let (accumulator, counter) = if let Some(initial) = initial {
+            (initial, Counter::Small(0))
+        } else {
+            let Some(first) = self.iterator_step_value(&mut record, span)? else {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "Iterator.reduce has no values or initial value",
+                ));
+            };
+            (first, Counter::Small(1))
+        };
+        self.iterator_reduce_loop(record, reducer, accumulator, counter, span)
+    }
+
+    fn iterator_reduce_loop(
+        &mut self,
+        mut record: IteratorRecord,
+        reducer: Value,
+        mut accumulator: Value,
+        mut counter: Counter,
+        span: Span,
+    ) -> Result<Value, Error> {
+        while let Some(value) = self.iterator_step_value(&mut record, span)? {
+            let index = self.iterator_counter_work(span, |budget| counter.number(budget))?;
+            let result = self.call(
+                reducer.clone(),
+                Value::Undefined,
+                vec![accumulator, value, Value::Number(index)],
+                span,
+            );
+            accumulator = match result {
+                Ok(value) => value,
+                Err(error) => return Err(self.iterator_close_error(&record, error, span)),
+            };
+            self.iterator_counter_work(span, |budget| counter.advance(budget))?;
+        }
+        Ok(accumulator)
+    }
+
     fn iterator_counter_work<T>(
         &mut self,
         span: Span,

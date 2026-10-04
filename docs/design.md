@@ -714,6 +714,16 @@ Find retains the original yielded value across the predicate call. Exhaustion
 returns true/false/undefined respectively and never closes. Step and host failures
 also bypass closing; internal counters have no default or BigInt-value quota.
 
+Iterator.prototype.reduce validates the callback before direct acquisition
+(27.1.3.3.9). An omitted initial value consumes the first yield as the accumulator
+and starts callback indices at one; a present value, including undefined, starts
+at zero. Empty input without an initial value throws TypeError without closing.
+Each reducer call receives undefined this and exactly accumulator/value/index;
+its result becomes the next accumulator without conversion. Only callback
+validation/language throws close with incoming-error precedence. Acquisition,
+step, exhaustion, and host failures never close. Share the exact unbounded
+mathematical counter used by other eager consumers.
+
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
 it does not retain the original receiver. A branded String iterator stores the

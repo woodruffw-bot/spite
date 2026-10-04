@@ -184,6 +184,10 @@ impl Realm {
             Builtin::IteratorForEach => {
                 self.iterator_for_each(this, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::IteratorReduce => {
+                let reducer = arguments.next().unwrap_or(Value::Undefined);
+                self.iterator_reduce(this, reducer, arguments.next(), span)
+            }
             Builtin::IteratorEvery | Builtin::IteratorSome | Builtin::IteratorFind => self
                 .iterator_predicate(
                     builtin,

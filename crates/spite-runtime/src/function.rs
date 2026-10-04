@@ -152,6 +152,7 @@ pub(crate) enum Builtin {
     IteratorEvery,
     IteratorSome,
     IteratorFind,
+    IteratorReduce,
     IteratorWrapperNext,
     IteratorWrapperReturn,
     IteratorIdentity,
@@ -371,7 +372,7 @@ impl Builtin {
             Self::ArraySplice => "splice",
             Self::ArrayFlat => "flat",
             Self::ArrayFlatMap => "flatMap",
-            Self::ArrayReduce => "reduce",
+            Self::ArrayReduce | Self::IteratorReduce => "reduce",
             Self::ArrayReduceRight => "reduceRight",
             Self::ArrayFind | Self::IteratorFind => "find",
             Self::ArrayFindIndex => "findIndex",
@@ -466,6 +467,7 @@ impl Builtin {
             | Self::IteratorEvery
             | Self::IteratorSome
             | Self::IteratorFind
+            | Self::IteratorReduce
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean

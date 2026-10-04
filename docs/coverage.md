@@ -661,6 +661,14 @@ throw preservation, exhaustion and step errors without cleanup, native/helper
 iteration, metadata/collection, large default inputs, and opt-in host aborts.
 Internal tests verify indices beyond u64 under a zero BigInt-value magnitude quota.
 
+Iterator.prototype.reduce distinguishes an omitted initial value from a present
+undefined, retains arbitrary accumulator identities, and uses exact mathematical
+callback indices. Regressions cover empty/singleton inputs, first-value selection,
+callback arguments/receivers, direct acquisition and cached next, live mutation,
+primitive/invalid reducer validation, incoming throw precedence, initial/later
+step errors without closing, exhaustion, ignored extra arguments, metadata and
+collection, native/helper iteration, large default inputs, and opt-in host aborts.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-await-of, catch patterns, generators,

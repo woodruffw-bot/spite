@@ -30,6 +30,7 @@ pub(crate) struct IteratorIntrinsics {
     every: ObjectHandle,
     some: ObjectHandle,
     find: ObjectHandle,
+    reduce: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -59,6 +60,7 @@ impl IteratorIntrinsics {
             &self.every,
             &self.some,
             &self.find,
+            &self.reduce,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -98,6 +100,7 @@ impl Realm {
         let every = self.new_builtin(function_prototype, Builtin::IteratorEvery, span)?;
         let some = self.new_builtin(function_prototype, Builtin::IteratorSome, span)?;
         let find = self.new_builtin(function_prototype, Builtin::IteratorFind, span)?;
+        let reduce = self.new_builtin(function_prototype, Builtin::IteratorReduce, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
@@ -108,6 +111,7 @@ impl Realm {
             (&prototype, "every", &every),
             (&prototype, "some", &some),
             (&prototype, "find", &find),
+            (&prototype, "reduce", &reduce),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -251,6 +255,7 @@ impl Realm {
             every,
             some,
             find,
+            reduce,
             array_prototype,
             string_prototype,
             identity,
