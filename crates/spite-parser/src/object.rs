@@ -147,7 +147,7 @@ impl Parser {
                     // PropertySetParameterList is a single FormalParameter: unlike
                     // FormalParameters, it does not permit a trailing comma.
                     self.expect(")")?;
-                    Rc::from([parameter])
+                    Rc::from([Parameter::Ordinary(parameter)])
                 }
                 PropertyKind::Method => {
                     self.formal_parameters("invalid method parameter identifier")?

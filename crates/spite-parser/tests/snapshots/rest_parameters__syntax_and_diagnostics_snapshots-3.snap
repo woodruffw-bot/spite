@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/rest_parameters.rs
+expression: "parse_script(\"function f(...rest){'use strict';}\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 0,
+        end: 34,
+    },
+    message: "use strict directive with non-simple parameters",
+}

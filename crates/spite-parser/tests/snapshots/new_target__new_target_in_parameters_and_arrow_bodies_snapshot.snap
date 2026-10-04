@@ -17,23 +17,25 @@ Script {
                         },
                     ),
                     parameters: [
-                        Binding {
-                            name: "x",
-                            span: Span {
-                                start: 11,
-                                end: 12,
-                            },
-                            initializer: Some(
-                                Expr {
-                                    depth: 1,
-                                    kind: NewTarget,
-                                    span: Span {
-                                        start: 15,
-                                        end: 25,
-                                    },
+                        Ordinary(
+                            Binding {
+                                name: "x",
+                                span: Span {
+                                    start: 11,
+                                    end: 12,
                                 },
-                            ),
-                        },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: NewTarget,
+                                        span: Span {
+                                            start: 15,
+                                            end: 25,
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
                     ],
                     body: FunctionBody {
                         statements: [

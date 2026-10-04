@@ -29,27 +29,29 @@ Script {
                                             },
                                         ),
                                         parameters: [
-                                            Binding {
-                                                name: "x",
-                                                span: Span {
-                                                    start: 23,
-                                                    end: 24,
-                                                },
-                                                initializer: Some(
-                                                    Expr {
-                                                        depth: 1,
-                                                        kind: Literal(
-                                                            Number(
-                                                                1.0,
-                                                            ),
-                                                        ),
-                                                        span: Span {
-                                                            start: 27,
-                                                            end: 28,
-                                                        },
+                                            Ordinary(
+                                                Binding {
+                                                    name: "x",
+                                                    span: Span {
+                                                        start: 23,
+                                                        end: 24,
                                                     },
-                                                ),
-                                            },
+                                                    initializer: Some(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Literal(
+                                                                Number(
+                                                                    1.0,
+                                                                ),
+                                                            ),
+                                                            span: Span {
+                                                                start: 27,
+                                                                end: 28,
+                                                            },
+                                                        },
+                                                    ),
+                                                },
+                                            ),
                                         ],
                                         body: FunctionBody {
                                             statements: [

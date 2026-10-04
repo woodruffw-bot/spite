@@ -111,14 +111,16 @@ Script {
                                     depth: 2,
                                     kind: Arrow {
                                         parameters: [
-                                            Binding {
-                                                name: "x",
-                                                span: Span {
-                                                    start: 34,
-                                                    end: 35,
+                                            Ordinary(
+                                                Binding {
+                                                    name: "x",
+                                                    span: Span {
+                                                        start: 34,
+                                                        end: 35,
+                                                    },
+                                                    initializer: None,
                                                 },
-                                                initializer: None,
-                                            },
+                                            ),
                                         ],
                                         body: Expression(
                                             Expr {

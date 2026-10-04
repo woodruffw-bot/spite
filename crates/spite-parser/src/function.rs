@@ -65,11 +65,19 @@ impl Parser {
     pub(super) fn formal_parameters(
         &mut self,
         invalid_name: &str,
-    ) -> Result<Rc<[Binding]>, Diagnostic> {
+    ) -> Result<Rc<[Parameter]>, Diagnostic> {
         self.expect("(")?;
         let mut parameters = Vec::new();
         while !self.at(")") {
-            parameters.push(self.formal_parameter(invalid_name, true)?);
+            if self.eat("...") {
+                let binding = self.formal_parameter(invalid_name, false)?;
+                parameters.push(Parameter::Rest(binding));
+                // BindingRestElement has no initializer and no trailing comma.
+                break;
+            }
+            parameters.push(Parameter::Ordinary(
+                self.formal_parameter(invalid_name, true)?,
+            ));
             if !self.eat(",") {
                 break;
             }
@@ -83,8 +91,8 @@ impl Parser {
         invalid_name: &str,
         allow_default: bool,
     ) -> Result<Binding, Diagnostic> {
-        if self.at("...") || self.at("[") || self.at("{") {
-            return Err(self.unsupported("rest and binding-pattern parameters are not implemented"));
+        if self.at("[") || self.at("{") {
+            return Err(self.unsupported("binding-pattern parameters are not implemented"));
         }
         let token = self.bump();
         let Kind::Word(name) = token.kind else {
@@ -146,13 +154,13 @@ impl Parser {
 }
 
 pub(super) fn validate_parameters(
-    parameters: &[Binding],
+    parameters: &[Parameter],
     inherited_strict: bool,
     own_strict: bool,
     unique: bool,
     span: Span,
 ) -> Result<BTreeSet<&str>, Diagnostic> {
-    let non_simple = parameters.iter().any(|p| p.initializer.is_some());
+    let non_simple = parameters.iter().any(|p| !p.is_simple());
     // ECMA-262 15.2.1 and 15.3.1.
     if own_strict && non_simple {
         return Err(early(
@@ -163,6 +171,7 @@ pub(super) fn validate_parameters(
     let strict = inherited_strict || own_strict;
     let mut names = BTreeSet::new();
     for parameter in parameters {
+        let parameter = parameter.binding();
         let duplicate = !names.insert(parameter.name.as_str());
         if duplicate && (unique || strict || non_simple) {
             return Err(early(parameter.span, "duplicate lexical binding"));

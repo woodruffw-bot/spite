@@ -1,0 +1,251 @@
+---
+source: crates/spite-parser/tests/rest_parameters.rs
+expression: "parse_script(\"function f(a=1,...rest){return rest;} let g=(x,...xs)=>xs; ({m(...values){return values;}})\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    name: Some(
+                        FunctionName {
+                            name: "f",
+                            span: Span {
+                                start: 9,
+                                end: 10,
+                            },
+                        },
+                    ),
+                    parameters: [
+                        Ordinary(
+                            Binding {
+                                name: "a",
+                                span: Span {
+                                    start: 11,
+                                    end: 12,
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 13,
+                                            end: 14,
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                        Rest(
+                            Binding {
+                                name: "rest",
+                                span: Span {
+                                    start: 18,
+                                    end: 22,
+                                },
+                                initializer: None,
+                            },
+                        ),
+                    ],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "rest",
+                                            ),
+                                            span: Span {
+                                                start: 31,
+                                                end: 35,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 24,
+                                    end: 36,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function f(a=1,...rest){return rest;}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 37,
+            },
+        },
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    Binding {
+                        name: "g",
+                        span: Span {
+                            start: 42,
+                            end: 43,
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 2,
+                                kind: Arrow {
+                                    parameters: [
+                                        Ordinary(
+                                            Binding {
+                                                name: "x",
+                                                span: Span {
+                                                    start: 45,
+                                                    end: 46,
+                                                },
+                                                initializer: None,
+                                            },
+                                        ),
+                                        Rest(
+                                            Binding {
+                                                name: "xs",
+                                                span: Span {
+                                                    start: 50,
+                                                    end: 52,
+                                                },
+                                                initializer: None,
+                                            },
+                                        ),
+                                    ],
+                                    body: Expression(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "xs",
+                                            ),
+                                            span: Span {
+                                                start: 55,
+                                                end: 57,
+                                            },
+                                        },
+                                    ),
+                                    source: FunctionSource(
+                                        "(x,...xs)=>xs",
+                                    ),
+                                },
+                                span: Span {
+                                    start: 44,
+                                    end: 57,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 38,
+                end: 58,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: Parenthesized(
+                        Expr {
+                            depth: 2,
+                            kind: Object(
+                                [
+                                    Property(
+                                        ObjectProperty {
+                                            name: Literal(
+                                                String(
+                                                    "m",
+                                                ),
+                                            ),
+                                            value: Expr {
+                                                depth: 1,
+                                                kind: Function(
+                                                    Function {
+                                                        name: None,
+                                                        parameters: [
+                                                            Rest(
+                                                                Binding {
+                                                                    name: "values",
+                                                                    span: Span {
+                                                                        start: 66,
+                                                                        end: 72,
+                                                                    },
+                                                                    initializer: None,
+                                                                },
+                                                            ),
+                                                        ],
+                                                        body: FunctionBody {
+                                                            statements: [
+                                                                Statement {
+                                                                    kind: Return(
+                                                                        Some(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: Identifier(
+                                                                                    "values",
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 81,
+                                                                                    end: 87,
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 74,
+                                                                        end: 88,
+                                                                    },
+                                                                },
+                                                            ],
+                                                            strict: false,
+                                                        },
+                                                        source: FunctionSource(
+                                                            "m(...values){return values;}",
+                                                        ),
+                                                    },
+                                                ),
+                                                span: Span {
+                                                    start: 61,
+                                                    end: 89,
+                                                },
+                                            },
+                                            kind: Method,
+                                            span: Span {
+                                                start: 61,
+                                                end: 89,
+                                            },
+                                        },
+                                    ),
+                                ],
+                            ),
+                            span: Span {
+                                start: 60,
+                                end: 90,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 59,
+                        end: 91,
+                    },
+                },
+            ),
+            span: Span {
+                start: 59,
+                end: 91,
+            },
+        },
+    ],
+    strict: false,
+}

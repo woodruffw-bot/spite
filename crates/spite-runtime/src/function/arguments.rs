@@ -6,7 +6,7 @@ use crate::{
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
-use spite_parser::ast::Binding;
+use spite_parser::ast::Parameter;
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Realm {
@@ -20,7 +20,7 @@ impl Realm {
 
     pub(super) fn mapped_arguments(
         &mut self,
-        parameters: &[Binding],
+        parameters: &[Parameter],
         arguments: &[Value],
         callee: ObjectHandle,
         environment: EnvironmentHandle,
@@ -30,6 +30,11 @@ impl Realm {
         let mut mapped = BTreeSet::new();
         let mut names = BTreeMap::new();
         for (index, parameter) in parameters.iter().enumerate().rev() {
+            debug_assert!(
+                parameter.is_simple(),
+                "only simple lists have mapped arguments"
+            );
+            let parameter = parameter.binding();
             self.object_work(parameter.span, |_, budget| {
                 budget.charge(parameter.name.len() + 1)
             })?;

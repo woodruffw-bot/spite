@@ -26,27 +26,29 @@ Script {
                                                     Function {
                                                         name: None,
                                                         parameters: [
-                                                            Binding {
-                                                                name: "a",
-                                                                span: Span {
-                                                                    start: 4,
-                                                                    end: 5,
-                                                                },
-                                                                initializer: Some(
-                                                                    Expr {
-                                                                        depth: 1,
-                                                                        kind: Literal(
-                                                                            Number(
-                                                                                1.0,
-                                                                            ),
-                                                                        ),
-                                                                        span: Span {
-                                                                            start: 6,
-                                                                            end: 7,
-                                                                        },
+                                                            Ordinary(
+                                                                Binding {
+                                                                    name: "a",
+                                                                    span: Span {
+                                                                        start: 4,
+                                                                        end: 5,
                                                                     },
-                                                                ),
-                                                            },
+                                                                    initializer: Some(
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Literal(
+                                                                                Number(
+                                                                                    1.0,
+                                                                                ),
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 6,
+                                                                                end: 7,
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                },
+                                                            ),
                                                         ],
                                                         body: FunctionBody {
                                                             statements: [
@@ -177,14 +179,16 @@ Script {
                                                     Function {
                                                         name: None,
                                                         parameters: [
-                                                            Binding {
-                                                                name: "v",
-                                                                span: Span {
-                                                                    start: 56,
-                                                                    end: 57,
+                                                            Ordinary(
+                                                                Binding {
+                                                                    name: "v",
+                                                                    span: Span {
+                                                                        start: 56,
+                                                                        end: 57,
+                                                                    },
+                                                                    initializer: None,
                                                                 },
-                                                                initializer: None,
-                                                            },
+                                                            ),
                                                         ],
                                                         body: FunctionBody {
                                                             statements: [

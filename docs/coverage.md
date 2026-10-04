@@ -21,10 +21,10 @@ not an alternative language specification.
 | Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
-| Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
+| Arrow functions | Expression/block bodies, identifier/default/rest parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for and synchronous for-of with assignment/var/lexical bindings, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -155,7 +155,10 @@ standard name inference and exact Function.prototype.toString source. Captured
 per-iteration/catch/block environments survive collection; unreachable cycles are
 reclaimed. Default parameters support ordered initialization, parameter TDZ,
 separate body var environments, closure capture, name inference, and length. Rest
-parameters, patterns, and async arrows remain gaps.
+identifiers collect remaining arguments into fresh dense intrinsic Arrays. Tests
+cover defaults before rest, TDZ, function length/source, unmapped arguments,
+body binding rules without parameter expressions, constructors, methods, and
+opt-in output quotas. Parameter patterns and async arrows remain gaps.
 
 Synchronous for-of accepts reference targets and single var/let/const bindings.
 Tests cover live Array lengths, String code points, cached next methods, RHS TDZ,
@@ -172,7 +175,7 @@ capture this and arguments from enclosing functions, including across collection
 Non-strict functions with object, Boolean, Number, String, Symbol, BigInt, or nullish/global receivers also execute. Simple parameter lists
 use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
-non-writable changes. Default parameters use unmapped arguments. Parameter/body
+non-writable changes. Default and rest parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
 Arguments objects now own the intrinsic Array values callable at Symbol.iterator.
 Ordinary new expressions create fresh receivers from the current constructor
@@ -264,7 +267,7 @@ lengths, receiver binding, arguments, and exact source text follow ordinary meth
 semantics. Accessor definitions merge pairs and replace data descriptors in source
 order. Twenty-three upstream files cover computed names, escaped/reserved method
 names, abrupt key evaluation, and setter scope. Async/generator methods, super,
-and parameter patterns/rest remain unsupported.
+and parameter patterns remain unsupported.
 Object.fromEntries/groupBy remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 

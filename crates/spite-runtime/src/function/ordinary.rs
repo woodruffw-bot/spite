@@ -34,11 +34,15 @@ impl Realm {
         let non_simple = code
             .parameters
             .iter()
-            .any(|parameter| parameter.initializer.is_some());
+            .any(|parameter| !parameter.is_simple());
+        let has_parameter_expressions = code
+            .parameters
+            .iter()
+            .any(|parameter| parameter.binding().initializer.is_some());
         let parameter_arguments = code
             .parameters
             .iter()
-            .any(|parameter| parameter.name == "arguments");
+            .any(|parameter| parameter.binding().name == "arguments");
         let body_arguments = body
             .statements()
             .iter()
@@ -52,11 +56,13 @@ impl Realm {
                 }
                 _ => false,
             });
-        // 10.2.11: body lexical/function names suppress arguments only for simple
-        // parameter lists; a parameter named arguments always suppresses it.
-        let arguments_needed = !parameter_arguments && (non_simple || !body_arguments);
+        // 10.2.11: body lexical/function names suppress arguments when parameters
+        // have no expressions; a parameter named arguments always suppresses it.
+        let arguments_needed =
+            !parameter_arguments && (has_parameter_expressions || !body_arguments);
         let mut bindings = BTreeMap::new();
         for parameter in code.parameters.iter() {
+            let parameter = parameter.binding();
             self.object_work(parameter.span, |_, budget| {
                 budget.charge(parameter.name.len() + 1)
             })?;
@@ -80,7 +86,7 @@ impl Realm {
             );
         }
         // Sloppy parameter expressions get their own environment outside body vars.
-        let separate_parameters = non_simple && !code.strict;
+        let separate_parameters = has_parameter_expressions && !code.strict;
         let parameters = if separate_parameters {
             std::mem::take(&mut bindings)
         } else {
@@ -213,7 +219,7 @@ impl Realm {
         let length = syntax
             .parameters
             .iter()
-            .take_while(|parameter| parameter.initializer.is_none())
+            .take_while(|parameter| parameter.is_simple())
             .count();
         self.define_builtin_property(
             &function,

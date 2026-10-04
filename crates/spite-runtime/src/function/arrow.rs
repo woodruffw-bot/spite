@@ -3,14 +3,14 @@
 use crate::{BindingState, CompletionKind, Error, Realm, Value, environment::EnvironmentHandle};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
-    ArrowBody, Binding, Expr, ExprKind, FunctionBody, FunctionSource, StatementKind,
+    ArrowBody, Expr, ExprKind, FunctionBody, FunctionSource, Parameter, StatementKind,
 };
 use std::{collections::BTreeMap, rc::Rc};
 
 #[derive(Clone, Debug)]
 pub(crate) struct ScriptFunction {
     pub environment: EnvironmentHandle,
-    pub parameters: Rc<[Binding]>,
+    pub parameters: Rc<[Parameter]>,
     pub body: ArrowBody,
     pub source: FunctionSource,
     pub strict: bool,
@@ -19,7 +19,7 @@ pub(crate) struct ScriptFunction {
 impl Realm {
     pub(crate) fn arrow_function(
         &mut self,
-        parameters: &Rc<[Binding]>,
+        parameters: &Rc<[Parameter]>,
         body: &ArrowBody,
         source: &FunctionSource,
         span: Span,
@@ -43,12 +43,7 @@ impl Realm {
         self.define_builtin_property(
             &function,
             "length",
-            Value::Number(
-                parameters
-                    .iter()
-                    .take_while(|p| p.initializer.is_none())
-                    .count() as f64,
-            ),
+            Value::Number(parameters.iter().take_while(|p| p.is_simple()).count() as f64),
             false,
             span,
         )?;
@@ -70,6 +65,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let mut bindings = BTreeMap::new();
         for parameter in arrow.parameters.iter() {
+            let parameter = parameter.binding();
             // All parameters begin uninitialized, including later defaults.
             self.object_work(parameter.span, |_, budget| {
                 budget.charge(parameter.name.len() + 1)
@@ -105,26 +101,32 @@ impl Realm {
 
     pub(super) fn initialize_parameters(
         &mut self,
-        parameters: &[Binding],
+        parameters: &[Parameter],
         arguments: &mut std::vec::IntoIter<Value>,
     ) -> Result<(), Error> {
         let environment = self.scopes.last().expect("parameter environment").clone();
         for parameter in parameters {
-            self.tick(parameter.span)?;
-            let mut value = arguments.next().unwrap_or(Value::Undefined);
-            if matches!(value, Value::Undefined) {
-                if let Some(initializer) = &parameter.initializer {
-                    // ECMA-262 8.6.3: defaults are evaluated left to right and name
-                    // anonymous functions only when the initializer is selected.
-                    value = self
-                        .named_expression(initializer, JsString::from(parameter.name.as_str()))?;
+            let binding = parameter.binding();
+            self.tick(binding.span)?;
+            let value = if matches!(parameter, Parameter::Rest(_)) {
+                self.create_array_from_list(arguments.by_ref(), binding.span)?
+            } else {
+                let mut value = arguments.next().unwrap_or(Value::Undefined);
+                if matches!(value, Value::Undefined) {
+                    if let Some(initializer) = &binding.initializer {
+                        // ECMA-262 8.6.3: defaults are evaluated left to right and name
+                        // anonymous functions only when the initializer is selected.
+                        value = self
+                            .named_expression(initializer, JsString::from(binding.name.as_str()))?;
+                    }
                 }
-            }
+                value
+            };
             self.objects
                 .environment_mut(&environment)
                 .expect("active environment")
                 .bindings
-                .get_mut(&parameter.name)
+                .get_mut(&binding.name)
                 .expect("parameter exists")
                 .value = Some(value);
         }
@@ -133,14 +135,14 @@ impl Realm {
 
     pub(super) fn instantiate_function_vars(
         &mut self,
-        parameters: &[Binding],
+        parameters: &[Parameter],
         body: &ArrowBody,
         span: Span,
     ) -> Result<(), Error> {
         let parameter_environment = self.scopes.last().expect("parameter environment").clone();
         let separate = parameters
             .iter()
-            .any(|parameter| parameter.initializer.is_some());
+            .any(|parameter| parameter.binding().initializer.is_some());
         if separate {
             // ECMA-262 10.2.11: defaults cannot see body vars, even through closures.
             self.push_scope(BTreeMap::new(), span)?;

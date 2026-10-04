@@ -108,7 +108,7 @@ fn unimplemented_method_dependencies_remain_explicit() {
         "({*m(){}})",
         "({async m(){}})",
         "({async *m(){}})",
-        "({m(...args){}})",
+        "({m(...[args]){}})",
         "({set x({a}){}})",
         "({m(){return super.x;}})",
     ] {

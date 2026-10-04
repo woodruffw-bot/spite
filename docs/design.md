@@ -106,8 +106,8 @@ targets and labels. Its directive prologue enables strict parameter/body checks,
 including legacy tokens before the directive and in nested functions. An own Use
 Strict Directive is forbidden with defaults, while inherited strictness is allowed.
 Defaults parse as AssignmentExpression with In enabled. Top-level
-lexical declarations cannot conflict with parameters (15.3.1). Rest/pattern
-parameters and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
+lexical declarations cannot conflict with parameters (15.3.1). Pattern parameters
+and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
 Ordinary function expressions and declarations share the identifier parameter and
@@ -120,7 +120,19 @@ targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
 and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
-Generators, async functions, rest parameters, and patterns remain separate steps.
+Generators, async functions, and patterns remain separate steps.
+
+Identifier rest parameters are final and have no initializer or trailing comma
+(15.2.3). They collect the remaining internal argument values into a fresh dense
+intrinsic Array, without invoking JavaScript iterators, setters, species, or the
+global Array binding. Function length stops before the first default or rest
+parameter. Rest makes a parameter list non-simple, requiring unique names,
+rejecting an own Use Strict Directive, and selecting unmapped arguments. Parameter
+expressions separately determine whether body vars need their own environment
+and whether body declarations can suppress the arguments binding (10.2.11).
+All parameters, including rest, begin uninitialized; earlier defaults can capture
+rest but cannot read it before initialization. Rest arrays share object identities
+with supplied arguments while their element assignments remain independent.
 
 New expressions retain the constructor and optional argument list (13.3.5).
 Constructor parsing consumes member access but leaves call parentheses to the new
@@ -1019,7 +1031,7 @@ definitions merge omitted getter/setter fields in source order; data/accessor
 transitions use ordinary descriptor rules and bypass inherited setters. Calls
 reuse ordinary this, arguments, parameter, strictness, and new.target semantics.
 Function.prototype.toString retains the complete method definition source.
-Async/generator methods, parameter patterns/rest, and super remain separate gaps.
+Async/generator methods, parameter patterns, and super remain separate gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

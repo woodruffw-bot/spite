@@ -17,14 +17,16 @@ Script {
                         },
                     ),
                     parameters: [
-                        Binding {
-                            name: "x",
-                            span: Span {
-                                start: 11,
-                                end: 12,
+                        Ordinary(
+                            Binding {
+                                name: "x",
+                                span: Span {
+                                    start: 11,
+                                    end: 12,
+                                },
+                                initializer: None,
                             },
-                            initializer: None,
-                        },
+                        ),
                     ],
                     body: FunctionBody {
                         statements: [

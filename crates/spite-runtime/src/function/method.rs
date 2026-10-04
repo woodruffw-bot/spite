@@ -44,7 +44,7 @@ impl Realm {
         let length = syntax
             .parameters
             .iter()
-            .take_while(|parameter| parameter.initializer.is_none())
+            .take_while(|parameter| parameter.is_simple())
             .count();
         self.define_builtin_property(
             &function,

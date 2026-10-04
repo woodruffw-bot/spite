@@ -53,7 +53,11 @@ impl Parser {
         let parameters = if self.at("(") {
             self.formal_parameters("invalid arrow binding identifier")?
         } else {
-            vec![self.formal_parameter("invalid arrow binding identifier", false)?].into()
+            vec![Parameter::Ordinary(self.formal_parameter(
+                "invalid arrow binding identifier",
+                false,
+            )?)]
+            .into()
         };
         self.expect("=>")?;
         let (body, end) = if self.at("{") {

@@ -528,14 +528,14 @@ impl Parser {
             ExprKind::Function(function) => function
                 .parameters
                 .iter()
-                .filter_map(|p| p.initializer.as_ref().map(|e| e.depth))
+                .filter_map(|p| p.binding().initializer.as_ref().map(|e| e.depth))
                 .max()
                 .unwrap_or(0),
             ExprKind::Arrow {
                 parameters, body, ..
             } => parameters
                 .iter()
-                .filter_map(|p| p.initializer.as_ref().map(|e| e.depth))
+                .filter_map(|p| p.binding().initializer.as_ref().map(|e| e.depth))
                 .max()
                 .unwrap_or(0)
                 .max(match body {

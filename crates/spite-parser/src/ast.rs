@@ -47,8 +47,8 @@ pub struct FunctionName {
 pub struct Function {
     /// Binding name, absent for anonymous expressions, methods, and accessors.
     pub name: Option<FunctionName>,
-    /// Identifier parameters, including optional default initializers.
-    pub parameters: Rc<[Binding]>,
+    /// Identifier parameters, including defaults and an optional final rest parameter.
+    pub parameters: Rc<[Parameter]>,
     /// Shared function body syntax.
     pub body: FunctionBody,
     /// Exact function source text.
@@ -352,6 +352,29 @@ pub struct Binding {
     pub initializer: Option<Expr>,
 }
 
+/// An identifier formal parameter (15.2.3).
+#[derive(Clone, Debug, PartialEq)]
+pub enum Parameter {
+    /// A parameter with an optional default initializer.
+    Ordinary(Binding),
+    /// The final parameter, collecting remaining arguments without an initializer.
+    Rest(Binding),
+}
+
+impl Parameter {
+    /// Returns the parameter's binding identifier and any default initializer.
+    pub fn binding(&self) -> &Binding {
+        match self {
+            Self::Ordinary(binding) | Self::Rest(binding) => binding,
+        }
+    }
+
+    /// Whether this is an ordinary identifier without a default initializer.
+    pub fn is_simple(&self) -> bool {
+        matches!(self, Self::Ordinary(binding) if binding.initializer.is_none())
+    }
+}
+
 /// An expression with its source range.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Expr {
@@ -471,7 +494,7 @@ pub enum ExprKind {
     /// A non-async arrow with identifier parameters and optional defaults.
     Arrow {
         /// Parameters in source order, with optional default-value initializers.
-        parameters: Rc<[Binding]>,
+        parameters: Rc<[Parameter]>,
         /// Shared body syntax, evaluated when the function is called.
         body: ArrowBody,
         /// Exact retained source for standard function stringification.

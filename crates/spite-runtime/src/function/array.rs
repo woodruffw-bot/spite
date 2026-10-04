@@ -60,9 +60,10 @@ impl ArrayIntrinsics {
 
 impl Realm {
     /// CreateArrayFromList with own data elements (7.3.17).
+    /// Consumes internal values without invoking a JavaScript iterator.
     pub(crate) fn create_array_from_list(
         &mut self,
-        values: Vec<Value>,
+        values: impl IntoIterator<Item = Value>,
         span: Span,
     ) -> Result<Value, Error> {
         let array = self.create_intrinsic_array(0, span)?;
