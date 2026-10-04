@@ -265,6 +265,37 @@ Property capacity failures remain distinct from descriptor rejection. Storage
 exposes checked internal operations; realms supply JavaScript execution and
 exception semantics. Symbol keys remain a separate implementation boundary.
 
+The next array increments use sparse indexed properties in the same traced heap,
+with an explicit Array exotic identity and a non-configurable data `length`
+property (10.4.2). Holes consume no indexed property slots; logical length is a
+u32, and the key `4294967295` is an ordinary string property. Array identity does
+not depend on the prototype chain. Storage will enforce index growth, read-only
+length checks, and descending-index truncation independently of parser syntax.
+
+ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
+the original descriptor value separately, before reading the current length
+descriptor (10.4.2.4). The same object can therefore run conversion code twice and
+mutate the array between conversions. Storage receives a validated integer length
+and performs no JavaScript calls under a borrow. Assignment must defer this work
+until OrdinarySet's receiver/writability checks have succeeded; Object.defineProperty
+must still perform length conversion before descriptor compatibility rejection.
+
+Shrinking length first applies the new length descriptor, then deletes indexed
+properties in descending numeric order. A non-configurable element stops deletion,
+restores length to that index plus one, and still applies a requested read-only
+length. Already deleted higher properties remain deleted. Host work/capacity
+checks must precede mutation so an abort cannot expose an inconsistent array.
+Initial sparse truncation may use a conservatively charged quadratic algorithm;
+iteration over absent indices up to the logical length is unnecessary.
+
+Land this work as storage invariants, Realm Array construction/Array.isArray and
+length coercions, array literal grammar/evaluation, then prototype methods and
+additional Test262 coverage. Array.prototype is itself an empty Array exotic
+object (23.1.3). Missing constructor/prototype methods, Symbol.iterator, species,
+and unscopables remain explicit gaps until their dependencies are implemented.
+Array literals must distinguish elisions from explicit undefined and preserve
+trailing-comma lengths; spread remains Unsupported until iterator semantics exist.
+
 The `Objects` heap context validates prototype handles and prevents ordinary
 prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively
 under an explicit work budget. Data writes follow the receiver even when lookup
