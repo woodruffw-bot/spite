@@ -778,6 +778,13 @@ and host aborts. Receiver conversion precedes the unsupported native RegExp fall
 no substring approximation is counted as matching. The complete String property
 inventory supports ordered reflection, copying, enumeration, and integrity operations.
 
+The standalone ECMA-404 JSON parser preserves UTF-16 strings, duplicate names,
+source lexemes, and correctly rounded Numbers. Insta snapshots cover flat trees
+and strict grammar diagnostics. Regressions check every raw noncontrol UTF-16 unit,
+JSON escapes, decimal boundary rounding, and 20,000 nested arrays/objects with
+iterative parsing and dropping. Host work aborts remain distinct from syntax errors;
+no default work or nesting quota is introduced. Runtime JSON APIs remain open.
+
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, for-await-of, catch patterns, generators,

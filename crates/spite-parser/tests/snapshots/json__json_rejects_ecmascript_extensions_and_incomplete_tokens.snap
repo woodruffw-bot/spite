@@ -1,0 +1,326 @@
+---
+source: crates/spite-parser/tests/json.rs
+expression: diagnostics
+---
+[
+    (
+        "",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        " ",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "undefined",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "NaN",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "Infinity",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "+1",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "01",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "unexpected trailing JSON text",
+        },
+    ),
+    (
+        "-01",
+        JsonError {
+            limit: false,
+            offset: 2,
+            message: "unexpected trailing JSON text",
+        },
+    ),
+    (
+        "0x10",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "unexpected trailing JSON text",
+        },
+    ),
+    (
+        ".1",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "1.",
+        JsonError {
+            limit: false,
+            offset: 2,
+            message: "expected JSON fraction digits",
+        },
+    ),
+    (
+        "-",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected JSON integer digits",
+        },
+    ),
+    (
+        "1e",
+        JsonError {
+            limit: false,
+            offset: 2,
+            message: "expected JSON exponent digits",
+        },
+    ),
+    (
+        "1e+",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "expected JSON exponent digits",
+        },
+    ),
+    (
+        "1e-",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "expected JSON exponent digits",
+        },
+    ),
+    (
+        "tru",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "unexpected end of JSON",
+        },
+    ),
+    (
+        "True",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "null false",
+        JsonError {
+            limit: false,
+            offset: 5,
+            message: "unexpected trailing JSON text",
+        },
+    ),
+    (
+        "[1,]",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "[,1]",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "[1 2]",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "expected a JSON comma or closing delimiter",
+        },
+    ),
+    (
+        "[",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "{",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected a double-quoted JSON string",
+        },
+    ),
+    (
+        "{a:1}",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected a double-quoted JSON string",
+        },
+    ),
+    (
+        "{'a':1}",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "expected a double-quoted JSON string",
+        },
+    ),
+    (
+        "{\"a\" 1}",
+        JsonError {
+            limit: false,
+            offset: 5,
+            message: "expected a JSON object colon",
+        },
+    ),
+    (
+        "{\"a\":}",
+        JsonError {
+            limit: false,
+            offset: 5,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "{\"a\":1,}",
+        JsonError {
+            limit: false,
+            offset: 7,
+            message: "expected a double-quoted JSON string",
+        },
+    ),
+    (
+        "//x\n1",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "/*x*/1",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "\u{feff}0",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "\u{a0}0",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "\u{2028}0",
+        JsonError {
+            limit: false,
+            offset: 0,
+            message: "expected a JSON value",
+        },
+    ),
+    (
+        "0\u{b}",
+        JsonError {
+            limit: false,
+            offset: 1,
+            message: "unexpected trailing JSON text",
+        },
+    ),
+    (
+        "\"unterminated",
+        JsonError {
+            limit: false,
+            offset: 13,
+            message: "unexpected end of JSON",
+        },
+    ),
+    (
+        "\"line\nfeed\"",
+        JsonError {
+            limit: false,
+            offset: 6,
+            message: "unescaped JSON string control character",
+        },
+    ),
+    (
+        "\"\\v\"",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "invalid JSON string escape",
+        },
+    ),
+    (
+        "\"\\x41\"",
+        JsonError {
+            limit: false,
+            offset: 3,
+            message: "invalid JSON string escape",
+        },
+    ),
+    (
+        "\"\\u{41}\"",
+        JsonError {
+            limit: false,
+            offset: 4,
+            message: "invalid JSON Unicode escape",
+        },
+    ),
+    (
+        "\"\\u123\"",
+        JsonError {
+            limit: false,
+            offset: 7,
+            message: "invalid JSON Unicode escape",
+        },
+    ),
+]

@@ -1703,3 +1703,16 @@ checks against other engines are supplementary evidence, never the specification
 - [Publication record](https://ecma-international.org/publications-and-standards/standards/ecma-262/)
 - [Living specification](https://tc39.es/ecma262/)
 - [Test262 execution rules](https://github.com/tc39/test262/blob/main/INTERPRETING.md)
+
+
+JSON text has a dedicated ECMA-404 parser (25.5.1, ParseJSON). It accepts exactly
+JSON whitespace, decimal numbers, double-quoted strings and JSON escapes, and
+object/array/literal grammar; ECMAScript extensions are syntax errors. Keep UTF-16
+units, including raw and escaped lone surrogates. Preserve source-order duplicate
+object entries and exact code-unit ranges for future reviver source contexts.
+The flat postorder tree uses child indices and explicit container states, so parsing
+and dropping deeply nested JSON never recurse on the native stack. Every growing
+buffer reserves fallibly; a caller-supplied work callback can abort separately from
+syntax errors, without imposing a default quota. Number conversion uses correctly
+rounded binary64 decimal parsing and preserves negative zero, overflow, and
+underflow. Runtime JSON materialization, revivers, stringify, and raw JSON remain open.

@@ -6,6 +6,7 @@ pub mod ast;
 mod construction;
 mod function;
 mod iteration;
+pub mod json;
 mod lexer;
 mod object;
 mod optional_chain;
