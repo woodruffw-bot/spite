@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2635 unmodified test fixtures and eight harness files come from
+These 2687 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -820,6 +820,19 @@ ordering, non-callable hooks, ignored primitive hooks, preserved results, collec
 and host aborts. Fallback matching remains Unsupported. The pin and all original
 bytes are unchanged; no default resource quota or test allowance is introduced.
 
+## JSON value creation review
+
+Fifty-two unchanged JSON.parse sources add 104 Script/StrictScript variants for
+exact JSON whitespace, string delimiters and escapes, control-character rejection,
+ordered text coercion and abrupt failures, negative zero, ordinary __proto__ keys,
+duplicate names, and function metadata/non-construction. The prototype descriptor
+fixture requiring whole-object enumeration remains excluded while the JSON method
+inventory is incomplete. Callable-reviver, stringify, and raw JSON fixtures remain
+outside this selection. Local regressions additionally cover intrinsic prototype
+and exception retention, own data descriptors, inherited setter bypass, binary64
+boundaries, deep default values, and opted-in host aborts. The pin, original bytes,
+harness files, and unlimited defaults remain unchanged.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -841,13 +854,13 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 5154 variants from 2616 reviewed sources: the eleven
+The `spite-test262` command runs 5258 variants from 2668 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 48 BigInt API tests, 173 Object tests,
+tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 52 JSON parsing tests, 48 BigInt API tests, 173 Object tests,
 430 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
@@ -858,7 +871,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-4958 positives using the upstream harness, and 192 reviewed parse-negative variants.
+5062 positives using the upstream harness, and 192 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
