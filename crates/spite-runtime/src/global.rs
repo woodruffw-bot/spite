@@ -162,6 +162,14 @@ impl Realm {
             .object
             .clone();
         self.define_builtin_property(&object, "Math", Value::Object(math), true, span)?;
+        let json = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .json
+            .object
+            .clone();
+        self.define_builtin_property(&object, "JSON", Value::Object(json), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

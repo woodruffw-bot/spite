@@ -158,7 +158,9 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
     for failure in ["Proxy;", "for (;;) ;"] {
         for in_catch in [false, true] {
             let mut realm = Realm::new(Limits {
-                max_steps: (failure == "for (;;) ;").then_some(160),
+                // This explicitly opted-in budget permits intrinsic setup, then
+                // aborts the infinite loop before any catch/finally handlers.
+                max_steps: (failure == "for (;;) ;").then_some(1024),
                 ..Limits::default()
             });
             realm.eval("let x = 1;").unwrap();

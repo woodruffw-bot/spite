@@ -1608,7 +1608,6 @@ fn standard_global(name: &str) -> bool {
             | "SharedArrayBuffer"
             | "DataView"
             | "Atomics"
-            | "JSON"
             | "WeakRef"
             | "FinalizationRegistry"
             | "Promise"

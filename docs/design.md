@@ -1715,4 +1715,14 @@ and dropping deeply nested JSON never recurse on the native stack. Every growing
 buffer reserves fallibly; a caller-supplied work callback can abort separately from
 syntax errors, without imposing a default quota. Number conversion uses correctly
 rounded binary64 decimal parsing and preserves negative zero, overflow, and
-underflow. Runtime JSON materialization, revivers, stringify, and raw JSON remain open.
+underflow. JSON.parse converts text once with the string hint, reports invalid
+text as an intrinsic SyntaxError, and materializes the flat tree iteratively.
+Objects and dense arrays use retained intrinsic prototypes. Own writable,
+enumerable, configurable data properties bypass inherited setters; duplicate
+names replace earlier values without changing their initial property order, and
+__proto__ is an ordinary JSON key. Noncallable revivers are ignored. Callable
+revivers remain explicitly Unsupported after parsing; reviver traversal, source
+contexts, stringify, and raw JSON remain open. Until that inventory is complete,
+missing JSON methods and whole-object enumeration remain explicit host gaps.
+Materialization has no default nesting or resource quota; opted-in work, heap,
+and final decoded string/property-name quotas retain their host-abort behavior.

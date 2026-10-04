@@ -17,6 +17,7 @@ mod construct;
 mod error;
 mod instance;
 mod iterator;
+mod json;
 mod math;
 mod method;
 pub(crate) use method::MethodFunction;
@@ -262,6 +263,7 @@ pub(crate) enum Builtin {
     NumberToLocaleString,
     ParseFloat,
     ParseInt,
+    JsonParse,
     IsFinite,
     IsNaN,
     NumberIsFinite,
@@ -484,6 +486,7 @@ impl Builtin {
             | Self::BigIntToLocaleString => "toLocaleString",
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
+            Self::JsonParse => "parse",
             Self::EncodeUri => "encodeURI",
             Self::EncodeUriComponent => "encodeURIComponent",
             Self::DecodeUri => "decodeURI",
@@ -660,6 +663,7 @@ impl Builtin {
             | Self::ReflectHas
             | Self::ReflectSetPrototypeOf
             | Self::ParseInt
+            | Self::JsonParse
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn
             | Self::ObjectSetPrototypeOf
@@ -737,6 +741,7 @@ pub(super) struct Intrinsics {
     pub iterator: iterator::IteratorIntrinsics,
     pub reflect: reflect::ReflectIntrinsics,
     pub math: math::MathIntrinsics,
+    pub json: json::JsonIntrinsics,
 }
 
 impl Intrinsics {
@@ -772,6 +777,7 @@ impl Intrinsics {
         .chain(self.iterator.roots())
         .chain(self.reflect.roots())
         .chain(self.math.roots())
+        .chain(self.json.roots())
     }
 }
 
@@ -915,6 +921,7 @@ impl Realm {
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
         let reflect = self.reflect_intrinsics(&object_prototype, &function_prototype, span)?;
         let math = self.math_intrinsics(&object_prototype, &function_prototype, span)?;
+        let json = self.json_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -946,6 +953,7 @@ impl Realm {
             iterator,
             reflect,
             math,
+            json,
         });
         Ok(object_prototype)
     }

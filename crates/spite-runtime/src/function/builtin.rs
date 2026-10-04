@@ -382,6 +382,11 @@ impl Realm {
                     _ => unreachable!("global numeric predicate"),
                 }))
             }
+            Builtin::JsonParse => self.json_parse(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ParseFloat => self
                 .parse_float(arguments.next().unwrap_or(Value::Undefined), span)
                 .map(Value::Number),

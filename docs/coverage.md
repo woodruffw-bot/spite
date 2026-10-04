@@ -783,7 +783,13 @@ source lexemes, and correctly rounded Numbers. Insta snapshots cover flat trees
 and strict grammar diagnostics. Regressions check every raw noncontrol UTF-16 unit,
 JSON escapes, decimal boundary rounding, and 20,000 nested arrays/objects with
 iterative parsing and dropping. Host work aborts remain distinct from syntax errors;
-no default work or nesting quota is introduced. Runtime JSON APIs remain open.
+no default work or nesting quota is introduced. JSON.parse now creates intrinsic
+objects and dense arrays, preserves own data descriptors and duplicate-key order,
+and treats __proto__ as an ordinary key. Runtime regressions cover ordered text
+conversion, ignored noncallable revivers, retained prototypes and SyntaxError
+identity, inherited setter bypass, function metadata, 10,000 nested arrays with
+ordinary defaults, and opted-in work/heap/final string aborts. Callable revivers,
+source contexts, serialization, and raw JSON remain explicit implementation gaps.
 
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring, regular

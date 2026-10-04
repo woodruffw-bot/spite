@@ -194,7 +194,7 @@ fn deliberate_assertion_failures_are_runtime_failures_in_both_modes() {
 
 #[test]
 fn missing_diagnostic_formatting_is_an_explicit_non_passing_gap() {
-    // String comparison diagnostics consult the unimplemented JSON global. They cannot
+    // String comparison diagnostics consult unimplemented JSON.stringify. They cannot
     // be mistaken for a passing assertion or a test's expected exception.
     let outcomes = run("assert.sameValue('left','right','deliberate mismatch');");
     assert_eq!(outcomes.len(), 2);
