@@ -12,6 +12,7 @@ mod mutation;
 mod range;
 mod reduce;
 mod search;
+mod slice;
 mod sort;
 mod species;
 mod string;
@@ -184,6 +185,7 @@ impl Realm {
             Builtin::ArraySome,
             Builtin::ArrayMap,
             Builtin::ArrayFilter,
+            Builtin::ArraySlice,
             Builtin::ArrayFind,
             Builtin::ArrayFindIndex,
             Builtin::ArrayFindLast,

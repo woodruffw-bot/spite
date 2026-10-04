@@ -482,9 +482,26 @@ without coercion (23.1.2.6). It has no setter and is configurable/non-enumerable
 Array.prototype's Symbol.unscopables data property points to the standard mutable
 null-prototype table of 16 true-valued names (23.1.3.41). The outer property is
 non-writable, non-enumerable, and configurable; "with" is absent from the table.
-These properties are materialized independently of pending species-dependent
-Array methods and with environments. Change-by-copy methods and
-Array.of do not consult species.
+These properties are materialized independently of individual Array methods
+and with environments. Change-by-copy methods and Array.of do not consult species.
+ArraySpeciesCreate (7.3.22) reads constructor only for branded Arrays, then reads
+Symbol.species only from object-valued constructors. Null species becomes
+undefined; undefined selects the intrinsic Array. Other values must be
+constructors and receive one Number length. Custom results need not be Arrays;
+ArrayCreate's uint32 bound applies only to the intrinsic fallback. Foreign-realm
+constructors and Proxy IsArray forwarding remain pending with those object kinds.
+Map/filter (23.1.3.8/21) share the present-element callback traversal. Validate the
+callback after length conversion and before species lookup. Map creates a result
+with the initial source length and defines only present indices. Filter creates
+with zero length, retains the pre-callback value with a charged clone, and packs
+truthy selections. Both use CreateDataPropertyOrThrow, bypassing setters and
+preserving earlier definitions after failure. Neither sets a final custom length.
+Slice (23.1.3.28) converts start/end after length, then creates the species result
+with the nonnegative range count. Visit HasProperty/Get live in ascending order
+and define present elements at their relative positions. Missing source indices
+do not delete pre-existing custom-result properties. Always perform a final
+strict length Set, including for empty ranges. Range cursors retain the full
+ToLength width and consume bounded work without an intermediate index list.
 
 Array iteration follows edition-17 CreateArrayIterator and next (23.1.5.1–3).
 Store an optional iterated-object handle, a u64 next index, and key/value/key+value

@@ -342,6 +342,12 @@ properties without invoking setters, retain partial results on abrupt completion
 and do not assign a final length to custom results. Checked heaps cannot expose
 foreign-realm constructors; cross-realm normalization and Proxy traversal remain
 pending with those object kinds. Sparse scans and value copies charge host work.
+Slice snapshots length before ordered start/end conversion, then creates its
+species result and copies present properties with live reads. Holes preserve
+any existing custom-result properties. A final strict length assignment runs
+even for empty results, observing inherited setters and read-only properties.
+Generic sources retain the full safe-integer index range; ArrayCreate rejects
+oversized results before element reads. Failed copies retain earlier definitions.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
 null prototype and all 16 specified entries. Other species-dependent Array methods
