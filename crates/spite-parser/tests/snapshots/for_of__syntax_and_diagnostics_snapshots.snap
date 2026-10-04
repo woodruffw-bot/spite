@@ -1,0 +1,227 @@
+---
+source: crates/spite-parser/tests/for_of.rs
+expression: "parse_script(\"for(x of source) x; for(var v of values) ; a:b:for(let y of iterable) continue a; for(const z of 'ab') {z;}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: ForOf {
+                binding: Assignment(
+                    Expr {
+                        depth: 1,
+                        kind: Identifier(
+                            "x",
+                        ),
+                        span: Span {
+                            start: 4,
+                            end: 5,
+                        },
+                    },
+                ),
+                iterable: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "source",
+                    ),
+                    span: Span {
+                        start: 9,
+                        end: 15,
+                    },
+                },
+                body: Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 17,
+                                end: 18,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 17,
+                        end: 19,
+                    },
+                },
+            },
+            span: Span {
+                start: 0,
+                end: 19,
+            },
+        },
+        Statement {
+            kind: ForOf {
+                binding: Var(
+                    Binding {
+                        name: "v",
+                        span: Span {
+                            start: 28,
+                            end: 29,
+                        },
+                        initializer: None,
+                    },
+                ),
+                iterable: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "values",
+                    ),
+                    span: Span {
+                        start: 33,
+                        end: 39,
+                    },
+                },
+                body: Statement {
+                    kind: Empty,
+                    span: Span {
+                        start: 41,
+                        end: 42,
+                    },
+                },
+            },
+            span: Span {
+                start: 20,
+                end: 42,
+            },
+        },
+        Statement {
+            kind: Labelled {
+                label: Label {
+                    name: "a",
+                    span: Span {
+                        start: 43,
+                        end: 44,
+                    },
+                },
+                body: Statement {
+                    kind: Labelled {
+                        label: Label {
+                            name: "b",
+                            span: Span {
+                                start: 45,
+                                end: 46,
+                            },
+                        },
+                        body: Statement {
+                            kind: ForOf {
+                                binding: Lexical {
+                                    mutable: true,
+                                    binding: Binding {
+                                        name: "y",
+                                        span: Span {
+                                            start: 55,
+                                            end: 56,
+                                        },
+                                        initializer: None,
+                                    },
+                                },
+                                iterable: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "iterable",
+                                    ),
+                                    span: Span {
+                                        start: 60,
+                                        end: 68,
+                                    },
+                                },
+                                body: Statement {
+                                    kind: Continue(
+                                        Some(
+                                            Label {
+                                                name: "a",
+                                                span: Span {
+                                                    start: 79,
+                                                    end: 80,
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 70,
+                                        end: 81,
+                                    },
+                                },
+                            },
+                            span: Span {
+                                start: 47,
+                                end: 81,
+                            },
+                        },
+                    },
+                    span: Span {
+                        start: 45,
+                        end: 81,
+                    },
+                },
+            },
+            span: Span {
+                start: 43,
+                end: 81,
+            },
+        },
+        Statement {
+            kind: ForOf {
+                binding: Lexical {
+                    mutable: false,
+                    binding: Binding {
+                        name: "z",
+                        span: Span {
+                            start: 92,
+                            end: 93,
+                        },
+                        initializer: None,
+                    },
+                },
+                iterable: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        String(
+                            "ab",
+                        ),
+                    ),
+                    span: Span {
+                        start: 97,
+                        end: 101,
+                    },
+                },
+                body: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "z",
+                                        ),
+                                        span: Span {
+                                            start: 104,
+                                            end: 105,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 104,
+                                    end: 106,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 103,
+                        end: 107,
+                    },
+                },
+            },
+            span: Span {
+                start: 82,
+                end: 107,
+            },
+        },
+    ],
+    strict: false,
+}

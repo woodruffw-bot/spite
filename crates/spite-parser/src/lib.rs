@@ -5,6 +5,7 @@ mod arrow;
 pub mod ast;
 mod construction;
 mod function;
+mod iteration;
 mod lexer;
 mod object;
 
@@ -362,52 +363,9 @@ impl Parser {
                 alternate,
             }
         } else if self.eat("for") {
-            if self.at("await") {
-                return Err(self.unsupported("for-await-of is not implemented"));
-            }
-            self.expect("(")?;
-            let initializer = if self.at(";") {
-                None
-            } else if self.eat("var") {
-                Some(ForInitializer::Var(self.binding_list(false, true, false)?))
-            } else if self.at("const")
-                || (self.at("let")
-                    && self
-                        .tokens
-                        .get(self.index + 1)
-                        .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))))
-            {
-                let (mutable, bindings) = self.lexical_bindings(true)?;
-                Some(ForInitializer::Lexical { mutable, bindings })
-            } else {
-                Some(ForInitializer::Expression(
-                    self.expression_with_in(1, false)?,
-                ))
-            };
-            if self.at("in") || self.at("of") {
-                return Err(self.unsupported("for-in and for-of are not implemented"));
-            }
-            // ECMA-262 12.10.1: ASI never supplies either header semicolon.
-            self.expect(";")?;
-            let test = if self.at(";") {
-                None
-            } else {
-                Some(self.expression(1)?)
-            };
-            self.expect(";")?;
-            let update = if self.at(")") {
-                None
-            } else {
-                Some(self.expression(1)?)
-            };
-            self.expect(")")?;
+            let header = self.for_header()?;
             let body = Box::new(self.statement(false)?);
-            StatementKind::For {
-                initializer,
-                test,
-                update,
-                body,
-            }
+            header.with_body(body)
         } else if self.eat("while") {
             self.expect("(")?;
             let test = self.expression(1)?;
@@ -534,10 +492,10 @@ impl Parser {
             } else {
                 None
             };
-            if for_header && (self.at("in") || self.at("of")) {
-                return Err(self.unsupported("for-in and for-of are not implemented"));
+            if for_header && self.at("in") {
+                return Err(self.unsupported("for-in is not implemented"));
             }
-            if require_initializer && initializer.is_none() {
+            if require_initializer && initializer.is_none() && !(for_header && self.at("of")) {
                 return Err(self.error("const requires an initializer"));
             }
             bindings.push(Binding {
@@ -1342,6 +1300,48 @@ fn validate_statement<'a>(
                 labels,
             )?;
         }
+        StatementKind::ForOf {
+            binding,
+            iterable,
+            body,
+        } => {
+            match binding {
+                ForOfBinding::Assignment(target) => {
+                    if strict
+                        && assignment_name(target).is_some_and(|name| {
+                            strict_reserved(name) || matches!(name, "eval" | "arguments")
+                        })
+                    {
+                        return Err(early(target.span, "invalid assignment in strict mode"));
+                    }
+                    validate_expr(target, strict)?;
+                }
+                ForOfBinding::Var(binding) => validate_binding(binding, strict)?,
+                ForOfBinding::Lexical { binding, .. } => {
+                    validate_binding(binding, strict)?;
+                    let mut declarations = Vec::new();
+                    body.collect_var_declarations(&mut declarations);
+                    for declaration in declarations {
+                        if declaration.name == binding.name {
+                            return Err(early(
+                                declaration.span,
+                                "var declaration conflicts with lexical for binding",
+                            ));
+                        }
+                    }
+                }
+            }
+            validate_expr(iterable, strict)?;
+            validate_statement(
+                body,
+                strict,
+                ControlContext {
+                    in_iteration: true,
+                    in_breakable: true,
+                },
+                labels,
+            )?;
+        }
         StatementKind::Switch {
             discriminant,
             clauses,
@@ -1433,7 +1433,10 @@ fn labels_iteration(mut statement: &Statement) -> bool {
     }
     matches!(
         statement.kind,
-        StatementKind::While { .. } | StatementKind::DoWhile { .. } | StatementKind::For { .. }
+        StatementKind::While { .. }
+            | StatementKind::DoWhile { .. }
+            | StatementKind::For { .. }
+            | StatementKind::ForOf { .. }
     )
 }
 

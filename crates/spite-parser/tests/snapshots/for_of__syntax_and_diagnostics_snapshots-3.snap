@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/for_of.rs
+expression: "parse_script(\"'use strict';for(eval of []) ;\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 17,
+        end: 21,
+    },
+    message: "invalid assignment in strict mode",
+}

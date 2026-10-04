@@ -143,6 +143,12 @@ impl Statement {
                 }
                 body.collect_var_declarations(declarations);
             }
+            StatementKind::ForOf { binding, body, .. } => {
+                if let ForOfBinding::Var(binding) = binding {
+                    declarations.push(binding);
+                }
+                body.collect_var_declarations(declarations);
+            }
             StatementKind::Switch { clauses, .. } => {
                 for statement in clauses.iter().flat_map(|c| &c.statements) {
                     statement.collect_var_declarations(declarations);
@@ -246,6 +252,15 @@ pub enum StatementKind {
         /// Repeated statement.
         body: Box<Statement>,
     },
+    /// A synchronous loop over an iterable.
+    ForOf {
+        /// Assignment target or single declaration initialized per iteration.
+        binding: ForOfBinding,
+        /// Iterable expression evaluated once before iterator acquisition.
+        iterable: Expr,
+        /// Repeated statement.
+        body: Box<Statement>,
+    },
     /// A statement with a control-flow label.
     Labelled {
         /// Declared label.
@@ -298,6 +313,22 @@ pub enum ForInitializer {
         mutable: bool,
         /// Bindings in source order.
         bindings: Vec<Binding>,
+    },
+}
+
+/// The supported binding forms of a synchronous for-of loop (14.7.5).
+#[derive(Clone, Debug, PartialEq)]
+pub enum ForOfBinding {
+    /// A reference evaluated anew after each iterator value is read.
+    Assignment(Expr),
+    /// A var binding in the surrounding variable environment, without initializer.
+    Var(Binding),
+    /// A fresh lexical binding for each iteration, without initializer.
+    Lexical {
+        /// Whether the iteration binding may be reassigned.
+        mutable: bool,
+        /// Binding identifier.
+        binding: Binding,
     },
 }
 

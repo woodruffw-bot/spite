@@ -52,7 +52,6 @@ fn unparenthesized_for_in_and_for_of_headers_remain_unsupported() {
         "for (var x in o) ;",
         "for (let x in o) ;",
         "for (const x in o) ;",
-        "for (x of o) ;",
         "for (x = 'x' in o) ;",
         "for (let x = 'x' in o) ;",
         "for (true ? false : 'x' in o) ;",

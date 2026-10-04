@@ -5,6 +5,7 @@
 mod test_support;
 
 mod environment;
+mod for_of;
 mod function;
 mod global;
 use environment::{BindingState, EnvironmentHandle};
@@ -832,6 +833,11 @@ impl Realm {
                     }
                 }
             }
+            StatementKind::ForOf {
+                binding,
+                iterable,
+                body,
+            } => self.for_of(binding, iterable, body, labels, statement.span),
             StatementKind::If {
                 test,
                 consequent,

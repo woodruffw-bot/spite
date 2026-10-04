@@ -35,6 +35,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add labelled statements, labelled control transfers, and label early errors.
 - [x] Add expression-header for loops and their completion semantics.
 - [x] Add lexical for-loop declarations and per-iteration environments.
+- [x] Parse/evaluate synchronous for-of with assignment/var/lexical bindings, fresh iteration scopes, and iterator closing.
 - [x] Parse switch clauses and validate their lexical scope and control flow.
 - [x] Evaluate switch selection, fall-through, and completion values.
 - [x] Parse try-finally blocks and validate their scopes and control targets.
@@ -45,7 +46,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute catch binding identifiers for implemented thrown values, including objects.
 - [x] Bind built-in exceptions as JavaScript Error objects in catch clauses.
 - [x] Add Error/NativeError constructors, causes, ErrorData identity, and standard methods.
-- [ ] Add remaining statements, for-in/of loops, catch parameters, and completions.
+- [ ] Add remaining statements, for-in loops, catch patterns, and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.
@@ -184,7 +185,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
 - [x] Add Array keys/values/entries iterators with live state, reentrant next calls, and source tracing.
 - [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
-- [x] Add synchronous iterator acquisition, cached next calls, stepping, and throw-completion closing.
+- [x] Add synchronous iterator acquisition, cached next calls, stepping, and language-completion closing.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [ ] Add remaining shared Iterator prototype properties.
 - [x] Expose the Symbol global with standard attributes.

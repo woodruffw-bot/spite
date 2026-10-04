@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/for_of.rs
+expression: "parse_script(\"for(let x=1 of []) ;\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 10,
+        end: 11,
+    },
+    message: "for-of requires one binding without an initializer",
+}

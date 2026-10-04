@@ -1,4 +1,4 @@
-//! Synchronous iterator acquisition, stepping, and closing throw completions (7.4).
+//! Synchronous iterator acquisition, stepping, and completion closing (7.4).
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKeyRef, Span};
@@ -113,5 +113,25 @@ impl Realm {
             Err(close_error) if !close_error.is_language_exception() => close_error,
             _ => error,
         }
+    }
+
+    /// IteratorClose for a non-throw completion: cleanup errors replace it.
+    pub(crate) fn iterator_close(
+        &mut self,
+        record: &IteratorRecord,
+        span: Span,
+    ) -> Result<(), Error> {
+        let receiver = Value::Object(record.iterator.clone());
+        if let Some(method) = self.get_method(&receiver, &JsString::from("return"), span)? {
+            let result = self.call(method, receiver, vec![], span)?;
+            if !matches!(result, Value::Object(_)) {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "iterator return result is not an object",
+                ));
+            }
+        }
+        Ok(())
     }
 }

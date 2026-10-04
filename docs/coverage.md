@@ -27,9 +27,9 @@ not an alternative language specification.
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
-| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for and synchronous for-of with assignment/var/lexical bindings, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
-| Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
+| Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
@@ -156,6 +156,14 @@ per-iteration/catch/block environments survive collection; unreachable cycles ar
 reclaimed. Default parameters support ordered initialization, parameter TDZ,
 separate body var environments, closure capture, name inference, and length. Rest
 parameters, patterns, and async arrows remain gaps.
+
+Synchronous for-of accepts reference targets and single var/let/const bindings.
+Tests cover live Array lengths, String code points, cached next methods, RHS TDZ,
+fresh lexical environments, and assignment references evaluated after each value.
+Iterator closing handles break, return, nonmatching continue, and body/assignment
+throws with the required cleanup precedence. Step failures and host failures do
+not close; cleanup host errors remain host errors. Completion values, labels,
+scope restoration, and captured bindings after collection have regressions.
 
 Strict ordinary functions execute with preserved receivers, shared lexical captures,
 hoisting, defaults, and return completions. Unmapped arguments expose original
@@ -423,7 +431,7 @@ and reviewed upstream Symbol/iterator fixtures.
 
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
-expressions, tagged templates, for-in/of, catch patterns, generators,
+expressions, tagged templates, for-in and for-await-of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral

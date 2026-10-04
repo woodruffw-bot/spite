@@ -81,6 +81,21 @@ Parser depth and opted-in evaluator work limits report host resource errors, not
 exceptions. Syntax or semantics that are not implemented must be recorded as gaps.
 Never use unsupported syntax rejection as evidence of conformance to negative tests.
 
+Synchronous for-of supports reference targets and single var/let/const identifiers
+(14.7.5). Parse the RHS as AssignmentExpression with In enabled and validate header
+initializers, targets, lexical conflicts, labels, and literal contextual keywords.
+Complete header parsing before recursively parsing the body to keep native frames
+small. Lexical names are uninitialized during RHS evaluation; restore the outer
+environment before iterator acquisition. Capture next once, then read each value
+before evaluating its assignment target. Both let and const receive a fresh
+environment per iteration. Normal exhaustion and matching continue do not close;
+break, return, nonmatching control transfers, and body/assignment throws use
+IteratorClose after restoring the outer environment. Cleanup errors replace
+non-throw completions; incoming throws override cleanup language errors. Iterator
+step failures propagate without closing. Host failures stop without executing
+cleanup, and host errors during cleanup remain host errors. Destructuring,
+for-in, and async iteration remain separate steps.
+
 Arrow parsing supports non-async arrows with identifier parameters, optional
 defaults, and assignment-expression or block bodies (15.3). A bounded token lookahead refines the
 parenthesized parameter cover without changing ordinary parenthesized expressions.
@@ -111,8 +126,8 @@ New expressions retain the constructor and optional argument list (13.3.5).
 Constructor parsing consumes member access but leaves call parentheses to the new
 expression, distinguishing `new F.x(a)` from `new F(a).x`. Nested new forms bind
 inner argument lists first. Calls and construction share argument parsing with In
-enabled; spans, strict validation, and depth budgets cover all children. Spread
-and derived construction remain separate gaps. NewTarget is permitted in ordinary
+enabled; spans, strict validation, and depth budgets cover all children. Derived
+construction remains a separate gap. NewTarget is permitted in ordinary
 function parameters/bodies and arrows nested within them; the permission crosses
 arrow boundaries but is restored after each ordinary function (16.1.1). Script
 and arrow-only occurrences are Syntax errors before execution. Escaped grammar
