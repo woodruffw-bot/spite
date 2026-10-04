@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2620 unmodified test fixtures and eight harness files come from
+These 2635 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -58,7 +58,7 @@ The 173 Object files cover SameValue, own-property checks, descriptor conversion
 reflection, prototype identity/mutation, extensibility, creation, value copying,
 key enumeration, and frozen/sealed integrity. Getter-mutation cases use accessor
 literals to exercise snapshot keys, live descriptors, and abrupt reads.
-The 415 String files cover wrappers, raw construction, character
+The 430 String files cover wrappers, raw construction, character
 access, searches, concatenation, substrings, trimming, repetition, padding, Unicode well-formedness, UTF-16 encoding/decoding,
 and ordered conversions. Each runs in both required Script
 modes. The `harness` manifest mode verifies support-file bytes without counting
@@ -78,7 +78,7 @@ The 677 Array and Array iterator files cover call/new construction, of, branding
 indexed growth, truncation, generic at/join/push/pop, toString/toLocaleString, and ordered
 forEach/every/some callback traversal, find/findIndex/findLast/findLastIndex,
 includes/indexOf/lastIndexOf searches, reduce/reduceRight accumulators, species-aware map/filter/slice/concat/flat/flatMap/splice, sparse reverse, fill/copyWithin range mutations, shift/unshift front mutations, and sort/toSorted and toReversed/with/toSpliced copies, plus keys/values/entries
-iteration and live mapped/unmapped arguments. The 415 String files now include
+iteration and live mapped/unmapped arguments. The 430 String files now include
 String iterator conversion, ancestry, branding, and surrogate-pair traversal.
 The 34 Symbol files cover identity, construction, boxing, descriptions, registry
 access, branded methods, and conversion hooks. These files run unchanged with
@@ -809,6 +809,17 @@ distinctions, lone surrogates, conversion/argument order, collection, and host a
 The documented fixed locale-neutral NFD ordering is an ECMA-262 host choice without
 ECMA-402. The pin, original bytes, helpers, and ordinary defaults remain unchanged.
 
+## String matching-hook review
+
+Fifteen unchanged match/matchAll/search sources add 30 Script/StrictScript variants
+for custom object hooks, getter errors, exact invocation arguments and receivers,
+non-coercible matchAll receivers, name/length/property descriptors, and
+non-construction. Originals requiring native RegExp creation or literals remain
+excluded and receive no pass credit. Native regressions also cover global-flag
+ordering, non-callable hooks, ignored primitive hooks, preserved results, collection,
+and host aborts. Fallback matching remains Unsupported. The pin and all original
+bytes are unchanged; no default resource quota or test allowance is introduced.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -830,14 +841,14 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 5124 variants from 2601 reviewed sources: the eleven
+The `spite-test262` command runs 5154 variants from 2616 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 48 BigInt API tests, 173 Object tests,
-415 String and String iterator tests, 677 Array and Array iterator tests
+430 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
 34 Symbol tests, 23 object method/accessor tests, and 75 for-of files (53 positive
@@ -847,7 +858,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-4928 positives using the upstream harness, and 192 reviewed parse-negative variants.
+4958 positives using the upstream harness, and 192 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
