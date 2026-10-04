@@ -107,6 +107,16 @@ impl Realm {
         if let Value::Object(object) = base {
             return self.get_property(object, key, span);
         }
+        if matches!(base, Value::Boolean(_)) {
+            let prototype = self
+                .intrinsics
+                .as_ref()
+                .expect("initialized realm")
+                .boolean
+                .prototype
+                .clone();
+            return self.get_property_with_receiver(&prototype, key, base.clone(), span);
+        }
         self.tick(span)?;
         if let Value::String(string) = base {
             if key_is(key, "length") {
@@ -148,9 +158,30 @@ impl Realm {
                 }
             };
         }
+        if matches!(base, Value::Boolean(_)) {
+            let prototype = self
+                .intrinsics
+                .as_ref()
+                .expect("initialized realm")
+                .boolean
+                .prototype
+                .clone();
+            let action = self.object_work(span, |objects, budget| {
+                budget.value(&value)?;
+                objects.set(&prototype, key, value.clone(), None, budget)
+            })?;
+            return match action {
+                SetAction::Done(result) => Ok(result),
+                SetAction::Call(setter) => {
+                    self.call(Value::Object(setter), base.clone(), vec![value], span)?;
+                    Ok(true)
+                }
+            };
+        }
         // GetThisValue retains the primitive receiver. String own properties
         // reject writes; ordinary inherited data properties reject non-objects
-        // as receivers (10.1.9.2). No primitive prototype has an enabled setter.
+        // as receivers (10.1.9.2). The remaining primitive prototypes do not yet
+        // expose setters.
         self.tick(span)?;
         Ok(false)
     }
@@ -183,6 +214,16 @@ impl Realm {
         key: &JsString,
         span: Span,
     ) -> Result<Value, Error> {
+        self.get_property_with_receiver(object, key, Value::Object(object.clone()), span)
+    }
+
+    fn get_property_with_receiver(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        receiver: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
         let mut next = Some(object.clone());
         while let Some(handle) = next {
             let own = self.object_work(span, |objects, budget| {
@@ -192,12 +233,9 @@ impl Realm {
                 return match property {
                     Property::Data(data) => Ok(data.value),
                     Property::Accessor(accessor) => match accessor.get {
-                        Some(getter) => self.call(
-                            Value::Object(getter),
-                            Value::Object(object.clone()),
-                            Vec::new(),
-                            span,
-                        ),
+                        Some(getter) => {
+                            self.call(Value::Object(getter), receiver.clone(), Vec::new(), span)
+                        }
                         None => Ok(Value::Undefined),
                     },
                 };

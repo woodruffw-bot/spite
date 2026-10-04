@@ -8,7 +8,7 @@ fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
     realm.eval("let flag=0;function f(){flag=9;}").unwrap();
     for source in [
         "f.call(1)",
-        "f.call(false)",
+        "f.call('text')",
         "f.apply(1n,{length:0})",
         "f.bind('text')()",
     ] {

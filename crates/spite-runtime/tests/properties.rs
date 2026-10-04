@@ -215,7 +215,7 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         number(&format!("({{__proto__: {{ {name}: 7 }} }}).{name}"), 7.0);
         number(&format!("let o = {{}}; o.{name} = 3; o.{name}"), 3.0);
     }
-    for source in ["1..toFixed", "'abc'.slice", "true.valueOf", "1n.toString"] {
+    for source in ["1..toFixed", "'abc'.slice", "1n.toString"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

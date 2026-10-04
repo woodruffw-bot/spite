@@ -8,6 +8,7 @@ use spite_core::{JsString, Span};
 
 mod arguments;
 mod arrow;
+mod boolean;
 mod bound;
 mod construct;
 mod instance;
@@ -25,6 +26,9 @@ pub(crate) enum Builtin {
     ThrowTypeError,
     ObjectToString,
     ObjectValueOf,
+    Boolean,
+    BooleanToString,
+    BooleanValueOf,
 }
 
 impl Builtin {
@@ -35,14 +39,15 @@ impl Builtin {
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
             Self::FunctionBind => "bind",
-            Self::FunctionToString | Self::ObjectToString => "toString",
-            Self::ObjectValueOf => "valueOf",
+            Self::FunctionToString | Self::ObjectToString | Self::BooleanToString => "toString",
+            Self::ObjectValueOf | Self::BooleanValueOf => "valueOf",
+            Self::Boolean => "Boolean",
         }
     }
 
     fn length(self) -> f64 {
         match self {
-            Self::FunctionCall | Self::FunctionBind => 1.0,
+            Self::FunctionCall | Self::FunctionBind | Self::Boolean => 1.0,
             Self::FunctionApply => 2.0,
             _ => 0.0,
         }
@@ -88,6 +93,7 @@ pub(super) struct Intrinsics {
     pub function_apply: ObjectHandle,
     pub function_bind: ObjectHandle,
     pub function_to_string: ObjectHandle,
+    pub boolean: boolean::BooleanIntrinsics,
 }
 
 impl Intrinsics {
@@ -104,6 +110,7 @@ impl Intrinsics {
             &self.function_to_string,
         ]
         .into_iter()
+        .chain(self.boolean.roots())
     }
 }
 
@@ -187,6 +194,7 @@ impl Realm {
                 span,
             )?;
         }
+        let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -199,6 +207,7 @@ impl Realm {
             function_apply,
             function_bind,
             function_to_string,
+            boolean,
         });
         Ok(object_prototype)
     }
@@ -229,7 +238,7 @@ impl Realm {
         Ok(object)
     }
 
-    fn define_builtin_property(
+    pub(super) fn define_builtin_property(
         &mut self,
         object: &ObjectHandle,
         name: &str,
@@ -454,22 +463,25 @@ impl Realm {
                     }
                 }
                 Builtin::FunctionPrototype => Ok(Value::Undefined),
+                Builtin::Boolean => Ok(Value::Boolean(
+                    arguments.next().unwrap_or(Value::Undefined).to_boolean(),
+                )),
+                Builtin::BooleanValueOf => {
+                    Ok(Value::Boolean(self.this_boolean_value(&this, span)?))
+                }
+                Builtin::BooleanToString => Ok(Value::String(JsString::from(
+                    if self.this_boolean_value(&this, span)? {
+                        "true"
+                    } else {
+                        "false"
+                    },
+                ))),
                 Builtin::ThrowTypeError => Err(Self::exception(
                     ExceptionKind::TypeError,
                     span,
                     "restricted function property",
                 )),
-                Builtin::ObjectValueOf => {
-                    Self::require_object_coercible(&this, span)?;
-                    if matches!(this, Value::Object(_)) {
-                        Ok(this)
-                    } else {
-                        Err(Self::unsupported(
-                            span,
-                            "returning primitive wrapper objects is not implemented",
-                        ))
-                    }
-                }
+                Builtin::ObjectValueOf => self.box_primitive(this, span),
                 Builtin::ObjectToString => {
                     // 20.1.3.6. No Symbol keys or additional exotic object kinds are
                     // exposed yet; their tags and hooks must join this dispatch later.
@@ -482,7 +494,9 @@ impl Realm {
                         Value::String(_) => "String",
                         Value::Object(handle) => self.object_work(span, |objects, _| {
                             let object = objects.inspect(handle)?;
-                            Ok(if object.is_arguments() {
+                            Ok(if object.boolean_data().is_some() {
+                                "Boolean"
+                            } else if object.is_arguments() {
                                 "Arguments"
                             } else if object.is_callable() {
                                 "Function"

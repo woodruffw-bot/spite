@@ -171,6 +171,18 @@ impl Objects {
         self.inspect(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Builtin(builtin));
+        object.constructible = matches!(builtin, Builtin::Boolean);
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn create_boolean(
+        &mut self,
+        prototype: &Handle,
+        value: bool,
+    ) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        object.boolean_data = Some(value);
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

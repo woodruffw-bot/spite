@@ -25,12 +25,7 @@ impl Realm {
             match this {
                 Value::Undefined | Value::Null => Value::Object(self.global_object()),
                 Value::Object(_) => this,
-                _ => {
-                    return Err(Self::unsupported(
-                        span,
-                        "non-strict primitive receivers are not implemented",
-                    ));
-                }
+                _ => self.box_primitive(this, span)?,
             }
         };
         let ArrowBody::Block(body) = &code.body else {

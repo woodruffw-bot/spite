@@ -102,9 +102,10 @@ strict or non-simple lists require unique names. A function's own strict directi
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
-bypass expression recursion limits. Ordinary functions instantiate; strict calls and non-strict calls with object
-receivers execute. Global receivers and ordinary construction also execute; boxed
-receivers remain a runtime gap. Generators, async functions, rest parameters, and patterns remain separate steps.
+bypass expression recursion limits. Ordinary functions instantiate; strict calls
+and non-strict calls with object, global, or Boolean receivers execute. Ordinary
+construction also executes; other primitive wrappers remain a runtime gap.
+Generators, async functions, rest parameters, and patterns remain separate steps.
 
 New expressions retain the constructor and optional argument list (13.3.5).
 Constructor parsing consumes member access but leaves call parentheses to the new
@@ -290,8 +291,8 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity; its callable
 properties remain incomplete. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. Object coercion hooks and primitive wrapper constructors
-remain explicit implementation gaps.
+that method normally. Symbol coercion hooks and Number, String, BigInt, and Symbol
+wrapper constructors remain explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors
 carry mutually exclusive kind-specific fields; omitted fields preserve existing
@@ -315,7 +316,9 @@ as permitted by the GetValue/PutValue/delete notes. String own properties expose
 UTF-16 length and single-code-unit indices with non-writable, non-configurable
 attributes. Canonical numeric index names exclude string `-0`, leading zeros,
 fractions, and out-of-range indices. Writes retain the primitive receiver and
-fail without persisting a property; strict mode throws. Missing standard prototype
+fail without persisting a data property; strict mode throws. Boolean primitives
+look up the actual Boolean prototype graph, retaining the primitive receiver for
+inherited getter/setter calls; setters can succeed in either strictness mode. Missing standard prototype
 methods report Unsupported, while absent properties produce undefined. The
 optional Annex B String methods and optional legacy Object.prototype accessor
 are not installed.
@@ -341,16 +344,31 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The nine intrinsic objects are published atomically during realm
+(20.1.3, 10.4.7.1). The thirteen intrinsic objects are published atomically during realm
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
 %ThrowTypeError% function (9.3.2, 10.2.4). Its name/length descriptors are frozen.
 Reads and writes throw TypeError in both modes, while presence and own-property
 deletion do not invoke accessors. Unavailable standard methods remain Unsupported.
-Native Object.prototype.valueOf still reports Unsupported when it would
-return a primitive wrapper. Arrow closures use the same callable dispatch with
+Native Object.prototype.valueOf returns fresh Boolean wrappers for Boolean
+receivers; other primitive wrappers remain Unsupported. Arrow closures use the same callable dispatch with
 their captured environment identity.
+
+Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
+without invoking conversion methods; construction also allocates a fresh ordinary
+object with an own BooleanData internal slot. Boolean.prototype holds false in
+that slot, inherits Object.prototype, and supplies constructor, toString, and
+valueOf. The methods accept Boolean primitives or objects with an own slot;
+inheriting Boolean.prototype alone does not qualify. The constructor's prototype
+property is fixed. The global Boolean property is writable/configurable and does
+not control intrinsic identity or receiver boxing after deletion/replacement.
+Non-strict ordinary calls and Object.prototype.valueOf use ToObject to allocate
+observable wrappers (7.1.18, 10.2.1.2); primitive property operations need no
+allocation. Object.prototype.toString recognizes BooleanData independently of
+prototype identity. Wrapper slots consume trace work, and wrapper object edges
+use the existing heap/root machinery. Bound construction forwards through the
+same Boolean constructor algorithm and ignores the bound receiver.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
@@ -461,8 +479,8 @@ is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
 alias indices, or vice versa. Argument values and receiver captures remain traced
 after returns or abrupt default initialization. The required Symbol.iterator hook
 is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
-recognizes the Arguments tag. Primitive non-strict receivers still report
-Unsupported until primitive wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
+recognizes the Arguments tag. Boolean non-strict receivers are boxed; other
+primitive receivers still report Unsupported until their wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
 
 Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps
 store checked environment handles and parameter names instead of exposing hidden

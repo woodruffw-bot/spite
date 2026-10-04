@@ -43,6 +43,14 @@ impl Realm {
                 )
             })?;
         }
+        let boolean = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .boolean
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Boolean", Value::Object(boolean), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

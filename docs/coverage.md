@@ -22,7 +22,7 @@ not an alternative language specification.
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions and inherited intrinsic hooks, with ordered prototype lookup; custom Symbol.hasInstance hooks await symbols |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; boxed non-strict receivers remain Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean receivers box; other non-strict primitive receivers remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -94,11 +94,10 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the nine objects remain rooted. Function.prototype caller/arguments
+is atomic and the thirteen objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
-metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
-wrappers returned by valueOf, spread arguments, optional calls, and
-boxed non-strict receivers remain open; missing operations report Unsupported. Function.prototype
+metadata. Their reads/writes throw catchable TypeError in both modes. Number/String/BigInt/Symbol
+wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -124,12 +123,12 @@ Strict ordinary functions execute with preserved receivers, shared lexical captu
 hoisting, defaults, and return completions. Unmapped arguments expose original
 indices, length, and restricted callee; indices and parameters do not alias. Arrows
 capture this and arguments from enclosing functions, including across collection.
-Non-strict functions with object or nullish/global receivers also execute. Simple parameter lists
+Non-strict functions with object, Boolean, or nullish/global receivers also execute. Simple parameter lists
 use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
-The arguments Symbol.iterator hook and boxed non-strict receivers remain unimplemented.
+The arguments Symbol.iterator hook and non-Boolean primitive wrappers remain unimplemented.
 Ordinary new expressions create fresh receivers from the current constructor
 prototype (or the realm default), run parameters/bodies, and honor object returns.
 Bound constructors forward arguments and newTarget while ignoring bound this and
@@ -138,8 +137,16 @@ Construction shares call nesting and argument limits; deep bound chains are iter
 new.target is validated in ordinary functions, binds undefined on calls or the
 constructor on construction, and is lexically captured/traced through arrows.
 
-Symbols, primitive wrapper constructors,
-arrays, boxed receivers, derived construction, classes, destructuring, regular
+Boolean calls, construction, prototype methods, descriptors, and boxed receivers
+are implemented. Boolean.prototype itself holds false. Methods validate own
+BooleanData slots; ordinary objects inheriting the prototype fail that check.
+Boolean primitive property access walks the actual prototype chain and retains
+the primitive receiver for inherited accessors. Object.prototype.valueOf boxes
+Booleans, and toString recognizes Boolean wrappers. Truthiness, ordinary coercion,
+bound construction, collection, and host-limit behavior have regression coverage.
+
+Symbols, Number/String/BigInt wrapper APIs,
+arrays, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

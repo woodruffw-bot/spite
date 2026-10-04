@@ -48,6 +48,7 @@ pub struct OrdinaryObject {
     max_properties: usize,
     callable: Option<Callable>,
     constructible: bool,
+    boolean_data: Option<bool>,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -66,6 +67,7 @@ impl OrdinaryObject {
             max_properties,
             callable: None,
             constructible: false,
+            boolean_data: None,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -89,6 +91,10 @@ impl OrdinaryObject {
 
     pub(crate) fn is_arguments(&self) -> bool {
         self.arguments
+    }
+
+    pub(crate) fn boolean_data(&self) -> Option<bool> {
+        self.boolean_data
     }
 
     pub(crate) fn callable(&self) -> Option<&Callable> {
@@ -193,6 +199,7 @@ impl Trace for OrdinaryObject {
             Some(Callable::Builtin(_)) | None => None,
         };
         std::iter::once(self.prototype.as_ref())
+            .chain(self.boolean_data.iter().map(|_| None))
             .chain(std::iter::once(capture))
             .chain(self.parameter_map.iter().flat_map(|map| {
                 std::iter::once(Some(&map.environment.0)).chain(map.names.values().map(|_| None))

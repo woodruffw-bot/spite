@@ -1,6 +1,6 @@
 //! Base ordinary construction and iterative bound forwarding (10.2.2, 10.4.1.2).
 
-use super::Callable;
+use super::{Builtin, Callable};
 use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span};
 
@@ -102,7 +102,25 @@ impl Realm {
                         this
                     });
                 }
-                _ => unreachable!("only ordinary and bound functions are constructors"),
+                Callable::Builtin(Builtin::Boolean) => {
+                    let value = arguments.first().unwrap_or(&Value::Undefined).to_boolean();
+                    let prototype =
+                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                    let prototype = if let Value::Object(prototype) = prototype {
+                        prototype
+                    } else {
+                        self.intrinsics
+                            .as_ref()
+                            .expect("initialized realm")
+                            .boolean
+                            .prototype
+                            .clone()
+                    };
+                    return self
+                        .object_work(span, |objects, _| objects.create_boolean(&prototype, value))
+                        .map(Value::Object);
+                }
+                _ => unreachable!("constructibility is enabled only for implemented constructors"),
             }
         }
     }
