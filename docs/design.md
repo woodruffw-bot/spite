@@ -1175,6 +1175,14 @@ opt-in and host aborts bypass JavaScript cleanup. The complete unchanged Unicode
 NormalizationTest oracle verifies all specified column invariants and scalar
 identity outside its Part 1 inventory.
 
+String.localeCompare uses this host's fixed locale-neutral collation without
+ECMA-402 (22.1.3.10). RequireObjectCoercible and ToString of the receiver precede
+ToString of the comparison value. Compare NFD strings lexicographically by UTF-16
+units, charging comparison work; this yields a consistent total ordering and +0
+for all canonically equivalent spellings. Preserve lone surrogates and compatibility
+distinctions. Ignore the reserved locale/options arguments after their evaluation,
+and invoke native normalization without consulting mutable public methods.
+
 String toLowerCase/toUpperCase use the full Unicode 18 default case mappings
 (22.1.3.29–31, 35). Generate reproducible, digest-pinned tables from UnicodeData,
 SpecialCasing, and DerivedCoreProperties; Rust toolchain Unicode versions must not

@@ -10,7 +10,7 @@ use spite_core::{
 mod tests;
 
 #[derive(Clone, Copy, Debug)]
-enum Form {
+pub(super) enum Form {
     Nfc,
     Nfd,
     Nfkc,
@@ -63,7 +63,7 @@ impl Realm {
             .map(Value::String)
     }
 
-    fn normalize_string(
+    pub(super) fn normalize_string(
         &mut self,
         string: &JsString,
         form: Form,

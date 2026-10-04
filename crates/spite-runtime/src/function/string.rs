@@ -7,6 +7,7 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 mod case;
 mod character;
 mod iteration;
+mod locale;
 mod normalize;
 mod raw;
 mod repeat;
@@ -96,6 +97,7 @@ impl Realm {
             Builtin::StringToLocaleLowerCase,
             Builtin::StringToLocaleUpperCase,
             Builtin::StringNormalize,
+            Builtin::StringLocaleCompare,
             Builtin::StringConcat,
             Builtin::StringSlice,
             Builtin::StringSubstring,

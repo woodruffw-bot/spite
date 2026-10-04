@@ -232,6 +232,7 @@ pub(crate) enum Builtin {
     StringToLocaleLowerCase,
     StringToLocaleUpperCase,
     StringNormalize,
+    StringLocaleCompare,
     StringConcat,
     StringSlice,
     StringSubstring,
@@ -416,6 +417,7 @@ impl Builtin {
             Self::StringToLocaleLowerCase => "toLocaleLowerCase",
             Self::StringToLocaleUpperCase => "toLocaleUpperCase",
             Self::StringNormalize => "normalize",
+            Self::StringLocaleCompare => "localeCompare",
             Self::StringConcat => "concat",
             Self::StringSlice => "slice",
             Self::StringSubstring => "substring",
@@ -552,6 +554,7 @@ impl Builtin {
             | Self::StringIncludes
             | Self::StringStartsWith
             | Self::StringEndsWith
+            | Self::StringLocaleCompare
             | Self::Object
             | Self::ObjectHasOwnProperty
             | Self::ObjectPropertyIsEnumerable

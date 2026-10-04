@@ -729,7 +729,7 @@ fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {
 }
 
 fn missing_string_method(key: &JsString) -> bool {
-    ["localeCompare", "match", "matchAll", "search"]
+    ["match", "matchAll", "search"]
         .iter()
         .any(|name| key_is(key, name))
 }

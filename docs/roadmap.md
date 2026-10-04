@@ -111,6 +111,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String code-unit/code-point constructors and character access methods.
 - [x] Add Unicode well-formedness checks and replacement of unpaired String surrogates.
 - [x] Add String normalization forms with full Unicode canonical/compatibility decomposition, stable combining-class order, composition exclusions, and algorithmic Hangul.
+- [x] Add String localeCompare with ordered coercion, canonical equivalence, and a consistent fixed locale-neutral ordering.
 - [x] Add generic String concatenation and UTF-16 slice/substring methods.
 - [x] Add String trim/trimStart/trimEnd with exact ECMAScript whitespace membership.
 - [x] Add full Unicode String case conversion with original-text final-sigma contexts and fixed locale-neutral fallback methods.

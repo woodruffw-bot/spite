@@ -762,6 +762,13 @@ Unicode normalization suite supplies 20,171 independent vectors, with all twenty
 column invariants per vector and identity checks on every other Unicode scalar.
 Intermediate decomposition does not consume the final output string quota.
 
+String.localeCompare uses the documented locale-neutral NFD UTF-16 ordering.
+It honours canonical equivalence with positive zero and preserves compatibility
+distinctions and lone surrogates. Regressions cover the specification examples,
+supplementary decompositions, antisymmetry/transitivity, ordered generic conversion,
+reserved argument evaluation, public normalization hooks, metadata, collection,
+large default inputs, and opted-in host aborts.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, for-await-of, catch patterns, generators,

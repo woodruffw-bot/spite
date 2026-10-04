@@ -536,6 +536,9 @@ impl Realm {
             Builtin::StringNormalize => {
                 self.string_normalize(this, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Builtin::StringLocaleCompare => {
+                self.string_locale_compare(this, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::StringToLowerCase
             | Builtin::StringToUpperCase
             | Builtin::StringToLocaleLowerCase
