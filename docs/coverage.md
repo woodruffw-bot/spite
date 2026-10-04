@@ -643,6 +643,15 @@ zero arguments, error identity without closing, element identity/undefined,
 species and inherited-setter bypass, metadata, deleted-link retention, large
 default results, and opt-in host failures.
 
+Iterator.prototype.forEach validates the callback before reading next and closes
+on invalid callbacks or callback language throws. Direct stepping errors never
+close. Regressions cover ordered acquisition, cached next, live callback mutation,
+undefined callback receivers, exact value/index arguments, incoming-error
+precedence, host aborts without cleanup, native/wrapped/helper iteration, metadata,
+collection, and large default inputs. Internal tests verify correctly rounded
+indices beyond 2^53 and u64 using exact counters, independently of a BigInt-value
+magnitude quota, and preserve work-failure behavior.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-await-of, catch patterns, generators,
@@ -678,7 +687,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 240 retained entries outside the per-Script work
+Realm initialization creates 241 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

@@ -148,6 +148,7 @@ pub(crate) enum Builtin {
     IteratorHelperNext,
     IteratorHelperReturn,
     IteratorToArray,
+    IteratorForEach,
     IteratorWrapperNext,
     IteratorWrapperReturn,
     IteratorIdentity,
@@ -357,7 +358,7 @@ impl Builtin {
             Self::ArrayWith => "with",
             Self::ArrayFill => "fill",
             Self::ArrayCopyWithin => "copyWithin",
-            Self::ArrayForEach => "forEach",
+            Self::ArrayForEach | Self::IteratorForEach => "forEach",
             Self::ArrayEvery => "every",
             Self::ArraySome => "some",
             Self::ArrayMap => "map",
@@ -458,6 +459,7 @@ impl Builtin {
             | Self::IteratorTagSet
             | Self::IteratorConstructorSet
             | Self::IteratorFrom
+            | Self::IteratorForEach
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean

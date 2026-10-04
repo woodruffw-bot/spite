@@ -9,6 +9,16 @@ pub(crate) struct IteratorRecord {
     done: bool,
 }
 
+impl IteratorRecord {
+    pub(super) fn uninitialized(iterator: ObjectHandle) -> Self {
+        Self {
+            iterator,
+            next: Value::Undefined,
+            done: false,
+        }
+    }
+}
+
 impl Realm {
     /// GetMethod (7.3.10) preserves the original primitive/object receiver.
     pub(crate) fn get_method<'key>(

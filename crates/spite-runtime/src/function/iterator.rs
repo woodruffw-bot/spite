@@ -26,6 +26,7 @@ pub(crate) struct IteratorIntrinsics {
     helper_next: ObjectHandle,
     helper_return: ObjectHandle,
     to_array: ObjectHandle,
+    for_each: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -51,6 +52,7 @@ impl IteratorIntrinsics {
             &self.helper_next,
             &self.helper_return,
             &self.to_array,
+            &self.for_each,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -86,12 +88,14 @@ impl Realm {
         let helper_return =
             self.new_builtin(function_prototype, Builtin::IteratorHelperReturn, span)?;
         let to_array = self.new_builtin(function_prototype, Builtin::IteratorToArray, span)?;
+        let for_each = self.new_builtin(function_prototype, Builtin::IteratorForEach, span)?;
         let wrapper_next =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
         let wrapper_return =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperReturn, span)?;
         for (object, name, function) in [
             (&prototype, "toArray", &to_array),
+            (&prototype, "forEach", &for_each),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -231,6 +235,7 @@ impl Realm {
             helper_next,
             helper_return,
             to_array,
+            for_each,
             array_prototype,
             string_prototype,
             identity,

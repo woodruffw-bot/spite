@@ -691,6 +691,20 @@ identities and explicit undefined entries without species, constructor, or
 inherited-setter calls. Defaults impose no work, list-size, or heap quota;
 native addressable/allocation capacity remains a distinct host failure.
 
+Iterator.prototype.forEach validates its object receiver and procedure before
+looking up next (27.1.3.3.7). An invalid procedure closes an uninitialized iterator
+record with the new TypeError as its incoming throw. Successful direct acquisition
+captures next once; each yielded value calls the procedure with undefined this
+and exactly value/index arguments. Ignore normal results, close on callback
+language throws with incoming-error precedence, and never close on acquisition,
+step, or host failures. Return undefined after exhaustion.
+
+The index counter preserves the mathematical integer before each Number conversion.
+Use u64 for ordinary counts, then exact integer storage beyond its range; correctly
+round all callback indices, including beyond 2^53. This internal storage produces
+Number values and is independent of the host's BigInt-value magnitude quota.
+Work accounting still applies, with no default counter or execution quota.
+
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
 it does not retain the original receiver. A branded String iterator stores the

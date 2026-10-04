@@ -206,6 +206,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Iterator.from with ordered iterable/direct acquisition, intrinsic instance identity, and branded next/return wrappers.
 - [x] Add lazy Iterator.concat with ordered method capture, native helper suspension/closing, reentry rejection, and complete static reflection.
 - [x] Add Iterator.prototype.toArray with direct acquisition, ordered consumption, and intrinsic Array results.
+- [x] Add Iterator.prototype.forEach with callback validation/closing, ordered direct iteration, and exact mathematical indices.
 - [ ] Add remaining shared Iterator prototype properties.
 - [x] Expose the Symbol global with standard attributes.
 - [ ] Complete Array species-dependent methods and iterator integration.
