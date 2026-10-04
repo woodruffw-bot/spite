@@ -149,6 +149,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute 65 reviewed Array construction, identity, literal, length, and string-conversion Test262 files.
 - [x] Add generic Array at with relative indexing, ordered conversion, and six Test262 files.
 - [x] Add generic Array push/pop with strict property operations, partial effects, and 14 Test262 files.
+- [x] Add generic Array forEach/every/some with live presence checks, ordered callbacks, and 42 Test262 files.
 - [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

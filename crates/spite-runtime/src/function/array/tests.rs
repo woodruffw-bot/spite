@@ -407,3 +407,53 @@ fn push_work_abort_retains_completed_elements_and_consistent_array_length() {
         "a.length>0 && a.length<20 && a[0]===0 && a[a.length-1]===a.length-1 && !Object.hasOwn(a,a.length)",
     );
 }
+
+#[test]
+fn callback_iteration_work_and_this_arg_copying_are_bounded() {
+    let mut realm = Realm::default();
+    realm.eval("let flag=0").unwrap();
+    realm.limits.max_steps = 500;
+    for method in ["forEach", "every", "some"] {
+        assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},()=>true);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+    }
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0");
+    let receiver = realm.eval("[1]").unwrap();
+    let callback = realm.eval("()=>0").unwrap();
+    let this_arg = Value::String(JsString::from_code_units(vec![0x61; 1000]));
+    realm.remaining_steps = 500;
+    assert!(matches!(
+        realm.array_callback(
+            Builtin::ArrayForEach,
+            receiver,
+            callback,
+            this_arg,
+            Span::new(0, 0)
+        ),
+        Err(Error::Limit { .. })
+    ));
+}
+
+#[test]
+fn recursive_array_callbacks_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for method in ["forEach", "every", "some"] {
+                let mut realm = Realm::default();
+                realm
+                    .eval(&format!("let a=[1],flag=0,f=()=>a.{method}(f)"))
+                    .unwrap();
+                assert!(matches!(
+                    realm.eval(&format!(
+                        "try{{a.{method}(f);}}catch{{flag=1;}}finally{{flag=2;}}"
+                    )),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1].every(v=>v===1)");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}

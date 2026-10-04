@@ -315,6 +315,13 @@ on failure. Push rejects lengths above 2^53 - 1 before writing elements, while
 Array exotic length overflow can throw after ordinary non-index properties were
 created. Pop reads an inherited final element but deletes only an own property.
 Both perform the length Set even when no elements are inserted or removed.
+ForEach/every/some share an ordered callback loop (23.1.3.6/15/29): ToObject,
+LengthOfArrayLike, then IsCallable before iteration, including empty receivers.
+Each index performs live HasProperty and Get; holes are skipped and inherited
+values visited. Callback arguments are value, index, and the boxed receiver.
+The supplied thisArg is preserved with copying charged before each call.
+Every/some short-circuit on ToBoolean without coercing object results. Work is
+charged per visited index, so large lengths still allow early observable exits.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

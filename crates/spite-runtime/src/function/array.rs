@@ -1,6 +1,7 @@
 //! Array construction, identification, and length conversion (23.1, 10.4.2.4).
 
 mod access;
+mod callback;
 mod literal;
 mod mutation;
 mod string;
@@ -76,6 +77,9 @@ impl Realm {
             Builtin::ArrayAt,
             Builtin::ArrayPush,
             Builtin::ArrayPop,
+            Builtin::ArrayForEach,
+            Builtin::ArrayEvery,
+            Builtin::ArraySome,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(

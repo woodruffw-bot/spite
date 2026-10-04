@@ -192,6 +192,14 @@ impl Realm {
             Builtin::ArrayToString => self.array_to_string(this, span),
             Builtin::ArrayPush => self.array_push(this, arguments, span),
             Builtin::ArrayPop => self.array_pop(this, span),
+            Builtin::ArrayForEach | Builtin::ArrayEvery | Builtin::ArraySome => self
+                .array_callback(
+                    builtin,
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                ),
             Builtin::ArrayAt => {
                 self.array_at(this, arguments.next().unwrap_or(Value::Undefined), span)
             }

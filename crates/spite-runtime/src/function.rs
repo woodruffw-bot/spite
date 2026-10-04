@@ -66,6 +66,9 @@ pub(crate) enum Builtin {
     ArrayAt,
     ArrayPush,
     ArrayPop,
+    ArrayForEach,
+    ArrayEvery,
+    ArraySome,
     ArrayToString,
     String,
     StringToString,
@@ -135,6 +138,9 @@ impl Builtin {
             Self::ArrayJoin => "join",
             Self::ArrayPush => "push",
             Self::ArrayPop => "pop",
+            Self::ArrayForEach => "forEach",
+            Self::ArrayEvery => "every",
+            Self::ArraySome => "some",
             Self::String => "String",
             Self::StringFromCharCode => "fromCharCode",
             Self::StringFromCodePoint => "fromCodePoint",
@@ -205,6 +211,9 @@ impl Builtin {
             | Self::ArrayJoin
             | Self::ArrayAt
             | Self::ArrayPush
+            | Self::ArrayForEach
+            | Self::ArrayEvery
+            | Self::ArraySome
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
