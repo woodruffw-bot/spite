@@ -331,8 +331,8 @@ and checks both safe-integer and Array length bounds before copying. It reads
 retained elements in ascending order and supports full-width source indices
 when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
-lookup, and preserve ordered live reads. With never reads its replaced index. Other
-prototype methods, spread, and array assignment patterns remain pending.
+lookup, and preserve ordered live reads. With never reads its replaced index. Spread and array assignment patterns remain
+pending.
 Map/filter validate callbacks before ArraySpeciesCreate, which consults constructor
 and Symbol.species only for genuine Arrays. Null/undefined species select an
 intrinsic Array; custom constructors receive one Number length (source length
@@ -365,10 +365,19 @@ only original-source elements. Custom results receive own data properties withou
 final length assignment; failed definitions retain earlier effects. Regressions cover
 safe-integer index overflow, species aliasing, and 4,000 nested Arrays on a 2 MiB
 native stack. Cyclic infinite flattening can be stopped with an opted-in work quota.
+Splice preserves omitted versus explicit undefined deletion counts, converts ranges
+before species construction, and copies present deleted elements with own data
+definitions. It strictly assigns the result length before moving source indices,
+including when species aliases the source. Shrinking copies forward and deletes
+obsolete indices backward; growing copies backward. Source moves and insertions
+use strict Set, delete targets for source holes, and retain partial effects on
+failure. A final strict source length assignment runs even with no arguments.
+Full-width safe-integer bounds precede species and indexed reads. Every Array
+prototype method is now materialized, enabling full key enumeration, descriptor
+reflection, and integrity operations on that prototype.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
-null prototype and all 16 specified entries. Splice and with environments remain
-pending.
+null prototype and all 16 specified entries. With environments remain pending.
 Array keys/values/entries create branded iterators that read live lengths and
 advance their index before reading values. Keys skip element reads; entries
 create intrinsic two-element arrays. Length errors retry the current index,
@@ -388,7 +397,7 @@ Symbol-keyed access is tested through native injection, Script integration tests
 and reviewed upstream Symbol/iterator fixtures.
 
 BigInt wrapper APIs, remaining String methods,
-remaining Array prototype methods, derived construction, classes, destructuring, regular
+Array.from/fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -406,7 +415,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 161 retained entries outside the per-Script work
+Realm initialization creates 162 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -449,7 +458,7 @@ and keys/values/entries iteration, including mapped/unmapped arguments. The 34
 Symbol files and 23 object method/accessor files run in their prescribed Script modes. Controls
 verify successful assertions and explicit assertion failures. Some string comparison
 failure formatting still requires missing JSON and remains Unsupported;
-remaining Array prototype methods, other includes, async completion, and agents
+Array.from/fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 2062 variants are four raw positives, 1986 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do

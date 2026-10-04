@@ -178,10 +178,7 @@ fn missing_array_intrinsics_remain_explicit_host_gaps() {
     for source in [
         "Array.from",
         "Array.fromAsync",
-        "Array().splice",
-        "Object.getOwnPropertyDescriptor(Array.prototype,'splice')",
         "Object.defineProperty(Array,'from',{})",
-        "Object.freeze(Array.prototype)",
         "Object.getOwnPropertyDescriptors(Array)",
     ] {
         assert!(

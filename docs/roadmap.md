@@ -164,7 +164,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add sparse Array slice with ordered range conversion, species results, and final strict length writes.
 - [x] Add sparse Array concat with species results, ordered spreadability hooks, and strict length writes.
 - [x] Add Array flat/flatMap with species results, iterative sparse flattening, and ordered mapper calls.
-- [ ] Add remaining Array prototype methods.
+- [x] Add Array splice with sparse species results, ordered moves/deletes, and strict length writes.
+- [x] Complete Array prototype method materialization and enable full reflection/integrity operations.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
 - [x] Integrate symbol keys into ordinary/exotic storage, ordering, and work budgets.

@@ -640,7 +640,6 @@ impl Realm {
             || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
-            || object == &intrinsics.array.prototype
         {
             return Err(Self::unsupported(
                 span,
@@ -705,17 +704,12 @@ impl Realm {
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
-            || (object == &intrinsics.array.prototype && missing_array_method(key))
             || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
     }
 }
 
 fn missing_array_static(key: &JsString) -> bool {
     ["from", "fromAsync"].iter().any(|name| key_is(key, name))
-}
-
-fn missing_array_method(key: &JsString) -> bool {
-    key_is(key, "splice")
 }
 
 fn missing_iterator_method(key: &JsString) -> bool {

@@ -17,6 +17,7 @@ mod search;
 mod slice;
 mod sort;
 mod species;
+mod splice;
 mod string;
 mod symbols;
 
@@ -189,6 +190,7 @@ impl Realm {
             Builtin::ArrayFilter,
             Builtin::ArraySlice,
             Builtin::ArrayConcat,
+            Builtin::ArraySplice,
             Builtin::ArrayFlat,
             Builtin::ArrayFlatMap,
             Builtin::ArrayFind,

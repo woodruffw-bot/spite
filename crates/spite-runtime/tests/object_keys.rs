@@ -144,7 +144,6 @@ fn copied_symbol_keys_and_object_values_survive_collection() {
 fn incomplete_intrinsic_key_lists_and_bigint_wrappers_remain_explicit_gaps() {
     for source in [
         "Object.keys(Object)",
-        "Object.getOwnPropertyNames(Array.prototype)",
         "Object.getOwnPropertySymbols(globalThis)",
         "Object.values(1n)",
     ] {

@@ -537,6 +537,20 @@ strict length Set, even for empty results. Do not prevalidate an intrinsic resul
 uint32 length: the final Set must follow earlier effects. Sparse scans consume
 bounded work and remain host limits rather than JavaScript exceptions.
 
+Splice (23.1.3.31) distinguishes missing start/deleteCount from explicit undefined,
+converts ranges after one length snapshot, and checks the resulting safe-integer
+length before species construction. Create a species result with the deletion
+count; copy present deleted indices with live HasProperty/Get and own data
+definitions. Always strictly set its length before touching the source, even when
+species returns the source. Shrinking moves the retained suffix forward, then
+deletes obsolete tail indices from highest to lowest. Growing moves the suffix
+backward to preserve overlap. Missing source properties delete their destination;
+present ones use strict Set, as do inserted values. Always strictly set source
+length last, including zero arguments. Retain earlier effects on every abrupt
+completion; do not preflight all properties or roll back. All Array prototype
+methods are materialized, so its enumeration and integrity operations use ordinary
+property traversal; Array constructor enumeration awaits from/fromAsync.
+
 Array iteration follows edition-17 CreateArrayIterator and next (23.1.5.1–3).
 Store an optional iterated-object handle, a u64 next index, and key/value/key+value
 kind on a distinct ordinary object. Trace the iterated object until exhaustion
