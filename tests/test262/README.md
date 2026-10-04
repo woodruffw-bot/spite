@@ -110,17 +110,27 @@ checks full-width length handling without an unbounded scan.
 Candidates requiring classes, proxies, foreign realms, typed arrays, RegExp,
 `isConstructor.js`/Reflect, or `propertyHelper.js` remain outside this corpus.
 The spreadable-function candidate requires the missing `Function` global. The
-4,000-hole sparse-object candidate exceeds the fixed one-million-unit harness
-work budget; its Limit outcomes remain non-passing and the budget is unchanged.
+4,000-hole sparse-object candidate exceeds the one-million-unit Script
+work allowance; its Limit outcomes remain non-passing and the budget is unchanged.
 Local runtime regressions also cover safe-integer overflow before indexed reads,
 strict final length writes, aliased species results, and bounded host scans.
 
 ## Scope and maintenance
 
-The conformance runner allows one million work units per Script evaluation so
-unchanged upstream files can combine many assertions and exact conversions.
+`Runner::default()` sets `Limits.max_steps` to 1,000,000 work units per Script
+evaluation; the ordinary runtime default is 100,000. Each harness file and each
+test body starts with a fresh allowance. Assertion functions called by a test
+consume that test body's allowance. Work units account for interpreter operations,
+property/prototype scans, value copies, and numeric work; they are not elapsed time
+or a count of JavaScript statements.
+
+The runner override was introduced in [commit 1aa21fc](https://github.com/woodruffw-bot/spite/commit/1aa21fcdce01979b1ac8c2540a1abeffca1653b9)
+to accommodate upstream files combining many assertions and exact numeric
+conversions. The value is a project-selected resource guard; neither Test262 nor
+ECMA-262 prescribes it, and no measured derivation was recorded for this cutoff.
 Other limits retain their runtime defaults. Exhaustion remains a non-passing
-`Limit` result; no test is retried with an unbounded budget.
+`Limit` result and establishes a host limitation, not a semantic failure or an
+unsupported specification feature. No test is retried with an unbounded budget.
 Runtime-negative matching reads the thrown object's constructor name as required
 by upstream `INTERPRETING.md`. These bounded host reads execute getters normally;
 inspection failures cannot satisfy the original expected exception. Primitive

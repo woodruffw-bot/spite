@@ -1,6 +1,8 @@
 # Development
 
 - Follow docs/design.md and keep docs/roadmap.md accurate.
+- Keep roadmap entries focused on concrete specification implementation. Record
+  test execution and fixture inventories in docs/coverage.md and tests/test262/README.md.
 - Use safe Rust. Every crate inherits the workspace lints.
 - Production dependencies must be workspace crates, except regex and jiff when needed.
 - No other new direct dependencies or external build dependencies are approved.

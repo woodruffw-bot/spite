@@ -1,7 +1,9 @@
 # Roadmap
 
-Each milestone lands in small commits with tests. Update this file with actual
-coverage. No milestone implies full conformance until the final audit passes.
+Track implementation of concrete specification behavior here. Each milestone
+lands in small commits with tests. Record test execution and fixture inventories
+in [coverage](coverage.md) and the [Test262 documentation](../tests/test262/README.md).
+No milestone implies full conformance until the final audit passes.
 
 ## 0. Foundation
 
@@ -15,9 +17,8 @@ coverage. No milestone implies full conformance until the final audit passes.
   identifiers, core operators, and ASI for the supported statements.
 - [x] Parse expression statements and lexical declarations with source spans.
 - [x] Evaluate primitive expressions and lexical bindings with correct errors.
-- [x] Add parser snapshots, runtime integration tests, and a command-line host.
+- [x] Add a command-line host.
 - [x] Bound parser nesting, evaluation steps, and individual string lengths.
-- [x] Add a pinned Test262 lexical smoke suite with reviewed expectations.
 
 Milestones 0 and 1 are implemented. See [coverage](coverage.md) for exact limits.
 
@@ -62,15 +63,10 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Integrate BigInt literals, values, coercions, and language operators.
 - [x] Implement Unicode identifier properties and literal identifier names.
 - [x] Implement identifier escapes and escape-aware reserved-word validation.
-- [x] Establish a pinned Test262 runner with strict modes and phase-aware results.
-- [x] Parse Test262 execution metadata and plan modes and ordered harness includes.
-- [x] Classify Test262 phases and keep unsupported, host-limit, and unverified results distinct.
-- [x] Match runtime-negative constructor names for built-in exceptions, explicit Errors, and rethrows.
-- [x] Run a reviewed pinned corpus through the runner in CI.
 
 ## 3. Objects and functions
 
-- [x] Add the handle heap, explicit roots, tracing, and collection tests.
+- [x] Add the handle heap, explicit roots, tracing, and collection.
 - [x] Add bounded generational storage with checked heap identity and slot reuse.
 - [x] Add iterative tracing with explicit roots and failure-before-sweep guarantees.
 - [ ] Root interpreter temporaries, environments, intrinsics, and host-held object values.
@@ -112,7 +108,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String repeat/padStart/padEnd with ordered conversions and bounded output.
 - [x] Add bounded UTF-16 String indexOf/lastIndexOf searches.
 - [x] Add String includes/startsWith/endsWith for currently exposed values.
-- [x] Connect String search predicates to IsRegExp's Symbol.match hook with native-injection tests.
+- [x] Connect String search predicates to IsRegExp's Symbol.match hook.
 - [ ] Add IsRegExp's internal-brand fallback when RegExp objects are implemented.
 - [x] Add ordinary-call String.raw and complete String constructor static own properties.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
@@ -128,7 +124,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute ordinary and bound construction with prototype selection and ordered arguments.
 - [x] Add new.target early errors, call/construction bindings, and lexical arrow capture.
 - [x] Implement instanceof for ordinary/bound functions and inherited default hooks.
-- [x] Materialize Function.prototype Symbol.hasInstance and test custom hooks with native-injected symbols.
+- [x] Materialize Function.prototype Symbol.hasInstance and dispatch custom hooks.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add Object construction and mandatory string-keyed prototype methods.
@@ -137,10 +133,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Object.create and ordered two-phase Object.defineProperties.
 - [x] Add Object.freeze/seal and frozen/sealed integrity predicates.
 - [x] Add Object.assign and complete own-descriptor copying for supported objects.
-- [x] Add Object own-name/symbol reflection and enumerable keys/values/entries, with 49 reviewed Test262 files.
-- [x] Parse ordinary object methods/getters/setters with scoped early errors and syntax/diagnostic snapshots.
+- [x] Add Object own-name/symbol reflection and enumerable keys/values/entries.
+- [x] Parse ordinary object methods/getters/setters with scoped early errors.
 - [x] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
-- [x] Add 23 reviewed object method/accessor and eight getter-enumeration Test262 files.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.
@@ -152,44 +147,39 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Array calls/new and Array.isArray.
 - [x] Parse/evaluate array literals with holes and trailing commas; defer spread to iteration.
 - [x] Add generic Array join and dynamic toString with ordered, bounded conversion.
-- [x] Execute 65 reviewed Array construction, identity, literal, length, and string-conversion Test262 files.
-- [x] Add generic Array at with relative indexing, ordered conversion, and six Test262 files.
-- [x] Add generic Array push/pop with strict property operations, partial effects, and 14 Test262 files.
-- [x] Add generic Array forEach/every/some with live presence checks, ordered callbacks, and 42 Test262 files.
-- [x] Add Array find/findIndex/findLast/findLastIndex with ordered visits to holes and 46 Test262 files.
-- [x] Add Array includes/indexOf/lastIndexOf with distinct equality and hole handling, plus 26 Test262 files.
-- [x] Add Array reduce/reduceRight with optional accumulators, live sparse traversal, and 34 Test262 files.
-- [x] Add generic Array reverse with sparse presence handling, ordered partial effects, and 11 Test262 files.
-- [x] Add generic Array fill/copyWithin with ordered ranges, overlap handling, and 20 Test262 files.
-- [x] Add generic Array shift/unshift with sparse movement, strict length writes, and 14 Test262 files.
-- [x] Add Array toReversed/with copies, 19 Test262 files, and the pinned compareArray compatibility include.
-- [x] Add Array toSpliced with optional deletion ranges, skipped discarded reads, and 19 Test262 files.
-- [x] Add Array.of with constructor dispatch, ordered data definitions, strict length writes, and eight Test262 files.
-- [x] Add Array toLocaleString using the non-ECMA-402 algorithm and four Test262 files.
-- [x] Add stable Array sort/toSorted with bounded fallible merging, sparse writeback, and 33 Test262 files.
+- [x] Add generic Array at with relative indexing and ordered conversion.
+- [x] Add generic Array push/pop with strict property operations and partial effects.
+- [x] Add generic Array forEach/every/some with live presence checks and ordered callbacks.
+- [x] Add Array find/findIndex/findLast/findLastIndex with ordered visits to holes.
+- [x] Add Array includes/indexOf/lastIndexOf with distinct equality and hole handling.
+- [x] Add Array reduce/reduceRight with optional accumulators and live sparse traversal.
+- [x] Add generic Array reverse with sparse presence handling and ordered partial effects.
+- [x] Add generic Array fill/copyWithin with ordered ranges and overlap handling.
+- [x] Add generic Array shift/unshift with sparse movement and strict length writes.
+- [x] Add Array toReversed/with copies with dense own elements and skipped replacement reads.
+- [x] Add Array toSpliced with optional deletion ranges and skipped discarded reads.
+- [x] Add Array.of with constructor dispatch, ordered data definitions, and strict length writes.
+- [x] Add Array toLocaleString using the non-ECMA-402 algorithm.
+- [x] Add stable Array sort/toSorted with bounded fallible merging and sparse writeback.
 - [x] Add ArraySpeciesCreate and map/filter with ordered constructors, live sparse visits, and partial definitions.
 - [x] Add sparse Array slice with ordered range conversion, species results, and final strict length writes.
-- [x] Execute 73 unchanged map/filter/slice Test262 files at the existing pin.
 - [x] Add sparse Array concat with species results, ordered spreadability hooks, and strict length writes.
-- [x] Execute 46 unchanged concat Test262 files at the existing pin.
-- [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
+- [ ] Add remaining Array prototype methods.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
 - [x] Integrate symbol keys into ordinary/exotic storage, ordering, and work budgets.
-- [x] Add runtime Symbol primitives and shared well-known identities with native-injection tests.
+- [x] Add runtime Symbol primitives and shared well-known identities.
 - [x] Integrate Realm symbol keys, reflection/enumeration, function names, and ToPrimitive hooks.
 - [x] Add Object.prototype.toString Symbol.toStringTag lookup and bounded UTF-16 formatting.
 - [x] Add Symbol wrappers, branded prototype methods, fresh intrinsic calls, and fixed well-known properties.
 - [x] Add bounded Symbol.for/keyFor interning shared across realms and host threads.
 - [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
-- [x] Add Array keys/values/entries iterators, live/reentrant state tests, source tracing, and nine Test262 files.
+- [x] Add Array keys/values/entries iterators with live state, reentrant next calls, and source tracing.
 - [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [ ] Add remaining shared Iterator prototype properties.
-- [x] Expose the Symbol global with standard attributes and add 59 reviewed Symbol/iterator Test262 files.
+- [x] Expose the Symbol global with standard attributes.
 - [ ] Complete Array species-dependent methods and iterator integration.
-- [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.
-- [ ] Complete remaining harness paths/includes as their language and library dependencies arrive.
 
 ## 4. Standard library
 
@@ -211,8 +201,6 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 - [ ] Implement agents, SharedArrayBuffer, Atomics, and memory-model requirements.
 - [ ] Audit normative optional features and host-defined behavior.
-- [ ] Run the complete in-scope pinned Test262 suite without hidden exclusions.
-- [ ] Add grammar fuzzing, resource-limit tests, and cross-platform validation.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.
 
