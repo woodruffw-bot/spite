@@ -2089,3 +2089,10 @@ test/built-ins/Iterator/constructor.js	-	-	-
 test/built-ins/Iterator/newtarget-or-active-function-object.js	-	-	-
 test/built-ins/Iterator/proto.js	-	-	-
 test/built-ins/Iterator/prototype/constructor/prop-desc.js	-	-	-
+test/built-ins/Iterator/from/is-function.js	-	-	-
+test/built-ins/Iterator/from/length.js	-	-	-
+test/built-ins/Iterator/from/name.js	-	-	-
+test/built-ins/Iterator/from/primitives.js	-	-	-
+test/built-ins/Iterator/from/proto.js	-	-	-
+test/built-ins/Iterator/from/return-method-returns-iterator-result.js	-	-	-
+test/built-ins/Iterator/from/supports-iterable.js	-	-	-

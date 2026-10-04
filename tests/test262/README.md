@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2109 unmodified test fixtures and six harness files come from
+These 2116 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -543,6 +543,18 @@ regressions cover distinct and bound newTargets, ordered prototype access,
 intrinsic fallback, protected setter semantics, and collection. The pin, harness
 bytes, and opt-in execution limits are unchanged.
 
+## Iterator.from review
+
+Seven unchanged sources add fourteen Script/StrictScript variants. They cover
+the function type/prototype, name/length descriptors, primitive rejection,
+Array and String-wrapper iterable inputs, and absent-return iterator results.
+Reviewed candidates using classes, generators, Proxy-based Temporal helpers,
+or complete Iterator constructor enumeration remain outside this selection.
+Their original source and helpers are not rewritten. Local regressions cover
+direct iterators, exact acquisition and receiver order, cached next/live return,
+primitive results, internal slots, reentrancy, errors, and collection. The pin,
+harness bytes, and opt-in execution limits are unchanged.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -564,12 +576,12 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 4106 variants from 2090 reviewed sources: the eleven
+The `spite-test262` command runs 4120 variants from 2097 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, four Iterator constructor/accessor tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
+object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, eleven Iterator constructor/acquisition tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
@@ -580,7 +592,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-3932 positives using the upstream harness, and 170 reviewed parse-negative variants.
+3946 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
