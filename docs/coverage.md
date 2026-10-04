@@ -182,8 +182,8 @@ live, skips Symbols, and suppresses inherited names even when a present own key
 is non-enumerable. Deleted keys do not suppress inherited names. Values and custom
 iterator hooks are never read. Tests cover mutation, ordered Array indices,
 primitive boxing, nullish skipping, closures, TDZ, and completion values. Reaching
-incomplete String/shared-Iterator prototypes remains Unsupported; fully
-enumerating those chains awaits their missing methods. The non-strict Annex B
+the incomplete String prototype remains Unsupported; complete shared Iterator
+chains use ordinary ordered enumeration. The non-strict Annex B
 initialized-var extension remains a separate unsupported feature.
 
 Strict ordinary functions execute with preserved receivers, shared lexical captures,
@@ -611,8 +611,11 @@ throw TypeError. Distinct newTargets select an object-valued prototype or the
 intrinsic fallback without executing their bodies or coercing ignored arguments.
 Regressions cover bound forwarding, ordered prototype access and errors, generic
 constructor getters, protected setter updates and inherited-property bypass,
-global replacement, and intrinsic retention. Unimplemented prototype helpers and
-shared prototype enumeration remain Unsupported.
+global replacement, and intrinsic retention. The complete edition-17 shared
+prototype supports ordered own-key reflection, copying, enumeration, and integrity
+operations without invoking constructor or tag getters. Regressions cover every
+method descriptor, accessor identity/protection, Symbol order, inherited iterator
+chains, deleted-link retention, and post-baseline names remaining absent.
 Symbol-keyed access is tested through native injection, Script integration tests,
 and reviewed upstream Symbol/iterator fixtures.
 
@@ -623,7 +626,7 @@ acquisition, captured next methods, live return lookups, exact result/receiver
 forwarding without arguments, no implicit completion state, reentrant calls,
 retry after throws, internal-slot validation, and cached/source retention during
 collection. Wrapper prototype reflection and integrity cover its complete two
-method inventory; the shared prototype helper inventory remains guarded.
+method inventory and the shared prototype's complete edition-17 properties.
 
 Iterator.concat captures object iterable methods in order, then opens and steps
 sources lazily. Native helper resumes cover fresh results, done-before-value,

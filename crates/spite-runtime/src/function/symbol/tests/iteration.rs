@@ -23,10 +23,10 @@ fn iterator_aliases_and_prototype_descriptors_are_standard() {
         &mut realm,
         "base===Iterator.prototype && base.constructor===Iterator",
     );
-    assert!(matches!(
-        realm.eval("Object.getOwnPropertyDescriptors(base)"),
-        Err(Error::Unsupported { .. })
-    ));
+    check(
+        &mut realm,
+        "Object.getOwnPropertyNames(base).join(',')==='constructor,drop,every,filter,find,flatMap,forEach,map,reduce,some,take,toArray' && Reflect.ownKeys(base).length===14",
+    );
 }
 
 #[test]

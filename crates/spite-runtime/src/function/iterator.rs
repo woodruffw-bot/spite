@@ -124,17 +124,6 @@ impl Realm {
         let wrapper_return =
             self.new_builtin(function_prototype, Builtin::IteratorWrapperReturn, span)?;
         for (object, name, function) in [
-            (&prototype, "toArray", &to_array),
-            (&prototype, "forEach", &for_each),
-            (&prototype, "every", &every),
-            (&prototype, "some", &some),
-            (&prototype, "find", &find),
-            (&prototype, "reduce", &reduce),
-            (&prototype, "map", &map),
-            (&prototype, "filter", &filter),
-            (&prototype, "flatMap", &flat_map),
-            (&prototype, "take", &take),
-            (&prototype, "drop", &drop),
             (&constructor, "concat", &concat),
             (&constructor, "from", &from),
             (&helper_prototype, "next", &helper_next),
@@ -214,6 +203,34 @@ impl Realm {
                 },
                 budget,
             )?;
+            // OrdinaryOwnPropertyKeys preserves initialization order. Install
+            // the complete edition-17 string inventory after constructor, in
+            // specification order (27.1.3.3), followed by its Symbol properties.
+            for (name, function) in [
+                ("drop", &drop),
+                ("every", &every),
+                ("filter", &filter),
+                ("find", &find),
+                ("flatMap", &flat_map),
+                ("forEach", &for_each),
+                ("map", &map),
+                ("reduce", &reduce),
+                ("some", &some),
+                ("take", &take),
+                ("toArray", &to_array),
+            ] {
+                objects.define(
+                    &prototype,
+                    name,
+                    DataDescriptor {
+                        value: Some(Value::Object(function.clone())),
+                        writable: Some(true),
+                        enumerable: Some(false),
+                        configurable: Some(true),
+                    },
+                    budget,
+                )?;
+            }
             objects.define(
                 &prototype,
                 WellKnownSymbol::ToStringTag.symbol(),

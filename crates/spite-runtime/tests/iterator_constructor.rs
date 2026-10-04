@@ -170,10 +170,10 @@ fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_one
 }
 
 #[test]
-fn incomplete_prototype_remains_a_host_gap_and_skips_handlers() {
+fn incomplete_global_remains_a_host_gap_and_skips_constructor_handlers() {
     for expression in [
-        "Reflect.ownKeys(Iterator.prototype)",
-        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Reflect.ownKeys(Iterator.prototype)});Reflect.construct(Iterator,[],B)",
+        "Reflect.ownKeys(globalThis)",
+        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Reflect.ownKeys(globalThis)});Reflect.construct(Iterator,[],B)",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

@@ -105,7 +105,7 @@ do. No property values or user iterator hooks are read. Assignment targets follo
 key retrieval, and lexical bindings receive fresh iteration environments. RHS
 comma expressions are allowed, unlike for-of. Host quotas remain opt-in. Chains
 that reach an incomplete intrinsic report Unsupported, preserving prior effects;
-String/Function/shared-Iterator prototype enumeration awaits their remaining APIs.
+String prototype enumeration awaits its remaining APIs.
 The Annex B initialized-var extension remains Unsupported in non-strict code and
 is a SyntaxError in strict code; it never changes the core binding algorithm.
 
@@ -633,11 +633,15 @@ intrinsic Iterator prototype otherwise. Bound construction first rewrites the
 newTarget as required by 10.4.1.2. Constructor arguments are ignored after normal
 evaluation; no next method or iterator brand is installed on the resulting object.
 The global binding and native constructor metadata retain standard attributes.
-The remaining prototype helpers are explicit Unsupported gaps; shared prototype
-enumeration remains guarded until that inventory is complete.
+The complete edition-17 shared prototype has constructor, eleven helper methods,
+Symbol.toStringTag, and Symbol.iterator. Initialize string properties in
+specification order and Symbols after them. Ordinary reflection, copying,
+enumeration, and integrity operations use this complete inventory, preserving
+accessor identity without invoking getters. Post-edition-17 iterator additions
+remain outside this baseline.
 The constructor getter returns the intrinsic Iterator independently of receiver
-or replaced globals (27.1.3.3.2). The tag getter returns "Iterator" for every
-receiver (27.1.3.3.14). Both setters share
+or replaced globals (27.1.3.3.1.1). The tag getter returns "Iterator" for every
+receiver (27.1.3.3.13.1). Both setters share
 SetterThatIgnoresPrototypeProperties (7.3.37): reject primitives and
 the intrinsic home prototype, then inspect the receiver's own descriptor. An
 absent property is created as an own writable/enumerable/configurable data
@@ -679,8 +683,8 @@ finish transition and active-reference release are charged before a resume
 enters user code. Cleanup always runs without allocation after it, including host
 failures; failed resumes complete without JavaScript cleanup. Completed helpers
 release their captures before the next host collection. Iterator's static
-inventory is complete, so its own reflection and integrity operations are enabled;
-the shared prototype's remaining helpers are still guarded.
+inventory and the shared prototype are complete, so their own reflection and
+integrity operations are enabled.
 
 Iterator.prototype.toArray acquires an object receiver directly, captures next,
 and consumes IteratorStepValue until done (27.1.3.3.12). It never consults
@@ -1177,8 +1181,8 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of incomplete Function/String/Array/Iterator/global intrinsics reports
-Unsupported until their own key sets are complete. Object.freeze/seal and
+bounded work. Enumeration of the incomplete String prototype, Array constructor, and global
+object reports Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
 and use mapped-argument descriptor rules when freezing indexed properties.

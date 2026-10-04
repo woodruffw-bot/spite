@@ -212,7 +212,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add lazy Iterator.prototype.map/filter with direct capture, exact indices, source closing, and traced native suspension.
 - [x] Add lazy Iterator.prototype.take/drop with ordered conversion, exact finite countdowns, discarded-value bypass, and source closing.
 - [x] Add lazy Iterator.prototype.flatMap with ordered iterator acquisition, one-level flattening, exact outer indices, and inner-before-outer closing.
-- [ ] Enable complete shared Iterator prototype reflection and integrity operations.
+- [x] Complete edition-17 shared Iterator prototype properties and enable ordered reflection and integrity operations.
 - [x] Expose the Symbol global with standard attributes.
 - [ ] Complete Array species-dependent methods and iterator integration.
 
