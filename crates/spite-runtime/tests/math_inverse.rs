@@ -46,14 +46,35 @@ fn finite_approximations_handle_ordinary_extreme_and_subnormal_inputs() {
     check(
         "Math.abs(Math.acos(0)-Math.PI/2)<1e-15 && Math.abs(Math.asin(0.5)-Math.PI/6)<1e-15 && Math.abs(Math.atan(1)-Math.PI/4)<1e-15 && Math.abs(Math.acosh(2)-1.3169578969248166)<1e-15 && Math.abs(Math.asinh(-1)+0.881373587019543)<1e-15 && Math.abs(Math.atanh(0.5)-0.5493061443340548)<1e-15 && Math.abs(Math.cbrt(-8)+2)<1e-14",
     );
+    for method in ["acosh", "asinh", "cbrt"] {
+        check(&format!("Number.isFinite(Math.{method}(Number.MAX_VALUE))"));
+    }
+    for method in ["asinh", "cbrt"] {
+        check(&format!(
+            "Number.isFinite(Math.{method}(-Number.MAX_VALUE))"
+        ));
+    }
+    // Finite cube roots are implementation approximations (sec-math.cbrt).
     check(
-        "Number.isFinite(Math.acosh(Number.MAX_VALUE)) && Number.isFinite(Math.asinh(Number.MAX_VALUE)) && Number.isFinite(Math.asinh(-Number.MAX_VALUE)) && Number.isFinite(Math.cbrt(Number.MAX_VALUE)) && Number.isFinite(Math.cbrt(-Number.MAX_VALUE)) && Math.cbrt(Number.MIN_VALUE)===2**-358 && Math.cbrt(-Number.MIN_VALUE)===-(2**-358)",
+        "Math.abs(Math.cbrt(Number.MIN_VALUE)/(2**-358)-1)<1e-15 && Math.abs(Math.cbrt(-Number.MIN_VALUE)/(-(2**-358))-1)<1e-15",
     );
     for method in ["asin", "asinh", "atan", "atanh"] {
         check(&format!(
             "Math.{method}(Number.MIN_VALUE)===Number.MIN_VALUE && Math.{method}(-Number.MIN_VALUE)===-Number.MIN_VALUE"
         ));
     }
+}
+
+#[test]
+fn inverse_hyperbolic_approximations_do_not_overflow_or_round_interior_values_to_endpoints() {
+    for input in ["2**28-1", "2**28", "2**28+1", "1e200", "Number.MAX_VALUE"] {
+        check(&format!(
+            "let x={input},expected=Math.log(x)+Math.LN2;Math.abs(Math.acosh(x)-expected)<1e-13 && Math.abs(Math.asinh(x)-expected)<1e-13 && Math.asinh(-x)===-Math.asinh(x)"
+        ));
+    }
+    check(
+        "let x=1-Number.EPSILON/2,y=Math.atanh(x);Number.isFinite(y) && Math.abs(y-18.714973875118524)<1e-14 && Math.atanh(-x)===-y",
+    );
 }
 
 #[test]

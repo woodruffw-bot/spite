@@ -393,6 +393,8 @@ fn inverse_unary(number: f64, builtin: Builtin) -> f64 {
                 f64::NAN
             } else if number == 1.0 {
                 0.0
+            } else if number > 268_435_456.0 {
+                log_twice(number)
             } else {
                 number.acosh()
             }
@@ -408,11 +410,18 @@ fn inverse_unary(number: f64, builtin: Builtin) -> f64 {
                 number.asin()
             }
         }
-        Builtin::MathAsinh | Builtin::MathCbrt => {
+        Builtin::MathAsinh => {
             if number == 0.0 || !number.is_finite() {
                 number
-            } else if matches!(builtin, Builtin::MathAsinh) {
+            } else if number.abs() > 268_435_456.0 {
+                log_twice(number.abs()).copysign(number)
+            } else {
                 number.asinh()
+            }
+        }
+        Builtin::MathCbrt => {
+            if number == 0.0 || !number.is_finite() {
+                number
             } else {
                 number.cbrt()
             }
@@ -434,11 +443,22 @@ fn inverse_unary(number: f64, builtin: Builtin) -> f64 {
             } else if number.abs() == 1.0 {
                 f64::INFINITY.copysign(number)
             } else {
-                number.atanh()
+                // Evaluate the positive magnitude then restore its sign. The
+                // negative formula can round its log1p argument to -1 even
+                // for the closest Number strictly greater than -1.
+                let magnitude = number.abs();
+                (0.5 * ((2.0 * magnitude) / (1.0 - magnitude)).ln_1p()).copysign(number)
             }
         }
         _ => unreachable!("Math inverse/cube-root operation"),
     }
+}
+
+fn log_twice(magnitude: f64) -> f64 {
+    // For x > 2^28, asinh(x) and acosh(x) differ from log(2*x) by
+    // O(1/x^2), below binary64 spacing here. Avoid forming 2*x, which
+    // overflows in Rust 1.85's inverse-hyperbolic implementations.
+    magnitude.ln() + std::f64::consts::LN_2
 }
 
 fn atan2(y: f64, x: f64) -> f64 {

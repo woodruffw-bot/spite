@@ -1251,7 +1251,12 @@ subnormal powers, before using the platform logarithm for other finite values.
 
 Math acos/acosh/asin/asinh/atan/atanh/cbrt handle their domains and signed
 endpoints before platform finite approximations (sec-math.acos through
-sec-math.cbrt). Atan2 converts y then x before any numeric shortcut
+sec-math.cbrt). Acosh/asinh magnitudes above 2^28 use log(x)+LN2, avoiding
+intermediate doubling overflow in Rust 1.85's standard-library implementations;
+the omitted O(1/x^2) correction is below binary64 spacing there. Atanh evaluates
+0.5*log1p(2*abs(x)/(1-abs(x))) and restores the sign, preventing a negative
+interior argument from rounding to the -1 logarithm endpoint. Atan2 converts y
+then x before any numeric shortcut
 (sec-math.atan2). NaN wins after both conversions; explicit zero and infinity
 quadrants retain the sign of y and distinguish either sign of x, including -0.
 Ordinary finite nonzero pairs use atan2 directly without forming y/x.
