@@ -22,7 +22,6 @@ fn iterator_aliases_and_prototype_descriptors_are_standard() {
     for source in [
         "base.constructor",
         "base.map",
-        "base[S.toStringTag]",
         "Object.getOwnPropertyDescriptors(base)",
     ] {
         assert!(

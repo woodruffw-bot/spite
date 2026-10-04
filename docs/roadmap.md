@@ -175,6 +175,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
 - [x] Add Array keys/values/entries iterators, live/reentrant state tests, source tracing, and nine Test262 files.
 - [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
+- [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [ ] Add remaining shared Iterator prototype properties.
 - [ ] Expose the Symbol global after completing remaining intrinsic symbol properties.
 - [ ] Complete Array species-dependent methods and iterator integration.

@@ -641,14 +641,9 @@ impl Realm {
         key: impl Into<PropertyKeyRef<'key>>,
     ) -> bool {
         let key = key.into();
-        if let PropertyKeyRef::Symbol(symbol) = key {
-            let Some(intrinsics) = &self.intrinsics else {
-                return false;
-            };
-            return object == &intrinsics.iterator.prototype
-                && symbol == &WellKnownSymbol::ToStringTag.symbol();
-        }
-        let key = key.as_string().expect("string key");
+        let Some(key) = key.as_string() else {
+            return false;
+        };
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
             return true;
         }

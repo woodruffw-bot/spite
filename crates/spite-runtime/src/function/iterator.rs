@@ -1,8 +1,13 @@
 //! Initial iterator prototype graph and IteratorResult creation (27.1, 7.4.16).
 
 use super::Builtin;
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::{
+    Error, ObjectHandle, Realm, Value,
+    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
+};
 use spite_core::{JsString, Span, WellKnownSymbol};
+
+mod tag;
 
 #[derive(Debug)]
 pub(crate) struct IteratorIntrinsics {
@@ -12,6 +17,8 @@ pub(crate) struct IteratorIntrinsics {
     identity: ObjectHandle,
     array_next: ObjectHandle,
     string_next: ObjectHandle,
+    tag_get: ObjectHandle,
+    tag_set: ObjectHandle,
 }
 
 impl IteratorIntrinsics {
@@ -23,6 +30,8 @@ impl IteratorIntrinsics {
             &self.identity,
             &self.array_next,
             &self.string_next,
+            &self.tag_get,
+            &self.tag_set,
         ]
         .into_iter()
     }
@@ -42,6 +51,8 @@ impl Realm {
         let string_prototype =
             self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let identity = self.new_builtin(function_prototype, Builtin::IteratorIdentity, span)?;
+        let tag_get = self.new_builtin(function_prototype, Builtin::IteratorTagGet, span)?;
+        let tag_set = self.new_builtin(function_prototype, Builtin::IteratorTagSet, span)?;
         let array_next = self.new_builtin(function_prototype, Builtin::ArrayIteratorNext, span)?;
         let string_next =
             self.new_builtin(function_prototype, Builtin::StringIteratorNext, span)?;
@@ -60,6 +71,19 @@ impl Realm {
             span,
         )?;
         self.object_work(span, |objects, budget| {
+            objects.define(
+                &prototype,
+                WellKnownSymbol::ToStringTag.symbol(),
+                PropertyDescriptor {
+                    kind: DescriptorKind::Accessor {
+                        get: Some(Some(tag_get.clone())),
+                        set: Some(Some(tag_set.clone())),
+                    },
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )?;
             objects.define(
                 &prototype,
                 WellKnownSymbol::Iterator.symbol(),
@@ -102,6 +126,8 @@ impl Realm {
             identity,
             array_next,
             string_next,
+            tag_get,
+            tag_set,
         })
     }
 

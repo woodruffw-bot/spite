@@ -49,6 +49,10 @@ impl Realm {
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
+            Builtin::IteratorTagGet => Ok(Value::String(JsString::from("Iterator"))),
+            Builtin::IteratorTagSet => {
+                self.iterator_tag_setter(this, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::ArrayKeys | Builtin::ArrayValues | Builtin::ArrayEntries => {
                 let kind = match builtin {
                     Builtin::ArrayKeys => crate::object::ArrayIterationKind::Key,

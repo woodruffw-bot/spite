@@ -8,6 +8,7 @@ mod array;
 mod hooks;
 mod instance;
 mod iteration;
+mod iterator_tag;
 mod keys;
 mod regexp;
 mod registry;

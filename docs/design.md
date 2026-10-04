@@ -498,8 +498,15 @@ abrupt Get. Native recursion remains subject to the ordinary host reentry limit.
 Iterator results are fresh ordinary objects with value/done data properties.
 Expose Array keys/values/entries together with the values alias at Symbol.iterator
 and the same intrinsic values callable on mapped/unmapped arguments. The shared
-Iterator prototype initially supplies its iterator identity method; its remaining
-standard properties must be marked Unsupported until their implementation arrives.
+Iterator prototype supplies its iterator identity method and Symbol.toStringTag
+accessor. Its constructor and helpers remain Unsupported until implemented.
+The tag getter returns "Iterator" for every receiver (27.1.3.3.14). The setter
+implements SetterThatIgnoresPrototypeProperties (7.3.37): reject primitives and
+the intrinsic home prototype, then inspect the receiver's own descriptor. An
+absent property is created as an own writable/enumerable/configurable data
+property without inherited lookups. An existing property uses strict Set,
+preserving its attributes and invoking its setter when present. These failures
+are catchable TypeErrors; recursive user setters retain the host reentry limit.
 
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;
