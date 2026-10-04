@@ -1,4 +1,4 @@
-//! Exact decimal formatting from binary64 components (21.1.3.3, 21.1.3.5).
+//! Decimal formatting from binary64 components (21.1.3.2–3, 21.1.3.5).
 
 use crate::{Error, ExceptionKind, Realm, Value};
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
@@ -88,16 +88,7 @@ impl Realm {
             result.push('-');
         }
         if exponent < -6 || exponent >= precision as i32 {
-            result.push_str(&digits[..1]);
-            if precision > 1 {
-                result.push('.');
-                result.push_str(&digits[1..]);
-            }
-            result.push('e');
-            if exponent >= 0 {
-                result.push('+');
-            }
-            result.push_str(&exponent.to_string());
+            append_exponential(&mut result, &digits, exponent);
         } else if exponent < 0 {
             result.push_str("0.");
             result.extend(std::iter::repeat_n('0', (-exponent - 1) as usize));
@@ -112,6 +103,68 @@ impl Realm {
         }
         Ok(Value::String(JsString::from(result.as_str())))
     }
+
+    pub(crate) fn number_prototype_to_exponential(
+        &mut self,
+        this: &Value,
+        fraction: Option<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let value = self.this_number_value(this, span)?;
+        let fraction = fraction.unwrap_or(Value::Undefined);
+        let shortest = matches!(fraction, Value::Undefined);
+        let fraction = self.number(fraction, span)?;
+        let fraction = if fraction.is_nan() {
+            0.0
+        } else {
+            fraction.trunc()
+        };
+        if !value.is_finite() {
+            return Ok(Value::String(JsString::from(
+                crate::value::number_to_string(value).as_str(),
+            )));
+        }
+        if !(0.0..=100.0).contains(&fraction) {
+            return Err(Self::exception(
+                ExceptionKind::RangeError,
+                span,
+                "fraction digits must be between 0 and 100",
+            ));
+        }
+        let (digits, exponent) = if shortest {
+            let text = format!("{:e}", value.abs());
+            let (significand, exponent) = text
+                .split_once('e')
+                .expect("scientific float representation");
+            (
+                significand.replace('.', ""),
+                exponent.parse().expect("decimal exponent"),
+            )
+        } else {
+            self.integer_work(span, |budget| {
+                significant_digits(value.abs(), fraction as usize + 1, budget)
+            })?
+        };
+        let mut result = String::new();
+        if value < 0.0 {
+            result.push('-');
+        }
+        append_exponential(&mut result, &digits, exponent);
+        Ok(Value::String(JsString::from(result.as_str())))
+    }
+}
+
+fn append_exponential(result: &mut String, digits: &str, exponent: i32) {
+    result.push_str(&digits[..1]);
+    if digits.len() > 1 {
+        result.push('.');
+        result.push_str(&digits[1..]);
+    }
+    result.push('e');
+    if exponent >= 0 {
+        result.push('+');
+    }
+    result.push_str(&exponent.to_string());
 }
 
 fn scaled_integer(value: f64, fraction: i32, budget: &mut Budget) -> Result<BigInt, IntegerError> {

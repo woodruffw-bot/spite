@@ -150,34 +150,37 @@ fn receiver_validation_precedes_fraction_coercion_and_special_values_do_not_skip
 }
 
 #[test]
-fn fixed_metadata_is_standard_and_the_method_is_not_a_constructor() {
-    let mut realm = Realm::default();
-    let Value::Object(handle) = realm.eval("Number.prototype.toFixed").unwrap() else {
-        panic!("function")
-    };
-    let object = realm.inspect_object(&handle).unwrap();
-    assert!(object.is_callable());
-    assert!(!object.is_constructor());
-    for (key, value) in [
-        ("name", Value::String(JsString::from("toFixed"))),
-        ("length", Value::Number(1.0)),
-    ] {
-        let property = object
-            .own_property(&JsString::from(key))
-            .unwrap()
-            .as_data()
-            .unwrap();
-        assert_eq!(property.value, value);
-        assert!(!property.writable && !property.enumerable && property.configurable);
+fn decimal_method_metadata_is_standard_and_methods_are_not_constructors() {
+    for method in ["toFixed", "toPrecision", "toExponential"] {
+        let mut realm = Realm::default();
+        let Value::Object(handle) = realm.eval(&format!("Number.prototype.{method}")).unwrap()
+        else {
+            panic!("function")
+        };
+        let object = realm.inspect_object(&handle).unwrap();
+        assert!(object.is_callable());
+        assert!(!object.is_constructor());
+        for (key, value) in [
+            ("name", Value::String(JsString::from(method))),
+            ("length", Value::Number(1.0)),
+        ] {
+            let property = object
+                .own_property(&JsString::from(key))
+                .unwrap()
+                .as_data()
+                .unwrap();
+            assert_eq!(property.value, value);
+            assert!(!property.writable && !property.enumerable && property.configurable);
+        }
+        assert!(object.own_property(&JsString::from("prototype")).is_none());
+        assert!(matches!(
+            realm.eval(&format!("new Number.prototype.{method}(2)")),
+            Err(Error::Exception {
+                kind: ExceptionKind::TypeError,
+                ..
+            })
+        ));
     }
-    assert!(object.own_property(&JsString::from("prototype")).is_none());
-    assert!(matches!(
-        realm.eval("new Number.prototype.toFixed(2)"),
-        Err(Error::Exception {
-            kind: ExceptionKind::TypeError,
-            ..
-        })
-    ));
 }
 
 #[test]
@@ -296,5 +299,111 @@ fn precision_extremes_support_one_hundred_significant_digits() {
     string(
         "(0.1).toPrecision(100)",
         "0.1000000000000000055511151231257827021181583404541015625000000000000000000000000000000000000000000000",
+    );
+}
+
+#[test]
+fn exponential_formats_shortest_or_exact_requested_fraction_digits() {
+    for (source, expected) in [
+        ("(0).toExponential()", "0e+0"),
+        ("(-0).toExponential(3)", "0.000e+0"),
+        ("(1).toExponential()", "1e+0"),
+        ("(123.5).toExponential()", "1.235e+2"),
+        ("(123.5).toExponential(undefined)", "1.235e+2"),
+        ("(123.5).toExponential(0)", "1e+2"),
+        ("(123.5).toExponential(2)", "1.24e+2"),
+        ("(-123.5).toExponential(2)", "-1.24e+2"),
+        ("(1.25).toExponential(1)", "1.3e+0"),
+        ("(2.55).toExponential(1)", "2.5e+0"),
+        ("(1.005).toExponential(2)", "1.00e+0"),
+        ("(9.99).toExponential(1)", "1.0e+1"),
+        ("(0.000001).toExponential()", "1e-6"),
+        ("(1e20).toExponential()", "1e+20"),
+        ("(1e23).toExponential(20)", "9.99999999999999916114e+22"),
+        ("Number.MIN_VALUE.toExponential()", "5e-324"),
+        (
+            "Number.MIN_VALUE.toExponential(16)",
+            "4.9406564584124654e-324",
+        ),
+        (
+            "Number.MAX_VALUE.toExponential()",
+            "1.7976931348623157e+308",
+        ),
+        ("Number.MAX_VALUE.toExponential(0)", "2e+308"),
+        ("Number.prototype.toExponential(1)", "0.0e+0"),
+        ("new Number(1.25).toExponential(1)", "1.3e+0"),
+    ] {
+        string(source, expected);
+    }
+    string(
+        "(0).toExponential(100)",
+        &format!("0.{}e+0", "0".repeat(100)),
+    );
+}
+
+#[test]
+fn exponential_fraction_conversion_distinguishes_undefined_from_an_object_returning_it() {
+    for (argument, expected) in [
+        ("null", "1e+2"),
+        ("NaN", "1e+2"),
+        ("false", "1e+2"),
+        ("true", "1.2e+2"),
+        ("-0.5", "1e+2"),
+        ("'2'", "1.23e+2"),
+        ("2.9", "1.23e+2"),
+        ("({valueOf:()=>undefined})", "1e+2"),
+    ] {
+        string(&format!("(123.4).toExponential({argument})"), expected);
+    }
+    for argument in ["-1", "101", "Infinity", "-Infinity"] {
+        assert!(matches!(
+            Realm::default().eval(&format!("(1).toExponential({argument})")),
+            Err(Error::Exception {
+                kind: ExceptionKind::RangeError,
+                ..
+            })
+        ));
+        string(&format!("NaN.toExponential({argument})"), "NaN");
+        string(&format!("Infinity.toExponential({argument})"), "Infinity");
+    }
+    let mut realm = Realm::default();
+    realm
+        .eval("let flag=0;let f={valueOf:()=>{flag++;return 2;}};")
+        .unwrap();
+    assert!(matches!(
+        realm.eval("Number.prototype.toExponential.call({},f)"),
+        Err(Error::Exception {
+            kind: ExceptionKind::TypeError,
+            ..
+        })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert_eq!(
+        realm.eval("NaN.toExponential(f)"),
+        Ok(Value::String(JsString::from("NaN")))
+    );
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
+    assert_eq!(
+        realm.eval("Infinity.toExponential({valueOf:()=>{throw 9;}})"),
+        Err(Error::Thrown(Value::Number(9.0)))
+    );
+    assert!(matches!(
+        realm.eval("NaN.toExponential(1n)"),
+        Err(Error::Exception {
+            kind: ExceptionKind::TypeError,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn exponential_supports_one_hundred_fraction_digits_at_binary64_extremes() {
+    string(
+        "Number.MIN_VALUE.toExponential(100)",
+        "4.9406564584124654417656879286822137236505980261432476442558568250067550727020875186529983636163599238e-324",
+    );
+    string(
+        "Number.MAX_VALUE.toExponential(100)",
+        "1.7976931348623157081452742373170435679807056752584499659891747680315726078002853876058955863276687817e+308",
     );
 }

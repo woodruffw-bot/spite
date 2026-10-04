@@ -104,6 +104,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
 - [x] Add exact Number.prototype.toPrecision with significant zeros and exponent correction.
+- [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.
 - [ ] Complete non-decimal Number formatting and the remaining Number methods.
 - [ ] Add remaining boxed receivers and the arguments iterator hook.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.

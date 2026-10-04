@@ -10,7 +10,7 @@ mod format;
 pub(crate) struct NumberIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
-    methods: [ObjectHandle; 8],
+    methods: [ObjectHandle; 9],
 }
 
 impl NumberIntrinsics {
@@ -72,6 +72,15 @@ impl Realm {
         let to_fixed = self.new_builtin(function_prototype, Builtin::NumberToFixed, span)?;
         let to_precision =
             self.new_builtin(function_prototype, Builtin::NumberToPrecision, span)?;
+        let to_exponential =
+            self.new_builtin(function_prototype, Builtin::NumberToExponential, span)?;
+        self.define_builtin_property(
+            &prototype,
+            "toExponential",
+            Value::Object(to_exponential.clone()),
+            true,
+            span,
+        )?;
         self.define_builtin_property(
             &prototype,
             "toPrecision",
@@ -151,6 +160,7 @@ impl Realm {
                 to_string,
                 to_fixed,
                 to_precision,
+                to_exponential,
                 is_finite,
                 is_nan,
                 is_integer,
