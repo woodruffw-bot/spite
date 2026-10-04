@@ -128,6 +128,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement instanceof for ordinary/bound functions and inherited default hooks.
 - [x] Materialize Function.prototype Symbol.hasInstance and dispatch custom hooks.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
+- [x] Parse/evaluate iterable spread arguments for calls and construction with ordered argument accumulation.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add Object construction and mandatory string-keyed prototype methods.
 - [x] Add Object.defineProperty/getOwnPropertyDescriptor, hasOwn, and is.

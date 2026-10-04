@@ -643,7 +643,7 @@ failures propagate directly without closing. Yielded undefined values are dense.
 Elisions assign length at their position; the final initializer assigns length
 after all elements, even if spreading crosses the Array index boundary. Convert
 large element indices through Number before stringifying property names. Native
-index arithmetic remains checked, with no default work or output quota. Call/object
+index arithmetic remains checked, with no default work or output quota. Object
 spread and array assignment patterns remain Unsupported until their semantics exist.
 
 The `Objects` heap context validates prototype handles and prevents ordinary
@@ -733,7 +733,13 @@ inside evaluation, temporary and pending-completion lifetimes still need roots.
 Function support begins with call syntax and reference-aware callee evaluation.
 GetValue of the callee precedes arguments; argument evaluation precedes the
 IsCallable check. Member calls retain their base as the receiver, including through
-parentheses. Spread arguments and optional calls remain unsupported. Builtin
+parentheses. Optional calls remain unsupported. ArgumentListEvaluation (13.3.8.1)
+distinguishes ordinary and spread arguments. Each spread expression acquires a
+synchronous iterator and consumes it before later arguments. Cache next and read
+done before value; step failures propagate without closing. Calls/construction
+check the callee only after all arguments finish. Keep the original member receiver
+and constructor value across iterator side effects. Argument storage uses checked
+count arithmetic/reservation, and any argument/work quotas remain opt-in. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype

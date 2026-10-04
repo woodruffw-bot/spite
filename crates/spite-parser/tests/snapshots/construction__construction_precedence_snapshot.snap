@@ -99,16 +99,18 @@ Script {
                                         },
                                         arguments: Some(
                                             [
-                                                Expr {
-                                                    depth: 1,
-                                                    kind: Identifier(
-                                                        "a",
-                                                    ),
-                                                    span: Span {
-                                                        start: 24,
-                                                        end: 25,
+                                                Expression(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "a",
+                                                        ),
+                                                        span: Span {
+                                                            start: 24,
+                                                            end: 25,
+                                                        },
                                                     },
-                                                },
+                                                ),
                                             ],
                                         ),
                                     },
@@ -161,16 +163,18 @@ Script {
                                 },
                                 arguments: Some(
                                     [
-                                        Expr {
-                                            depth: 1,
-                                            kind: Identifier(
-                                                "a",
-                                            ),
-                                            span: Span {
-                                                start: 38,
-                                                end: 39,
+                                        Expression(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "a",
+                                                ),
+                                                span: Span {
+                                                    start: 38,
+                                                    end: 39,
+                                                },
                                             },
-                                        },
+                                        ),
                                     ],
                                 ),
                             },
@@ -180,16 +184,18 @@ Script {
                             },
                         },
                         arguments: [
-                            Expr {
-                                depth: 1,
-                                kind: Identifier(
-                                    "b",
-                                ),
-                                span: Span {
-                                    start: 41,
-                                    end: 42,
+                            Expression(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "b",
+                                    ),
+                                    span: Span {
+                                        start: 41,
+                                        end: 42,
+                                    },
                                 },
-                            },
+                            ),
                         ],
                     },
                     span: Span {
@@ -223,16 +229,18 @@ Script {
                                 },
                                 arguments: Some(
                                     [
-                                        Expr {
-                                            depth: 1,
-                                            kind: Identifier(
-                                                "a",
-                                            ),
-                                            span: Span {
-                                                start: 55,
-                                                end: 56,
+                                        Expression(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "a",
+                                                ),
+                                                span: Span {
+                                                    start: 55,
+                                                    end: 56,
+                                                },
                                             },
-                                        },
+                                        ),
                                     ],
                                 ),
                             },
@@ -243,16 +251,18 @@ Script {
                         },
                         arguments: Some(
                             [
-                                Expr {
-                                    depth: 1,
-                                    kind: Identifier(
-                                        "b",
-                                    ),
-                                    span: Span {
-                                        start: 58,
-                                        end: 59,
+                                Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "b",
+                                        ),
+                                        span: Span {
+                                            start: 58,
+                                            end: 59,
+                                        },
                                     },
-                                },
+                                ),
                             ],
                         ),
                     },
@@ -303,16 +313,18 @@ Script {
                         },
                         arguments: Some(
                             [
-                                Expr {
-                                    depth: 1,
-                                    kind: Identifier(
-                                        "x",
-                                    ),
-                                    span: Span {
-                                        start: 72,
-                                        end: 73,
+                                Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 72,
+                                            end: 73,
+                                        },
                                     },
-                                },
+                                ),
                             ],
                         ),
                     },

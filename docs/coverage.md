@@ -124,8 +124,13 @@ descriptors. Object.prototype has an immutable null prototype and its mandatory
 string-keyed methods. Default ordinary-object conversion is supported. Intrinsic
 initialization is atomic and the initialized objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
-metadata. Their reads/writes throw catchable TypeError in both modes. Spread
-arguments and optional calls remain open; missing operations report Unsupported. Function.prototype
+metadata. Their reads/writes throw catchable TypeError in both modes. Optional
+calls remain open; missing operations report Unsupported. Ordinary calls and new
+support iterable spread arguments, consuming each iterator before later arguments
+and retaining the original callee/member receiver. Next is cached once; failures
+in next/done/value do not close. Non-callable/constructible checks follow argument
+evaluation. Argument storage checks platform capacity without a default quota.
+Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -347,7 +352,7 @@ and checks both safe-integer and Array length bounds before copying. It reads
 retained elements in ascending order and supports full-width source indices
 when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
-lookup, and preserve ordered live reads. With never reads its replaced index. Call/object spread and array assignment patterns remain
+lookup, and preserve ordered live reads. With never reads its replaced index. Object spread and array assignment patterns remain
 pending.
 Map/filter validate callbacks before ArraySpeciesCreate, which consults constructor
 and Symbol.species only for genuine Arrays. Null/undefined species select an

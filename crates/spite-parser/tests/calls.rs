@@ -9,10 +9,22 @@ fn call_syntax_snapshot() {
 }
 
 #[test]
+fn spread_call_and_constructor_arguments_snapshot() {
+    insta::assert_debug_snapshot!(
+        parse_script("obj.f(1,...items,...make(), x=y,);new F(...(a,b),...items,)").unwrap()
+    );
+    insta::assert_debug_snapshot!(parse_script("f(...,)").unwrap_err());
+}
+
+#[test]
 fn calls_chain_with_members_and_accept_assignment_expressions() {
     for source in [
         "f()",
         "f(a, b,)",
+        "f(...x)",
+        "f(a,...x,b,...y,)",
+        "f(...x=y)",
+        "f(...(a,b))",
         "f((a, b))",
         "f(a = 1, b ? c : d)",
         "f()()",
@@ -53,6 +65,12 @@ fn malformed_arguments_and_call_targets_are_rejected() {
         "++f()",
         "'use strict'; f(eval = 1)",
         "'use strict'; f(yield)",
+        "f(...)",
+        "f(...,)",
+        "f(...x,,y)",
+        "f(...x ...y)",
+        "'use strict'; f(...eval=1)",
+        "'use strict'; f(...yield)",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
@@ -60,13 +78,10 @@ fn malformed_arguments_and_call_targets_are_rejected() {
             "{source}"
         );
     }
-    for source in ["f(...x)", "f(a, ...x)", "f?.()"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
-    }
+    assert_eq!(
+        parse_script("f?.()").unwrap_err().kind,
+        DiagnosticKind::Unsupported
+    );
 }
 
 #[test]
@@ -76,6 +91,11 @@ fn nested_and_flat_call_depth_is_bounded() {
         format!(
             "{}0{}",
             "f(".repeat(MAX_DEPTH * 2),
+            ")".repeat(MAX_DEPTH * 2)
+        ),
+        format!(
+            "{}[]{}",
+            "f(...".repeat(MAX_DEPTH * 2),
             ")".repeat(MAX_DEPTH * 2)
         ),
     ] {

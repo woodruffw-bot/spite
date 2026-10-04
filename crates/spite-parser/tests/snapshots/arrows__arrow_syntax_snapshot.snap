@@ -234,30 +234,34 @@ Script {
                             },
                         },
                         arguments: [
-                            Expr {
-                                depth: 1,
-                                kind: Literal(
-                                    Number(
-                                        1.0,
+                            Expression(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            1.0,
+                                        ),
                                     ),
-                                ),
-                                span: Span {
-                                    start: 56,
-                                    end: 57,
+                                    span: Span {
+                                        start: 56,
+                                        end: 57,
+                                    },
                                 },
-                            },
-                            Expr {
-                                depth: 1,
-                                kind: Literal(
-                                    Number(
-                                        2.0,
+                            ),
+                            Expression(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            2.0,
+                                        ),
                                     ),
-                                ),
-                                span: Span {
-                                    start: 59,
-                                    end: 60,
+                                    span: Span {
+                                        start: 59,
+                                        end: 60,
+                                    },
                                 },
-                            },
+                            ),
                         ],
                     },
                     span: Span {

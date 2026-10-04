@@ -55,49 +55,53 @@ Script {
                                                             },
                                                         },
                                                         arguments: [
-                                                            Expr {
-                                                                depth: 1,
-                                                                kind: Literal(
-                                                                    Number(
-                                                                        1.0,
+                                                            Expression(
+                                                                Expr {
+                                                                    depth: 1,
+                                                                    kind: Literal(
+                                                                        Number(
+                                                                            1.0,
+                                                                        ),
                                                                     ),
-                                                                ),
-                                                                span: Span {
-                                                                    start: 13,
-                                                                    end: 14,
-                                                                },
-                                                            },
-                                                            Expr {
-                                                                depth: 2,
-                                                                kind: Assign(
-                                                                    Expr {
-                                                                        depth: 1,
-                                                                        kind: Identifier(
-                                                                            "x",
-                                                                        ),
-                                                                        span: Span {
-                                                                            start: 16,
-                                                                            end: 17,
-                                                                        },
+                                                                    span: Span {
+                                                                        start: 13,
+                                                                        end: 14,
                                                                     },
-                                                                    Expr {
-                                                                        depth: 1,
-                                                                        kind: Literal(
-                                                                            Number(
-                                                                                2.0,
+                                                                },
+                                                            ),
+                                                            Expression(
+                                                                Expr {
+                                                                    depth: 2,
+                                                                    kind: Assign(
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Identifier(
+                                                                                "x",
                                                                             ),
-                                                                        ),
-                                                                        span: Span {
-                                                                            start: 20,
-                                                                            end: 21,
+                                                                            span: Span {
+                                                                                start: 16,
+                                                                                end: 17,
+                                                                            },
                                                                         },
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Literal(
+                                                                                Number(
+                                                                                    2.0,
+                                                                                ),
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 20,
+                                                                                end: 21,
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 16,
+                                                                        end: 21,
                                                                     },
-                                                                ),
-                                                                span: Span {
-                                                                    start: 16,
-                                                                    end: 21,
                                                                 },
-                                                            },
+                                                            ),
                                                         ],
                                                     },
                                                     span: Span {

@@ -377,6 +377,24 @@ impl ArrayElement {
     }
 }
 
+/// An ordinary or spread call/construction argument (13.3.8.1).
+#[derive(Clone, Debug, PartialEq)]
+pub enum Argument {
+    /// A single value evaluated in source order.
+    Expression(Expr),
+    /// Values yielded by a synchronously acquired iterator.
+    Spread(Expr),
+}
+
+impl Argument {
+    /// Returns the expression evaluated for this argument.
+    pub fn expression(&self) -> &Expr {
+        match self {
+            Self::Expression(expression) | Self::Spread(expression) => expression,
+        }
+    }
+}
+
 /// Supported expression forms.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExprKind {
@@ -403,19 +421,19 @@ pub enum ExprKind {
     Parenthesized(Box<Expr>),
     /// A dotted or computed property reference.
     Member(Box<Expr>, PropertyName),
-    /// A call with an ordered list of non-spread arguments.
+    /// A call with an ordered list of ordinary and spread arguments.
     Call {
         /// Expression whose value is called; references retain their receiver.
         callee: Box<Expr>,
         /// Argument expressions in source order.
-        arguments: Vec<Expr>,
+        arguments: Vec<Argument>,
     },
-    /// Construction with optional parentheses and ordered non-spread arguments.
+    /// Construction with optional parentheses and ordered ordinary/spread arguments.
     New {
         /// Expression whose value must be a constructor at runtime.
         callee: Box<Expr>,
         /// None for the bare new form; Some includes explicit empty parentheses.
-        arguments: Option<Vec<Expr>>,
+        arguments: Option<Vec<Argument>>,
     },
     /// An ordinary function expression with optional local name.
     Function(Rc<Function>),

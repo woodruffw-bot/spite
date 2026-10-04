@@ -1163,12 +1163,7 @@ impl Realm {
             ExprKind::Array(elements) => self.array_literal(elements, expr.span)?,
             ExprKind::New { callee, arguments } => {
                 let constructor = self.expression(callee)?;
-                let mut values = Vec::new();
-                for argument in arguments.iter().flatten() {
-                    let value = self.expression(argument)?;
-                    self.check_argument_count(values.len() + 1, argument.span)?;
-                    values.push(value);
-                }
+                let values = self.argument_list(arguments.as_deref().unwrap_or(&[]))?;
                 self.construct(constructor, values, expr.span)?
             }
             ExprKind::Call { callee, arguments } => {
@@ -1183,12 +1178,7 @@ impl Realm {
                 } else {
                     (self.expression(callee)?, Value::Undefined)
                 };
-                let mut values = Vec::new();
-                for argument in arguments {
-                    let value = self.expression(argument)?;
-                    self.check_argument_count(values.len() + 1, argument.span)?;
-                    values.push(value);
-                }
+                let values = self.argument_list(arguments)?;
                 self.call(function, this, values, expr.span)?
             }
             ExprKind::Template {

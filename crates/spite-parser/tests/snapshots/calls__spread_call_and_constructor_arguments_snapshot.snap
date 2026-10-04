@@ -1,0 +1,215 @@
+---
+source: crates/spite-parser/tests/calls.rs
+expression: "parse_script(\"obj.f(1,...items,...make(), x=y,);new F(...(a,b),...items,)\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 3,
+                    kind: Call {
+                        callee: Expr {
+                            depth: 2,
+                            kind: Member(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "obj",
+                                    ),
+                                    span: Span {
+                                        start: 0,
+                                        end: 3,
+                                    },
+                                },
+                                Literal(
+                                    String(
+                                        "f",
+                                    ),
+                                ),
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 5,
+                            },
+                        },
+                        arguments: [
+                            Expression(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            1.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 6,
+                                        end: 7,
+                                    },
+                                },
+                            ),
+                            Spread(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "items",
+                                    ),
+                                    span: Span {
+                                        start: 11,
+                                        end: 16,
+                                    },
+                                },
+                            ),
+                            Spread(
+                                Expr {
+                                    depth: 2,
+                                    kind: Call {
+                                        callee: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "make",
+                                            ),
+                                            span: Span {
+                                                start: 20,
+                                                end: 24,
+                                            },
+                                        },
+                                        arguments: [],
+                                    },
+                                    span: Span {
+                                        start: 20,
+                                        end: 26,
+                                    },
+                                },
+                            ),
+                            Expression(
+                                Expr {
+                                    depth: 2,
+                                    kind: Assign(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "x",
+                                            ),
+                                            span: Span {
+                                                start: 28,
+                                                end: 29,
+                                            },
+                                        },
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "y",
+                                            ),
+                                            span: Span {
+                                                start: 30,
+                                                end: 31,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 28,
+                                        end: 31,
+                                    },
+                                },
+                            ),
+                        ],
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 33,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 34,
+            },
+        },
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: New {
+                        callee: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "F",
+                            ),
+                            span: Span {
+                                start: 38,
+                                end: 39,
+                            },
+                        },
+                        arguments: Some(
+                            [
+                                Spread(
+                                    Expr {
+                                        depth: 3,
+                                        kind: Parenthesized(
+                                            Expr {
+                                                depth: 2,
+                                                kind: Binary(
+                                                    Comma,
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "a",
+                                                        ),
+                                                        span: Span {
+                                                            start: 44,
+                                                            end: 45,
+                                                        },
+                                                    },
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "b",
+                                                        ),
+                                                        span: Span {
+                                                            start: 46,
+                                                            end: 47,
+                                                        },
+                                                    },
+                                                ),
+                                                span: Span {
+                                                    start: 44,
+                                                    end: 47,
+                                                },
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 43,
+                                            end: 48,
+                                        },
+                                    },
+                                ),
+                                Spread(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "items",
+                                        ),
+                                        span: Span {
+                                            start: 52,
+                                            end: 57,
+                                        },
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                    span: Span {
+                        start: 34,
+                        end: 59,
+                    },
+                },
+            ),
+            span: Span {
+                start: 34,
+                end: 59,
+            },
+        },
+    ],
+    strict: false,
+}

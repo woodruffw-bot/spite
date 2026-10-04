@@ -77,11 +77,7 @@ fn invalid_targets_and_strict_errors_in_callees_or_arguments_are_rejected() {
         );
     }
     for source in ["new F(...x)", "new F(a,...x)"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 

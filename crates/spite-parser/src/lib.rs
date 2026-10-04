@@ -594,14 +594,14 @@ impl Parser {
             }),
             ExprKind::Call { callee, arguments } => arguments
                 .iter()
-                .map(|argument| argument.depth)
+                .map(|argument| argument.expression().depth)
                 .max()
                 .unwrap_or(0)
                 .max(callee.depth),
             ExprKind::New { callee, arguments } => arguments
                 .iter()
                 .flatten()
-                .map(|argument| argument.depth)
+                .map(|argument| argument.expression().depth)
                 .max()
                 .unwrap_or(0)
                 .max(callee.depth),
@@ -1501,13 +1501,13 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Call { callee, arguments } => {
             validate_expr(callee, strict)?;
             for argument in arguments {
-                validate_expr(argument, strict)?;
+                validate_expr(argument.expression(), strict)?;
             }
         }
         ExprKind::New { callee, arguments } => {
             validate_expr(callee, strict)?;
             for argument in arguments.iter().flatten() {
-                validate_expr(argument, strict)?;
+                validate_expr(argument.expression(), strict)?;
             }
         }
         ExprKind::Update { argument, .. } => {

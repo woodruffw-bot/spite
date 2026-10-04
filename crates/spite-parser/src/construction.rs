@@ -1,16 +1,19 @@
 //! Arguments and new-expression precedence (13.3.1, 13.3.5, 13.3.8).
 
-use crate::{Diagnostic, Expr, ExprKind, Parser, Span, early, member_base};
+use crate::{Argument, Diagnostic, Expr, ExprKind, Parser, Span, early, member_base};
 
 impl Parser {
-    pub(super) fn arguments(&mut self) -> Result<Vec<Expr>, Diagnostic> {
+    pub(super) fn arguments(&mut self) -> Result<Vec<Argument>, Diagnostic> {
         self.expect("(")?;
         let mut arguments = Vec::new();
         while !self.at(")") {
-            if self.at("...") {
-                return Err(self.unsupported("spread arguments are not implemented"));
-            }
-            arguments.push(self.expression_with_in(2, true)?);
+            let spread = self.eat("...");
+            let expression = self.expression_with_in(2, true)?;
+            arguments.push(if spread {
+                Argument::Spread(expression)
+            } else {
+                Argument::Expression(expression)
+            });
             if !self.eat(",") {
                 break;
             }

@@ -22,6 +22,7 @@ pub(crate) use method::MethodFunction;
 mod number;
 mod object;
 mod ordinary;
+mod spread;
 mod string;
 mod symbol;
 mod wrapper;

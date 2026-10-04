@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/calls.rs
+expression: "parse_script(\"f(...,)\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 5,
+        end: 6,
+    },
+    message: "expected an expression",
+}
