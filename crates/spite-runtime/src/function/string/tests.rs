@@ -122,3 +122,68 @@ fn well_formedness_bounds_scans_and_replacement_allocation() {
         Ok(Value::String(JsString::from_code_units(vec![0xfffd; 100])))
     );
 }
+
+#[test]
+fn sequence_methods_bound_copying_and_output_lengths() {
+    let mut realm = Realm::default();
+    let input = Value::String(JsString::from("a".repeat(100).as_str()));
+    let span = Span::new(0, 0);
+    realm.remaining_steps = 50;
+    assert!(matches!(
+        realm.string_concat(input.clone(), vec![].into_iter(), span),
+        Err(Error::Limit { .. })
+    ));
+    for relative in [false, true] {
+        realm.remaining_steps = 50;
+        assert!(matches!(
+            realm.string_substring(
+                input.clone(),
+                Value::Number(0.0),
+                Value::Undefined,
+                relative,
+                span
+            ),
+            Err(Error::Limit { .. })
+        ));
+        realm.remaining_steps = 1000;
+        realm.limits.max_string_units = 99;
+        assert!(matches!(
+            realm.string_substring(
+                input.clone(),
+                Value::Number(0.0),
+                Value::Undefined,
+                relative,
+                span
+            ),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(
+            realm.string_substring(
+                input.clone(),
+                Value::Number(0.0),
+                Value::Number(1.0),
+                relative,
+                span
+            ),
+            Ok(Value::String(JsString::from("a")))
+        );
+        realm.limits.max_string_units = 100;
+    }
+    realm.remaining_steps = 1000;
+    assert!(matches!(
+        realm.string_concat(
+            input.clone(),
+            vec![Value::String(JsString::from("b"))].into_iter(),
+            span
+        ),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(
+        realm.string_concat(
+            input.clone(),
+            vec![Value::String(JsString::from(""))].into_iter(),
+            span
+        ),
+        Ok(input)
+    );
+}

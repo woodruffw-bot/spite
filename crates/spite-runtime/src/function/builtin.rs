@@ -185,6 +185,14 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined).to_boolean(),
             )),
             Builtin::String => self.string_constructor(None, arguments.next(), span),
+            Builtin::StringConcat => self.string_concat(this, arguments, span),
+            Builtin::StringSlice | Builtin::StringSubstring => self.string_substring(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                matches!(builtin, Builtin::StringSlice),
+                span,
+            ),
             Builtin::StringFromCharCode | Builtin::StringFromCodePoint => self.string_from_codes(
                 arguments,
                 matches!(builtin, Builtin::StringFromCodePoint),

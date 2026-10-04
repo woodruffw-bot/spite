@@ -181,9 +181,9 @@ fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
     type_error("new String.prototype.toString()");
     for source in [
         "String.raw",
-        "String.prototype.slice",
-        "String.prototype.slice=1",
-        "delete String.prototype.slice",
+        "String.prototype.split",
+        "String.prototype.split=1",
+        "delete String.prototype.split",
         "Object.getOwnPropertyDescriptors(String.prototype)",
     ] {
         assert!(

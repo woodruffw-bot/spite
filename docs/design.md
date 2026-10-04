@@ -383,6 +383,12 @@ UTF-16 with the standard library (22.1.3.10/31, 7.2.7). Decoding errors identify
 individual unpaired surrogates; toWellFormed replaces those units with U+FFFD and
 preserves every valid pair. Scans charge work in advance, and replacement checks
 the unchanged output length before allocation.
+concat uses String-hint conversion for its receiver and each argument in order,
+checking cumulative output lengths before extending the result (22.1.3.5).
+slice and substring convert the receiver, start, and end in order even for empty
+inputs (22.1.3.22/25). Their shared implementation distinguishes relative negative
+indices from clamping/swapping endpoints and slices code units without repairing
+surrogates. Output allocation and copying remain subject to host limits.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary

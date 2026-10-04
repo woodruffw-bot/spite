@@ -70,6 +70,9 @@ pub(crate) enum Builtin {
     StringCodePointAt,
     StringIsWellFormed,
     StringToWellFormed,
+    StringConcat,
+    StringSlice,
+    StringSubstring,
     Number,
     NumberValueOf,
     NumberToString,
@@ -115,6 +118,9 @@ impl Builtin {
             Self::StringCodePointAt => "codePointAt",
             Self::StringIsWellFormed => "isWellFormed",
             Self::StringToWellFormed => "toWellFormed",
+            Self::StringConcat => "concat",
+            Self::StringSlice => "slice",
+            Self::StringSubstring => "substring",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -163,6 +169,7 @@ impl Builtin {
             | Self::StringCharAt
             | Self::StringCharCodeAt
             | Self::StringCodePointAt
+            | Self::StringConcat
             | Self::Object
             | Self::ObjectHasOwnProperty
             | Self::ObjectPropertyIsEnumerable
@@ -190,6 +197,8 @@ impl Builtin {
             | Self::IsNaN
             | Self::ParseFloat => 1.0,
             Self::FunctionApply
+            | Self::StringSlice
+            | Self::StringSubstring
             | Self::ParseInt
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn

@@ -215,7 +215,9 @@ fromCharCode/fromCodePoint construct UTF-16 with ordered numeric conversions;
 at/charAt/charCodeAt/codePointAt apply generic receiver conversion and distinguish
 relative indexing, out-of-range results, and surrogate pairs. isWellFormed and
 toWellFormed detect unpaired surrogates and replace each with U+FFFD while retaining
-valid pairs and all other code units. Missing String
+valid pairs and all other code units. concat converts each argument in order;
+slice and substring extract UTF-16 code units with their respective relative-index
+and endpoint-swapping rules. Missing String
 static/prototype methods and enumeration of those incomplete
 intrinsics remain Unsupported.
 
@@ -235,7 +237,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 80 retained entries under a separate fixed work
+Realm initialization creates 83 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

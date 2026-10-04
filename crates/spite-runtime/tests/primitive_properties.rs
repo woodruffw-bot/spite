@@ -186,7 +186,7 @@ fn logical_assignment_can_skip_a_forbidden_primitive_write() {
 #[test]
 fn missing_standard_methods_are_distinct_from_absent_and_annex_b_properties() {
     for source in [
-        "'s'.slice",
+        "'s'.split",
         "'s'.normalize",
         "'s'.trimStart",
         "'s'.replaceAll",

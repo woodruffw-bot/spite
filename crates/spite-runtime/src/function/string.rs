@@ -5,6 +5,7 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescri
 use spite_core::{JsString, Span};
 
 mod character;
+mod sequence;
 #[cfg(test)]
 mod tests;
 mod well_formed;
@@ -80,6 +81,9 @@ impl Realm {
             Builtin::StringCodePointAt,
             Builtin::StringIsWellFormed,
             Builtin::StringToWellFormed,
+            Builtin::StringConcat,
+            Builtin::StringSlice,
+            Builtin::StringSubstring,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

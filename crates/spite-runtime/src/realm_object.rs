@@ -562,7 +562,6 @@ fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
 
 fn missing_string_method(key: &JsString) -> bool {
     [
-        "concat",
         "endsWith",
         "includes",
         "indexOf",
@@ -577,10 +576,8 @@ fn missing_string_method(key: &JsString) -> bool {
         "replace",
         "replaceAll",
         "search",
-        "slice",
         "split",
         "startsWith",
-        "substring",
         "toLocaleLowerCase",
         "toLocaleUpperCase",
         "toLowerCase",
