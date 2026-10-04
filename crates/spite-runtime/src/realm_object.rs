@@ -2,11 +2,14 @@
 
 use crate::{
     Collection, Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{self, DataDescriptor, OrdinaryObject, Property, SetAction},
+    object::{
+        self, DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor,
+        SetAction,
+    },
 };
 use spite_bigint::BigInt;
 use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span, WellKnownSymbol};
-use spite_parser::ast::{Literal, ObjectProperty, PropertyKind, PropertyName};
+use spite_parser::ast::{ExprKind, Literal, ObjectProperty, PropertyKind, PropertyName};
 
 pub(super) enum Hint {
     Default,
@@ -477,15 +480,6 @@ impl Realm {
         let prototype = self.ensure_object_intrinsics(span)?;
         let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         for property in properties {
-            if matches!(
-                property.kind,
-                PropertyKind::Method | PropertyKind::Getter | PropertyKind::Setter
-            ) {
-                return Err(Self::unsupported(
-                    property.span,
-                    "object method and accessor execution is not implemented",
-                ));
-            }
             self.tick(property.span)?;
             let key = match &property.name {
                 PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,
@@ -493,6 +487,49 @@ impl Realm {
             };
             // ToPropertyKey precedes evaluation of the property's value.
             let key = self.property_key(key, property.span)?;
+            if matches!(
+                property.kind,
+                PropertyKind::Method | PropertyKind::Getter | PropertyKind::Setter
+            ) {
+                let ExprKind::Function(syntax) = &property.value.kind else {
+                    unreachable!("method syntax");
+                };
+                let function = self.method_function(
+                    syntax,
+                    &object,
+                    key.clone(),
+                    property.kind,
+                    property.span,
+                )?;
+                let descriptor = match property.kind {
+                    PropertyKind::Method => DataDescriptor {
+                        value: Some(Value::Object(function)),
+                        writable: Some(true),
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    }
+                    .into(),
+                    PropertyKind::Getter => PropertyDescriptor {
+                        kind: DescriptorKind::Accessor {
+                            get: Some(Some(function)),
+                            set: None,
+                        },
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    },
+                    PropertyKind::Setter => PropertyDescriptor {
+                        kind: DescriptorKind::Accessor {
+                            get: None,
+                            set: Some(Some(function)),
+                        },
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    },
+                    _ => unreachable!("method property kind"),
+                };
+                self.define_property_or_throw(&object, key, descriptor, property.span)?;
+                continue;
+            }
             let value = if property.kind == PropertyKind::Prototype {
                 self.expression(&property.value)?
             } else {
@@ -525,7 +562,7 @@ impl Realm {
                         budget,
                     )
                 })?;
-                debug_assert!(created, "new literal has only configurable data properties");
+                debug_assert!(created, "new literal has only configurable properties");
             }
         }
         Ok(Value::Object(object))

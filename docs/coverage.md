@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1709 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1770 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -89,8 +89,8 @@ checks, and receiver-sensitive writes. Rust values carry object identity and
 trace object-valued property edges, including cycles. Object literals parse with
 literal/computed keys, shorthand, trailing commas, and duplicate prototype-setter
 early errors. Evaluation preserves key/value order and implements ordinary data
-properties and prototype initializers. Methods, accessors, and spread remain
-unsupported. Explicit collection between evaluations retains persistent bindings,
+properties, prototype initializers, ordinary methods, and getters/setters. Spread
+remains unsupported. Explicit collection between evaluations retains persistent bindings,
 intrinsics, and host roots. Returned/thrown object values need a host root to
 survive collection; tokens release roots when their last clone is dropped. Root
 registry storage is reused. Collection during evaluation remains disabled until
@@ -239,11 +239,16 @@ Keys skips value reads; values/entries perform live Get and preserve earlier
 getter effects on failure. Entries creates dense intrinsic pairs; all result
 arrays bypass public constructors, species, and inherited setters. Forty-nine
 additional upstream Object files cover key reflection, primitive wrapping,
-symbol exclusion, intrinsic arrays, and metadata. Getter-mutation regressions use
-Object.defineProperty; upstream cases using accessor literals await runtime support.
+symbol exclusion, intrinsic arrays, and metadata. Eight more upstream files cover
+getter additions, deletions, enumerability changes, and abrupt reads.
 Ordinary method/getter/setter literals now parse with source retention, arity,
-strictness, unique-parameter, scope, and depth checks. Execution explicitly
-reports Unsupported until method closures and accessor definition are connected.
+strictness, unique-parameter, scope, and depth checks. Their non-constructible
+closures capture the current environment and trace their home objects; names,
+lengths, receiver binding, arguments, and exact source text follow ordinary method
+semantics. Accessor definitions merge pairs and replace data descriptors in source
+order. Twenty-three upstream files cover computed names, escaped/reserved method
+names, abrupt key evaluation, and setter scope. Async/generator methods, super,
+and parameter patterns/rest remain unsupported.
 Object.fromEntries/groupBy and BigInt boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
@@ -401,7 +406,7 @@ unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. The unchanged pinned assert.js/sta.js harness now
 executes for nine positive function/capture tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
-22 Error construction, conversion, and prototype tests, plus 132 Object descriptor,
+22 Error construction, conversion, and prototype tests, plus 140 Object descriptor,
 prototype, extensibility, creation, copying, key enumeration, integrity, and SameValue tests, and
 153 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
 well-formedness, conversion, and String iteration tests in both Script modes. Another 389 Array and Array iterator
@@ -409,12 +414,12 @@ files cover construction, of, isArray, literal elisions, length/index boundaries
 truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
 and reduce/reduceRight callbacks, plus sort/toSorted, toReversed/with/toSpliced copies,
 and keys/values/entries iteration, including mapped/unmapped arguments. The 34
-Symbol files run in their prescribed default/strict Script modes. Controls
+Symbol files and 23 object method/accessor files run in their prescribed Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON or Array.prototype.map and other APIs and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 1709 variants are four raw positives, 1633 positives using the upstream
+Rust. Its 1770 variants are four raw positives, 1694 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

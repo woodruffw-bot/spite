@@ -16,6 +16,8 @@ mod construct;
 mod error;
 mod instance;
 mod iterator;
+mod method;
+pub(crate) use method::MethodFunction;
 mod number;
 mod object;
 mod ordinary;
@@ -395,6 +397,7 @@ pub(crate) enum Callable {
     Bound(BoundFunction),
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
+    Method(Box<MethodFunction>),
 }
 
 pub(super) enum FunctionText {
@@ -410,6 +413,7 @@ impl Callable {
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
+            Self::Method(method) => FunctionText::Script(method.code.source.clone()),
         }
     }
 }
@@ -757,6 +761,12 @@ impl Realm {
                         unreachable!("callable object")
                     };
                     return self.call_ordinary(code, callee, this, None, arguments, span);
+                }
+                Some(Callable::Method(method)) => {
+                    let Value::Object(callee) = function else {
+                        unreachable!("callable object")
+                    };
+                    return self.call_ordinary(method.code, callee, this, None, arguments, span);
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound

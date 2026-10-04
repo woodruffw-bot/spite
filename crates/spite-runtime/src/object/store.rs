@@ -5,7 +5,7 @@ use super::{
     DataDescriptor, DataProperty, DescriptorKind, OrdinaryObject, PrimitiveData, Property,
     PropertyDescriptor,
 };
-use crate::function::{BoundFunction, Builtin, Callable, ScriptFunction};
+use crate::function::{BoundFunction, Builtin, Callable, MethodFunction, ScriptFunction};
 use crate::{
     Value,
     environment::{BindingState, Environment, EnvironmentHandle},
@@ -341,6 +341,19 @@ impl Objects {
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Ordinary(function));
         object.constructible = true;
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn create_method(
+        &mut self,
+        prototype: &Handle,
+        method: MethodFunction,
+    ) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        self.inspect(&method.home_object)?;
+        self.environment(&method.code.environment)?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        object.callable = Some(Callable::Method(Box::new(method)));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

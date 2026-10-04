@@ -184,19 +184,6 @@ fn early_errors_precede_all_effects() {
 }
 
 #[test]
-fn parsed_methods_remain_host_gaps_until_runtime_method_closures_are_implemented() {
-    for source in ["({m(){}})", "({get x(){return 1;}})", "({set x(v){}})"] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
-}
-
-#[test]
 fn allocation_property_and_key_limits_are_host_failures() {
     // Leave room for intrinsic initialization, then overflow a script object.
     let properties = (0..64)

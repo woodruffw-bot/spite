@@ -874,11 +874,18 @@ use a new non-arrow function context. Validation resets labels/loop targets and
 checks inherited strictness, parameter/lexical collisions, and non-simple strict
 directives. Contextual get/set prefixes must be unescaped; methods named get/set
 remain ordinary methods. Only colon-form non-computed __proto__ definitions are
-prototype setters. Parsing lands first with explicit Unsupported execution.
-Runtime integration will allocate non-constructible closures, retain HomeObject
-edges, set key-derived names (get/set prefixes included), and merge accessor
-descriptors in source order. Async/generator methods, parameter patterns/rest,
-and super remain separate implementation gaps.
+prototype setters. Runtime evaluation converts each key before creating the
+closure and captures the current environment without a private function-name
+binding. OrdinaryFunctionCreate without MakeConstructor produces non-constructible
+methods with no own prototype property (15.4.4–5). MakeMethod retains a traced
+HomeObject edge even for detached methods (10.2.7); unrooted cycles are collectible.
+SetFunctionName preserves UTF-16 keys and Symbol descriptions, includes get/set
+prefixes, and checks output limits before prefix allocation (10.2.9). Accessor
+definitions merge omitted getter/setter fields in source order; data/accessor
+transitions use ordinary descriptor rules and bypass inherited setters. Calls
+reuse ordinary this, arguments, parameter, strictness, and new.target semantics.
+Function.prototype.toString retains the complete method definition source.
+Async/generator methods, parameter patterns/rest, and super remain separate gaps.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

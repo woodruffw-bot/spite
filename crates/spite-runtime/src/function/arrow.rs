@@ -253,14 +253,7 @@ impl Realm {
             let Value::Object(function) = &value else {
                 unreachable!("anonymous function value")
             };
-            let name = Value::String(match name {
-                spite_core::PropertyKey::String(name) => name,
-                spite_core::PropertyKey::Symbol(symbol) => {
-                    self.symbol_function_name(&symbol, expression.span)?
-                }
-            });
-            self.check_string(&name, expression.span)?;
-            self.define_builtin_property(function, "name", name, false, expression.span)?;
+            self.set_function_name(function, name, None, expression.span)?;
         }
         Ok(value)
     }
