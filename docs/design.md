@@ -265,6 +265,31 @@ Property capacity failures remain distinct from descriptor rejection. Storage
 exposes checked internal operations; realms supply JavaScript execution and
 exception semantics. Symbol keys remain a separate implementation boundary.
 
+Symbol integration proceeds in three layers (6.1.5, 6.1.7, 7.1.19). First,
+spite-core owns immutable JsSymbol identities and a PropertyKey enum that
+distinguishes UTF-16 strings from symbols. A symbol owns an Arc containing only
+its optional description. Equality and hashing use allocation identity, never
+the description. Clones retain identity without copying text; independently
+created symbols remain unequal even when both descriptions are absent or equal.
+This requires no unsafe code, global counter, or new dependency. Symbols cannot
+point to objects, so reference counting cannot create a symbol/object cycle.
+
+Next, migrate ordinary/exotic storage and work accounting to PropertyKey. Own
+keys must enumerate numeric string indices first, then other strings in creation
+order, then symbols in creation order. Symbol keys never trigger Array length,
+String index, mapped-argument, or global binding behavior merely because their
+description resembles a string key. Descriptor rules, inherited accessors, and
+tracing of property values apply to both key kinds. Charge symbol comparisons
+and clones as constant work, while string keys retain UTF-16 work accounting.
+
+Finally, integrate Symbol values, wrappers, construction, shared well-known
+identities and registry semantics, ToPropertyKey, and observable hooks before
+exposing the JavaScript Symbol global. In particular, ToPrimitive, instanceof,
+Object.prototype.toString, String IsRegExp checks, and intrinsic symbol properties
+must stop relying on their current no-symbol assumptions. Array species and
+iteration then build on those boundaries. The foundation alone does not expose
+partial Symbol behavior to scripts or count as additional Test262 coverage.
+
 Array storage uses sparse indexed properties in the same traced heap,
 with an explicit Array exotic identity and a non-configurable data `length`
 property (10.4.2). Holes consume no indexed property slots; logical length is a

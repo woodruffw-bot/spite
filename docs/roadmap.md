@@ -163,6 +163,10 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add stable Array sort/toSorted with bounded fallible merging, sparse writeback, and 33 Test262 files.
 - [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
+- [x] Add immutable symbol identities and distinct string/symbol property keys.
+- [ ] Integrate symbol keys into ordinary/exotic storage, ordering, and work budgets.
+- [ ] Add Symbol values, wrappers, shared identities/registry, and required observable hooks.
+- [ ] Complete Array species-dependent methods and iterator integration.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.
 - [ ] Complete remaining harness paths/includes as their language and library dependencies arrive.
 

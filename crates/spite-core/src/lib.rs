@@ -1,8 +1,10 @@
-//! Shared source locations, diagnostics, and ECMAScript strings.
+//! Shared source locations, diagnostics, strings, symbols, and property keys.
 
+mod symbol;
 mod unicode;
 mod unicode_data;
 
+pub use symbol::{JsSymbol, PropertyKey};
 pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;
 

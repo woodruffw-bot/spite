@@ -48,6 +48,12 @@ a test-only dependency. Rust unsafe code is forbidden through inherited workspac
 
 ## Not implemented
 
+The core crate provides immutable, shared Symbol identities and distinct
+string/symbol PropertyKey values, with identity-based equality and hashing.
+Descriptions preserve UTF-16, including lone surrogates and absent versus empty
+text. Runtime Value integration, symbol-keyed storage, Symbol APIs, and observable
+hooks are still pending; this foundation adds no Script/Test262 coverage.
+
 The `spite-heap` foundation provides capacity-bounded generational storage,
 checked cross-heap identity, stale-handle rejection, and bounded iterative
 collection from explicit roots. Handle or budget failures occur before sweeping.
