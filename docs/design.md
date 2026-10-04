@@ -346,6 +346,13 @@ can therefore change the second presence check. The four presence combinations
 use the specified Set/DeletePropertyOrThrow order, retaining partial effects on
 failure. Values move between reads and writes without extra copies. No length
 assignment occurs, and the middle element of an odd range is never accessed.
+Fill/copyWithin (23.1.3.4/7) share bounded relative-index conversion after a
+single LengthOfArrayLike snapshot. Conversions run even when the eventual range
+is empty. Fill charges each value copy before Set; copyWithin reads source
+presence/value live and deletes a target when its source is absent. Overlapping
+forward destinations traverse backward; identical indices still perform reads
+and writes. u64 cursors retain the full ToLength range without allocating index
+lists. Both methods retain partial effects on failure and never assign length.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

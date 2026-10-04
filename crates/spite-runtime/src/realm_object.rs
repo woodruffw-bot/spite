@@ -596,9 +596,7 @@ fn missing_array_static(key: &JsString) -> bool {
 fn missing_array_method(key: &JsString) -> bool {
     [
         "concat",
-        "copyWithin",
         "entries",
-        "fill",
         "filter",
         "flat",
         "flatMap",

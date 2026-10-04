@@ -67,6 +67,8 @@ pub(crate) enum Builtin {
     ArrayPush,
     ArrayPop,
     ArrayReverse,
+    ArrayFill,
+    ArrayCopyWithin,
     ArrayForEach,
     ArrayEvery,
     ArraySome,
@@ -149,6 +151,8 @@ impl Builtin {
             Self::ArrayPush => "push",
             Self::ArrayPop => "pop",
             Self::ArrayReverse => "reverse",
+            Self::ArrayFill => "fill",
+            Self::ArrayCopyWithin => "copyWithin",
             Self::ArrayForEach => "forEach",
             Self::ArrayEvery => "every",
             Self::ArraySome => "some",
@@ -228,6 +232,7 @@ impl Builtin {
             | Self::ArrayJoin
             | Self::ArrayAt
             | Self::ArrayPush
+            | Self::ArrayFill
             | Self::ArrayForEach
             | Self::ArrayEvery
             | Self::ArraySome
@@ -284,6 +289,7 @@ impl Builtin {
             | Self::IsNaN
             | Self::ParseFloat => 1.0,
             Self::FunctionApply
+            | Self::ArrayCopyWithin
             | Self::StringSlice
             | Self::StringSubstring
             | Self::ParseInt

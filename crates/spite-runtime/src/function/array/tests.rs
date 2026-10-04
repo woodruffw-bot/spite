@@ -649,3 +649,69 @@ fn reverse_bounds_sparse_traversal_and_keeps_completed_mutations_on_host_abort()
     ));
     check(&mut realm, "a[0].charAt(0)==='a' && a[1].charAt(0)==='b'");
 }
+
+#[test]
+fn recursive_range_conversions_and_writes_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for (setup, call) in [
+                ("let a=[1],i={valueOf:()=>a.fill(0,i)}", "a.fill(0,i)"),
+                (
+                    "let a=[1],i={valueOf:()=>a.copyWithin(i,0)}",
+                    "a.copyWithin(i,0)",
+                ),
+                (
+                    "let a=[1];Object.defineProperty(a,'0',{set:()=>a.fill(0)})",
+                    "a.fill(0)",
+                ),
+                (
+                    "let a=[1];Object.defineProperty(a,'0',{get:()=>a.copyWithin(0,0)})",
+                    "a.copyWithin(0,0)",
+                ),
+            ] {
+                let mut realm = Realm::default();
+                realm.eval(setup).unwrap();
+                realm.eval("let flag=0").unwrap();
+                assert!(matches!(
+                    realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1].fill(7)[0]===7");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn range_mutations_bound_traversal_and_charge_fill_value_copies() {
+    let mut realm = Realm::default();
+    realm.eval("let o={length:Infinity},flag=0").unwrap();
+    realm.limits.max_steps = 10_000;
+    assert!(matches!(
+        realm.eval("try{Array.prototype.fill.call(o,7);}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0 && o[0]===7 && o.length===Infinity");
+    realm.limits.max_steps = 500;
+    assert!(matches!(realm.eval("try{Array.prototype.copyWithin.call({length:Infinity},0,0);}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0");
+    let receiver = realm.eval("let a=[0,0];a").unwrap();
+    let value = realm.eval("'a'.repeat(1000)").unwrap();
+    realm.remaining_steps = 500;
+    assert!(matches!(
+        realm.array_fill(
+            receiver,
+            value,
+            Value::Undefined,
+            Value::Undefined,
+            Span::new(0, 0)
+        ),
+        Err(Error::Limit { .. })
+    ));
+    check(&mut realm, "a[0]===0 && a[1]===0");
+}

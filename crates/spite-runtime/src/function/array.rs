@@ -5,6 +5,7 @@ mod callback;
 mod find;
 mod literal;
 mod mutation;
+mod range;
 mod reduce;
 mod search;
 mod string;
@@ -81,6 +82,8 @@ impl Realm {
             Builtin::ArrayPush,
             Builtin::ArrayPop,
             Builtin::ArrayReverse,
+            Builtin::ArrayFill,
+            Builtin::ArrayCopyWithin,
             Builtin::ArrayForEach,
             Builtin::ArrayEvery,
             Builtin::ArraySome,

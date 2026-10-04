@@ -193,6 +193,20 @@ impl Realm {
             Builtin::ArrayPush => self.array_push(this, arguments, span),
             Builtin::ArrayPop => self.array_pop(this, span),
             Builtin::ArrayReverse => self.array_reverse(this, span),
+            Builtin::ArrayFill => self.array_fill(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::ArrayCopyWithin => self.array_copy_within(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ArrayIncludes | Builtin::ArrayIndexOf | Builtin::ArrayLastIndexOf => self
                 .array_search(
                     builtin,
