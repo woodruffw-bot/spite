@@ -54,11 +54,22 @@ fn pinned_corpus_runs_all_reviewed_variants() {
             .iter()
             .all(|(name, count)| *name == "passed" || *count == 0)
     );
-    let output = command(&pinned());
+}
+
+#[test]
+fn command_reports_successful_variants_and_counts() {
+    // The pinned library test above and CI's standalone command both run the
+    // entire corpus. A minimal corpus exercises CLI formatting/exit behavior
+    // without an additional execution of every exhaustive upstream loop.
+    let corpus = TemporaryCorpus::new(
+        "/*---\nflags: [raw]\n---*/\n1",
+        "test/example.js\t-\t-\t-\n",
+    );
+    let output = command(&corpus.0);
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(stdout.contains("2332 source files"));
-    assert!(stdout.contains("passed=4586"));
+    assert!(stdout.contains("1 source files"));
+    assert!(stdout.contains("passed=1"));
     assert!(stdout.contains("unverified=0"));
     assert!(output.stderr.is_empty());
 }
