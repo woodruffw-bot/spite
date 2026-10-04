@@ -349,7 +349,7 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The twenty-one intrinsic objects are published atomically during realm
+(20.1.3, 10.4.7.1). The twenty-two intrinsic objects are published atomically during realm
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
@@ -384,6 +384,14 @@ conversion after validating the receiver and radix in specification order.
 Non-decimal finite formatting remains an explicit host gap until its complete
 conversion algorithm is implemented; invalid radices still throw RangeError.
 Other Number formatting methods and parseInt/parseFloat remain separate steps.
+
+Number.prototype.toFixed uses the exact binary significand/exponent to scale by
+10 to the requested power, divides with integer arithmetic, and rounds ties toward
+the larger magnitude (21.1.3.3). It must not use the shortest decimal rendering as
+input or Rust's ties-even decimal formatter. Validate the receiver and fraction
+argument before special-value handling. Negative zero has no sign, but negative
+nonzero values that round to zero retain it. Values at least 1e21 use ordinary
+Number string conversion. Integer work and result length remain host bounded.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

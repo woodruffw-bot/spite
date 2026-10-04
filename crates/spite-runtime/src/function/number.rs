@@ -4,11 +4,13 @@ use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span};
 
+mod format;
+
 #[derive(Debug)]
 pub(crate) struct NumberIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
-    methods: [ObjectHandle; 6],
+    methods: [ObjectHandle; 7],
 }
 
 impl NumberIntrinsics {
@@ -67,6 +69,14 @@ impl Realm {
         )?;
         let value_of = self.new_builtin(function_prototype, Builtin::NumberValueOf, span)?;
         let to_string = self.new_builtin(function_prototype, Builtin::NumberToString, span)?;
+        let to_fixed = self.new_builtin(function_prototype, Builtin::NumberToFixed, span)?;
+        self.define_builtin_property(
+            &prototype,
+            "toFixed",
+            Value::Object(to_fixed.clone()),
+            true,
+            span,
+        )?;
         self.define_builtin_property(
             &prototype,
             "valueOf",
@@ -130,6 +140,7 @@ impl Realm {
             methods: [
                 value_of,
                 to_string,
+                to_fixed,
                 is_finite,
                 is_nan,
                 is_integer,
