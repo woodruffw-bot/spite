@@ -877,8 +877,19 @@ String; convert their return value to literal replacement text. Non-functional
 replacements use GetSubstitution with no captures (22.1.3.19.1): expand $$, $&,
 prefix, and suffix tokens once; numeric/named-capture tokens remain literal.
 Checked output reservation and copied/scanned units charge opted-in work. Input
-Strings remain fixed through callbacks. RegExp captures and replaceAll are separate
-steps.
+Strings remain fixed through callbacks. RegExp captures remain a separate step.
+
+String.replaceAll (22.1.3.20) checks object searches through IsRegExp, then reads
+and converts flags for a true result and requires a lowercase g before looking up
+Symbol.replace. Primitive searches ignore prototype hooks. Ordinary fallback
+converts receiver, search, and non-callable replacement in order, then collects
+non-overlapping match positions before any replacement callback. Empty searches
+match every UTF-16 boundary, including between surrogate halves and at the end.
+Each callback receives match/position/full String with undefined this and yields
+literal text; String replacements reuse uncaptured GetSubstitution against the
+original input for every match. Position storage and output reservation check
+platform capacity, and searches, callback copies, and substitutions charge opted-in
+work. RegExp objects and their replacement hooks remain pending.
 
 String.raw uses ToObject for its template and raw value, reads length once through
 LengthOfArrayLike, and interleaves each indexed literal conversion with the

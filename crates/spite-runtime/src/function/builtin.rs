@@ -342,6 +342,12 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined),
                 span,
             ),
+            Builtin::StringReplaceAll => self.string_replace_all(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::StringIncludes | Builtin::StringStartsWith | Builtin::StringEndsWith => self
                 .string_search_predicate(
                     builtin,

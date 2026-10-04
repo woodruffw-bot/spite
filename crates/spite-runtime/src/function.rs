@@ -164,6 +164,7 @@ pub(crate) enum Builtin {
     StringEndsWith,
     StringSplit,
     StringReplace,
+    StringReplaceAll,
     Number,
     NumberValueOf,
     NumberToString,
@@ -281,6 +282,7 @@ impl Builtin {
             Self::StringEndsWith => "endsWith",
             Self::StringSplit => "split",
             Self::StringReplace => "replace",
+            Self::StringReplaceAll => "replaceAll",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -426,6 +428,7 @@ impl Builtin {
             | Self::StringSubstring
             | Self::StringSplit
             | Self::StringReplace
+            | Self::StringReplaceAll
             | Self::ParseInt
             | Self::ObjectGetOwnPropertyDescriptor
             | Self::ObjectHasOwn

@@ -339,6 +339,15 @@ and suffix tokens; capture tokens remain literal without RegExp captures. Tests
 cover hook and conversion ordering, callbacks, surrogate boundaries, substitution,
 metadata, collection, large default outputs, and opt-in host failures.
 
+String.replaceAll collects all non-overlapping positions before callbacks and
+handles empty searches at every UTF-16 boundary. Each match uses the original
+String for callback arguments and prefix/suffix substitutions. Object searches
+perform IsRegExp and the required global-flag checks before Symbol.replace lookup;
+primitive hooks are ignored. Regressions cover flags and hook ordering, fixed
+converted inputs, callback result conversion and failure, literal dollar patterns,
+metadata, collection, large default outputs, and opt-in host failures. Actual
+RegExp objects and captures remain pending.
+
 Sparse Array storage now enforces indexed length growth, read-only length, and
 descending partial truncation behind the low-level Objects API. Numeric length
 descriptors must be preconverted there; work checks precede any truncation.
@@ -505,7 +514,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 174 retained entries outside the per-Script work
+Realm initialization creates 175 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

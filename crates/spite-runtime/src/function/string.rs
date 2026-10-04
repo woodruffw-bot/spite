@@ -105,6 +105,7 @@ impl Realm {
             Builtin::StringEndsWith,
             Builtin::StringSplit,
             Builtin::StringReplace,
+            Builtin::StringReplaceAll,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

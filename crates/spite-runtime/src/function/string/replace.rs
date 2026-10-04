@@ -1,6 +1,6 @@
-//! String.prototype.replace (22.1.3.19) and uncaptured GetSubstitution (22.1.3.19.1).
+//! String replace/replaceAll (22.1.3.19–20) and uncaptured GetSubstitution.
 
-use crate::{Error, Realm, Value};
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 enum Replacement {
@@ -39,24 +39,10 @@ impl Realm {
         // Functional replacement runs before result construction. Its returned
         // String is literal text, without dollar-pattern substitution.
         let (replacement, substitute) = match replacement {
-            Replacement::Function(function) => {
-                self.object_work(span, |_, budget| {
-                    budget.value(&function)?;
-                    budget.charge(search.len())?;
-                    budget.charge(string.len())
-                })?;
-                let value = self.call(
-                    function,
-                    Value::Undefined,
-                    vec![
-                        Value::String(search.clone()),
-                        Value::Number(position as f64),
-                        Value::String(string.clone()),
-                    ],
-                    span,
-                )?;
-                (self.string(value, span)?, false)
-            }
+            Replacement::Function(function) => (
+                self.functional_replacement(&function, &string, &search, position, span)?,
+                false,
+            ),
             Replacement::Text(text) => (text, true),
         };
         let mut result = Vec::new();
@@ -79,6 +65,123 @@ impl Realm {
             span,
         )?;
         Ok(Value::String(JsString::from_code_units(result)))
+    }
+
+    pub(crate) fn string_replace_all(
+        &mut self,
+        receiver: Value,
+        search: Value,
+        replace: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        Self::require_object_coercible(&receiver, span)?;
+        if let Value::Object(object) = &search {
+            // 22.1.3.20: IsRegExp and the global flag check precede GetMethod,
+            // even when a custom Symbol.replace hook would return immediately.
+            if self.is_regexp(&search, span)? {
+                let flags = self.get_property(object, &JsString::from("flags"), span)?;
+                Self::require_object_coercible(&flags, span)?;
+                let flags = self.string(flags, span)?;
+                self.object_work(span, |_, budget| budget.charge(flags.len()))?;
+                if !flags.code_units().contains(&u16::from(b'g')) {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "String.replaceAll requires a global regular expression",
+                    ));
+                }
+            }
+            if let Some(method) =
+                self.get_method(&search, &WellKnownSymbol::Replace.symbol(), span)?
+            {
+                return self.call(method, search, vec![receiver, replace], span);
+            }
+        }
+        // Edition 17 skips primitive prototype hooks, as for replace.
+        let string = self.string(receiver, span)?;
+        let search = self.string(search, span)?;
+        let replacement = if self.is_callable(&replace, span)? {
+            Replacement::Function(replace)
+        } else {
+            Replacement::Text(self.string(replace, span)?)
+        };
+        // Collect non-overlapping positions before running any callbacks. An
+        // empty search includes every UTF-16 boundary, including the last one.
+        let advance = search.len().max(1);
+        let mut positions = Vec::new();
+        let mut start = 0;
+        while start <= string.len() {
+            let Some(position) = self.find_string(&string, &search, start, false, span)? else {
+                break;
+            };
+            self.tick(span)?;
+            positions
+                .try_reserve(1)
+                .map_err(|_| replacement_limit(span))?;
+            positions.push(position);
+            if position == string.len() {
+                break;
+            }
+            start = position
+                .checked_add(advance)
+                .ok_or_else(|| replacement_limit(span))?;
+        }
+        if positions.is_empty() {
+            return Ok(Value::String(string));
+        }
+        let mut result = Vec::new();
+        let mut end = 0;
+        for position in positions {
+            let prefix = &string.code_units()[end..position];
+            match &replacement {
+                Replacement::Function(function) => {
+                    let text =
+                        self.functional_replacement(function, &string, &search, position, span)?;
+                    self.append_replacement_units(&mut result, prefix, span)?;
+                    self.append_replacement_units(&mut result, text.code_units(), span)?;
+                }
+                Replacement::Text(text) => {
+                    self.append_replacement_units(&mut result, prefix, span)?;
+                    self.append_uncaptured_substitution(
+                        &mut result,
+                        &string,
+                        &search,
+                        position,
+                        text,
+                        span,
+                    )?;
+                }
+            }
+            end = position + search.len();
+        }
+        self.append_replacement_units(&mut result, &string.code_units()[end..], span)?;
+        Ok(Value::String(JsString::from_code_units(result)))
+    }
+
+    fn functional_replacement(
+        &mut self,
+        function: &Value,
+        string: &JsString,
+        search: &JsString,
+        position: usize,
+        span: Span,
+    ) -> Result<JsString, Error> {
+        self.object_work(span, |_, budget| {
+            budget.value(function)?;
+            budget.charge(search.len())?;
+            budget.charge(string.len())
+        })?;
+        let value = self.call(
+            function.clone(),
+            Value::Undefined,
+            vec![
+                Value::String(search.clone()),
+                Value::Number(position as f64),
+                Value::String(string.clone()),
+            ],
+            span,
+        )?;
+        self.string(value, span)
     }
 
     fn append_uncaptured_substitution(
