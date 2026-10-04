@@ -1361,6 +1361,7 @@ impl Realm {
         use BinaryOp::*;
         match op {
             And | Or | Nullish | Comma => return Ok(right),
+            Instanceof => return Ok(Value::Boolean(self.instance_of(left, right, span)?)),
             In => {
                 let Value::Object(object) = right else {
                     return Err(Self::exception(

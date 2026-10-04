@@ -747,11 +747,10 @@ impl Parser {
                 )?;
                 continue;
             }
-            if self.at("instanceof") {
-                return Err(self.unsupported("instanceof is not implemented"));
-            }
             let operator = if self.allow_in && self.at("in") {
                 Some((BinaryOp::In, 10))
+            } else if self.at("instanceof") {
+                Some((BinaryOp::Instanceof, 10))
             } else {
                 binary(&self.current().kind)
             };
@@ -907,6 +906,9 @@ impl Parser {
             Kind::Word(name) if matches!(name.as_str(), "catch" | "finally") => Err(
                 Diagnostic::new(DiagnosticKind::Syntax, span, "unexpected catch or finally"),
             ),
+            Kind::Word(name) if name == "instanceof" => {
+                Err(early(span, "unexpected binary operator"))
+            }
             Kind::Word(_) | Kind::Punct("[" | "/") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,

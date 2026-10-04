@@ -394,6 +394,21 @@ binding through nested scopes and after return (9.4.5, 13.3.12). Bound construct
 exposes the substituted target, and nested ordinary calls reset the binding.
 Derived constructors remain unimplemented.
 
+Instanceof uses relational precedence, evaluates both operands, then follows
+InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
+re-enter the operator on their target through an iterative loop. Primitive left
+operands return false before reading prototype; object operands require an object
+prototype and compare its identity with ancestors. Callable arrows can participate
+without being constructors. Non-callable objects inheriting the default hook return
+false; non-callable objects without a hook throw TypeError.
+
+Until Symbol keys are exposed, hook lookup recognizes Function.prototype's fixed,
+non-writable, non-configurable @@hasInstance method along the actual prototype
+chain (20.2.3.6). This path does not expose a symbol-keyed callable or descriptor.
+Symbol support must materialize that property and implement custom-hook lookup
+before symbol properties or reflection become accessible. Prototype getter calls
+retain their receiver and abrupt completions, and traversal consumes host work.
+
 Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
 64 until explicit frames replace Rust recursion. Every success and abrupt result
 restores the counter; iterative call/apply/bound transfers do not increase it.

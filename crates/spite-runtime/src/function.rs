@@ -10,6 +10,7 @@ mod arguments;
 mod arrow;
 mod bound;
 mod construct;
+mod instance;
 mod ordinary;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;

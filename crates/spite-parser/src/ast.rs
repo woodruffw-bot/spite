@@ -551,6 +551,8 @@ pub enum BinaryOp {
     GreaterEqual,
     /// Whether an object has an own or inherited property.
     In,
+    /// Whether a value is an instance of the right-hand function/object.
+    Instanceof,
     /// Logical conjunction.
     And,
     /// Logical disjunction.

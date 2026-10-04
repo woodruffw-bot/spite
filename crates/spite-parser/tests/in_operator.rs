@@ -77,7 +77,7 @@ fn in_requires_operands_and_an_unescaped_terminal() {
     }
     assert!(parse_script("o.in; o['in']; 'x'\nin\no").is_ok());
     assert_eq!(
-        parse_script("x instanceof y").unwrap_err().kind,
-        DiagnosticKind::Unsupported
+        parse_script("x instanceof").unwrap_err().kind,
+        DiagnosticKind::Syntax
     );
 }

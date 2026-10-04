@@ -103,6 +103,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.
 - [x] Execute ordinary and bound construction with prototype selection and ordered arguments.
 - [x] Add new.target early errors, call/construction bindings, and lexical arrow capture.
+- [x] Implement instanceof for ordinary/bound functions and inherited default hooks.
+- [ ] Materialize Function.prototype Symbol.hasInstance and enable custom hooks with symbol properties.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
