@@ -4,7 +4,7 @@ use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{DataDescriptor, DescriptorKind, Property, PropertyDescriptor},
 };
-use spite_core::{JsString, Span};
+use spite_core::{JsString, PropertyKey, Span};
 
 impl Realm {
     pub(crate) fn object_define_property(
@@ -31,7 +31,7 @@ impl Realm {
     pub(crate) fn define_property_or_throw(
         &mut self,
         object: &ObjectHandle,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         descriptor: PropertyDescriptor,
         span: Span,
     ) -> Result<(), Error> {
@@ -49,10 +49,11 @@ impl Realm {
     pub(crate) fn define_property(
         &mut self,
         object: &ObjectHandle,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         mut descriptor: PropertyDescriptor,
         span: Span,
     ) -> Result<bool, Error> {
+        let key = key.into();
         self.check_missing_intrinsic_mutation(object, &key, span)?;
         self.convert_array_length(object, &key, &mut descriptor, span)?;
         self.object_work(span, |objects, budget| {

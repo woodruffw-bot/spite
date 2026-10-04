@@ -58,9 +58,13 @@ Borrowed lookup keys avoid allocation; symbol comparison/copy work is constant.
 Runtime Symbol values support identity equality, truthiness, typeof, and abrupt
 numeric/implicit string conversions. String(symbol) produces its descriptive
 UTF-16 string, with bounded allocation. The 13 edition-17 well-known identities
-are shared across realms and host threads. Native injection tests this foundation;
-the JavaScript Symbol global, wrappers, registry, and hooks remain unavailable.
-Realm property-key conversion/enumeration of symbols remains explicitly Unsupported.
+are shared across realms and host threads. Realm property operations, descriptors,
+copying, integrity operations, and enumeration preserve both key kinds. Computed
+keys retain Symbol identity, and anonymous function names use bounded bracketed
+descriptions. ToPrimitive observes symbol-keyed hooks, exact hints, original
+receivers, and abrupt completions before ordinary conversion. Native injection
+tests this foundation; the JavaScript Symbol global, wrappers, registry, and
+remaining well-known hooks remain unavailable.
 This foundation adds no Script/Test262 coverage.
 
 The `spite-heap` foundation provides capacity-bounded generational storage,

@@ -5,7 +5,7 @@ use crate::{
     object::{self, DataDescriptor, OrdinaryObject, Property, SetAction},
 };
 use spite_bigint::BigInt;
-use spite_core::{JsString, PropertyKey, Span};
+use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span, WellKnownSymbol};
 use spite_parser::ast::{Literal, ObjectProperty, PropertyKind, PropertyName};
 
 pub(super) enum Hint {
@@ -30,13 +30,18 @@ impl RootedValue {
 }
 
 impl Realm {
-    /// Reads a string-keyed property with JavaScript Get semantics, including
+    /// Reads a string- or symbol-keyed property with JavaScript Get semantics, including
     /// inherited accessors and the original receiver. Each host call starts a
     /// fresh evaluation work budget and may execute JavaScript getters.
     ///
     /// The result is unrooted; use [`Self::root_value`] across explicit collection.
     /// Nullish values throw TypeError, and invalid object handles are rejected.
-    pub fn read_property(&mut self, value: &Value, key: &JsString) -> Result<Value, Error> {
+    pub fn read_property<'key>(
+        &mut self,
+        value: &Value,
+        key: impl Into<PropertyKeyRef<'key>>,
+    ) -> Result<Value, Error> {
+        let key = key.into();
         if let Value::Object(handle) = value {
             self.objects.inspect(handle).map_err(Error::InvalidObject)?;
         }
@@ -45,13 +50,18 @@ impl Realm {
         let span = Span::new(0, 0);
         self.tick(span)?;
         Self::require_object_coercible(value, span)?;
-        if key.len() > self.limits.max_string_units {
+        if key
+            .as_string()
+            .is_some_and(|key| key.len() > self.limits.max_string_units)
+        {
             return Err(Error::Limit {
                 span,
                 message: "property key length limit exceeded".into(),
             });
         }
-        self.object_work(span, |_, budget| budget.charge(key.len()))?;
+        self.object_work(span, |_, budget| {
+            budget.charge(key.as_string().map_or(1, JsString::len))
+        })?;
         let result = self.get_property_value(value, key, span)?;
         self.check_string(&result, span)?;
         Ok(result)
@@ -66,8 +76,38 @@ impl Realm {
         let Value::Object(object) = value else {
             return Ok(value);
         };
-        // 7.1.1 / 7.1.1.1. Symbol-keyed hooks cannot be installed yet. Ordinary
-        // method lookup and calls retain their receiver and requested hint order.
+        // ToPrimitive, 7.1.1: GetMethod observes inherited accessors before
+        // ordinary conversion. Only null/undefined mean the hook is absent.
+        let method = self.get_property(&object, &WellKnownSymbol::ToPrimitive.symbol(), span)?;
+        if !matches!(method, Value::Undefined | Value::Null) {
+            if !self.is_callable(&method, span)? {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "Symbol.toPrimitive must be callable",
+                ));
+            }
+            let hint = match hint {
+                Hint::Default => "default",
+                Hint::Number => "number",
+                Hint::String => "string",
+            };
+            let result = self.call(
+                method,
+                Value::Object(object.clone()),
+                vec![Value::String(JsString::from(hint))],
+                span,
+            )?;
+            if !matches!(result, Value::Object(_)) {
+                return Ok(result);
+            }
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Symbol.toPrimitive returned an object",
+            ));
+        }
+        // OrdinaryToPrimitive, 7.1.1.1, retains receiver and hint order.
         let names = match hint {
             Hint::String => ["toString", "valueOf"],
             Hint::Default | Hint::Number => ["valueOf", "toString"],
@@ -96,12 +136,13 @@ impl Realm {
         self.conversion_work(span, |budget| primitive.to_js_string(budget))
     }
 
-    pub(super) fn has_property(
+    pub(super) fn has_property<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<bool, Error> {
+        let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
             if self.object_work(span, |objects, budget| {
@@ -128,12 +169,13 @@ impl Realm {
         }
     }
 
-    pub(super) fn get_property_value(
+    pub(super) fn get_property_value<'key>(
         &mut self,
         base: &Value,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<Value, Error> {
+        let key = key.into();
         if let Value::Object(object) = base {
             return self.get_property(object, key, span);
         }
@@ -164,10 +206,11 @@ impl Realm {
     pub(super) fn set_property_value(
         &mut self,
         base: &Value,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         value: Value,
         span: Span,
     ) -> Result<bool, Error> {
+        let key = key.into();
         if let Value::Object(object) = base {
             self.check_global_property_operation(object, &key, span)?;
             self.check_missing_intrinsic_mutation(object, &key, span)?;
@@ -222,12 +265,13 @@ impl Realm {
         Ok(false)
     }
 
-    pub(super) fn delete_property_value(
+    pub(super) fn delete_property_value<'key>(
         &mut self,
         base: &Value,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<bool, Error> {
+        let key = key.into();
         if let Value::Object(object) = base {
             self.check_global_property_operation(object, key, span)?;
             self.check_missing_intrinsic_mutation(object, key, span)?;
@@ -239,28 +283,37 @@ impl Realm {
         )
     }
 
-    pub(super) fn reference_key(&mut self, key: &mut Value, span: Span) -> Result<JsString, Error> {
+    pub(super) fn reference_key(
+        &mut self,
+        key: &mut Value,
+        span: Span,
+    ) -> Result<PropertyKey, Error> {
         let converted = self.property_key(key.clone(), span)?;
-        *key = Value::String(converted.clone());
+        *key = match &converted {
+            PropertyKey::String(key) => Value::String(key.clone()),
+            PropertyKey::Symbol(key) => Value::Symbol(key.clone()),
+        };
         Ok(converted)
     }
 
-    pub(super) fn get_property(
+    pub(super) fn get_property<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<Value, Error> {
+        let key = key.into();
         self.get_property_with_receiver(object, key, Value::Object(object.clone()), span)
     }
 
-    fn get_property_with_receiver(
+    fn get_property_with_receiver<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         receiver: Value,
         span: Span,
     ) -> Result<Value, Error> {
+        let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
             let own = self.object_work(span, |objects, budget| {
@@ -400,13 +453,11 @@ impl Realm {
         })
     }
 
-    pub(super) fn property_key(&mut self, value: Value, span: Span) -> Result<JsString, Error> {
+    pub(super) fn property_key(&mut self, value: Value, span: Span) -> Result<PropertyKey, Error> {
         let value = self.primitive(value, Hint::String, span)?;
-        if matches!(value, Value::Symbol(_)) {
-            return Err(Self::unsupported(
-                span,
-                "symbol-keyed Realm operations are not implemented",
-            ));
+        // ToPropertyKey, 7.1.19: preserve Symbol identity after ToPrimitive.
+        if let Value::Symbol(symbol) = value {
+            return Ok(PropertyKey::Symbol(symbol));
         }
         let key = self.string(value, span)?;
         if key.len() > self.limits.max_string_units {
@@ -415,7 +466,7 @@ impl Realm {
                 message: "property key length limit exceeded".into(),
             });
         }
-        Ok(key)
+        Ok(PropertyKey::String(key))
     }
 
     pub(super) fn object_literal(
@@ -476,10 +527,11 @@ impl Realm {
     pub(crate) fn set_property_or_throw(
         &mut self,
         object: &ObjectHandle,
-        key: JsString,
+        key: impl Into<PropertyKey>,
         value: Value,
         span: Span,
     ) -> Result<(), Error> {
+        let key = key.into();
         // Set(O, P, V, true), 7.3.4, including inherited setters.
         if !self.set_property_value(&Value::Object(object.clone()), key, value, span)? {
             return Err(Self::exception(
@@ -491,12 +543,13 @@ impl Realm {
         Ok(())
     }
 
-    pub(crate) fn delete_property_or_throw(
+    pub(crate) fn delete_property_or_throw<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<(), Error> {
+        let key = key.into();
         // DeletePropertyOrThrow, 7.3.10, retains earlier observable effects.
         if !self.delete_property_value(&Value::Object(object.clone()), key, span)? {
             return Err(Self::exception(
@@ -528,7 +581,7 @@ impl Realm {
         &mut self,
         object: &ObjectHandle,
         span: Span,
-    ) -> Result<Vec<JsString>, Error> {
+    ) -> Result<Vec<PropertyKey>, Error> {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         if self.global_object.as_ref() == Some(object)
             || object == &intrinsics.object.constructor
@@ -542,26 +595,16 @@ impl Realm {
                 "own keys of this incomplete intrinsic are not implemented",
             ));
         }
-        let keys = self.object_work(span, |objects, budget| objects.own_keys(object, budget))?;
-        // Storage supports symbol identities before the Realm's Value and hook
-        // integration. Never silently omit a symbol supplied by an embedding.
-        keys.into_iter()
-            .map(|key| match key {
-                PropertyKey::String(key) => Ok(key),
-                PropertyKey::Symbol(_) => Err(Self::unsupported(
-                    span,
-                    "symbol-keyed Realm enumeration is not implemented",
-                )),
-            })
-            .collect()
+        self.object_work(span, |objects, budget| objects.own_keys(object, budget))
     }
 
-    pub(crate) fn own_property_descriptor(
+    pub(crate) fn own_property_descriptor<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<Option<Property>, Error> {
+        let key = key.into();
         let property =
             self.object_work(span, |objects, budget| objects.get_own(object, key, budget))?;
         if property.is_none() && self.missing_intrinsic_property(object, key) {
@@ -573,12 +616,13 @@ impl Realm {
         Ok(property)
     }
 
-    pub(crate) fn check_missing_intrinsic_mutation(
+    pub(crate) fn check_missing_intrinsic_mutation<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<(), Error> {
+        let key = key.into();
         if self.missing_intrinsic_property(object, key)
             && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?
         {
@@ -590,7 +634,27 @@ impl Realm {
         Ok(())
     }
 
-    pub(crate) fn missing_intrinsic_property(&self, object: &ObjectHandle, key: &JsString) -> bool {
+    pub(crate) fn missing_intrinsic_property<'key>(
+        &self,
+        object: &ObjectHandle,
+        key: impl Into<PropertyKeyRef<'key>>,
+    ) -> bool {
+        let key = key.into();
+        if let PropertyKeyRef::Symbol(symbol) = key {
+            let Some(intrinsics) = &self.intrinsics else {
+                return false;
+            };
+            return (object == &intrinsics.function_prototype
+                && symbol == &WellKnownSymbol::HasInstance.symbol())
+                || (object == &intrinsics.string.prototype
+                    && symbol == &WellKnownSymbol::Iterator.symbol())
+                || (object == &intrinsics.array.constructor
+                    && symbol == &WellKnownSymbol::Species.symbol())
+                || (object == &intrinsics.array.prototype
+                    && (symbol == &WellKnownSymbol::Iterator.symbol()
+                        || symbol == &WellKnownSymbol::Unscopables.symbol()));
+        }
+        let key = key.as_string().expect("string key");
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
             return true;
         }
@@ -644,11 +708,22 @@ fn missing_object_method(key: &JsString) -> bool {
     .any(|name| key_is(key, name))
 }
 
-fn key_is(key: &JsString, name: &str) -> bool {
-    key.code_units().iter().copied().eq(name.encode_utf16())
+fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {
+    key.into()
+        .as_string()
+        .is_some_and(|key| key.code_units().iter().copied().eq(name.encode_utf16()))
 }
 
-fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
+fn missing_primitive_method(base: &Value, key: PropertyKeyRef<'_>) -> bool {
+    let key = match key {
+        PropertyKeyRef::String(key) => key,
+        PropertyKeyRef::Symbol(symbol) => {
+            return (matches!(base, Value::Symbol(_) | Value::BigInt(_))
+                && symbol == &WellKnownSymbol::ToStringTag.symbol())
+                || (matches!(base, Value::Symbol(_))
+                    && symbol == &WellKnownSymbol::ToPrimitive.symbol());
+        }
+    };
     if missing_object_method(key) || key_is(key, "toString") || key_is(key, "valueOf") {
         return true;
     }
@@ -686,7 +761,8 @@ fn missing_string_method(key: &JsString) -> bool {
 // 10.4.3.5: only canonical, non-negative integral Number names below the string
 // length identify characters. Decimal parsing bounds work by usize's width;
 // the final Number::toString check rejects decimal integers rounded by binary64.
-fn string_index(string: &JsString, key: &JsString) -> Option<usize> {
+fn string_index<'key>(string: &JsString, key: impl Into<PropertyKeyRef<'key>>) -> Option<usize> {
+    let key = key.into().as_string()?;
     let units = key.code_units();
     if units.is_empty() || units.len() > 20 || units.len() > 1 && units[0] == u16::from(b'0') {
         return None;

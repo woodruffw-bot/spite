@@ -245,14 +245,20 @@ impl Realm {
     pub(crate) fn named_expression(
         &mut self,
         expression: &Expr,
-        name: JsString,
+        name: impl Into<spite_core::PropertyKey>,
     ) -> Result<Value, Error> {
+        let name = name.into();
         let value = self.expression(expression)?;
         if anonymous_definition(expression) {
             let Value::Object(function) = &value else {
                 unreachable!("anonymous function value")
             };
-            let name = Value::String(name);
+            let name = Value::String(match name {
+                spite_core::PropertyKey::String(name) => name,
+                spite_core::PropertyKey::Symbol(symbol) => {
+                    self.symbol_function_name(&symbol, expression.span)?
+                }
+            });
             self.check_string(&name, expression.span)?;
             self.define_builtin_property(function, "name", name, false, expression.span)?;
         }

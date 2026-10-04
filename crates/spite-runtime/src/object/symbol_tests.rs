@@ -443,28 +443,31 @@ fn symbol_keyed_values_and_accessors_remain_traced_until_their_properties_are_de
 }
 
 #[test]
-fn realm_enumeration_reports_the_pending_symbol_boundary_without_omitting_keys() {
+fn realm_enumeration_preserves_host_supplied_symbol_keys() {
     let mut realm = Realm::default();
     let Value::Object(object) = realm.eval("let source={};source").unwrap() else {
         panic!("object")
     };
+    let key = symbol("x");
     realm
         .objects
         .define(
             &object,
-            symbol("x"),
+            key.clone(),
             data(Value::Number(7.0)),
             &mut Budget::new(100),
         )
         .unwrap();
-    assert!(matches!(
-        realm.eval("Object.assign({},source)"),
-        Err(crate::Error::Unsupported { .. })
-    ));
-    assert!(matches!(
-        realm.eval("Object.getOwnPropertyDescriptors(source)"),
-        Err(crate::Error::Unsupported { .. })
-    ));
+    let copy = realm.eval("Object.assign({},source)").unwrap();
+    assert_eq!(realm.read_property(&copy, &key), Ok(Value::Number(7.0)));
+    let descriptors = realm
+        .eval("Object.getOwnPropertyDescriptors(source)")
+        .unwrap();
+    let descriptor = realm.read_property(&descriptors, &key).unwrap();
+    assert_eq!(
+        realm.read_property(&descriptor, &JsString::from("value")),
+        Ok(Value::Number(7.0))
+    );
     assert_eq!(
         realm.eval("Object.hasOwn(source,'x')"),
         Ok(Value::Boolean(false))

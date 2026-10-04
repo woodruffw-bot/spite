@@ -166,7 +166,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add immutable symbol identities and distinct string/symbol property keys.
 - [x] Integrate symbol keys into ordinary/exotic storage, ordering, and work budgets.
 - [x] Add runtime Symbol primitives and shared well-known identities with native-injection tests.
-- [ ] Integrate Realm symbol keys, wrappers, shared registry, and required observable hooks.
+- [x] Integrate Realm symbol keys, reflection/enumeration, function names, and ToPrimitive hooks.
+- [ ] Add Symbol wrappers, shared registry, and remaining required observable hooks.
 - [ ] Complete Array species-dependent methods and iterator integration.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.
 - [ ] Complete remaining harness paths/includes as their language and library dependencies arrive.

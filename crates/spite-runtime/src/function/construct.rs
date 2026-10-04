@@ -251,7 +251,7 @@ mod tests {
         );
         let instance = realm.construct(value, Vec::new(), Span::new(0, 0)).unwrap();
         assert_eq!(
-            realm.get_property_value(&instance, &"x".into(), Span::new(0, 0)),
+            realm.get_property_value(&instance, &JsString::from("x"), Span::new(0, 0)),
             Ok(Value::Number(7.0))
         );
         assert_eq!(realm.call_depth, 0);

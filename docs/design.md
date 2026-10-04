@@ -284,9 +284,12 @@ tracing of property values apply to both key kinds. Charge symbol comparisons
 and clones as constant work, while string keys retain UTF-16 work accounting.
 PropertyKeyRef borrows either key kind without allocating a lookup copy. Storage
 accepts borrowed keys for reads and owned keys for mutations; existing string
-callers use the same operations. The Realm enumeration boundary remains
-Unsupported for objects with symbol keys until Value and hook integration; it
-must never silently discard those keys.
+callers use the same operations. Realm Get/Set/Delete/HasProperty, descriptor
+reflection, Object.assign, integrity operations, and own-key enumeration preserve
+both key kinds. ToPropertyKey uses the string hint and preserves resulting Symbol
+identity. Deferred reference conversion caches the converted identity for updates.
+Anonymous function names use bracketed descriptions, with an empty name only for
+an absent description (10.2.9); formatting is bounded before allocation.
 
 Runtime values now preserve Symbol identity, truthiness, typeof, equality, and
 abrupt numeric/implicit string conversions. String called with a primitive Symbol
@@ -297,9 +300,14 @@ table, separate from fresh symbols and the future registry. Initialization runs
 no user code, and each lookup clones only an Arc. Native-injected values exercise
 these algorithms while the JavaScript Symbol global stays unavailable.
 
+ToPrimitive now looks up the shared Symbol.toPrimitive identity using GetMethod
+semantics: inherited accessors retain the original receiver; only null/undefined
+fall back to OrdinaryToPrimitive. Calls receive the exact default/string/number
+hint, and object results throw TypeError without falling back (7.1.1).
+
 Finally, integrate Symbol wrappers, construction, shared registry semantics,
-ToPropertyKey, and observable hooks before
-exposing the JavaScript Symbol global. In particular, ToPrimitive, instanceof,
+and remaining observable hooks before exposing the JavaScript Symbol global.
+In particular, instanceof,
 Object.prototype.toString, String IsRegExp checks, and intrinsic symbol properties
 must stop relying on their current no-symbol assumptions. Array species and
 iteration then build on those boundaries. The foundation alone does not expose
@@ -473,11 +481,12 @@ consume explicit work budgets. Object fields must hold handles, never root token
 object is truthy, and property tracing visits object-valued edges. Heap-context
 definitions validate these edges before mutation. Context-free conversion APIs
 return a distinct `ConversionError::ObjectNeedsContext`, rather than inventing
-a primitive or JavaScript exception. Realm-level OrdinaryToPrimitive performs
+a primitive or JavaScript exception. Realm-level ToPrimitive checks its symbol
+hook before OrdinaryToPrimitive performs
 ordered method lookups and calls using the requested hint and original receiver.
 Objects without a method yielding a primitive throw TypeError. Object.prototype
 toString and valueOf provide ordinary default conversion. Missing intrinsics
-remain Unsupported. Add Symbol hooks before exposing Symbol keys.
+remain Unsupported. Complete required Symbol hooks before exposing the Symbol global.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; templates and property names use the string hint.
 
@@ -487,8 +496,8 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity and its mandatory
 string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. Symbol coercion hooks and BigInt/Symbol
-wrapper constructors remain explicit implementation gaps.
+that method normally. BigInt/Symbol wrapper constructors and remaining well-known
+hooks remain explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors
 carry mutually exclusive kind-specific fields; omitted fields preserve existing

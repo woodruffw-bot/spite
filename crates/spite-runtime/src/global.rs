@@ -264,12 +264,15 @@ impl Realm {
         })
     }
 
-    pub(super) fn check_global_property_operation(
+    pub(super) fn check_global_property_operation<'key>(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: impl Into<spite_core::PropertyKeyRef<'key>>,
         span: Span,
     ) -> Result<(), Error> {
+        let Some(key) = key.into().as_string() else {
+            return Ok(());
+        };
         if self.global_object.as_ref() == Some(object)
             && self.missing_global_property(key)
             && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?

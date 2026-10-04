@@ -4,6 +4,9 @@ use crate::{
     object::{Budget, DataDescriptor},
 };
 
+mod hooks;
+mod keys;
+
 // The Symbol global stays unavailable until its wrappers and hooks are ready.
 // Native injection lets us verify the primitive algorithms independently.
 fn realm_with_symbols() -> Realm {
@@ -17,6 +20,10 @@ fn realm_with_symbols() -> Realm {
         ("other", JsSymbol::new(Some(JsString::from("name")))),
         ("unnamed", JsSymbol::new(None)),
         ("empty", JsSymbol::new(Some(JsString::from("")))),
+        ("zeroKey", JsSymbol::new(Some(JsString::from("0")))),
+        ("lengthKey", JsSymbol::new(Some(JsString::from("length")))),
+        ("globalKey", JsSymbol::new(Some(JsString::from("Symbol")))),
+        ("convert", spite_core::WellKnownSymbol::ToPrimitive.symbol()),
         (
             "raw",
             JsSymbol::new(Some(JsString::from_code_units(vec![0xD800, 0, 0xDC00]))),
@@ -181,7 +188,7 @@ fn descriptive_output_is_bounded_and_symbol_copies_do_not_copy_descriptions() {
 }
 
 #[test]
-fn symbol_global_wrappers_and_realm_key_operations_remain_explicit_gaps() {
+fn symbol_global_and_wrappers_remain_explicit_gaps() {
     for source in [
         "Symbol",
         "Object(s)",
@@ -190,11 +197,6 @@ fn symbol_global_wrappers_and_realm_key_operations_remain_explicit_gaps() {
         "s.valueOf",
         "s.constructor",
         "Object.prototype.toString.call(s)",
-        "({})[s]",
-        "({[s]:1})",
-        "Object.defineProperty({},s,{})",
-        "s in {}",
-        "({})[{toString:()=>s}]",
     ] {
         assert!(
             matches!(

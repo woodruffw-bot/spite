@@ -276,11 +276,14 @@ impl Realm {
     pub(crate) fn convert_array_length(
         &mut self,
         object: &ObjectHandle,
-        key: &JsString,
+        key: &spite_core::PropertyKey,
         descriptor: &mut PropertyDescriptor,
         span: Span,
     ) -> Result<(), Error> {
-        if key.code_units() != [0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68] {
+        if !key
+            .as_string()
+            .is_some_and(|key| key.code_units() == [0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68])
+        {
             return Ok(());
         }
         let DescriptorKind::Data {
