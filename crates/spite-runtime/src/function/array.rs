@@ -6,6 +6,7 @@ mod copy;
 mod factory;
 mod find;
 mod front;
+mod iteration;
 mod literal;
 mod mutation;
 mod range;
@@ -27,6 +28,7 @@ use spite_core::{JsString, Span};
 pub(crate) struct ArrayIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
+    pub values: ObjectHandle,
     is_array: ObjectHandle,
     of: ObjectHandle,
     unscopables: ObjectHandle,
@@ -40,6 +42,7 @@ impl ArrayIntrinsics {
             &self.prototype,
             &self.is_array,
             &self.of,
+            &self.values,
             &self.unscopables,
         ]
         .into_iter()
@@ -97,6 +100,14 @@ impl Realm {
         })?;
         let is_array = self.new_builtin(function_prototype, Builtin::ArrayIsArray, span)?;
         let of = self.new_builtin(function_prototype, Builtin::ArrayOf, span)?;
+        let values = self.new_builtin(function_prototype, Builtin::ArrayValues, span)?;
+        self.define_builtin_property(
+            &prototype,
+            "values",
+            Value::Object(values.clone()),
+            true,
+            span,
+        )?;
         self.object_work(span, |objects, budget| {
             objects.define(
                 &constructor,
@@ -155,6 +166,8 @@ impl Realm {
             Builtin::ArrayLastIndexOf,
             Builtin::ArrayReduce,
             Builtin::ArrayReduceRight,
+            Builtin::ArrayKeys,
+            Builtin::ArrayEntries,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(
@@ -166,12 +179,18 @@ impl Realm {
             )?;
             methods.push(method);
         }
-        let (species, unscopables) =
-            self.array_symbol_properties(&constructor, &prototype, function_prototype, span)?;
+        let (species, unscopables) = self.array_symbol_properties(
+            &constructor,
+            &prototype,
+            &values,
+            function_prototype,
+            span,
+        )?;
         methods.push(species);
         Ok(ArrayIntrinsics {
             constructor,
             prototype,
+            values,
             is_array,
             of,
             unscopables,

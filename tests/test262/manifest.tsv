@@ -779,3 +779,12 @@ script-pass	7df9b36b6f51cd325f02a00352b7b659f41cd93b28c6f0ad4541d8173364a9ad	tes
 script-pass	8101006992bc8d6ad1cc9a62c82d4af90e98f4ec67023a24a152dac0d600b703	test/built-ins/Array/prototype/toSorted/this-value-boolean.js
 script-pass	83400558abd6a0880b455e7c3d69dd07e4720a717728ac0c0e76c79996eabb07	test/built-ins/Array/prototype/toSorted/this-value-nullish.js
 script-pass	7aa48e8e694b1bfdf58361365894c297d39dcfa505ab6e2e2981448baba7a09b	test/built-ins/Array/prototype/toSorted/zero-or-one-element.js
+script-pass	a4450e2fdd3ea652a021959a377ad7b4bb394b026802c1674d024799ec6a48ce	test/built-ins/Array/prototype/keys/iteration.js
+script-pass	d2dafafdb7ac267b8b776f3961c82297538befa18fe3a49d0f747e00bf180e22	test/built-ins/Array/prototype/keys/iteration-mutable.js
+script-pass	69e981d249ccc5b0e2f7606235d3e7d27d67e14a3c4f59ad1e88416cbf45d65a	test/built-ins/Array/prototype/keys/return-abrupt-from-this.js
+script-pass	7ef2335c3541a0651fdaf62dc41b0dc37e3e4160b1c816ae8f9ce657be9acab7	test/built-ins/Array/prototype/values/iteration.js
+script-pass	67ad35b891c3618c2e2492f09f4c8e9db9a16f33e9cde7bf4c63085c105590f6	test/built-ins/Array/prototype/values/iteration-mutable.js
+script-pass	b1368dfa2a284cc09cc83017760bca8f09eeac1e14b3c0fb4a471d7abdd4d2f9	test/built-ins/Array/prototype/values/this-val-non-obj-coercible.js
+script-pass	0acd0b34bc7578798c7a5ecbe049d02b451e77e621cfa2ded639dbb99c3c181e	test/built-ins/Array/prototype/entries/iteration.js
+script-pass	8e45e2e03251a4ba68171468b8d3c032427cb57388f067f301e0ba6801bbded1	test/built-ins/Array/prototype/entries/iteration-mutable.js
+script-pass	45e30cd20276f55f36c1bbc0429a8e007f7a642f47487ae2743f4a7a2a80e4bb	test/built-ins/Array/prototype/entries/return-abrupt-from-this.js

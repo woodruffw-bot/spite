@@ -122,7 +122,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add global parseFloat/parseInt and their shared Number aliases with exact prefix parsing.
 - [x] Add global isFinite/isNaN with ordered ToNumber coercion and abrupt completion propagation.
 - [x] Complete non-decimal Number formatting with exact shortest-roundtrip intervals.
-- [ ] Add remaining boxed receivers and the arguments iterator hook.
+- [ ] Add remaining BigInt boxed receivers.
+- [x] Add the intrinsic Array values iterator hook to mapped and unmapped arguments.
 - [x] Parse new expressions with optional arguments and constructor/member/call precedence.
 - [x] Execute ordinary and bound construction with prototype selection and ordered arguments.
 - [x] Add new.target early errors, call/construction bindings, and lexical arrow capture.
@@ -172,6 +173,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Symbol wrappers, branded prototype methods, fresh intrinsic calls, and fixed well-known properties.
 - [x] Add bounded Symbol.for/keyFor interning shared across realms and host threads.
 - [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
+- [x] Add Array keys/values/entries iterators, live/reentrant state tests, source tracing, and nine Test262 files.
+- [ ] Add String iteration and remaining shared Iterator prototype properties.
 - [ ] Expose the Symbol global after completing remaining intrinsic symbol properties.
 - [ ] Complete Array species-dependent methods and iterator integration.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

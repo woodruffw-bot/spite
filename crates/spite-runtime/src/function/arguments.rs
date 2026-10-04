@@ -1,11 +1,11 @@
-//! Arguments objects (10.4.4.6–7), before Symbol.iterator is exposed.
+//! Arguments objects and their intrinsic Array values iterator (10.4.4.6–7).
 
 use crate::{
     Error, ObjectHandle, Realm, Value,
     environment::EnvironmentHandle,
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
-use spite_core::{JsString, Span};
+use spite_core::{JsString, Span, WellKnownSymbol};
 use spite_parser::ast::Binding;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -64,6 +64,7 @@ impl Realm {
             .expect("function intrinsics initialized");
         let prototype = intrinsics.object_prototype.clone();
         let thrower = intrinsics.throw_type_error.clone();
+        let values = intrinsics.array.values.clone();
         let object = self.object_work(span, |objects, _| objects.create_arguments(&prototype))?;
         self.define_builtin_property(
             &object,
@@ -88,8 +89,19 @@ impl Realm {
                 )
             })?;
         }
-        // The required @@iterator hook will be installed with Symbol/Array iteration;
-        // no Symbol property keys or reflection operations are exposed yet.
+        self.object_work(span, |objects, budget| {
+            objects.define(
+                &object,
+                WellKnownSymbol::Iterator.symbol(),
+                DataDescriptor {
+                    value: Some(Value::Object(values)),
+                    writable: Some(true),
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )
+        })?;
         if let Some(callee) = callee {
             self.define_builtin_property(&object, "callee", Value::Object(callee), true, span)?;
         } else {

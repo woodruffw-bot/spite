@@ -7,6 +7,7 @@ use crate::{
 mod array;
 mod hooks;
 mod instance;
+mod iteration;
 mod keys;
 mod regexp;
 mod registry;

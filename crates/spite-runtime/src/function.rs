@@ -15,6 +15,7 @@ mod builtin;
 mod construct;
 mod error;
 mod instance;
+mod iterator;
 mod number;
 mod object;
 mod ordinary;
@@ -66,6 +67,11 @@ pub(crate) enum Builtin {
     ArrayIsArray,
     ArrayOf,
     ArraySpecies,
+    ArrayKeys,
+    ArrayValues,
+    ArrayEntries,
+    ArrayIteratorNext,
+    IteratorIdentity,
     ArrayJoin,
     ArrayAt,
     ArrayPush,
@@ -171,6 +177,11 @@ impl Builtin {
             Self::ArrayIsArray => "isArray",
             Self::ArrayOf => "of",
             Self::ArraySpecies => "get [Symbol.species]",
+            Self::ArrayKeys => "keys",
+            Self::ArrayValues => "values",
+            Self::ArrayEntries => "entries",
+            Self::ArrayIteratorNext => "next",
+            Self::IteratorIdentity => "[Symbol.iterator]",
             Self::ArrayJoin => "join",
             Self::ArrayPush => "push",
             Self::ArrayPop => "pop",
@@ -402,6 +413,7 @@ pub(super) struct Intrinsics {
     pub string: string::StringIntrinsics,
     pub symbol: symbol::SymbolIntrinsics,
     pub array: array::ArrayIntrinsics,
+    pub iterator: iterator::IteratorIntrinsics,
 }
 
 impl Intrinsics {
@@ -428,6 +440,7 @@ impl Intrinsics {
         .chain(self.string.roots())
         .chain(self.symbol.roots())
         .chain(self.array.roots())
+        .chain(self.iterator.roots())
     }
 }
 
@@ -536,6 +549,7 @@ impl Realm {
             self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
         let string = self.string_intrinsics(&object_prototype, &function_prototype, span)?;
         let symbol = self.symbol_intrinsics(&object_prototype, &function_prototype, span)?;
+        let iterator = self.iterator_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
@@ -559,6 +573,7 @@ impl Realm {
             string,
             symbol,
             array,
+            iterator,
         });
         Ok(object_prototype)
     }

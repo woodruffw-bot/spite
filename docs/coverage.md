@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1487 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1505 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -155,7 +155,8 @@ use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
-The arguments Symbol.iterator hook and BigInt primitive wrappers remain unimplemented.
+Arguments objects now own the intrinsic Array values callable at Symbol.iterator.
+BigInt primitive wrappers remain unimplemented.
 Ordinary new expressions create fresh receivers from the current constructor
 prototype (or the realm default), run parameters/bodies, and honor object returns.
 Bound constructors forward arguments and newTarget while ignoring bound this and
@@ -317,8 +318,16 @@ lookup, and preserve ordered live reads. With never reads its replaced index. Ot
 prototype methods, spread, and array assignment patterns remain pending.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
-null prototype and all 16 specified entries. Species-dependent Array methods,
-iterator hooks, and with environments remain pending.
+null prototype and all 16 specified entries. Species-dependent Array methods
+and with environments remain pending.
+Array keys/values/entries create branded iterators that read live lengths and
+advance their index before reading values. Keys skip element reads; entries
+create intrinsic two-element arrays. Length errors retry the current index,
+element errors retain the increment, and exhaustion permanently releases the
+source. Reentrant getters preserve these ordered state changes. Array and
+arguments Symbol.iterator properties alias the original values callable.
+Iterator prototypes supply the identity method and Array Iterator tag; the
+shared Iterator constructor, tag accessor, and helpers remain Unsupported.
 
 The Symbol global, BigInt wrapper APIs, remaining String methods,
 remaining Array prototype methods, derived construction, classes, destructuring, regular
@@ -339,7 +348,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry retains at most 10,000 identities and 1,048,576
 total key code units; it never evicts entries. Work/output/capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 138 retained entries under a separate fixed work
+Realm initialization creates 145 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -374,15 +383,16 @@ Number tests, ten numeric parsing tests, five global numeric predicate tests, an
 22 Error construction, conversion, and prototype tests, plus 83 Object descriptor,
 prototype, extensibility, creation, copying, integrity, and SameValue tests, and
 147 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
-well-formedness, and conversion tests in both Script modes. Another 361 Array
+well-formedness, and conversion tests in both Script modes. Another 370 Array
 files cover construction, of, isArray, literal elisions, length/index boundaries,
 truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
-and reduce/reduceRight callbacks, plus sort/toSorted and toReversed/with/toSpliced copies. Controls
+and reduce/reduceRight callbacks, plus sort/toSorted, toReversed/with/toSpliced copies,
+and keys/values/entries iteration. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON or Array.prototype.map and other APIs and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 1487 variants are four raw positives, 1411 positives using the upstream
+Rust. Its 1505 variants are four raw positives, 1429 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

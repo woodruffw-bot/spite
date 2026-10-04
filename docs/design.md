@@ -369,8 +369,9 @@ iteration over absent indices up to the logical length is unnecessary.
 Land this work as storage invariants, Realm Array construction/Array.isArray and
 length coercions, array literal grammar/evaluation, then prototype methods and
 additional Test262 coverage. Array.prototype is itself an empty Array exotic
-object (23.1.3). Missing constructor/prototype methods, Symbol.iterator, species,
-and unscopables remain explicit gaps until their dependencies are implemented.
+object (23.1.3). Missing constructor/prototype methods remain explicit gaps until
+their dependencies are implemented. Symbol.iterator, species, and unscopables
+are materialized as described below.
 Join uses ToObject and reads LengthOfArrayLike once before separator conversion,
 then interleaves indexed Get and element ToString in order. Nullish elements
 contribute empty text; inherited properties at holes remain observable. Appends
@@ -480,8 +481,25 @@ Array.prototype's Symbol.unscopables data property points to the standard mutabl
 null-prototype table of 16 true-valued names (23.1.3.41). The outer property is
 non-writable, non-enumerable, and configurable; "with" is absent from the table.
 These properties are materialized independently of pending species-dependent
-Array methods, iteration, and with environments. Change-by-copy methods and
+Array methods and with environments. Change-by-copy methods and
 Array.of do not consult species.
+
+Array iteration follows edition-17 CreateArrayIterator and next (23.1.5.1–3).
+Store an optional iterated-object handle, a u64 next index, and key/value/key+value
+kind on a distinct ordinary object. Trace the iterated object until exhaustion
+clears it; wrappers and prototype changes do not create or remove the iterator brand.
+Each next call snapshots the index before reading live LengthOfArrayLike. Exhaustion
+clears the source permanently. Otherwise update the index before an indexed Get;
+keys never read elements, values return Get's result, and entries create intrinsic
+two-element arrays. Length-conversion failures leave the index untouched; indexed
+Get failures retain its increment. Reentrant getters observe these exact mutations,
+without introducing a generator-style executing flag or automatic completion on
+abrupt Get. Native recursion remains subject to the ordinary host reentry limit.
+Iterator results are fresh ordinary objects with value/done data properties.
+Expose Array keys/values/entries together with the values alias at Symbol.iterator
+and the same intrinsic values callable on mapped/unmapped arguments. The shared
+Iterator prototype initially supplies its iterator identity method; its remaining
+standard properties must be marked Unsupported until their implementation arrives.
 
 Array.of (23.1.2.4) tests its receiver for [[Construct]] without coercion. It
 constructs with one numeric item-count argument or falls back to ArrayCreate.
@@ -930,9 +948,10 @@ Strict arguments objects are unmapped ordinary objects (10.4.4.6): indexed value
 are writable/enumerable/configurable, length is writable/configurable, and callee
 is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
 alias indices, or vice versa. Argument values and receiver captures remain traced
-after returns or abrupt default initialization. The required Symbol.iterator hook
-is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
-recognizes the Arguments tag. Boolean, Number, and String non-strict receivers are boxed; other
+after returns or abrupt default initialization. Their own Symbol.iterator property
+aliases the intrinsic Array values function, independent of public replacements.
+Object.prototype.toString recognizes the Arguments tag. Boolean, Number, String,
+and Symbol non-strict receivers are boxed; other
 primitive receivers still report Unsupported until their wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
 
 Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps

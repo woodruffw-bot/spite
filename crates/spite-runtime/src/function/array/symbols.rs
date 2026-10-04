@@ -8,6 +8,7 @@ impl Realm {
         &mut self,
         constructor: &ObjectHandle,
         prototype: &ObjectHandle,
+        values: &ObjectHandle,
         function_prototype: &ObjectHandle,
         span: Span,
     ) -> Result<(ObjectHandle, ObjectHandle), Error> {
@@ -52,6 +53,17 @@ impl Realm {
                         get: Some(Some(species.clone())),
                         set: Some(None),
                     },
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )?;
+            objects.define(
+                prototype,
+                WellKnownSymbol::Iterator.symbol(),
+                DataDescriptor {
+                    value: Some(Value::Object(values.clone())),
+                    writable: Some(true),
                     enumerable: Some(false),
                     configurable: Some(true),
                 },

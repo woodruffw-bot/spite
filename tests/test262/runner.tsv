@@ -757,3 +757,12 @@ test/built-ins/Array/prototype/toSorted/length-tolength.js	-	-	-
 test/built-ins/Array/prototype/toSorted/this-value-boolean.js	-	-	-
 test/built-ins/Array/prototype/toSorted/this-value-nullish.js	-	-	-
 test/built-ins/Array/prototype/toSorted/zero-or-one-element.js	-	-	-
+test/built-ins/Array/prototype/keys/iteration.js	-	-	-
+test/built-ins/Array/prototype/keys/iteration-mutable.js	-	-	-
+test/built-ins/Array/prototype/keys/return-abrupt-from-this.js	-	-	-
+test/built-ins/Array/prototype/values/iteration.js	-	-	-
+test/built-ins/Array/prototype/values/iteration-mutable.js	-	-	-
+test/built-ins/Array/prototype/values/this-val-non-obj-coercible.js	-	-	-
+test/built-ins/Array/prototype/entries/iteration.js	-	-	-
+test/built-ins/Array/prototype/entries/iteration-mutable.js	-	-	-
+test/built-ins/Array/prototype/entries/return-abrupt-from-this.js	-	-	-

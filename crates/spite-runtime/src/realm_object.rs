@@ -586,6 +586,7 @@ impl Realm {
         if self.global_object.as_ref() == Some(object)
             || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
+            || object == &intrinsics.iterator.prototype
             || object == &intrinsics.string.prototype
             || object == &intrinsics.array.constructor
             || object == &intrinsics.array.prototype
@@ -646,8 +647,8 @@ impl Realm {
             };
             return (object == &intrinsics.string.prototype
                 && symbol == &WellKnownSymbol::Iterator.symbol())
-                || (object == &intrinsics.array.prototype
-                    && symbol == &WellKnownSymbol::Iterator.symbol());
+                || (object == &intrinsics.iterator.prototype
+                    && symbol == &WellKnownSymbol::ToStringTag.symbol());
         }
         let key = key.as_string().expect("string key");
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
@@ -661,6 +662,7 @@ impl Realm {
             || (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
             || (object == &intrinsics.array.prototype && missing_array_method(key))
+            || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
     }
 }
 
@@ -670,8 +672,26 @@ fn missing_array_static(key: &JsString) -> bool {
 
 fn missing_array_method(key: &JsString) -> bool {
     [
-        "concat", "entries", "filter", "flat", "flatMap", "keys", "map", "slice", "splice",
-        "values",
+        "concat", "filter", "flat", "flatMap", "map", "slice", "splice",
+    ]
+    .iter()
+    .any(|name| key_is(key, name))
+}
+
+fn missing_iterator_method(key: &JsString) -> bool {
+    [
+        "constructor",
+        "drop",
+        "every",
+        "filter",
+        "find",
+        "flatMap",
+        "forEach",
+        "map",
+        "reduce",
+        "some",
+        "take",
+        "toArray",
     ]
     .iter()
     .any(|name| key_is(key, name))

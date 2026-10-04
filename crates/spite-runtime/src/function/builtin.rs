@@ -48,7 +48,16 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
-            Builtin::ArraySpecies => Ok(this),
+            Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
+            Builtin::ArrayKeys | Builtin::ArrayValues | Builtin::ArrayEntries => {
+                let kind = match builtin {
+                    Builtin::ArrayKeys => crate::object::ArrayIterationKind::Key,
+                    Builtin::ArrayValues => crate::object::ArrayIterationKind::Value,
+                    _ => crate::object::ArrayIterationKind::KeyValue,
+                };
+                self.array_iterator(this, kind, span)
+            }
+            Builtin::ArrayIteratorNext => self.array_iterator_next(this, span),
             Builtin::Object => {
                 self.object_constructor(None, arguments.next().unwrap_or(Value::Undefined), span)
             }

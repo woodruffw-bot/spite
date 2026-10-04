@@ -197,12 +197,12 @@ fn arguments_descriptors_and_property_order_follow_the_unmapped_algorithm() {
         panic!()
     };
     let record = realm.inspect_object(&arguments).unwrap();
-    let keys: Vec<_> = record
-        .own_keys()
-        .iter()
-        .map(|key| key.as_string().expect("string key").to_utf8().unwrap())
+    let mut keys: Vec<spite_core::PropertyKey> = ["0", "1", "length", "callee"]
+        .into_iter()
+        .map(Into::into)
         .collect();
-    assert_eq!(keys, ["0", "1", "length", "callee"]);
+    keys.push(spite_core::WellKnownSymbol::Iterator.symbol().into());
+    assert_eq!(record.own_keys(), keys);
     for name in ["0", "1"] {
         let property = record
             .own_property(&spite_core::JsString::from(name))
