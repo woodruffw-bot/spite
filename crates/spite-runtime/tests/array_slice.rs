@@ -182,7 +182,7 @@ fn invalid_species_and_huge_ranges_fail_before_copying() {
         "let o={length:4294967296,get 0(){throw 7;}},caught=false;try{Array.prototype.slice.call(o);}catch(e){caught=e instanceof RangeError;}caught",
     );
     let mut realm = Realm::new(Limits {
-        max_steps: 5_000,
+        max_steps: Some(5_000),
         ..Limits::default()
     });
     assert!(matches!(

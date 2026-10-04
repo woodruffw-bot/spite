@@ -13,7 +13,7 @@ fn scanner_and_integer_failures_abort_and_restore_call_state() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     assert_eq!(realm.eval("parseInt('12')"), Ok(Value::Number(12.0)));
-    realm.remaining_steps = 0;
+    realm.remaining_steps = Some(0);
     assert!(matches!(
         realm.parse_float(Value::String(JsString::from("123")), Span::new(0, 0)),
         Err(Error::Limit { .. })

@@ -109,9 +109,10 @@ impl std::error::Error for Error {}
 /// Host resource limits. They do not alter ECMAScript exceptions.
 #[derive(Clone, Copy, Debug)]
 pub struct Limits {
-    /// Maximum work per Script, including bindings, clauses, and integer arithmetic.
+    /// Optional maximum work per Script, including bindings, clauses, and arithmetic.
+    /// Defaults to `None`, which disables the execution work limit.
     /// Fixed realm initialization has a separate bounded work budget.
-    pub max_steps: usize,
+    pub max_steps: Option<usize>,
     /// Maximum code units in any produced string.
     pub max_string_units: usize,
     /// Maximum magnitude bits in a produced BigInt.
@@ -126,7 +127,7 @@ pub struct Limits {
 impl Default for Limits {
     fn default() -> Self {
         Self {
-            max_steps: 100_000,
+            max_steps: None,
             max_string_units: 1024 * 1024,
             max_bigint_bits: 65_536,
             max_arguments: 16_384,
@@ -215,7 +216,7 @@ pub struct Realm {
     global_object: Option<ObjectHandle>,
     unsupported_host_globals: BTreeSet<String>,
     limits: Limits,
-    remaining_steps: usize,
+    remaining_steps: Option<usize>,
     call_depth: usize,
     evaluation_depth: usize,
     strict: bool,
@@ -237,7 +238,7 @@ impl Realm {
             global_object: None,
             unsupported_host_globals: BTreeSet::new(),
             limits,
-            remaining_steps: 0,
+            remaining_steps: limits.max_steps,
             call_depth: 0,
             evaluation_depth: 0,
             strict: false,
@@ -293,13 +294,12 @@ impl Realm {
         }
     }
     fn tick(&mut self, span: Span) -> Result<(), Error> {
-        self.remaining_steps = self
-            .remaining_steps
-            .checked_sub(1)
-            .ok_or_else(|| Error::Limit {
+        if let Some(remaining) = &mut self.remaining_steps {
+            *remaining = remaining.checked_sub(1).ok_or_else(|| Error::Limit {
                 span,
                 message: "evaluation step limit exceeded".into(),
             })?;
+        }
         Ok(())
     }
 
@@ -308,7 +308,7 @@ impl Realm {
         span: Span,
         work: impl FnOnce(&mut Budget) -> Result<T, IntegerError>,
     ) -> Result<T, Error> {
-        let mut budget = Budget::new(self.limits.max_bigint_bits, self.remaining_steps);
+        let mut budget = Budget::with_work_limit(self.limits.max_bigint_bits, self.remaining_steps);
         let result = work(&mut budget);
         self.remaining_steps = budget.remaining_work();
         result.map_err(|error| Self::integer_error(error, span))
@@ -334,7 +334,7 @@ impl Realm {
         span: Span,
         work: impl FnOnce(&mut Budget) -> Result<T, ConversionError>,
     ) -> Result<T, Error> {
-        let mut budget = Budget::new(self.limits.max_bigint_bits, self.remaining_steps);
+        let mut budget = Budget::with_work_limit(self.limits.max_bigint_bits, self.remaining_steps);
         let result = work(&mut budget);
         self.remaining_steps = budget.remaining_work();
         result.map_err(|error| Self::conversion_error(error, span))

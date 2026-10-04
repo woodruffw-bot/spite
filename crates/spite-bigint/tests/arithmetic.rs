@@ -155,7 +155,23 @@ fn invalid_digits_radices_and_resource_exhaustion_are_distinct() {
         parse(&"f".repeat(128), 16).to_radix(10, &mut Budget::new(4096, 4)),
         Err(Error::Limit)
     );
-    assert_eq!(empty.remaining_work(), 0);
+    assert_eq!(empty.remaining_work(), Some(0));
+}
+
+#[test]
+fn unlimited_work_preserves_the_integer_size_limit() {
+    let mut budget = Budget::with_work_limit(8, None);
+    budget.charge(usize::MAX).unwrap();
+    budget.charge(usize::MAX).unwrap();
+    assert_eq!(
+        BigInt::from(1).add(&BigInt::from(2), &mut budget),
+        Ok(BigInt::from(3))
+    );
+    assert_eq!(
+        BigInt::parse_digits("256", 10, &mut budget),
+        Err(Error::Limit)
+    );
+    assert_eq!(budget.remaining_work(), None);
 }
 
 #[test]

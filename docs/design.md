@@ -77,7 +77,7 @@ and line terminators need focused boundary tests.
 Parsing returns an owned, inspectable syntax tree or a diagnostic with a source
 span. A separate validation step can handle non-local early errors. Finish all
 parsing and early-error checks before executing any part of a Script or Module.
-Parser depth and evaluator work limits report host resource errors, not JavaScript
+Parser depth and opted-in evaluator work limits report host resource errors, not JavaScript
 exceptions. Syntax or semantics that are not implemented must be recorded as gaps.
 Never use unsupported syntax rejection as evidence of conformance to negative tests.
 
@@ -141,15 +141,15 @@ language's separate equality algorithms.
 BigInt uses a sign and a normalized little-endian vector of 32-bit magnitude
 words. Zero has no words and no negative sign. Start with straightforward carry,
 borrow, multiplication, and division algorithms. Each arithmetic operation takes
-a budget that bounds result bits and charges word operations before doing the
-work. The runtime translates budget exhaustion into a host limit, while division
+a budget that bounds result bits and optionally charges word operations before
+doing the work. The runtime translates budget exhaustion into a host limit, while division
 by zero and negative exponents become JavaScript RangeError exceptions.
 Comparisons between BigInt and Number must compare mathematical values without
 rounding the integer first. Literal grammar, string coercion, and mixed-type
 operator rules remain in the parser and runtime rather than the arithmetic crate.
 The AST stores validated BigInt digits and their radix. Evaluation converts them
 under the realm's budget, so parsing never performs unbounded integer arithmetic.
-The evaluator shares its step budget with integer arithmetic and conversion and
+The evaluator shares any opted-in step budget with integer arithmetic and conversion and
 also bounds BigInt magnitude bits (65,536 by default). BigInt/Number comparisons
 inspect the binary64 significand and exponent without rounding the integer.
 The integer library also supplies explicit conversion to binary64 for the Number
@@ -196,7 +196,13 @@ copy bindings into a fresh identity with the same outer link (14.7.4.4).
 Realm initialization runs on first evaluation, after parsing succeeds. It creates
 the global lexical environment, implemented intrinsics, and an ordinary global
 object whose prototype is Object.prototype (9.3.1). This fixed graph uses a separate
-100,000-unit initialization budget; `max_steps` applies to each Script. The host
+100,000-unit initialization budget. Script evaluation has no work limit by default;
+hosts can set `Limits.max_steps` to `Some(units)` to opt into a per-Script budget.
+`None` disables work accounting across evaluation, property operations, string
+scans/copies, and integer arithmetic. Work units measure implementation operations,
+not elapsed time or JavaScript statements. The value-size, allocation, argument,
+and native recursion limits still apply independently. References below to execution
+work budgets apply when a host enables this option. The host
 slot limit is named `max_heap_entries` and counts both objects and environments.
 Temporary scopes remain allocated until explicit collection; scope restoration
 changes active roots on every normal or abrupt exit. The collector traces outer
@@ -836,12 +842,13 @@ span for uncaught failures. Host Unsupported/Limit failures must still bypass
 JavaScript handlers. Standard Error properties are the entire exposed interface;
 stack traces and host-specific fields are outside the language baseline.
 
-Embedding hosts can obtain exception values and read properties through bounded
+Embedding hosts can obtain exception values and read properties through checked
 realm operations. Exception conversion preserves explicit throw identity and
 creates a fresh standard Error for a Rust-described built-in failure; parse and
 host failures have no JavaScript value. Property reads preserve Get semantics,
 including accessor receivers and abrupt completions. Each operation receives a
-fresh work budget, and returned values require host roots across collection.
+fresh allowance when `max_steps` is enabled, and returned values require host roots
+across collection.
 Foreign/stale embedding handles are checked at the boundary and return a distinct
 InvalidObject host failure before internal evaluation can dereference them.
 The Test262 runner uses these operations to inspect constructor names for

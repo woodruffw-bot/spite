@@ -24,7 +24,7 @@ fn debugger_has_an_empty_completion_and_no_effects() {
 #[test]
 fn debugger_statements_consume_the_host_work_budget() {
     let mut realm = Realm::new(Limits {
-        max_steps: 8,
+        max_steps: Some(8),
         ..Limits::default()
     });
     assert!(matches!(

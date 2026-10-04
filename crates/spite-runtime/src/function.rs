@@ -700,7 +700,11 @@ impl Realm {
             ));
         };
         let length = self.length_of_array_like(&object, span)?;
-        if length > self.limits.max_arguments as u64 || length > self.remaining_steps as u64 {
+        if length > self.limits.max_arguments as u64
+            || self
+                .remaining_steps
+                .is_some_and(|work| length > work as u64)
+        {
             return Err(Error::Limit {
                 span,
                 message: "array-like argument list exceeds host limits".into(),

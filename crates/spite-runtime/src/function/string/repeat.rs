@@ -93,7 +93,7 @@ impl Realm {
         self.object_work(span, |_, budget| budget.charge(length))?;
         let mut result = Vec::new();
         // Checked reservation also rejects platform capacity overflow when an
-        // embedding deliberately raises both output and work limits very high.
+        // embedding disables work accounting and raises the output limit.
         result
             .try_reserve_exact(length)
             .map_err(|_| length_limit(span))?;

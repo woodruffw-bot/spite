@@ -17,6 +17,50 @@ fn evaluates_an_argument() {
 }
 
 #[test]
+fn execution_work_limit_is_optional() {
+    let source = "'a'.repeat(2000).indexOf('a'.repeat(999)+'b')";
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args(["--eval", source])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "-1");
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args(["--max-steps", "100000", "--eval", source])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .starts_with("Limit")
+    );
+    insta::allow_duplicates! {
+        for count in ["-1", "invalid", "184467440737095516160"] {
+            let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+                .args(["--max-steps", count, "--eval", "1"])
+                .output()
+                .unwrap();
+            assert_eq!(output.status.code(), Some(2));
+            insta::assert_snapshot!(
+                String::from_utf8(output.stderr).unwrap(),
+                @"--max-steps requires a non-negative integer"
+            );
+        }
+    }
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args(["--max-steps", "0", "--eval", "1"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .starts_with("Limit")
+    );
+}
+
+#[test]
 fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),

@@ -70,7 +70,7 @@ impl ErrorIntrinsics {
 }
 
 impl Realm {
-    /// Obtains a JavaScript exception value with a fresh work budget.
+    /// Obtains a JavaScript exception value, resetting any opted-in work allowance.
     ///
     /// Thrown values retain their identity. Each conversion of a host-described
     /// built-in exception creates a fresh Error instance with its intrinsic

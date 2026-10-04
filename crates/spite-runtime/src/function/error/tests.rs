@@ -259,7 +259,7 @@ fn host_property_reads_run_inherited_getters_with_bounded_work_and_restore_state
         "x",
         "(function(){try{while(true){}}finally{flag=2;}})",
     );
-    realm.limits.max_steps = 1_000;
+    realm.limits.max_steps = Some(1_000);
     assert!(matches!(
         realm.read_property(&child, &JsString::from("x")),
         Err(Error::Limit { .. })

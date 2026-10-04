@@ -62,7 +62,7 @@ fn odd_and_even_merge_ranges_preserve_every_value_in_stable_order() {
     for length in [0, 1, 2, 3, 5, 7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65] {
         // Budget includes the scripted stability/permutation audit as well as sorting.
         let mut realm = Realm::new(Limits {
-            max_steps: 1_000_000,
+            max_steps: Some(1_000_000),
             ..Limits::default()
         });
         assert_eq!(realm.eval(&format!(

@@ -201,7 +201,7 @@ fn host_limits_cannot_be_caught_or_replaced_by_return_completions() {
     assert!(matches!(realm.eval(&source), Err(Error::Limit { .. })));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::new(Limits {
-        max_steps: 2000,
+        max_steps: Some(2000),
         ..Limits::default()
     });
     realm

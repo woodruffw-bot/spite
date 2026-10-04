@@ -11,5 +11,8 @@ spite-core.workspace = true
 spite-parser.workspace = true
 spite-runtime.workspace = true
 
+[dev-dependencies]
+insta.workspace = true
+
 [lints]
 workspace = true

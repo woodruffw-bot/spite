@@ -272,7 +272,7 @@ fn empty_fallthrough_clauses_consume_the_host_budget() {
     let clauses = (1..2_000).map(|i| format!("case {i}:")).collect::<String>();
     let source = format!("switch (0) {{ case 0: let x = 2; {clauses} }}");
     let mut realm = Realm::new(Limits {
-        max_steps: 1_000,
+        max_steps: Some(1_000),
         ..Limits::default()
     });
     realm.eval("let x = 1").unwrap();

@@ -167,7 +167,7 @@ fn output_and_iteration_limits_abort_without_running_catch_or_finally() {
         Ok(Value::Number(64.0))
     );
     let mut realm = Realm::new(Limits {
-        max_steps: 1000,
+        max_steps: Some(1000),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();

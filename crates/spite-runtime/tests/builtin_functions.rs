@@ -241,7 +241,7 @@ fn builtin_graphs_and_host_roots_survive_collection() {
 fn partial_intrinsic_initialization_is_never_published() {
     // Script work is separate from fixed, bounded realm initialization.
     let mut realm = Realm::new(Limits {
-        max_steps: 0,
+        max_steps: Some(0),
         ..Limits::default()
     });
     assert!(matches!(realm.eval("0"), Err(Error::Limit { .. })));

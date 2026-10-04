@@ -84,7 +84,7 @@ fn language_call_failures_are_catchable_but_missing_intrinsics_are_host_gaps() {
 #[test]
 fn argument_evaluation_obeys_host_work_limits() {
     let mut realm = Realm::new(Limits {
-        max_steps: 1000,
+        max_steps: Some(1000),
         ..Limits::default()
     });
     realm.eval("let flag = 0").unwrap();

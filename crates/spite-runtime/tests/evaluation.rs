@@ -297,9 +297,36 @@ fn bitwise_operations_use_modulo_conversion() {
 }
 
 #[test]
+fn execution_work_limits_are_opt_in() {
+    for source in [
+        "function f(){var n=0;while(n<20000)n++;return n;}f()===20000",
+        "'a'.repeat(2000).indexOf('a'.repeat(999)+'b')===-1",
+        "`${2n**8192n}`.length===2467",
+        "let o={length:4000};o[Symbol.isConcatSpreadable]=true;[].concat(o).length===4000",
+    ] {
+        assert_eq!(
+            Realm::default().eval(source),
+            Ok(Value::Boolean(true)),
+            "{source}"
+        );
+        assert!(
+            matches!(
+                Realm::new(Limits {
+                    max_steps: Some(100_000),
+                    ..Limits::default()
+                })
+                .eval(source),
+                Err(Error::Limit { .. })
+            ),
+            "{source}"
+        );
+    }
+}
+
+#[test]
 fn resource_failures_are_host_errors_and_restore_scopes() {
     let mut realm = Realm::new(Limits {
-        max_steps: 1_000,
+        max_steps: Some(1_000),
         max_string_units: 16,
         ..Limits::default()
     });
@@ -310,7 +337,7 @@ fn resource_failures_are_host_errors_and_restore_scopes() {
     assert_eq!(realm.eval("let x = 1"), Ok(Value::Undefined));
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
     let mut realm = Realm::new(Limits {
-        max_steps: 100,
+        max_steps: Some(100),
         max_string_units: 4,
         ..Limits::default()
     });

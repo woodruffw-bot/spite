@@ -133,7 +133,7 @@ fn bodies_restore_scopes_before_updates_and_on_budget_exhaustion() {
         "a: for (;;) { let x = 2; continue a; }",
     ] {
         let mut realm = Realm::new(Limits {
-            max_steps: 100,
+            max_steps: Some(100),
             ..Limits::default()
         });
         realm.eval("let x = 1").unwrap();
@@ -285,7 +285,7 @@ fn lexical_loop_values_are_preserved() {
 #[test]
 fn lexical_loop_limits_and_early_errors_restore_state() {
     let mut realm = Realm::new(Limits {
-        max_steps: 1_000,
+        max_steps: Some(1_000),
         ..Limits::default()
     });
     realm.eval("let x = 7").unwrap();

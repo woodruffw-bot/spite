@@ -92,7 +92,7 @@ fn template_limits_abort_without_exposing_partial_results() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_steps: 16,
+        max_steps: Some(16),
         ..Limits::default()
     });
     let source = format!("`{}`", "${''}".repeat(32));

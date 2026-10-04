@@ -108,7 +108,7 @@ fn call_forwarding_is_iterative_and_budgeted() {
         realm.call(call.clone(), call.clone(), arguments, Span::new(0, 0)),
         Ok(Value::String(JsString::from("[object Null]")))
     );
-    realm.remaining_steps = 3;
+    realm.remaining_steps = Some(3);
     assert!(matches!(
         realm.call(
             call.clone(),

@@ -222,7 +222,7 @@ fn truncation_work_abort_precedes_mutation_and_skips_language_handlers() {
     realm
         .eval("let flag=0;for(let i=0;i<10;i++)a[i]=i")
         .unwrap();
-    realm.limits.max_steps = 1000;
+    realm.limits.max_steps = Some(1000);
     assert!(matches!(
         realm.eval("try{a.length=0;}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
@@ -318,14 +318,14 @@ fn join_checks_output_before_next_get_and_bounds_empty_output_work() {
     ));
     check(&mut realm, "n===0 && flag===0");
     realm.limits.max_string_units = 1_048_576;
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     assert!(matches!(
         realm.eval(
             "try{Array.prototype.join.call({length:Infinity},'');}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Limit { .. })
     ));
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0 && [1,2].join()==='1,2'");
     // A huge logical length does not skip earlier observable operations.
     assert_eq!(
@@ -394,7 +394,7 @@ fn recursive_push_setters_and_pop_getters_obey_the_native_stack_limit() {
 fn push_work_abort_retains_completed_elements_and_consistent_array_length() {
     let mut realm = Realm::default();
     let receiver = realm.eval("let a=[];a").unwrap();
-    realm.remaining_steps = 300;
+    realm.remaining_steps = Some(300);
     let values = (0..20)
         .map(|n| Value::Number(f64::from(n)))
         .collect::<Vec<_>>();
@@ -412,16 +412,16 @@ fn push_work_abort_retains_completed_elements_and_consistent_array_length() {
 fn callback_iteration_work_and_this_arg_copying_are_bounded() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     for method in ["forEach", "every", "some"] {
         assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},()=>true);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
     }
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0");
     let receiver = realm.eval("[1]").unwrap();
     let callback = realm.eval("()=>0").unwrap();
     let this_arg = Value::String(JsString::from_code_units(vec![0x61; 1000]));
-    realm.remaining_steps = 500;
+    realm.remaining_steps = Some(500);
     assert!(matches!(
         realm.array_callback(
             Builtin::ArrayForEach,
@@ -486,15 +486,15 @@ fn recursive_find_predicates_stop_on_a_two_mebibyte_stack() {
 fn find_bounds_hole_traversal_and_copying_of_retained_values() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     for method in ["find", "findIndex", "findLast", "findLastIndex"] {
         assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},()=>false);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
     }
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0");
     let receiver = realm.eval("['a'.repeat(1000)]").unwrap();
     let predicate = realm.eval("()=>true").unwrap();
-    realm.remaining_steps = 1500;
+    realm.remaining_steps = Some(1500);
     assert!(matches!(
         realm.array_find(
             Builtin::ArrayFind,
@@ -537,18 +537,18 @@ fn recursive_array_search_getters_stop_on_a_two_mebibyte_stack() {
 fn array_search_bounds_hole_traversal_and_each_element_comparison() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     for method in ["includes", "indexOf", "lastIndexOf"] {
         assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},7);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
     }
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(
         &mut realm,
         "flag===0 && Array.prototype.includes.call({length:Infinity},undefined)",
     );
     let receiver = realm.eval("['a'.repeat(1000)]").unwrap();
     let search = realm.eval("'a'.repeat(1000)").unwrap();
-    realm.remaining_steps = 2500;
+    realm.remaining_steps = Some(2500);
     assert!(matches!(
         realm.array_search(
             Builtin::ArrayIncludes,
@@ -589,14 +589,14 @@ fn recursive_reducers_stop_on_a_two_mebibyte_stack() {
 fn reduction_bounds_seed_search_and_callback_traversal() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     for method in ["reduce", "reduceRight"] {
         for initial in ["", ",0"] {
             assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:Infinity}},()=>0{initial});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
         }
         assert!(matches!(realm.eval(&format!("try{{[1,2,3].{method}(()=>{{while(true){{}}}},0);}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
     }
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0");
 }
 
@@ -629,12 +629,12 @@ fn reverse_bounds_sparse_traversal_and_keeps_completed_mutations_on_host_abort()
     let mut realm = Realm::default();
     realm.eval("let o={0:7,length:Infinity},flag=0").unwrap();
     // Allow the first pair to complete before the remaining huge range aborts.
-    realm.limits.max_steps = 10_000;
+    realm.limits.max_steps = Some(10_000);
     assert!(matches!(
         realm.eval("try{Array.prototype.reverse.call(o);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(
         &mut realm,
         "flag===0 && !(0 in o) && o[9007199254740990]===7 && o.length===Infinity",
@@ -642,7 +642,7 @@ fn reverse_bounds_sparse_traversal_and_keeps_completed_mutations_on_host_abort()
     let receiver = realm
         .eval("let a=['a'.repeat(1000),'b'.repeat(1000)];a")
         .unwrap();
-    realm.remaining_steps = 1500;
+    realm.remaining_steps = Some(1500);
     assert!(matches!(
         realm.array_reverse(receiver, Span::new(0, 0)),
         Err(Error::Limit { .. })
@@ -689,20 +689,20 @@ fn recursive_range_conversions_and_writes_stop_on_a_two_mebibyte_stack() {
 fn range_mutations_bound_traversal_and_charge_fill_value_copies() {
     let mut realm = Realm::default();
     realm.eval("let o={length:Infinity},flag=0").unwrap();
-    realm.limits.max_steps = 10_000;
+    realm.limits.max_steps = Some(10_000);
     assert!(matches!(
         realm.eval("try{Array.prototype.fill.call(o,7);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0 && o[0]===7 && o.length===Infinity");
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     assert!(matches!(realm.eval("try{Array.prototype.copyWithin.call({length:Infinity},0,0);}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0");
     let receiver = realm.eval("let a=[0,0];a").unwrap();
     let value = realm.eval("'a'.repeat(1000)").unwrap();
-    realm.remaining_steps = 500;
+    realm.remaining_steps = Some(500);
     assert!(matches!(
         realm.array_fill(
             receiver,
@@ -750,12 +750,12 @@ fn front_movement_bounds_huge_ranges_and_retains_completed_effects_on_host_abort
         let mut realm = Realm::default();
         realm.eval(setup).unwrap();
         realm.eval("let flag=0").unwrap();
-        realm.limits.max_steps = 10_000;
+        realm.limits.max_steps = Some(10_000);
         assert!(matches!(
             realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
             Err(Error::Limit { .. })
         ));
-        realm.limits.max_steps = 100_000;
+        realm.limits.max_steps = Some(100_000);
         check(&mut realm, &format!("flag===0 && ({expected})"));
     }
 }
@@ -805,14 +805,14 @@ fn array_copies_bound_dense_output_and_preserve_the_receiver_on_host_abort() {
     for call in ["toReversed()", "with(0,7)", "toSpliced(0,0)"] {
         let mut realm = Realm::default();
         realm.eval("let a=Array(4294967295),flag=0").unwrap();
-        realm.limits.max_steps = 500;
+        realm.limits.max_steps = Some(500);
         assert!(matches!(
             realm.eval(&format!(
                 "try{{a.{call};}}catch{{flag=1;}}finally{{flag=2;}}"
             )),
             Err(Error::Limit { .. })
         ));
-        realm.limits.max_steps = 100_000;
+        realm.limits.max_steps = Some(100_000);
         check(
             &mut realm,
             "flag===0 && a.length===4294967295 && !Object.hasOwn(a,'0')",
@@ -821,7 +821,7 @@ fn array_copies_bound_dense_output_and_preserve_the_receiver_on_host_abort() {
     }
     let mut realm = Realm::default();
     let receiver = realm.eval("['x'.repeat(1000)]").unwrap();
-    realm.remaining_steps = 500;
+    realm.remaining_steps = Some(500);
     assert!(matches!(
         realm.array_to_reversed(receiver, Span::new(0, 0)),
         Err(Error::Limit { .. })
@@ -856,7 +856,7 @@ fn array_of_constructor_and_length_setter_reentry_are_bounded_on_small_stacks() 
 fn array_of_bounds_property_work_and_retains_partial_custom_object_definitions() {
     let mut realm = Realm::default();
     let constructor = realm.eval("let o={};function C(){return o;}C").unwrap();
-    realm.remaining_steps = 500;
+    realm.remaining_steps = Some(500);
     assert!(matches!(
         realm.array_of(
             constructor,
@@ -909,9 +909,9 @@ fn array_locale_output_limits_precede_later_gets_and_large_lengths_are_bounded()
     ));
     check(&mut realm, "n===0 && flag===0");
     realm.limits.max_string_units = 1_048_576;
-    realm.limits.max_steps = 500;
+    realm.limits.max_steps = Some(500);
     assert!(matches!(realm.eval("try{Array.prototype.toLocaleString.call({length:Infinity});}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
-    realm.limits.max_steps = 100_000;
+    realm.limits.max_steps = Some(100_000);
     check(&mut realm, "flag===0 && [1].toLocaleString()==='1'");
     assert_eq!(realm.eval("Array.prototype.toLocaleString.call({0:{toLocaleString:()=>{throw 7;}},length:Infinity})"),Err(Error::Thrown(Value::Number(7.0))));
 }
@@ -968,12 +968,12 @@ fn array_sort_collection_and_comparison_work_abort_without_implicit_writes() {
         let mut realm = Realm::default();
         realm.eval(setup).unwrap();
         realm.eval("let flag=0").unwrap();
-        realm.limits.max_steps = 500;
+        realm.limits.max_steps = Some(500);
         assert!(matches!(
             realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
             Err(Error::Limit { .. })
         ));
-        realm.limits.max_steps = 100_000;
+        realm.limits.max_steps = Some(100_000);
         check(&mut realm, &format!("flag===0 && ({expected})"));
         realm.collect(10_000).unwrap();
     }

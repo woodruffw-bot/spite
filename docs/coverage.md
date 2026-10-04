@@ -31,7 +31,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
-| Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
+| Limits | 1 MiB source, depth 64, opt-in evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2005 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
@@ -353,8 +353,8 @@ Symbol.isConcatSpreadable overrides the Array brand for objects; primitive argum
 remain single elements. Each spread input snapshots length and visits properties
 live, preserving holes and inherited values. Definitions bypass setters and keep
 partial results. Safe-integer overflow throws TypeError before indexed reads;
-the final strict length write follows traversal. Large sparse scans remain bounded
-host work, and custom results can alias inputs without hiding subsequent mutations.
+the final strict length write follows traversal. Large sparse scans consume an
+opted-in work budget, and custom results can alias inputs without hiding subsequent mutations.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
 null prototype and all 16 specified entries. Other species-dependent Array methods
@@ -444,10 +444,10 @@ remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stab
 Rust. Its 2005 variants are four raw positives, 1929 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
-The runner uses one million work units per Script evaluation for combined upstream
-assertions and exact conversions; other resource limits use the runtime defaults.
+The runner uses the runtime defaults, including no execution work limit.
+Hosts can opt into a per-Script work budget with `Limits.max_steps = Some(units)`.
 Runtime-negative tests inspect the thrown object's constructor name through
-bounded realm property reads, including explicit Errors and rethrows. Inspection
+checked realm property reads, including explicit Errors and rethrows. Inspection
 failures remain non-passing; the original exception category cannot mask them.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion

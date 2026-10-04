@@ -87,7 +87,7 @@ fn property_reads_check_handles_and_keep_host_work_and_string_limits() {
         Err(Error::InvalidObject(_))
     ));
     let mut limited = Realm::new(Limits {
-        max_steps: 0,
+        max_steps: Some(0),
         ..Limits::default()
     });
     assert!(matches!(

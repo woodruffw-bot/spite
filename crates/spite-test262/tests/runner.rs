@@ -32,6 +32,14 @@ fn negative(phase: &str, error_type: &str, body: &str) -> Outcome {
 }
 
 #[test]
+fn default_execution_has_no_work_cutoff() {
+    assert_eq!(
+        raw("if('a'.repeat(2000).indexOf('a'.repeat(999)+'b')!==-1)throw 1;"),
+        Outcome::Passed
+    );
+}
+
+#[test]
 fn runtime_negatives_match_both_phase_and_error_type() {
     for (body, kind) in [
         ("missing", "ReferenceError"),
@@ -231,7 +239,7 @@ fn unsupported_and_limits_are_never_negative_passes() {
     ));
     let runner = Runner {
         limits: Limits {
-            max_steps: 20,
+            max_steps: Some(20),
             ..Limits::default()
         },
     };
@@ -333,7 +341,7 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
     ));
     let runner = Runner {
         limits: Limits {
-            max_steps: 20,
+            max_steps: Some(20),
             ..Limits::default()
         },
     };

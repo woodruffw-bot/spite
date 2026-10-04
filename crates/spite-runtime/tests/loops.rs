@@ -135,7 +135,7 @@ fn infinite_loops_exhaust_the_host_budget_and_restore_scopes() {
         "do { let x = 2; } while (true)",
     ] {
         let mut realm = Realm::new(Limits {
-            max_steps: 100,
+            max_steps: Some(100),
             ..Limits::default()
         });
         realm.eval("let x = 1").unwrap();
@@ -258,7 +258,7 @@ fn control_transfers_restore_scopes() {
         "do { let x = 2; continue; } while (true)",
     ] {
         let mut realm = Realm::new(Limits {
-            max_steps: 100,
+            max_steps: Some(100),
             ..Limits::default()
         });
         realm.eval("let x = 1").unwrap();

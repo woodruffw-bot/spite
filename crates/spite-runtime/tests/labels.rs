@@ -124,7 +124,7 @@ fn escaping_a_label_restores_all_nested_scopes() {
         Value::Number(3.0),
     );
     let mut realm = Realm::new(Limits {
-        max_steps: 100,
+        max_steps: Some(100),
         ..Limits::default()
     });
     realm.eval("let x = 1").unwrap();

@@ -193,12 +193,12 @@ fn descriptive_output_is_bounded_and_symbol_copies_do_not_copy_descriptions() {
     let huge = JsSymbol::new(Some(JsString::from_code_units(vec![0x61; 100_000])));
     let mut budget = Budget::new(1);
     assert!(budget.value(&Value::Symbol(huge.clone())).is_ok());
-    realm.remaining_steps = 10;
+    realm.remaining_steps = Some(10);
     assert!(matches!(
         realm.symbol_descriptive_string(&huge, Span::new(0, 0)),
         Err(Error::Limit { .. })
     ));
-    realm.remaining_steps = 100_000;
+    realm.remaining_steps = Some(100_000);
     check(&mut realm, "String(s)==='Symbol(name)'");
 }
 

@@ -221,7 +221,7 @@ fn huge_inputs_fail_with_the_right_kind_and_custom_species_keep_full_lengths() {
     ));
     for method in METHODS {
         let mut realm = Realm::new(Limits {
-            max_steps: 5_000,
+            max_steps: Some(5_000),
             ..Limits::default()
         });
         let length = if method == "map" {
@@ -232,7 +232,7 @@ fn huge_inputs_fail_with_the_right_kind_and_custom_species_keep_full_lengths() {
         assert!(matches!(realm.eval(&format!("try{{Array.prototype.{method}.call({{length:{length}}},()=>true);}}catch{{throw 7;}}")),Err(Error::Limit{..})));
     }
     let mut realm = Realm::new(Limits {
-        max_steps: 5_000,
+        max_steps: Some(5_000),
         ..Limits::default()
     });
     assert!(matches!(realm.eval("let n,a=Array(4294967295);function C(x){n=x;}a.constructor={[Symbol.species]:C};a.map(()=>true)"),Err(Error::Limit{..})));

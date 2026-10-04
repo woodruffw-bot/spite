@@ -15,7 +15,7 @@ impl Realm {
         // Realm initialization (9.3.1) precedes Script evaluation. Its fixed-size
         // intrinsic graph has a separate bounded budget; heap/property limits
         // still apply. No user code can run during this initialization.
-        self.remaining_steps = 100_000;
+        self.remaining_steps = Some(100_000);
         let span = Span::new(0, 0);
         if self.scopes.is_empty() {
             self.push_scope(BTreeMap::new(), span)?;
@@ -545,7 +545,7 @@ mod tests {
     fn intrinsic_work_failure_does_not_publish_partial_graphs() {
         for work in 0..1000 {
             let mut realm = Realm {
-                remaining_steps: work,
+                remaining_steps: Some(work),
                 ..Realm::default()
             };
             let result = realm.ensure_object_intrinsics(Span::new(0, 0));

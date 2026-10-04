@@ -70,7 +70,7 @@ fn string_output_and_work_limits_skip_language_handlers() {
     );
     realm.limits.max_string_units = 1000;
     let input = Value::String(JsString::from("x".repeat(100).as_str()));
-    realm.remaining_steps = 50;
+    realm.remaining_steps = Some(50);
     assert!(matches!(
         realm.this_string_value(&input, Span::new(0, 0)),
         Err(Error::Limit { .. })
@@ -104,13 +104,13 @@ fn well_formedness_bounds_scans_and_replacement_allocation() {
     let mut realm = Realm::default();
     let input = Value::String(JsString::from_code_units(vec![0xd800; 100]));
     for replace in [false, true] {
-        realm.remaining_steps = 50;
+        realm.remaining_steps = Some(50);
         assert!(matches!(
             realm.string_well_formed(input.clone(), replace, Span::new(0, 0)),
             Err(Error::Limit { .. })
         ));
     }
-    realm.remaining_steps = 1000;
+    realm.remaining_steps = Some(1000);
     realm.limits.max_string_units = 99;
     assert!(matches!(
         realm.string_well_formed(input.clone(), true, Span::new(0, 0)),
@@ -128,13 +128,13 @@ fn sequence_methods_bound_copying_and_output_lengths() {
     let mut realm = Realm::default();
     let input = Value::String(JsString::from("a".repeat(100).as_str()));
     let span = Span::new(0, 0);
-    realm.remaining_steps = 50;
+    realm.remaining_steps = Some(50);
     assert!(matches!(
         realm.string_concat(input.clone(), vec![].into_iter(), span),
         Err(Error::Limit { .. })
     ));
     for relative in [false, true] {
-        realm.remaining_steps = 50;
+        realm.remaining_steps = Some(50);
         assert!(matches!(
             realm.string_substring(
                 input.clone(),
@@ -145,7 +145,7 @@ fn sequence_methods_bound_copying_and_output_lengths() {
             ),
             Err(Error::Limit { .. })
         ));
-        realm.remaining_steps = 1000;
+        realm.remaining_steps = Some(1000);
         realm.limits.max_string_units = 99;
         assert!(matches!(
             realm.string_substring(
@@ -169,7 +169,7 @@ fn sequence_methods_bound_copying_and_output_lengths() {
         );
         realm.limits.max_string_units = 100;
     }
-    realm.remaining_steps = 1000;
+    realm.remaining_steps = Some(1000);
     assert!(matches!(
         realm.string_concat(
             input.clone(),
@@ -198,12 +198,12 @@ fn trimming_bounds_scans_and_copies_only_the_result() {
         Builtin::StringTrimStart,
         Builtin::StringTrimEnd,
     ] {
-        realm.remaining_steps = 50;
+        realm.remaining_steps = Some(50);
         assert!(matches!(
             realm.string_trim(builtin, input.clone(), span),
             Err(Error::Limit { .. })
         ));
-        realm.remaining_steps = 1000;
+        realm.remaining_steps = Some(1000);
         realm.limits.max_string_units = 0;
         assert_eq!(
             realm.string_trim(builtin, input.clone(), span),
@@ -221,13 +221,13 @@ fn repetition_and_padding_charge_output_work_before_allocating() {
     let mut realm = Realm::default();
     let input = Value::String(JsString::from("a"));
     let span = Span::new(0, 0);
-    realm.remaining_steps = 50;
+    realm.remaining_steps = Some(50);
     assert!(matches!(
         realm.string_repeat(input.clone(), Value::Number(100.0), span),
         Err(Error::Limit { .. })
     ));
     for at_start in [false, true] {
-        realm.remaining_steps = 50;
+        realm.remaining_steps = Some(50);
         assert!(matches!(
             realm.string_pad(
                 input.clone(),
@@ -241,7 +241,7 @@ fn repetition_and_padding_charge_output_work_before_allocating() {
     }
     // Platform capacity overflow must be a host limit, even if the embedding
     // disables practical work/length bounds. This cannot request real storage.
-    realm.remaining_steps = usize::MAX;
+    realm.remaining_steps = None;
     realm.limits.max_string_units = usize::MAX;
     let count = (usize::MAX / 2 + 1) as f64;
     assert!(matches!(
@@ -256,7 +256,7 @@ fn substring_search_bounds_repeated_candidate_comparisons() {
     let input = Value::String(JsString::from("a".repeat(100).as_str()));
     let search = Value::String(JsString::from(format!("{}b", "a".repeat(39)).as_str()));
     for backwards in [false, true] {
-        realm.remaining_steps = 500;
+        realm.remaining_steps = Some(500);
         assert!(matches!(
             realm.string_index_of(
                 input.clone(),
@@ -267,7 +267,7 @@ fn substring_search_bounds_repeated_candidate_comparisons() {
             ),
             Err(Error::Limit { .. })
         ));
-        realm.remaining_steps = 500;
+        realm.remaining_steps = Some(500);
         let expected = if backwards { 60.0 } else { 0.0 };
         assert_eq!(
             realm.string_index_of(
@@ -291,7 +291,7 @@ fn search_predicates_charge_comparisons_before_inspecting_code_units() {
         Builtin::StringStartsWith,
         Builtin::StringEndsWith,
     ] {
-        realm.remaining_steps = 50;
+        realm.remaining_steps = Some(50);
         assert!(matches!(
             realm.string_search_predicate(
                 builtin,

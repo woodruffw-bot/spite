@@ -237,7 +237,7 @@ fn property_references_preserve_identity_through_control_flow_and_collection() {
 #[test]
 fn long_prototype_reads_are_bounded_and_host_failures_skip_finalizers() {
     let mut realm = Realm::new(Limits {
-        max_steps: 512,
+        max_steps: Some(512),
         ..Limits::default()
     });
     realm.eval("let p = null; let flag = 0").unwrap();

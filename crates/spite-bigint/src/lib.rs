@@ -1,4 +1,4 @@
-//! Safe arbitrary-precision integers with explicit size and work budgets.
+//! Safe arbitrary-precision integers with explicit size and optional work budgets.
 
 use std::{cmp::Ordering, fmt};
 
@@ -45,26 +45,34 @@ pub enum BitwiseOp {
 #[derive(Clone, Debug)]
 pub struct Budget {
     max_bits: usize,
-    remaining_work: usize,
+    remaining_work: Option<usize>,
 }
 
 impl Budget {
     /// Sets the maximum result magnitude in bits and available work units.
     pub fn new(max_bits: usize, work: usize) -> Self {
+        Self::with_work_limit(max_bits, Some(work))
+    }
+
+    /// Sets the maximum result magnitude and an optional work limit.
+    /// `None` disables work accounting while retaining the result size limit.
+    pub fn with_work_limit(max_bits: usize, work: Option<usize>) -> Self {
         Self {
             max_bits,
             remaining_work: work,
         }
     }
 
-    /// Returns the unspent work units.
-    pub fn remaining_work(&self) -> usize {
+    /// Returns the unspent work units, or `None` when work is unlimited.
+    pub fn remaining_work(&self) -> Option<usize> {
         self.remaining_work
     }
 
     /// Reserves work before an operation, including caller-owned conversion work.
     pub fn charge(&mut self, work: usize) -> Result<(), Error> {
-        self.remaining_work = self.remaining_work.checked_sub(work).ok_or(Error::Limit)?;
+        if let Some(remaining) = &mut self.remaining_work {
+            *remaining = remaining.checked_sub(work).ok_or(Error::Limit)?;
+        }
         Ok(())
     }
 

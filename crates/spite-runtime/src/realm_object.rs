@@ -34,8 +34,8 @@ impl RootedValue {
 
 impl Realm {
     /// Reads a string- or symbol-keyed property with JavaScript Get semantics, including
-    /// inherited accessors and the original receiver. Each host call starts a
-    /// fresh evaluation work budget and may execute JavaScript getters.
+    /// inherited accessors and the original receiver. Each host call may execute
+    /// JavaScript getters and resets the work allowance if `max_steps` is enabled.
     ///
     /// The result is unrooted; use [`Self::root_value`] across explicit collection.
     /// Nullish values throw TypeError, and invalid object handles are rejected.
@@ -418,7 +418,7 @@ impl Realm {
         work: impl FnOnce(&mut object::Objects, &mut object::Budget) -> Result<T, object::Error>,
     ) -> Result<T, Error> {
         self.tick(span)?;
-        let mut budget = object::Budget::new(self.remaining_steps);
+        let mut budget = object::Budget::with_work_limit(self.remaining_steps);
         let result = work(&mut self.objects, &mut budget);
         self.remaining_steps = budget.remaining_work();
         result.map_err(|error| match error {

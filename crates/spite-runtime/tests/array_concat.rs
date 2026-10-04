@@ -206,7 +206,7 @@ fn safe_integer_overflow_precedes_indexed_reads_and_keeps_partial_effects() {
     );
     for length in ["4294967296", "Infinity"] {
         let mut realm = Realm::new(Limits {
-            max_steps: 5_000,
+            max_steps: Some(5_000),
             ..Limits::default()
         });
         assert!(matches!(realm.eval(&format!("try{{[].concat({{length:{length},[Symbol.isConcatSpreadable]:true}});}}catch{{throw 7;}}")), Err(Error::Limit { .. })));

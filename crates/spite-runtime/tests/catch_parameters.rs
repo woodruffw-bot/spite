@@ -152,7 +152,7 @@ fn host_abort_restores_both_catch_scopes_and_skips_pending_handlers() {
         let mut realm = Realm::new(Limits {
             // Leave room for global property lookup after the abort; only the
             // deliberate infinite loops should exhaust this work allowance.
-            max_steps: 1_000,
+            max_steps: Some(1_000),
             ..Limits::default()
         });
         realm.eval("let e = 3; let flag = 0;").unwrap();

@@ -161,7 +161,7 @@ fn incomplete_intrinsic_key_lists_and_bigint_wrappers_remain_explicit_gaps() {
 #[test]
 fn enumeration_work_and_reentrant_getters_obey_host_limits() {
     let mut realm = Realm::new(Limits {
-        max_steps: 1000,
+        max_steps: Some(1000),
         ..Limits::default()
     });
     realm.eval("let flag=0,o={}").unwrap();

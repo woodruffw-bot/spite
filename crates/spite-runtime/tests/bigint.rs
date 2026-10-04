@@ -299,7 +299,7 @@ fn bigint_size_work_and_string_limits_abort_language_handlers() {
     assert!(matches!(realm.eval("16n * 16n"), Err(Error::Limit { .. })));
     assert!(matches!(realm.eval("2n ** 8n"), Err(Error::Limit { .. })));
     let mut realm = Realm::new(Limits {
-        max_steps: 100,
+        max_steps: Some(100),
         ..Limits::default()
     });
     assert!(matches!(

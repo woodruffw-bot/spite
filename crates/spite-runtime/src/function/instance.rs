@@ -225,7 +225,7 @@ mod tests {
         let mut realm = Realm::new(Limits {
             max_heap_entries: 20_000,
             // Each link now performs an actual inherited symbol-key lookup.
-            max_steps: 1_000_000,
+            max_steps: Some(1_000_000),
             ..Limits::default()
         });
         let Value::Object(mut target) = realm.eval("function F(){}let instance=new F;F").unwrap()
@@ -254,7 +254,7 @@ mod tests {
             ),
             Ok(true)
         );
-        realm.remaining_steps = 5;
+        realm.remaining_steps = Some(5);
         assert!(matches!(
             realm.instance_of(instance, Value::Object(target), Span::new(0, 0)),
             Err(Error::Limit { .. })

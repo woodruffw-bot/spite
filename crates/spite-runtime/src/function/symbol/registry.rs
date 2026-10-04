@@ -75,7 +75,7 @@ impl Realm {
         work: impl FnOnce(&mut Registry, &mut Budget) -> Result<T, RegistryError>,
     ) -> Result<T, Error> {
         self.tick(span)?;
-        let mut budget = Budget::new(self.remaining_steps);
+        let mut budget = Budget::with_work_limit(self.remaining_steps);
         let result = {
             let mut registry = REGISTRY
                 .get_or_init(|| Mutex::new(Registry::new(10_000, 1_048_576)))

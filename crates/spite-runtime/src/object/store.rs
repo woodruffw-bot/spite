@@ -77,22 +77,30 @@ impl From<spite_heap::Error> for Error {
 /// Work remaining for prototype hops, property scans, and value copies.
 #[derive(Debug)]
 pub struct Budget {
-    remaining: usize,
+    remaining: Option<usize>,
 }
 
 impl Budget {
     /// Creates an object-operation budget.
     pub fn new(work: usize) -> Self {
+        Self::with_work_limit(Some(work))
+    }
+
+    /// Creates an object-operation budget with an optional work limit.
+    /// `None` disables work accounting; storage and identity checks still apply.
+    pub fn with_work_limit(work: Option<usize>) -> Self {
         Self { remaining: work }
     }
 
-    /// Returns the unconsumed work units.
-    pub fn remaining_work(&self) -> usize {
+    /// Returns the unconsumed work units, or `None` when work is unlimited.
+    pub fn remaining_work(&self) -> Option<usize> {
         self.remaining
     }
 
     pub(crate) fn charge(&mut self, work: usize) -> Result<(), Error> {
-        self.remaining = self.remaining.checked_sub(work).ok_or(Error::WorkLimit)?;
+        if let Some(remaining) = &mut self.remaining {
+            *remaining = remaining.checked_sub(work).ok_or(Error::WorkLimit)?;
+        }
         Ok(())
     }
 
@@ -101,6 +109,9 @@ impl Budget {
         object: &OrdinaryObject,
         key: impl Into<PropertyKeyRef<'key>>,
     ) -> Result<(), Error> {
+        if self.remaining.is_none() {
+            return Ok(());
+        }
         let key = key.into();
         let comparisons = key
             .as_string()
