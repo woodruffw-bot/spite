@@ -79,6 +79,8 @@ impl Realm {
             Builtin::MathCbrt,
             Builtin::MathCeil,
             Builtin::MathClz32,
+            Builtin::MathCos,
+            Builtin::MathCosh,
             Builtin::MathExp,
             Builtin::MathExpm1,
             Builtin::MathFloor,
@@ -94,7 +96,11 @@ impl Realm {
             Builtin::MathPow,
             Builtin::MathRound,
             Builtin::MathSign,
+            Builtin::MathSin,
+            Builtin::MathSinh,
             Builtin::MathSqrt,
+            Builtin::MathTan,
+            Builtin::MathTanh,
             Builtin::MathTrunc,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
@@ -126,6 +132,12 @@ impl Realm {
             | Builtin::MathAtan
             | Builtin::MathAtanh
             | Builtin::MathCbrt => inverse_unary(number, builtin),
+            Builtin::MathCos
+            | Builtin::MathCosh
+            | Builtin::MathSin
+            | Builtin::MathSinh
+            | Builtin::MathTan
+            | Builtin::MathTanh => trigonometric_unary(number, builtin),
             Builtin::MathCeil => number.ceil(),
             Builtin::MathClz32 => f64::from(to_uint32(number).leading_zeros()),
             Builtin::MathExp => {
@@ -244,6 +256,60 @@ impl Realm {
         let y = self.number(y, span)?;
         let x = self.number(x, span)?;
         Ok(Value::Number(atan2(y, x)))
+    }
+}
+
+// sec-math.cos/cosh/sin/sinh/tan/tanh: required endpoints precede
+// implementation-approximated finite results. In particular, -0 must survive
+// odd functions and either infinity is outside circular functions' domains.
+fn trigonometric_unary(number: f64, builtin: Builtin) -> f64 {
+    match builtin {
+        Builtin::MathCos => {
+            if number == 0.0 {
+                1.0
+            } else if !number.is_finite() {
+                f64::NAN
+            } else {
+                number.cos()
+            }
+        }
+        Builtin::MathSin | Builtin::MathTan => {
+            if number == 0.0 || number.is_nan() {
+                number
+            } else if number.is_infinite() {
+                f64::NAN
+            } else if matches!(builtin, Builtin::MathSin) {
+                number.sin()
+            } else {
+                number.tan()
+            }
+        }
+        Builtin::MathSinh => {
+            if number == 0.0 || !number.is_finite() {
+                number
+            } else {
+                number.sinh()
+            }
+        }
+        Builtin::MathCosh => {
+            if number == 0.0 {
+                1.0
+            } else if number.is_infinite() {
+                f64::INFINITY
+            } else {
+                number.cosh()
+            }
+        }
+        Builtin::MathTanh => {
+            if number == 0.0 || number.is_nan() {
+                number
+            } else if number.is_infinite() {
+                number.signum()
+            } else {
+                number.tanh()
+            }
+        }
+        _ => unreachable!("Math trigonometric operation"),
     }
 }
 

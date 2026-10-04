@@ -60,6 +60,8 @@ pub(crate) enum Builtin {
     MathCbrt,
     MathCeil,
     MathClz32,
+    MathCos,
+    MathCosh,
     MathExp,
     MathExpm1,
     MathFloor,
@@ -75,7 +77,11 @@ pub(crate) enum Builtin {
     MathPow,
     MathRound,
     MathSign,
+    MathSin,
+    MathSinh,
     MathSqrt,
+    MathTan,
+    MathTanh,
     MathTrunc,
     ReflectPreventExtensions,
     FunctionBind,
@@ -257,6 +263,8 @@ impl Builtin {
             Self::MathCbrt => "cbrt",
             Self::MathCeil => "ceil",
             Self::MathClz32 => "clz32",
+            Self::MathCos => "cos",
+            Self::MathCosh => "cosh",
             Self::MathExp => "exp",
             Self::MathExpm1 => "expm1",
             Self::MathFloor => "floor",
@@ -272,7 +280,11 @@ impl Builtin {
             Self::MathPow => "pow",
             Self::MathRound => "round",
             Self::MathSign => "sign",
+            Self::MathSin => "sin",
+            Self::MathSinh => "sinh",
             Self::MathSqrt => "sqrt",
+            Self::MathTan => "tan",
+            Self::MathTanh => "tanh",
             Self::MathTrunc => "trunc",
             Self::ReflectPreventExtensions => "preventExtensions",
             Self::FunctionBind => "bind",
@@ -489,6 +501,8 @@ impl Builtin {
             | Self::MathCbrt
             | Self::MathCeil
             | Self::MathClz32
+            | Self::MathCos
+            | Self::MathCosh
             | Self::MathExp
             | Self::MathExpm1
             | Self::MathFloor
@@ -500,7 +514,11 @@ impl Builtin {
             | Self::MathLog10
             | Self::MathRound
             | Self::MathSign
+            | Self::MathSin
+            | Self::MathSinh
             | Self::MathSqrt
+            | Self::MathTan
+            | Self::MathTanh
             | Self::MathTrunc
             | Self::ReflectPreventExtensions
             | Self::ObjectIsExtensible

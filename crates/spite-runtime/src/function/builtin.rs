@@ -65,6 +65,8 @@ impl Realm {
             | Builtin::MathCbrt
             | Builtin::MathCeil
             | Builtin::MathClz32
+            | Builtin::MathCos
+            | Builtin::MathCosh
             | Builtin::MathExp
             | Builtin::MathExpm1
             | Builtin::MathFloor
@@ -76,7 +78,11 @@ impl Realm {
             | Builtin::MathLog10
             | Builtin::MathRound
             | Builtin::MathSign
+            | Builtin::MathSin
+            | Builtin::MathSinh
             | Builtin::MathSqrt
+            | Builtin::MathTan
+            | Builtin::MathTanh
             | Builtin::MathTrunc => {
                 self.math_unary(builtin, arguments.next().unwrap_or(Value::Undefined), span)
             }

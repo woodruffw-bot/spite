@@ -1257,6 +1257,13 @@ sec-math.cbrt). Atan2 converts y then x before any numeric shortcut
 quadrants retain the sign of y and distinguish either sign of x, including -0.
 Ordinary finite nonzero pairs use atan2 directly without forming y/x.
 
+Math sin/cos/tan and sinh/cosh/tanh perform one ToNumber conversion
+(sec-math.cos/cosh/sin/sinh/tan/tanh). Circular functions reject either infinity
+as NaN; odd functions retain both zero signs. Cosh maps either infinity to
++Infinity, sinh retains its sign, and tanh maps it to the corresponding unit.
+Cos/cosh return exactly one at either zero. Other finite inputs use the platform
+approximations, including large-argument reduction and subnormal inputs.
+
 Instanceof uses relational precedence, evaluates both operands, then follows
 InstanceofOperator and OrdinaryHasInstance (13.10.2, 7.3.21). Bound functions
 re-enter the operator on their target through an iterative loop. Primitive left

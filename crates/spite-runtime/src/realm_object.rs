@@ -719,19 +719,9 @@ impl Realm {
 }
 
 fn missing_math_method(key: &JsString) -> bool {
-    [
-        "cos",
-        "cosh",
-        "hypot",
-        "random",
-        "sin",
-        "sinh",
-        "sumPrecise",
-        "tan",
-        "tanh",
-    ]
-    .iter()
-    .any(|name| key_is(key, name))
+    ["hypot", "random", "sumPrecise"]
+        .iter()
+        .any(|name| key_is(key, name))
 }
 
 fn missing_array_static(key: &JsString) -> bool {
