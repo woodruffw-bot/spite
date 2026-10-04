@@ -559,8 +559,6 @@ fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
 
 fn missing_string_method(key: &JsString) -> bool {
     [
-        "endsWith",
-        "includes",
         "localeCompare",
         "match",
         "matchAll",
@@ -569,7 +567,6 @@ fn missing_string_method(key: &JsString) -> bool {
         "replaceAll",
         "search",
         "split",
-        "startsWith",
         "toLocaleLowerCase",
         "toLocaleUpperCase",
         "toLowerCase",

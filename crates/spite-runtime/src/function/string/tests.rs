@@ -281,3 +281,26 @@ fn substring_search_bounds_repeated_candidate_comparisons() {
         );
     }
 }
+
+#[test]
+fn search_predicates_charge_comparisons_before_inspecting_code_units() {
+    let mut realm = Realm::default();
+    let input = Value::String(JsString::from("a".repeat(100).as_str()));
+    for builtin in [
+        Builtin::StringIncludes,
+        Builtin::StringStartsWith,
+        Builtin::StringEndsWith,
+    ] {
+        realm.remaining_steps = 50;
+        assert!(matches!(
+            realm.string_search_predicate(
+                builtin,
+                input.clone(),
+                input.clone(),
+                Value::Undefined,
+                Span::new(0, 0)
+            ),
+            Err(Error::Limit { .. })
+        ));
+    }
+}

@@ -190,6 +190,14 @@ impl Realm {
                 self.string_raw(template, arguments, span)
             }
             Builtin::StringConcat => self.string_concat(this, arguments, span),
+            Builtin::StringIncludes | Builtin::StringStartsWith | Builtin::StringEndsWith => self
+                .string_search_predicate(
+                    builtin,
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                ),
             Builtin::StringIndexOf | Builtin::StringLastIndexOf => self.string_index_of(
                 this,
                 arguments.next().unwrap_or(Value::Undefined),

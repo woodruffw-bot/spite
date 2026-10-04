@@ -97,6 +97,9 @@ impl Realm {
             Builtin::StringPadEnd,
             Builtin::StringIndexOf,
             Builtin::StringLastIndexOf,
+            Builtin::StringIncludes,
+            Builtin::StringStartsWith,
+            Builtin::StringEndsWith,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

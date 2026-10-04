@@ -408,6 +408,12 @@ lastIndexOf. Searches compare UTF-16 slices without decoding, return the clamped
 position for empty needles, and charge the needle length before each candidate
 comparison. This bounds the initial quadratic algorithm without introducing a
 more complex matching implementation before it is needed.
+includes shares bounded substring search; startsWith/endsWith compare just their
+selected range (22.1.3.7/8/24). Empty searches match, including clamped endpoints.
+endsWith defaults undefined to the receiver length; other position conversions
+map NaN to zero. IsRegExp is false for all values currently exposed by the runtime.
+Symbol.match lookup and RegExpMatcher rejection must join before search-string
+conversion when Symbols/RegExp are introduced; string-keyed lookalikes are not hooks.
 String.raw uses ToObject for its template and raw value, reads length once through
 LengthOfArrayLike, and interleaves each indexed literal conversion with the
 corresponding available substitution (22.1.2.4). Missing substitutions add no text;

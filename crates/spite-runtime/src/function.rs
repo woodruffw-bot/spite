@@ -82,6 +82,9 @@ pub(crate) enum Builtin {
     StringPadEnd,
     StringIndexOf,
     StringLastIndexOf,
+    StringIncludes,
+    StringStartsWith,
+    StringEndsWith,
     Number,
     NumberValueOf,
     NumberToString,
@@ -139,6 +142,9 @@ impl Builtin {
             Self::StringPadEnd => "padEnd",
             Self::StringIndexOf => "indexOf",
             Self::StringLastIndexOf => "lastIndexOf",
+            Self::StringIncludes => "includes",
+            Self::StringStartsWith => "startsWith",
+            Self::StringEndsWith => "endsWith",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -194,6 +200,9 @@ impl Builtin {
             | Self::StringPadEnd
             | Self::StringIndexOf
             | Self::StringLastIndexOf
+            | Self::StringIncludes
+            | Self::StringStartsWith
+            | Self::StringEndsWith
             | Self::Object
             | Self::ObjectHasOwnProperty
             | Self::ObjectPropertyIsEnumerable
