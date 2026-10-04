@@ -788,8 +788,13 @@ objects and dense arrays, preserves own data descriptors and duplicate-key order
 and treats __proto__ as an ordinary key. Runtime regressions cover ordered text
 conversion, ignored noncallable revivers, retained prototypes and SyntaxError
 identity, inherited setter bypass, function metadata, 10,000 nested arrays with
-ordinary defaults, and opted-in work/heap/final string aborts. Callable revivers,
-source contexts, serialization, and raw JSON remain explicit implementation gaps.
+ordinary defaults, and opted-in work/heap/final string aborts. Reviver regressions
+cover postorder numeric/string key ordering, root holders and bound callbacks,
+exact primitive source lexemes and descriptors, duplicate-key sources, SameValue
+checks after mutation, replaced containers, snapshot keys/length, inherited values,
+setters and rejected updates, abrupt identity, nested parsing, and 10,000-level
+traversal. Cyclic forward mutations abort with an explicitly opted-in work quota.
+Serialization and raw JSON remain explicit implementation gaps.
 
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring, regular

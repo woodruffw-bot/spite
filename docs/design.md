@@ -1721,8 +1721,19 @@ Objects and dense arrays use retained intrinsic prototypes. Own writable,
 enumerable, configurable data properties bypass inherited setters; duplicate
 names replace earlier values without changing their initial property order, and
 __proto__ is an ordinary JSON key. Noncallable revivers are ignored. Callable
-revivers remain explicitly Unsupported after parsing; reviver traversal, source
-contexts, stringify, and raw JSON remain open. Until that inventory is complete,
+revivers use an immutable flat parse snapshot and explicit traversal frames.
+Get precedes creation of each fresh context object; SameValue determines whether
+the original primitive lexeme or child snapshot remains available. Duplicate
+names use the last source occurrence. Snapshot enumerable string keys or array
+length before visiting children, then invoke the reviver in postorder with its
+holder as this and exactly three arguments. Read each child live, so mutations,
+inherited values, getters, and newly encountered objects retain their specified
+effects. Undefined deletes a child; other returns create own data properties,
+bypassing setters. Ignore false from those updates while propagating abrupt
+completions. The root holder has an own empty-string property, and its callback
+result is returned directly. Source ranges and traversal remain iterative even
+for deeply nested JSON; user-created cycles can be aborted with opt-in work limits.
+Stringify and raw JSON remain open. Until that inventory is complete,
 missing JSON methods and whole-object enumeration remain explicit host gaps.
 Materialization has no default nesting or resource quota; opted-in work, heap,
 and final decoded string/property-name quotas retain their host-abort behavior.

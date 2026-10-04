@@ -1,4 +1,4 @@
-//! ParseJSON materialization; callable revivers and serialization remain open.
+//! ParseJSON materialization; serialization remains open.
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
@@ -65,7 +65,7 @@ fn input_conversion_precedes_syntax_and_noncallable_revivers_are_ignored() {
 }
 
 #[test]
-fn invalid_json_throws_intrinsic_syntaxerror_and_callable_revivers_remain_host_gaps() {
+fn invalid_json_throws_intrinsic_syntaxerror_and_serialization_remains_a_host_gap() {
     for text in ["undefined", "NaN", "01", "[1,]", "{a:1}", "'x'", "/*x*/1"] {
         assert!(
             matches!(
@@ -81,13 +81,6 @@ fn invalid_json_throws_intrinsic_syntaxerror_and_callable_revivers_remain_host_g
     check(
         "let C=SyntaxError;globalThis.SyntaxError=function(){throw 7;};let caught=false;try{JSON.parse('x');}catch(e){caught=e instanceof C && e.constructor===C;}caught",
     );
-    let mut realm = Realm::default();
-    realm.eval("let flag=0;").unwrap();
-    assert!(matches!(
-        realm.eval("try{JSON.parse('1',()=>{flag=1;});}catch{flag=2;}finally{flag=3;}"),
-        Err(Error::Unsupported { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
         "JSON.stringify",
         "JSON.rawJSON",

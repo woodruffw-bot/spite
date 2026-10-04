@@ -1,9 +1,11 @@
-//! JSON object and ParseJSON value creation (25.5.1); revivers remain open.
+//! JSON object, ParseJSON, and iterative reviver traversal (25.5.1).
 
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span, WellKnownSymbol};
 use spite_parser::json::{JsonKind, parse_json_with_work};
+
+mod reviver;
 
 #[derive(Debug)]
 pub(crate) struct JsonIntrinsics {
@@ -73,22 +75,22 @@ impl Realm {
                 Self::exception(ExceptionKind::SyntaxError, span, error.to_string())
             }
         })?;
-        let mut values: Vec<Option<Value>> = Vec::new();
-        for node in document.nodes {
+        let mut values: Vec<Value> = Vec::new();
+        for node in &document.nodes {
             self.tick(span)?;
-            let value = match node.kind {
+            let value = match &node.kind {
                 JsonKind::Null => Value::Null,
-                JsonKind::Boolean(value) => Value::Boolean(value),
-                JsonKind::Number(value) => Value::Number(value),
+                JsonKind::Boolean(value) => Value::Boolean(*value),
+                JsonKind::Number(value) => Value::Number(*value),
                 JsonKind::String(value) => {
-                    self.check_json_string(&value, span)?;
-                    Value::String(value)
+                    self.check_json_string(value, span)?;
+                    Value::String(value.clone())
                 }
                 JsonKind::Array(elements) => {
                     let array = self.create_intrinsic_array(0, span)?;
-                    for (index, child) in elements.into_iter().enumerate() {
+                    for (index, child) in elements.iter().enumerate() {
                         self.tick(span)?;
-                        let value = values[child].take().expect("unique postorder JSON child");
+                        let value = values[*child].clone();
                         self.create_array_element(&array, index as u64, value, span)?;
                     }
                     Value::Object(array)
@@ -99,13 +101,13 @@ impl Realm {
                         self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
                     for (key, child) in entries {
                         self.tick(span)?;
-                        self.check_json_string(&key, span)?;
-                        let value = values[child].take().expect("unique postorder JSON child");
+                        self.check_json_string(key, span)?;
+                        let value = values[*child].clone();
                         // Create own data properties, including __proto__, without
                         // inherited setters. Later duplicates replace earlier values.
                         self.define_property_or_throw(
                             &object,
-                            key,
+                            key.clone(),
                             DataDescriptor {
                                 value: Some(value),
                                 writable: Some(true),
@@ -123,16 +125,13 @@ impl Realm {
                 span,
                 message: "JSON value tree exceeds platform capacity".into(),
             })?;
-            values.push(Some(value));
+            values.push(value);
         }
-        let value = values[document.root].take().expect("parsed JSON root");
-        if self.is_callable(&reviver, span)? {
-            return Err(Self::unsupported(
-                span,
-                "JSON reviver traversal and source contexts are not implemented",
-            ));
+        let value = values[document.root].clone();
+        if !self.is_callable(&reviver, span)? {
+            return Ok(value);
         }
-        Ok(value)
+        self.json_revive(&text, &document, &values, reviver, span)
     }
 
     fn check_json_string(&self, string: &JsString, span: Span) -> Result<(), Error> {
