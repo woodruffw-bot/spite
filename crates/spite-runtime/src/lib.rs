@@ -1151,6 +1151,7 @@ impl Realm {
                 source,
             } => self.arrow_function(parameters, body, source, expr.span)?,
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
+            ExprKind::Array(elements) => self.array_literal(elements, expr.span)?,
             ExprKind::New { callee, arguments } => {
                 let constructor = self.expression(callee)?;
                 let mut values = Vec::new();

@@ -15,7 +15,8 @@ not an alternative language specification.
 | Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
-| Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
+| Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
+| Arrays | Calls/new, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, and partial truncation |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
@@ -238,11 +239,13 @@ descriptors must be preconverted there; work checks precede any truncation.
 Realm definitions now perform both ArraySetLength conversions, and assignments
 defer them until after receiver/writability checks. Array calls/new and Array.isArray
 are implemented, including Array.prototype identity, sparse numeric construction,
-and non-coercing single-element construction. Array literal syntax and prototype
-methods remain unavailable until the next integration increments.
+and non-coercing single-element construction. Array literals preserve holes,
+trailing commas, and element evaluation order, using own data definitions and
+the intrinsic prototype independently of the global binding. Prototype methods,
+spread, and array assignment patterns remain pending.
 
 Symbols, BigInt wrapper APIs, remaining String methods,
-Array literal syntax/methods, derived construction, classes, destructuring, regular
+Array prototype methods, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -295,7 +298,7 @@ prototype, extensibility, creation, copying, integrity, and SameValue tests, and
 well-formedness, and conversion tests in both Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON and other APIs and remains Unsupported;
-arrays, other includes, async completion, and agents
+Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 778 variants are four raw positives, 702 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do

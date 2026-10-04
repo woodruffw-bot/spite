@@ -1,5 +1,7 @@
 //! Array construction, identification, and length conversion (23.1, 10.4.2.4).
 
+mod literal;
+
 use super::Builtin;
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,

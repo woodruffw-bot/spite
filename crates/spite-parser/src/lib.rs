@@ -1,5 +1,6 @@
 //! Parsing and early-error validation for the implemented ECMAScript subset.
 
+mod array;
 mod arrow;
 pub mod ast;
 mod construction;
@@ -601,6 +602,12 @@ impl Parser {
             ExprKind::Template { substitutions, .. } => {
                 substitutions.iter().map(|e| e.depth).max().unwrap_or(0)
             }
+            ExprKind::Array(elements) => elements
+                .iter()
+                .flatten()
+                .map(|e| e.depth)
+                .max()
+                .unwrap_or(0),
             ExprKind::Object(properties) => properties
                 .iter()
                 .map(|property| {
@@ -722,6 +729,9 @@ impl Parser {
             }
             let assignment_op = compound_assignment(&self.current().kind);
             if minimum <= 2 && (self.at("=") || assignment_op.is_some()) {
+                if assignment_op.is_none() && matches!(left.kind, ExprKind::Array(_)) {
+                    return Err(self.unsupported("array assignment patterns are not implemented"));
+                }
                 self.bump();
                 if !assignment_target(&left) {
                     return Err(early(left.span, "invalid assignment target"));
@@ -889,6 +899,7 @@ impl Parser {
                 self.make_expr(ExprKind::This, span)
             }
             Kind::Punct("{") => self.object_literal(span.start),
+            Kind::Punct("[") => self.array_literal(span.start),
             Kind::Word(name) if !reserved(&name) => {
                 self.make_expr(ExprKind::Identifier(name), span)
             }
@@ -909,7 +920,7 @@ impl Parser {
             Kind::Word(name) if name == "instanceof" => {
                 Err(early(span, "unexpected binary operator"))
             }
-            Kind::Word(_) | Kind::Punct("[" | "/") => Err(Diagnostic::new(
+            Kind::Word(_) | Kind::Punct("/") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
                 "expression form is not implemented",
@@ -1040,6 +1051,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::NewTarget
             | ExprKind::Literal(_)
             | ExprKind::Object(_)
+            | ExprKind::Array(_)
             | ExprKind::Template { .. }
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
@@ -1524,6 +1536,11 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
             }
         }
 
+        ExprKind::Array(elements) => {
+            for element in elements.iter().flatten() {
+                validate_expr(element, strict)?;
+            }
+        }
         ExprKind::Object(properties) => {
             for property in properties {
                 if let PropertyName::Computed(key) = &property.name {

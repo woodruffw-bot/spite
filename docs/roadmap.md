@@ -144,7 +144,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add sparse Array exotic storage, indexed growth, and partial length truncation.
 - [x] Add ordered Realm-level ArraySetLength coercions and deferred length assignments.
 - [x] Add Array calls/new and Array.isArray.
-- [ ] Parse/evaluate array literals with holes and trailing commas; defer spread to iteration.
+- [x] Parse/evaluate array literals with holes and trailing commas; defer spread to iteration.
 - [ ] Add Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.

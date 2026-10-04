@@ -1,0 +1,12 @@
+---
+source: crates/spite-parser/tests/arrays.rs
+expression: "parse_script(\"[1 2]\").unwrap_err()"
+---
+Diagnostic {
+    kind: Syntax,
+    span: Span {
+        start: 3,
+        end: 4,
+    },
+    message: "expected ]",
+}

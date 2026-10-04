@@ -63,17 +63,19 @@ fn access_continues_across_newlines_when_grammar_allows_it() {
             "{source}"
         );
     }
-    for source in ["a++\n(b)", "a--\n`x`", "-a++\n(b)", "a.b\n++c.d"] {
+    for source in [
+        "a++\n(b)",
+        "a--\n`x`",
+        "-a++\n(b)",
+        "a.b\n++c.d",
+        "a++\n[0]",
+    ] {
         assert_eq!(
             parse_script(source).unwrap().statements().len(),
             2,
             "{source}"
         );
     }
-    assert_eq!(
-        parse_script("a++\n[0]").unwrap_err().kind,
-        DiagnosticKind::Unsupported
-    );
 }
 
 #[test]

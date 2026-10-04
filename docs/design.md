@@ -275,7 +275,7 @@ The low-level Objects API accepts only preconverted integral Number length
 descriptors; UnnormalizedArrayLength reports a violated storage precondition,
 not a JavaScript exception. Realm descriptor definitions and deferred length
 assignments now supply these conversions. Array calls/new and Array.isArray now expose these objects to Scripts;
-literal syntax and prototype methods remain pending.
+literal syntax is implemented, while prototype methods remain pending.
 
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
@@ -304,8 +304,12 @@ other single value becomes an element without coercion. Element creation uses
 own data definitions, bypassing inherited setters. IsArray uses the internal
 identity independently of prototypes; Proxy forwarding will join it when Proxy
 objects exist. All Array intrinsics remain rooted after global properties change.
-Array literals must distinguish elisions from explicit undefined and preserve
-trailing-comma lengths; spread remains Unsupported until iterator semantics exist.
+Array literals retain each elision as an absent AST element, distinct from an
+explicit undefined expression. AssignmentExpression[+In] parsing separates
+elements from comma expressions and preserves trailing-comma lengths. Evaluation
+creates an intrinsic Array before evaluating elements, grows length for holes,
+and defines own elements in source order without inferring function names. Spread
+and array assignment patterns remain Unsupported until their semantics exist.
 
 The `Objects` heap context validates prototype handles and prevents ordinary
 prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively

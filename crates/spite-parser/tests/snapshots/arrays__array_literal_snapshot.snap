@@ -1,0 +1,160 @@
+---
+source: crates/spite-parser/tests/arrays.rs
+expression: "parse_script(\"[ , 1, , undefined, [2,], (a, b), x => x, ]\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: Array(
+                        [
+                            None,
+                            Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            1.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 4,
+                                        end: 5,
+                                    },
+                                },
+                            ),
+                            None,
+                            Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "undefined",
+                                    ),
+                                    span: Span {
+                                        start: 9,
+                                        end: 18,
+                                    },
+                                },
+                            ),
+                            Some(
+                                Expr {
+                                    depth: 2,
+                                    kind: Array(
+                                        [
+                                            Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Literal(
+                                                        Number(
+                                                            2.0,
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 21,
+                                                        end: 22,
+                                                    },
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    span: Span {
+                                        start: 20,
+                                        end: 24,
+                                    },
+                                },
+                            ),
+                            Some(
+                                Expr {
+                                    depth: 3,
+                                    kind: Parenthesized(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Binary(
+                                                Comma,
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "a",
+                                                    ),
+                                                    span: Span {
+                                                        start: 27,
+                                                        end: 28,
+                                                    },
+                                                },
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "b",
+                                                    ),
+                                                    span: Span {
+                                                        start: 30,
+                                                        end: 31,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 27,
+                                                end: 31,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 26,
+                                        end: 32,
+                                    },
+                                },
+                            ),
+                            Some(
+                                Expr {
+                                    depth: 2,
+                                    kind: Arrow {
+                                        parameters: [
+                                            Binding {
+                                                name: "x",
+                                                span: Span {
+                                                    start: 34,
+                                                    end: 35,
+                                                },
+                                                initializer: None,
+                                            },
+                                        ],
+                                        body: Expression(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 39,
+                                                    end: 40,
+                                                },
+                                            },
+                                        ),
+                                        source: FunctionSource(
+                                            "x => x",
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 34,
+                                        end: 40,
+                                    },
+                                },
+                            ),
+                        ],
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 43,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 43,
+            },
+        },
+    ],
+    strict: false,
+}

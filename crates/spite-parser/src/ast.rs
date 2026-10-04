@@ -361,6 +361,8 @@ impl fmt::Debug for FunctionSource {
 pub enum ExprKind {
     /// A primitive literal.
     Literal(Literal),
+    /// An Array initializer in index order. None denotes an elision (a hole).
+    Array(Vec<Option<Expr>>),
     /// An ordinary object initializer, in source property order.
     Object(Vec<ObjectProperty>),
     /// An untagged template literal. There is one more element than substitution.
