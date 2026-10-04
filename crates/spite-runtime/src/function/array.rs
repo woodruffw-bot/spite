@@ -2,6 +2,7 @@
 
 mod access;
 mod callback;
+mod concat;
 mod copy;
 mod factory;
 mod find;
@@ -186,6 +187,7 @@ impl Realm {
             Builtin::ArrayMap,
             Builtin::ArrayFilter,
             Builtin::ArraySlice,
+            Builtin::ArrayConcat,
             Builtin::ArrayFind,
             Builtin::ArrayFindIndex,
             Builtin::ArrayFindLast,

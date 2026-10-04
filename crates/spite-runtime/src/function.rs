@@ -103,6 +103,7 @@ pub(crate) enum Builtin {
     ArrayMap,
     ArrayFilter,
     ArraySlice,
+    ArrayConcat,
     ArrayFind,
     ArrayFindIndex,
     ArrayFindLast,
@@ -217,6 +218,7 @@ impl Builtin {
             Self::ArrayMap => "map",
             Self::ArrayFilter => "filter",
             Self::ArraySlice => "slice",
+            Self::ArrayConcat => "concat",
             Self::ArrayReduce => "reduce",
             Self::ArrayReduceRight => "reduceRight",
             Self::ArrayFind => "find",
@@ -314,6 +316,7 @@ impl Builtin {
             | Self::ArraySome
             | Self::ArrayMap
             | Self::ArrayFilter
+            | Self::ArrayConcat
             | Self::ArrayFind
             | Self::ArrayFindIndex
             | Self::ArrayFindLast

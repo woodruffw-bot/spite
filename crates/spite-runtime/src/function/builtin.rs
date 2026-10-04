@@ -225,6 +225,7 @@ impl Realm {
             Builtin::ArrayShift => self.array_shift(this, span),
             Builtin::ArrayUnshift => self.array_unshift(this, arguments, span),
             Builtin::ArrayReverse => self.array_reverse(this, span),
+            Builtin::ArrayConcat => self.array_concat(this, arguments, span),
             Builtin::ArraySlice => self.array_slice(
                 this,
                 arguments.next().unwrap_or(Value::Undefined),

@@ -503,6 +503,18 @@ do not delete pre-existing custom-result properties. Always perform a final
 strict length Set, including for empty ranges. Range cursors retain the full
 ToLength width and consume bounded work without an intermediate index list.
 
+Concat (23.1.3.2–2.1) boxes its receiver and constructs a species result with
+length zero before testing spreadability. For each receiver/argument in order,
+objects consult Symbol.isConcatSpreadable; undefined falls back to the internal
+Array brand. Primitive arguments never consult wrapper hooks. Spread inputs
+snapshot LengthOfArrayLike, check the combined safe-integer bound before indexed
+reads, then visit live HasProperty/Get in ascending order. Holes advance the
+output cursor and preserve existing custom-result properties. Own data definitions
+bypass setters and retain prior effects on failure. Always perform the final
+strict length Set, even for empty results. Do not prevalidate an intrinsic result's
+uint32 length: the final Set must follow earlier effects. Sparse scans consume
+bounded work and remain host limits rather than JavaScript exceptions.
+
 Array iteration follows edition-17 CreateArrayIterator and next (23.1.5.1–3).
 Store an optional iterated-object handle, a u64 next index, and key/value/key+value
 kind on a distinct ordinary object. Trace the iterated object until exhaustion
