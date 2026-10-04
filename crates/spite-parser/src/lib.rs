@@ -724,7 +724,7 @@ impl Parser {
             if minimum <= 2 && (self.at("=") || assignment_op.is_some()) {
                 self.bump();
                 if !assignment_target(&left) {
-                    return Err(self.error("invalid assignment target"));
+                    return Err(early(left.span, "invalid assignment target"));
                 }
                 let right = self.expression(2)?;
                 let span = Span::new(left.span.start, right.span.end);

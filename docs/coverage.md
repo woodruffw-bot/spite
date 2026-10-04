@@ -30,7 +30,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 48 reviewed Test262 variants from 11 hashbang, 10 BigInt, and 11 arrow files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 76 reviewed Test262 variants from 11 hashbang, 10 BigInt, 11 arrow, and 14 new.target files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -181,8 +181,8 @@ require a reviewed diagnostic range and message; unreviewed syntax errors remain
 unverified. Unsupported features, missing host helpers, and resource limits are
 separate non-passing results. Modules, async completion, agents, and the full
 upstream harness remain unsupported. CI runs the reviewed corpus on Linux and
-Windows with the minimum supported Rust version and stable Rust. Its 48 variants
-are four raw positive evaluations and 44 reviewed parse-negative variants, not a
+Windows with the minimum supported Rust version and stable Rust. Its 76 variants
+are four raw positive evaluations and 72 reviewed parse-negative variants, not a
 whole-suite conformance measurement. Component fixtures do not enter this count.
 
 Number-to-string formatting uses Rust's shortest round-trip decimal conversion

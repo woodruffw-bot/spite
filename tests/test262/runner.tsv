@@ -31,3 +31,17 @@ test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bin
 test/language/expressions/arrow-function/dflt-params-duplicates.js	1749	1750	duplicate lexical binding
 test/language/expressions/arrow-function/syntax/early-errors/use-strict-with-non-simple-param.js	573	603	use strict directive with non-simple parameters
 test/language/expressions/arrow-function/param-dflt-yield-id-strict.js	524	529	reserved identifier in strict mode
+test/language/global-code/new.target.js	619	629	new.target requires an enclosing non-arrow function
+test/language/global-code/new.target-arrow.js	1160	1170	new.target requires an enclosing non-arrow function
+test/language/expressions/new.target/escaped-new.js	804	812	reserved word cannot be an identifier
+test/language/expressions/new.target/escaped-target.js	822	833	expected target after new dot
+test/language/expressions/assignment/target-newtarget.js	719	729	invalid assignment target
+test/language/expressions/assignment/target-cover-newtarget.js	731	743	invalid assignment target
+test/language/expressions/prefix-increment/target-newtarget.js	637	647	invalid update target
+test/language/expressions/prefix-increment/target-cover-newtarget.js	649	661	invalid update target
+test/language/expressions/prefix-decrement/target-newtarget.js	637	647	invalid update target
+test/language/expressions/prefix-decrement/target-cover-newtarget.js	649	661	invalid update target
+test/language/expressions/postfix-increment/target-newtarget.js	648	658	invalid update target
+test/language/expressions/postfix-increment/target-cover-newtarget.js	660	672	invalid update target
+test/language/expressions/postfix-decrement/target-newtarget.js	648	658	invalid update target
+test/language/expressions/postfix-decrement/target-cover-newtarget.js	660	672	invalid update target

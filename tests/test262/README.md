@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 51 unmodified fixtures come from
+These 65 unmodified fixtures come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -38,14 +38,18 @@ the Test262 harness or count as full Script execution passes.
 
 ## Scope and maintenance
 
-The `spite-test262` command runs 48 variants from 32 reviewed sources: the eleven
+The `spite-test262` command runs 76 variants from 46 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
-and eleven arrow parse-negative files in their prescribed Script modes.
-That means four raw positive evaluations and 44 reviewed parse-negative variants.
+eleven arrow parse-negative files in their prescribed Script modes, and fourteen
+new.target parse-negative files in both Script modes.
+That means four raw positive evaluations and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
 intended token; unsupported bodies or unrelated syntax cannot substitute for it.
+NewTarget reviews cover Script/arrow-only scope, escaped grammar terminals, and
+assignment/prefix/postfix targets, including parenthesized forms. Invalid assignment
+diagnostics highlight the rejected target rather than the following RHS token.
 The other nineteen files remain component regressions, outside this result count.
 `runner.tsv` records exact rejection byte ranges and messages for negative tests.
 Strict variants adjust these ranges only for the prescribed directive prefix.
