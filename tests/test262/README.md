@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2278 unmodified test fixtures and six harness files come from
+These 2305 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -703,6 +703,23 @@ late callable checks, public-hook bypass, large default inputs, and atomic cache
 publication after successful construction. The pin and original source/helper
 bytes remain unchanged; all host quotas remain disabled by default.
 
+## Optional chaining review
+
+Twenty-seven unchanged sources add fifty-four Script/StrictScript variants:
+sixteen positives cover nullish checks, optional property/call grammar, method
+receivers, ungrouped suffixes, skipped side effects, decimal lookahead,
+new.target calls, and iteration statements. Eleven parse negatives reject direct
+template tags (including newline forms) and assignment/prefix/postfix targets.
+Each review records the intended template or chain target's exact byte range and
+diagnostic; unsupported syntax cannot substitute for these early errors.
+
+Reviewed originals requiring classes/super, async functions/promises, RegExp, or
+eval remain excluded. Local regressions also cover deletion without final
+getters, grouping boundaries, ordered computed keys and arguments, abrupt
+completions, strict receivers, spread, grouped construction, syntax retention
+through collection, large flat chains, and opt-in host aborts. The pin and original
+source/helper bytes are unchanged; no default work or heap limit is introduced.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -724,7 +741,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 4440 variants from 2259 reviewed sources: the eleven
+The `spite-test262` command runs 4494 variants from 2286 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -733,14 +750,15 @@ object-spread tests, 133 Reflect call, construction, prototype, extensibility, d
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
-19 tagged-template tests, 34 Symbol tests, 23 object method/accessor tests, and 75 for-of files (53 positive
+19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
+34 Symbol tests, 23 object method/accessor tests, and 75 for-of files (53 positive
 and 22 parse-negative), plus seven rest-parameter positives and twelve parameter
 parse negatives, and 56 for-in files (36 positive and 20 parse-negative). The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-4266 positives using the upstream harness, and 170 reviewed parse-negative variants.
+4298 positives using the upstream harness, and 192 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the

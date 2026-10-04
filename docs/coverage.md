@@ -35,7 +35,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 4440 reviewed Test262 variants, six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 4494 reviewed Test262 variants, six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -805,6 +805,12 @@ variants covering site caching, raw/cooked text and invalid escapes, unconverted
 arguments/receivers, chains and constructor precedence, freezing, and property
 attributes. Originals requiring eval, dynamic Function construction, cross-realm
 hooks, or proper tail calls remain excluded, without rewriting or pass credit.
+Twenty-seven unchanged optional-chaining sources add fifty-four variants: sixteen
+positives cover lazy nullish checks, receivers, ungrouped suffixes, grammar,
+decimal lookahead, new.target calls, and iteration. Eleven reviewed negatives
+reject template tags (including newline forms) and write/update targets at their
+intended byte ranges. Originals requiring classes/super, async/promises, RegExp,
+or eval remain excluded, without rewriting or pass credit.
 Another 53 positive for-of files and 22 reviewed for-of parse-negative files cover
 iteration, bindings, header grammar, and closing precedence. Seven rest-parameter
 positives and twelve parameter parse negatives cover Arrays, length, argument
@@ -815,8 +821,8 @@ verify successful assertions and explicit assertion failures. Some string compar
 failure formatting still requires missing JSON and remains Unsupported;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 4440 variants are four raw positives, 4266 positives using the upstream
-harness, and 170 reviewed parse negatives. Component fixtures and harness files do
+Rust. Its 4494 variants are four raw positives, 4298 positives using the upstream
+harness, and 192 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol

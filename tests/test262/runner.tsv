@@ -2258,3 +2258,30 @@ test/language/expressions/tagged-template/template-object-frozen-non-strict.js	-
 test/language/expressions/tagged-template/template-object-frozen-strict.js	-	-	-
 test/language/expressions/tagged-template/template-object-template-map.js	-	-	-
 test/language/expressions/tagged-template/template-object.js	-	-	-
+test/language/expressions/optional-chaining/early-errors-tail-position-null-op-template-string-esi.js	619	626	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-null-op-template-string.js	530	537	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-null-optchain-template-string-esi.js	621	628	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-null-optchain-template-string.js	532	539	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-op-template-string-esi.js	642	649	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-op-template-string.js	553	560	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-optchain-template-string-esi.js	633	640	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/early-errors-tail-position-optchain-template-string.js	544	551	optional chains cannot be tagged templates
+test/language/expressions/optional-chaining/static-semantics-simple-assignment.js	479	485	invalid assignment target
+test/language/expressions/optional-chaining/update-expression-postfix.js	514	518	invalid update target
+test/language/expressions/optional-chaining/update-expression-prefix.js	508	512	invalid update target
+test/language/expressions/optional-chaining/iteration-statement-do.js	-	-	-
+test/language/expressions/optional-chaining/iteration-statement-for-in.js	-	-	-
+test/language/expressions/optional-chaining/iteration-statement-for-of-type-error.js	-	-	-
+test/language/expressions/optional-chaining/iteration-statement-for.js	-	-	-
+test/language/expressions/optional-chaining/iteration-statement-while.js	-	-	-
+test/language/expressions/optional-chaining/new-target-optional-call.js	-	-	-
+test/language/expressions/optional-chaining/optional-call-preserves-this.js	-	-	-
+test/language/expressions/optional-chaining/optional-chain-expression-optional-expression.js	-	-	-
+test/language/expressions/optional-chaining/optional-chain-prod-arguments.js	-	-	-
+test/language/expressions/optional-chaining/optional-chain-prod-expression.js	-	-	-
+test/language/expressions/optional-chaining/optional-chain-prod-identifiername.js	-	-	-
+test/language/expressions/optional-chaining/optional-chain.js	-	-	-
+test/language/expressions/optional-chaining/optional-expression.js	-	-	-
+test/language/expressions/optional-chaining/punctuator-decimal-lookahead.js	-	-	-
+test/language/expressions/optional-chaining/runtime-semantics-evaluation.js	-	-	-
+test/language/expressions/optional-chaining/short-circuiting.js	-	-	-
