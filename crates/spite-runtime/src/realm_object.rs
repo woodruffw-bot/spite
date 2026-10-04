@@ -715,9 +715,7 @@ impl Realm {
         };
         (object == &intrinsics.array.constructor && missing_array_static(key))
             || (object == &intrinsics.json.object
-                && ["stringify", "rawJSON", "isRawJSON"]
-                    .iter()
-                    .any(|name| key_is(key, name)))
+                && ["stringify"].iter().any(|name| key_is(key, name)))
     }
 }
 

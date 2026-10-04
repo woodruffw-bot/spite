@@ -256,6 +256,12 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
+    pub(crate) fn create_raw_json(&mut self) -> Result<Handle, Error> {
+        let mut object = OrdinaryObject::with_property_limit(None, self.max_properties);
+        object.raw_json = true;
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
     pub(crate) fn create_error(&mut self, prototype: &Handle) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         let mut object =

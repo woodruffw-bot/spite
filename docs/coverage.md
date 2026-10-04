@@ -35,6 +35,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
+| JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, and frozen raw JSON objects with unforgeable branding; stringify remains open |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5284 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
@@ -794,7 +795,12 @@ exact primitive source lexemes and descriptors, duplicate-key sources, SameValue
 checks after mutation, replaced containers, snapshot keys/length, inherited values,
 setters and rejected updates, abrupt identity, nested parsing, and 10,000-level
 traversal. Cyclic forward mutations abort with an explicitly opted-in work quota.
-Serialization and raw JSON remain explicit implementation gaps.
+Raw JSON regressions cover primitive validation and boundary code units, exact
+lexemes including large integers and lone surrogates, single ordered conversion,
+intrinsic SyntaxError retention, frozen/null-prototype descriptors, mutation
+rejection, getter-free branding, inheritance/copying, metadata, collection,
+100,000-character default text, and opted-in work aborts. Serialization remains
+an explicit implementation gap.
 
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring, regular

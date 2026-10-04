@@ -264,6 +264,8 @@ pub(crate) enum Builtin {
     ParseFloat,
     ParseInt,
     JsonParse,
+    JsonRaw,
+    JsonIsRaw,
     IsFinite,
     IsNaN,
     NumberIsFinite,
@@ -487,6 +489,8 @@ impl Builtin {
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
             Self::JsonParse => "parse",
+            Self::JsonRaw => "rawJSON",
+            Self::JsonIsRaw => "isRawJSON",
             Self::EncodeUri => "encodeURI",
             Self::EncodeUriComponent => "encodeURIComponent",
             Self::DecodeUri => "decodeURI",
@@ -636,6 +640,8 @@ impl Builtin {
             | Self::EncodeUriComponent
             | Self::DecodeUri
             | Self::DecodeUriComponent
+            | Self::JsonRaw
+            | Self::JsonIsRaw
             | Self::ParseFloat => 1.0,
             Self::FunctionApply
             | Self::BigIntAsIntN

@@ -387,6 +387,10 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined),
                 span,
             ),
+            Builtin::JsonRaw => self.json_raw(arguments.next().unwrap_or(Value::Undefined), span),
+            Builtin::JsonIsRaw => {
+                self.json_is_raw(arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::ParseFloat => self
                 .parse_float(arguments.next().unwrap_or(Value::Undefined), span)
                 .map(Value::Number),

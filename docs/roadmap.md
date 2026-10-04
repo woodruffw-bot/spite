@@ -244,7 +244,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse strict ECMA-404 JSON text iteratively with UTF-16 strings, duplicate entries, and exact source ranges.
 - [x] Materialize JSON values with intrinsic prototypes, own data properties, and ordered text conversion.
 - [x] Implement JSON reviver traversal and primitive source contexts.
-- [ ] Implement JSON stringify and raw JSON builtins.
+- [x] Implement raw JSON primitive validation, frozen objects, and unforgeable branding.
+- [ ] Implement JSON stringify with replacers, indentation, cycle detection, and raw JSON embedding.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.

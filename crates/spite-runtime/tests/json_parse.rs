@@ -81,12 +81,7 @@ fn invalid_json_throws_intrinsic_syntaxerror_and_serialization_remains_a_host_ga
     check(
         "let C=SyntaxError;globalThis.SyntaxError=function(){throw 7;};let caught=false;try{JSON.parse('x');}catch(e){caught=e instanceof C && e.constructor===C;}caught",
     );
-    for source in [
-        "JSON.stringify",
-        "JSON.rawJSON",
-        "JSON.isRawJSON",
-        "Reflect.ownKeys(JSON)",
-    ] {
+    for source in ["JSON.stringify", "Reflect.ownKeys(JSON)"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

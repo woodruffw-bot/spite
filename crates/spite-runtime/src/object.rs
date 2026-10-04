@@ -69,6 +69,7 @@ pub struct OrdinaryObject {
     constructible: bool,
     primitive_data: Option<PrimitiveData>,
     error_data: bool,
+    raw_json: bool,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -96,6 +97,7 @@ impl OrdinaryObject {
             constructible: false,
             primitive_data: None,
             error_data: false,
+            raw_json: false,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -122,6 +124,10 @@ impl OrdinaryObject {
     /// Returns whether the object has the ErrorData internal slot.
     pub fn is_error(&self) -> bool {
         self.error_data
+    }
+
+    pub(crate) fn is_raw_json(&self) -> bool {
+        self.raw_json
     }
 
     /// Returns whether this record has Array exotic internal methods.
@@ -325,6 +331,7 @@ impl Trace for OrdinaryObject {
             .chain(self.primitive_data.iter().map(|_| None))
             .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
+            .chain(self.raw_json.then_some(None))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))
             .chain(self.parameter_map.iter().flat_map(|map| {

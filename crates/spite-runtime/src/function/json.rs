@@ -3,19 +3,22 @@
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span, WellKnownSymbol};
-use spite_parser::json::{JsonKind, parse_json_with_work};
+use spite_parser::json::{JsonDocument, JsonKind, parse_json_with_work};
 
+mod raw;
 mod reviver;
 
 #[derive(Debug)]
 pub(crate) struct JsonIntrinsics {
     pub object: ObjectHandle,
     parse: ObjectHandle,
+    raw: ObjectHandle,
+    is_raw: ObjectHandle,
 }
 
 impl JsonIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.object, &self.parse].into_iter()
+        [&self.object, &self.parse, &self.raw, &self.is_raw].into_iter()
     }
 }
 
@@ -29,6 +32,16 @@ impl Realm {
         let object = self.object_work(span, |objects, _| objects.create(Some(object_prototype)))?;
         let parse = self.new_builtin(function_prototype, Builtin::JsonParse, span)?;
         self.define_builtin_property(&object, "parse", Value::Object(parse.clone()), true, span)?;
+        let raw = self.new_builtin(function_prototype, Builtin::JsonRaw, span)?;
+        let is_raw = self.new_builtin(function_prototype, Builtin::JsonIsRaw, span)?;
+        self.define_builtin_property(&object, "rawJSON", Value::Object(raw.clone()), true, span)?;
+        self.define_builtin_property(
+            &object,
+            "isRawJSON",
+            Value::Object(is_raw.clone()),
+            true,
+            span,
+        )?;
         self.object_work(span, |objects, budget| {
             objects.define(
                 &object,
@@ -42,7 +55,12 @@ impl Realm {
                 budget,
             )
         })?;
-        Ok(JsonIntrinsics { object, parse })
+        Ok(JsonIntrinsics {
+            object,
+            parse,
+            raw,
+            is_raw,
+        })
     }
 
     pub(super) fn json_parse(
@@ -52,29 +70,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let text = self.string(text, span)?;
-        let mut abort = None;
-        let result = parse_json_with_work(&text, |work| {
-            match self.object_work(span, |_, budget| budget.charge(work)) {
-                Ok(()) => true,
-                Err(error) => {
-                    abort = Some(error);
-                    false
-                }
-            }
-        });
-        if let Some(error) = abort {
-            return Err(error);
-        }
-        let document = result.map_err(|error| {
-            if error.limit {
-                Error::Limit {
-                    span,
-                    message: error.to_string(),
-                }
-            } else {
-                Self::exception(ExceptionKind::SyntaxError, span, error.to_string())
-            }
-        })?;
+        let document = self.json_document(&text, span)?;
         let mut values: Vec<Value> = Vec::new();
         for node in &document.nodes {
             self.tick(span)?;
@@ -132,6 +128,32 @@ impl Realm {
             return Ok(value);
         }
         self.json_revive(&text, &document, &values, reviver, span)
+    }
+
+    fn json_document(&mut self, text: &JsString, span: Span) -> Result<JsonDocument, Error> {
+        let mut abort = None;
+        let result = parse_json_with_work(text, |work| {
+            match self.object_work(span, |_, budget| budget.charge(work)) {
+                Ok(()) => true,
+                Err(error) => {
+                    abort = Some(error);
+                    false
+                }
+            }
+        });
+        if let Some(error) = abort {
+            return Err(error);
+        }
+        result.map_err(|error| {
+            if error.limit {
+                Error::Limit {
+                    span,
+                    message: error.to_string(),
+                }
+            } else {
+                Self::exception(ExceptionKind::SyntaxError, span, error.to_string())
+            }
+        })
     }
 
     fn check_json_string(&self, string: &JsString, span: Span) -> Result<(), Error> {

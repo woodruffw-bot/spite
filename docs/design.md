@@ -1733,7 +1733,14 @@ bypassing setters. Ignore false from those updates while propagating abrupt
 completions. The root holder has an own empty-string property, and its callback
 result is returned directly. Source ranges and traversal remain iterative even
 for deeply nested JSON; user-created cycles can be aborted with opt-in work limits.
-Stringify and raw JSON remain open. Until that inventory is complete,
+JSON.rawJSON performs string-hint conversion once, checks the edition-17 leading
+and trailing code-unit restrictions, and validates strict primitive JSON text.
+It preserves the original text even when the parsed Number would round or
+overflow. Returned objects have null prototypes, an internal IsRawJSON brand,
+and an enumerable frozen rawJSON data property. JSON.isRawJSON checks that slot
+without property reads or coercion; inheritance and copying cannot transfer it.
+The brand contributes one slot to shared heap accounting and survives collection.
+Stringify remains open. Until that inventory is complete,
 missing JSON methods and whole-object enumeration remain explicit host gaps.
 Materialization has no default nesting or resource quota; opted-in work, heap,
 and final decoded string/property-name quotas retain their host-abort behavior.
