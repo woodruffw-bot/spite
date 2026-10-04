@@ -123,17 +123,8 @@ fn malformed_properties_and_nested_strict_violations_are_rejected() {
 }
 
 #[test]
-fn methods_accessors_and_spread_remain_explicitly_unsupported() {
-    for source in [
-        "({m() {}})",
-        "({get x() {}})",
-        "({set x(v) {}})",
-        "({get 1() {}})",
-        "({['x']() {}})",
-        "({*g() {}})",
-        "({async m() {}})",
-        "({...x})",
-    ] {
+fn suspended_methods_and_spread_remain_explicitly_unsupported() {
+    for source in ["({*g() {}})", "({async m() {}})", "({...x})"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

@@ -6,6 +6,7 @@ pub mod ast;
 mod construction;
 mod function;
 mod lexer;
+mod object;
 
 use ast::*;
 use lexer::{Kind, Lexer, Token};
@@ -932,99 +933,6 @@ impl Parser {
             )),
         }
     }
-
-    fn object_literal(&mut self, start: usize) -> Result<Expr, Diagnostic> {
-        let mut properties = Vec::new();
-        let mut prototype_seen = false;
-        while !self.at("}") {
-            if self.at("...") || self.at("*") {
-                return Err(self.unsupported("object spread and methods are not implemented"));
-            }
-            let token = self.bump();
-            let property_start = token.span.start;
-            let shorthand = match &token.kind {
-                Kind::Word(name) => Some(name.clone()),
-                _ => None,
-            };
-            let name = match token.kind {
-                Kind::Word(name) => {
-                    PropertyName::Literal(Literal::String(JsString::from(name.as_str())))
-                }
-                Kind::Literal(Literal::Null) => {
-                    PropertyName::Literal(Literal::String(JsString::from("null")))
-                }
-                Kind::Literal(Literal::Boolean(value)) => {
-                    PropertyName::Literal(Literal::String(JsString::from(if value {
-                        "true"
-                    } else {
-                        "false"
-                    })))
-                }
-                Kind::Literal(literal) => PropertyName::Literal(literal),
-                Kind::Punct("[") => {
-                    let key = self.expression_with_in(2, true)?;
-                    self.expect("]")?;
-                    PropertyName::Computed(Box::new(key))
-                }
-                _ => return Err(early(token.span, "expected an object property name")),
-            };
-            let (kind, value) = if self.eat(":") {
-                let prototype = matches!(&name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("__proto__"));
-                if prototype && prototype_seen {
-                    return Err(early(
-                        token.span,
-                        "duplicate prototype setter in object literal",
-                    ));
-                }
-                prototype_seen |= prototype;
-                (
-                    if prototype {
-                        PropertyKind::Prototype
-                    } else {
-                        PropertyKind::Data
-                    },
-                    self.expression_with_in(2, true)?,
-                )
-            } else {
-                if self.at("=") {
-                    return Err(
-                        self.error("initialized shorthand is not allowed in an object literal")
-                    );
-                }
-                if self.at("(")
-                    || shorthand
-                        .as_deref()
-                        .is_some_and(|name| matches!(name, "get" | "set" | "async"))
-                        && !self.at(",")
-                        && !self.at("}")
-                {
-                    return Err(
-                        self.unsupported("object methods and accessors are not implemented")
-                    );
-                }
-                let Some(identifier) = shorthand.filter(|name| !reserved(name)) else {
-                    return Err(early(token.span, "expected a colon after property name"));
-                };
-                (
-                    PropertyKind::Shorthand,
-                    self.make_expr(ExprKind::Identifier(identifier), token.span)?,
-                )
-            };
-            let span = Span::new(property_start, value.span.end);
-            properties.push(ObjectProperty {
-                name,
-                value,
-                kind,
-                span,
-            });
-            if !self.eat(",") {
-                break;
-            }
-        }
-        self.expect("}")?;
-        let end = self.tokens[self.index - 1].span.end;
-        self.make_expr(ExprKind::Object(properties), Span::new(start, end))
-    }
 }
 
 fn assignment_name(expr: &Expr) -> Option<&str> {
@@ -1546,7 +1454,17 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 if let PropertyName::Computed(key) = &property.name {
                     validate_expr(key, strict)?;
                 }
-                validate_expr(&property.value, strict)?;
+                if matches!(
+                    property.kind,
+                    PropertyKind::Method | PropertyKind::Getter | PropertyKind::Setter
+                ) {
+                    let ExprKind::Function(function) = &property.value.kind else {
+                        unreachable!("method syntax");
+                    };
+                    function::validate_method(function, strict)?;
+                } else {
+                    validate_expr(&property.value, strict)?;
+                }
             }
         }
         ExprKind::Template { substitutions, .. } => {

@@ -220,3 +220,19 @@ pub(super) fn validate_function(
     }
     validate_body(&function.body, strict, &names)
 }
+
+pub(super) fn validate_method(
+    function: &Function,
+    inherited_strict: bool,
+) -> Result<(), Diagnostic> {
+    let own_strict = function.body.is_strict();
+    // MethodDefinition uses UniqueFormalParameters even in non-strict code (15.4).
+    let names = validate_parameters(
+        &function.parameters,
+        inherited_strict,
+        own_strict,
+        true,
+        function.source.span,
+    )?;
+    validate_body(&function.body, inherited_strict || own_strict, &names)
+}

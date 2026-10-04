@@ -865,6 +865,21 @@ own writable/enumerable/configurable data elements in order. Results never call
 the public Array constructor, species getters, or inherited indexed setters.
 Object.fromEntries/groupBy remain explicit gaps pending iterator consumption.
 
+Object method/accessor syntax reuses shared function bodies and source capture,
+with distinct property kinds for methods, getters, and setters (13.2.5, 15.4).
+Method parameters are unique even in sloppy code; getters have no parameters,
+and setters take one FormalParameter without a trailing comma or rest marker.
+Computed keys parse in the outer new.target context, while parameters and bodies
+use a new non-arrow function context. Validation resets labels/loop targets and
+checks inherited strictness, parameter/lexical collisions, and non-simple strict
+directives. Contextual get/set prefixes must be unescaped; methods named get/set
+remain ordinary methods. Only colon-form non-computed __proto__ definitions are
+prototype setters. Parsing lands first with explicit Unsupported execution.
+Runtime integration will allocate non-constructible closures, retain HomeObject
+edges, set key-derived names (get/set prefixes included), and merge accessor
+descriptors in source order. Async/generator methods, parameter patterns/rest,
+and super remain separate implementation gaps.
+
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
 Function.prototype.toString emits `function NAME() { [native code] }` for builtin

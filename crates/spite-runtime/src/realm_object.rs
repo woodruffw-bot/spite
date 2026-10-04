@@ -477,6 +477,15 @@ impl Realm {
         let prototype = self.ensure_object_intrinsics(span)?;
         let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         for property in properties {
+            if matches!(
+                property.kind,
+                PropertyKind::Method | PropertyKind::Getter | PropertyKind::Setter
+            ) {
+                return Err(Self::unsupported(
+                    property.span,
+                    "object method and accessor execution is not implemented",
+                ));
+            }
             self.tick(property.span)?;
             let key = match &property.name {
                 PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,

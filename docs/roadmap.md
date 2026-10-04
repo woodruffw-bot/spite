@@ -138,6 +138,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Object.freeze/seal and frozen/sealed integrity predicates.
 - [x] Add Object.assign and complete own-descriptor copying for supported objects.
 - [x] Add Object own-name/symbol reflection and enumerable keys/values/entries, with 49 reviewed Test262 files.
+- [x] Parse ordinary object methods/getters/setters with scoped early errors and syntax/diagnostic snapshots.
+- [ ] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.

@@ -240,7 +240,10 @@ getter effects on failure. Entries creates dense intrinsic pairs; all result
 arrays bypass public constructors, species, and inherited setters. Forty-nine
 additional upstream Object files cover key reflection, primitive wrapping,
 symbol exclusion, intrinsic arrays, and metadata. Getter-mutation regressions use
-Object.defineProperty; upstream cases using accessor literals await parser support.
+Object.defineProperty; upstream cases using accessor literals await runtime support.
+Ordinary method/getter/setter literals now parse with source retention, arity,
+strictness, unique-parameter, scope, and depth checks. Execution explicitly
+reports Unsupported until method closures and accessor definition are connected.
 Object.fromEntries/groupBy and BigInt boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 

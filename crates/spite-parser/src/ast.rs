@@ -42,10 +42,10 @@ pub struct FunctionName {
     pub span: Span,
 }
 
-/// Shared syntax for an ordinary non-async, non-generator function.
+/// Shared syntax for an ordinary function, method, or accessor body.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
-    /// Binding name, absent only for anonymous expressions.
+    /// Binding name, absent for anonymous expressions, methods, and accessors.
     pub name: Option<FunctionName>,
     /// Identifier parameters, including optional default initializers.
     pub parameters: Rc<[Binding]>,
@@ -433,7 +433,7 @@ pub enum ExprKind {
 pub struct ObjectProperty {
     /// The literal or computed property name.
     pub name: PropertyName,
-    /// The initializer, or identifier reference for shorthand syntax.
+    /// Initializer, shorthand reference, or Function expression for a method/accessor.
     pub value: Expr,
     /// The property definition's evaluation form.
     pub kind: PropertyKind,
@@ -450,6 +450,12 @@ pub enum PropertyKind {
     Shorthand,
     /// A non-computed `__proto__` colon definition.
     Prototype,
+    /// A concise ordinary method, without a Construct internal method.
+    Method,
+    /// A getter with no formal parameters.
+    Getter,
+    /// A setter with exactly one formal parameter.
+    Setter,
 }
 
 /// A property name before runtime ToPropertyKey conversion.
