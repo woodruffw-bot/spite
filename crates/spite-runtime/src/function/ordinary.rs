@@ -10,6 +10,94 @@ use spite_parser::ast::{ArrowBody, Function};
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Realm {
+    pub(super) fn call_ordinary(
+        &mut self,
+        code: ScriptFunction,
+        this: Value,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        if !code.strict {
+            return Err(Self::unsupported(
+                span,
+                "non-strict ordinary calls are not implemented",
+            ));
+        }
+        let mut bindings = BTreeMap::new();
+        for parameter in code.parameters.iter() {
+            self.object_work(parameter.span, |_, budget| {
+                budget.charge(parameter.name.len() + 1)
+            })?;
+            bindings.insert(
+                parameter.name.clone(),
+                BindingState {
+                    value: None,
+                    mutable: true,
+                    strict: true,
+                },
+            );
+        }
+        // Strict early errors exclude an arguments parameter or body declaration.
+        bindings.insert(
+            "arguments".into(),
+            BindingState {
+                value: None,
+                mutable: false,
+                strict: true,
+            },
+        );
+        let environment = self.object_work(span, |objects, budget| {
+            objects.create_function_environment(code.environment, bindings, this, budget)
+        })?;
+        let caller_depth = self.scopes.len();
+        let caller_strict = self.strict;
+        self.scopes.push(environment.clone());
+        self.strict = true;
+        let result = (|| {
+            let value = self.unmapped_arguments(arguments.as_slice(), span)?;
+            self.objects
+                .environment_mut(&environment)
+                .expect("function environment")
+                .bindings
+                .get_mut("arguments")
+                .expect("arguments binding")
+                .value = Some(value);
+            self.initialize_parameters(&code.parameters, &mut arguments)?;
+            self.instantiate_function_vars(&code.parameters, &code.body, span)?;
+            let ArrowBody::Block(body) = &code.body else {
+                unreachable!("ordinary functions have block bodies");
+            };
+            self.function_body(body, span)
+        })();
+        self.strict = caller_strict;
+        self.scopes.truncate(caller_depth);
+        result
+    }
+
+    pub(crate) fn this_value(&mut self, span: Span) -> Result<Value, Error> {
+        let mut next = self.scopes.last().cloned();
+        while let Some(environment) = next {
+            let (value, outer) = self.object_work(span, |objects, budget| {
+                let environment = objects.environment(&environment)?;
+                let value = if let Some(value) = &environment.this {
+                    budget.value(value)?;
+                    Some(value.clone())
+                } else {
+                    None
+                };
+                Ok((value, environment.outer.clone()))
+            })?;
+            if let Some(value) = value {
+                return Ok(value);
+            }
+            next = outer;
+        }
+        Err(Self::unsupported(
+            span,
+            "global this binding is not implemented",
+        ))
+    }
+
     pub(crate) fn ordinary_function(
         &mut self,
         syntax: &Function,

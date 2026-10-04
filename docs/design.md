@@ -102,9 +102,9 @@ strict or non-simple lists require unique names. A function's own strict directi
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
-bypass expression recursion limits. Ordinary function objects now instantiate; their call and construct operations
-remain explicit runtime gaps. This, arguments objects, generators, async functions,
-rest parameters, and patterns remain separate steps.
+bypass expression recursion limits. Ordinary functions instantiate and strict calls execute; non-strict calls and
+construction remain explicit runtime gaps. Global this, mapped arguments,
+generators, async functions, rest parameters, and patterns remain separate steps.
 
 Direct function declarations are var-scoped in Scripts and function bodies;
 block and switch declarations are lexical (8.2.6, 8.2.8). Scope validation checks
@@ -354,7 +354,8 @@ through safe Rc values. Creating a closure captures an environment handle; invok
 it allocates a fresh parameter environment whose outer is the captured environment,
 never the caller’s scope. Missing parameters are undefined, extra arguments are
 ignored after evaluation, and parameters remain mutable. Arrows create no arguments
-binding or constructor/prototype property. Lexical this syntax remains unimplemented.
+binding or constructor/prototype property. Lexical this follows captured function
+environments; the global this binding remains unimplemented.
 Every call restores caller strictness and active scopes on success or abrupt exit.
 The evaluator bounds combined statement/expression nesting across calls to 64,
 as well as call re-entry; ordinary user tail calls await explicit execution frames.
@@ -384,7 +385,19 @@ non-enumerable, configurable constructor backlink (10.2.5). Named expressions
 capture an extra environment with an immutable self binding (15.2.5). This binding
 ignores non-strict writes and rejects strict writes; const bindings always reject
 writes (9.1.1.1.5). Captures, self bindings, and prototype cycles are all traced.
-Calls remain Unsupported while ordinary this/arguments execution is implemented.
+Strict ordinary calls use a function environment with a traced this binding and
+an immutable arguments binding. The original receiver is preserved, including
+undefined, null, and primitives (10.2.1.2). Arrows create neither binding and
+resolve this/arguments through captured outer environments (9.4.4).
+
+Strict arguments objects are unmapped ordinary objects (10.4.4.6): indexed values
+are writable/enumerable/configurable, length is writable/configurable, and callee
+is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
+alias indices, or vice versa. Argument values and receiver captures remain traced
+after returns or abrupt default initialization. The required Symbol.iterator hook
+is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
+recognizes the Arguments tag. Non-strict calls and global this still report
+Unsupported. Call failures restore strictness, scopes, and nesting counters.
 
 NamedEvaluation supplies names for binding initializers, bare identifier assignment
 and logical-assignment targets, and ordinary object property values. Parenthesized

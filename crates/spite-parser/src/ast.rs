@@ -370,6 +370,8 @@ pub enum ExprKind {
         /// Expressions interpolated between elements.
         substitutions: Vec<Expr>,
     },
+    /// The this binding of the current lexical environment.
+    This,
     /// An identifier reference.
     Identifier(String),
     /// A parenthesized expression. Retained for grammar restrictions.

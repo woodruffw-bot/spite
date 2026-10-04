@@ -6,6 +6,7 @@ use crate::{
 };
 use spite_core::{JsString, Span};
 
+mod arguments;
 mod arrow;
 mod bound;
 mod ordinary;
@@ -354,11 +355,8 @@ impl Realm {
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
                 Some(Callable::Arrow(arrow)) => return self.call_arrow(arrow, arguments, span),
-                Some(Callable::Ordinary(_)) => {
-                    return Err(Self::unsupported(
-                        span,
-                        "ordinary function calls are not implemented",
-                    ));
+                Some(Callable::Ordinary(code)) => {
+                    return self.call_ordinary(code, this, arguments, span);
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound
@@ -472,8 +470,16 @@ impl Realm {
                         Value::Number(_) => "Number",
                         Value::BigInt(_) => "BigInt",
                         Value::String(_) => "String",
-                        Value::Object(_) if self.is_callable(&this, span)? => "Function",
-                        Value::Object(_) => "Object",
+                        Value::Object(handle) => self.object_work(span, |objects, _| {
+                            let object = objects.inspect(handle)?;
+                            Ok(if object.is_arguments() {
+                                "Arguments"
+                            } else if object.is_callable() {
+                                "Function"
+                            } else {
+                                "Object"
+                            })
+                        })?,
                     };
                     Ok(Value::String(JsString::from(
                         format!("[object {tag}]").as_str(),

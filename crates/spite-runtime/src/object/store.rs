@@ -241,6 +241,29 @@ impl Objects {
         }
     }
 
+    pub(crate) fn create_arguments(&mut self, prototype: &Handle) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        object.arguments = true;
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn create_function_environment(
+        &mut self,
+        outer: EnvironmentHandle,
+        bindings: BTreeMap<String, BindingState>,
+        this: Value,
+        budget: &mut Budget,
+    ) -> Result<EnvironmentHandle, Error> {
+        budget.value(&this)?;
+        if let Value::Object(handle) = &this {
+            self.inspect(handle)?;
+        }
+        let environment = self.create_environment(Some(outer), bindings, budget)?;
+        self.environment_mut(&environment)?.this = Some(this);
+        Ok(environment)
+    }
+
     pub(crate) fn create_environment(
         &mut self,
         outer: Option<EnvironmentHandle>,
@@ -257,7 +280,11 @@ impl Objects {
             }
         }
         Ok(EnvironmentHandle(self.heap.insert(Entry::Environment(
-            Environment { outer, bindings },
+            Environment {
+                outer,
+                bindings,
+                this: None,
+            },
         ))?))
     }
 

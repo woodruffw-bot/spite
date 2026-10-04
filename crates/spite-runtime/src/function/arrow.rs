@@ -103,7 +103,7 @@ impl Realm {
         result
     }
 
-    fn initialize_parameters(
+    pub(super) fn initialize_parameters(
         &mut self,
         parameters: &[Binding],
         arguments: &mut std::vec::IntoIter<Value>,
@@ -131,7 +131,7 @@ impl Realm {
         Ok(())
     }
 
-    fn instantiate_function_vars(
+    pub(super) fn instantiate_function_vars(
         &mut self,
         parameters: &[Binding],
         body: &ArrowBody,
@@ -206,7 +206,11 @@ impl Realm {
         Ok(())
     }
 
-    fn function_body(&mut self, body: &FunctionBody, span: Span) -> Result<Value, Error> {
+    pub(super) fn function_body(
+        &mut self,
+        body: &FunctionBody,
+        span: Span,
+    ) -> Result<Value, Error> {
         // ECMA-262 10.2.11: sloppy bodies have a separate lexical environment;
         // strict bodies reuse the parameter/var environment.
         let var_environment = self.scopes.last().expect("var environment").clone();

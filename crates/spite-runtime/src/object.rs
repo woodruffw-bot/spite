@@ -45,6 +45,8 @@ pub struct OrdinaryObject {
     max_properties: usize,
     callable: Option<Callable>,
     immutable_prototype: bool,
+    // Presence of [[ParameterMap]], currently only the unmapped form.
+    arguments: bool,
 }
 
 impl OrdinaryObject {
@@ -59,6 +61,7 @@ impl OrdinaryObject {
             max_properties,
             callable: None,
             immutable_prototype: false,
+            arguments: false,
         }
     }
 
@@ -70,6 +73,10 @@ impl OrdinaryObject {
     /// Returns whether the object has a [[Call]] internal method.
     pub fn is_callable(&self) -> bool {
         self.callable.is_some()
+    }
+
+    pub(crate) fn is_arguments(&self) -> bool {
+        self.arguments
     }
 
     pub(crate) fn callable(&self) -> Option<&Callable> {

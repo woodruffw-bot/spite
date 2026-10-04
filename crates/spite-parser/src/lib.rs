@@ -884,6 +884,9 @@ impl Parser {
                 )
             }
             Kind::Literal(lit) => self.make_expr(ExprKind::Literal(lit), span),
+            Kind::Word(name) if !token.escaped && name == "this" => {
+                self.make_expr(ExprKind::This, span)
+            }
             Kind::Punct("{") => self.object_literal(span.start),
             Kind::Word(name) if !reserved(&name) => {
                 self.make_expr(ExprKind::Identifier(name), span)
@@ -1029,6 +1032,7 @@ fn member_base(expr: &Expr) -> bool {
     matches!(
         expr.kind,
         ExprKind::Identifier(_)
+            | ExprKind::This
             | ExprKind::Literal(_)
             | ExprKind::Object(_)
             | ExprKind::Template { .. }
