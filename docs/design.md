@@ -1162,6 +1162,19 @@ objects from Number.isFinite and Number.isNaN, which never coerce their argument
 The global functions ignore their receiver and additional arguments after normal
 argument evaluation. Their intrinsic roots survive deletion of public bindings.
 
+String.normalize implements NFC, NFD, NFKC, and NFKD using pinned Unicode 18 data
+(22.1.3.15, UAX #15). Require a non-nullish receiver and convert it with the string
+hint before converting/validating the form; undefined selects NFC. Generate
+decomposition, combining-class, and composition tables with source digests,
+acyclic-graph validation, and full composition exclusions. Expand mappings with
+an explicit stack, reorder nonstarter runs with stable counting order, and compose
+in place with canonical blocking and algorithmic Hangul. Preserve lone surrogates
+as class-zero boundaries. Do not apply output string quotas to intermediate scalar
+lists; check final UTF-16 output before fallible reservation. Work quotas remain
+opt-in and host aborts bypass JavaScript cleanup. The complete unchanged Unicode
+NormalizationTest oracle verifies all specified column invariants and scalar
+identity outside its Part 1 inventory.
+
 String toLowerCase/toUpperCase use the full Unicode 18 default case mappings
 (22.1.3.29–31, 35). Generate reproducible, digest-pinned tables from UnicodeData,
 SpecialCasing, and DerivedCoreProperties; Rust toolchain Unicode versions must not

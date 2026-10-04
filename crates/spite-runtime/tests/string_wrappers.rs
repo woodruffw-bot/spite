@@ -180,9 +180,9 @@ fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
     );
     type_error("new String.prototype.toString()");
     for source in [
-        "String.prototype.normalize",
-        "String.prototype.normalize=1",
-        "delete String.prototype.normalize",
+        "String.prototype.matchAll",
+        "String.prototype.matchAll=1",
+        "delete String.prototype.matchAll",
         "Object.getOwnPropertyDescriptors(String.prototype)",
     ] {
         assert!(

@@ -76,7 +76,7 @@ fn data_and_missing_setter_rejections_are_boolean_even_in_strict_callers() {
 #[test]
 fn setters_receive_exact_receivers_and_return_true_independently_of_their_result() {
     check(
-        "let calls=0;Reflect.set({set normalize(v){calls++;}},'normalize',1,String.prototype)===true && calls===1",
+        "let calls=0;Reflect.set({set matchAll(v){calls++;}},'matchAll',1,String.prototype)===true && calls===1",
     );
     check(
         "let calls=0,seen,got,p={set x(v){'use strict';if(arguments.length!==1)throw 7;calls++;seen=this;got=v;return false;}},target=Object.create(p),receiver={};Reflect.set(target,'x',7,receiver)===true && calls===1 && seen===receiver && got===7 && !Object.hasOwn(target,'x') && !Object.hasOwn(receiver,'x')",
@@ -166,11 +166,11 @@ fn metadata_and_saved_intrinsics_survive_deletion_and_collection() {
 #[test]
 fn missing_intrinsic_descriptors_and_unsupported_setters_skip_pending_handlers() {
     for operation in [
-        "Reflect.set(String.prototype,'normalize',1)",
-        "Reflect.set({},'normalize',1,String.prototype)",
+        "Reflect.set(String.prototype,'matchAll',1)",
+        "Reflect.set({},'matchAll',1,String.prototype)",
         "Reflect.set({set x(v){Proxy;}},'x',1)",
         "Reflect.set({},'length',{valueOf(){Proxy;}},[])",
-        "String.prototype.normalize=1",
+        "String.prototype.matchAll=1",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

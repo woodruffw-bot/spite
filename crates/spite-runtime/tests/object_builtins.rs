@@ -194,8 +194,8 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "String.prototype.normalize",
-        "String.prototype.propertyIsEnumerable('normalize')",
+        "String.prototype.matchAll",
+        "String.prototype.propertyIsEnumerable('matchAll')",
         "globalThis.hasOwnProperty('Proxy')",
     ] {
         assert!(

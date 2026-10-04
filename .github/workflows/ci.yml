@@ -67,5 +67,6 @@ jobs:
       - run: python3 tools/check-test262.py
       - run: python3 tools/generate-unicode.py --check
       - run: python3 tools/generate-case-mappings.py --check
+      - run: python3 tools/generate-normalization.py --check
       - run: python3 tools/generate-number-radix-fixtures.py --check
       - run: python3 tools/generate-number-sum-fixtures.py --check

@@ -533,6 +533,9 @@ impl Realm {
                 self.string_raw(template, arguments, span)
             }
             Builtin::StringConcat => self.string_concat(this, arguments, span),
+            Builtin::StringNormalize => {
+                self.string_normalize(this, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::StringToLowerCase
             | Builtin::StringToUpperCase
             | Builtin::StringToLocaleLowerCase

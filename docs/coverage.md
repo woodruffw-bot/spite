@@ -752,6 +752,16 @@ supplementary mappings, Unicode 18 additions, generic coercion/abrupt results,
 metadata, intrinsic retention, large default output, and opted-in host failures.
 Generated tables are checked against digest-pinned UCD sources independently of Rust.
 
+String.normalize supports all four Unicode 18 forms, recursive canonical and
+compatibility mappings, stable combining-class ordering, excluded compositions,
+and algorithmic Hangul. It preserves lone surrogates and orders receiver/form
+conversion and invalid-form errors. Native regressions cover canonical blocking,
+leading marks, generic coercion, intrinsic RangeError retention, descriptors,
+collection, large default inputs, and opted-in host aborts. The complete unchanged
+Unicode normalization suite supplies 20,171 independent vectors, with all twenty
+column invariants per vector and identity checks on every other Unicode scalar.
+Intermediate decomposition does not consume the final output string quota.
+
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, for-await-of, catch patterns, generators,

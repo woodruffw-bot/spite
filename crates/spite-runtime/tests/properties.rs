@@ -197,7 +197,7 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 #[test]
 fn incomplete_intrinsic_methods_report_unsupported() {
     {
-        let name = "normalize";
+        let name = "matchAll";
         let mut realm = Realm::default();
         realm.eval("let flag = 0").unwrap();
         assert!(matches!(
@@ -210,7 +210,7 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         number(&format!("({{__proto__: {{ {name}: 7 }} }}).{name}"), 7.0);
         number(&format!("let o = {{}}; o.{name} = 3; o.{name}"), 3.0);
     }
-    for source in ["'abc'.match", "'abc'.normalize"] {
+    for source in ["'abc'.match", "'abc'.matchAll"] {
         assert!(
             matches!(
                 Realm::default().eval(source),
