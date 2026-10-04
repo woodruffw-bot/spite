@@ -1,6 +1,6 @@
 use crate::{Metadata, MetadataError, Mode, Negative, Phase};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
-use spite_parser::parse_script;
+use spite_parser::{parse_script, parse_script_with_source_limit};
 use spite_runtime::{Error, Limits, Realm, Value};
 
 /// A runner stage, distinguishing harness setup from language phases.
@@ -71,7 +71,7 @@ pub struct CaseResult {
 #[derive(Clone, Debug, Default)]
 pub struct Runner {
     /// Limits used for each Script evaluation in a fresh test realm.
-    /// Uses the runtime defaults, including no execution work limit.
+    /// Uses the runtime defaults, with all host resource quotas disabled.
     pub limits: Limits,
 }
 
@@ -115,7 +115,11 @@ impl Runner {
             );
         }
         let source = mode.prepare_source(original);
-        let script = match parse_script(&source) {
+        let parsed = match self.limits.max_source_bytes {
+            Some(limit) => parse_script_with_source_limit(&source, limit),
+            None => parse_script(&source),
+        };
+        let script = match parsed {
             Ok(script) => script,
             Err(diagnostic) => {
                 return parse_result(

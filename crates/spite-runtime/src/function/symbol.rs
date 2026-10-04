@@ -151,7 +151,11 @@ impl Realm {
             None
         } else {
             let description = self.string(description, span)?;
-            if description.len() > self.limits.max_string_units {
+            if self
+                .limits
+                .max_string_units
+                .is_some_and(|limit| description.len() > limit)
+            {
                 return Err(Error::Limit {
                     span,
                     message: "Symbol description length limit exceeded".into(),
@@ -230,7 +234,11 @@ impl Realm {
             .checked_add(prefix.encode_utf16().count())
             .and_then(|length| length.checked_add(suffix.encode_utf16().count()))
             .ok_or_else(limit)?;
-        if length > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| length > limit)
+        {
             return Err(limit());
         }
         self.object_work(span, |_, budget| budget.charge(length))?;

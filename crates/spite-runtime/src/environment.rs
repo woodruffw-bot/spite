@@ -237,14 +237,14 @@ mod tests {
     #[test]
     fn environment_allocation_is_lazy_bounded_and_reusable_only_after_collection() {
         let mut empty = Realm::new(Limits {
-            max_heap_entries: 0,
+            max_heap_entries: Some(0),
             ..Limits::default()
         });
         assert!(matches!(empty.eval("const x;"), Err(Error::Parse(_))));
         assert!(matches!(empty.eval("0"), Err(Error::Limit { .. })));
         assert_eq!(empty.collect(100).unwrap().live, 0);
         let mut realm = Realm::new(Limits {
-            max_heap_entries: crate::test_support::REALM_ENTRIES + 2,
+            max_heap_entries: Some(crate::test_support::REALM_ENTRIES + 2),
             ..Limits::default()
         });
         for _ in 0..2 {

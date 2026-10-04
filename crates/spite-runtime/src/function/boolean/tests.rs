@@ -98,7 +98,7 @@ fn generated_strings_obey_limits_and_restore_call_state_after_failure() {
     realm
         .eval("Boolean.prototype.s=Boolean.prototype.toString; let flag=0")
         .unwrap();
-    realm.limits.max_string_units = 4;
+    realm.limits.max_string_units = Some(4);
     assert_eq!(
         realm.eval("true.s()"),
         Ok(Value::String(JsString::from("true")))

@@ -269,7 +269,7 @@ fn roots_retain_wrappers_and_unreachable_wrappers_are_reclaimed() {
 #[test]
 fn wrapper_allocation_limits_remain_uncatchable_host_failures() {
     let mut realm = Realm::new(Limits {
-        max_heap_entries: REALM_ENTRIES,
+        max_heap_entries: Some(REALM_ENTRIES),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();

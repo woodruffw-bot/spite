@@ -228,15 +228,15 @@ fn description_output_and_wrapper_allocation_obey_host_limits() {
     realm
         .eval("let S=s.constructor,description='long text',flag=0,g=Object.getOwnPropertyDescriptor(S.prototype,'description').get")
         .unwrap();
-    realm.limits.max_string_units = 8;
+    realm.limits.max_string_units = Some(8);
     assert!(matches!(
         realm.eval("try{S(description);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
     check(&mut realm, "flag===0");
-    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_string_units = Some(1_048_576);
     realm.eval("let large=S(description)").unwrap();
-    realm.limits.max_string_units = 8;
+    realm.limits.max_string_units = Some(8);
     assert!(matches!(
         realm.eval("g.call(large)"),
         Err(Error::Limit { .. })

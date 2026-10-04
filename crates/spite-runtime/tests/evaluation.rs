@@ -327,7 +327,7 @@ fn execution_work_limits_are_opt_in() {
 fn resource_failures_are_host_errors_and_restore_scopes() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(1_000),
-        max_string_units: 16,
+        max_string_units: Some(16),
         ..Limits::default()
     });
     assert!(matches!(
@@ -338,7 +338,7 @@ fn resource_failures_are_host_errors_and_restore_scopes() {
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
     let mut realm = Realm::new(Limits {
         max_steps: Some(100),
-        max_string_units: 4,
+        max_string_units: Some(4),
         ..Limits::default()
     });
     assert!(matches!(

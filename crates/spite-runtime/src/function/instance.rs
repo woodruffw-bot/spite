@@ -223,7 +223,7 @@ mod tests {
     #[test]
     fn deep_bound_instance_checks_are_iterative_and_budgeted() {
         let mut realm = Realm::new(Limits {
-            max_heap_entries: 20_000,
+            max_heap_entries: Some(20_000),
             // Each link now performs an actual inherited symbol-key lookup.
             max_steps: Some(1_000_000),
             ..Limits::default()

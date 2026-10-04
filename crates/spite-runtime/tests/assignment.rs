@@ -154,7 +154,7 @@ fn get_value_failures_precede_rhs_but_put_value_failures_follow_it() {
 #[test]
 fn unsupported_operations_and_limits_never_write_partial_results() {
     let mut realm = Realm::new(Limits {
-        max_string_units: 3,
+        max_string_units: Some(3),
         ..Limits::default()
     });
     realm.eval("let x = 'ab'; let effect = 0;").unwrap();

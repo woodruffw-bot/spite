@@ -264,7 +264,7 @@ fn abrupt_calls_restore_caller_state_and_host_limits_skip_finalizers() {
     ));
     assert_eq!(realm.eval("another=8"), Ok(Value::Number(8.0)));
     let mut realm = Realm::new(Limits {
-        max_properties: 64,
+        max_properties: Some(64),
         ..Limits::default()
     });
     realm

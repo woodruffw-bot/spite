@@ -221,7 +221,7 @@ fn explicit_collection_traces_arrays_elements_and_intrinsic_roots() {
 #[test]
 fn array_allocation_limits_skip_javascript_handlers() {
     let mut realm = Realm::new(Limits {
-        max_heap_entries: REALM_ENTRIES,
+        max_heap_entries: Some(REALM_ENTRIES),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();

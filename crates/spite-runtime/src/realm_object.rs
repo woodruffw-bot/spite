@@ -53,10 +53,11 @@ impl Realm {
         let span = Span::new(0, 0);
         self.tick(span)?;
         Self::require_object_coercible(value, span)?;
-        if key
-            .as_string()
-            .is_some_and(|key| key.len() > self.limits.max_string_units)
-        {
+        if key.as_string().is_some_and(|key| {
+            self.limits
+                .max_string_units
+                .is_some_and(|limit| key.len() > limit)
+        }) {
             return Err(Error::Limit {
                 span,
                 message: "property key length limit exceeded".into(),
@@ -463,7 +464,11 @@ impl Realm {
             return Ok(PropertyKey::Symbol(symbol));
         }
         let key = self.string(value, span)?;
-        if key.len() > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| key.len() > limit)
+        {
             return Err(Error::Limit {
                 span,
                 message: "property key length limit exceeded".into(),

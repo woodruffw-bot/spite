@@ -111,7 +111,7 @@ fn arrays_trace_nested_values_and_allow_sparse_holes_under_property_limits() {
 #[test]
 fn allocation_precedes_elements_and_literals_do_not_use_argument_limits() {
     let mut realm = Realm::new(Limits {
-        max_heap_entries: common::REALM_ENTRIES,
+        max_heap_entries: Some(common::REALM_ENTRIES),
         ..Limits::default()
     });
     realm.eval("let n=0,flag=0").unwrap();
@@ -121,7 +121,7 @@ fn allocation_precedes_elements_and_literals_do_not_use_argument_limits() {
     ));
     assert_eq!(realm.eval("n===0 && flag===0"), Ok(Value::Boolean(true)));
     let mut realm = Realm::new(Limits {
-        max_arguments: 0,
+        max_arguments: Some(0),
         ..Limits::default()
     });
     assert_eq!(realm.eval("[1,2,3].length"), Ok(Value::Number(3.0)));

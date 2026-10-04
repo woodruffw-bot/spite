@@ -193,15 +193,15 @@ fn allocation_property_and_key_limits_are_host_failures() {
     let source = format!("({{{properties},extra:{{}}}})");
     for limits in [
         Limits {
-            max_heap_entries: REALM_ENTRIES + 1,
+            max_heap_entries: Some(REALM_ENTRIES + 1),
             ..Limits::default()
         },
         Limits {
-            max_properties: 64,
+            max_properties: Some(64),
             ..Limits::default()
         },
         Limits {
-            max_string_units: 0,
+            max_string_units: Some(0),
             ..Limits::default()
         },
     ] {
@@ -216,7 +216,7 @@ fn allocation_property_and_key_limits_are_host_failures() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_properties: 64,
+        max_properties: Some(64),
         ..Limits::default()
     });
     let handle = object(&mut realm, "({a: 1, a: 2})");

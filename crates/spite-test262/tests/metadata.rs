@@ -183,9 +183,11 @@ fn unknown_semantics_and_unsupported_yaml_never_default_to_a_normal_test() {
 }
 
 #[test]
-fn oversized_metadata_is_a_host_limit() {
+fn frontmatter_size_limits_are_opt_in() {
+    let source = source(&format!("description: {}", "a".repeat(65_536)));
+    assert!(Metadata::parse(&source).is_ok());
     assert_eq!(
-        Metadata::parse(&source(&format!("description: {}", "a".repeat(65_536))))
+        Metadata::parse_with_frontmatter_limit(&source, 65_536)
             .unwrap_err()
             .kind,
         MetadataErrorKind::Limit

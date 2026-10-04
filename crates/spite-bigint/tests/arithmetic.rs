@@ -175,6 +175,17 @@ fn unlimited_work_preserves_the_integer_size_limit() {
 }
 
 #[test]
+fn optional_size_limits_preserve_checked_shift_arithmetic() {
+    let mut budget = Budget::with_limits(None, None);
+    let count = BigInt::parse_digits(&usize::MAX.to_string(), 10, &mut budget).unwrap();
+    assert_eq!(BigInt::from(1).shl(&count, &mut budget), Err(Error::Limit));
+    let count = BigInt::from(65_536);
+    let shifted = BigInt::from(1).shl(&count, &mut budget).unwrap();
+    assert_eq!(shifted.bit_length(), 65_537);
+    assert_eq!(shifted.shr(&count, &mut budget), Ok(BigInt::from(1)));
+}
+
+#[test]
 fn multiplication_and_division_match_exact_native_arithmetic() {
     let values = [
         i64::MIN,

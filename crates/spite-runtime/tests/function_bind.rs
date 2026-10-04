@@ -115,7 +115,7 @@ fn bound_targets_receivers_arguments_and_cycles_survive_collection() {
 #[test]
 fn bound_arguments_share_call_limits_and_failure_skips_finalizers() {
     let mut realm = Realm::new(Limits {
-        max_arguments: 3,
+        max_arguments: Some(3),
         ..Limits::default()
     });
     realm

@@ -24,7 +24,7 @@ The CLI prints the Script's completion value. Strings use a quoted representatio
 that preserves lone surrogates. Source input must be UTF-8. The host installs no
 console, process, filesystem, or other non-standard JavaScript globals.
 
-Execution has no work limit by default. Supply `--max-steps N` before the input
+Host resource quotas are disabled by default. Supply `--max-steps N` before the input
 arguments to opt into a per-Script work limit. Work units count interpreter and
 builtin operations, rather than JavaScript statements or elapsed time.
 
@@ -39,7 +39,9 @@ assert_eq!(realm.eval("let x = 6; x * 7").unwrap(), Value::Number(42.0));
 
 Embedders can opt into an execution work limit with
 `Realm::new(Limits { max_steps: Some(100_000), ..Limits::default() })`.
-Value-size, allocation, argument, and recursion limits apply independently.
+Every `Limits` field is optional and defaults to `None`. For example,
+`max_heap_entries: Some(10_000)` opts into a shared object/environment slot quota.
+Platform capacity checks and the interpreter's native-stack guards remain active.
 
 The workspace contains `spite-core`, `spite-parser`, `spite-runtime`, and the
 `spite` facade and CLI. All members live under `crates/`.

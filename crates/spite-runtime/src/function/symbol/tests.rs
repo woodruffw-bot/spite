@@ -183,13 +183,13 @@ fn comparison_coercion_order_and_abrupt_completions_are_preserved() {
 fn descriptive_output_is_bounded_and_symbol_copies_do_not_copy_descriptions() {
     let mut realm = realm_with_symbols();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_string_units = 8;
+    realm.limits.max_string_units = Some(8);
     assert!(matches!(
         realm.eval("try{String(s);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
     check(&mut realm, "flag===0 && s===same");
-    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_string_units = Some(1_048_576);
     let huge = JsSymbol::new(Some(JsString::from_code_units(vec![0x61; 100_000])));
     let mut budget = Budget::new(1);
     assert!(budget.value(&Value::Symbol(huge.clone())).is_ok());

@@ -58,14 +58,14 @@ fn work_integer_and_output_limits_abort_without_running_handlers() {
     );
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_bigint_bits = 8;
+    realm.limits.max_bigint_bits = Some(8);
     assert!(matches!(
         realm.eval("try{(0.1).toString(3);}catch{flag=1;}finally{flag=2;}"),
         Err(RuntimeError::Limit { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    realm.limits.max_bigint_bits = 65_536;
-    realm.limits.max_string_units = 8;
+    realm.limits.max_bigint_bits = Some(65_536);
+    realm.limits.max_string_units = Some(8);
     assert!(matches!(
         realm.eval("try{Number.MIN_VALUE.toString(2);}catch{flag=1;}finally{flag=2;}"),
         Err(RuntimeError::Limit { .. })

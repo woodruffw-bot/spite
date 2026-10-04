@@ -79,7 +79,7 @@ fn foreign_values_are_rejected_and_failed_collection_preserves_state() {
 #[test]
 fn explicit_collection_reuses_slots_and_allocation_never_collects_implicitly() {
     let mut realm = Realm::new(Limits {
-        max_heap_entries: REALM_ENTRIES + 1,
+        max_heap_entries: Some(REALM_ENTRIES + 1),
         ..Limits::default()
     });
     for _ in 0..100 {

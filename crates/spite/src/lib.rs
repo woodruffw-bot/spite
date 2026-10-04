@@ -14,7 +14,7 @@
 //! repository. Unsupported features are not treated as JavaScript exceptions.
 
 pub use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
-pub use spite_parser::{ast, parse_script};
+pub use spite_parser::{ast, parse_script, parse_script_with_source_limit};
 pub use spite_runtime::{
     Collection, ConversionError, Error, ExceptionKind, Limits, ObjectHandle, Realm, RootedValue,
     Value,

@@ -212,7 +212,11 @@ impl Realm {
     }
 
     fn copy_string_units(&mut self, units: &[u16], span: Span) -> Result<Value, Error> {
-        if units.len() > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| units.len() > limit)
+        {
             return Err(Error::Limit {
                 span,
                 message: "string length limit exceeded".into(),

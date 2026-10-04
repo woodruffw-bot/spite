@@ -87,7 +87,11 @@ impl Realm {
     }
 
     fn repeated_string_buffer(&mut self, length: usize, span: Span) -> Result<Vec<u16>, Error> {
-        if length > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| length > limit)
+        {
             return Err(length_limit(span));
         }
         self.object_work(span, |_, budget| budget.charge(length))?;

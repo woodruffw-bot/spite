@@ -1,7 +1,7 @@
 //! Parser regression tests.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{MAX_DEPTH, MAX_SOURCE_BYTES, ast::*, parse_script};
+use spite_parser::{MAX_DEPTH, ast::*, parse_script, parse_script_with_source_limit};
 
 #[test]
 fn syntax_snapshot() {
@@ -200,13 +200,30 @@ fn limits_cover_nested_and_flat_expression_trees() {
         ")".repeat(MAX_DEPTH * 4)
     );
     let chain = "1+".repeat(MAX_DEPTH * 4) + "1";
-    let huge = " ".repeat(MAX_SOURCE_BYTES + 1);
-    for source in [nested, chain, huge] {
+    for source in [nested, chain] {
         assert_eq!(
             parse_script(&source).unwrap_err().kind,
             DiagnosticKind::Limit
         );
     }
+}
+
+#[test]
+fn source_size_limits_are_opt_in() {
+    let source = " ".repeat(1024 * 1024 + 1);
+    assert!(parse_script(&source).is_ok());
+    assert_eq!(
+        parse_script_with_source_limit(&source, 1024 * 1024)
+            .unwrap_err()
+            .kind,
+        DiagnosticKind::Limit
+    );
+    assert!(parse_script_with_source_limit("1", 1).is_ok());
+    assert!(parse_script_with_source_limit("", 0).is_ok());
+    insta::assert_snapshot!(
+        parse_script_with_source_limit("true", 3).unwrap_err().to_string(),
+        @"Limit at 0..4: source size limit exceeded"
+    );
 }
 
 #[test]

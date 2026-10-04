@@ -276,7 +276,7 @@ mod tests {
     #[test]
     fn deep_bound_chains_dispatch_and_trace_iteratively() {
         let mut realm = Realm::new(Limits {
-            max_heap_entries: 11_000,
+            max_heap_entries: Some(11_000),
             ..Limits::default()
         });
         let mut function = target(&mut realm);

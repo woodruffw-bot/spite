@@ -174,7 +174,7 @@ fn methods_reject_nullish_receivers_and_have_standard_metadata() {
 #[test]
 fn generated_output_limits_are_host_aborts_and_do_not_run_language_handlers() {
     let mut realm = Realm::new(Limits {
-        max_string_units: 64,
+        max_string_units: Some(64),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();

@@ -19,7 +19,11 @@ impl Realm {
         }
         // Each replacement occupies exactly one UTF-16 unit. Valid pairs retain
         // both units, so output length equals input length even for ill-formed S.
-        if string.len() > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| string.len() > limit)
+        {
             return Err(Error::Limit {
                 span,
                 message: "string length limit exceeded".into(),

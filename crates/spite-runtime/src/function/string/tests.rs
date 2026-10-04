@@ -46,7 +46,7 @@ fn string_output_and_work_limits_skip_language_handlers() {
     realm
         .eval("let flag=0,s=Object('abcdef'),convert=String.prototype.valueOf")
         .unwrap();
-    realm.limits.max_string_units = 3;
+    realm.limits.max_string_units = Some(3);
     for expression in [
         "String(1234)",
         "String(1234n)",
@@ -68,7 +68,7 @@ fn string_output_and_work_limits_skip_language_handlers() {
         realm.eval("String(12)"),
         Ok(Value::String(JsString::from("12")))
     );
-    realm.limits.max_string_units = 1000;
+    realm.limits.max_string_units = Some(1000);
     let input = Value::String(JsString::from("x".repeat(100).as_str()));
     realm.remaining_steps = Some(50);
     assert!(matches!(
@@ -83,7 +83,7 @@ fn code_construction_charges_each_utf16_unit_against_output_limits() {
     realm
         .eval("let flag=0,f=String.fromCodePoint,g=String.fromCharCode")
         .unwrap();
-    realm.limits.max_string_units = 1;
+    realm.limits.max_string_units = Some(1);
     for expression in ["f(0x10000)", "g(65,66)"] {
         assert!(
             matches!(
@@ -111,12 +111,12 @@ fn well_formedness_bounds_scans_and_replacement_allocation() {
         ));
     }
     realm.remaining_steps = Some(1000);
-    realm.limits.max_string_units = 99;
+    realm.limits.max_string_units = Some(99);
     assert!(matches!(
         realm.string_well_formed(input.clone(), true, Span::new(0, 0)),
         Err(Error::Limit { .. })
     ));
-    realm.limits.max_string_units = 100;
+    realm.limits.max_string_units = Some(100);
     assert_eq!(
         realm.string_well_formed(input, true, Span::new(0, 0)),
         Ok(Value::String(JsString::from_code_units(vec![0xfffd; 100])))
@@ -146,7 +146,7 @@ fn sequence_methods_bound_copying_and_output_lengths() {
             Err(Error::Limit { .. })
         ));
         realm.remaining_steps = Some(1000);
-        realm.limits.max_string_units = 99;
+        realm.limits.max_string_units = Some(99);
         assert!(matches!(
             realm.string_substring(
                 input.clone(),
@@ -167,7 +167,7 @@ fn sequence_methods_bound_copying_and_output_lengths() {
             ),
             Ok(Value::String(JsString::from("a")))
         );
-        realm.limits.max_string_units = 100;
+        realm.limits.max_string_units = Some(100);
     }
     realm.remaining_steps = Some(1000);
     assert!(matches!(
@@ -204,7 +204,7 @@ fn trimming_bounds_scans_and_copies_only_the_result() {
             Err(Error::Limit { .. })
         ));
         realm.remaining_steps = Some(1000);
-        realm.limits.max_string_units = 0;
+        realm.limits.max_string_units = Some(0);
         assert_eq!(
             realm.string_trim(builtin, input.clone(), span),
             Ok(Value::String(JsString::from("")))
@@ -242,7 +242,7 @@ fn repetition_and_padding_charge_output_work_before_allocating() {
     // Platform capacity overflow must be a host limit, even if the embedding
     // disables practical work/length bounds. This cannot request real storage.
     realm.remaining_steps = None;
-    realm.limits.max_string_units = usize::MAX;
+    realm.limits.max_string_units = None;
     let count = (usize::MAX / 2 + 1) as f64;
     assert!(matches!(
         realm.string_repeat(input, Value::Number(count), span),

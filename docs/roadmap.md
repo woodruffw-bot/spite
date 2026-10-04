@@ -18,7 +18,6 @@ No milestone implies full conformance until the final audit passes.
 - [x] Parse expression statements and lexical declarations with source spans.
 - [x] Evaluate primitive expressions and lexical bindings with correct errors.
 - [x] Add a command-line host.
-- [x] Bound parser nesting and individual string lengths; allow opt-in evaluation work limits.
 
 Milestones 0 and 1 are implemented. See [coverage](coverage.md) for exact limits.
 

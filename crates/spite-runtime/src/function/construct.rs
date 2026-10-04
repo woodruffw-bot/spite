@@ -224,7 +224,7 @@ mod tests {
     #[test]
     fn deep_bound_constructors_forward_and_trace_without_rust_recursion() {
         let mut realm = Realm::new(Limits {
-            max_heap_entries: 20_000,
+            max_heap_entries: Some(20_000),
             ..Limits::default()
         });
         let Value::Object(mut target) = realm.eval("function F(){this.x=7;}F").unwrap() else {

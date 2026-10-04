@@ -96,13 +96,13 @@ fn method_creation_rejects_foreign_and_stale_home_objects_before_allocation() {
 fn accessor_name_prefixes_obey_utf16_limits_and_host_failures_bypass_handlers() {
     let mut realm = Realm::default();
     realm.eval("let key=Symbol('xyz'),flag=0").unwrap();
-    realm.limits.max_string_units = 8;
+    realm.limits.max_string_units = Some(8);
     assert!(matches!(
         realm.eval("try{({get [key](){}});}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. }),
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    realm.limits.max_string_units = 9;
+    realm.limits.max_string_units = Some(9);
     let home = object(realm.eval("({get [key](){}})").unwrap());
     let Value::Symbol(key) = realm.eval("key").unwrap() else {
         panic!("symbol expected");

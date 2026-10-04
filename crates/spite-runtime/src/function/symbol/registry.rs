@@ -13,14 +13,14 @@ enum RegistryError {
 struct Registry {
     symbols: Vec<JsSymbol>,
     units: usize,
-    max_entries: usize,
-    max_units: usize,
+    max_entries: Option<usize>,
+    max_units: Option<usize>,
 }
 
 static REGISTRY: OnceLock<Mutex<Registry>> = OnceLock::new();
 
 impl Registry {
-    fn new(max_entries: usize, max_units: usize) -> Self {
+    fn new(max_entries: Option<usize>, max_units: Option<usize>) -> Self {
         Self {
             symbols: Vec::new(),
             units: 0,
@@ -45,7 +45,11 @@ impl Registry {
             .units
             .checked_add(key.len())
             .ok_or(RegistryError::Capacity)?;
-        if self.symbols.len() >= self.max_entries || units > self.max_units {
+        if self
+            .max_entries
+            .is_some_and(|limit| self.symbols.len() >= limit)
+            || self.max_units.is_some_and(|limit| units > limit)
+        {
             return Err(RegistryError::Capacity);
         }
         self.symbols
@@ -78,7 +82,7 @@ impl Realm {
         let mut budget = Budget::with_work_limit(self.remaining_steps);
         let result = {
             let mut registry = REGISTRY
-                .get_or_init(|| Mutex::new(Registry::new(10_000, 1_048_576)))
+                .get_or_init(|| Mutex::new(Registry::new(None, None)))
                 .lock()
                 .map_err(|_| Error::Limit {
                     span,
@@ -102,7 +106,11 @@ impl Realm {
     pub(crate) fn symbol_for(&mut self, key: Value, span: Span) -> Result<Value, Error> {
         // Conversion can call Symbol.for itself; it must finish before locking.
         let key = self.string(key, span)?;
-        if key.len() > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| key.len() > limit)
+        {
             return Err(Error::Limit {
                 span,
                 message: "Symbol registry key length limit exceeded".into(),
@@ -135,7 +143,7 @@ mod tests {
 
     #[test]
     fn capacity_limits_preserve_existing_identities_and_do_not_insert_failed_keys() {
-        let mut registry = Registry::new(2, 3);
+        let mut registry = Registry::new(Some(2), Some(3));
         let first = registry
             .intern(JsString::from("ab"), &mut Budget::new(100))
             .unwrap();
@@ -164,7 +172,7 @@ mod tests {
 
     #[test]
     fn work_limits_precede_comparison_and_insertion_and_keys_preserve_utf16() {
-        let mut registry = Registry::new(3, 8);
+        let mut registry = Registry::new(Some(3), Some(8));
         assert_eq!(
             registry.intern(JsString::from("x"), &mut Budget::new(0)),
             Err(RegistryError::Work)

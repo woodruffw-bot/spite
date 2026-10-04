@@ -6,7 +6,7 @@ fn scanner_and_integer_failures_abort_and_restore_call_state() {
     realm
         .eval("let flag=0;let text='12345678901234567890'")
         .unwrap();
-    realm.limits.max_bigint_bits = 8;
+    realm.limits.max_bigint_bits = Some(8);
     assert!(matches!(
         realm.eval("try{parseInt(text);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
@@ -25,7 +25,7 @@ fn scanner_and_integer_failures_abort_and_restore_call_state() {
 fn internally_converted_strings_obey_the_string_limit() {
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_string_units = 3;
+    realm.limits.max_string_units = Some(3);
     for function in ["parseInt", "parseFloat"] {
         assert!(matches!(
             realm.eval(&format!(

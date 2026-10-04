@@ -136,7 +136,7 @@ fn construction_limits_abort_handlers_and_restore_call_state() {
         Ok(Value::Number(7.0))
     );
     let mut realm = Realm::new(Limits {
-        max_arguments: 3,
+        max_arguments: Some(3),
         ..Limits::default()
     });
     realm

@@ -168,15 +168,20 @@ pub enum SetAction {
 #[derive(Debug)]
 pub struct Objects {
     heap: Heap<Entry>,
-    max_properties: usize,
+    max_properties: Option<usize>,
     roots: Vec<Weak<Handle>>,
 }
 
 impl Objects {
     /// Creates an empty heap with slot and per-object property limits.
     pub fn new(max_entries: usize, max_properties: usize) -> Self {
+        Self::with_limits(Some(max_entries), Some(max_properties))
+    }
+
+    /// Creates an empty heap with optional slot and per-object property limits.
+    pub fn with_limits(max_entries: Option<usize>, max_properties: Option<usize>) -> Self {
         Self {
-            heap: Heap::new(max_entries),
+            heap: Heap::with_capacity_limit(max_entries),
             max_properties,
             roots: Vec::new(),
         }
@@ -187,10 +192,12 @@ impl Objects {
         if let Some(prototype) = prototype {
             self.inspect(prototype)?;
         }
-        Ok(self.heap.insert(Entry::Object(OrdinaryObject::new(
-            prototype.cloned(),
-            self.max_properties,
-        )))?)
+        Ok(self
+            .heap
+            .insert(Entry::Object(OrdinaryObject::with_property_limit(
+                prototype.cloned(),
+                self.max_properties,
+            )))?)
     }
 
     /// Creates a sparse Array exotic object with the supplied logical length.
@@ -208,7 +215,8 @@ impl Objects {
             self.inspect(prototype)?;
         }
         budget.charge(1)?;
-        let mut record = OrdinaryObject::new(prototype.cloned(), self.max_properties);
+        let mut record =
+            OrdinaryObject::with_property_limit(prototype.cloned(), self.max_properties);
         record
             .define_own_property(
                 JsString::from("length"),
@@ -230,7 +238,8 @@ impl Objects {
         builtin: Builtin,
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
@@ -246,7 +255,8 @@ impl Objects {
 
     pub(crate) fn create_error(&mut self, prototype: &Handle) -> Result<Handle, Error> {
         self.inspect(prototype)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.error_data = true;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -281,7 +291,8 @@ impl Objects {
         value: PrimitiveData,
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.primitive_data = Some(value);
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -296,11 +307,20 @@ impl Objects {
         // StringCreate (10.4.3.4): materialize immutable index descriptors so
         // ordinary descriptor validation enforces the exotic invariants. Each
         // index consumes the same property limit as an ordinary own property.
-        if value.len() >= self.max_properties {
+        if self
+            .max_properties
+            .is_some_and(|limit| value.len() >= limit)
+        {
             return Err(Error::PropertyLimit);
         }
         budget.charge(value.len())?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        let count = value.len().checked_add(1).ok_or(Error::PropertyLimit)?;
+        object
+            .properties
+            .try_reserve_exact(count)
+            .map_err(|_| Error::PropertyLimit)?;
         for (index, &unit) in value.code_units().iter().enumerate() {
             let key = JsString::from(index.to_string().as_str());
             budget.charge(key.len() + 1)?;
@@ -337,7 +357,8 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         self.environment(&arrow.environment)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Arrow(arrow));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -349,7 +370,8 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         self.environment(&function.environment)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Ordinary(function));
         object.constructible = true;
         Ok(self.heap.insert(Entry::Object(object))?)
@@ -363,7 +385,8 @@ impl Objects {
         self.inspect(prototype)?;
         self.inspect(&method.home_object)?;
         self.environment(&method.code.environment)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Method(Box::new(method)));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -386,14 +409,14 @@ impl Objects {
                 self.inspect(handle)?;
             }
         }
-        let mut object = OrdinaryObject::new(prototype, self.max_properties);
+        let mut object = OrdinaryObject::with_property_limit(prototype, self.max_properties);
         object.callable = Some(Callable::Bound(bound));
         object.constructible = constructible;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
     pub(crate) fn create_object_prototype(&mut self) -> Result<Handle, Error> {
-        let mut object = OrdinaryObject::new(None, self.max_properties);
+        let mut object = OrdinaryObject::with_property_limit(None, self.max_properties);
         object.immutable_prototype = true;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -415,7 +438,8 @@ impl Objects {
 
     pub(crate) fn create_arguments(&mut self, prototype: &Handle) -> Result<Handle, Error> {
         self.inspect(prototype)?;
-        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.arguments = true;
         Ok(self.heap.insert(Entry::Object(object))?)
     }

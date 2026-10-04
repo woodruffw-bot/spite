@@ -288,7 +288,7 @@ mod tests {
         realm
             .eval("Number.prototype.f=Number.prototype.toFixed; let flag=0")
             .unwrap();
-        realm.limits.max_string_units = 4;
+        realm.limits.max_string_units = Some(4);
         assert_eq!(
             realm.eval("(1).f(2)"),
             Ok(Value::String(JsString::from("1.00")))

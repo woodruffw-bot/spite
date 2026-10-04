@@ -12,10 +12,10 @@ impl Realm {
         if self.global_object.is_some() {
             return Ok(());
         }
-        // Realm initialization (9.3.1) precedes Script evaluation. Its fixed-size
-        // intrinsic graph has a separate bounded budget; heap/property limits
-        // still apply. No user code can run during this initialization.
-        self.remaining_steps = Some(100_000);
+        // Realm initialization (9.3.1) precedes the per-Script work allowance.
+        // Its fixed intrinsic graph runs no user code. Opted-in heap/property
+        // quotas and checked allocation still apply.
+        self.remaining_steps = None;
         let span = Span::new(0, 0);
         if self.scopes.is_empty() {
             self.push_scope(BTreeMap::new(), span)?;

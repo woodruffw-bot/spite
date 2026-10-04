@@ -248,7 +248,7 @@ fn partial_intrinsic_initialization_is_never_published() {
     assert_eq!(realm.collect(10_000).unwrap().live, REALM_ENTRIES);
     for slots in 0..REALM_ENTRIES - 1 {
         let mut realm = Realm::new(Limits {
-            max_heap_entries: slots,
+            max_heap_entries: Some(slots),
             ..Limits::default()
         });
         assert!(matches!(realm.eval("({})"), Err(Error::Limit { .. })));

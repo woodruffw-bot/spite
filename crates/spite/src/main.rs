@@ -1,7 +1,6 @@
 //! A minimal command-line host with no extra JavaScript globals.
 
 use spite::{Limits, Realm};
-use spite_parser::MAX_SOURCE_BYTES;
 use std::{
     env,
     fs::File,
@@ -9,15 +8,9 @@ use std::{
     process::ExitCode,
 };
 
-fn read_source(reader: impl Read) -> Result<String, String> {
+fn read_source(mut reader: impl Read) -> Result<String, String> {
     let mut bytes = Vec::new();
-    reader
-        .take(MAX_SOURCE_BYTES as u64 + 1)
-        .read_to_end(&mut bytes)
-        .map_err(|e| e.to_string())?;
-    if bytes.len() > MAX_SOURCE_BYTES {
-        return Err("source size limit exceeded".into());
-    }
+    reader.read_to_end(&mut bytes).map_err(|e| e.to_string())?;
     String::from_utf8(bytes).map_err(|_| "source must be valid UTF-8".into())
 }
 

@@ -149,7 +149,7 @@ fn generated_builtin_strings_obey_host_limits_even_during_coercion() {
         "+({}).toString",
     ] {
         let mut realm = Realm::new(Limits {
-            max_string_units: 10,
+            max_string_units: Some(10),
             ..Limits::default()
         });
         realm.eval("let flag = 0").unwrap();

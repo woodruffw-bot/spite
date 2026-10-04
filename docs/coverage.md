@@ -31,7 +31,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration let scopes, temporal dead zones, immutable bindings, ordered evaluation |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
-| Limits | 1 MiB source, depth 64, opt-in evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
+| Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 2005 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
@@ -83,7 +83,7 @@ properties use SameValue and preserve equivalent NaN payloads. Accessor descript
 validate callable handles, trace getter/setter edges, preserve omitted attributes,
 and enforce non-configurable identity and kind invariants. Reads/writes dispatch
 accessors with the original receiver after releasing storage borrows. These records
-have a host property-capacity limit. A heap context adds bounded iterative
+support an opt-in host property-capacity quota. A heap context adds bounded iterative
 prototype traversal, cycle-checked mutation, inherited data reads and presence
 checks, and receiver-sensitive writes. Rust values carry object identity and
 trace object-valued property edges, including cycles. Object literals parse with
@@ -355,9 +355,8 @@ live, preserving holes and inherited values. Definitions bypass setters and keep
 partial results. Safe-integer overflow throws TypeError before indexed reads;
 the final strict length write follows traversal. Large sparse scans consume an
 opted-in work budget, and custom results can alias inputs without hiding subsequent mutations.
-The pinned 4,000-hole sparse-object concat fixture remains outside the reviewed
-passing corpus: its upstream assertions exhaust the default shared heap-slot limit
-in both Script modes even with execution work limits disabled.
+The pinned 4,000-hole sparse-object concat fixture is being reviewed again with
+heap quotas disabled by default before adding it to the passing corpus.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
 null prototype and all 16 specified entries. Other species-dependent Array methods
@@ -396,11 +395,11 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-The process-wide Symbol registry retains at most 10,000 identities and 1,048,576
-total key code units; it never evicts entries. Work/output/capacity failures are
+The process-wide Symbol registry has no default identity or text quota and never
+evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 155 retained entries under a separate fixed work
-budget before Script execution; allocation/property limits still apply.
+Realm initialization creates 159 retained entries outside the per-Script work
+allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
@@ -447,8 +446,9 @@ remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stab
 Rust. Its 2005 variants are four raw positives, 1929 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
-The runner uses the runtime defaults, including no execution work limit.
-Hosts can opt into a per-Script work budget with `Limits.max_steps = Some(units)`.
+The runner uses the runtime defaults, with every host resource quota disabled.
+Hosts can opt into quotas with `Limits` fields such as `max_steps: Some(units)`
+and `max_heap_entries: Some(slots)`.
 Runtime-negative tests inspect the thrown object's constructor name through
 checked realm property reads, including explicit Errors and rethrows. Inspection
 failures remain non-passing; the original exception category cannot mask them.
@@ -458,7 +458,7 @@ with ECMAScript presentation rules. Primitive numeric operations have boundary
 regressions. Exhaustive numerical and cross-platform conformance audits remain
 part of the roadmap.
 
-The resource limits bound specific work and value sizes. They do not provide a
+Opted-in resource quotas bound specific work and value sizes. They do not provide a
 complete memory budget or an operating-system sandbox. State is not rolled back
 after runtime failure. Parsing and early errors occur before any execution.
 Host failures abort evaluation without running further JavaScript finalizers.

@@ -246,7 +246,7 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
 #[test]
 fn descriptor_allocation_failure_is_a_host_limit_and_leaves_the_target_intact() {
     let mut realm = Realm::new(Limits {
-        max_heap_entries: common::REALM_ENTRIES + 1,
+        max_heap_entries: Some(common::REALM_ENTRIES + 1),
         ..Limits::default()
     });
     realm.eval("let o={x:3}").unwrap();

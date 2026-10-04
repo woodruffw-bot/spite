@@ -75,7 +75,7 @@ fn abrupt_substitutions_stop_later_effects_and_run_language_finalizers() {
 fn template_limits_abort_without_exposing_partial_results() {
     for source in ["`abcd`", "`ab${'cd'}`", "`${'ab'}cd`", "`${'💩'}${'💩'}`"] {
         let mut realm = Realm::new(Limits {
-            max_string_units: 3,
+            max_string_units: Some(3),
             ..Limits::default()
         });
         realm.eval("let x = 'ok'; let flag = 0;").unwrap();

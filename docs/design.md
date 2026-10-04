@@ -150,7 +150,7 @@ operator rules remain in the parser and runtime rather than the arithmetic crate
 The AST stores validated BigInt digits and their radix. Evaluation converts them
 under the realm's budget, so parsing never performs unbounded integer arithmetic.
 The evaluator shares any opted-in step budget with integer arithmetic and conversion and
-also bounds BigInt magnitude bits (65,536 by default). BigInt/Number comparisons
+can also opt into a BigInt magnitude-bit quota. BigInt/Number comparisons
 inspect the binary64 significand and exponent without rounding the integer.
 The integer library also supplies explicit conversion to binary64 for the Number
 constructor (21.1.1.1). It retains the leading 53 bits and rounds once using guard,
@@ -195,13 +195,18 @@ copy bindings into a fresh identity with the same outer link (14.7.4.4).
 
 Realm initialization runs on first evaluation, after parsing succeeds. It creates
 the global lexical environment, implemented intrinsics, and an ordinary global
-object whose prototype is Object.prototype (9.3.1). This fixed graph uses a separate
-100,000-unit initialization budget. Script evaluation has no work limit by default;
+object whose prototype is Object.prototype (9.3.1). This fixed graph runs no user
+code and is outside the per-Script work allowance. Script evaluation has no work limit by default;
 hosts can set `Limits.max_steps` to `Some(units)` to opt into a per-Script budget.
 `None` disables work accounting across evaluation, property operations, string
 scans/copies, and integer arithmetic. Work units measure implementation operations,
-not elapsed time or JavaScript statements. The value-size, allocation, argument,
-and native recursion limits still apply independently. References below to execution
+not elapsed time or JavaScript statements. Every `Limits` field defaults to `None`:
+source bytes, string code units, BigInt bits, argument counts, heap slots, and own
+properties have no host-selected quotas until an embedder supplies `Some(limit)`.
+Checked size arithmetic, fallible reservation, and handle validation remain active.
+The parser/evaluator native-stack guards are current implementation constraints;
+removing them safely requires replacing recursive execution with explicit frames.
+References below to execution
 work budgets apply when a host enables this option. The host
 slot limit is named `max_heap_entries` and counts both objects and environments.
 Temporary scopes remain allocated until explicit collection; scope restoration
@@ -322,7 +327,7 @@ undefined preserves an absent description. It has length zero and no Construct
 method, and its 13 well-known properties are fixed identities (20.4.1–2).
 
 The append-only GlobalSymbolRegistry is shared across realms (20.4.2.2/6).
-A process-wide Mutex protects a bounded vector of registered identities. Each
+A process-wide Mutex protects a vector of registered identities. Each
 identity's immutable description is its registry key, avoiding a second text copy.
 Perform ToString before locking; lookup/insertion under the lock cannot run user
 code. This permits reentrant coercion and atomic interning across host threads.
@@ -330,10 +335,10 @@ Charge each identity or UTF-16 comparison before inspecting it, and reserve vect
 capacity before insertion. Symbol.keyFor accepts only primitive Symbols, scans
 identity, and copies a matched key only after releasing the lock and checking output
 limits. Fresh and well-known symbols never enter this registry implicitly.
-The process registry retains at most 10,000 keys and 1,048,576 total UTF-16 units;
-these shared host limits supplement per-evaluation work/string limits. Exhaustion
-must not evict entries, change an existing identity, or become a JavaScript exception.
-Private isolated registry instances test capacity edges without filling shared state.
+The process registry has no default entry or text quota. Checked total-size
+arithmetic and reservation failures remain host failures and must not evict entries,
+change existing identities, or become JavaScript exceptions. Private isolated
+registry instances test optional capacity edges without filling shared state.
 
 Symbol.for/keyFor use this registry, and the intrinsic Symbol constructor's own
 properties can be enumerated. The JavaScript global now exposes that same
@@ -607,7 +612,7 @@ required Symbol hooks alongside its string-keyed API.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; templates and property names use the string hint.
 
-Realm allocation is bounded by shared heap slots and per-object property counts. Object
+Realm allocation supports opt-in shared heap-slot and per-object property quotas. Object
 literals create data properties in source order, convert computed keys before
 evaluating values, and implement the required non-computed `__proto__` initializer.
 The intrinsic Object prototype has a stable, retained identity and its mandatory
@@ -935,8 +940,10 @@ Function.prototype.apply checks callability before inspecting argArray, treats
 nullish lists as empty, and otherwise performs object-only CreateListFromArrayLike
 (20.2.3.1, 7.3.19). Length conversion uses ToLength; indexed reads include inherited
 properties and getters, preserve the list receiver, and finish before the target
-call. Direct calls and apply share a configurable argument-list limit (16,384 by
-default). Work and argument limits are checked before allocating a large list.
+call. Direct calls and apply share an optional argument-list quota, disabled by
+default. Opted-in work and argument quotas are checked before building a large
+list. Indexed traversal retains ToLength's full width, and reservation is checked
+as values are appended.
 
 Bound function exotic records capture an unrooted target handle, a receiver value,
 and an argument list (10.4.1). The heap validates and traces every captured edge,

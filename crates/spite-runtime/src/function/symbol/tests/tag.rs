@@ -111,13 +111,13 @@ fn tag_recursion_and_output_are_bounded_before_allocation() {
     }).unwrap().join().unwrap();
     let mut realm = realm_with_symbols();
     realm.eval("let o={[tag]:'xxxx'},flag=0").unwrap();
-    realm.limits.max_string_units = 12;
+    realm.limits.max_string_units = Some(12);
     assert!(matches!(
         realm.eval("try{Object.prototype.toString.call(o);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
     check(&mut realm, "flag===0");
-    realm.limits.max_string_units = 13;
+    realm.limits.max_string_units = Some(13);
     assert_eq!(
         realm.eval("Object.prototype.toString.call(o)"),
         Ok(Value::String(JsString::from("[object xxxx]")))

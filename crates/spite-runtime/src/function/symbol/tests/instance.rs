@@ -161,7 +161,7 @@ fn implicit_instance_calls_respect_the_argument_limit() {
         let mut realm = realm_with_symbols();
         realm.eval(setup).unwrap();
         realm.eval("let flag=0").unwrap();
-        realm.limits.max_arguments = 0;
+        realm.limits.max_arguments = Some(0);
         assert!(matches!(
             realm.eval("try{1 instanceof F;}catch{flag=1;}finally{flag=2;}"),
             Err(Error::Limit { .. })

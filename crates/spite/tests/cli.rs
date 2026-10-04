@@ -122,6 +122,14 @@ fn stdin_is_utf8_without_lossy_decoding() {
 }
 
 #[test]
+fn stdin_accepts_sources_above_the_former_default_size_cutoff() {
+    let source = " ".repeat(1024 * 1024 + 1) + "42";
+    let output = stdin(source.as_bytes());
+    assert!(output.status.success());
+    assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "42");
+}
+
+#[test]
 fn help_and_usage() {
     let output = Command::new(env!("CARGO_BIN_EXE_spite"))
         .arg("--help")

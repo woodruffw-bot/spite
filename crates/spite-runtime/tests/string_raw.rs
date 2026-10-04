@@ -153,7 +153,7 @@ fn constructor_static_properties_can_be_reflected_and_frozen() {
 #[test]
 fn output_and_iteration_limits_abort_without_running_catch_or_finally() {
     let mut realm = Realm::new(Limits {
-        max_string_units: 64,
+        max_string_units: Some(64),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();

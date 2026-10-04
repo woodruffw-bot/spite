@@ -51,7 +51,7 @@ pub enum MetadataErrorKind {
     Invalid,
     /// Validity or meaning requires YAML syntax or a field not yet supported.
     Unsupported,
-    /// The frontmatter exceeds the host's 64 KiB limit.
+    /// The frontmatter exceeds an opted-in host size quota.
     Limit,
 }
 
@@ -99,6 +99,18 @@ pub struct Metadata {
 impl Metadata {
     /// Reads frontmatter without modifying the source or interpreting its JavaScript.
     pub fn parse(source: &str) -> Result<Self, MetadataError> {
+        Self::parse_with_limit(source, None)
+    }
+
+    /// Reads frontmatter with an opted-in maximum UTF-8 frontmatter size.
+    pub fn parse_with_frontmatter_limit(
+        source: &str,
+        max_bytes: usize,
+    ) -> Result<Self, MetadataError> {
+        Self::parse_with_limit(source, Some(max_bytes))
+    }
+
+    fn parse_with_limit(source: &str, max_bytes: Option<usize>) -> Result<Self, MetadataError> {
         use MetadataErrorKind::{Invalid, Limit, Unsupported};
         let start = source
             .find("/*---")
@@ -109,8 +121,8 @@ impl Metadata {
             .ok_or_else(|| error(Invalid, "unterminated frontmatter"))?
             + start;
         let body = &source[start..end];
-        if body.len() > 64 * 1024 {
-            return Err(error(Limit, "frontmatter is larger than 64 KiB"));
+        if max_bytes.is_some_and(|limit| body.len() > limit) {
+            return Err(error(Limit, "frontmatter size limit exceeded"));
         }
         let lines: Vec<_> = body.lines().collect();
         let mut index = 0;

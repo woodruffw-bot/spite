@@ -81,7 +81,7 @@ fn number_string_limits_abort_without_running_catch_or_finally() {
     realm
         .eval("Number.prototype.s=Number.prototype.toString; let flag=0;")
         .unwrap();
-    realm.limits.max_string_units = 3;
+    realm.limits.max_string_units = Some(3);
     assert_eq!(
         realm.eval("(100).s()"),
         Ok(Value::String(JsString::from("100")))

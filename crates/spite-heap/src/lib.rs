@@ -1,4 +1,4 @@
-//! Safe, capacity-bounded generational storage for single-threaded object graphs.
+//! Safe generational storage with optional capacity limits for object graphs.
 //!
 //! Handles validate both heap identity and slot generation. Cloning a handle does
 //! not keep its stored value alive; collection roots are supplied explicitly.
@@ -41,7 +41,7 @@ impl fmt::Debug for Handle {
 /// An invalid reference or exhausted storage limit.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Error {
-    /// No reusable slot remains and the slot limit has been reached.
+    /// The configured slot quota or allocator capacity has been exhausted.
     Capacity,
     /// The handle belongs to a different heap.
     ForeignHandle,
@@ -54,7 +54,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            Self::Capacity => "heap slot limit exceeded",
+            Self::Capacity => "heap storage capacity exceeded",
             Self::ForeignHandle => "handle belongs to another heap",
             Self::StaleHandle => "handle refers to a removed value",
             Self::Limit => "heap collection work limit exceeded",
@@ -101,12 +101,18 @@ pub struct Heap<T> {
     slots: Vec<Slot<T>>,
     free: Vec<usize>,
     live: usize,
-    max_slots: usize,
+    max_slots: Option<usize>,
 }
 
 impl<T> Heap<T> {
     /// Creates an empty heap with an explicit maximum number of storage slots.
     pub fn new(max_slots: usize) -> Self {
+        Self::with_capacity_limit(Some(max_slots))
+    }
+
+    /// Creates an empty heap with an optional storage-slot limit.
+    /// `None` leaves capacity to the allocator and platform address space.
+    pub fn with_capacity_limit(max_slots: Option<usize>) -> Self {
         Self {
             owner: Rc::new(Identity),
             slots: Vec::new(),
@@ -138,9 +144,13 @@ impl<T> Heap<T> {
             self.slots[index].value = Some(value);
             index
         } else {
-            if self.slots.len() >= self.max_slots {
+            if self
+                .max_slots
+                .is_some_and(|limit| self.slots.len() >= limit)
+            {
                 return Err(Error::Capacity);
             }
+            self.slots.try_reserve(1).map_err(|_| Error::Capacity)?;
             let index = self.slots.len();
             self.slots.push(Slot {
                 generation: 0,

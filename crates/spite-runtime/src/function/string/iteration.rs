@@ -7,7 +7,11 @@ impl Realm {
     pub(crate) fn string_iterator(&mut self, receiver: Value, span: Span) -> Result<Value, Error> {
         Self::require_object_coercible(&receiver, span)?;
         let string = self.string(receiver, span)?;
-        if string.len() > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| string.len() > limit)
+        {
             return Err(Error::Limit {
                 span,
                 message: "string length limit exceeded".into(),

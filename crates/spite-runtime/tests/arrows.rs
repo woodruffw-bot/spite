@@ -261,7 +261,7 @@ fn arrow_limits_and_early_errors_precede_later_effects() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::new(Limits {
-        max_string_units: 10,
+        max_string_units: Some(10),
         ..Limits::default()
     });
     realm

@@ -254,9 +254,15 @@ fn unsupported_and_limits_are_never_negative_passes() {
             ..
         }
     ));
+    let runner = Runner {
+        limits: Limits {
+            max_source_bytes: Some(1024),
+            ..runner.limits
+        },
+    };
     let oversized = source(
         "flags: [raw]\nnegative:\n  phase: parse\n  type: SyntaxError",
-        &" ".repeat(spite_parser::MAX_SOURCE_BYTES),
+        &" ".repeat(1024),
     );
     assert!(matches!(
         runner.run(&oversized, None, |_| unreachable!()).unwrap()[0].outcome,

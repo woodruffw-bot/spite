@@ -285,7 +285,7 @@ fn numeric_errors_are_catchable_and_preserve_evaluation_order() {
 #[test]
 fn bigint_size_work_and_string_limits_abort_language_handlers() {
     let mut realm = Realm::new(Limits {
-        max_bigint_bits: 8,
+        max_bigint_bits: Some(8),
         ..Limits::default()
     });
     realm.eval("let x = 255n; let flag = 0").unwrap();
@@ -311,13 +311,13 @@ fn bigint_size_work_and_string_limits_abort_language_handlers() {
         Err(Error::Limit { .. })
     ));
     let mut realm = Realm::new(Limits {
-        max_string_units: 3,
+        max_string_units: Some(3),
         ..Limits::default()
     });
     assert!(matches!(realm.eval("`${1000n}`"), Err(Error::Limit { .. })));
     assert!(matches!(realm.eval("'' + 1000n"), Err(Error::Limit { .. })));
     let mut realm = Realm::new(Limits {
-        max_bigint_bits: 0,
+        max_bigint_bits: Some(0),
         ..Limits::default()
     });
     assert_eq!(realm.eval("0n"), Ok(integer("0")));

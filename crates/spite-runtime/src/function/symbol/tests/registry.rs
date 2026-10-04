@@ -158,13 +158,13 @@ fn recursive_registry_coercion_and_key_output_are_bounded_without_lock_reentry()
     realm
         .eval("let S=s.constructor,large=S.for('registry.output-limit'),flag=0")
         .unwrap();
-    realm.limits.max_string_units = 8;
+    realm.limits.max_string_units = Some(8);
     assert!(matches!(
         realm.eval("try{S.keyFor(large);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
     check(&mut realm, "flag===0");
-    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_string_units = Some(1_048_576);
     check(
         &mut realm,
         "S.keyFor(large)==='registry.output-limit' && S.for('registry.output-limit')===large",

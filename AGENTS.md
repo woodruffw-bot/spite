@@ -10,6 +10,9 @@
 - Implement ECMA-262 behavior. Do not add Node.js, browser, or syntax extensions.
 - Cite specification sections for subtle semantics and add regression tests.
 - Separate unsupported features and host limits from JavaScript exceptions.
+- Host resource quotas are opt-in. Do not add default quotas or test-only
+  allowances to make conformance fixtures pass. Document necessary native-stack
+  and platform safety checks as implementation constraints.
 - Never count unsupported syntax as a passing negative conformance test.
 - Use insta for syntax and diagnostic snapshots. Inspect changes before committing.
 - Run formatting, Clippy, tests, and the dependency-policy check before pushing.

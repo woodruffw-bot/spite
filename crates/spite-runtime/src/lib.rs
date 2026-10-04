@@ -18,7 +18,7 @@ pub use value::{ConversionError, Value};
 use realm_object::Hint;
 use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
-use spite_parser::{ast::*, parse_script};
+use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fmt,
@@ -106,35 +106,26 @@ impl fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 
-/// Host resource limits. They do not alter ECMAScript exceptions.
-#[derive(Clone, Copy, Debug)]
+/// Optional host resource quotas. All default to `None` (no quota).
+/// They do not alter ECMAScript exceptions or disable platform safety checks.
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Limits {
+    /// Optional maximum UTF-8 bytes in source passed to [`Realm::eval`].
+    pub max_source_bytes: Option<usize>,
     /// Optional maximum work per Script, including bindings, clauses, and arithmetic.
     /// Defaults to `None`, which disables the execution work limit.
-    /// Fixed realm initialization has a separate bounded work budget.
+    /// Realm initialization is outside this per-Script allowance.
     pub max_steps: Option<usize>,
-    /// Maximum code units in any produced string.
-    pub max_string_units: usize,
-    /// Maximum magnitude bits in a produced BigInt.
-    pub max_bigint_bits: usize,
-    /// Maximum values in a call argument list, including apply and bound arguments.
-    pub max_arguments: usize,
-    /// Maximum heap slots shared by objects and lexical environments.
-    pub max_heap_entries: usize,
-    /// Maximum own properties in each ordinary object.
-    pub max_properties: usize,
-}
-impl Default for Limits {
-    fn default() -> Self {
-        Self {
-            max_steps: None,
-            max_string_units: 1024 * 1024,
-            max_bigint_bits: 65_536,
-            max_arguments: 16_384,
-            max_heap_entries: 10_000,
-            max_properties: 1024,
-        }
-    }
+    /// Optional maximum code units in any produced string.
+    pub max_string_units: Option<usize>,
+    /// Optional maximum magnitude bits in a produced BigInt.
+    pub max_bigint_bits: Option<usize>,
+    /// Optional maximum values in a call argument list, including apply and bound arguments.
+    pub max_arguments: Option<usize>,
+    /// Optional maximum heap slots shared by objects and lexical environments.
+    pub max_heap_entries: Option<usize>,
+    /// Optional maximum own properties in each ordinary object.
+    pub max_properties: Option<usize>,
 }
 
 // Resolve references before evaluating assignment RHS expressions. GetValue and
@@ -242,7 +233,7 @@ impl Realm {
             call_depth: 0,
             evaluation_depth: 0,
             strict: false,
-            objects: object::Objects::new(limits.max_heap_entries, limits.max_properties),
+            objects: object::Objects::with_limits(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
         }
     }
@@ -264,7 +255,11 @@ impl Realm {
     /// Returned and thrown object values are unrooted. Use [`Self::root_value`]
     /// to retain them across explicit collection. Evaluation never collects.
     pub fn eval(&mut self, source: &str) -> Result<Value, Error> {
-        let script = parse_script(source).map_err(Error::Parse)?;
+        let script = match self.limits.max_source_bytes {
+            Some(limit) => parse_script_with_source_limit(source, limit),
+            None => parse_script(source),
+        }
+        .map_err(Error::Parse)?;
         self.evaluate(&script)
     }
 
@@ -308,7 +303,7 @@ impl Realm {
         span: Span,
         work: impl FnOnce(&mut Budget) -> Result<T, IntegerError>,
     ) -> Result<T, Error> {
-        let mut budget = Budget::with_work_limit(self.limits.max_bigint_bits, self.remaining_steps);
+        let mut budget = Budget::with_limits(self.limits.max_bigint_bits, self.remaining_steps);
         let result = work(&mut budget);
         self.remaining_steps = budget.remaining_work();
         result.map_err(|error| Self::integer_error(error, span))
@@ -334,7 +329,7 @@ impl Realm {
         span: Span,
         work: impl FnOnce(&mut Budget) -> Result<T, ConversionError>,
     ) -> Result<T, Error> {
-        let mut budget = Budget::with_work_limit(self.limits.max_bigint_bits, self.remaining_steps);
+        let mut budget = Budget::with_limits(self.limits.max_bigint_bits, self.remaining_steps);
         let result = work(&mut budget);
         self.remaining_steps = budget.remaining_work();
         result.map_err(|error| Self::conversion_error(error, span))
@@ -396,7 +391,11 @@ impl Realm {
     }
     fn check_string(&self, value: &Value, span: Span) -> Result<(), Error> {
         if let Value::String(s) = value {
-            if s.len() > self.limits.max_string_units {
+            if self
+                .limits
+                .max_string_units
+                .is_some_and(|limit| s.len() > limit)
+            {
                 return Err(Error::Limit {
                     span,
                     message: "string length limit exceeded".into(),
@@ -412,11 +411,11 @@ impl Realm {
         part: &JsString,
         span: Span,
     ) -> Result<(), Error> {
-        if units
-            .len()
-            .checked_add(part.len())
-            .is_none_or(|len| len > self.limits.max_string_units)
-        {
+        if units.len().checked_add(part.len()).is_none_or(|len| {
+            self.limits
+                .max_string_units
+                .is_some_and(|limit| len > limit)
+        }) {
             return Err(Error::Limit {
                 span,
                 message: "string length limit exceeded".into(),
@@ -1441,10 +1440,11 @@ impl Realm {
                 if matches!(left, Value::String(_)) || matches!(right, Value::String(_)) {
                     let a = self.string(left, span)?;
                     let b = self.string(right, span)?;
-                    if a.len()
-                        .checked_add(b.len())
-                        .is_none_or(|length| length > self.limits.max_string_units)
-                    {
+                    if a.len().checked_add(b.len()).is_none_or(|length| {
+                        self.limits
+                            .max_string_units
+                            .is_some_and(|limit| length > limit)
+                    }) {
                         return Err(Error::Limit {
                             span,
                             message: "string length limit exceeded".into(),

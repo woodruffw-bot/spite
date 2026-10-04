@@ -53,7 +53,11 @@ impl Realm {
             message: "Object tag string output limit exceeded".into(),
         };
         let length = tag.len().checked_add(9).ok_or_else(limit)?;
-        if length > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| length > limit)
+        {
             return Err(limit());
         }
         self.object_work(span, |_, budget| budget.charge(length))?;

@@ -142,7 +142,7 @@ fn inferred_names_distinguish_undefined_empty_and_utf16_descriptions() {
         &mut realm,
         "let d=Object.getOwnPropertyDescriptor(o[s],'name');!d.writable && !d.enumerable && d.configurable",
     );
-    realm.limits.max_string_units = 5;
+    realm.limits.max_string_units = Some(5);
     assert!(matches!(
         realm.eval("({[s]:()=>0})"),
         Err(Error::Limit { .. })
@@ -172,6 +172,6 @@ fn host_symbol_lookup_is_constant_work_and_keeps_getter_semantics() {
     assert_eq!(realm.read_property(&object, &symbol), Ok(object.clone()));
     let huge = JsSymbol::new(Some(JsString::from_code_units(vec![0x61; 100_000])));
     realm.limits.max_steps = Some(30);
-    realm.limits.max_string_units = 1;
+    realm.limits.max_string_units = Some(1);
     assert_eq!(realm.read_property(&object, &huge), Ok(Value::Undefined));
 }

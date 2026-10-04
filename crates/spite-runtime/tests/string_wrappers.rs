@@ -149,7 +149,7 @@ fn object_algorithms_on_strings_use_index_descriptors_without_special_substituti
 #[test]
 fn wrapper_property_capacity_is_a_host_limit_while_primitive_reads_remain_available() {
     let mut realm = Realm::new(Limits {
-        max_properties: 64,
+        max_properties: Some(64),
         ..Limits::default()
     });
     let text = "x".repeat(64);

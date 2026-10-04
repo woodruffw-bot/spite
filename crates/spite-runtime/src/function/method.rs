@@ -81,7 +81,11 @@ impl Realm {
             let length = name
                 .len()
                 .checked_add(prefix_len)
-                .filter(|length| *length <= self.limits.max_string_units)
+                .filter(|length| {
+                    self.limits
+                        .max_string_units
+                        .is_none_or(|limit| *length <= limit)
+                })
                 .ok_or_else(|| Error::Limit {
                     span,
                     message: "function name length limit exceeded".into(),

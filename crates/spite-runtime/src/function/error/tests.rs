@@ -169,7 +169,7 @@ fn message_output_and_allocation_limits_remain_host_aborts() {
     realm
         .eval("let flag=0;let e=Error('abc');let stringify=Error.prototype.toString;")
         .unwrap();
-    realm.limits.max_string_units = 4;
+    realm.limits.max_string_units = Some(4);
     for source in ["Error(123456n)", "stringify.call(e)"] {
         assert!(matches!(
             realm.eval(&format!(
@@ -184,7 +184,7 @@ fn message_output_and_allocation_limits_remain_host_aborts() {
         Ok(Value::Boolean(true))
     );
     let mut realm = Realm::new(Limits {
-        max_heap_entries: crate::test_support::REALM_ENTRIES,
+        max_heap_entries: Some(crate::test_support::REALM_ENTRIES),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();
@@ -199,7 +199,7 @@ fn message_output_and_allocation_limits_remain_host_aborts() {
 fn materializing_a_builtin_exception_can_abort_without_entering_pending_handlers() {
     // The try block consumes the last slot; creating the catch value must fail.
     let mut realm = Realm::new(Limits {
-        max_heap_entries: crate::test_support::REALM_ENTRIES + 1,
+        max_heap_entries: Some(crate::test_support::REALM_ENTRIES + 1),
         ..Limits::default()
     });
     realm.eval("let flag=0").unwrap();
@@ -212,7 +212,7 @@ fn materializing_a_builtin_exception_can_abort_without_entering_pending_handlers
 
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    realm.limits.max_string_units = 16;
+    realm.limits.max_string_units = Some(16);
     assert!(matches!(
         realm.eval("try{+1n;}catch(e){flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })

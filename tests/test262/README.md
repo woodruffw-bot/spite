@@ -110,26 +110,25 @@ checks full-width length handling without an unbounded scan.
 Candidates requiring classes, proxies, foreign realms, typed arrays, RegExp,
 `isConstructor.js`/Reflect, or `propertyHelper.js` remain outside this corpus.
 The spreadable-function candidate requires the missing `Function` global. The
-4,000-hole sparse-object candidate was reviewed again after disabling the default
-execution work limit. Its upstream assertions exhaust the default 10,000 shared
-object/environment heap slots in both Script modes, so it remains outside the
-passing corpus. This is a host allocation limit; the fixture was not rewritten
-or retried with larger limits.
+4,000-hole sparse-object candidate is being reviewed again with host resource
+quotas disabled by default before adding it to the passing corpus.
 Local runtime regressions also cover safe-integer overflow before indexed reads,
 strict final length writes, aliased species results, and bounded host scans.
 
 ## Scope and maintenance
 
-`Runner::default()` uses the ordinary runtime defaults, including
-`Limits.max_steps = None`: execution has no work limit. Embedders can opt into a
+`Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
+`None`, with no source-size, work, string/BigInt size, argument, heap, or property
+quota. Test262 frontmatter also has no default size quota. Embedders can opt into a
 limit with `Runner { limits: Limits { max_steps: Some(units), ..Limits::default() } }`.
 Each harness file and each test body then starts with a fresh allowance. Assertion
 functions called by a test consume that test body's allowance. Work units account
 for interpreter operations, property/prototype scans, value copies, and numeric
 work; they are not elapsed time or a count of JavaScript statements.
 
-Size, allocation, argument, and recursion limits retain their runtime defaults.
-Exhaustion of an opted-in work limit remains a non-passing `Limit` result and
+Checked arithmetic, addressable capacity, handle validation, and native-stack
+guards remain implementation safety checks. Exhaustion of an opted-in quota
+remains a non-passing `Limit` result and
 establishes a host limitation, not a semantic failure or an unsupported specification
 feature. The runner does not retry failures with different limits.
 Runtime-negative matching reads the thrown object's constructor name as required

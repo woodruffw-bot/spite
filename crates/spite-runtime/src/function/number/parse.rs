@@ -10,7 +10,11 @@ mod tests;
 impl Realm {
     fn numeric_input(&mut self, value: Value, span: Span) -> Result<JsString, Error> {
         let text = self.string(value, span)?;
-        if text.len() > self.limits.max_string_units {
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| text.len() > limit)
+        {
             return Err(Error::Limit {
                 span,
                 message: "string length limit exceeded".into(),

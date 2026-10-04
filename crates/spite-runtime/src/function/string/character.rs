@@ -43,11 +43,11 @@ impl Realm {
                     2,
                 )
             };
-            if result
-                .len()
-                .checked_add(count)
-                .is_none_or(|length| length > self.limits.max_string_units)
-            {
+            if result.len().checked_add(count).is_none_or(|length| {
+                self.limits
+                    .max_string_units
+                    .is_some_and(|limit| length > limit)
+            }) {
                 return Err(Error::Limit {
                     span,
                     message: "string length limit exceeded".into(),

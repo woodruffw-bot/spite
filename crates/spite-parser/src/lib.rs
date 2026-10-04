@@ -13,23 +13,29 @@ use lexer::{Kind, Lexer, Token};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use std::collections::BTreeSet;
 
-/// Maximum source size accepted by this parser, in UTF-8 bytes.
-pub const MAX_SOURCE_BYTES: usize = 1024 * 1024;
 /// Maximum recursive syntax depth accepted by this parser.
 pub const MAX_DEPTH: usize = 64;
 
-/// Parses a Script and validates implemented early errors before returning it.
-///
-/// This is not yet a complete ECMAScript parser. Unsupported features produce
-/// [`DiagnosticKind::Unsupported`] where they can be recognized.
-pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
-    if source.len() > MAX_SOURCE_BYTES {
+/// Parses a Script with an opted-in maximum UTF-8 source length.
+pub fn parse_script_with_source_limit(
+    source: &str,
+    max_bytes: usize,
+) -> Result<Script, Diagnostic> {
+    if source.len() > max_bytes {
         return Err(Diagnostic::new(
             DiagnosticKind::Limit,
             Span::new(0, source.len()),
             "source size limit exceeded",
         ));
     }
+    parse_script(source)
+}
+
+/// Parses a Script and validates implemented early errors before returning it.
+///
+/// This is not yet a complete ECMAScript parser. Unsupported features produce
+/// [`DiagnosticKind::Unsupported`] where they can be recognized.
+pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
     let mut lexer = Lexer::new(source);
     let mut tokens = Vec::new();
     loop {

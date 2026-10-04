@@ -1,4 +1,4 @@
-//! Safe arbitrary-precision integers with explicit size and optional work budgets.
+//! Safe arbitrary-precision integers with optional size and work budgets.
 
 use std::{cmp::Ordering, fmt};
 
@@ -44,7 +44,7 @@ pub enum BitwiseOp {
 /// Limits integer result size and remaining arithmetic work.
 #[derive(Clone, Debug)]
 pub struct Budget {
-    max_bits: usize,
+    max_bits: Option<usize>,
     remaining_work: Option<usize>,
 }
 
@@ -57,6 +57,11 @@ impl Budget {
     /// Sets the maximum result magnitude and an optional work limit.
     /// `None` disables work accounting while retaining the result size limit.
     pub fn with_work_limit(max_bits: usize, work: Option<usize>) -> Self {
+        Self::with_limits(Some(max_bits), work)
+    }
+
+    /// Sets optional result-magnitude and work limits. `None` disables a quota.
+    pub fn with_limits(max_bits: Option<usize>, work: Option<usize>) -> Self {
         Self {
             max_bits,
             remaining_work: work,
@@ -77,7 +82,10 @@ impl Budget {
     }
 
     fn finish(&self, value: BigInt) -> Result<BigInt, Error> {
-        if value.bit_length() > self.max_bits {
+        if self
+            .max_bits
+            .is_some_and(|limit| value.bit_length() > limit)
+        {
             Err(Error::Limit)
         } else {
             Ok(value)
@@ -111,7 +119,10 @@ impl BigInt {
                 .ok_or(Error::InvalidDigit)?;
             budget.charge(value.words.len().max(1))?;
             value.multiply_add_small(radix, digit);
-            if value.bit_length() > budget.max_bits {
+            if budget
+                .max_bits
+                .is_some_and(|limit| value.bit_length() > limit)
+            {
                 return Err(Error::Limit);
             }
         }
@@ -311,7 +322,7 @@ impl BigInt {
             .checked_add(other.bit_length())
             .and_then(|n| n.checked_sub(1))
             .ok_or(Error::Limit)?;
-        if minimum_bits > budget.max_bits {
+        if budget.max_bits.is_some_and(|limit| minimum_bits > limit) {
             return Err(Error::Limit);
         }
         let work = self
@@ -326,7 +337,7 @@ impl BigInt {
             .len()
             .checked_add(other.words.len())
             .ok_or(Error::Limit)?;
-        let mut words = vec![0u32; length];
+        let mut words = Self::zero_words(length)?;
         for (i, a) in self.words.iter().enumerate() {
             let mut carry = 0u64;
             for (j, b) in other.words.iter().enumerate() {
@@ -399,7 +410,7 @@ impl BigInt {
             .checked_mul(exponent)
             .and_then(|n| n.checked_add(1))
             .ok_or(Error::Limit)?;
-        if minimum_bits > budget.max_bits {
+        if budget.max_bits.is_some_and(|limit| minimum_bits > limit) {
             return Err(Error::Limit);
         }
         let mut base = self.clone();
@@ -490,12 +501,12 @@ impl BigInt {
             budget.finish(result)
         } else {
             let bits = self.bit_length().checked_add(count).ok_or(Error::Limit)?;
-            if bits > budget.max_bits {
+            if budget.max_bits.is_some_and(|limit| bits > limit) {
                 return Err(Error::Limit);
             }
             let length = bits.div_ceil(32);
             budget.charge(length)?;
-            let mut words = vec![0; length];
+            let mut words = Self::zero_words(length)?;
             let mut carry = 0u64;
             for (i, &word) in self.words.iter().enumerate() {
                 let shifted = (u64::from(word) << part) | carry;
@@ -519,6 +530,15 @@ impl BigInt {
                 .enumerate()
                 .fold(0, |n, (i, &word)| n | ((word as usize) << (i * 32))),
         )
+    }
+
+    fn zero_words(length: usize) -> Result<Vec<u32>, Error> {
+        // Large shifts can request storage far beyond addressable memory even
+        // without a host quota. Reject reservation failure before initializing.
+        let mut words = Vec::new();
+        words.try_reserve_exact(length).map_err(|_| Error::Limit)?;
+        words.resize(length, 0);
+        Ok(words)
     }
 
     fn twos_complement(&self, width: usize) -> Vec<u32> {

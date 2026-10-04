@@ -95,7 +95,7 @@ fn property_reads_check_handles_and_keep_host_work_and_string_limits() {
         Err(Error::Limit { .. })
     ));
     let mut limited = Realm::new(Limits {
-        max_string_units: 1,
+        max_string_units: Some(1),
         ..Limits::default()
     });
     assert!(matches!(

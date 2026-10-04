@@ -139,10 +139,18 @@ fn nonobjects_are_rejected_and_callable_check_precedes_list_inspection() {
 }
 
 #[test]
+fn unlimited_argument_lists_preserve_full_width_getter_failures() {
+    assert_eq!(
+        Realm::default().eval("let reads=0,o={length:Infinity,get 0(){reads++;throw 17;}};let caught=false;try{Boolean.apply(null,o);}catch(e){caught=e===17;}caught && reads===1"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
 fn list_lengths_and_direct_calls_have_explicit_host_argument_limits() {
     for length in ["4", "Infinity", "9007199254740991", "1e100"] {
         let mut realm = Realm::new(Limits {
-            max_arguments: 3,
+            max_arguments: Some(3),
             ..Limits::default()
         });
         realm.eval("let flag = 0").unwrap();
@@ -150,7 +158,7 @@ fn list_lengths_and_direct_calls_have_explicit_host_argument_limits() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::new(Limits {
-        max_arguments: 1,
+        max_arguments: Some(1),
         ..Limits::default()
     });
     assert_eq!(

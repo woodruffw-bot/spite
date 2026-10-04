@@ -311,13 +311,13 @@ fn construction_observes_new_target_prototype_before_length_validation() {
 fn join_checks_output_before_next_get_and_bounds_empty_output_work() {
     let mut realm = Realm::default();
     realm.eval("let n=0,flag=0,a=['a','b'],sep='xxx';Object.defineProperty(a,'1',{get:()=>{n++;return 'b';}})").unwrap();
-    realm.limits.max_string_units = 3;
+    realm.limits.max_string_units = Some(3);
     assert!(matches!(
         realm.eval("try{a.join(sep);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
     check(&mut realm, "n===0 && flag===0");
-    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_string_units = Some(1_048_576);
     realm.limits.max_steps = Some(500);
     assert!(matches!(
         realm.eval(
@@ -902,13 +902,13 @@ fn array_locale_output_limits_precede_later_gets_and_large_lengths_are_bounded()
     realm
         .eval("let flag=0,n=0,a=['abc',2];Object.defineProperty(a,'1',{get:()=>{n++;return 2;}})")
         .unwrap();
-    realm.limits.max_string_units = 3;
+    realm.limits.max_string_units = Some(3);
     assert!(matches!(
         realm.eval("try{a.toLocaleString();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
     ));
     check(&mut realm, "n===0 && flag===0");
-    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_string_units = Some(1_048_576);
     realm.limits.max_steps = Some(500);
     assert!(matches!(realm.eval("try{Array.prototype.toLocaleString.call({length:Infinity});}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
     realm.limits.max_steps = Some(100_000);

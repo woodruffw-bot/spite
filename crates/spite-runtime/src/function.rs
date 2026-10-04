@@ -677,7 +677,7 @@ impl Realm {
     }
 
     pub(super) fn check_argument_count(&self, count: usize, span: Span) -> Result<(), Error> {
-        if count > self.limits.max_arguments {
+        if self.limits.max_arguments.is_some_and(|limit| count > limit) {
             return Err(Error::Limit {
                 span,
                 message: "call argument limit exceeded".into(),
@@ -700,7 +700,10 @@ impl Realm {
             ));
         };
         let length = self.length_of_array_like(&object, span)?;
-        if length > self.limits.max_arguments as u64
+        if self
+            .limits
+            .max_arguments
+            .is_some_and(|limit| length > limit as u64)
             || self
                 .remaining_steps
                 .is_some_and(|work| length > work as u64)
@@ -711,7 +714,13 @@ impl Realm {
             });
         }
         let mut values = Vec::new();
-        for index in 0..length as usize {
+        // Retain ToLength's full width and grow storage as Get succeeds. A huge
+        // array-like can throw at its first getter without allocating the list.
+        for index in 0..length {
+            values.try_reserve(1).map_err(|_| Error::Limit {
+                span,
+                message: "call argument allocation failed".into(),
+            })?;
             values.push(self.get_property(
                 &object,
                 &JsString::from(index.to_string().as_str()),

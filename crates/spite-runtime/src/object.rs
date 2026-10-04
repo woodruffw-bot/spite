@@ -51,15 +51,15 @@ pub(crate) enum PrimitiveData {
 
 /// Stored object properties, prototype, extensibility, and internal-slot metadata.
 ///
-/// Lookup is linear. String keys compare UTF-16 units; symbols compare identity. The property limit
-/// bounds storage; callers must account for lookup and enumeration work when
+/// Lookup is linear. String keys compare UTF-16 units; symbols compare identity.
+/// An optional property quota bounds storage; callers account for lookup and enumeration work when
 /// integrating these records into an evaluator.
 #[derive(Debug)]
 pub struct OrdinaryObject {
     prototype: Option<Handle>,
     extensible: bool,
     properties: Vec<(PropertyKey, Property)>,
-    max_properties: usize,
+    max_properties: Option<usize>,
     callable: Option<Callable>,
     constructible: bool,
     primitive_data: Option<PrimitiveData>,
@@ -77,6 +77,11 @@ impl OrdinaryObject {
     ///
     /// The caller must supply a prototype from the intended owning heap.
     pub fn new(prototype: Option<Handle>, max_properties: usize) -> Self {
+        Self::with_property_limit(prototype, Some(max_properties))
+    }
+
+    /// Creates an extensible object with an optional own-property limit.
+    pub fn with_property_limit(prototype: Option<Handle>, max_properties: Option<usize>) -> Self {
         Self {
             prototype,
             extensible: true,
@@ -212,9 +217,13 @@ impl OrdinaryObject {
         if !self.extensible {
             return Ok(false);
         }
-        if self.properties.len() >= self.max_properties {
+        if self
+            .max_properties
+            .is_some_and(|limit| self.properties.len() >= limit)
+        {
             return Err(PropertyLimit);
         }
+        self.properties.try_reserve(1).map_err(|_| PropertyLimit)?;
         self.properties.push((key, descriptor.complete()));
         Ok(true)
     }
