@@ -4,8 +4,8 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKeyRef, Span};
 
 pub(crate) struct IteratorRecord {
-    iterator: ObjectHandle,
-    next: Value,
+    pub(super) iterator: ObjectHandle,
+    pub(super) next: Value,
     done: bool,
 }
 
@@ -45,6 +45,15 @@ impl Realm {
                 "iterator is not an object",
             ));
         };
+        self.get_iterator_direct(iterator, span)
+    }
+
+    /// GetIteratorDirect (sec-getiteratordirect) captures next without checking callability.
+    pub(crate) fn get_iterator_direct(
+        &mut self,
+        iterator: ObjectHandle,
+        span: Span,
+    ) -> Result<IteratorRecord, Error> {
         // Get next exactly once. Its callable check belongs to IteratorNext.
         let next = self.get_property(&iterator, &JsString::from("next"), span)?;
         Ok(IteratorRecord {

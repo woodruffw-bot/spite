@@ -176,6 +176,15 @@ impl Realm {
                 span,
                 "Iterator requires a distinct newTarget",
             )),
+            Builtin::IteratorFrom => {
+                self.iterator_from(arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Builtin::IteratorWrapperNext | Builtin::IteratorWrapperReturn => self
+                .iterator_wrapper_method(
+                    this,
+                    matches!(builtin, Builtin::IteratorWrapperReturn),
+                    span,
+                ),
             Builtin::IteratorConstructorGet => Ok(Value::Object(
                 self.intrinsics
                     .as_ref()

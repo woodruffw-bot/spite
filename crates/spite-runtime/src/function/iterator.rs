@@ -7,6 +7,7 @@ use crate::{
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod from;
 mod operations;
 mod tag;
 
@@ -14,6 +15,10 @@ mod tag;
 pub(crate) struct IteratorIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
+    wrapper_prototype: ObjectHandle,
+    from: ObjectHandle,
+    wrapper_next: ObjectHandle,
+    wrapper_return: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
     identity: ObjectHandle,
@@ -30,6 +35,10 @@ impl IteratorIntrinsics {
         [
             &self.constructor,
             &self.prototype,
+            &self.wrapper_prototype,
+            &self.from,
+            &self.wrapper_next,
+            &self.wrapper_return,
             &self.array_prototype,
             &self.string_prototype,
             &self.identity,
@@ -54,6 +63,26 @@ impl Realm {
         let constructor = self.new_builtin(function_prototype, Builtin::Iterator, span)?;
         let prototype =
             self.object_work(span, |objects, _| objects.create(Some(object_prototype)))?;
+        let wrapper_prototype =
+            self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let from = self.new_builtin(function_prototype, Builtin::IteratorFrom, span)?;
+        let wrapper_next =
+            self.new_builtin(function_prototype, Builtin::IteratorWrapperNext, span)?;
+        let wrapper_return =
+            self.new_builtin(function_prototype, Builtin::IteratorWrapperReturn, span)?;
+        for (object, name, function) in [
+            (&constructor, "from", &from),
+            (&wrapper_prototype, "next", &wrapper_next),
+            (&wrapper_prototype, "return", &wrapper_return),
+        ] {
+            self.define_builtin_property(
+                object,
+                name,
+                Value::Object(function.clone()),
+                true,
+                span,
+            )?;
+        }
         let array_prototype =
             self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let string_prototype =
@@ -158,6 +187,10 @@ impl Realm {
         Ok(IteratorIntrinsics {
             constructor,
             prototype,
+            wrapper_prototype,
+            from,
+            wrapper_next,
+            wrapper_return,
             array_prototype,
             string_prototype,
             identity,

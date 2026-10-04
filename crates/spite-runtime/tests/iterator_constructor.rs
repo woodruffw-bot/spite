@@ -172,12 +172,11 @@ fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_one
 #[test]
 fn incomplete_iterator_inventories_remain_host_gaps_and_skip_handlers() {
     for expression in [
-        "Iterator.from",
         "Iterator.concat",
         "Iterator.prototype.map",
         "Reflect.ownKeys(Iterator)",
         "Reflect.ownKeys(Iterator.prototype)",
-        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Iterator.from});Reflect.construct(Iterator,[],B)",
+        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Iterator.concat});Reflect.construct(Iterator,[],B)",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

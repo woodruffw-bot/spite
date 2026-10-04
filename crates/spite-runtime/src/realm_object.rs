@@ -732,7 +732,7 @@ fn missing_iterator_method(key: &JsString) -> bool {
 }
 
 fn missing_iterator_static(key: &JsString) -> bool {
-    ["from", "concat"].iter().any(|name| key_is(key, name))
+    key_is(key, "concat")
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

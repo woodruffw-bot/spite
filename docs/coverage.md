@@ -611,10 +611,19 @@ throw TypeError. Distinct newTargets select an object-valued prototype or the
 intrinsic fallback without executing their bodies or coercing ignored arguments.
 Regressions cover bound forwarding, ordered prototype access and errors, generic
 constructor getters, protected setter updates and inherited-property bypass,
-global replacement, and intrinsic retention. Iterator.from/concat and prototype
+global replacement, and intrinsic retention. Iterator.concat and prototype
 helpers remain Unsupported, including enumeration of either incomplete inventory.
 Symbol-keyed access is tested through native injection, Script integration tests,
 and reviewed upstream Symbol/iterator fixtures.
+
+Iterator.from supports object iterables, direct iterators, and String primitives,
+preserving existing intrinsic instances and wrapping other iterators. Regressions
+cover primitive rejection before hooks, original hook receivers, ordered
+acquisition, captured next methods, live return lookups, exact result/receiver
+forwarding without arguments, no implicit completion state, reentrant calls,
+retry after throws, internal-slot validation, and cached/source retention during
+collection. Wrapper prototype reflection and integrity cover its complete two
+method inventory; constructor/prototype helper inventories remain guarded.
 
 Remaining String methods,
 Array.fromAsync, derived construction, classes, destructuring, regular
@@ -651,7 +660,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 231 retained entries outside the per-Script work
+Realm initialization creates 235 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

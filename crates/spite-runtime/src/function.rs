@@ -143,6 +143,9 @@ pub(crate) enum Builtin {
     ArrayEntries,
     ArrayIteratorNext,
     Iterator,
+    IteratorFrom,
+    IteratorWrapperNext,
+    IteratorWrapperReturn,
     IteratorIdentity,
     IteratorConstructorGet,
     IteratorConstructorSet,
@@ -320,12 +323,15 @@ impl Builtin {
             Self::Array => "Array",
             Self::ArrayIsArray => "isArray",
             Self::ArrayOf => "of",
-            Self::ArrayFrom => "from",
+            Self::ArrayFrom | Self::IteratorFrom => "from",
             Self::ArraySpecies => "get [Symbol.species]",
             Self::ArrayKeys => "keys",
             Self::ArrayValues => "values",
             Self::ArrayEntries => "entries",
-            Self::ArrayIteratorNext | Self::StringIteratorNext => "next",
+            Self::ArrayIteratorNext | Self::StringIteratorNext | Self::IteratorWrapperNext => {
+                "next"
+            }
+            Self::IteratorWrapperReturn => "return",
             Self::Iterator => "Iterator",
             Self::IteratorIdentity | Self::StringIterator => "[Symbol.iterator]",
             Self::IteratorConstructorGet => "get constructor",
@@ -445,6 +451,7 @@ impl Builtin {
             | Self::Function
             | Self::IteratorTagSet
             | Self::IteratorConstructorSet
+            | Self::IteratorFrom
             | Self::FunctionHasInstance
             | Self::FunctionBind
             | Self::Boolean

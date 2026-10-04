@@ -21,7 +21,7 @@ use arguments::ParameterMap;
 mod descriptor;
 mod iterator;
 use iterator::IteratorState;
-pub(crate) use iterator::{ArrayIterationKind, ArrayIterator, StringIterator};
+pub(crate) use iterator::{ArrayIterationKind, ArrayIterator, IteratorWrapper, StringIterator};
 mod entry;
 mod store;
 pub use descriptor::{
@@ -136,6 +136,13 @@ impl OrdinaryObject {
     pub(crate) fn string_iterator(&self) -> Option<&StringIterator> {
         match &self.iterator {
             Some(IteratorState::String(state)) => Some(state),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn iterator_wrapper(&self) -> Option<&IteratorWrapper> {
+        match &self.iterator {
+            Some(IteratorState::Wrapper(state)) => Some(state),
             _ => None,
         }
     }
@@ -306,10 +313,7 @@ impl Trace for OrdinaryObject {
         };
         std::iter::once(self.prototype.as_ref())
             .chain(self.primitive_data.iter().map(|_| None))
-            .chain(self.iterator.iter().map(|iterator| match iterator {
-                IteratorState::Array(state) => state.array.as_ref(),
-                IteratorState::String(_) => None,
-            }))
+            .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))

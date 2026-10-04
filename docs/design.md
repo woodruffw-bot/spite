@@ -633,7 +633,7 @@ intrinsic Iterator prototype otherwise. Bound construction first rewrites the
 newTarget as required by 10.4.1.2. Constructor arguments are ignored after normal
 evaluation; no next method or iterator brand is installed on the resulting object.
 The global binding and native constructor metadata retain standard attributes.
-Iterator.from, Iterator.concat, and the remaining prototype helpers are explicit
+Iterator.concat and the remaining prototype helpers are explicit
 Unsupported gaps; own enumeration remains guarded until each inventory is complete.
 The constructor getter returns the intrinsic Iterator independently of receiver
 or replaced globals (27.1.3.3.2). The tag getter returns "Iterator" for every
@@ -644,6 +644,21 @@ absent property is created as an own writable/enumerable/configurable data
 property without inherited lookups. An existing property uses strict Set,
 preserving its attributes and invoking its setter when present. These failures
 are catchable TypeErrors; recursive user setters retain the host reentry limit.
+
+Iterator.from uses GetIteratorFlattenable in iterate-string-primitives mode
+(27.1.3.2.2): reject all other primitives before hooks, get/call Symbol.iterator
+with the original receiver when present, otherwise use the input object directly.
+GetIteratorDirect captures next once before OrdinaryHasInstance tests against the
+intrinsic Iterator constructor. Existing instances retain identity, independently
+of public bindings or custom Symbol.hasInstance hooks. Other inputs become ordinary
+objects with a private Iterated record and the intrinsic wrapper prototype, which
+inherits Iterator.prototype. Trace both the underlying iterator and cached next.
+The wrapper's next calls that cached value without arguments. Return reads its
+underlying return method on each call and returns a fresh undefined/done result
+when absent. Both methods validate their own internal slot, ignore arguments,
+and forward present-method results unchanged without inspecting done/value or
+tracking completion. Reentrancy and retries after language errors remain valid;
+host failures preserve the existing handler bypass and native-stack guards.
 
 String iteration converts its receiver once, synchronously at creation, after
 RequireObjectCoercible (22.1.3.36). The captured value is an owned UTF-16 string;

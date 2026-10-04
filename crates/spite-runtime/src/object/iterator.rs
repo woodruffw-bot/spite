@@ -1,13 +1,34 @@
-//! Built-in iterator state and source retention (22.1.3.36, 23.1.5).
+//! Built-in iterator state and source retention (22.1.3.36, 23.1.5, 27.1.3.2.2).
 
-use super::{Budget, Error, Objects};
+use super::{Budget, Error, Objects, Value};
 use spite_core::JsString;
-use spite_heap::Handle;
+use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]
 pub(super) enum IteratorState {
     Array(ArrayIterator),
     String(StringIterator),
+    Wrapper(Box<IteratorWrapper>),
+}
+
+impl IteratorState {
+    pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
+        let (first, second) = match self {
+            Self::Array(state) => (state.array.as_ref(), None),
+            Self::String(_) => (None, None),
+            Self::Wrapper(state) => (
+                Some(&state.iterator),
+                Some(state.next.trace().next().flatten()),
+            ),
+        };
+        std::iter::once(first).chain(second)
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct IteratorWrapper {
+    pub iterator: Handle,
+    pub next: Value,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -31,6 +52,20 @@ pub(crate) struct StringIterator {
 }
 
 impl Objects {
+    pub(crate) fn create_iterator_wrapper(
+        &mut self,
+        prototype: &Handle,
+        state: IteratorWrapper,
+    ) -> Result<Handle, Error> {
+        self.inspect(&state.iterator)?;
+        if let Value::Object(next) = &state.next {
+            self.inspect(next)?;
+        }
+        let wrapper = self.create(Some(prototype))?;
+        self.object_mut(&wrapper)?.iterator = Some(IteratorState::Wrapper(Box::new(state)));
+        Ok(wrapper)
+    }
+
     pub(crate) fn create_string_iterator(
         &mut self,
         prototype: &Handle,
@@ -222,6 +257,53 @@ mod tests {
             objects.inspect(&source),
             Err(Error::Heap(spite_heap::Error::StaleHandle))
         ));
+    }
+
+    #[test]
+    fn wrapper_sources_and_cached_next_handles_are_validated_before_allocation() {
+        let mut objects = Objects::new(4, 8);
+        let prototype = objects.create(None).unwrap();
+        let source = objects.create(None).unwrap();
+        let next = objects.create(None).unwrap();
+        let mut other = Objects::new(1, 8);
+        let foreign = other.create(None).unwrap();
+        for (proto, iterator, next_method) in [
+            (&foreign, &source, &next),
+            (&prototype, &foreign, &next),
+            (&prototype, &source, &foreign),
+        ] {
+            assert!(matches!(
+                objects.create_iterator_wrapper(
+                    proto,
+                    IteratorWrapper {
+                        iterator: iterator.clone(),
+                        next: Value::Object(next_method.clone()),
+                    }
+                ),
+                Err(Error::Heap(spite_heap::Error::ForeignHandle))
+            ));
+        }
+        assert_eq!(
+            objects
+                .collect([&prototype, &source, &next], 100)
+                .unwrap()
+                .live,
+            3
+        );
+        assert_eq!(objects.collect([&prototype], 100).unwrap().live, 1);
+        for (iterator, next_method) in [(&source, &prototype), (&prototype, &next)] {
+            assert!(matches!(
+                objects.create_iterator_wrapper(
+                    &prototype,
+                    IteratorWrapper {
+                        iterator: iterator.clone(),
+                        next: Value::Object(next_method.clone()),
+                    }
+                ),
+                Err(Error::Heap(spite_heap::Error::StaleHandle))
+            ));
+        }
+        assert_eq!(objects.collect([&prototype], 100).unwrap().live, 1);
     }
 
     #[test]
