@@ -10,6 +10,7 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 mod callback;
 mod concat;
 mod consume;
+mod flat_map;
 mod from;
 mod limit;
 mod operations;
@@ -35,6 +36,7 @@ pub(crate) struct IteratorIntrinsics {
     reduce: ObjectHandle,
     map: ObjectHandle,
     filter: ObjectHandle,
+    flat_map: ObjectHandle,
     take: ObjectHandle,
     drop: ObjectHandle,
     pub array_prototype: ObjectHandle,
@@ -69,6 +71,7 @@ impl IteratorIntrinsics {
             &self.reduce,
             &self.map,
             &self.filter,
+            &self.flat_map,
             &self.take,
             &self.drop,
             &self.array_prototype,
@@ -113,6 +116,7 @@ impl Realm {
         let reduce = self.new_builtin(function_prototype, Builtin::IteratorReduce, span)?;
         let map = self.new_builtin(function_prototype, Builtin::IteratorMap, span)?;
         let filter = self.new_builtin(function_prototype, Builtin::IteratorFilter, span)?;
+        let flat_map = self.new_builtin(function_prototype, Builtin::IteratorFlatMap, span)?;
         let take = self.new_builtin(function_prototype, Builtin::IteratorTake, span)?;
         let drop = self.new_builtin(function_prototype, Builtin::IteratorDrop, span)?;
         let wrapper_next =
@@ -128,6 +132,7 @@ impl Realm {
             (&prototype, "reduce", &reduce),
             (&prototype, "map", &map),
             (&prototype, "filter", &filter),
+            (&prototype, "flatMap", &flat_map),
             (&prototype, "take", &take),
             (&prototype, "drop", &drop),
             (&constructor, "concat", &concat),
@@ -276,6 +281,7 @@ impl Realm {
             reduce,
             map,
             filter,
+            flat_map,
             take,
             drop,
             array_prototype,

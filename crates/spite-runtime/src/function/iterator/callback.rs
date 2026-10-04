@@ -13,7 +13,7 @@ impl Realm {
         &mut self,
         receiver: Value,
         callback: Value,
-        filter: bool,
+        kind: CallbackKind,
         span: Span,
     ) -> Result<Value, Error> {
         let Value::Object(iterator) = receiver else {
@@ -51,11 +51,7 @@ impl Realm {
                     next: record.next,
                 },
                 callback,
-                if filter {
-                    CallbackKind::Filter
-                } else {
-                    CallbackKind::Map
-                },
+                kind,
                 budget,
             )
         })
@@ -128,11 +124,12 @@ impl Realm {
                 CallbackKind::Map => return Ok(Some(result)),
                 CallbackKind::Filter if result.to_boolean() => return Ok(retained),
                 CallbackKind::Filter => {}
+                CallbackKind::FlatMap => unreachable!("flatMap has its own step algorithm"),
             }
         }
     }
 
-    fn iterator_callback_counter_work<T>(
+    pub(super) fn iterator_callback_counter_work<T>(
         &mut self,
         helper: &ObjectHandle,
         span: Span,

@@ -29,6 +29,7 @@ pub(crate) struct ConcatIterator {
 pub(crate) enum CallbackKind {
     Map,
     Filter,
+    FlatMap,
 }
 
 #[derive(Debug)]
@@ -38,6 +39,7 @@ pub(crate) struct CallbackIterator {
     pub kind: CallbackKind,
     pub counter: Counter,
     pub advance: bool,
+    pub inner: Option<IteratorWrapper>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -116,6 +118,10 @@ impl IteratorHelper {
                     Some(&state.callback),
                     state.iterated.next.trace().next().flatten(),
                 ]
+                .into_iter()
+                .chain(state.inner.iter().flat_map(|inner| {
+                    std::iter::once(Some(&inner.iterator)).chain(inner.next.trace())
+                }))
             }))
             .chain(self.limit().into_iter().flat_map(|state| {
                 [
@@ -183,6 +189,7 @@ impl Objects {
                     kind,
                     counter: Counter::Small(0),
                     advance: false,
+                    inner: None,
                 })),
             })));
         Ok(helper)
@@ -239,7 +246,7 @@ impl Objects {
             previous,
             HelperStatus::SuspendedStart | HelperStatus::SuspendedYield
         ) {
-            // Finish and active concat-reference release are prepaid per resume;
+            // Finish and active inner-reference release are prepaid per resume;
             // all other capture release was prepaid at creation. Host work
             // failures cannot strand an executing object.
             budget.charge(3)?;
@@ -299,6 +306,38 @@ impl Objects {
             Some(HelperClosure::Concat(state)) => Ok(state),
             _ => Err(Error::WrongKind),
         }
+    }
+
+    pub(crate) fn set_callback_inner(
+        &mut self,
+        helper: &Handle,
+        inner: IteratorWrapper,
+    ) -> Result<(), Error> {
+        self.inspect(&inner.iterator)?;
+        if let crate::Value::Object(next) = &inner.next {
+            self.inspect(next)?;
+        }
+        let state = self.callback_mut(helper)?;
+        debug_assert_eq!(state.kind, CallbackKind::FlatMap);
+        debug_assert!(state.inner.is_none());
+        state.inner = Some(inner);
+        Ok(())
+    }
+
+    pub(crate) fn finish_callback_inner(
+        &mut self,
+        helper: &Handle,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        // Each exhausted inner releases its two captures. Completion after a
+        // host abort instead uses the release prepaid before this resume.
+        budget.charge(2)?;
+        let state = self.callback_mut(helper)?;
+        debug_assert_eq!(state.kind, CallbackKind::FlatMap);
+        debug_assert!(state.inner.is_some());
+        state.inner = None;
+        state.advance = true;
+        Ok(())
     }
 
     pub(crate) fn callback_mut(&mut self, helper: &Handle) -> Result<&mut CallbackIterator, Error> {

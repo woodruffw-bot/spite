@@ -1,7 +1,7 @@
 //! Native algorithms are kept out of the recursive script dispatch frame.
 
 use super::{Builtin, Callable, FunctionText, number};
-use crate::{Error, ExceptionKind, Realm, Value};
+use crate::{Error, ExceptionKind, Realm, Value, object::CallbackKind};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {
@@ -190,12 +190,18 @@ impl Realm {
                 matches!(builtin, Builtin::IteratorTake),
                 span,
             ),
-            Builtin::IteratorMap | Builtin::IteratorFilter => self.iterator_callback_helper(
-                this,
-                arguments.next().unwrap_or(Value::Undefined),
-                matches!(builtin, Builtin::IteratorFilter),
-                span,
-            ),
+            Builtin::IteratorMap | Builtin::IteratorFilter | Builtin::IteratorFlatMap => self
+                .iterator_callback_helper(
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    match builtin {
+                        Builtin::IteratorMap => CallbackKind::Map,
+                        Builtin::IteratorFilter => CallbackKind::Filter,
+                        Builtin::IteratorFlatMap => CallbackKind::FlatMap,
+                        _ => unreachable!("callback helper"),
+                    },
+                    span,
+                ),
             Builtin::IteratorReduce => {
                 let reducer = arguments.next().unwrap_or(Value::Undefined);
                 self.iterator_reduce(this, reducer, arguments.next(), span)

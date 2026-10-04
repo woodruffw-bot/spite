@@ -712,16 +712,11 @@ impl Realm {
         };
         (object == &intrinsics.string.prototype && missing_string_method(key))
             || (object == &intrinsics.array.constructor && missing_array_static(key))
-            || (object == &intrinsics.iterator.prototype && missing_iterator_method(key))
     }
 }
 
 fn missing_array_static(key: &JsString) -> bool {
     key_is(key, "fromAsync")
-}
-
-fn missing_iterator_method(key: &JsString) -> bool {
-    ["flatMap"].iter().any(|name| key_is(key, name))
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

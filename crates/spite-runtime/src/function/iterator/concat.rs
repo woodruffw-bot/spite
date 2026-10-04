@@ -2,7 +2,7 @@
 
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{ConcatIterable, HelperStatus, IteratorWrapper},
+    object::{CallbackKind, ConcatIterable, HelperStatus, IteratorWrapper},
 };
 use spite_core::{Span, WellKnownSymbol};
 
@@ -111,24 +111,19 @@ impl Realm {
         }
         let result = (|| {
             let value = if return_method {
-                let iterator = self.object_work(span, |objects, _| {
-                    Ok(objects
-                        .inspect(&helper)?
-                        .iterator_helper()
-                        .expect("helper")
-                        .underlying()
-                        .cloned())
-                })?;
-                if let Some(iterator) = iterator {
-                    self.iterator_close_direct(iterator, span)?;
-                }
+                self.iterator_helper_close_yielded(&helper, span)?;
                 None
             } else {
                 let (callback, limit) = self.object_work(span, |objects, _| {
                     let state = objects.inspect(&helper)?.iterator_helper().expect("helper");
-                    Ok((state.callback().is_some(), state.limit().is_some()))
+                    Ok((
+                        state.callback().map(|state| state.kind),
+                        state.limit().is_some(),
+                    ))
                 })?;
-                if callback {
+                if callback == Some(CallbackKind::FlatMap) {
+                    self.iterator_flat_map_step(&helper, span)?
+                } else if callback.is_some() {
                     self.iterator_callback_step(&helper, span)?
                 } else if limit {
                     self.iterator_limit_step(&helper, span)?

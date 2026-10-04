@@ -739,6 +739,19 @@ callback throws close the live source; step/host failures never do. Active reent
 throws TypeError. Finish/release work is prepaid and cannot strand an executing
 helper after a host abort. All defaults remain unlimited.
 
+Iterator.prototype.flatMap captures direct next and suspends a one-level flattening
+closure (27.1.3.3.6). GetIteratorFlattenable rejects all mapped primitives, including
+Strings, before any iterator lookup. Object results use their iterator method or
+fall back to direct next. Capture each inner next once; exhaust empty inners with
+an iterative loop. Advance the exact outer index only after an inner is exhausted.
+Outer step failures never close; mapper, acquisition, and inner step language
+throws close the outer source with incoming-error precedence, without closing a
+failing inner. A return resumed at Yield closes the inner before the outer. Inner
+closing errors become the incoming throw for outer cleanup. Host failures skip
+JavaScript cleanup and permanently complete the helper. Trace the outer, mapper,
+and active inner captures throughout execution and suspension; release them on
+completion. Defaults impose no execution, heap, or internal counter quota.
+
 Iterator.prototype.take/drop convert the limit before direct next capture
 (27.1.3.3.2/11). Conversion throws, NaN, and negative integer counts close with
 incoming-error precedence; negative fractions truncate to zero. Edition 17 accepts

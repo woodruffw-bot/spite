@@ -680,6 +680,15 @@ metadata/collection, large default pipelines, and opt-in host aborts. Internal
 tests verify indices beyond u64 under a zero BigInt-value quota and reject foreign
 or noncallable captures before allocating native helper objects.
 
+Lazy Iterator.prototype.flatMap regressions cover direct outer capture, delayed
+mapper/inner acquisition, cached inner next, iterable/direct fallback and boxed
+Strings, primitive rejection before hooks, one-level identity preservation, empty
+inners and exact outer indices, mapper/acquisition/inner-step closing, outer-step
+failures without closing, done-before-value, early completion before cleanup,
+inner-before-outer return and error precedence, reentry, metadata/brands, traced
+capture retention/release, large default inputs, and host aborts without cleanup.
+Internal traversal verifies indices beyond u64 with a zero BigInt-value quota.
+
 Lazy Iterator.prototype.take/drop validate their object receivers, convert counts
 before capturing next, and preserve exact finite countdowns. Regressions cover
 conversion/validation closing precedence, signed zero and fractional truncation,

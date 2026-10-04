@@ -1,7 +1,7 @@
 //! Synchronous iterator acquisition, stepping, and completion closing (7.4).
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
-use spite_core::{JsString, PropertyKeyRef, Span};
+use spite_core::{JsString, PropertyKeyRef, Span, WellKnownSymbol};
 
 pub(crate) struct IteratorRecord {
     pub(super) iterator: ObjectHandle,
@@ -49,6 +49,39 @@ impl Realm {
         span: Span,
     ) -> Result<IteratorRecord, Error> {
         let Value::Object(iterator) = self.call(method, value, vec![], span)? else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "iterator is not an object",
+            ));
+        };
+        self.get_iterator_direct(iterator, span)
+    }
+
+    /// GetIteratorFlattenable (7.4): reject disallowed primitives before lookup.
+    pub(super) fn get_iterator_flattenable(
+        &mut self,
+        value: Value,
+        iterate_string_primitives: bool,
+        span: Span,
+    ) -> Result<IteratorRecord, Error> {
+        if !matches!(&value, Value::Object(_))
+            && !(iterate_string_primitives && matches!(&value, Value::String(_)))
+        {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "value cannot be flattened as an iterator",
+            ));
+        }
+        let iterator = if let Some(method) =
+            self.get_method(&value, &WellKnownSymbol::Iterator.symbol(), span)?
+        {
+            self.call(method, value, vec![], span)?
+        } else {
+            value
+        };
+        let Value::Object(iterator) = iterator else {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

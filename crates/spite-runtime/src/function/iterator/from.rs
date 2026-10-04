@@ -1,34 +1,11 @@
 //! Iterator.from and %WrapForValidIteratorPrototype% (27.1.3.2.2).
 
 use crate::{Error, ExceptionKind, Realm, Value, object::IteratorWrapper};
-use spite_core::{JsString, Span, WellKnownSymbol};
+use spite_core::{JsString, Span};
 
 impl Realm {
     pub(crate) fn iterator_from(&mut self, value: Value, span: Span) -> Result<Value, Error> {
-        // GetIteratorFlattenable (sec-getiteratorflattenable), iterate-string-primitives mode:
-        // reject every other primitive before any property lookup or coercion.
-        if !matches!(&value, Value::Object(_) | Value::String(_)) {
-            return Err(Self::exception(
-                ExceptionKind::TypeError,
-                span,
-                "Iterator.from requires an object or String",
-            ));
-        }
-        let iterator = if let Some(method) =
-            self.get_method(&value, &WellKnownSymbol::Iterator.symbol(), span)?
-        {
-            self.call(method, value, vec![], span)?
-        } else {
-            value
-        };
-        let Value::Object(iterator) = iterator else {
-            return Err(Self::exception(
-                ExceptionKind::TypeError,
-                span,
-                "iterator is not an object",
-            ));
-        };
-        let record = self.get_iterator_direct(iterator, span)?;
+        let record = self.get_iterator_flattenable(value, true, span)?;
         let intrinsics = &self.intrinsics.as_ref().expect("initialized").iterator;
         let constructor = intrinsics.constructor.clone();
         let prototype = intrinsics.wrapper_prototype.clone();
