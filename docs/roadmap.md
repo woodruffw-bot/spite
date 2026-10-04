@@ -91,7 +91,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Store declarative environments in the traced heap with stable identity and outer links.
 - [x] Parse expression-bodied arrows with simple parameters, early errors, and exact source text.
 - [x] Execute arrow closures with shared bindings, names, metadata, and source stringification.
-- [ ] Add function bodies, return completions, ordinary functions, and lexical this.
+- [x] Add arrow block bodies, function-local declarations, strict directives, and return completions.
+- [ ] Add ordinary functions and lexical this.
 - [x] Parse calls and evaluate callee/arguments in order, with correct non-callable TypeErrors.
 - [x] Add builtin function objects and Object.prototype conversion methods.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.

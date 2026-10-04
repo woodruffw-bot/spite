@@ -35,12 +35,4 @@ expression: errors
         },
         message: "default parameters are not implemented",
     },
-    Diagnostic {
-        kind: Unsupported,
-        span: Span {
-            start: 3,
-            end: 4,
-        },
-        message: "arrow block bodies are not implemented",
-    },
 ]

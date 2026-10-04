@@ -152,6 +152,7 @@ enum CompletionKind {
     Normal,
     Break,
     Continue,
+    Return,
 }
 
 struct Completion {
@@ -207,7 +208,7 @@ pub struct Realm {
     limits: Limits,
     remaining_steps: usize,
     call_depth: usize,
-    expression_depth: usize,
+    evaluation_depth: usize,
     strict: bool,
     objects: object::Objects,
     intrinsics: Option<function::Intrinsics>,
@@ -244,7 +245,7 @@ impl Realm {
             limits,
             remaining_steps: 0,
             call_depth: 0,
-            expression_depth: 0,
+            evaluation_depth: 0,
             strict: false,
             objects: object::Objects::new(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
@@ -591,6 +592,17 @@ impl Realm {
         statement: &Statement,
         labels: &[&str],
     ) -> Result<Completion, Error> {
+        self.enter_evaluation(statement.span)?;
+        let result = self.statement_inner(statement, labels);
+        self.evaluation_depth -= 1;
+        result
+    }
+
+    fn statement_inner(
+        &mut self,
+        statement: &Statement,
+        labels: &[&str],
+    ) -> Result<Completion, Error> {
         self.tick(statement.span)?;
         match &statement.kind {
             // ECMA-262 14.16.1: no debugging facility is active in this host.
@@ -619,6 +631,14 @@ impl Realm {
                 }
                 Ok(result)
             }
+            StatementKind::Return(expression) => Ok(Completion {
+                kind: CompletionKind::Return,
+                value: Some(match expression {
+                    Some(expression) => self.expression(expression)?,
+                    None => Value::Undefined,
+                }),
+                target: None,
+            }),
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
             StatementKind::Lexical { bindings, .. } => {
                 self.initialize_bindings(bindings)?;
@@ -1056,17 +1076,22 @@ impl Realm {
         result
     }
 
-    fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
-        // Bound total evaluator recursion across function calls as well as syntax.
-        if self.expression_depth >= 64 {
+    fn enter_evaluation(&mut self, span: Span) -> Result<(), Error> {
+        // Bound combined statement/expression recursion across function calls.
+        if self.evaluation_depth >= 64 {
             return Err(Error::Limit {
-                span: expr.span,
-                message: "expression nesting limit exceeded".into(),
+                span,
+                message: "evaluation nesting limit exceeded".into(),
             });
         }
-        self.expression_depth += 1;
+        self.evaluation_depth += 1;
+        Ok(())
+    }
+
+    fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
+        self.enter_evaluation(expr.span)?;
         let result = self.expression_inner(expr);
-        self.expression_depth -= 1;
+        self.evaluation_depth -= 1;
         result
     }
 

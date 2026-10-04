@@ -42,12 +42,28 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
         index: 0,
         depth: 0,
         allow_in: true,
+        allow_return: false,
     };
     let mut statements = Vec::new();
     while parser.current().kind != Kind::Eof {
         statements.push(parser.statement(true)?);
     }
-    let strict = statements
+    let strict = has_use_strict(&statements, source);
+    if strict {
+        reject_legacy_tokens(&parser.tokens)?;
+    }
+    validate_scope(
+        &statements,
+        strict,
+        ControlContext::default(),
+        &mut Vec::new(),
+    )?;
+    Ok(Script { statements, strict })
+}
+
+// ECMA-262 14.1: only unescaped, unparenthesized string directives count.
+fn has_use_strict(statements: &[Statement], source: &str) -> bool {
+    statements
         .iter()
         .take_while(|s| {
             matches!(
@@ -66,25 +82,18 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
                 &source[expr.span.start..expr.span.end],
                 "\"use strict\"" | "'use strict'"
             )
-        });
-    // Strictness is known only after reading the complete directive prologue.
-    // Earlier string directives are subject to the same strict lexical errors.
-    if strict {
-        if let Some(token) = parser.tokens.iter().find(|token| token.legacy) {
-            return Err(Diagnostic::new(
-                DiagnosticKind::Syntax,
-                token.span,
-                "legacy numeric literals and escapes are forbidden in strict code",
-            ));
-        }
+        })
+}
+
+fn reject_legacy_tokens(tokens: &[Token]) -> Result<(), Diagnostic> {
+    // Strictness also applies to earlier directives and nested function code.
+    if let Some(token) = tokens.iter().find(|token| token.legacy) {
+        return Err(early(
+            token.span,
+            "legacy numeric literals and escapes are forbidden in strict code",
+        ));
     }
-    validate_scope(
-        &statements,
-        strict,
-        ControlContext::default(),
-        &mut Vec::new(),
-    )?;
-    Ok(Script { statements, strict })
+    Ok(())
 }
 
 struct Parser {
@@ -93,6 +102,7 @@ struct Parser {
     index: usize,
     depth: usize,
     allow_in: bool,
+    allow_return: bool,
 }
 
 impl Parser {
@@ -417,6 +427,23 @@ impl Parser {
         } else if self.eat("debugger") {
             self.semicolon()?;
             StatementKind::Debugger
+        } else if self.at("return") {
+            if !self.allow_return {
+                return Err(self.error("return outside a function body"));
+            }
+            self.bump();
+            // ECMA-262 14.10: a line terminator ends a bare return.
+            let value = if self.current().newline
+                || self.at(";")
+                || self.at("}")
+                || self.current().kind == Kind::Eof
+            {
+                None
+            } else {
+                Some(self.expression_with_in(1, true)?)
+            };
+            self.semicolon()?;
+            StatementKind::Return(value)
         } else if self.eat("throw") {
             if self.current().newline {
                 return Err(self.error("line terminator after throw"));
@@ -429,7 +456,7 @@ impl Parser {
                 if !self.current().escaped
                     && matches!(
                         word.as_str(),
-                        "function" | "class" | "return" | "with" | "import" | "export"
+                        "function" | "class" | "with" | "import" | "export"
                     )
                 {
                     return Err(self.unsupported("statement is not implemented"));
@@ -525,7 +552,11 @@ impl Parser {
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
-            ExprKind::Arrow { body, .. } => body.depth,
+            ExprKind::Arrow { body, .. } => match body {
+                ArrowBody::Expression(body) => body.depth,
+                // Statement nesting is bounded while parsing the body.
+                ArrowBody::Block(_) => 0,
+            },
             ExprKind::Binary(_, a, b)
             | ExprKind::Assign(a, b)
             | ExprKind::CompoundAssign(_, a, b) => a.depth.max(b.depth),
@@ -1148,7 +1179,7 @@ fn validate_var_bindings(bindings: &[Binding], strict: bool) -> Result<(), Diagn
     Ok(())
 }
 
-// Function and static-initialization bodies will start with a fresh context.
+// Function bodies start with a fresh context; class static blocks will too.
 #[derive(Clone, Copy, Default)]
 struct ControlContext {
     in_iteration: bool,
@@ -1201,9 +1232,9 @@ fn validate_statement<'a>(
 ) -> Result<(), Diagnostic> {
     match &statement.kind {
         StatementKind::Var(bindings) => validate_var_bindings(bindings, strict)?,
-        StatementKind::Expression(expr) | StatementKind::Throw(expr) => {
-            validate_expr(expr, strict)?
-        }
+        StatementKind::Expression(expr)
+        | StatementKind::Throw(expr)
+        | StatementKind::Return(Some(expr)) => validate_expr(expr, strict)?,
         StatementKind::Lexical { bindings, .. } => {
             for binding in bindings {
                 if let Some(expr) = &binding.initializer {
@@ -1384,7 +1415,8 @@ fn validate_statement<'a>(
         StatementKind::Empty
         | StatementKind::Debugger
         | StatementKind::Break(None)
-        | StatementKind::Continue(None) => {}
+        | StatementKind::Continue(None)
+        | StatementKind::Return(None) => {}
     }
     Ok(())
 }
@@ -1410,8 +1442,34 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Arrow {
             parameters, body, ..
         } => {
-            validate_binding_names(parameters, strict, &mut BTreeSet::new())?;
-            validate_expr(body, strict)?;
+            let strict = strict || matches!(body, ArrowBody::Block(body) if body.is_strict());
+            let mut names = BTreeSet::new();
+            validate_binding_names(parameters, strict, &mut names)?;
+            match body {
+                ArrowBody::Expression(body) => validate_expr(body, strict)?,
+                ArrowBody::Block(body) => {
+                    // ECMA-262 15.3.1: top-level lexical names cannot be parameters.
+                    for statement in body.statements() {
+                        if let StatementKind::Lexical { bindings, .. } = &statement.kind {
+                            for binding in bindings {
+                                if names.contains(binding.name.as_str()) {
+                                    return Err(early(
+                                        binding.span,
+                                        "lexical declaration conflicts with parameter",
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                    // Function boundaries reset labels and break/continue targets.
+                    validate_scope(
+                        body.statements(),
+                        strict,
+                        ControlContext::default(),
+                        &mut Vec::new(),
+                    )?;
+                }
+            }
         }
 
         ExprKind::Object(properties) => {

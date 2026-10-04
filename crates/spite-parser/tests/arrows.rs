@@ -120,7 +120,6 @@ fn unimplemented_parameter_and_body_forms_remain_explicit_gaps() {
         "(...xs)=>xs",
         "([x])=>x",
         "({x})=>x",
-        "x=>{return x;}",
         "async x=>x",
         "async (x)=>x",
     ] {
@@ -134,16 +133,10 @@ fn unimplemented_parameter_and_body_forms_remain_explicit_gaps() {
 
 #[test]
 fn arrow_diagnostics_snapshot() {
-    let errors: Vec<_> = [
-        "(x,x)=>x",
-        "x\n=>x",
-        "'use strict'; eval=>eval",
-        "(x=1)=>x",
-        "x=>{return x;}",
-    ]
-    .into_iter()
-    .map(|source| parse_script(source).unwrap_err())
-    .collect();
+    let errors: Vec<_> = ["(x,x)=>x", "x\n=>x", "'use strict'; eval=>eval", "(x=1)=>x"]
+        .into_iter()
+        .map(|source| parse_script(source).unwrap_err())
+        .collect();
     insta::assert_debug_snapshot!(errors);
 }
 

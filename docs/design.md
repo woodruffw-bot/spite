@@ -81,13 +81,16 @@ Parser depth and evaluator work limits report host resource errors, not JavaScri
 exceptions. Syntax or semantics that are not implemented must be recorded as gaps.
 Never use unsupported syntax rejection as evidence of conformance to negative tests.
 
-Arrow parsing begins with non-async arrows, simple identifier parameters, and
-assignment-expression bodies (15.3). A bounded token lookahead refines the
+Arrow parsing supports non-async arrows with simple identifier parameters and
+assignment-expression or block bodies (15.3). A bounded token lookahead refines the
 parenthesized parameter cover without changing ordinary parenthesized expressions.
 Parameters are unique in both modes, strict binding rules are inherited, and no
-line terminator may precede the arrow. The body inherits the In grammar parameter.
-Defaults, rest/pattern parameters, async arrows, and block bodies remain explicit
-gaps. Function source ranges share an owned source allocation and preserve exact
+line terminator may precede the arrow. Expression bodies inherit the In grammar
+parameter; block bodies reset In and enable Return. Each function resets control
+targets and labels. Its directive prologue enables strict parameter/body checks,
+including legacy tokens before the directive and in nested functions. Top-level
+lexical declarations cannot conflict with parameters (15.3.1). Defaults,
+rest/pattern parameters, and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
 ## Runtime
@@ -321,15 +324,24 @@ Accessor/coercion calls that re-enter execution have a fixed host nesting limit 
 restores the counter; iterative call/apply/bound transfers do not increase it.
 Host limit failures continue to bypass JavaScript catch/finally handlers.
 
-Expression-bodied arrows share immutable parameter/body syntax and retained source
+Arrows share immutable parameter/body syntax and retained source
 through safe Rc values. Creating a closure captures an environment handle; invoking
 it allocates a fresh parameter environment whose outer is the captured environment,
 never the caller’s scope. Missing parameters are undefined, extra arguments are
 ignored after evaluation, and parameters remain mutable. Arrows create no arguments
 binding or constructor/prototype property. Lexical this syntax remains unimplemented.
 Every call restores caller strictness and active scopes on success or abrupt exit.
-The evaluator bounds total nested expressions across calls to 64 as well as call
-re-entry; ordinary user tail calls still await explicit execution frames.
+The evaluator bounds combined statement/expression nesting across calls to 64,
+as well as call re-entry; ordinary user tail calls await explicit execution frames.
+
+Block bodies instantiate all function vars in the parameter environment before
+execution, preserving existing parameter values and initializing other vars to
+undefined (10.2.11). Body lexical declarations begin uninitialized; non-strict
+bodies use a separate lexical environment. Nested functions do not contribute
+vars to their enclosing scope. A normal body completion produces undefined.
+Return completions always carry a value, including undefined for bare returns,
+and propagate through statements until invocation consumes them (14.10, 15.3.3).
+Finally may replace a language completion, but cannot intercept host failures.
 
 NamedEvaluation supplies names for binding initializers, bare identifier assignment
 and logical-assignment targets, and ordinary object property values. Parenthesized

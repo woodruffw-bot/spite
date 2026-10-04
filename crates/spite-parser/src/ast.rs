@@ -29,6 +29,41 @@ impl Script {
     }
 }
 
+/// A shared function statement list, excluding its surrounding braces.
+#[derive(Clone, Debug, PartialEq)]
+pub struct FunctionBody {
+    pub(crate) statements: Rc<[Statement]>,
+    pub(crate) strict: bool,
+}
+
+impl FunctionBody {
+    /// Returns the function's top-level statements.
+    pub fn statements(&self) -> &[Statement] {
+        &self.statements
+    }
+    /// Returns whether this body's own directive prologue enables strict mode.
+    pub fn is_strict(&self) -> bool {
+        self.strict
+    }
+    /// Returns function-scoped var declarations, excluding nested functions.
+    pub fn var_declarations(&self) -> Vec<&Binding> {
+        let mut declarations = Vec::new();
+        for statement in self.statements.iter() {
+            statement.collect_var_declarations(&mut declarations);
+        }
+        declarations
+    }
+}
+
+/// The two concise-body forms of a non-async arrow.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ArrowBody {
+    /// An assignment expression whose value is returned.
+    Expression(Rc<Expr>),
+    /// A function body requiring an explicit return to produce a value.
+    Block(FunctionBody),
+}
+
 /// A statement with its source range.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Statement {
@@ -92,7 +127,8 @@ impl Statement {
             | StatementKind::Lexical { .. }
             | StatementKind::Break(_)
             | StatementKind::Continue(_)
-            | StatementKind::Throw(_) => {}
+            | StatementKind::Throw(_)
+            | StatementKind::Return(_) => {}
         }
     }
 }
@@ -180,6 +216,8 @@ pub enum StatementKind {
     Continue(Option<Label>),
     /// Throw a language value.
     Throw(Expr),
+    /// Return from the current function, with undefined when the expression is absent.
+    Return(Option<Expr>),
 }
 
 /// A catch clause with an optional binding identifier.
@@ -302,12 +340,12 @@ pub enum ExprKind {
         /// Argument expressions in source order.
         arguments: Vec<Expr>,
     },
-    /// A non-async arrow with simple identifier parameters and an expression body.
+    /// A non-async arrow with simple identifier parameters.
     Arrow {
         /// Parameters in source order; supported parameters have no initializer.
         parameters: Rc<[Binding]>,
-        /// The shared assignment-expression body, evaluated when the function is called.
-        body: Rc<Expr>,
+        /// Shared body syntax, evaluated when the function is called.
+        body: ArrowBody,
         /// Exact retained source for standard function stringification.
         source: FunctionSource,
     },

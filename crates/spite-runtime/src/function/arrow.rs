@@ -1,15 +1,17 @@
-//! Expression-bodied arrow closures and function name inference.
+//! Arrow closures and function name inference.
 
-use crate::{BindingState, Error, Realm, Value, environment::EnvironmentHandle};
+use crate::{BindingState, CompletionKind, Error, Realm, Value, environment::EnvironmentHandle};
 use spite_core::{JsString, Span};
-use spite_parser::ast::{Binding, Expr, ExprKind, FunctionSource};
+use spite_parser::ast::{
+    ArrowBody, Binding, Expr, ExprKind, FunctionBody, FunctionSource, StatementKind,
+};
 use std::{collections::BTreeMap, rc::Rc};
 
 #[derive(Clone, Debug)]
 pub(crate) struct ArrowFunction {
     pub environment: EnvironmentHandle,
     pub parameters: Rc<[Binding]>,
-    pub body: Rc<Expr>,
+    pub body: ArrowBody,
     pub source: FunctionSource,
     pub strict: bool,
 }
@@ -18,7 +20,7 @@ impl Realm {
     pub(crate) fn arrow_function(
         &mut self,
         parameters: &Rc<[Binding]>,
-        body: &Rc<Expr>,
+        body: &ArrowBody,
         source: &FunctionSource,
         span: Span,
     ) -> Result<Value, Error> {
@@ -34,7 +36,7 @@ impl Realm {
             parameters: parameters.clone(),
             body: body.clone(),
             source: source.clone(),
-            strict: self.strict,
+            strict: self.strict || matches!(body, ArrowBody::Block(body) if body.is_strict()),
         };
         let function =
             self.object_work(span, |objects, _| objects.create_arrow(&prototype, arrow))?;
@@ -75,6 +77,21 @@ impl Realm {
                 },
             );
         }
+        // ECMA-262 10.2.11: simple parameters and vars share an environment.
+        // Repeated vars preserve parameter values and start as undefined otherwise.
+        if let ArrowBody::Block(body) = &arrow.body {
+            for declaration in body.var_declarations() {
+                self.object_work(declaration.span, |_, budget| {
+                    budget.charge(declaration.name.len() + 1)
+                })?;
+                bindings
+                    .entry(declaration.name.clone())
+                    .or_insert(BindingState {
+                        value: Some(Value::Undefined),
+                        mutable: true,
+                    });
+            }
+        }
         let environment = self.object_work(span, |objects, budget| {
             objects.create_environment(Some(arrow.environment), bindings, budget)
         })?;
@@ -82,10 +99,40 @@ impl Realm {
         let caller_depth = self.scopes.len();
         self.scopes.push(environment);
         self.strict = arrow.strict;
-        let result = self.expression(&arrow.body);
+        let result = match &arrow.body {
+            ArrowBody::Expression(body) => self.expression(body),
+            ArrowBody::Block(body) => self.function_body(body, span),
+        };
         self.strict = caller_strict;
         self.scopes.truncate(caller_depth);
         result
+    }
+
+    fn function_body(&mut self, body: &FunctionBody, span: Span) -> Result<Value, Error> {
+        // ECMA-262 10.2.11: sloppy bodies have a separate lexical environment;
+        // strict bodies reuse the parameter/var environment.
+        if !self.strict {
+            self.push_scope(BTreeMap::new(), span)?;
+        }
+        for statement in body.statements() {
+            self.tick(statement.span)?;
+            if let StatementKind::Lexical { bindings, .. } = &statement.kind {
+                for binding in bindings {
+                    self.object_work(binding.span, |_, budget| {
+                        budget.charge(binding.name.len() + 1)
+                    })?;
+                }
+            }
+        }
+        self.instantiate(body.statements().iter(), false)?;
+        let completion = self.statements(body.statements())?;
+        match completion.kind {
+            CompletionKind::Return => Ok(completion.value.expect("return has a value")),
+            CompletionKind::Normal => Ok(Value::Undefined),
+            CompletionKind::Break | CompletionKind::Continue => {
+                unreachable!("validated control target")
+            }
+        }
     }
 
     pub(crate) fn named_expression(
@@ -203,7 +250,7 @@ mod tests {
         ));
         assert_eq!(realm.eval("log"), Ok(Value::String(JsString::from(""))));
         assert_eq!(realm.call_depth, 0);
-        assert_eq!(realm.expression_depth, 0);
+        assert_eq!(realm.evaluation_depth, 0);
         assert_eq!(realm.scopes.len(), 1);
     }
 }

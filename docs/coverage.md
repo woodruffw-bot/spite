@@ -105,13 +105,15 @@ selection, standard length/name metadata, and iterative invocation. Captured
 object edges survive collection and unreachable cycles are reclaimed. Re-entrant
 getter/coercion calls have a host nesting limit of 64; tail transfers are iterative.
 
-Simple expression-bodied arrows parse and execute with shared lexical captures,
-fresh mutable parameter bindings, missing/extra argument handling, inherited
-strictness, unique names, source retention, and bounded nesting. Metadata includes
+Simple arrows with expression or block bodies parse and execute with shared lexical captures,
+fresh mutable parameter bindings, missing/extra argument handling, inherited and
+body-local strictness, unique names, source retention, and bounded nesting.
+Block bodies support local var/lexical instantiation and return completions through
+loops, labels, switch, try/catch/finally, including return ASI and early errors. Metadata includes
 standard name inference and exact Function.prototype.toString source. Captured
 per-iteration/catch/block environments survive collection; unreachable cycles are
-reclaimed. Default/rest parameters, patterns, lexical this syntax, async arrows,
-and block bodies remain gaps.
+reclaimed. Default/rest parameters, patterns, lexical this syntax, and async arrows
+remain gaps.
 
 Symbols, primitive wrapper constructors,
 arrays, ordinary functions, constructors, classes, destructuring, regular

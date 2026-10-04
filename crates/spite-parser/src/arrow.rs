@@ -1,4 +1,4 @@
-//! Arrow cover grammar for simple parameters and expression bodies (15.3).
+//! Arrow cover grammar for simple parameters and concise bodies (15.3).
 
 use super::*;
 
@@ -83,11 +83,15 @@ impl Parser {
             self.expect(")")?;
         }
         self.expect("=>")?;
-        if self.at("{") {
-            return Err(self.unsupported("arrow block bodies are not implemented"));
-        }
-        let body = self.expression(2)?;
-        let span = Span::new(start, body.span.end);
+        let (body, end) = if self.at("{") {
+            let body = self.function_body()?;
+            (ArrowBody::Block(body), self.tokens[self.index - 1].span.end)
+        } else {
+            let body = self.expression(2)?;
+            let end = body.span.end;
+            (ArrowBody::Expression(std::rc::Rc::new(body)), end)
+        };
+        let span = Span::new(start, end);
         let source = FunctionSource {
             text: self.source.clone(),
             span,
@@ -95,11 +99,41 @@ impl Parser {
         self.make_expr(
             ExprKind::Arrow {
                 parameters: parameters.into(),
-                body: std::rc::Rc::new(body),
+                body,
                 source,
             },
             span,
         )
         .map(Some)
+    }
+
+    fn function_body(&mut self) -> Result<FunctionBody, Diagnostic> {
+        self.expect("{")?;
+        let token_start = self.index;
+        let previous_return = self.allow_return;
+        let previous_in = self.allow_in;
+        self.allow_return = true;
+        self.allow_in = true;
+        let result = (|| {
+            let mut statements = Vec::new();
+            while !self.at("}") {
+                if self.current().kind == Kind::Eof {
+                    return Err(self.error("unterminated function body"));
+                }
+                statements.push(self.statement(true)?);
+            }
+            let strict = has_use_strict(&statements, &self.source);
+            if strict {
+                reject_legacy_tokens(&self.tokens[token_start..self.index])?;
+            }
+            self.expect("}")?;
+            Ok(FunctionBody {
+                statements: statements.into(),
+                strict,
+            })
+        })();
+        self.allow_return = previous_return;
+        self.allow_in = previous_in;
+        result
     }
 }
