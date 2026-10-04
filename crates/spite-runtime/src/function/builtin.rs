@@ -48,6 +48,16 @@ impl Realm {
                 }
             }
             Builtin::FunctionPrototype => Ok(Value::Undefined),
+            Builtin::ParseFloat => self
+                .parse_float(arguments.next().unwrap_or(Value::Undefined), span)
+                .map(Value::Number),
+            Builtin::ParseInt => self
+                .parse_int(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+                .map(Value::Number),
             Builtin::Number => Ok(Value::Number(
                 self.number_constructor_value(arguments.next(), span)?,
             )),

@@ -421,10 +421,6 @@ impl Realm {
         };
         (object == &intrinsics.object_prototype && missing_object_method(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
-            || (object == &intrinsics.number.constructor
-                && ["parseFloat", "parseInt"]
-                    .iter()
-                    .any(|name| key_is(key, name)))
     }
 }
 

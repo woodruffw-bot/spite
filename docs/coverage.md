@@ -94,7 +94,7 @@ in order. Non-callable values throw TypeError after argument evaluation. Builtin
 function objects inherit callable Function.prototype and expose standard name/length
 descriptors. Object.prototype has an immutable null prototype, toString, and
 valueOf. Default ordinary-object conversion is supported. Intrinsic initialization
-is atomic and the twenty-five objects remain rooted. Function.prototype caller/arguments
+is atomic and the twenty-seven objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. String/BigInt/Symbol
 wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
@@ -159,7 +159,10 @@ the same rounding for explicit 0–100 fraction digits and shortest scientific
 notation when the argument is undefined. toLocaleString uses the explicitly
 permitted ECMA-262 fallback of ordinary numeric formatting, ignores reserved
 locale/options arguments, and provides no ECMA-402 locale services.
-parseInt/parseFloat remain gaps, including their callable values. NumberData preserves negative zero
+Global parseInt/parseFloat and their Number aliases share identity, implement
+ordered coercion and longest-prefix parsing, and preserve negative zero. Integer
+prefixes accumulate exactly in every radix before one binary64 rounding. UTF-16
+surrogate tails terminate a valid numeric prefix. NumberData preserves negative zero
 and NaN independently of the object's current prototype.
 
 Symbols, String/BigInt wrapper APIs,
@@ -178,7 +181,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates eleven retained entries under a separate fixed work
+Realm initialization creates 29 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

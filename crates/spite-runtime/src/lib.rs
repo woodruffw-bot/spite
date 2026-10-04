@@ -1542,8 +1542,6 @@ fn standard_global(name: &str) -> bool {
         "eval"
             | "isFinite"
             | "isNaN"
-            | "parseFloat"
-            | "parseInt"
             | "decodeURI"
             | "decodeURIComponent"
             | "encodeURI"

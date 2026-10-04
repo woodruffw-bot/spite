@@ -349,7 +349,7 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The twenty-five intrinsic objects are published atomically during realm
+(20.1.3, 10.4.7.1). The twenty-seven intrinsic objects are published atomically during realm
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
@@ -383,7 +383,7 @@ preserves negative zero and NaN. Decimal toString uses the existing Number strin
 conversion after validating the receiver and radix in specification order.
 Non-decimal finite formatting remains an explicit host gap until its complete
 conversion algorithm is implemented; invalid radices still throw RangeError.
-Other Number formatting methods and parseInt/parseFloat remain separate steps.
+Non-decimal Number formatting remains a separate step.
 
 Number.prototype.toFixed uses the exact binary significand/exponent to scale by
 10 to the requested power, divides with integer arithmetic, and rounds ties toward
@@ -415,6 +415,16 @@ receivers directly and ignores the reserved locale/options arguments; their
 positions are not repurposed. Overrides of the public toString property do not
 change this builtin algorithm. This implementation-defined choice is stable across
 host operating-system locales.
+
+The global parseFloat and parseInt functions share identity with Number.parseFloat
+and Number.parseInt (19.2.4–5, 21.1.2.12–13). Coerce the input to String first;
+parseInt then coerces radix with ToInt32. Scan UTF-16 units for the decimal/radix
+prefix after ECMAScript leading whitespace, so an unpaired surrogate after valid
+digits terminates the prefix rather than invalidating it. Decimal exponents only
+join a prefix when they contain digits. parseInt accumulates an exact integer in
+every radix and rounds once to binary64; it does not use the optional approximation
+allowances. Preserve negative zero and the specified hexadecimal prefix rules.
+Input length, scan work, and integer arithmetic remain bounded by realm limits.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

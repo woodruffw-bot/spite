@@ -313,12 +313,7 @@ fn constants_and_builtin_metadata_have_standard_values_and_attributes() {
 
 #[test]
 fn incomplete_formatting_paths_remain_visible_host_gaps() {
-    for source in [
-        "(1).toString(2)",
-        "new Number(0.5).toString(16)",
-        "Number.parseInt",
-        "Number.parseFloat",
-    ] {
+    for source in ["(1).toString(2)", "new Number(0.5).toString(16)"] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();
         assert!(

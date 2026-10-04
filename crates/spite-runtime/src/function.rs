@@ -39,6 +39,8 @@ pub(crate) enum Builtin {
     NumberToPrecision,
     NumberToExponential,
     NumberToLocaleString,
+    ParseFloat,
+    ParseInt,
     NumberIsFinite,
     NumberIsNaN,
     NumberIsInteger,
@@ -68,6 +70,8 @@ impl Builtin {
             Self::NumberToPrecision => "toPrecision",
             Self::NumberToExponential => "toExponential",
             Self::NumberToLocaleString => "toLocaleString",
+            Self::ParseFloat => "parseFloat",
+            Self::ParseInt => "parseInt",
         }
     }
 
@@ -84,8 +88,9 @@ impl Builtin {
             | Self::NumberIsFinite
             | Self::NumberIsNaN
             | Self::NumberIsInteger
-            | Self::NumberIsSafeInteger => 1.0,
-            Self::FunctionApply => 2.0,
+            | Self::NumberIsSafeInteger
+            | Self::ParseFloat => 1.0,
+            Self::FunctionApply | Self::ParseInt => 2.0,
             _ => 0.0,
         }
     }

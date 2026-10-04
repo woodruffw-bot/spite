@@ -82,13 +82,13 @@ fn language_call_failures_are_catchable_but_missing_intrinsics_are_host_gaps() {
 #[test]
 fn argument_evaluation_obeys_host_work_limits() {
     let mut realm = Realm::new(Limits {
-        max_steps: 40,
+        max_steps: 1000,
         ..Limits::default()
     });
     realm.eval("let flag = 0").unwrap();
     let source = format!(
         "try {{ (0)({}); }} finally {{ flag = 1; }}",
-        vec!["1"; 80].join(",")
+        vec!["1"; 2000].join(",")
     );
     assert!(matches!(realm.eval(&source), Err(Error::Limit { .. })));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

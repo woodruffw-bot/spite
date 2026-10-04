@@ -5,19 +5,27 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescri
 use spite_core::{JsString, Span};
 
 mod format;
+mod parse;
 
 #[derive(Debug)]
 pub(crate) struct NumberIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
+    pub parse_float: ObjectHandle,
+    pub parse_int: ObjectHandle,
     methods: [ObjectHandle; 10],
 }
 
 impl NumberIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.constructor, &self.prototype]
-            .into_iter()
-            .chain(self.methods.iter())
+        [
+            &self.constructor,
+            &self.prototype,
+            &self.parse_float,
+            &self.parse_int,
+        ]
+        .into_iter()
+        .chain(self.methods.iter())
     }
 }
 
@@ -44,6 +52,22 @@ impl Realm {
         span: Span,
     ) -> Result<NumberIntrinsics, Error> {
         let constructor = self.new_builtin(function_prototype, Builtin::Number, span)?;
+        let parse_float = self.new_builtin(function_prototype, Builtin::ParseFloat, span)?;
+        let parse_int = self.new_builtin(function_prototype, Builtin::ParseInt, span)?;
+        self.define_builtin_property(
+            &constructor,
+            "parseFloat",
+            Value::Object(parse_float.clone()),
+            true,
+            span,
+        )?;
+        self.define_builtin_property(
+            &constructor,
+            "parseInt",
+            Value::Object(parse_int.clone()),
+            true,
+            span,
+        )?;
         let prototype = self.object_work(span, |objects, _| {
             objects.create_number(object_prototype, 0.0)
         })?;
@@ -164,6 +188,8 @@ impl Realm {
         Ok(NumberIntrinsics {
             constructor,
             prototype,
+            parse_float,
+            parse_int,
             methods: [
                 value_of,
                 to_string,
