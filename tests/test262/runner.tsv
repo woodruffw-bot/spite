@@ -467,3 +467,17 @@ test/built-ins/Array/prototype/at/returns-item-relative-index.js	-	-	-
 test/built-ins/Array/prototype/at/returns-item.js	-	-	-
 test/built-ins/Array/prototype/at/returns-undefined-for-holes-in-sparse-arrays.js	-	-	-
 test/built-ins/Array/prototype/at/returns-undefined-for-out-of-range-index.js	-	-	-
+test/built-ins/Array/prototype/push/call-with-boolean.js	-	-	-
+test/built-ins/Array/prototype/push/clamps-to-integer-limit.js	-	-	-
+test/built-ins/Array/prototype/push/length-near-integer-limit-set-failure.js	-	-	-
+test/built-ins/Array/prototype/push/length-near-integer-limit.js	-	-	-
+test/built-ins/Array/prototype/push/set-length-zero-array-is-frozen.js	-	-	-
+test/built-ins/Array/prototype/push/set-length-zero-array-length-is-non-writable.js	-	-	-
+test/built-ins/Array/prototype/push/throws-if-integer-limit-exceeded.js	-	-	-
+test/built-ins/Array/prototype/push/throws-with-string-receiver.js	-	-	-
+test/built-ins/Array/prototype/pop/call-with-boolean.js	-	-	-
+test/built-ins/Array/prototype/pop/clamps-to-integer-limit.js	-	-	-
+test/built-ins/Array/prototype/pop/length-near-integer-limit.js	-	-	-
+test/built-ins/Array/prototype/pop/set-length-zero-array-is-frozen.js	-	-	-
+test/built-ins/Array/prototype/pop/set-length-zero-array-length-is-non-writable.js	-	-	-
+test/built-ins/Array/prototype/pop/throws-with-string-receiver.js	-	-	-

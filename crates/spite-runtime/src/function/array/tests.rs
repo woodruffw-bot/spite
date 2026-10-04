@@ -374,3 +374,36 @@ fn recursive_at_index_conversion_is_bounded_on_a_two_mebibyte_stack() {
         .join()
         .unwrap();
 }
+
+#[test]
+fn recursive_push_setters_and_pop_getters_obey_the_native_stack_limit() {
+    std::thread::Builder::new().stack_size(2*1024*1024).spawn(|| {
+        for (setup,expression) in [
+            ("let o={length:0,push:Array.prototype.push};Object.defineProperty(o,'0',{set:()=>o.push(1)})","o.push(1)"),
+            ("let o={pop:Array.prototype.pop};Object.defineProperty(o,'length',{get:()=>o.pop()})","o.pop()"),
+        ] {
+            let mut realm=Realm::default();
+            realm.eval(setup).unwrap();realm.eval("let flag=0").unwrap();
+            assert!(matches!(realm.eval(&format!("try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+            check(&mut realm,"flag===0 && [1].pop()===1");
+        }
+    }).unwrap().join().unwrap();
+}
+
+#[test]
+fn push_work_abort_retains_completed_elements_and_consistent_array_length() {
+    let mut realm = Realm::default();
+    let receiver = realm.eval("let a=[];a").unwrap();
+    realm.remaining_steps = 300;
+    let values = (0..20)
+        .map(|n| Value::Number(f64::from(n)))
+        .collect::<Vec<_>>();
+    assert!(matches!(
+        realm.array_push(receiver, values.into_iter(), Span::new(0, 0)),
+        Err(Error::Limit { .. })
+    ));
+    check(
+        &mut realm,
+        "a.length>0 && a.length<20 && a[0]===0 && a[a.length-1]===a.length-1 && !Object.hasOwn(a,a.length)",
+    );
+}

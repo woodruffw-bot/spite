@@ -275,8 +275,8 @@ The low-level Objects API accepts only preconverted integral Number length
 descriptors; UnnormalizedArrayLength reports a violated storage precondition,
 not a JavaScript exception. Realm descriptor definitions and deferred length
 assignments now supply these conversions. Array calls/new and Array.isArray now expose these objects to Scripts;
-literal syntax and join/toString are implemented; remaining prototype methods
-are pending.
+literal syntax and at/join/toString/push/pop are implemented; remaining prototype
+methods are pending.
 
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
@@ -309,6 +309,12 @@ cyclic arrays, is bounded by the existing host call limit. LengthOfArrayLike is
 shared with String.raw and Function.prototype.apply. Generic Array at snapshots
 length before converting its index, applies ToIntegerOrInfinity, and performs Get
 only for an in-range index. It uses u64 indices through the full ToLength range.
+Push and pop also use generic LengthOfArrayLike. Each performs observable indexed
+Set/Get/Delete operations before the final length Set, preserving partial effects
+on failure. Push rejects lengths above 2^53 - 1 before writing elements, while
+Array exotic length overflow can throw after ordinary non-index properties were
+created. Pop reads an inherited final element but deletes only an own property.
+Both perform the length Set even when no elements are inserted or removed.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

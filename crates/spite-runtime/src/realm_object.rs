@@ -1,7 +1,7 @@
 //! Realm ownership and collection outside active evaluation.
 
 use crate::{
-    Collection, Error, ObjectHandle, Realm, Value,
+    Collection, Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{self, DataDescriptor, OrdinaryObject, Property, SetAction},
 };
 use spite_bigint::BigInt;
@@ -466,6 +466,41 @@ impl Realm {
 }
 
 impl Realm {
+    pub(crate) fn set_property_or_throw(
+        &mut self,
+        object: &ObjectHandle,
+        key: JsString,
+        value: Value,
+        span: Span,
+    ) -> Result<(), Error> {
+        // Set(O, P, V, true), 7.3.4, including inherited setters.
+        if !self.set_property_value(&Value::Object(object.clone()), key, value, span)? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "property write was rejected",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(crate) fn delete_property_or_throw(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<(), Error> {
+        // DeletePropertyOrThrow, 7.3.10, retains earlier observable effects.
+        if !self.delete_property_value(&Value::Object(object.clone()), key, span)? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "property deletion was rejected",
+            ));
+        }
+        Ok(())
+    }
+
     pub(crate) fn length_of_array_like(
         &mut self,
         object: &ObjectHandle,
@@ -578,8 +613,6 @@ fn missing_array_method(key: &JsString) -> bool {
         "keys",
         "lastIndexOf",
         "map",
-        "pop",
-        "push",
         "reduce",
         "reduceRight",
         "reverse",

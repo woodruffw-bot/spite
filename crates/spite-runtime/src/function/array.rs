@@ -2,6 +2,7 @@
 
 mod access;
 mod literal;
+mod mutation;
 mod string;
 
 use super::Builtin;
@@ -69,7 +70,13 @@ impl Realm {
             span,
         )?;
         let mut methods = Vec::new();
-        for builtin in [Builtin::ArrayJoin, Builtin::ArrayToString, Builtin::ArrayAt] {
+        for builtin in [
+            Builtin::ArrayJoin,
+            Builtin::ArrayToString,
+            Builtin::ArrayAt,
+            Builtin::ArrayPush,
+            Builtin::ArrayPop,
+        ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(
                 &prototype,

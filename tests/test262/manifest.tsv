@@ -488,3 +488,17 @@ script-pass	71f53cf86f1387101b19b6ae9939d47ced34497d3cee12f954eef454f912ba88	tes
 script-pass	793b0f4a94ccf54a1e43813b3fde39d8e1f216cde9e22be674ecefd6a46e8e63	test/built-ins/Array/prototype/at/returns-item.js
 script-pass	32d020ce560af714f8c429f6d168507797304f72ef340f31c725c925e38d3969	test/built-ins/Array/prototype/at/returns-undefined-for-holes-in-sparse-arrays.js
 script-pass	ad51fad4e5e759ba996c59306e49bfd355f4c9afc6f0ba4bc90a768f57e3ff63	test/built-ins/Array/prototype/at/returns-undefined-for-out-of-range-index.js
+script-pass	9076ebb3de52769ebe42994ee0f2d14e1469a05741d0f6146540cd12e33f0ce9	test/built-ins/Array/prototype/push/call-with-boolean.js
+script-pass	5beec801c694eca8622a064483174e1477d288488eaefbceae2534b4f11c445e	test/built-ins/Array/prototype/push/clamps-to-integer-limit.js
+script-pass	ad2d885e1510bd20851d5442acdf73717c8a13c12c6e1f874c60ed2a9dbda0b2	test/built-ins/Array/prototype/push/length-near-integer-limit-set-failure.js
+script-pass	186e5a411922854b563c53563c5b0d5314a5a38a58524ffae595e6fd50fd2324	test/built-ins/Array/prototype/push/length-near-integer-limit.js
+script-pass	ecd4c4da959f6c92ab71f9307e608c6f4c27dfc4ca66b54e64e171e82fafa837	test/built-ins/Array/prototype/push/set-length-zero-array-is-frozen.js
+script-pass	bf33acde7c6c78cf0ecc9989135db9045d9e898adf6fd96fb335328c6916457b	test/built-ins/Array/prototype/push/set-length-zero-array-length-is-non-writable.js
+script-pass	8d5d53df4e44a635bf5b9c04f818135ca270a06ce405ceb67216f8768545f5ce	test/built-ins/Array/prototype/push/throws-if-integer-limit-exceeded.js
+script-pass	4ed9f5bc0cc1e61309668734b277c89dad2ca396376c2e60fe25abd0cf04df0f	test/built-ins/Array/prototype/push/throws-with-string-receiver.js
+script-pass	382c24b6e1a2767631b4f86a67023c75d3bb01815f41cde6ece59cc13fdcc2f8	test/built-ins/Array/prototype/pop/call-with-boolean.js
+script-pass	7115df0d0ecea2e4d7eba9ede1b8fcf22e1d85487678c61e74ae1f4d88323ab4	test/built-ins/Array/prototype/pop/clamps-to-integer-limit.js
+script-pass	ec3854460f7a72a29e70efbb519ac0e21a7596f515df2324a005e6bc3cf67eab	test/built-ins/Array/prototype/pop/length-near-integer-limit.js
+script-pass	12986fa0e079b98bb0fc50e443944fa314f866c91bdae866ec24b3e77d9120b3	test/built-ins/Array/prototype/pop/set-length-zero-array-is-frozen.js
+script-pass	54a0098b70284227ecbc1fa096d4f190a575d1bd08b05185fd82a60a61fb5988	test/built-ins/Array/prototype/pop/set-length-zero-array-length-is-non-writable.js
+script-pass	add5787a1f690cd112987702527bb6b9c363896efcfa3fd747af909200abcc95	test/built-ins/Array/prototype/pop/throws-with-string-receiver.js
