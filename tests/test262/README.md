@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2066 unmodified test fixtures and six harness files come from
+These 2105 unmodified test fixtures and six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -315,8 +315,9 @@ return values, and non-constructibility. Four construction files cover argument
 reads, custom and default newTarget, and resulting prototypes. The pinned,
 unchanged `isConstructor.js` is the fourth harness file; local controls verify
 true/false results, its non-function error, and propagation of host gaps. Reviewed
-candidates requiring the Function or Date globals or `propertyHelper.js` remain
-outside this corpus. The existing pin and execution quotas remain unchanged.
+candidates requiring dynamic Function construction or Date remain outside this
+corpus. The Reflect metadata review below adds the property-helper files. The
+existing pin and execution quotas remain unchanged.
 
 ## Reflect prototype and extensibility review
 
@@ -326,16 +327,18 @@ files. They cover object-only targets, prototype identity, cycles, non-extensibl
 changes, idempotence, and non-constructibility using the pinned isConstructor
 helper. The preventExtensions Symbol-target fixture checks isExtensible in its
 original source; local regressions check all four methods directly. Reviewed
-Proxy and `propertyHelper.js` candidates remain outside this corpus. The pin,
-harness bytes, and execution quotas remain unchanged.
+Proxy candidates remain outside this corpus; the Reflect metadata review below
+adds the property-helper files. The pin, harness bytes, and execution quotas
+remain unchanged.
 
 ## Reflect property read, presence, and deletion review
 
 Twenty-one unchanged files add 42 variants in both Script modes: eight get, six
 has, and seven deleteProperty files. They cover ordered key conversion, explicit
 read receivers, getters and inherited reads, symbol keys, boolean deletion,
-primitive target rejection, and non-constructibility. Reviewed Proxy and
-`propertyHelper.js` candidates remain outside this corpus. Local regressions also
+primitive target rejection, and non-constructibility. Reviewed Proxy candidates
+remain outside this corpus; the Reflect metadata review below adds the
+property-helper files. Local regressions also
 cover key-conversion mutations, exact primitive accessor receivers, dormant
 getters, Array/String/arguments exotics, metadata, collection, and host failures.
 The pin, harness bytes, and execution quotas remain unchanged.
@@ -346,8 +349,9 @@ Twenty-five unchanged files add 50 variants in both Script modes: seven
 defineProperty, nine getOwnPropertyDescriptor, and nine ownKeys files. They cover
 ordered conversions, boolean definitions, data/accessor descriptor fields, symbol
 keys, non-enumerables, chronological order and large indices, primitive target
-rejection, and non-constructibility. Reviewed Proxy and `propertyHelper.js`
-candidates remain outside this corpus. Local regressions cover Array partial
+rejection, and non-constructibility. Reviewed Proxy candidates remain outside
+this corpus; the Reflect metadata review below adds the property-helper files.
+Local regressions cover Array partial
 truncation, fresh descriptors, setter/species bypass, exotics, collection, and host
 gaps. The pin, harness bytes, and execution quotas remain unchanged.
 
@@ -356,8 +360,8 @@ gaps. The pin, harness bytes, and execution quotas remain unchanged.
 Fourteen unchanged files add 28 variants in both Script modes. They cover
 ordered key conversion, data and accessor writes, explicit receivers, boolean
 rejections, prototype setters, symbol keys, primitive target rejection, and
-non-constructibility. Reviewed `propertyHelper.js` candidates remain outside this
-corpus. Local regressions cover Array partial truncation, String/arguments
+non-constructibility. The Reflect metadata review below adds the property-helper
+files. Local regressions cover Array partial truncation, String/arguments
 receivers, ordinary assignment, missing descriptors before mutation, and complete
 Reflect own reflection/integrity operations. The pin, harness bytes, and execution
 quotas remain unchanged.
@@ -517,6 +521,17 @@ its source is not rewritten. Local runtime regressions cover the global binding'
 attributes directly. The pin, harness bytes, and opt-in execution limits are
 unchanged.
 
+## Reflect function metadata and method-property review
+
+Thirty-nine unchanged sources add seventy-eight Script/StrictScript variants.
+Each of the thirteen Reflect methods now has name, length, and Reflect-property
+descriptor fixtures using the original property helper. Function attributes are
+read-only/non-enumerable/configurable; Reflect method properties are
+writable/non-enumerable/configurable. Complete Reflect own reflection enables
+the helper's original enumeration and mutation checks. Other reviewed Proxy,
+foreign-realm, and dynamic-function candidates remain separate gaps. The pin,
+harness bytes, and opt-in execution limits are unchanged.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -538,12 +553,12 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 4020 variants from 2047 reviewed sources: the eleven
+The `spite-test262` command runs 4098 variants from 2086 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 94 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
+object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 48 BigInt API tests, 173 Object tests,
 286 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
@@ -554,7 +569,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-3846 positives using the upstream harness, and 170 reviewed parse-negative variants.
+3924 positives using the upstream harness, and 170 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
