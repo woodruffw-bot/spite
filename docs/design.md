@@ -643,8 +643,8 @@ failures propagate directly without closing. Yielded undefined values are dense.
 Elisions assign length at their position; the final initializer assigns length
 after all elements, even if spreading crosses the Array index boundary. Convert
 large element indices through Number before stringifying property names. Native
-index arithmetic remains checked, with no default work or output quota. Object
-spread and array assignment patterns remain Unsupported until their semantics exist.
+index arithmetic remains checked, with no default work or output quota. Array
+assignment patterns remain Unsupported until their semantics exist.
 
 The `Objects` heap context validates prototype handles and prevents ordinary
 prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively
@@ -682,6 +682,12 @@ both expressions evaluate; templates and property names use the string hint.
 Realm allocation supports opt-in shared heap-slot and per-object property quotas. Object
 literals create data properties in source order, convert computed keys before
 evaluating values, and implement the required non-computed `__proto__` initializer.
+Object spread evaluates sources in order and applies CopyDataProperties with an
+empty exclusion list (13.2.5.5, 7.3.25). Skip nullish sources; box other primitives
+without coercion hooks. Snapshot ordered own keys, including Symbols, then read
+each descriptor and enumerable value live so earlier getters can delete keys or
+change their enumerability. Define writable, enumerable, configurable own data
+properties, bypassing setters and treating spread `__proto__` keys as data.
 The intrinsic Object prototype has a stable, retained identity and its mandatory
 string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow

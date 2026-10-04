@@ -9,7 +9,7 @@ use crate::{
 };
 use spite_bigint::BigInt;
 use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span, WellKnownSymbol};
-use spite_parser::ast::{ExprKind, Literal, ObjectProperty, PropertyKind, PropertyName};
+use spite_parser::ast::{ExprKind, Literal, ObjectElement, PropertyKind, PropertyName};
 
 pub(super) enum Hint {
     Default,
@@ -469,12 +469,20 @@ impl Realm {
 
     pub(super) fn object_literal(
         &mut self,
-        properties: &[ObjectProperty],
+        properties: &[ObjectElement],
         span: Span,
     ) -> Result<Value, Error> {
         let prototype = self.ensure_object_intrinsics(span)?;
         let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
-        for property in properties {
+        for element in properties {
+            let property = match element {
+                ObjectElement::Spread(expression) => {
+                    let source = self.expression(expression)?;
+                    self.copy_spread_properties(&object, source, expression.span)?;
+                    continue;
+                }
+                ObjectElement::Property(property) => property,
+            };
             self.tick(property.span)?;
             let key = match &property.name {
                 PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,

@@ -79,6 +79,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement inherited data reads, presence checks, and receiver-sensitive writes.
 - [x] Parse object literals, computed keys, shorthand, and duplicate prototype-setter early errors.
 - [x] Evaluate object literals and integrate the object heap with realms.
+- [x] Parse/evaluate object spread with ordered CopyDataProperties and own data definitions.
 - [x] Collect between evaluations with persistent bindings, intrinsic handles, and host roots.
 - [x] Parse dotted/computed property references and preserve assignment targets in the AST.
 - [x] Evaluate ordinary-object property reads, writes, updates, and deletion with ordered references.

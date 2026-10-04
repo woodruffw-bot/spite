@@ -18,7 +18,7 @@ not an alternative language specification.
 | BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Arrays | Calls/new, of, from, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
-| Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
+| Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
@@ -90,8 +90,12 @@ checks, and receiver-sensitive writes. Rust values carry object identity and
 trace object-valued property edges, including cycles. Object literals parse with
 literal/computed keys, shorthand, trailing commas, and duplicate prototype-setter
 early errors. Evaluation preserves key/value order and implements ordinary data
-properties, prototype initializers, ordinary methods, and getters/setters. Spread
-remains unsupported. Explicit collection between evaluations retains persistent bindings,
+properties, prototype initializers, ordinary methods, and getters/setters. Object
+spread skips nullish sources, boxes primitives, snapshots ordered own keys, and
+reads descriptors and values live. Enumerable string and Symbol keys become fresh
+data properties, bypassing setters; spread `__proto__` keys remain data. Regressions
+cover getter receivers, key deletion and enumerability changes, ordered overwrites,
+abrupt getters, and opt-in copy limits. Explicit collection between evaluations retains persistent bindings,
 intrinsics, and host roots. Returned/thrown object values need a host root to
 survive collection; tokens release roots when their last clone is dropped. Root
 registry storage is reused. Collection during evaluation remains disabled until
@@ -352,8 +356,8 @@ and checks both safe-integer and Array length bounds before copying. It reads
 retained elements in ascending order and supports full-width source indices
 when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
-lookup, and preserve ordered live reads. With never reads its replaced index. Object spread and array assignment patterns remain
-pending.
+lookup, and preserve ordered live reads. With never reads its replaced index. Array
+assignment patterns remain pending.
 Map/filter validate callbacks before ArraySpeciesCreate, which consults constructor
 and Symbol.species only for genuine Arrays. Null/undefined species select an
 intrinsic Array; custom constructors receive one Number length (source length

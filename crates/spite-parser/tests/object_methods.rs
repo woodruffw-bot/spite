@@ -3,7 +3,7 @@
 use spite_core::DiagnosticKind;
 use spite_parser::{
     MAX_DEPTH,
-    ast::{ExprKind, StatementKind},
+    ast::{ExprKind, ObjectElement, StatementKind},
     parse_script,
 };
 
@@ -91,6 +91,9 @@ fn function_source_includes_the_method_name_and_accessor_prefix() {
         "m /*name*/ (x) { return x; }",
         "get ['x'] /*body*/ () {return 1;}",
     ]) {
+        let ObjectElement::Property(property) = property else {
+            panic!("property");
+        };
         let ExprKind::Function(function) = &property.value.kind else {
             panic!("method");
         };

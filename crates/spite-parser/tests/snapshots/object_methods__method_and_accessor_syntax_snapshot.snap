@@ -13,181 +13,108 @@ Script {
                             depth: 3,
                             kind: Object(
                                 [
-                                    ObjectProperty {
-                                        name: Literal(
-                                            String(
-                                                "m",
+                                    Property(
+                                        ObjectProperty {
+                                            name: Literal(
+                                                String(
+                                                    "m",
+                                                ),
                                             ),
-                                        ),
-                                        value: Expr {
-                                            depth: 2,
-                                            kind: Function(
-                                                Function {
-                                                    name: None,
-                                                    parameters: [
-                                                        Binding {
-                                                            name: "a",
-                                                            span: Span {
-                                                                start: 4,
-                                                                end: 5,
+                                            value: Expr {
+                                                depth: 2,
+                                                kind: Function(
+                                                    Function {
+                                                        name: None,
+                                                        parameters: [
+                                                            Binding {
+                                                                name: "a",
+                                                                span: Span {
+                                                                    start: 4,
+                                                                    end: 5,
+                                                                },
+                                                                initializer: Some(
+                                                                    Expr {
+                                                                        depth: 1,
+                                                                        kind: Literal(
+                                                                            Number(
+                                                                                1.0,
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 6,
+                                                                            end: 7,
+                                                                        },
+                                                                    },
+                                                                ),
                                                             },
-                                                            initializer: Some(
-                                                                Expr {
-                                                                    depth: 1,
-                                                                    kind: Literal(
-                                                                        Number(
-                                                                            1.0,
+                                                        ],
+                                                        body: FunctionBody {
+                                                            statements: [
+                                                                Statement {
+                                                                    kind: Return(
+                                                                        Some(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: Identifier(
+                                                                                    "a",
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 16,
+                                                                                    end: 17,
+                                                                                },
+                                                                            },
                                                                         ),
                                                                     ),
                                                                     span: Span {
-                                                                        start: 6,
-                                                                        end: 7,
+                                                                        start: 9,
+                                                                        end: 18,
                                                                     },
                                                                 },
-                                                            ),
+                                                            ],
+                                                            strict: false,
                                                         },
-                                                    ],
-                                                    body: FunctionBody {
-                                                        statements: [
-                                                            Statement {
-                                                                kind: Return(
-                                                                    Some(
-                                                                        Expr {
-                                                                            depth: 1,
-                                                                            kind: Identifier(
-                                                                                "a",
-                                                                            ),
-                                                                            span: Span {
-                                                                                start: 16,
-                                                                                end: 17,
-                                                                            },
-                                                                        },
-                                                                    ),
-                                                                ),
-                                                                span: Span {
-                                                                    start: 9,
-                                                                    end: 18,
-                                                                },
-                                                            },
-                                                        ],
-                                                        strict: false,
+                                                        source: FunctionSource(
+                                                            "m(a=1){return a;}",
+                                                        ),
                                                     },
-                                                    source: FunctionSource(
-                                                        "m(a=1){return a;}",
-                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 2,
+                                                    end: 19,
                                                 },
-                                            ),
+                                            },
+                                            kind: Method,
                                             span: Span {
                                                 start: 2,
                                                 end: 19,
                                             },
                                         },
-                                        kind: Method,
-                                        span: Span {
-                                            start: 2,
-                                            end: 19,
-                                        },
-                                    },
-                                    ObjectProperty {
-                                        name: Computed(
-                                            Expr {
-                                                depth: 1,
-                                                kind: Identifier(
-                                                    "key",
-                                                ),
-                                                span: Span {
-                                                    start: 26,
-                                                    end: 29,
-                                                },
-                                            },
-                                        ),
-                                        value: Expr {
-                                            depth: 1,
-                                            kind: Function(
-                                                Function {
-                                                    name: None,
-                                                    parameters: [],
-                                                    body: FunctionBody {
-                                                        statements: [
-                                                            Statement {
-                                                                kind: Return(
-                                                                    Some(
-                                                                        Expr {
-                                                                            depth: 2,
-                                                                            kind: Member(
-                                                                                Expr {
-                                                                                    depth: 1,
-                                                                                    kind: This,
-                                                                                    span: Span {
-                                                                                        start: 40,
-                                                                                        end: 44,
-                                                                                    },
-                                                                                },
-                                                                                Literal(
-                                                                                    String(
-                                                                                        "x",
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                            span: Span {
-                                                                                start: 40,
-                                                                                end: 46,
-                                                                            },
-                                                                        },
-                                                                    ),
-                                                                ),
-                                                                span: Span {
-                                                                    start: 33,
-                                                                    end: 47,
-                                                                },
-                                                            },
-                                                        ],
-                                                        strict: false,
-                                                    },
-                                                    source: FunctionSource(
-                                                        "get [key](){return this.x;}",
+                                    ),
+                                    Property(
+                                        ObjectProperty {
+                                            name: Computed(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "key",
                                                     ),
+                                                    span: Span {
+                                                        start: 26,
+                                                        end: 29,
+                                                    },
                                                 },
                                             ),
-                                            span: Span {
-                                                start: 21,
-                                                end: 48,
-                                            },
-                                        },
-                                        kind: Getter,
-                                        span: Span {
-                                            start: 21,
-                                            end: 48,
-                                        },
-                                    },
-                                    ObjectProperty {
-                                        name: Literal(
-                                            String(
-                                                "x",
-                                            ),
-                                        ),
-                                        value: Expr {
-                                            depth: 1,
-                                            kind: Function(
-                                                Function {
-                                                    name: None,
-                                                    parameters: [
-                                                        Binding {
-                                                            name: "v",
-                                                            span: Span {
-                                                                start: 56,
-                                                                end: 57,
-                                                            },
-                                                            initializer: None,
-                                                        },
-                                                    ],
-                                                    body: FunctionBody {
-                                                        statements: [
-                                                            Statement {
-                                                                kind: Expression(
-                                                                    Expr {
-                                                                        depth: 3,
-                                                                        kind: Assign(
+                                            value: Expr {
+                                                depth: 1,
+                                                kind: Function(
+                                                    Function {
+                                                        name: None,
+                                                        parameters: [],
+                                                        body: FunctionBody {
+                                                            statements: [
+                                                                Statement {
+                                                                    kind: Return(
+                                                                        Some(
                                                                             Expr {
                                                                                 depth: 2,
                                                                                 kind: Member(
@@ -195,62 +122,141 @@ Script {
                                                                                         depth: 1,
                                                                                         kind: This,
                                                                                         span: Span {
-                                                                                            start: 59,
-                                                                                            end: 63,
+                                                                                            start: 40,
+                                                                                            end: 44,
                                                                                         },
                                                                                     },
                                                                                     Literal(
                                                                                         String(
-                                                                                            "y",
+                                                                                            "x",
                                                                                         ),
                                                                                     ),
                                                                                 ),
                                                                                 span: Span {
-                                                                                    start: 59,
-                                                                                    end: 65,
-                                                                                },
-                                                                            },
-                                                                            Expr {
-                                                                                depth: 1,
-                                                                                kind: Identifier(
-                                                                                    "v",
-                                                                                ),
-                                                                                span: Span {
-                                                                                    start: 66,
-                                                                                    end: 67,
+                                                                                    start: 40,
+                                                                                    end: 46,
                                                                                 },
                                                                             },
                                                                         ),
-                                                                        span: Span {
-                                                                            start: 59,
-                                                                            end: 67,
-                                                                        },
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 33,
+                                                                        end: 47,
                                                                     },
-                                                                ),
-                                                                span: Span {
-                                                                    start: 59,
-                                                                    end: 68,
                                                                 },
+                                                            ],
+                                                            strict: false,
+                                                        },
+                                                        source: FunctionSource(
+                                                            "get [key](){return this.x;}",
+                                                        ),
+                                                    },
+                                                ),
+                                                span: Span {
+                                                    start: 21,
+                                                    end: 48,
+                                                },
+                                            },
+                                            kind: Getter,
+                                            span: Span {
+                                                start: 21,
+                                                end: 48,
+                                            },
+                                        },
+                                    ),
+                                    Property(
+                                        ObjectProperty {
+                                            name: Literal(
+                                                String(
+                                                    "x",
+                                                ),
+                                            ),
+                                            value: Expr {
+                                                depth: 1,
+                                                kind: Function(
+                                                    Function {
+                                                        name: None,
+                                                        parameters: [
+                                                            Binding {
+                                                                name: "v",
+                                                                span: Span {
+                                                                    start: 56,
+                                                                    end: 57,
+                                                                },
+                                                                initializer: None,
                                                             },
                                                         ],
-                                                        strict: false,
+                                                        body: FunctionBody {
+                                                            statements: [
+                                                                Statement {
+                                                                    kind: Expression(
+                                                                        Expr {
+                                                                            depth: 3,
+                                                                            kind: Assign(
+                                                                                Expr {
+                                                                                    depth: 2,
+                                                                                    kind: Member(
+                                                                                        Expr {
+                                                                                            depth: 1,
+                                                                                            kind: This,
+                                                                                            span: Span {
+                                                                                                start: 59,
+                                                                                                end: 63,
+                                                                                            },
+                                                                                        },
+                                                                                        Literal(
+                                                                                            String(
+                                                                                                "y",
+                                                                                            ),
+                                                                                        ),
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 59,
+                                                                                        end: 65,
+                                                                                    },
+                                                                                },
+                                                                                Expr {
+                                                                                    depth: 1,
+                                                                                    kind: Identifier(
+                                                                                        "v",
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 66,
+                                                                                        end: 67,
+                                                                                    },
+                                                                                },
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 59,
+                                                                                end: 67,
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 59,
+                                                                        end: 68,
+                                                                    },
+                                                                },
+                                                            ],
+                                                            strict: false,
+                                                        },
+                                                        source: FunctionSource(
+                                                            "set x(v){this.y=v;}",
+                                                        ),
                                                     },
-                                                    source: FunctionSource(
-                                                        "set x(v){this.y=v;}",
-                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 50,
+                                                    end: 69,
                                                 },
-                                            ),
+                                            },
+                                            kind: Setter,
                                             span: Span {
                                                 start: 50,
                                                 end: 69,
                                             },
                                         },
-                                        kind: Setter,
-                                        span: Span {
-                                            start: 50,
-                                            end: 69,
-                                        },
-                                    },
+                                    ),
                                 ],
                             ),
                             span: Span {

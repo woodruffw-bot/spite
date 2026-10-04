@@ -132,50 +132,54 @@ Script {
                                                                 depth: 2,
                                                                 kind: Object(
                                                                     [
-                                                                        ObjectProperty {
-                                                                            name: Literal(
-                                                                                String(
-                                                                                    "x",
+                                                                        Property(
+                                                                            ObjectProperty {
+                                                                                name: Literal(
+                                                                                    String(
+                                                                                        "x",
+                                                                                    ),
                                                                                 ),
-                                                                            ),
-                                                                            value: Expr {
-                                                                                depth: 1,
-                                                                                kind: Identifier(
-                                                                                    "x",
-                                                                                ),
+                                                                                value: Expr {
+                                                                                    depth: 1,
+                                                                                    kind: Identifier(
+                                                                                        "x",
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 46,
+                                                                                        end: 47,
+                                                                                    },
+                                                                                },
+                                                                                kind: Shorthand,
                                                                                 span: Span {
                                                                                     start: 46,
                                                                                     end: 47,
                                                                                 },
                                                                             },
-                                                                            kind: Shorthand,
-                                                                            span: Span {
-                                                                                start: 46,
-                                                                                end: 47,
-                                                                            },
-                                                                        },
-                                                                        ObjectProperty {
-                                                                            name: Literal(
-                                                                                String(
-                                                                                    "y",
+                                                                        ),
+                                                                        Property(
+                                                                            ObjectProperty {
+                                                                                name: Literal(
+                                                                                    String(
+                                                                                        "y",
+                                                                                    ),
                                                                                 ),
-                                                                            ),
-                                                                            value: Expr {
-                                                                                depth: 1,
-                                                                                kind: Identifier(
-                                                                                    "y",
-                                                                                ),
+                                                                                value: Expr {
+                                                                                    depth: 1,
+                                                                                    kind: Identifier(
+                                                                                        "y",
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 49,
+                                                                                        end: 50,
+                                                                                    },
+                                                                                },
+                                                                                kind: Shorthand,
                                                                                 span: Span {
                                                                                     start: 49,
                                                                                     end: 50,
                                                                                 },
                                                                             },
-                                                                            kind: Shorthand,
-                                                                            span: Span {
-                                                                                start: 49,
-                                                                                end: 50,
-                                                                            },
-                                                                        },
+                                                                        ),
                                                                     ],
                                                                 ),
                                                                 span: Span {

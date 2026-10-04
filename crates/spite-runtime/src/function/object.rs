@@ -9,6 +9,7 @@ mod descriptor;
 mod integrity;
 mod keys;
 mod prototype;
+mod spread;
 mod tag;
 #[cfg(test)]
 mod tests;

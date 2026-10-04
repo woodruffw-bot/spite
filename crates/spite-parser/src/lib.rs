@@ -617,12 +617,15 @@ impl Parser {
                 .unwrap_or(0),
             ExprKind::Object(properties) => properties
                 .iter()
-                .map(|property| {
-                    let key_depth = match &property.name {
-                        PropertyName::Computed(key) => key.depth,
-                        PropertyName::Literal(_) => 0,
-                    };
-                    key_depth.max(property.value.depth)
+                .map(|element| match element {
+                    ObjectElement::Spread(expression) => expression.depth,
+                    ObjectElement::Property(property) => {
+                        let key_depth = match &property.name {
+                            PropertyName::Computed(key) => key.depth,
+                            PropertyName::Literal(_) => 0,
+                        };
+                        key_depth.max(property.value.depth)
+                    }
                 })
                 .max()
                 .unwrap_or(0),
@@ -1456,7 +1459,14 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
             }
         }
         ExprKind::Object(properties) => {
-            for property in properties {
+            for element in properties {
+                let property = match element {
+                    ObjectElement::Spread(expression) => {
+                        validate_expr(expression, strict)?;
+                        continue;
+                    }
+                    ObjectElement::Property(property) => property,
+                };
                 if let PropertyName::Computed(key) = &property.name {
                     validate_expr(key, strict)?;
                 }

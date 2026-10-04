@@ -3,7 +3,7 @@
 use spite_core::{DiagnosticKind, JsString};
 use spite_parser::{
     MAX_DEPTH,
-    ast::{ExprKind, Literal, PropertyKind, PropertyName, StatementKind},
+    ast::{ExprKind, Literal, ObjectElement, PropertyKind, PropertyName, StatementKind},
     parse_script,
 };
 
@@ -12,6 +12,38 @@ fn object_literal_snapshot() {
     insta::assert_debug_snapshot!(
         parse_script("({plain: 1, shorthand, ['x' + n]: 2, 0x10n: 3, __proto__: null,})").unwrap()
     );
+}
+
+#[test]
+fn spread_property_syntax_and_diagnostics_snapshot() {
+    insta::assert_debug_snapshot!(
+        parse_script("({first:1,...source,[key]:2,...other=source, get x(){return 3;},...null,})")
+            .unwrap()
+    );
+    insta::assert_debug_snapshot!(parse_script("({...:1})").unwrap_err());
+    for source in [
+        "({...x})",
+        "({...x,...y,})",
+        "for(let x={...'x' in {}};false;){}",
+        "({__proto__:null,...source,['__proto__']:7})",
+    ] {
+        assert!(parse_script(source).is_ok(), "{source}");
+    }
+    for source in [
+        "({...})",
+        "({...x ...y})",
+        "({...x:1})",
+        "({...x=})",
+        "'use strict';({...eval=1})",
+        "'use strict';({...yield})",
+        "({__proto__:null,...source,__proto__:null})",
+    ] {
+        assert_eq!(
+            parse_script(source).unwrap_err().kind,
+            DiagnosticKind::Syntax,
+            "{source}"
+        );
+    }
 }
 
 #[test]
@@ -36,6 +68,9 @@ fn property_names_accept_identifier_names_and_preserve_utf16() {
         JsString::from_code_units(vec![0xd800]),
     ];
     for (property, expected) in properties.iter().zip(expected) {
+        let ObjectElement::Property(property) = property else {
+            panic!("property");
+        };
         assert_eq!(
             property.name,
             PropertyName::Literal(Literal::String(expected))
@@ -123,8 +158,8 @@ fn malformed_properties_and_nested_strict_violations_are_rejected() {
 }
 
 #[test]
-fn suspended_methods_and_spread_remain_explicitly_unsupported() {
-    for source in ["({*g() {}})", "({async m() {}})", "({...x})"] {
+fn suspended_methods_remain_explicitly_unsupported() {
+    for source in ["({*g() {}})", "({async m() {}})"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,
@@ -136,6 +171,11 @@ fn suspended_methods_and_spread_remain_explicitly_unsupported() {
 #[test]
 fn nested_object_values_and_computed_names_obey_depth_limits() {
     for source in [
+        format!(
+            "({}0{})",
+            "{...".repeat(MAX_DEPTH * 2),
+            "}".repeat(MAX_DEPTH * 2)
+        ),
         format!(
             "({}0{})",
             "{x:".repeat(MAX_DEPTH * 2),

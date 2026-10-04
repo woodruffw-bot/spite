@@ -8,10 +8,15 @@ impl Parser {
         let mut properties = Vec::new();
         let mut prototype_seen = false;
         while !self.at("}") {
-            if self.at("...") || self.at("*") {
-                return Err(
-                    self.unsupported("object spread and generator methods are not implemented")
-                );
+            if self.eat("...") {
+                properties.push(ObjectElement::Spread(self.expression_with_in(2, true)?));
+                if !self.eat(",") {
+                    break;
+                }
+                continue;
+            }
+            if self.at("*") {
+                return Err(self.unsupported("generator methods are not implemented"));
             }
             let token = self.bump();
             let property_start = token.span.start;
@@ -81,12 +86,12 @@ impl Parser {
                 }
             };
             let span = Span::new(property_start, value.span.end);
-            properties.push(ObjectProperty {
+            properties.push(ObjectElement::Property(ObjectProperty {
                 name,
                 value,
                 kind,
                 span,
-            });
+            }));
             if !self.eat(",") {
                 break;
             }

@@ -403,7 +403,7 @@ pub enum ExprKind {
     /// An Array initializer in source order, including elisions and spread.
     Array(Vec<ArrayElement>),
     /// An ordinary object initializer, in source property order.
-    Object(Vec<ObjectProperty>),
+    Object(Vec<ObjectElement>),
     /// An untagged template literal. There is one more element than substitution.
     Template {
         /// Cooked and raw components in source order.
@@ -465,6 +465,15 @@ pub enum ExprKind {
     CompoundAssign(BinaryOp, Box<Expr>, Box<Expr>),
     /// A conditional expression.
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+}
+
+/// An object initializer element (13.2.5), evaluated in source order.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectElement {
+    /// A named data, prototype, method, or accessor definition.
+    Property(ObjectProperty),
+    /// An expression whose enumerable own properties are copied.
+    Spread(Expr),
 }
 
 /// A property definition in an object initializer.
