@@ -1758,3 +1758,36 @@ The complete JSON method inventory supports reflection and integrity operations.
 No default serialization nesting or resource quota is introduced.
 Materialization has no default nesting or resource quota; opted-in work, heap,
 and final decoded string/property-name quotas retain their host-abort behavior.
+
+## Map keyed collections
+
+Map (24.1) stores canonical collection keys in a standard randomized HashMap
+that indexes a stable vector of ordered entries. Keys compare by primitive type,
+UTF-16 string content, normalized BigInt magnitude/sign, Symbol identity, or
+validated heap handle identity. All NaNs share a hash identity; signed zero is
+stored as positive zero. No key conversion invokes user code. Expected sublinear
+lookup meets the specification's performance requirement. Updates preserve an
+entry's position, while deletion and clear erase values and retain vacant positions
+so suspended iterators and forEach observe later appends correctly. Historical
+vacant positions consume addressable storage until the Map is collected; they
+retain no keys or values. This representation sets no default host quota.
+
+MapData traces each live key/value. Iterators retain their source Map until
+completion and then release it permanently. Storage validates handles, charges
+opted-in work, reserves new hash/vector capacity before inserting, and executes
+no JavaScript under a heap borrow. BigInt and heap handle hashes agree with their
+existing equality rules. Map.prototype is ordinary and has no MapData brand;
+methods and size reject inherited or forged slots regardless of public prototypes.
+
+Construction requires NewTarget and reads its prototype before the instance's
+set method. Null/undefined input returns before reading set. AddEntriesFromIterable
+caches the adder and next method, reads entry zero before one, closes entry or
+adder errors, and never closes next/done/value failures. Incoming throw completions
+win over closing errors; host aborts skip script cleanup. Computed insertion
+validates its callback before lookup, passes a canonical key with undefined this,
+and looks up the entry again after callback mutation before assigning the result.
+ForEach and Map iterators use live ordered cursors and expose reinsertions/appends.
+GroupBy checks its safe-integer index before stepping, closes callback errors,
+uses canonical collection keys without coercion, and materializes retained intrinsic
+Map and Array objects after exhaustion without reading public constructors or set.
+The complete edition-17 Map and Map Iterator inventories support ordinary reflection.

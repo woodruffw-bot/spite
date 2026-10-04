@@ -98,7 +98,7 @@ impl Budget {
 /// A signed integer with no fixed precision.
 ///
 /// Magnitudes use normalized little-endian 32-bit words. Zero is non-negative.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct BigInt {
     negative: bool,
     words: Vec<u32>,

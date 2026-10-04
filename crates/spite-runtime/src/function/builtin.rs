@@ -16,6 +16,47 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::Map => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Map requires construction",
+            )),
+            Builtin::MapSpecies => Ok(this),
+            Builtin::MapClear
+            | Builtin::MapDelete
+            | Builtin::MapGet
+            | Builtin::MapGetOrInsert
+            | Builtin::MapGetOrInsertComputed
+            | Builtin::MapHas
+            | Builtin::MapSet
+            | Builtin::MapSize => self.map_method(
+                builtin,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::MapForEach => self.map_for_each(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::MapEntries | Builtin::MapKeys | Builtin::MapValues => self.map_iterator(
+                this,
+                match builtin {
+                    Builtin::MapKeys => crate::object::ArrayIterationKind::Key,
+                    Builtin::MapValues => crate::object::ArrayIterationKind::Value,
+                    _ => crate::object::ArrayIterationKind::KeyValue,
+                },
+                span,
+            ),
+            Builtin::MapIteratorNext => self.map_iterator_next(this, span),
+            Builtin::MapGroupBy => self.map_group_by(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::DecodeUri | Builtin::DecodeUriComponent => self.decode_uri(
                 arguments.next().unwrap_or(Value::Undefined),
                 matches!(builtin, Builtin::DecodeUriComponent),

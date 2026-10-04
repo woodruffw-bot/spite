@@ -246,6 +246,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement JSON reviver traversal and primitive source contexts.
 - [x] Implement raw JSON primitive validation, frozen objects, and unforgeable branding.
 - [x] Implement JSON stringify with replacers, indentation, cycle detection, and raw JSON embedding.
+- [x] Implement Map construction, canonical key identity, ordered mutation, live iterators, forEach, getOrInsert methods, and intrinsic groupBy.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.

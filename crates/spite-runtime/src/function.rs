@@ -18,6 +18,7 @@ mod error;
 mod instance;
 mod iterator;
 mod json;
+mod map;
 mod math;
 mod method;
 pub(crate) use method::MethodFunction;
@@ -263,6 +264,22 @@ pub(crate) enum Builtin {
     NumberToLocaleString,
     ParseFloat,
     ParseInt,
+    Map,
+    MapClear,
+    MapDelete,
+    MapEntries,
+    MapForEach,
+    MapGet,
+    MapGetOrInsert,
+    MapGetOrInsertComputed,
+    MapHas,
+    MapKeys,
+    MapSet,
+    MapValues,
+    MapSize,
+    MapSpecies,
+    MapGroupBy,
+    MapIteratorNext,
     JsonParse,
     JsonRaw,
     JsonIsRaw,
@@ -489,6 +506,22 @@ impl Builtin {
             | Self::BigIntToLocaleString => "toLocaleString",
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
+            Self::Map => "Map",
+            Self::MapClear => "clear",
+            Self::MapDelete => "delete",
+            Self::MapEntries => "entries",
+            Self::MapForEach => "forEach",
+            Self::MapGet => "get",
+            Self::MapGetOrInsert => "getOrInsert",
+            Self::MapGetOrInsertComputed => "getOrInsertComputed",
+            Self::MapHas => "has",
+            Self::MapKeys => "keys",
+            Self::MapSet => "set",
+            Self::MapValues => "values",
+            Self::MapSize => "get size",
+            Self::MapSpecies => "get [Symbol.species]",
+            Self::MapGroupBy => "groupBy",
+            Self::MapIteratorNext => "next",
             Self::JsonParse => "parse",
             Self::JsonRaw => "rawJSON",
             Self::JsonIsRaw => "isRawJSON",
@@ -503,6 +536,11 @@ impl Builtin {
     fn length(self) -> f64 {
         match self {
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
+            Self::MapDelete | Self::MapForEach | Self::MapGet | Self::MapHas => 1.0,
+            Self::MapSet
+            | Self::MapGetOrInsert
+            | Self::MapGetOrInsertComputed
+            | Self::MapGroupBy => 2.0,
             Self::FunctionCall
             | Self::Function
             | Self::IteratorTagSet
@@ -751,6 +789,7 @@ pub(super) struct Intrinsics {
     pub reflect: reflect::ReflectIntrinsics,
     pub math: math::MathIntrinsics,
     pub json: json::JsonIntrinsics,
+    pub map: map::MapIntrinsics,
 }
 
 impl Intrinsics {
@@ -787,6 +826,7 @@ impl Intrinsics {
         .chain(self.reflect.roots())
         .chain(self.math.roots())
         .chain(self.json.roots())
+        .chain(self.map.roots())
     }
 }
 
@@ -931,6 +971,12 @@ impl Realm {
         let reflect = self.reflect_intrinsics(&object_prototype, &function_prototype, span)?;
         let math = self.math_intrinsics(&object_prototype, &function_prototype, span)?;
         let json = self.json_intrinsics(&object_prototype, &function_prototype, span)?;
+        let map = self.map_intrinsics(
+            &object_prototype,
+            &function_prototype,
+            &iterator.prototype,
+            span,
+        )?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -963,6 +1009,7 @@ impl Realm {
             reflect,
             math,
             json,
+            map,
         });
         Ok(object_prototype)
     }

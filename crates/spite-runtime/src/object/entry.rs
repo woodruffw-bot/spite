@@ -5,6 +5,10 @@ use crate::environment::Environment;
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "Heap slots primarily hold objects; keep records inline and box optional collection payloads"
+)]
 pub(super) enum Entry {
     Object(OrdinaryObject),
     Environment(Environment),

@@ -35,6 +35,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
+| Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 5434 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -996,3 +997,12 @@ extensions are not enabled for this non-browser host. They are standardized
 optional behavior, not evidence that Node.js compatibility is required.
 The `Legacy` numeric and string productions in edition-17 sections 12.9.3–4 are
 required language syntax, distinct from those optional Annex B features.
+
+Map regressions cover all primitive key types, distinct Object/Symbol identities,
+NaN payloads, canonical positive zero, wide BigInt keys, unchanged insertion order,
+deleted/reinserted entries, frozen instances, prototype/adder/iterator ordering,
+entry-closing precedence, step failures, own branding, live and exhausted iterators,
+exact callback arguments/receivers, callback mutation/reentry, computed insertion,
+intrinsic group materialization, metadata, garbage-collection retention/release,
+foreign/stale handle rejection, a 20,000-entry default Map, and opt-in host aborts.
+The GroupBy safe-integer guard is checked directly before the next step.

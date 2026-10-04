@@ -1600,7 +1600,6 @@ fn standard_global(name: &str) -> bool {
             | "Float16Array"
             | "Float32Array"
             | "Float64Array"
-            | "Map"
             | "Set"
             | "WeakMap"
             | "WeakSet"

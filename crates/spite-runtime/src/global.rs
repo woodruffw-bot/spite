@@ -170,6 +170,14 @@ impl Realm {
             .object
             .clone();
         self.define_builtin_property(&object, "JSON", Value::Object(json), true, span)?;
+        let map = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .map
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Map", Value::Object(map), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

@@ -20,11 +20,14 @@ mod symbol_tests;
 use arguments::ParameterMap;
 mod descriptor;
 mod iterator;
+mod map;
 use iterator::IteratorState;
+use iterator::MapIterator;
 pub(crate) use iterator::{
     ArrayIterationKind, ArrayIterator, CallbackIterator, CallbackKind, ConcatIterable,
     HelperStatus, IteratorHelper, IteratorWrapper, LimitKind, StringIterator,
 };
+pub(crate) use map::CollectionKey;
 mod entry;
 mod store;
 pub use descriptor::{
@@ -70,6 +73,7 @@ pub struct OrdinaryObject {
     primitive_data: Option<PrimitiveData>,
     error_data: bool,
     raw_json: bool,
+    map: Option<Box<map::MapData>>,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -98,6 +102,7 @@ impl OrdinaryObject {
             primitive_data: None,
             error_data: false,
             raw_json: false,
+            map: None,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -130,6 +135,10 @@ impl OrdinaryObject {
         self.raw_json
     }
 
+    pub(crate) fn is_map(&self) -> bool {
+        self.map.is_some()
+    }
+
     /// Returns whether this record has Array exotic internal methods.
     pub fn is_array(&self) -> bool {
         self.array
@@ -138,6 +147,13 @@ impl OrdinaryObject {
     pub(crate) fn array_iterator(&self) -> Option<&ArrayIterator> {
         match &self.iterator {
             Some(IteratorState::Array(state)) => Some(state),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn map_iterator(&self) -> Option<&MapIterator> {
+        match &self.iterator {
+            Some(IteratorState::Map(state)) => Some(state),
             _ => None,
         }
     }
@@ -332,6 +348,7 @@ impl Trace for OrdinaryObject {
             .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
             .chain(self.raw_json.then_some(None))
+            .chain(self.map.iter().flat_map(|data| data.trace()))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))
             .chain(self.parameter_map.iter().flat_map(|map| {
