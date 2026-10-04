@@ -171,24 +171,60 @@ fn host_abort_restores_both_catch_scopes_and_skips_pending_handlers() {
 }
 
 #[test]
-fn built_in_exception_binding_reports_missing_error_objects_without_substitute_values() {
-    for expression in ["missing", "+1n", "1n / 0n"] {
+fn built_in_exception_bindings_receive_error_objects_and_restore_scopes() {
+    for (expression, name) in [
+        ("missing", "ReferenceError"),
+        ("+1n", "TypeError"),
+        ("1n / 0n", "RangeError"),
+    ] {
         let mut realm = Realm::default();
         realm.eval("let flag = 0; let e = 3").unwrap();
         let result = realm.eval(&format!(
-            "try {{ {expression}; }} catch (e) {{ flag = 1; }} finally {{ flag = 2; }}"
+            "try {{ {expression}; }} catch (e) {{ flag = Error.isError(e) && e instanceof {name} && e.constructor==={name} && e.name==='{name}' && typeof e.message==='string'; }} finally {{ if(flag===true)flag = 2; }}"
         ));
-        assert!(
-            matches!(result, Err(Error::Unsupported { .. })),
-            "{expression}"
-        );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+        assert!(result.is_ok(), "{expression}: {result:?}");
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
         assert_eq!(realm.eval("e"), Ok(Value::Number(3.0)));
         assert_eq!(
             realm.eval(&format!("try {{ {expression}; }} catch {{ 9; }}")),
             Ok(Value::Number(9.0))
         );
     }
+}
+
+#[test]
+fn materialized_errors_preserve_identity_across_rethrows_and_finalizers() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval("let saved;let flag=0;try{try{+1n;}catch(e){saved=e;throw e;}finally{flag=1;}}catch(e){e===saved && e instanceof TypeError && Error.isError(e) && flag===1}"),Ok(Value::Boolean(true)));
+    let Value::Object(error) = realm.eval("saved").unwrap() else {
+        panic!("error");
+    };
+    let message = realm
+        .inspect_object(&error)
+        .unwrap()
+        .own_property(&JsString::from("message"))
+        .unwrap()
+        .as_data()
+        .unwrap();
+    assert!(message.writable && !message.enumerable && message.configurable);
+    realm.collect(100_000).unwrap();
+    assert_eq!(
+        realm.eval("saved instanceof TypeError && Error.isError(saved)"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn error_creation_uses_intrinsics_after_global_bindings_are_replaced() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval("let T=TypeError;let R=ReferenceError;TypeError=()=>{throw 1;};delete globalThis.ReferenceError;let a,b;try{+1n;}catch(e){a=e;}try{missing;}catch(e){b=e;}a instanceof T && a.constructor===T && b instanceof R && b.constructor===R"),Ok(Value::Boolean(true)));
+    assert!(matches!(
+        realm.eval("+1n"),
+        Err(Error::Exception {
+            kind: spite_runtime::ExceptionKind::TypeError,
+            ..
+        })
+    ));
 }
 
 #[test]

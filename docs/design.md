@@ -176,9 +176,9 @@ on every exit, including a host abort.
 
 A catch parameter creates a mutable declarative binding in an environment outside
 the catch block's lexical environment. Restore both before a finalizer or outer
-handler runs. Thrown values, including object identities, are bound without coercion. Until the object
-model supplies Error instances, binding a built-in exception reports Unsupported;
-catch clauses without a parameter can still handle those exceptions. The optional
+handler runs. Thrown values, including object identities, are bound without
+coercion. Built-in exceptions materialize as Error instances when a binding needs
+their JavaScript value; catch clauses without a parameter need no such value. The optional
 Annex B rule permitting var to redeclare a catch parameter is not enabled.
 
 An engine owns realms, environments, execution contexts, and the object heap.
@@ -452,7 +452,7 @@ then inspect object-valued options for an inherited or own cause property. Keep
 ErrorData private and trace cause values through ordinary properties. AggregateError
 depends on iteration and remains a separate increment.
 
-Then materialize built-in runtime exceptions as Error objects when a catch binding
+Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced
 global bindings. Preserve the host-facing exception category, message, and source
 span for uncaught failures. Host Unsupported/Limit failures must still bypass

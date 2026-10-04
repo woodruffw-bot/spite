@@ -1090,12 +1090,11 @@ impl Realm {
         };
         let value = match error {
             Error::Thrown(value) => value,
-            Error::Exception { .. } => {
-                return Err(Self::unsupported(
-                    handler.span,
-                    "binding built-in exceptions requires JavaScript Error objects",
-                ));
-            }
+            Error::Exception {
+                kind,
+                span,
+                message,
+            } => self.materialize_exception(kind, message, span)?,
             _ => unreachable!("only language throws enter a catch clause"),
         };
         self.tick(parameter.span)?;

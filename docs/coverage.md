@@ -201,8 +201,11 @@ exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
 Supported throws initialize a mutable catch binding without coercion, preserving object identity. The catch
 binding and block scopes are restored across every completion and host failure.
-Binding a built-in exception currently reports Unsupported; these exceptions are
-not yet materialized into Error objects for catch bindings.
+Built-in exceptions materialize as Error objects for catch bindings, using
+intrinsic prototypes even after global constructor bindings are replaced. Rethrows
+preserve object identity. Allocation/string limits during materialization remain
+host aborts and skip pending handlers and finalizers. Uncaught built-in failures
+retain their host-facing Rust category and source span.
 Catch binding patterns remain unsupported.
 
 Recognized missing features return Unsupported. Because the grammar is incomplete,
@@ -226,7 +229,7 @@ Number tests, ten numeric parsing tests, and five global numeric predicate tests
 in both Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing String/JSON APIs and remains Unsupported;
-arrays, built-in exception bindings, other includes, async completion, and agents
+arrays, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 274 variants are four raw positives, 198 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do

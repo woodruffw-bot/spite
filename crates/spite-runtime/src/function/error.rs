@@ -70,6 +70,29 @@ impl ErrorIntrinsics {
 }
 
 impl Realm {
+    pub(crate) fn materialize_exception(
+        &mut self,
+        kind: ExceptionKind,
+        message: String,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let constructor = match kind {
+            ExceptionKind::SyntaxError => ErrorConstructor::SyntaxError,
+            ExceptionKind::ReferenceError => ErrorConstructor::ReferenceError,
+            ExceptionKind::TypeError => ErrorConstructor::TypeError,
+            ExceptionKind::RangeError => ErrorConstructor::RangeError,
+        };
+        // Error constructors and their fixed prototype properties are reached
+        // through realm intrinsics, never mutable global bindings. No user
+        // conversion hook runs for the already-generated diagnostic message.
+        self.error_constructor(
+            constructor,
+            None,
+            vec![Value::String(JsString::from(message.as_str()))].into_iter(),
+            span,
+        )
+    }
+
     pub(super) fn error_intrinsics(
         &mut self,
         object_prototype: &ObjectHandle,

@@ -27,6 +27,25 @@ fn original_assertions_compare_values_and_catch_test262_error_objects() {
 }
 
 #[test]
+fn original_throws_assertions_check_native_error_constructors() {
+    let outcomes = run(
+        "assert.throws(TypeError,()=>+1n);assert.throws(ReferenceError,()=>missing);assert.throws(RangeError,()=>1n/0n);assert.throws(TypeError,()=>{throw new TypeError('explicit');});",
+    );
+    assert_eq!(outcomes, [Outcome::Passed, Outcome::Passed]);
+    let outcomes = run("assert.throws(TypeError,()=>{throw new RangeError('wrong kind');});");
+    assert!(
+        outcomes.iter().all(|outcome| matches!(
+            outcome,
+            Outcome::Failed {
+                stage: Stage::Runtime,
+                ..
+            }
+        )),
+        "{outcomes:?}"
+    );
+}
+
+#[test]
 fn deliberate_assertion_failures_are_runtime_failures_in_both_modes() {
     for body in [
         "assert(false,'deliberate failure');",

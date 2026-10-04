@@ -194,3 +194,29 @@ fn message_output_and_allocation_limits_remain_host_aborts() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }
+
+#[test]
+fn materializing_a_builtin_exception_can_abort_without_entering_pending_handlers() {
+    // The try block consumes the last slot; creating the catch value must fail.
+    let mut realm = Realm::new(Limits {
+        max_heap_entries: crate::test_support::REALM_ENTRIES + 1,
+        ..Limits::default()
+    });
+    realm.eval("let flag=0").unwrap();
+    assert!(matches!(
+        realm.eval("try{+1n;}catch(e){flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
+
+    let mut realm = Realm::default();
+    realm.eval("let flag=0").unwrap();
+    realm.limits.max_string_units = 16;
+    assert!(matches!(
+        realm.eval("try{+1n;}catch(e){flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert_eq!(realm.eval("1+2"), Ok(Value::Number(3.0)));
+}
