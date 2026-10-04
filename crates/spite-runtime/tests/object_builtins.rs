@@ -23,7 +23,7 @@ fn construction_distinguishes_nullish_object_and_primitive_arguments() {
         "let b=Object(false),n=new Object(-0);b instanceof Boolean && b.valueOf()===false && n instanceof Number && 1/n.valueOf()===-Infinity && n!==Object(-0)",
     );
     check("let effect=0;Object(null,effect=1);effect===1");
-    for source in ["Object('x')", "new Object(1n)"] {
+    for source in ["Object(1n)", "new Object(1n)"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

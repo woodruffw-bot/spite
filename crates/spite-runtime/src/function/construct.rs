@@ -109,6 +109,13 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::String) => {
+                    return self.string_constructor(
+                        Some(new_target),
+                        arguments.into_iter().next(),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::Error(kind)) => {
                     return self.error_constructor(
                         kind,

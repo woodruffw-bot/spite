@@ -1,4 +1,4 @@
-//! Primitive non-strict receivers remain host gaps.
+//! BigInt non-strict receivers remain host gaps.
 
 use spite_runtime::{Error, Realm, Value};
 
@@ -6,12 +6,7 @@ use spite_runtime::{Error, Realm, Value};
 fn missing_receivers_remain_uncatchable_host_gaps_and_never_execute_the_body() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;function f(){flag=9;}").unwrap();
-    for source in [
-        "f.call(1n)",
-        "f.call('text')",
-        "f.apply(1n,{length:0})",
-        "f.bind('text')()",
-    ] {
+    for source in ["f.call(1n)", "f.apply(1n,{length:0})", "f.bind(1n)()"] {
         assert!(matches!(
             realm.eval(&format!(
                 "try{{{source};}}catch{{flag=1;}}finally{{flag=2;}}"

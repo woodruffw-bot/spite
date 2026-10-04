@@ -90,6 +90,9 @@ impl Realm {
 
     pub(super) fn string(&mut self, value: Value, span: Span) -> Result<JsString, Error> {
         let primitive = self.primitive(value, Hint::String, span)?;
+        if let Value::String(string) = primitive {
+            return Ok(string);
+        }
         self.conversion_work(span, |budget| primitive.to_js_string(budget))
     }
 
@@ -134,11 +137,8 @@ impl Realm {
         if let Value::Object(object) = base {
             return self.get_property(object, key, span);
         }
-        if let Some(prototype) = self.primitive_prototype(base) {
-            return self.get_property_with_receiver(&prototype, key, base.clone(), span);
-        }
-        self.tick(span)?;
         if let Value::String(string) = base {
+            self.tick(span)?;
             if key_is(key, "length") {
                 return Ok(Value::Number(string.len() as f64));
             }
@@ -148,6 +148,10 @@ impl Realm {
                 ])));
             }
         }
+        if let Some(prototype) = self.primitive_prototype(base) {
+            return self.get_property_with_receiver(&prototype, key, base.clone(), span);
+        }
+        self.tick(span)?;
         if missing_primitive_method(base, key) {
             return Err(Self::unsupported(
                 span,
@@ -178,6 +182,11 @@ impl Realm {
                     Ok(true)
                 }
             };
+        }
+        if matches!(base,Value::String(string) if key_is(&key,"length") || string_index(string,&key).is_some())
+        {
+            self.tick(span)?;
+            return Ok(false);
         }
         if let Some(prototype) = self.primitive_prototype(base) {
             let action = self.object_work(span, |objects, budget| {
@@ -450,6 +459,8 @@ impl Realm {
         if self.global_object.as_ref() == Some(object)
             || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
+            || object == &intrinsics.string.constructor
+            || object == &intrinsics.string.prototype
         {
             return Err(Self::unsupported(
                 span,
@@ -502,6 +513,11 @@ impl Realm {
         };
         (object == &intrinsics.object.constructor && missing_object_static(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
+            || (object == &intrinsics.string.prototype && missing_string_method(key))
+            || (object == &intrinsics.string.constructor
+                && ["fromCharCode", "fromCodePoint", "raw"]
+                    .iter()
+                    .any(|name| key_is(key, name)))
     }
 }
 
@@ -539,46 +555,50 @@ fn missing_primitive_method(base: &Value, key: &JsString) -> bool {
     if missing_object_method(key) || key_is(key, "toString") || key_is(key, "valueOf") {
         return true;
     }
-    let names: &[&str] = match base {
-        Value::String(_) => &[
-            "at",
-            "charAt",
-            "charCodeAt",
-            "codePointAt",
-            "concat",
-            "endsWith",
-            "includes",
-            "indexOf",
-            "isWellFormed",
-            "lastIndexOf",
-            "localeCompare",
-            "match",
-            "matchAll",
-            "normalize",
-            "padEnd",
-            "padStart",
-            "repeat",
-            "replace",
-            "replaceAll",
-            "search",
-            "slice",
-            "split",
-            "startsWith",
-            "substring",
-            "toLocaleLowerCase",
-            "toLocaleUpperCase",
-            "toLowerCase",
-            "toUpperCase",
-            "toWellFormed",
-            "trim",
-            "trimEnd",
-            "trimStart",
-        ],
-        Value::Number(_) => &["toExponential", "toLocaleString"],
-        Value::BigInt(_) => &["toLocaleString"],
-        _ => &[],
-    };
-    names.iter().any(|name| key_is(key, name))
+    match base {
+        Value::String(_) => missing_string_method(key),
+        Value::BigInt(_) => key_is(key, "toLocaleString"),
+        _ => false,
+    }
+}
+
+fn missing_string_method(key: &JsString) -> bool {
+    [
+        "at",
+        "charAt",
+        "charCodeAt",
+        "codePointAt",
+        "concat",
+        "endsWith",
+        "includes",
+        "indexOf",
+        "isWellFormed",
+        "lastIndexOf",
+        "localeCompare",
+        "match",
+        "matchAll",
+        "normalize",
+        "padEnd",
+        "padStart",
+        "repeat",
+        "replace",
+        "replaceAll",
+        "search",
+        "slice",
+        "split",
+        "startsWith",
+        "substring",
+        "toLocaleLowerCase",
+        "toLocaleUpperCase",
+        "toLowerCase",
+        "toUpperCase",
+        "toWellFormed",
+        "trim",
+        "trimEnd",
+        "trimStart",
+    ]
+    .iter()
+    .any(|name| key_is(key, name))
 }
 
 // 10.4.3.5: only canonical, non-negative integral Number names below the string

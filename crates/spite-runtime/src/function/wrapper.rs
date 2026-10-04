@@ -12,6 +12,7 @@ impl Realm {
         match value {
             Value::Boolean(_) => Some(intrinsics.boolean.prototype.clone()),
             Value::Number(_) => Some(intrinsics.number.prototype.clone()),
+            Value::String(_) => Some(intrinsics.string.prototype.clone()),
             _ => None,
         }
     }
@@ -27,9 +28,10 @@ impl Realm {
                 "this primitive wrapper type is not implemented",
             ));
         };
-        self.object_work(span, |objects, _| match value {
+        self.object_work(span, |objects, budget| match value {
             Value::Boolean(value) => objects.create_boolean(&prototype, value),
             Value::Number(value) => objects.create_number(&prototype, value),
+            Value::String(value) => objects.create_string(&prototype, value, budget),
             _ => unreachable!("primitive with an implemented prototype"),
         })
         .map(Value::Object)

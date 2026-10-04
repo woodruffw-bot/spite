@@ -2,7 +2,8 @@
 
 use super::entry::Entry;
 use super::{
-    DataDescriptor, DescriptorKind, OrdinaryObject, PrimitiveData, Property, PropertyDescriptor,
+    DataDescriptor, DataProperty, DescriptorKind, OrdinaryObject, PrimitiveData, Property,
+    PropertyDescriptor,
 };
 use crate::function::{BoundFunction, Builtin, Callable, ScriptFunction};
 use crate::{
@@ -175,7 +176,11 @@ impl Objects {
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
-            Builtin::Boolean | Builtin::Number | Builtin::Object | Builtin::Error(_)
+            Builtin::Boolean
+                | Builtin::Number
+                | Builtin::String
+                | Builtin::Object
+                | Builtin::Error(_)
         );
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -211,6 +216,50 @@ impl Objects {
         self.inspect(prototype)?;
         let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
         object.primitive_data = Some(value);
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn create_string(
+        &mut self,
+        prototype: &Handle,
+        value: JsString,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        // StringCreate (10.4.3.4): materialize immutable index descriptors so
+        // ordinary descriptor validation enforces the exotic invariants. Each
+        // index consumes the same property limit as an ordinary own property.
+        if value.len() >= self.max_properties {
+            return Err(Error::PropertyLimit);
+        }
+        budget.charge(value.len())?;
+        let mut object = OrdinaryObject::new(Some(prototype.clone()), self.max_properties);
+        for (index, &unit) in value.code_units().iter().enumerate() {
+            let key = JsString::from(index.to_string().as_str());
+            budget.charge(key.len() + 1)?;
+            // Fresh keys are unique. Their order also places every String
+            // index before length, including indices beyond the array range.
+            object.properties.push((
+                key,
+                Property::Data(DataProperty {
+                    value: Value::String(JsString::from_code_units(vec![unit])),
+                    writable: false,
+                    enumerable: true,
+                    configurable: false,
+                }),
+            ));
+        }
+        budget.charge(1)?;
+        object.properties.push((
+            JsString::from("length"),
+            Property::Data(DataProperty {
+                value: Value::Number(value.len() as f64),
+                writable: false,
+                enumerable: false,
+                configurable: false,
+            }),
+        ));
+        object.primitive_data = Some(PrimitiveData::String(value));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

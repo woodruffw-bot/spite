@@ -184,6 +184,10 @@ impl Realm {
             Builtin::Boolean => Ok(Value::Boolean(
                 arguments.next().unwrap_or(Value::Undefined).to_boolean(),
             )),
+            Builtin::String => self.string_constructor(None, arguments.next(), span),
+            Builtin::StringToString | Builtin::StringValueOf => {
+                self.this_string_value(&this, span).map(Value::String)
+            }
             Builtin::BooleanValueOf => Ok(Value::Boolean(self.this_boolean_value(&this, span)?)),
             Builtin::BooleanToString => Ok(Value::String(JsString::from(
                 if self.this_boolean_value(&this, span)? {
@@ -216,6 +220,8 @@ impl Realm {
                             "Boolean"
                         } else if object.number_data().is_some() {
                             "Number"
+                        } else if object.string_data().is_some() {
+                            "String"
                         } else if object.is_arguments() {
                             "Arguments"
                         } else if object.is_callable() {

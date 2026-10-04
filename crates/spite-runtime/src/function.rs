@@ -17,6 +17,7 @@ mod instance;
 mod number;
 mod object;
 mod ordinary;
+mod string;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;
@@ -58,6 +59,9 @@ pub(crate) enum Builtin {
     Boolean,
     BooleanToString,
     BooleanValueOf,
+    String,
+    StringToString,
+    StringValueOf,
     Number,
     NumberValueOf,
     NumberToString,
@@ -86,10 +90,15 @@ impl Builtin {
             Self::FunctionToString
             | Self::ObjectToString
             | Self::BooleanToString
+            | Self::StringToString
             | Self::ErrorToString
             | Self::NumberToString => "toString",
-            Self::ObjectValueOf | Self::BooleanValueOf | Self::NumberValueOf => "valueOf",
+            Self::ObjectValueOf
+            | Self::BooleanValueOf
+            | Self::NumberValueOf
+            | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
+            Self::String => "String",
             Self::Object => "Object",
             Self::ObjectHasOwnProperty => "hasOwnProperty",
             Self::ObjectPropertyIsEnumerable => "propertyIsEnumerable",
@@ -131,6 +140,7 @@ impl Builtin {
             Self::FunctionCall
             | Self::FunctionBind
             | Self::Boolean
+            | Self::String
             | Self::Object
             | Self::ObjectHasOwnProperty
             | Self::ObjectPropertyIsEnumerable
@@ -217,6 +227,7 @@ pub(super) struct Intrinsics {
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
     pub number: number::NumberIntrinsics,
+    pub string: string::StringIntrinsics,
 }
 
 impl Intrinsics {
@@ -239,6 +250,7 @@ impl Intrinsics {
         .chain(self.number.roots())
         .chain(self.errors.roots())
         .chain(self.object.roots())
+        .chain(self.string.roots())
     }
 }
 
@@ -329,6 +341,7 @@ impl Realm {
         let errors = self.error_intrinsics(&object_prototype, &function_prototype, span)?;
         let object =
             self.object_constructor_intrinsics(&object_prototype, &function_prototype, span)?;
+        let string = self.string_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -347,6 +360,7 @@ impl Realm {
             function_to_string,
             boolean,
             number,
+            string,
         });
         Ok(object_prototype)
     }

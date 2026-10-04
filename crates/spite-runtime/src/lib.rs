@@ -1555,7 +1555,6 @@ fn standard_global(name: &str) -> bool {
             | "BigInt"
             | "Math"
             | "Date"
-            | "String"
             | "RegExp"
             | "Array"
             | "Int8Array"

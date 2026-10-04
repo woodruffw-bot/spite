@@ -35,10 +35,11 @@ impl fmt::Display for PropertyLimit {
 }
 impl std::error::Error for PropertyLimit {}
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) enum PrimitiveData {
     Boolean(bool),
     Number(f64),
+    String(JsString),
 }
 
 /// An ordinary object's prototype, extensibility, and ordered properties.
@@ -107,21 +108,28 @@ impl OrdinaryObject {
     }
 
     pub(crate) fn boolean_data(&self) -> Option<bool> {
-        match self.primitive_data {
-            Some(PrimitiveData::Boolean(value)) => Some(value),
+        match &self.primitive_data {
+            Some(PrimitiveData::Boolean(value)) => Some(*value),
             _ => None,
         }
     }
 
     pub(crate) fn number_data(&self) -> Option<f64> {
-        match self.primitive_data {
-            Some(PrimitiveData::Number(value)) => Some(value),
+        match &self.primitive_data {
+            Some(PrimitiveData::Number(value)) => Some(*value),
             _ => None,
         }
     }
 
     pub(crate) fn callable(&self) -> Option<&Callable> {
         self.callable.as_ref()
+    }
+
+    pub(crate) fn string_data(&self) -> Option<&JsString> {
+        match &self.primitive_data {
+            Some(PrimitiveData::String(value)) => Some(value),
+            _ => None,
+        }
     }
 
     /// Returns whether new own properties may be created.

@@ -296,7 +296,7 @@ evaluating values, and implement the required non-computed `__proto__` initializ
 The intrinsic Object prototype has a stable, retained identity and its mandatory
 string-keyed methods. A lookup that reaches an unimplemented intrinsic
 method reports Unsupported; own or nearer inherited data properties can shadow
-that method normally. Symbol coercion hooks and String, BigInt, and Symbol
+that method normally. Symbol coercion hooks and BigInt/Symbol
 wrapper constructors remain explicit implementation gaps.
 
 Ordinary properties distinguish data and accessor records. Partial descriptors
@@ -321,7 +321,7 @@ as permitted by the GetValue/PutValue/delete notes. String own properties expose
 UTF-16 length and single-code-unit indices with non-writable, non-configurable
 attributes. Canonical numeric index names exclude string `-0`, leading zeros,
 fractions, and out-of-range indices. Writes retain the primitive receiver and
-fail without persisting a data property; strict mode throws. Boolean and Number primitives
+fail without persisting a data property; strict mode throws. Boolean, Number, and String primitives
 look up their actual prototype graphs, retaining the primitive receiver for
 inherited getter/setter calls; setters can succeed in either strictness mode. Missing standard prototype
 methods report Unsupported, while absent properties produce undefined. The
@@ -349,16 +349,29 @@ parentheses. Spread arguments and optional calls remain unsupported. Builtin
 function objects carry explicit callable metadata, inherit Function.prototype,
 and have standard name/length descriptors. Function.prototype itself is callable
 and returns undefined. Object.prototype has an immutable null prototype
-(20.1.3, 10.4.7.1). The twenty-seven intrinsic objects are published atomically during realm
+(20.1.3, 10.4.7.1). The intrinsic objects are published atomically during realm
 initialization and retained as roots; failed initialization leaves only unreachable
 allocations for explicit collection. Function.prototype owns configurable,
 non-enumerable caller/arguments accessors that share the realm’s non-extensible
 %ThrowTypeError% function (9.3.2, 10.2.4). Its name/length descriptors are frozen.
 Reads and writes throw TypeError in both modes, while presence and own-property
 deletion do not invoke accessors. Unavailable standard methods remain Unsupported.
-Native Object.prototype.valueOf returns fresh Boolean/Number wrappers for their primitive
+Native Object.prototype.valueOf returns fresh Boolean/Number/String wrappers for their primitive
 receivers; other primitive wrappers remain Unsupported. Arrow closures use the same callable dispatch with
 their captured environment identity.
+
+String construction follows 22.1.1.1, converting the argument before observing
+newTarget.prototype. Missing input differs from explicit undefined. StringData
+identifies wrapper values for the branded toString/valueOf methods, independently
+of prototype identity. StringCreate (10.4.3.4) currently materializes every UTF-16
+index as an immutable enumerable data descriptor plus the fixed length property.
+This produces String exotic read/define/key-order behavior through the existing
+descriptor machinery, while charging length plus one against property capacity.
+Bulk construction charges work before publishing the wrapper; a later virtual
+representation can improve storage without changing semantics. Primitive index
+reads stay virtual and precede prototype access, and primitive writes to those
+indices cannot invoke inherited setters. String prototype methods and statics not
+yet implemented remain explicit gaps.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary
@@ -494,7 +507,7 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of incomplete Object/Function/global intrinsics reports
+bounded work. Enumeration of incomplete Object/Function/String/global intrinsics reports
 Unsupported until their own key sets are complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
@@ -621,7 +634,7 @@ is a non-configurable accessor using %ThrowTypeError%. Parameter writes do not
 alias indices, or vice versa. Argument values and receiver captures remain traced
 after returns or abrupt default initialization. The required Symbol.iterator hook
 is deferred until Symbol/Array iteration is exposed; Object.prototype.toString
-recognizes the Arguments tag. Boolean and Number non-strict receivers are boxed; other
+recognizes the Arguments tag. Boolean, Number, and String non-strict receivers are boxed; other
 primitive receivers still report Unsupported until their wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
 
 Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps
@@ -668,7 +681,7 @@ positive regressions. Harness files have a separate checksummed manifest mode;
 they are support code, not test cases, and their frontmatter is not interpreted as
 test metadata. Local controls check successful assertions, Test262Error identity,
 and deliberate assertion failures against those exact files. Diagnostic paths
-requiring missing String/JSON facilities stay Unsupported and never count as passes.
+requiring missing JSON and other facilities stay Unsupported and never count as passes.
 Additional includes and host capabilities join coverage only when their execution
 paths are implemented and reviewed.
 

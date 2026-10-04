@@ -137,7 +137,6 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
         ));
     }
     for source in [
-        "Object.defineProperties({},'x')",
         "Object.create(null,1n)",
         "Object.defineProperties({},Object)",
         "Object.defineProperties({},globalThis)",

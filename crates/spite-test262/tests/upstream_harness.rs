@@ -50,6 +50,8 @@ fn deliberate_assertion_failures_are_runtime_failures_in_both_modes() {
     for body in [
         "assert(false,'deliberate failure');",
         "assert.throws(Test262Error,()=>{},'missing throw');",
+        "assert.sameValue(1,2,'deliberate mismatch');",
+        "assert.notSameValue(1n,1n,'deliberate mismatch');",
     ] {
         let outcomes = run(body);
         assert_eq!(outcomes.len(), 2);
@@ -68,9 +70,9 @@ fn deliberate_assertion_failures_are_runtime_failures_in_both_modes() {
 
 #[test]
 fn missing_diagnostic_formatting_is_an_explicit_non_passing_gap() {
-    // This failure path calls the unimplemented String constructor. It cannot
+    // String comparison diagnostics consult the unimplemented JSON global. They cannot
     // be mistaken for a passing assertion or a test's expected exception.
-    let outcomes = run("assert.sameValue(1,2,'deliberate mismatch');");
+    let outcomes = run("assert.sameValue('left','right','deliberate mismatch');");
     assert_eq!(outcomes.len(), 2);
     assert!(
         outcomes.iter().all(|outcome| matches!(

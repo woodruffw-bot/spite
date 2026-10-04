@@ -62,8 +62,8 @@ definitions and is not parsed as test execution metadata.
 Local controls execute successful assertions and deliberately failing assertions
 against these exact harness files. Test262Error construction, native Error
 construction, and built-in exception catch/constructor checks execute normally.
-Formatting some failed comparisons still requires String,
-JSON, or other missing standard APIs; those paths report Unsupported and fail the
+Formatting some failed comparisons still requires JSON or other missing
+standard APIs; those paths report Unsupported and fail the
 gate. Arrays, additional includes, async completion,
 and agent helpers remain separate harness gaps.
 

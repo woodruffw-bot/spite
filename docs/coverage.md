@@ -18,11 +18,11 @@ not an alternative language specification.
 | Expressions | Primitive and object literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
-| Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
+| Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
 | Arrow functions | Expression/block bodies, identifier/default parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions and inherited intrinsic hooks, with ordered prototype lookup; custom Symbol.hasInstance hooks await symbols |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean and Number receivers box; other non-strict primitive receivers remain Unsupported |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, and String receivers box; other non-strict primitive receivers remain Unsupported |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, for with expression, lexical, or var headers, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
@@ -96,7 +96,7 @@ descriptors. Object.prototype has an immutable null prototype and its mandatory
 string-keyed methods. Default ordinary-object conversion is supported. Intrinsic
 initialization is atomic and the initialized objects remain rooted. Function.prototype caller/arguments
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
-metadata. Their reads/writes throw catchable TypeError in both modes. String/BigInt/Symbol
+metadata. Their reads/writes throw catchable TypeError in both modes. BigInt/Symbol
 wrappers, spread arguments, and optional calls remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
@@ -124,12 +124,12 @@ Strict ordinary functions execute with preserved receivers, shared lexical captu
 hoisting, defaults, and return completions. Unmapped arguments expose original
 indices, length, and restricted callee; indices and parameters do not alias. Arrows
 capture this and arguments from enclosing functions, including across collection.
-Non-strict functions with object, Boolean, Number, or nullish/global receivers also execute. Simple parameter lists
+Non-strict functions with object, Boolean, Number, String, or nullish/global receivers also execute. Simple parameter lists
 use mapped arguments, including last-duplicate rules, live descriptor values,
 receiver-sensitive writes, and detachment on deletion, accessor conversion, or
 non-writable changes. Default parameters use unmapped arguments. Parameter/body
 arguments declarations shadow or suppress the implicit binding as specified.
-The arguments Symbol.iterator hook and String/BigInt/Symbol primitive wrappers remain unimplemented.
+The arguments Symbol.iterator hook and BigInt/Symbol primitive wrappers remain unimplemented.
 Ordinary new expressions create fresh receivers from the current constructor
 prototype (or the realm default), run parameters/bodies, and honor object returns.
 Bound constructors forward arguments and newTarget while ignoring bound this and
@@ -179,7 +179,7 @@ of prototype identity; Error prototypes do not carry that slot. Cause references
 are traced through ordinary properties. AggregateError remains unimplemented.
 
 Object calls/new preserve object identity, create fresh nullish-argument objects,
-and box Boolean/Number values. Object.prototype provides hasOwnProperty,
+and box Boolean/Number/String values. Object.prototype provides hasOwnProperty,
 propertyIsEnumerable, isPrototypeOf, toLocaleString, constructor, toString, and
 valueOf with ordered conversions and receiver handling. Own-property predicates
 read descriptors without invoking accessors. Object.defineProperty converts
@@ -192,7 +192,7 @@ changes; isExtensible/preventExtensions retain their primitive special cases.
 Object.create selects an object/null prototype and optionally defines properties.
 Object.defineProperties snapshots own keys in specification order, converts every
 enumerable descriptor before defining properties, and retains earlier definitions
-if a later definition is rejected. Enumeration of incomplete Object/Function/global
+if a later definition is rejected. Enumeration of incomplete Object/Function/String/global
 intrinsics remains Unsupported. Object.freeze/seal close extensibility and tighten
 own descriptors without invoking accessors or recursively freezing values.
 isFrozen/isSealed inspect integrity, with primitive and empty-object special cases;
@@ -201,10 +201,20 @@ enumerable own values in source/key order through ordinary Get/Set, including
 getters, inherited setters, and rejected-write TypeErrors. getOwnPropertyDescriptors
 copies all own descriptors into a fresh object without invoking property getters.
 Remaining static methods and
-String/BigInt/Symbol boxing remain explicit gaps, including descriptor inspection
+BigInt/Symbol boxing remain explicit gaps, including descriptor inspection
 or mutation of an unimplemented intrinsic property.
 
-Symbols, String/BigInt wrapper APIs,
+String calls/new, StringData wrappers, and branded toString/valueOf are supported.
+Length and indices use UTF-16 code units, including lone surrogates. Wrapper index
+properties are read-only, enumerable, and non-configurable; length is also
+non-enumerable. String receivers box for non-strict calls, while strict accessors
+retain primitive receivers. Own primitive indices take precedence over inherited
+accessors. Wrappers currently materialize indexed descriptors, so length plus one
+consumes the per-object property capacity; primitive index reads do not allocate.
+Missing String static/prototype methods and enumeration of those incomplete
+intrinsics remain Unsupported.
+
+Symbols, BigInt wrapper APIs, remaining String methods,
 arrays, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
@@ -220,7 +230,7 @@ share storage; lexical bindings stay separate. Declaration checks use actual own
 property attributes and extensibility. Global accessors and inherited properties
 retain correct receivers, and strict assignments recheck bindings deleted by RHS
 evaluation. Replacing/deleting globalThis does not change the realm's this identity.
-Realm initialization creates 68 retained entries under a separate fixed work
+Realm initialization creates 72 retained entries under a separate fixed work
 budget before Script execution; allocation/property limits still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -256,7 +266,7 @@ Number tests, ten numeric parsing tests, five global numeric predicate tests, an
 prototype, extensibility, creation, copying, integrity, and SameValue tests in both
 Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
-failure formatting still requires missing String/JSON APIs and remains Unsupported;
+failure formatting still requires missing JSON and other APIs and remains Unsupported;
 arrays, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 478 variants are four raw positives, 402 positives using the upstream
