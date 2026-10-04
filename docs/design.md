@@ -569,7 +569,7 @@ present ones use strict Set, as do inserted values. Always strictly set source
 length last, including zero arguments. Retain earlier effects on every abrupt
 completion; do not preflight all properties or roll back. All Array prototype
 methods are materialized, so its enumeration and integrity operations use ordinary
-property traversal; Array constructor enumeration awaits from/fromAsync.
+property traversal; Array constructor enumeration awaits fromAsync.
 
 Array iteration follows edition-17 CreateArrayIterator and next (23.1.5.1–3).
 Store an optional iterated-object handle, a u64 next index, and key/value/key+value
@@ -616,6 +616,22 @@ assigns length even for zero items. Custom constructors may return arbitrary
 objects; definitions bypass inherited setters and replace configurable accessors
 or read-only properties. A later rejected definition or length write preserves
 earlier effects. Nested construction and length setters use shared reentry limits.
+
+Array.from (23.1.2.1) validates a supplied mapper before GetMethod(items, @@iterator).
+Iterable results construct with no arguments before calling the iterator method;
+array-like results snapshot ToLength before constructing with one length argument.
+Neither path observes species. Non-constructors use intrinsic Arrays. Get every
+array-like index, including holes, but use live iterator state for iterable input.
+Mapping receives exactly value/index with the supplied thisArg. Create own data
+elements and strictly set the final length, preserving all earlier effects.
+Iterator acquisition calls the method with the original receiver and captures
+next once. IteratorStepValue reads done before value, marks completion/abrupt steps,
+and never closes after a next/done/value failure. Mapping, element definition,
+and the safe-integer overflow guard close an active iterator. IteratorClose with
+an incoming throw calls return but preserves that throw over cleanup exceptions
+or non-object results. Host failures stop without running cleanup; failures in
+cleanup remain host failures. A final length failure after exhaustion does not close.
+
 Array literals retain each elision as an absent AST element, distinct from an
 explicit undefined expression. AssignmentExpression[+In] parsing separates
 elements from comma expressions and preserves trailing-comma lengths. Evaluation

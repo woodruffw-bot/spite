@@ -17,7 +17,7 @@ not an alternative language specification.
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
 | Expressions | Primitive, object, and array literals, untagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional and comma expressions |
-| Arrays | Calls/new, of, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
+| Arrays | Calls/new, of, from, isArray, literal holes and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls with strict, object, global, or Boolean/Number/String boxed receivers, function typeof, name/length descriptors, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
@@ -326,6 +326,15 @@ locale fallback.
 Array.of constructs through constructor receivers or creates an intrinsic Array
 for non-constructors. It defines own data elements before a final strict length
 assignment, including on empty results, and retains partial effects on failure.
+Array.from accepts iterable and array-like sources, uses ordered zero/one-argument
+construction without species, and maps with exactly value/index and the supplied
+receiver. Holes become own undefined elements; array-like length is snapshotted,
+while iterator state remains live. Iterator methods preserve original receivers;
+next is cached once, and done is read before value. Mapping/definition failures
+close the iterator and preserve the original throw over cleanup exceptions.
+Step failures and final length failures do not close. Host failures remain distinct
+and do not trigger JavaScript cleanup. Regressions also cover custom result identity,
+source aliasing, partial effects, astral/lone-surrogate strings, and retained intrinsics.
 ToSpliced preserves omitted versus undefined arguments, skips discarded getters,
 and checks both safe-integer and Array length bounds before copying. It reads
 retained elements in ascending order and supports full-width source indices
@@ -397,7 +406,7 @@ Symbol-keyed access is tested through native injection, Script integration tests
 and reviewed upstream Symbol/iterator fixtures.
 
 Remaining String methods,
-Array.from/fromAsync, derived construction, classes, destructuring, regular
+Array.fromAsync, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -431,7 +440,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 169 retained entries outside the per-Script work
+Realm initialization creates 170 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
@@ -475,7 +484,7 @@ and keys/values/entries iteration, including mapped/unmapped arguments. The 34
 Symbol files and 23 object method/accessor files run in their prescribed Script modes. Controls
 verify successful assertions and explicit assertion failures. Some string comparison
 failure formatting still requires missing JSON and remains Unsupported;
-Array.from/fromAsync, other includes, async completion, and agents
+Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
 Rust. Its 2290 variants are four raw positives, 2214 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do

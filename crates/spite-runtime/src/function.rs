@@ -80,6 +80,7 @@ pub(crate) enum Builtin {
     Array,
     ArrayIsArray,
     ArrayOf,
+    ArrayFrom,
     ArraySpecies,
     ArrayKeys,
     ArrayValues,
@@ -206,6 +207,7 @@ impl Builtin {
             Self::Array => "Array",
             Self::ArrayIsArray => "isArray",
             Self::ArrayOf => "of",
+            Self::ArrayFrom => "from",
             Self::ArraySpecies => "get [Symbol.species]",
             Self::ArrayKeys => "keys",
             Self::ArrayValues => "values",
@@ -327,6 +329,7 @@ impl Builtin {
             | Self::BigIntToString
             | Self::Array
             | Self::ArrayIsArray
+            | Self::ArrayFrom
             | Self::ArrayJoin
             | Self::ArrayAt
             | Self::ArrayPush

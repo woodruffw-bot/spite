@@ -699,7 +699,7 @@ impl Realm {
 }
 
 fn missing_array_static(key: &JsString) -> bool {
-    ["from", "fromAsync"].iter().any(|name| key_is(key, name))
+    key_is(key, "fromAsync")
 }
 
 fn missing_iterator_method(key: &JsString) -> bool {

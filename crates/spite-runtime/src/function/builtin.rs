@@ -215,6 +215,13 @@ impl Realm {
             Builtin::Array => self.array_constructor(None, arguments, span),
             Builtin::ArrayIsArray => self.array_is_array(arguments.next(), span),
             Builtin::ArrayOf => self.array_of(this, arguments, span),
+            Builtin::ArrayFrom => self.array_from(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ArrayJoin => {
                 self.array_join(this, arguments.next().unwrap_or(Value::Undefined), span)
             }

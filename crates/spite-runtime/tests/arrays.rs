@@ -176,9 +176,8 @@ fn index_growth_readonly_lengths_and_integrity_operations_use_array_rules() {
 #[test]
 fn missing_array_intrinsics_remain_explicit_host_gaps() {
     for source in [
-        "Array.from",
         "Array.fromAsync",
-        "Object.defineProperty(Array,'from',{})",
+        "Object.defineProperty(Array,'fromAsync',{})",
         "Object.getOwnPropertyDescriptors(Array)",
     ] {
         assert!(

@@ -7,6 +7,7 @@ mod copy;
 mod factory;
 mod find;
 mod flatten;
+mod from;
 mod front;
 mod iteration;
 mod literal;
@@ -36,6 +37,7 @@ pub(crate) struct ArrayIntrinsics {
     pub values: ObjectHandle,
     is_array: ObjectHandle,
     of: ObjectHandle,
+    from: ObjectHandle,
     unscopables: ObjectHandle,
     methods: Vec<ObjectHandle>,
 }
@@ -47,6 +49,7 @@ impl ArrayIntrinsics {
             &self.prototype,
             &self.is_array,
             &self.of,
+            &self.from,
             &self.values,
             &self.unscopables,
         ]
@@ -129,6 +132,7 @@ impl Realm {
         })?;
         let is_array = self.new_builtin(function_prototype, Builtin::ArrayIsArray, span)?;
         let of = self.new_builtin(function_prototype, Builtin::ArrayOf, span)?;
+        let from = self.new_builtin(function_prototype, Builtin::ArrayFrom, span)?;
         let values = self.new_builtin(function_prototype, Builtin::ArrayValues, span)?;
         self.define_builtin_property(
             &prototype,
@@ -165,6 +169,13 @@ impl Realm {
             span,
         )?;
         self.define_builtin_property(&constructor, "of", Value::Object(of.clone()), true, span)?;
+        self.define_builtin_property(
+            &constructor,
+            "from",
+            Value::Object(from.clone()),
+            true,
+            span,
+        )?;
         let mut methods = Vec::new();
         for builtin in [
             Builtin::ArrayJoin,
@@ -229,6 +240,7 @@ impl Realm {
             values,
             is_array,
             of,
+            from,
             unscopables,
             methods,
         })

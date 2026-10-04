@@ -7,6 +7,7 @@ use crate::{
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod operations;
 mod tag;
 
 #[derive(Debug)]

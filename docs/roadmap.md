@@ -161,6 +161,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Array toReversed/with copies with dense own elements and skipped replacement reads.
 - [x] Add Array toSpliced with optional deletion ranges and skipped discarded reads.
 - [x] Add Array.of with constructor dispatch, ordered data definitions, and strict length writes.
+- [x] Add Array.from with iterable/array-like traversal, ordered mapping/construction, and iterator closing.
 - [x] Add Array toLocaleString using the non-ECMA-402 algorithm.
 - [x] Add stable Array sort/toSorted with bounded fallible merging and sparse writeback.
 - [x] Add ArraySpeciesCreate and map/filter with ordered constructors, live sparse visits, and partial definitions.
@@ -180,6 +181,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Materialize Array's Symbol.species getter and Symbol.unscopables table.
 - [x] Add Array keys/values/entries iterators with live state, reentrant next calls, and source tracing.
 - [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
+- [x] Add synchronous iterator acquisition, cached next calls, stepping, and throw-completion closing.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [ ] Add remaining shared Iterator prototype properties.
 - [x] Expose the Symbol global with standard attributes.
