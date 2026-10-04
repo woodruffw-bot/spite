@@ -94,7 +94,7 @@ is atomic and the nine objects remain rooted. Function.prototype caller/argument
 accessors use the shared, non-extensible %ThrowTypeError% with frozen name/length
 metadata. Their reads/writes throw catchable TypeError in both modes. Primitive
 wrappers returned by valueOf, spread arguments, optional calls, and
-user functions remain open; missing operations report Unsupported. Function.prototype
+ordinary functions remain open; missing operations report Unsupported. Function.prototype
 call passes receivers unchanged through bounded iterative dispatch. Native function
 toString uses the original builtin name even after public name changes; generated
 strings obey host limits. Apply accepts ordinary array-like objects, converts
@@ -105,13 +105,16 @@ selection, standard length/name metadata, and iterative invocation. Captured
 object edges survive collection and unreachable cycles are reclaimed. Re-entrant
 getter/coercion calls have a host nesting limit of 64; tail transfers are iterative.
 
-Simple expression-bodied arrows now parse with identifier parameters, uniqueness
-and strict early errors, source retention, and bounded nesting. Creating an arrow
-at runtime remains Unsupported until closure execution is integrated. Default/rest
-parameters, patterns, async arrows, and block bodies remain syntax gaps.
+Simple expression-bodied arrows parse and execute with shared lexical captures,
+fresh mutable parameter bindings, missing/extra argument handling, inherited
+strictness, unique names, source retention, and bounded nesting. Metadata includes
+standard name inference and exact Function.prototype.toString source. Captured
+per-iteration/catch/block environments survive collection; unreachable cycles are
+reclaimed. Default/rest parameters, patterns, lexical this syntax, async arrows,
+and block bodies remain gaps.
 
 Symbols, primitive wrapper constructors,
-arrays, user functions, closures, constructors, classes, destructuring, regular
+arrays, ordinary functions, constructors, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

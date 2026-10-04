@@ -351,7 +351,11 @@ impl Realm {
             };
             // ToPropertyKey precedes evaluation of the property's value.
             let key = self.property_key(key, property.span)?;
-            let value = self.expression(&property.value)?;
+            let value = if property.kind == PropertyKind::Prototype {
+                self.expression(&property.value)?
+            } else {
+                self.named_expression(&property.value, key.clone())?
+            };
             if property.kind == PropertyKind::Prototype {
                 let prototype = match &value {
                     Value::Object(handle) => Some(handle),

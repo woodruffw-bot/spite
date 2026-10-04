@@ -78,15 +78,6 @@ impl Callable {
         }
         Ok(self.clone())
     }
-
-    pub(super) fn native_name(&self) -> &'static str {
-        match self {
-            Self::Builtin(builtin) => builtin.initial_name(),
-            // Callable exotics have no [[InitialName]]. This anonymous native
-            // representation is the host's permitted 20.2.3.5 choice.
-            Self::Bound(_) => "",
-        }
-    }
 }
 
 #[cfg(test)]

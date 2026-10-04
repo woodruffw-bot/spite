@@ -207,6 +207,7 @@ pub struct Realm {
     limits: Limits,
     remaining_steps: usize,
     call_depth: usize,
+    expression_depth: usize,
     strict: bool,
     objects: object::Objects,
     intrinsics: Option<function::Intrinsics>,
@@ -243,6 +244,7 @@ impl Realm {
             limits,
             remaining_steps: 0,
             call_depth: 0,
+            expression_depth: 0,
             strict: false,
             objects: object::Objects::new(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
@@ -493,7 +495,7 @@ impl Realm {
         for binding in bindings {
             self.tick(binding.span)?;
             let value = if let Some(expr) = &binding.initializer {
-                self.expression(expr)?
+                self.named_expression(expr, JsString::from(binding.name.as_str()))?
             } else {
                 Value::Undefined
             };
@@ -561,7 +563,7 @@ impl Realm {
             // assign, and an initializer resolves its reference before the RHS.
             if let Some(expr) = &binding.initializer {
                 let reference = self.resolve(&binding.name, binding.span)?;
-                let value = self.expression(expr)?;
+                let value = self.named_expression(expr, JsString::from(binding.name.as_str()))?;
                 self.put(reference, value, binding.span)?;
             }
         }
@@ -1055,15 +1057,27 @@ impl Realm {
     }
 
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
+        // Bound total evaluator recursion across function calls as well as syntax.
+        if self.expression_depth >= 64 {
+            return Err(Error::Limit {
+                span: expr.span,
+                message: "expression nesting limit exceeded".into(),
+            });
+        }
+        self.expression_depth += 1;
+        let result = self.expression_inner(expr);
+        self.expression_depth -= 1;
+        result
+    }
+
+    fn expression_inner(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.tick(expr.span)?;
         let result = match &expr.kind {
-            ExprKind::Arrow { .. } => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "arrow function execution is not implemented",
-                ));
-            }
-
+            ExprKind::Arrow {
+                parameters,
+                body,
+                source,
+            } => self.arrow_function(parameters, body, source, expr.span)?,
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
             ExprKind::Call { callee, arguments } => {
                 let (function, this) = if reference_expression(callee) {
@@ -1122,7 +1136,7 @@ impl Realm {
             }
             ExprKind::Assign(target, right) => {
                 let reference = self.reference(target)?;
-                let value = self.expression(right)?;
+                let value = self.assignment_expression(target, right)?;
                 self.put(reference, value.clone(), expr.span)?;
                 value
             }
@@ -1136,7 +1150,12 @@ impl Realm {
                     BinaryOp::Or if left.to_boolean() => left,
                     BinaryOp::Nullish if !matches!(left, Value::Null | Value::Undefined) => left,
                     _ => {
-                        let right = self.expression(right)?;
+                        let right =
+                            if matches!(op, BinaryOp::And | BinaryOp::Or | BinaryOp::Nullish) {
+                                self.assignment_expression(target, right)?
+                            } else {
+                                self.expression(right)?
+                            };
                         let value = self.binary(*op, left, right, expr.span)?;
                         self.put(reference, value.clone(), expr.span)?;
                         value

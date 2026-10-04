@@ -88,7 +88,7 @@ Parameters are unique in both modes, strict binding rules are inherited, and no
 line terminator may precede the arrow. The body inherits the In grammar parameter.
 Defaults, rest/pattern parameters, async arrows, and block bodies remain explicit
 gaps. Function source ranges share an owned source allocation and preserve exact
-text for Function.prototype.toString. Runtime arrow instantiation is the next step.
+text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
 ## Runtime
 
@@ -153,9 +153,9 @@ slot limit is named `max_heap_entries` and counts both objects and environments.
 Temporary scopes remain allocated until explicit collection; scope restoration
 changes active roots on every normal or abrupt exit. The collector traces outer
 links and every binding, charging scans even for uninitialized/primitive values.
-Checked object access rejects an environment handle and vice versa. User function
-records will capture these environment handles; function syntax and calls follow
-this storage migration. Global object/var bindings remain a separate realm map
+Checked object access rejects an environment handle and vice versa. Arrow function records capture these environment handles. Ordinary function
+syntax and remaining function forms follow this storage migration. Global
+object/var bindings remain a separate realm map
 until the observable global object model is implemented.
 
 Object support starts with a separately tested `spite-heap` foundation before
@@ -288,15 +288,16 @@ non-enumerable caller/arguments accessors that share the realm’s non-extensibl
 Reads and writes throw TypeError in both modes, while presence and own-property
 deletion do not invoke accessors. Unavailable standard methods remain Unsupported.
 Native Object.prototype.valueOf still reports Unsupported when it would
-return a primitive wrapper. Captured environment storage and user functions follow
-this callable-object foundation.
+return a primitive wrapper. Arrow closures use the same callable dispatch with
+their captured environment identity.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.
 Function.prototype.toString emits `function NAME() { [native code] }` for builtin
 functions, using immutable builtin identity for [[InitialName]] (20.2.3.5). It
 never reads the public name property. Generated builtin strings respect the realm
-length limit, including during implicit coercion. User function source retention remains a subsequent increment.
+length limit, including during implicit coercion. Arrow functions return their exact retained source, including internal comments
+and formatting, independently of the public name property.
 
 Function.prototype.apply checks callability before inspecting argArray, treats
 nullish lists as empty, and otherwise performs object-only CreateListFromArrayLike
@@ -319,6 +320,23 @@ Accessor/coercion calls that re-enter execution have a fixed host nesting limit 
 64 until explicit frames replace Rust recursion. Every success and abrupt result
 restores the counter; iterative call/apply/bound transfers do not increase it.
 Host limit failures continue to bypass JavaScript catch/finally handlers.
+
+Expression-bodied arrows share immutable parameter/body syntax and retained source
+through safe Rc values. Creating a closure captures an environment handle; invoking
+it allocates a fresh parameter environment whose outer is the captured environment,
+never the caller’s scope. Missing parameters are undefined, extra arguments are
+ignored after evaluation, and parameters remain mutable. Arrows create no arguments
+binding or constructor/prototype property. Lexical this syntax remains unimplemented.
+Every call restores caller strictness and active scopes on success or abrupt exit.
+The evaluator bounds total nested expressions across calls to 64 as well as call
+re-entry; ordinary user tail calls still await explicit execution frames.
+
+NamedEvaluation supplies names for binding initializers, bare identifier assignment
+and logical-assignment targets, and ordinary object property values. Parenthesized
+RHS function definitions retain inference; parenthesized LHS identifiers do not
+(IsIdentifierRef, 8.4.4). The non-computed prototype setter also excludes inference.
+Captured environments, functions, and ordinary objects form one traced graph, so
+shared bindings survive caller exit and unreachable closure cycles are reclaimed.
 
 Modules use standard module records and host resolution hooks. Promises use a job
 queue. Async functions and generators require resumable execution, which can later

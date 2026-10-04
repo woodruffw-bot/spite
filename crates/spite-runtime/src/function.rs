@@ -6,7 +6,9 @@ use crate::{
 };
 use spite_core::{JsString, Span};
 
+mod arrow;
 mod bound;
+pub(crate) use arrow::ArrowFunction;
 pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
@@ -50,6 +52,22 @@ mod tests;
 pub(crate) enum Callable {
     Builtin(Builtin),
     Bound(BoundFunction),
+    Arrow(ArrowFunction),
+}
+
+pub(super) enum FunctionText {
+    Native(&'static str),
+    Script(spite_parser::ast::FunctionSource),
+}
+
+impl Callable {
+    fn source_text(&self) -> FunctionText {
+        match self {
+            Self::Builtin(builtin) => FunctionText::Native(builtin.initial_name()),
+            Self::Bound(_) => FunctionText::Native(""),
+            Self::Arrow(arrow) => FunctionText::Script(arrow.source.clone()),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -331,6 +349,7 @@ impl Realm {
             };
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
+                Some(Callable::Arrow(arrow)) => return self.call_arrow(arrow, arguments, span),
                 Some(Callable::Bound(bound)) => {
                     let count = bound
                         .arguments
@@ -394,13 +413,19 @@ impl Realm {
                             Ok(objects
                                 .inspect(object)?
                                 .callable()
-                                .map(Callable::native_name))
+                                .map(Callable::source_text))
                         })?
                     } else {
                         None
                     };
                     match callable {
-                        Some(name) => Ok(Value::String(JsString::from(
+                        Some(FunctionText::Script(source)) => {
+                            self.object_work(span, |_, budget| {
+                                budget.charge(source.as_str().len())
+                            })?;
+                            Ok(Value::String(JsString::from(source.as_str())))
+                        }
+                        Some(FunctionText::Native(name)) => Ok(Value::String(JsString::from(
                             format!("function {name}() {{ [native code] }}").as_str(),
                         ))),
                         None => Err(Self::exception(

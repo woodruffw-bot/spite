@@ -162,11 +162,16 @@ impl OrdinaryObject {
 impl Trace for OrdinaryObject {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         let bound = self.callable.as_ref().and_then(|callable| match callable {
-            Callable::Builtin(_) => None,
+            Callable::Builtin(_) | Callable::Arrow(_) => None,
             Callable::Bound(bound) => Some(bound),
         });
+        let capture = match self.callable.as_ref() {
+            Some(Callable::Bound(bound)) => Some(&bound.target),
+            Some(Callable::Arrow(arrow)) => Some(&arrow.environment.0),
+            Some(Callable::Builtin(_)) | None => None,
+        };
         std::iter::once(self.prototype.as_ref())
-            .chain(std::iter::once(bound.map(|bound| &bound.target)))
+            .chain(std::iter::once(capture))
             .chain(bound.into_iter().flat_map(|bound| {
                 std::iter::once(&bound.this)
                     .chain(&bound.arguments)
