@@ -232,8 +232,14 @@ substitution conversion. All baseline String constructor static properties are
 installed, and its own-key enumeration is supported. Remaining prototype methods and enumeration of the
 incomplete String.prototype remain Unsupported; tagged template syntax is still open.
 
+Sparse Array storage now enforces indexed length growth, read-only length, and
+descending partial truncation behind the low-level Objects API. Numeric length
+descriptors must be preconverted there; work checks precede any truncation.
+Array construction, length coercion, literal syntax, and prototype methods remain
+unavailable to JavaScript until the next integration increments.
+
 Symbols, BigInt wrapper APIs, remaining String methods,
-arrays, derived construction, classes, destructuring, regular
+JavaScript arrays, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

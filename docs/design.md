@@ -265,12 +265,15 @@ Property capacity failures remain distinct from descriptor rejection. Storage
 exposes checked internal operations; realms supply JavaScript execution and
 exception semantics. Symbol keys remain a separate implementation boundary.
 
-The next array increments use sparse indexed properties in the same traced heap,
+Array storage uses sparse indexed properties in the same traced heap,
 with an explicit Array exotic identity and a non-configurable data `length`
 property (10.4.2). Holes consume no indexed property slots; logical length is a
 u32, and the key `4294967295` is an ordinary string property. Array identity does
-not depend on the prototype chain. Storage will enforce index growth, read-only
+not depend on the prototype chain. Storage enforces index growth, read-only
 length checks, and descending-index truncation independently of parser syntax.
+The low-level Objects API accepts only preconverted integral Number length
+descriptors; UnnormalizedArrayLength reports a violated storage precondition,
+not a JavaScript exception. Array storage is not yet exposed to Script execution.
 
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
@@ -285,7 +288,7 @@ properties in descending numeric order. A non-configurable element stops deletio
 restores length to that index plus one, and still applies a requested read-only
 length. Already deleted higher properties remain deleted. Host work/capacity
 checks must precede mutation so an abort cannot expose an inconsistent array.
-Initial sparse truncation may use a conservatively charged quadratic algorithm;
+Initial sparse truncation uses a conservatively charged quadratic algorithm;
 iteration over absent indices up to the logical length is unnecessary.
 
 Land this work as storage invariants, Realm Array construction/Array.isArray and

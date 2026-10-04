@@ -364,6 +364,9 @@ impl Realm {
             object::Error::NotCallable | object::Error::WrongKind => {
                 unreachable!("realm operations validate function callability before storage")
             }
+            object::Error::UnnormalizedArrayLength => {
+                unreachable!("realm converts array length values before storage")
+            }
             object::Error::Heap(
                 spite_heap::Error::ForeignHandle | spite_heap::Error::StaleHandle,
             ) => {

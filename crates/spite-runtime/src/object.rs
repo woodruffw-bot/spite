@@ -13,6 +13,7 @@ use std::fmt;
 #[cfg(test)]
 mod accessor_tests;
 mod arguments;
+mod array;
 use arguments::ParameterMap;
 mod descriptor;
 mod entry;
@@ -42,7 +43,7 @@ pub(crate) enum PrimitiveData {
     String(JsString),
 }
 
-/// An ordinary object's prototype, extensibility, and ordered properties.
+/// Stored object properties, prototype, extensibility, and internal-slot metadata.
 ///
 /// Lookup is linear and keys compare exact UTF-16 code units. The property limit
 /// bounds storage; callers must account for lookup and enumeration work when
@@ -61,6 +62,7 @@ pub struct OrdinaryObject {
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
     parameter_map: Option<ParameterMap>,
+    array: bool,
 }
 
 impl OrdinaryObject {
@@ -80,6 +82,7 @@ impl OrdinaryObject {
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
+            array: false,
         }
     }
 
@@ -101,6 +104,11 @@ impl OrdinaryObject {
     /// Returns whether the object has the ErrorData internal slot.
     pub fn is_error(&self) -> bool {
         self.error_data
+    }
+
+    /// Returns whether this record has Array exotic internal methods.
+    pub fn is_array(&self) -> bool {
+        self.array
     }
 
     pub(crate) fn is_arguments(&self) -> bool {

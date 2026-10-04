@@ -48,6 +48,9 @@ pub enum Error {
     NotCallable,
     /// A valid handle refers to a different kind of runtime heap entry.
     WrongKind,
+    /// Array length has not been converted to an integral Number in the u32 range.
+    /// JavaScript's two observable numeric conversions belong to the Realm layer.
+    UnnormalizedArrayLength,
 }
 
 impl fmt::Display for Error {
@@ -58,6 +61,9 @@ impl fmt::Display for Error {
             Self::PropertyLimit => f.write_str("object property limit exceeded"),
             Self::NotCallable => f.write_str("function handle must be callable"),
             Self::WrongKind => f.write_str("heap entry has the wrong kind"),
+            Self::UnnormalizedArrayLength => {
+                f.write_str("array length requires a preconverted u32 Number")
+            }
         }
     }
 }
@@ -164,6 +170,37 @@ impl Objects {
             prototype.cloned(),
             self.max_properties,
         )))?)
+    }
+
+    /// Creates a sparse Array exotic object with the supplied logical length.
+    ///
+    /// Holes allocate no indexed properties. The fixed length descriptor counts
+    /// against property capacity. This storage API accepts only validated u32
+    /// lengths; JavaScript constructor/coercion rules belong to the Realm layer.
+    pub fn create_array(
+        &mut self,
+        prototype: Option<&Handle>,
+        length: u32,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        if let Some(prototype) = prototype {
+            self.inspect(prototype)?;
+        }
+        budget.charge(1)?;
+        let mut record = OrdinaryObject::new(prototype.cloned(), self.max_properties);
+        record
+            .define_own_property(
+                JsString::from("length"),
+                DataDescriptor {
+                    value: Some(Value::Number(f64::from(length))),
+                    writable: Some(true),
+                    enumerable: Some(false),
+                    configurable: Some(false),
+                },
+            )
+            .map_err(|_| Error::PropertyLimit)?;
+        record.array = true;
+        Ok(self.heap.insert(Entry::Object(record))?)
     }
 
     pub(crate) fn create_builtin(
@@ -475,6 +512,10 @@ impl Objects {
     }
 
     /// Applies an own descriptor, validating value edges and accessor callability.
+    ///
+    /// Array length values must already be Numbers in the u32 range; this storage
+    /// layer cannot execute the observable ArraySetLength conversions. Array
+    /// truncation can return false after deleting higher configurable elements.
     pub fn define(
         &mut self,
         object: &Handle,
@@ -544,10 +585,15 @@ impl Objects {
             }
             _ => {}
         }
-        let allowed = self
-            .object_mut(object)?
-            .define_own_property(key, descriptor)
-            .map_err(|_| Error::PropertyLimit)?;
+        let record = self.inspect(object)?;
+        let array_length = record.prepare_array_definition(&key, &descriptor, budget)?;
+        let record = self.object_mut(object)?;
+        let allowed = if record.is_array() {
+            record.define_array_property(key, descriptor, array_length)
+        } else {
+            record.define_own_property(key, descriptor)
+        }
+        .map_err(|_| Error::PropertyLimit)?;
         if allowed {
             if let Some((environment, name, index)) = mapping {
                 if let Some(value) = mapped_value {
