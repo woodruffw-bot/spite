@@ -629,3 +629,14 @@ test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-7.js	-	-	-
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-8.js	-	-	-
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-20.js	-	-	-
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-10-2.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A1_T1.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A1_T2.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A2_T1.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A2_T2.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A2_T3.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A3_T3.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A4_T1.js	-	-	-
+test/built-ins/Array/prototype/reverse/S15.4.4.8_A4_T2.js	-	-	-
+test/built-ins/Array/prototype/reverse/array-has-one-entry.js	-	-	-
+test/built-ins/Array/prototype/reverse/call-with-boolean.js	-	-	-
+test/built-ins/Array/prototype/reverse/get_if_present_with_delete.js	-	-	-

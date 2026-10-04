@@ -80,6 +80,7 @@ impl Realm {
             Builtin::ArrayAt,
             Builtin::ArrayPush,
             Builtin::ArrayPop,
+            Builtin::ArrayReverse,
             Builtin::ArrayForEach,
             Builtin::ArrayEvery,
             Builtin::ArraySome,

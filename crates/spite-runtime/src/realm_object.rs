@@ -604,7 +604,6 @@ fn missing_array_method(key: &JsString) -> bool {
         "flatMap",
         "keys",
         "map",
-        "reverse",
         "shift",
         "slice",
         "sort",

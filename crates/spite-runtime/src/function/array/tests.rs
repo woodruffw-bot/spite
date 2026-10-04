@@ -599,3 +599,53 @@ fn reduction_bounds_seed_search_and_callback_traversal() {
     realm.limits.max_steps = 100_000;
     check(&mut realm, "flag===0");
 }
+
+#[test]
+fn recursive_reverse_getters_and_setters_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for descriptor in ["{get:()=>a.reverse()}", "{get:()=>1,set:()=>a.reverse()}"] {
+                let mut realm = Realm::default();
+                realm
+                    .eval(&format!(
+                        "let a=[1,2],flag=0;Object.defineProperty(a,'0',{descriptor})"
+                    ))
+                    .unwrap();
+                assert!(matches!(
+                    realm.eval("try{a.reverse();}catch{flag=1;}finally{flag=2;}"),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1,2].reverse()[0]===2");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn reverse_bounds_sparse_traversal_and_keeps_completed_mutations_on_host_abort() {
+    let mut realm = Realm::default();
+    realm.eval("let o={0:7,length:Infinity},flag=0").unwrap();
+    // Allow the first pair to complete before the remaining huge range aborts.
+    realm.limits.max_steps = 10_000;
+    assert!(matches!(
+        realm.eval("try{Array.prototype.reverse.call(o);}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    realm.limits.max_steps = 100_000;
+    check(
+        &mut realm,
+        "flag===0 && !(0 in o) && o[9007199254740990]===7 && o.length===Infinity",
+    );
+    let receiver = realm
+        .eval("let a=['a'.repeat(1000),'b'.repeat(1000)];a")
+        .unwrap();
+    realm.remaining_steps = 1500;
+    assert!(matches!(
+        realm.array_reverse(receiver, Span::new(0, 0)),
+        Err(Error::Limit { .. })
+    ));
+    check(&mut realm, "a[0].charAt(0)==='a' && a[1].charAt(0)==='b'");
+}

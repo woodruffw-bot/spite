@@ -650,3 +650,14 @@ script-pass	c73989cd00626bcd3a970ce70d325579d4bd5eeb90c1d143fa1b82b6e596a647	tes
 script-pass	925713cfb3b0fab5ec5366b97b10b7c0b13f8e3d809aeed674be337539559006	test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-8.js
 script-pass	b46687cad355afab421763f659169822b49b244a8a754c4826b1e45fe1f6a976	test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-20.js
 script-pass	f2fbbf765dae2cfdbcdfa294a0c6c3aa8dc12923e53b77e4b3cb24492e15ac1f	test/built-ins/Array/prototype/reduceRight/15.4.4.22-10-2.js
+script-pass	6db94ba76821c0b4819c06ab5000db3a666bcc8abbfd7ecf1aa1416dba887d5f	test/built-ins/Array/prototype/reverse/S15.4.4.8_A1_T1.js
+script-pass	31c0b74318849dd65e361de56856ff82c646ac0de2c9f9391a5b46ea51f1cc63	test/built-ins/Array/prototype/reverse/S15.4.4.8_A1_T2.js
+script-pass	fad64c6553b3c844948b72a76852da209973931edae69e50accce3e19135ed1b	test/built-ins/Array/prototype/reverse/S15.4.4.8_A2_T1.js
+script-pass	5668eccb7060b07d98ae4a4ac3190e8c1ac11f6dc05da2cbb9238b77af1b7de8	test/built-ins/Array/prototype/reverse/S15.4.4.8_A2_T2.js
+script-pass	db627efd8d32adcbaacda366d539faa71e3c85b8e5c1d41711d51696a965c22a	test/built-ins/Array/prototype/reverse/S15.4.4.8_A2_T3.js
+script-pass	ff7c3c517b9aba67db5439ed532ed78036dbc5bd5f7e859e03cf7806d9de20db	test/built-ins/Array/prototype/reverse/S15.4.4.8_A3_T3.js
+script-pass	982f1f7ee1e23573430abbd1f5d26b3684447bcf475864939681c03a9e467252	test/built-ins/Array/prototype/reverse/S15.4.4.8_A4_T1.js
+script-pass	6c2635f05c4a15febf976e91fd78f316af5d6b6eb0612346f3f1ca0ba89c6f28	test/built-ins/Array/prototype/reverse/S15.4.4.8_A4_T2.js
+script-pass	358cd27a565bd21ae8904fe03cd8b937d12f101543538a7e0412970318686c39	test/built-ins/Array/prototype/reverse/array-has-one-entry.js
+script-pass	5c5916ec25ad0ae3cf3899aa7eb396327a5cd5613d9d023cb7cd9881f4b7f91d	test/built-ins/Array/prototype/reverse/call-with-boolean.js
+script-pass	839e6ce297e886e5960b8c645dd612ba8759755ba0b5e246c9fee6f9e0b2a7d8	test/built-ins/Array/prototype/reverse/get_if_present_with_delete.js

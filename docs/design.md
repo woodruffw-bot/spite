@@ -340,6 +340,12 @@ omitted accumulator; subsequent callbacks receive four arguments with undefined
 as thisArgument. Moving the accumulator into Call avoids extra value copies.
 A fully sparse range with no supplied initial value throws TypeError, and the
 seed search consumes the same bounded work as subsequent traversal.
+Reverse (23.1.3.26) snapshots length and walks pairs from the ends inward.
+Each lower HasProperty/Get precedes the upper HasProperty/Get; the first getter
+can therefore change the second presence check. The four presence combinations
+use the specified Set/DeletePropertyOrThrow order, retaining partial effects on
+failure. Values move between reads and writes without extra copies. No length
+assignment occurs, and the middle element of an odd range is never accessed.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses
