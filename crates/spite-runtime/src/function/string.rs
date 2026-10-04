@@ -8,6 +8,7 @@ mod character;
 mod iteration;
 mod raw;
 mod repeat;
+mod replace;
 mod search;
 mod sequence;
 mod split;
@@ -103,6 +104,7 @@ impl Realm {
             Builtin::StringStartsWith,
             Builtin::StringEndsWith,
             Builtin::StringSplit,
+            Builtin::StringReplace,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(

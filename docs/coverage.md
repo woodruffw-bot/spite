@@ -330,6 +330,14 @@ in that order; separator conversion still runs for zero limits. Results are dens
 intrinsic Arrays with own data elements. Tests cover surrogate halves, generic
 receivers, conversion failures, uint32 wrapping, metadata, collection, and opt-in
 host failures. RegExp's split hook remains pending with RegExp objects.
+String.replace delegates object Symbol.replace hooks before conversion and skips
+primitive prototype hooks. Ordinary searches convert receiver/search/replacement
+in order, replace the first UTF-16 match, and preserve unchanged Strings on misses.
+Functional replacements receive match/position/full String with undefined this;
+their converted return text is literal. String replacements expand $$, $&, prefix,
+and suffix tokens; capture tokens remain literal without RegExp captures. Tests
+cover hook and conversion ordering, callbacks, surrogate boundaries, substitution,
+metadata, collection, large default outputs, and opt-in host failures.
 
 Sparse Array storage now enforces indexed length growth, read-only length, and
 descending partial truncation behind the low-level Objects API. Numeric length
@@ -497,7 +505,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 173 retained entries outside the per-Script work
+Realm initialization creates 174 retained entries outside the per-Script work
 allowance; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

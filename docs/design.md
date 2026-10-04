@@ -868,6 +868,18 @@ empty substrings and stopping at the limit. Checked copies and each search
 comparison charge opted-in work. Fresh intrinsic Arrays bypass constructors,
 species, and inherited setters. RegExp-specific splitting awaits RegExp objects.
 
+String.replace (22.1.3.19) delegates Symbol.replace only on object searches,
+preserving original this/replacement values and returning the hook's result.
+Fallback converts the receiver and search, then converts non-callable replacements
+before searching even when there is no match. Replace only the first UTF-16 match.
+Call functional replacements with undefined this and exactly match/position/full
+String; convert their return value to literal replacement text. Non-functional
+replacements use GetSubstitution with no captures (22.1.3.19.1): expand $$, $&,
+prefix, and suffix tokens once; numeric/named-capture tokens remain literal.
+Checked output reservation and copied/scanned units charge opted-in work. Input
+Strings remain fixed through callbacks. RegExp captures and replaceAll are separate
+steps.
+
 String.raw uses ToObject for its template and raw value, reads length once through
 LengthOfArrayLike, and interleaves each indexed literal conversion with the
 corresponding available substitution (22.1.2.4). Missing substitutions add no text;
