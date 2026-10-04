@@ -466,6 +466,22 @@ impl Realm {
 }
 
 impl Realm {
+    pub(crate) fn length_of_array_like(
+        &mut self,
+        object: &ObjectHandle,
+        span: Span,
+    ) -> Result<u64, Error> {
+        // LengthOfArrayLike/ToLength, 7.3.18/7.1.20. Read length once and use
+        // u64 to represent every valid index independently of host usize.
+        let length = self.get_property(object, &JsString::from("length"), span)?;
+        let number = self.number(length, span)?;
+        Ok(if number.is_nan() || number <= 0.0 {
+            0
+        } else {
+            number.trunc().min(9_007_199_254_740_991.0) as u64
+        })
+    }
+
     pub(crate) fn own_property_keys(
         &mut self,
         object: &ObjectHandle,
@@ -560,7 +576,6 @@ fn missing_array_method(key: &JsString) -> bool {
         "forEach",
         "includes",
         "indexOf",
-        "join",
         "keys",
         "lastIndexOf",
         "map",
@@ -578,7 +593,6 @@ fn missing_array_method(key: &JsString) -> bool {
         "toReversed",
         "toSorted",
         "toSpliced",
-        "toString",
         "unshift",
         "values",
         "with",

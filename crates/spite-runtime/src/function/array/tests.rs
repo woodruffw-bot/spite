@@ -306,3 +306,51 @@ fn construction_observes_new_target_prototype_before_length_validation() {
         Err(Error::Thrown(Value::Number(9.0)))
     );
 }
+
+#[test]
+fn join_checks_output_before_next_get_and_bounds_empty_output_work() {
+    let mut realm = Realm::default();
+    realm.eval("let n=0,flag=0,a=['a','b'],sep='xxx';Object.defineProperty(a,'1',{get:()=>{n++;return 'b';}})").unwrap();
+    realm.limits.max_string_units = 3;
+    assert!(matches!(
+        realm.eval("try{a.join(sep);}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    check(&mut realm, "n===0 && flag===0");
+    realm.limits.max_string_units = 1_048_576;
+    realm.limits.max_steps = 500;
+    assert!(matches!(
+        realm.eval(
+            "try{Array.prototype.join.call({length:Infinity},'');}catch{flag=1;}finally{flag=2;}"
+        ),
+        Err(Error::Limit { .. })
+    ));
+    realm.limits.max_steps = 100_000;
+    check(&mut realm, "flag===0 && [1,2].join()==='1,2'");
+    // A huge logical length does not skip earlier observable operations.
+    assert_eq!(
+        realm.eval("Array.prototype.join.call({0:{toString:()=>{throw 9;}},length:Infinity})"),
+        Err(Error::Thrown(Value::Number(9.0)))
+    );
+}
+
+#[test]
+fn recursive_join_and_to_string_are_bounded_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for source in ["let a=[];a[0]=a;", "let a=[];a.join=()=>a.toString();"] {
+                let mut realm = Realm::default();
+                realm.eval(source).unwrap();
+                realm.eval("let flag=0").unwrap();
+                assert!(matches!(
+                    realm.eval("try{a.toString();}catch{flag=1;}finally{flag=2;}"),
+                    Err(Error::Limit { .. })
+                ));
+                check(&mut realm, "flag===0 && [1,2].join()==='1,2'");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}

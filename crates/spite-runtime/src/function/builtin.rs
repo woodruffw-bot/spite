@@ -186,6 +186,10 @@ impl Realm {
             )),
             Builtin::Array => self.array_constructor(None, arguments, span),
             Builtin::ArrayIsArray => self.array_is_array(arguments.next(), span),
+            Builtin::ArrayJoin => {
+                self.array_join(this, arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Builtin::ArrayToString => self.array_to_string(this, span),
             Builtin::String => self.string_constructor(None, arguments.next(), span),
             Builtin::StringRaw => {
                 let template = arguments.next().unwrap_or(Value::Undefined);

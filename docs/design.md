@@ -275,7 +275,8 @@ The low-level Objects API accepts only preconverted integral Number length
 descriptors; UnnormalizedArrayLength reports a violated storage precondition,
 not a JavaScript exception. Realm descriptor definitions and deferred length
 assignments now supply these conversions. Array calls/new and Array.isArray now expose these objects to Scripts;
-literal syntax is implemented, while prototype methods remain pending.
+literal syntax and join/toString are implemented; remaining prototype methods
+are pending.
 
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
@@ -298,6 +299,14 @@ length coercions, array literal grammar/evaluation, then prototype methods and
 additional Test262 coverage. Array.prototype is itself an empty Array exotic
 object (23.1.3). Missing constructor/prototype methods, Symbol.iterator, species,
 and unscopables remain explicit gaps until their dependencies are implemented.
+Join uses ToObject and reads LengthOfArrayLike once before separator conversion,
+then interleaves indexed Get and element ToString in order. Nullish elements
+contribute empty text; inherited properties at holes remain observable. Appends
+charge work and check UTF-16 output limits before allocation. Array toString
+invokes the current callable join with no arguments, falling back to the intrinsic
+Object toString when join is not callable. Native recursive conversion, including
+cyclic arrays, is bounded by the existing host call limit. LengthOfArrayLike is
+shared with String.raw and Function.prototype.apply.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

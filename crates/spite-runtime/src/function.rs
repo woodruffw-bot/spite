@@ -62,6 +62,8 @@ pub(crate) enum Builtin {
     BooleanValueOf,
     Array,
     ArrayIsArray,
+    ArrayJoin,
+    ArrayToString,
     String,
     StringToString,
     StringValueOf,
@@ -114,6 +116,7 @@ impl Builtin {
             Self::FunctionApply => "apply",
             Self::FunctionBind => "bind",
             Self::FunctionToString
+            | Self::ArrayToString
             | Self::ObjectToString
             | Self::BooleanToString
             | Self::StringToString
@@ -126,6 +129,7 @@ impl Builtin {
             Self::Boolean => "Boolean",
             Self::Array => "Array",
             Self::ArrayIsArray => "isArray",
+            Self::ArrayJoin => "join",
             Self::String => "String",
             Self::StringFromCharCode => "fromCharCode",
             Self::StringFromCodePoint => "fromCodePoint",
@@ -193,6 +197,7 @@ impl Builtin {
             | Self::Boolean
             | Self::Array
             | Self::ArrayIsArray
+            | Self::ArrayJoin
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
@@ -523,15 +528,8 @@ impl Realm {
                 "apply argument list must be an object",
             ));
         };
-        let length = self.get_property(&object, &JsString::from("length"), span)?;
-        let number = self.number(length, span)?;
-        // ToIntegerOrInfinity then ToLength, 7.1.5 / 7.1.20. NaN maps to +0.
-        let length = if number.is_nan() || number <= 0.0 {
-            0.0
-        } else {
-            number.trunc().min(9_007_199_254_740_991.0)
-        };
-        if length > self.limits.max_arguments as f64 || length > self.remaining_steps as f64 {
+        let length = self.length_of_array_like(&object, span)?;
+        if length > self.limits.max_arguments as u64 || length > self.remaining_steps as u64 {
             return Err(Error::Limit {
                 span,
                 message: "array-like argument list exceeds host limits".into(),

@@ -145,7 +145,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add ordered Realm-level ArraySetLength coercions and deferred length assignments.
 - [x] Add Array calls/new and Array.isArray.
 - [x] Parse/evaluate array literals with holes and trailing commas; defer spread to iteration.
-- [ ] Add Array prototype methods and expand reviewed array/harness conformance coverage.
+- [x] Add generic Array join and dynamic toString with ordered, bounded conversion.
+- [ ] Add remaining Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.
 - [ ] Complete remaining harness paths/includes as their language and library dependencies arrive.

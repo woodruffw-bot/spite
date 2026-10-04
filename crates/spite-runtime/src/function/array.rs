@@ -1,6 +1,7 @@
 //! Array construction, identification, and length conversion (23.1, 10.4.2.4).
 
 mod literal;
+mod string;
 
 use super::Builtin;
 use crate::{
@@ -15,11 +16,14 @@ pub(crate) struct ArrayIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
     is_array: ObjectHandle,
+    methods: Vec<ObjectHandle>,
 }
 
 impl ArrayIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.constructor, &self.prototype, &self.is_array].into_iter()
+        [&self.constructor, &self.prototype, &self.is_array]
+            .into_iter()
+            .chain(self.methods.iter())
     }
 }
 
@@ -63,10 +67,23 @@ impl Realm {
             true,
             span,
         )?;
+        let mut methods = Vec::new();
+        for builtin in [Builtin::ArrayJoin, Builtin::ArrayToString] {
+            let method = self.new_builtin(function_prototype, builtin, span)?;
+            self.define_builtin_property(
+                &prototype,
+                builtin.initial_name(),
+                Value::Object(method.clone()),
+                true,
+                span,
+            )?;
+            methods.push(method);
+        }
         Ok(ArrayIntrinsics {
             constructor,
             prototype,
             is_array,
+            methods,
         })
     }
 

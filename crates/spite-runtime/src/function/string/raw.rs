@@ -17,15 +17,7 @@ impl Realm {
         let Value::Object(literals) = self.box_primitive(raw, span)? else {
             unreachable!("ToObject");
         };
-        let length = self.get_property(&literals, &JsString::from("length"), span)?;
-        let number = self.number(length, span)?;
-        // LengthOfArrayLike/ToLength, 7.3.18/7.1.20. A u64 index represents the
-        // entire valid range on every target, without truncating to host usize.
-        let count = if number.is_nan() || number <= 0.0 {
-            0
-        } else {
-            number.trunc().min(9_007_199_254_740_991.0) as u64
-        };
+        let count = self.length_of_array_like(&literals, span)?;
         let mut result = Vec::new();
         for index in 0..count {
             self.tick(span)?;
