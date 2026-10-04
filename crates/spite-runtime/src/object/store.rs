@@ -136,6 +136,9 @@ pub enum SetAction {
     Done(bool),
     /// Call this setter with the original receiver and assigned value, then return true.
     Call(Handle),
+    /// Define this Array receiver's length after performing ArraySetLength's
+    /// numeric conversions on the originally assigned value outside storage.
+    ArrayLength(Handle),
 }
 
 /// An ordinary-object heap that validates prototypes and prevents their cycles.
@@ -754,6 +757,9 @@ impl Objects {
                 configurable: Some(true),
             }
         };
+        if destination.is_array() && super::array::is_length(&key) {
+            return Ok(SetAction::ArrayLength(receiver.clone()));
+        }
         self.define(receiver, key, descriptor, budget)
             .map(SetAction::Done)
     }

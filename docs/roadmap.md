@@ -142,7 +142,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Bound re-entrant calls and dispatch builtin/bound tail transfers iteratively.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [x] Add sparse Array exotic storage, indexed growth, and partial length truncation.
-- [ ] Add Array calls/new, Array.isArray, and ordered Realm-level ArraySetLength coercions.
+- [x] Add ordered Realm-level ArraySetLength coercions and deferred length assignments.
+- [ ] Add Array calls/new and Array.isArray.
 - [ ] Parse/evaluate array literals with holes and trailing commas; defer spread to iteration.
 - [ ] Add Array prototype methods and expand reviewed array/harness conformance coverage.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.

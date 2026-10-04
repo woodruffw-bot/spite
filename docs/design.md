@@ -273,7 +273,9 @@ not depend on the prototype chain. Storage enforces index growth, read-only
 length checks, and descending-index truncation independently of parser syntax.
 The low-level Objects API accepts only preconverted integral Number length
 descriptors; UnnormalizedArrayLength reports a violated storage precondition,
-not a JavaScript exception. Array storage is not yet exposed to Script execution.
+not a JavaScript exception. Realm descriptor definitions and deferred length
+assignments now supply these conversions. Array construction/literal syntax is
+not yet exposed to Script execution.
 
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length

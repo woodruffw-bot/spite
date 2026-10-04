@@ -235,7 +235,8 @@ incomplete String.prototype remain Unsupported; tagged template syntax is still 
 Sparse Array storage now enforces indexed length growth, read-only length, and
 descending partial truncation behind the low-level Objects API. Numeric length
 descriptors must be preconverted there; work checks precede any truncation.
-Array construction, length coercion, literal syntax, and prototype methods remain
+Realm definitions now perform both ArraySetLength conversions, and assignments
+defer them until after receiver/writability checks. Array construction, literal syntax, and prototype methods remain
 unavailable to JavaScript until the next integration increments.
 
 Symbols, BigInt wrapper APIs, remaining String methods,

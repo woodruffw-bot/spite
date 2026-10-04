@@ -7,6 +7,7 @@ use crate::{
 use spite_core::{JsString, Span};
 
 mod arguments;
+mod array;
 mod arrow;
 mod boolean;
 mod bound;

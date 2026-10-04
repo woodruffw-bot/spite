@@ -161,7 +161,7 @@ impl OrdinaryObject {
     }
 }
 
-fn is_length(key: &JsString) -> bool {
+pub(super) fn is_length(key: &JsString) -> bool {
     key.code_units() == [0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68]
 }
 

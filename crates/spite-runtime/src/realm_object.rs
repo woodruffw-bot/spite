@@ -177,6 +177,16 @@ impl Realm {
             })?;
             return match action {
                 SetAction::Done(result) => Ok(result),
+                SetAction::ArrayLength(receiver) => self.define_property(
+                    &receiver,
+                    JsString::from("length"),
+                    DataDescriptor {
+                        value: Some(value),
+                        ..Default::default()
+                    }
+                    .into(),
+                    span,
+                ),
                 SetAction::Call(setter) => {
                     self.call(Value::Object(setter), base.clone(), vec![value], span)?;
                     Ok(true)
@@ -195,6 +205,9 @@ impl Realm {
             })?;
             return match action {
                 SetAction::Done(result) => Ok(result),
+                SetAction::ArrayLength(_) => {
+                    unreachable!("primitive receivers cannot define Array length")
+                }
                 SetAction::Call(setter) => {
                     self.call(Value::Object(setter), base.clone(), vec![value], span)?;
                     Ok(true)

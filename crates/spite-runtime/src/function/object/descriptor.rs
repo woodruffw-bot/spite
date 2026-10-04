@@ -35,10 +35,7 @@ impl Realm {
         descriptor: PropertyDescriptor,
         span: Span,
     ) -> Result<(), Error> {
-        self.check_missing_intrinsic_mutation(object, &key, span)?;
-        let defined = self.object_work(span, |objects, budget| {
-            objects.define(object, key, descriptor, budget)
-        })?;
+        let defined = self.define_property(object, key, descriptor, span)?;
         if !defined {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
@@ -47,6 +44,20 @@ impl Realm {
             ));
         }
         Ok(())
+    }
+
+    pub(crate) fn define_property(
+        &mut self,
+        object: &ObjectHandle,
+        key: JsString,
+        mut descriptor: PropertyDescriptor,
+        span: Span,
+    ) -> Result<bool, Error> {
+        self.check_missing_intrinsic_mutation(object, &key, span)?;
+        self.convert_array_length(object, &key, &mut descriptor, span)?;
+        self.object_work(span, |objects, budget| {
+            objects.define(object, key, descriptor, budget)
+        })
     }
 
     pub(crate) fn object_create(
