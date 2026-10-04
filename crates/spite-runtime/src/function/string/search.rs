@@ -1,8 +1,8 @@
 //! UTF-16 substring search and predicates (22.1.3.7–9/11/24, 6.1.4.1–2).
 
 use super::Builtin;
-use crate::{Error, Realm, Value};
-use spite_core::{JsString, Span};
+use crate::{Error, ExceptionKind, Realm, Value};
+use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {
     pub(crate) fn string_index_of(
@@ -39,9 +39,15 @@ impl Realm {
     ) -> Result<Value, Error> {
         Self::require_object_coercible(&receiver, span)?;
         let string = self.string(receiver, span)?;
-        // IsRegExp (7.2.6) is false for all currently exposed values: neither
-        // Symbol keys nor RegExpMatcher slots exist. Their lookup/rejection must
-        // join here, before search ToString, when those facilities are exposed.
+        // IsRegExp precedes conversion of the search string and position, even
+        // when the result could otherwise be determined without searching.
+        if self.is_regexp(&search, span)? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "String search predicate does not accept a regular expression",
+            ));
+        }
         let search = self.string(search, span)?;
         let position =
             if matches!(builtin, Builtin::StringEndsWith) && matches!(position, Value::Undefined) {
@@ -73,6 +79,20 @@ impl Realm {
         Ok(Value::Boolean(
             &string.code_units()[range] == search.code_units(),
         ))
+    }
+
+    /// IsRegExp (7.2.6), including the observable Symbol.match override.
+    pub(crate) fn is_regexp(&mut self, value: &Value, span: Span) -> Result<bool, Error> {
+        let Value::Object(object) = value else {
+            return Ok(false);
+        };
+        let matcher = self.get_property(object, &WellKnownSymbol::Match.symbol(), span)?;
+        if !matches!(matcher, Value::Undefined) {
+            return Ok(matcher.to_boolean());
+        }
+        // None of the implemented object kinds has [[RegExpMatcher]]. Its brand
+        // check belongs here when RegExp objects are implemented, after Get.
+        Ok(false)
     }
 
     fn find_string(

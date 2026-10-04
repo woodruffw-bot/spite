@@ -245,8 +245,10 @@ has checked length/capacity and bounded copying. indexOf/lastIndexOf search UTF-
 units with ordered conversions, clamped positions, and the distinct NaN defaults;
 each candidate comparison is charged to the work budget. includes shares this
 bounded search; startsWith/endsWith compare the selected code-unit range once.
-These predicates operate on currently exposed values. RegExp rejection and
-Symbol.match lookup remain pending with RegExp/Symbol support. String.raw processes
+These predicates perform IsRegExp's Symbol.match lookup between receiver and
+search conversion, rejecting truthy markers without invoking them. Native-injected
+symbols test lookup order, abrupt completion, and bounded recursion. The actual
+RegExpMatcher brand fallback awaits RegExp objects. String.raw processes
 ordinary array-like templates with ordered raw/length/index reads and interleaved
 substitution conversion. All baseline String constructor static properties are
 installed, and its own-key enumeration is supported. Remaining prototype methods and enumeration of the

@@ -307,7 +307,7 @@ hint, and object results throw TypeError without falling back (7.1.1).
 
 Finally, integrate Symbol wrappers, construction, shared registry semantics,
 and remaining observable hooks before exposing the JavaScript Symbol global.
-In particular, Object.prototype.toString, String IsRegExp checks, and intrinsic symbol properties
+In particular, Object.prototype.toString and remaining intrinsic symbol properties
 must stop relying on their current no-symbol assumptions. Array species and
 iteration then build on those boundaries. The foundation alone does not expose
 partial Symbol behavior to scripts or count as additional Test262 coverage.
@@ -610,9 +610,12 @@ more complex matching implementation before it is needed.
 includes shares bounded substring search; startsWith/endsWith compare just their
 selected range (22.1.3.7/8/24). Empty searches match, including clamped endpoints.
 endsWith defaults undefined to the receiver length; other position conversions
-map NaN to zero. IsRegExp is false for all values currently exposed by the runtime.
-Symbol.match lookup and RegExpMatcher rejection must join before search-string
-conversion when Symbols/RegExp are introduced; string-keyed lookalikes are not hooks.
+map NaN to zero. IsRegExp reads Symbol.match on objects after receiver conversion
+and before search-string or position conversion (7.2.6). A defined marker uses
+ToBoolean without calling or converting it; truthy markers cause TypeError even
+for empty searches. Primitive searches never perform this lookup. Inherited
+getters retain the search object as receiver. The RegExpMatcher brand fallback
+remains false until RegExp objects exist; string-keyed lookalikes are not hooks.
 String.raw uses ToObject for its template and raw value, reads length once through
 LengthOfArrayLike, and interleaves each indexed literal conversion with the
 corresponding available substitution (22.1.2.4). Missing substitutions add no text;
