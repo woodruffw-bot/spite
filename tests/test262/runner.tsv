@@ -2130,3 +2130,10 @@ test/built-ins/Iterator/length.js	-	-	-
 test/built-ins/Iterator/name.js	-	-	-
 test/built-ins/Iterator/prototype/initial-value.js	-	-	-
 test/built-ins/Iterator/from/prop-desc.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/length.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/name.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/proto.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/this-non-callable-next.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/this-non-object.js	-	-	-
+test/built-ins/Iterator/prototype/toArray/this-plain-iterator.js	-	-	-

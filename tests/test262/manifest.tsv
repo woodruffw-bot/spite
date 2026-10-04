@@ -2155,3 +2155,10 @@ script-pass	12eb7e2490edf6cb35c0cb72a9ddbe8e6a11c0272f49c3d1bcbc1e2bbfb442b2	tes
 script-pass	2c7c1686e7ef8ad1d43d384dd4f090a75fc294da1139115a7234b62d864dc8f2	test/built-ins/Iterator/name.js
 script-pass	a6fb6e5b25519da73c6de2ab4c32e306e60bb72fa66c65cd215cdca01654f102	test/built-ins/Iterator/prototype/initial-value.js
 script-pass	46a3b6b0c9ed947bd9ceaae95c928182334fa9e72049a1a42c4323a0a386766a	test/built-ins/Iterator/from/prop-desc.js
+script-pass	e67f15f9d93c575f37a2442fec414ee8cf32dfb2556f5277fd36af7ecfa605a1	test/built-ins/Iterator/prototype/toArray/is-function.js
+script-pass	519043237f191894179bd645c704552573dc92ad0918d5118358f0644243bf83	test/built-ins/Iterator/prototype/toArray/length.js
+script-pass	34dadabc6287b636800a2046efe11e71aa78a3850dc0f15d0521910c2a217028	test/built-ins/Iterator/prototype/toArray/name.js
+script-pass	65cef823cfd384486403bb16c89cde31bd0e55491f10c430f44e84c0c586dac8	test/built-ins/Iterator/prototype/toArray/proto.js
+script-pass	0dbf72aeeb27efe005e3fa65d86f9a12c6ec4eebdb78d0b293e3a8d152e9dea6	test/built-ins/Iterator/prototype/toArray/this-non-callable-next.js
+script-pass	4924839670e3af6399641a05ad85beb55e58d80011fe7866601605c5550dd2e1	test/built-ins/Iterator/prototype/toArray/this-non-object.js
+script-pass	bd9de1bbbb35e5fd748b088cb2c8cfa4a1992df49aeb0f230b8ce6b70719ab4b	test/built-ins/Iterator/prototype/toArray/this-plain-iterator.js
