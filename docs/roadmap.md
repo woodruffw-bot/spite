@@ -111,6 +111,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String trim/trimStart/trimEnd with exact ECMAScript whitespace membership.
 - [x] Add String repeat/padStart/padEnd with ordered conversions and bounded output.
 - [x] Add bounded UTF-16 String indexOf/lastIndexOf searches.
+- [x] Add ordinary-call String.raw and complete String constructor static own properties.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
 - [x] Add exact Number.prototype.toPrecision with significant zeros and exponent correction.
 - [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.

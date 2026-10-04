@@ -64,6 +64,7 @@ pub(crate) enum Builtin {
     StringValueOf,
     StringFromCharCode,
     StringFromCodePoint,
+    StringRaw,
     StringAt,
     StringCharAt,
     StringCharCodeAt,
@@ -120,6 +121,7 @@ impl Builtin {
             Self::String => "String",
             Self::StringFromCharCode => "fromCharCode",
             Self::StringFromCodePoint => "fromCodePoint",
+            Self::StringRaw => "raw",
             Self::StringAt => "at",
             Self::StringCharAt => "charAt",
             Self::StringCharCodeAt => "charCodeAt",
@@ -181,6 +183,7 @@ impl Builtin {
             | Self::String
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
+            | Self::StringRaw
             | Self::StringAt
             | Self::StringCharAt
             | Self::StringCharCodeAt

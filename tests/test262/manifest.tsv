@@ -387,3 +387,15 @@ script-pass	fbe884c54172a99c2bb57570eb93258285ef6bc8b5fb532bd181cf5554f2e91f	tes
 script-pass	a6e35218d75c511c31efc0ad212255b9ef62177ca6644dfd576c52384a7d51c9	test/built-ins/String/prototype/lastIndexOf/S15.5.4.8_A4_T5.js
 script-pass	5767c71e79ccfb856cb1e9854d7f4c7f9e3dfeb07c697631db78072c9233ce64	test/built-ins/String/prototype/lastIndexOf/this-value-not-obj-coercible.js
 script-pass	1fa0e88ffe6a342e6204c925918ae6fc29b003d47007210fc377c24bc56bd41d	test/built-ins/String/prototype/lastIndexOf/not-a-substring.js
+script-pass	2c8e6cab24acb8fd049aa3d9922de0c7f9457f4c3b084ef632f18c6f9760f827	test/built-ins/String/raw/return-empty-string-if-length-is-negative-infinity.js
+script-pass	3d06b0f4d2cb7391961c04b9c34e03955e8b7df8181ec36927064acd801cc5e0	test/built-ins/String/raw/return-empty-string-if-length-is-not-defined.js
+script-pass	6a93d3c16a6bfb41cdedef2412036b5cf876964f7a383fa77ad156b46c30d8cf	test/built-ins/String/raw/return-empty-string-if-length-is-undefined.js
+script-pass	1eee1290f77bdd72d12fa97efcb970586f630b7ef85238364d7ab173a6a97f61	test/built-ins/String/raw/return-empty-string-if-length-is-zero-NaN.js
+script-pass	80daf07e69377bd0d4b4e102232eca2ddf1775f09dad045654d69df0f171fb1f	test/built-ins/String/raw/return-empty-string-if-length-is-zero-boolean.js
+script-pass	521ed20ccbe5d52e198ecb89bd42e90fee43b023a2f335146c76a19a7ee9492d	test/built-ins/String/raw/return-empty-string-if-length-is-zero-null.js
+script-pass	4568639e68127491e0599d20bc992021967cdf24bfaf6ce2387cc9adb33c4cfb	test/built-ins/String/raw/return-empty-string-if-length-is-zero-or-less-number.js
+script-pass	74685cd592363709d512efb33744972c4b215a818eefe22b20c36273db506f74	test/built-ins/String/raw/return-empty-string-if-length-is-zero-or-less-string.js
+script-pass	47665c5840af794dd118c8450930c5724f4e11d2bcc55a6119311f2202c4b698	test/built-ins/String/raw/return-the-string-value.js
+script-pass	dc76e380748d53c54cb95252cc38d0f7a8b8d6b058a1c9de5c038e1c947ea35a	test/built-ins/String/raw/template-not-object-throws.js
+script-pass	49ecebe06b9069f8000b5eedfd86906241ad2004465e48d1218f74b4b56ab6bb	test/built-ins/String/raw/template-raw-not-object-throws.js
+script-pass	8084595750b5911ae3d53083787670a37370b55d200ace8b65dadd0b2b97cf35	test/built-ins/String/raw/returns-abrupt-from-next-key-toString.js

@@ -408,6 +408,14 @@ lastIndexOf. Searches compare UTF-16 slices without decoding, return the clamped
 position for empty needles, and charge the needle length before each candidate
 comparison. This bounds the initial quadratic algorithm without introducing a
 more complex matching implementation before it is needed.
+String.raw uses ToObject for its template and raw value, reads length once through
+LengthOfArrayLike, and interleaves each indexed literal conversion with the
+corresponding available substitution (22.1.2.4). Missing substitutions add no text;
+missing indexed literals convert undefined normally. Each iteration and copied
+unit consumes work, even for huge lengths and empty literals. This ordinary-call
+API completes the String constructor's static properties, so own-key reflection
+and integrity operations on that constructor no longer need an incomplete-intrinsic
+guard. Tagged template grammar and template object caching remain separate work.
 
 Boolean construction and methods follow 20.3. Calling Boolean applies ToBoolean
 without invoking conversion methods; construction also allocates a fresh ordinary

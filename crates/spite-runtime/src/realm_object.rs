@@ -459,7 +459,6 @@ impl Realm {
         if self.global_object.as_ref() == Some(object)
             || object == &intrinsics.object.constructor
             || object == &intrinsics.function_prototype
-            || object == &intrinsics.string.constructor
             || object == &intrinsics.string.prototype
         {
             return Err(Self::unsupported(
@@ -514,8 +513,6 @@ impl Realm {
         (object == &intrinsics.object.constructor && missing_object_static(key))
             || (object == &intrinsics.function_prototype && key_is(key, "constructor"))
             || (object == &intrinsics.string.prototype && missing_string_method(key))
-            || (object == &intrinsics.string.constructor
-                && ["raw"].iter().any(|name| key_is(key, name)))
     }
 }
 

@@ -5,6 +5,7 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescri
 use spite_core::{JsString, Span};
 
 mod character;
+mod raw;
 mod repeat;
 mod search;
 mod sequence;
@@ -78,6 +79,7 @@ impl Realm {
         for builtin in [
             Builtin::StringFromCharCode,
             Builtin::StringFromCodePoint,
+            Builtin::StringRaw,
             Builtin::StringAt,
             Builtin::StringCharAt,
             Builtin::StringCharCodeAt,
@@ -99,7 +101,7 @@ impl Realm {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             let target = if matches!(
                 builtin,
-                Builtin::StringFromCharCode | Builtin::StringFromCodePoint
+                Builtin::StringFromCharCode | Builtin::StringFromCodePoint | Builtin::StringRaw
             ) {
                 &constructor
             } else {

@@ -185,6 +185,10 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined).to_boolean(),
             )),
             Builtin::String => self.string_constructor(None, arguments.next(), span),
+            Builtin::StringRaw => {
+                let template = arguments.next().unwrap_or(Value::Undefined);
+                self.string_raw(template, arguments, span)
+            }
             Builtin::StringConcat => self.string_concat(this, arguments, span),
             Builtin::StringIndexOf | Builtin::StringLastIndexOf => self.string_index_of(
                 this,
