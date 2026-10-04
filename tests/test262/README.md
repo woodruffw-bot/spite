@@ -110,8 +110,11 @@ checks full-width length handling without an unbounded scan.
 Candidates requiring classes, proxies, foreign realms, typed arrays, RegExp,
 `isConstructor.js`/Reflect, or `propertyHelper.js` remain outside this corpus.
 The spreadable-function candidate requires the missing `Function` global. The
-4,000-hole sparse-object candidate previously exceeded the runner's work allowance;
-it will be reviewed again with the default work limit disabled.
+4,000-hole sparse-object candidate was reviewed again after disabling the default
+execution work limit. Its upstream assertions exhaust the default 10,000 shared
+object/environment heap slots in both Script modes, so it remains outside the
+passing corpus. This is a host allocation limit; the fixture was not rewritten
+or retried with larger limits.
 Local runtime regressions also cover safe-integer overflow before indexed reads,
 strict final length writes, aliased species results, and bounded host scans.
 

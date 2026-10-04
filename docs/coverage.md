@@ -355,6 +355,9 @@ live, preserving holes and inherited values. Definitions bypass setters and keep
 partial results. Safe-integer overflow throws TypeError before indexed reads;
 the final strict length write follows traversal. Large sparse scans consume an
 opted-in work budget, and custom results can alias inputs without hiding subsequent mutations.
+The pinned 4,000-hole sparse-object concat fixture remains outside the reviewed
+passing corpus: its upstream assertions exhaust the default shared heap-slot limit
+in both Script modes even with execution work limits disabled.
 Array's Symbol.species getter and Array.prototype's Symbol.unscopables table have
 their standard attributes. The getter preserves its receiver; the table has a
 null prototype and all 16 specified entries. Other species-dependent Array methods
