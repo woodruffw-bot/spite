@@ -201,8 +201,12 @@ are traced through ordinary properties. AggregateError remains unimplemented.
 Object calls/new preserve object identity, create fresh nullish-argument objects,
 and box Boolean/Number/String values. Object.prototype provides hasOwnProperty,
 propertyIsEnumerable, isPrototypeOf, toLocaleString, constructor, toString, and
-valueOf with ordered conversions and receiver handling. Own-property predicates
-read descriptors without invoking accessors. Object.defineProperty converts
+valueOf with ordered conversions and receiver handling. Object.prototype.toString reads Symbol.toStringTag
+after selecting its fallback, accepts only String tags, and bounds UTF-16 output.
+Tag getters receive the original object or a fresh primitive wrapper. BigInt
+primitives retain their default tag while that prototype remains inaccessible;
+Symbol receivers still require the pending wrapper implementation. Own-property
+predicates inspect string/symbol descriptors without invoking accessors. Object.defineProperty converts
 inherited descriptor fields in order and applies data/accessor changes, including
 mapped-argument alias updates. Object.getOwnPropertyDescriptor returns fresh,
 mutable descriptor objects; Object.hasOwn boxes before key conversion, and

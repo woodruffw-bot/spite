@@ -339,47 +339,7 @@ impl Realm {
                 .ordinary_has_instance(this, arguments.next().unwrap_or(Value::Undefined), span)
                 .map(Value::Boolean),
             Builtin::ObjectValueOf => self.box_primitive(this, span),
-            Builtin::ObjectToString => {
-                // 20.1.3.6. No Symbol keys or additional exotic object kinds are
-                // exposed yet; their tags and hooks must join this dispatch later.
-                let tag = match &this {
-                    Value::Undefined => "Undefined",
-                    Value::Null => "Null",
-                    Value::Boolean(_) => "Boolean",
-                    Value::Number(_) => "Number",
-                    Value::BigInt(_) => "BigInt",
-                    Value::String(_) => "String",
-                    Value::Symbol(_) => {
-                        return Err(Self::unsupported(
-                            span,
-                            "Symbol wrapper and tag hooks are not implemented",
-                        ));
-                    }
-                    Value::Object(handle) => self.object_work(span, |objects, _| {
-                        let object = objects.inspect(handle)?;
-                        Ok(if object.is_array() {
-                            "Array"
-                        } else if object.is_error() {
-                            "Error"
-                        } else if object.boolean_data().is_some() {
-                            "Boolean"
-                        } else if object.number_data().is_some() {
-                            "Number"
-                        } else if object.string_data().is_some() {
-                            "String"
-                        } else if object.is_arguments() {
-                            "Arguments"
-                        } else if object.is_callable() {
-                            "Function"
-                        } else {
-                            "Object"
-                        })
-                    })?,
-                };
-                Ok(Value::String(JsString::from(
-                    format!("[object {tag}]").as_str(),
-                )))
-            }
+            Builtin::ObjectToString => self.object_to_string(this, span),
         }
     }
 }

@@ -8,6 +8,7 @@ mod hooks;
 mod instance;
 mod keys;
 mod regexp;
+mod tag;
 
 // The Symbol global stays unavailable until its wrappers and hooks are ready.
 // Native injection lets us verify the primitive algorithms independently.
@@ -27,6 +28,7 @@ fn realm_with_symbols() -> Realm {
         ("globalKey", JsSymbol::new(Some(JsString::from("Symbol")))),
         ("convert", spite_core::WellKnownSymbol::ToPrimitive.symbol()),
         ("matcher", spite_core::WellKnownSymbol::Match.symbol()),
+        ("tag", spite_core::WellKnownSymbol::ToStringTag.symbol()),
         (
             "hasInstance",
             spite_core::WellKnownSymbol::HasInstance.symbol(),

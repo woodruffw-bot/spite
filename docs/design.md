@@ -307,9 +307,9 @@ hint, and object results throw TypeError without falling back (7.1.1).
 
 Finally, integrate Symbol wrappers, construction, shared registry semantics,
 and remaining observable hooks before exposing the JavaScript Symbol global.
-In particular, Object.prototype.toString and remaining intrinsic symbol properties
-must stop relying on their current no-symbol assumptions. Array species and
-iteration then build on those boundaries. The foundation alone does not expose
+Remaining intrinsic symbol properties must stop relying on their current
+no-symbol assumptions. Array species and iteration then build on those boundaries.
+The foundation alone does not expose
 partial Symbol behavior to scripts or count as additional Test262 coverage.
 
 Array storage uses sparse indexed properties in the same traced heap,
@@ -484,8 +484,16 @@ a primitive or JavaScript exception. Realm-level ToPrimitive checks its symbol
 hook before OrdinaryToPrimitive performs
 ordered method lookups and calls using the requested hint and original receiver.
 Objects without a method yielding a primitive throw TypeError. Object.prototype
-toString and valueOf provide ordinary default conversion. Missing intrinsics
-remain Unsupported. Complete required Symbol hooks before exposing the Symbol global.
+toString and valueOf provide ordinary default conversion. Object.prototype.toString
+boxes implemented primitive kinds, selects the internal-slot fallback, then reads
+Symbol.toStringTag with the boxed/original object as receiver (20.1.3.6). Only a
+String overrides the fallback; other values are never coerced. Tag concatenation
+preserves UTF-16 and checks output work/capacity before allocation. Nullish values
+skip lookup. BigInt primitives retain their default tag while their unexposed
+prototype cannot be changed; BigInt wrapper integration must replace this shortcut
+with ordinary ToObject/Get. Symbol receivers remain Unsupported until boxing exists.
+Missing intrinsics remain Unsupported. Complete required Symbol hooks before
+exposing the Symbol global.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; templates and property names use the string hint.
 

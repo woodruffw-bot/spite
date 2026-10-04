@@ -8,6 +8,7 @@ mod copy;
 mod descriptor;
 mod integrity;
 mod prototype;
+mod tag;
 #[cfg(test)]
 mod tests;
 
