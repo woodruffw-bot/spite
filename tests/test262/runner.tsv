@@ -2173,3 +2173,13 @@ test/built-ins/Iterator/prototype/find/proto.js	-	-	-
 test/built-ins/Iterator/prototype/find/this-non-callable-next.js	-	-	-
 test/built-ins/Iterator/prototype/find/this-non-object.js	-	-	-
 test/built-ins/Iterator/prototype/find/this-plain-iterator.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/argument-effect-order.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/argument-validation-failure-closes-underlying.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/length.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/name.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/proto.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/reducer-memo-can-be-any-type.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/this-non-callable-next.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/this-non-object.js	-	-	-
+test/built-ins/Iterator/prototype/reduce/this-plain-iterator.js	-	-	-

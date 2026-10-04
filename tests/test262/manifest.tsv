@@ -2198,3 +2198,13 @@ script-pass	58cef1d5fd551808155d9cd538a03c77adf19fa81bd2412cd277afa6b8143c22	tes
 script-pass	67a52ad7f0b627a586f298e17fc2ccf90cfb0d09cdd03a0665043456d155d085	test/built-ins/Iterator/prototype/find/this-non-callable-next.js
 script-pass	5af7fb2a220460111250b79e8632edd0eccc230c6aef4ce04a0cd070b4c9424d	test/built-ins/Iterator/prototype/find/this-non-object.js
 script-pass	2983fe6b1f89345607d22c2fd48258e1a32a024b3f33b95d06da83f6005beeca	test/built-ins/Iterator/prototype/find/this-plain-iterator.js
+script-pass	98b9469870bb548035ee38bae6a93da5858f245e64b95c64d9528628673261f2	test/built-ins/Iterator/prototype/reduce/argument-effect-order.js
+script-pass	be75c3dbf8c98282654ecd4540b5098ecbd2efe02c5affb6fc81350aca7627a2	test/built-ins/Iterator/prototype/reduce/argument-validation-failure-closes-underlying.js
+script-pass	7afd04ed9cca12569007688e6299d6082553920c7e209d035c8a7ad89d34f781	test/built-ins/Iterator/prototype/reduce/is-function.js
+script-pass	74e8d439f27d1cd5561182d93b39a71f1abe85aaa8ba90df00f045a0a889cfc5	test/built-ins/Iterator/prototype/reduce/length.js
+script-pass	65fde1e9bbe7740c026a46b5c9b9441135d324841ffd05d8ec2910b944689c60	test/built-ins/Iterator/prototype/reduce/name.js
+script-pass	28a6b337a74f6e6a7c6ae4f311becde01e37c0b6a7cfcce56065468000d42653	test/built-ins/Iterator/prototype/reduce/proto.js
+script-pass	55874df7e0eb8d4c9f7301eb573015c1a117ebcd70ce6d6902dcc0fde1d2c1dd	test/built-ins/Iterator/prototype/reduce/reducer-memo-can-be-any-type.js
+script-pass	5cdaa786408beed293602fe980f090267fa52c8dbe900a80e7ca3b2aa1090d4a	test/built-ins/Iterator/prototype/reduce/this-non-callable-next.js
+script-pass	e1023f29dcfdb172d246ae568d7682c97a6963c5c33730bf0926958ffb3b1c56	test/built-ins/Iterator/prototype/reduce/this-non-object.js
+script-pass	161e33265134136fab20a354d66d0514aa9ca21d1d9eaa75a3e0f3ab895cf5d5	test/built-ins/Iterator/prototype/reduce/this-plain-iterator.js
