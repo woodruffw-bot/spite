@@ -75,3 +75,15 @@ script-pass	1343ec397a456e9bec7011e3692e5dd7cb602a69c6d08b5f819acd04ce057aa1	tes
 script-pass	67198284ac6a97a5c5636832c536c565166c7d4114d1820c6b7264346779e039	test/language/expressions/arrow-function/lexical-this.js
 harness	206e274ca325eb8a652e3911c3fbd090e2480d11ed7579dc17a5d17a2360ed48	harness/assert.js
 harness	1930c54af79455c484799f43e9a28e2b2f15c40d0917c9941ca54e26db243f35	harness/sta.js
+script-pass	77121e13c98c5e1aeb6151f6abc6f40a688f7fde01c6ad03eaa7d0e553400c61	test/built-ins/Boolean/S15.6.1.1_A1_T2.js
+script-pass	9b60bdb967f7377d661e1b36694b6002096e68e09d219632f68e024abdde1066	test/built-ins/Boolean/S15.6.1.1_A1_T3.js
+script-pass	468300148d2e5da04d41c87bf1ef2261416a3f5e034c6df4d3547d7c109ffe03	test/built-ins/Boolean/S15.6.1.1_A1_T4.js
+script-pass	9b284c6f2334d209a0dda6529675f4ff8e86f1e9f757afd384207c6074725990	test/built-ins/Boolean/S15.6.1.1_A1_T5.js
+script-pass	d415e0f2cf83fd7237b1147da3e1ba530dd485fe95e05672324ba9b4c2493600	test/built-ins/Boolean/S15.6.1.1_A2.js
+script-pass	856f5196329178918238b516f5bd7cb19c0516996a7f9d5104285f75db7ac1c6	test/built-ins/Boolean/S15.6.2.1_A1.js
+script-pass	2c3405e21856c1b9af45400daea362f1be96ce3db9680bf48f9956608d4c0cc1	test/built-ins/Boolean/S15.6.2.1_A4.js
+script-pass	4dc19d77c7808092507d6e001477ebab54221a37c3ea3894da5178f663ca6382	test/built-ins/Boolean/S9.2_A2_T1.js
+script-pass	667e940fb83abf5665354bfed34991f463bc3a3421cdc53efde1c09a58d9b3a4	test/built-ins/Boolean/S9.2_A3_T1.js
+script-pass	09a9592d72cdf30684cf32756b71533f6bed7b19cb108a730dc278b9b15ad178	test/built-ins/Boolean/S9.2_A5_T1.js
+script-pass	1011252f0f083f15e24a5a2b13b8ebfaee157c7711a52b6a37e5f73dd77b810d	test/built-ins/Boolean/S9.2_A5_T3.js
+script-pass	cc084812507a89dff645ca18a70217b095bb17f09b75ae93bdb9b0e1bfd60e02	test/built-ins/Boolean/prototype/constructor/S15.6.4.1_A1.js

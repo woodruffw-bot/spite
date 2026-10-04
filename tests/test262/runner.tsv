@@ -54,3 +54,15 @@ test/language/expressions/arrow-function/lexical-new.target.js	-	-	-
 test/language/expressions/arrow-function/lexical-new.target-closure-returned.js	-	-	-
 test/language/expressions/arrow-function/lexical-arguments.js	-	-	-
 test/language/expressions/arrow-function/lexical-this.js	-	-	-
+test/built-ins/Boolean/S15.6.1.1_A1_T2.js	-	-	-
+test/built-ins/Boolean/S15.6.1.1_A1_T3.js	-	-	-
+test/built-ins/Boolean/S15.6.1.1_A1_T4.js	-	-	-
+test/built-ins/Boolean/S15.6.1.1_A1_T5.js	-	-	-
+test/built-ins/Boolean/S15.6.1.1_A2.js	-	-	-
+test/built-ins/Boolean/S15.6.2.1_A1.js	-	-	-
+test/built-ins/Boolean/S15.6.2.1_A4.js	-	-	-
+test/built-ins/Boolean/S9.2_A2_T1.js	-	-	-
+test/built-ins/Boolean/S9.2_A3_T1.js	-	-	-
+test/built-ins/Boolean/S9.2_A5_T1.js	-	-	-
+test/built-ins/Boolean/S9.2_A5_T3.js	-	-	-
+test/built-ins/Boolean/prototype/constructor/S15.6.4.1_A1.js	-	-	-
