@@ -296,9 +296,9 @@ abrupt numeric/implicit string conversions. String called with a primitive Symbo
 uses bounded SymbolDescriptiveString and preserves its UTF-16 description;
 String construction still throws TypeError (20.4.3.3.1, 22.1.1.1).
 The edition-17 well-known identities live in a fixed, process-shared OnceLock
-table, separate from fresh symbols and the future registry. Initialization runs
-no user code, and each lookup clones only an Arc. Native-injected values exercise
-these algorithms while the JavaScript Symbol global stays unavailable.
+table, separate from fresh symbols and the registry. Initialization runs
+no user code, and each lookup clones only an Arc. Native-injected values and
+Script-visible Symbol calls exercise these algorithms.
 
 ToPrimitive now looks up the shared Symbol.toPrimitive identity using GetMethod
 semantics: inherited accessors retain the original receiver; only null/undefined
@@ -329,13 +329,15 @@ these shared host limits supplement per-evaluation work/string limits. Exhaustio
 must not evict entries, change an existing identity, or become a JavaScript exception.
 Private isolated registry instances test capacity edges without filling shared state.
 
-Symbol.for/keyFor now use this registry, and the intrinsic Symbol constructor's
-own properties can be enumerated. Finally, integrate remaining observable hooks
-before exposing the JavaScript Symbol global.
-Remaining intrinsic symbol properties must stop relying on their current
-no-symbol assumptions. Array iteration then builds on those boundaries.
-The foundation alone does not expose
-partial Symbol behavior to scripts or count as additional Test262 coverage.
+Symbol.for/keyFor use this registry, and the intrinsic Symbol constructor's own
+properties can be enumerated. The JavaScript global now exposes that same
+intrinsic as a writable, non-enumerable, configurable property (19.3). Deleting
+or replacing the global binding never changes retained intrinsic identities.
+Implemented objects provide their required symbol properties: coercion and
+instance checks, object tags, Array species/unscopables, Array/arguments/String
+iteration, and shared iterator tags. New object kinds must add their own required
+hooks when implemented. Script integration tests and unmodified reviewed Test262
+Symbol/iterator files complement native tests of embedding and resource limits.
 
 Array storage uses sparse indexed properties in the same traced heap,
 with an explicit Array exotic identity and a non-configurable data `length`
@@ -565,8 +567,8 @@ preserves UTF-16 and checks output work/capacity before allocation. Nullish valu
 skip lookup. BigInt primitives retain their default tag while their unexposed
 prototype cannot be changed; BigInt wrapper integration must replace this shortcut
 with ordinary ToObject/Get. Symbol receivers use their actual wrapper and prototype tag.
-Missing intrinsics remain Unsupported. Complete required Symbol hooks before
-exposing the Symbol global.
+Missing intrinsics remain Unsupported. Each new object kind must implement its
+required Symbol hooks alongside its string-keyed API.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; templates and property names use the string hint.
 
@@ -911,7 +913,7 @@ bound targets re-enter InstanceofOperator and observe their current hook even fo
 primitive left operands. Lookup of the exact intrinsic forwards iteratively to
 avoid native stack growth across deep bound chains; it still checks argument
 limits and charges property traversal. Other handlers use ordinary bounded Call.
-Native-injection tests cover symbol access while the Symbol global is pending.
+Native-injection and Script tests cover symbol access.
 
 Accessor/coercion calls that re-enter execution have a fixed host nesting limit of
 32 until explicit frames replace Rust recursion. Every success and abrupt result

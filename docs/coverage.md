@@ -32,7 +32,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | Limits | 1 MiB source, depth 64, configurable evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1505 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 1611 reviewed Test262 variants, three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -62,16 +62,17 @@ are shared across realms and host threads. Realm property operations, descriptor
 copying, integrity operations, and enumeration preserve both key kinds. Computed
 keys retain Symbol identity, and anonymous function names use bounded bracketed
 descriptions. ToPrimitive observes symbol-keyed hooks, exact hints, original
-receivers, and abrupt completions before ordinary conversion. Native injection
-tests this foundation. Symbol wrappers, branded methods, description access,
+receivers, and abrupt completions before ordinary conversion. Native and Script
+tests cover this foundation. Symbol wrappers, branded methods, description access,
 fresh intrinsic calls, and the 13 fixed constructor properties are implemented.
 Symbol.prototype has no SymbolData, and new rejects the intrinsic before coercing
 the description. Symbol.for/keyFor share an append-only registry across realms
 and threads, preserving exact UTF-16 keys and identity through realm destruction.
 Coercion runs before locking; copying runs after unlock. Registry operations and
-constructor enumeration are covered through native injection. The JavaScript
-Symbol global and remaining intrinsic symbol properties remain unavailable.
-This foundation adds no Script/Test262 coverage.
+constructor enumeration have native and Script coverage. The JavaScript Symbol
+global now exposes the retained intrinsic with standard attributes. Thirty-four
+reviewed Symbol files exercise construction, identity, boxing, registry access,
+descriptions, branded methods, and conversion hooks through the upstream harness.
 
 The `spite-heap` foundation provides capacity-bounded generational storage,
 checked cross-heap identity, stale-handle rejection, and bounded iterative
@@ -335,10 +336,10 @@ Iterator tags. The shared Iterator tag getter is generic. Its setter rejects
 primitive receivers and the intrinsic prototype, creates an own data property
 when absent, and strictly updates existing own properties without changing their
 attributes. The shared Iterator constructor and helpers remain Unsupported.
-Symbol-keyed access is tested through native injection until the Symbol global
-is exposed.
+Symbol-keyed access is tested through native injection, Script integration tests,
+and reviewed upstream Symbol/iterator fixtures.
 
-The Symbol global, BigInt wrapper APIs, remaining String methods,
+BigInt wrapper APIs, remaining String methods,
 remaining Array prototype methods, derived construction, classes, destructuring, regular
 expressions, tagged templates, for-in/of, catch patterns, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
@@ -391,17 +392,18 @@ executes for nine positive function/capture tests, twelve Boolean tests, 63
 Number tests, ten numeric parsing tests, five global numeric predicate tests, and
 22 Error construction, conversion, and prototype tests, plus 83 Object descriptor,
 prototype, extensibility, creation, copying, integrity, and SameValue tests, and
-147 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
-well-formedness, and conversion tests in both Script modes. Another 370 Array
+153 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
+well-formedness, conversion, and String iteration tests in both Script modes. Another 389 Array and Array iterator
 files cover construction, of, isArray, literal elisions, length/index boundaries,
 truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
 and reduce/reduceRight callbacks, plus sort/toSorted, toReversed/with/toSpliced copies,
-and keys/values/entries iteration. Controls
+and keys/values/entries iteration, including mapped/unmapped arguments. The 34
+Symbol files run in their prescribed default/strict Script modes. Controls
 verify successful assertions and explicit assertion failures. Some comparison
 failure formatting still requires missing JSON or Array.prototype.map and other APIs and remains Unsupported;
 remaining Array prototype methods, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 1505 variants are four raw positives, 1429 positives using the upstream
+Rust. Its 1611 variants are four raw positives, 1535 positives using the upstream
 harness, and 72 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The runner uses one million work units per Script evaluation for combined upstream

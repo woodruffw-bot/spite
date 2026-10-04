@@ -16,8 +16,8 @@ mod string_iteration;
 mod tag;
 mod wrapper;
 
-// The Symbol global stays unavailable until the remaining intrinsic hooks are ready.
-// Native injection lets us verify the primitive algorithms independently.
+// Native injection also covers values created by embedders, including descriptions
+// that cannot be expressed as Rust UTF-8 strings and shared well-known identities.
 fn realm_with_symbols() -> Realm {
     let mut realm = Realm::default();
     realm.eval("").unwrap();
@@ -203,9 +203,9 @@ fn descriptive_output_is_bounded_and_symbol_copies_do_not_copy_descriptions() {
 }
 
 #[test]
-fn symbol_global_remains_an_explicit_gap() {
-    assert!(matches!(
-        realm_with_symbols().eval("Symbol"),
-        Err(Error::Unsupported { .. })
-    ));
+fn symbol_global_uses_the_same_intrinsic_as_native_injected_primitives() {
+    check(
+        &mut realm_with_symbols(),
+        "Symbol===s.constructor && Symbol.toPrimitive===convert && Symbol.match===matcher && Symbol.toStringTag===tag && Symbol.hasInstance===hasInstance",
+    );
 }

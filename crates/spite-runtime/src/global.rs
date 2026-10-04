@@ -101,6 +101,14 @@ impl Realm {
             .intrinsics
             .as_ref()
             .expect("initialized")
+            .symbol
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Symbol", Value::Object(constructor), true, span)?;
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
             .array
             .constructor
             .clone();

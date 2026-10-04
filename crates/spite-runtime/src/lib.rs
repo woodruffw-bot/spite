@@ -1569,7 +1569,6 @@ fn standard_global(name: &str) -> bool {
             | "encodeURI"
             | "encodeURIComponent"
             | "Function"
-            | "Symbol"
             | "AggregateError"
             | "BigInt"
             | "Math"

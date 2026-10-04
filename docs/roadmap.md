@@ -177,7 +177,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String iteration with immediate coercion, exact code-point boundaries, and bounded next steps.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [ ] Add remaining shared Iterator prototype properties.
-- [ ] Expose the Symbol global after completing remaining intrinsic symbol properties.
+- [x] Expose the Symbol global with standard attributes and add 59 reviewed Symbol/iterator Test262 files.
 - [ ] Complete Array species-dependent methods and iterator integration.
 - [x] Execute pinned assert.js/sta.js and positive Test262 function/capture regressions.
 - [ ] Complete remaining harness paths/includes as their language and library dependencies arrive.

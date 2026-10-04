@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 786 unmodified test fixtures and three harness files come from
+These 845 unmodified test fixtures and three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -53,7 +53,7 @@ shape, abrupt coercion, and nonfinite values. Twenty-two Error files cover
 construction, message conversion, prototype identity, branding, and toString.
 Eighty-three Object files cover SameValue, own-property checks, descriptor conversion and
 reflection, prototype identity/mutation, extensibility, creation, value copying,
-and frozen/sealed integrity. The 147 String files cover wrappers, raw construction, character
+and frozen/sealed integrity. The 153 String files cover wrappers, raw construction, character
 access, searches, concatenation, substrings, trimming, repetition, padding, Unicode well-formedness, UTF-16 encoding/decoding,
 and ordered conversions. Each runs in both required Script
 modes. The `harness` manifest mode verifies support-file bytes without counting
@@ -69,12 +69,15 @@ standard APIs; those paths report Unsupported and fail the
 gate. Remaining Array methods, additional includes, async completion,
 and agent helpers remain separate harness gaps.
 
-The 370 Array files cover call/new construction, of, branding, literal elisions,
+The 389 Array and Array iterator files cover call/new construction, of, branding, literal elisions,
 indexed growth, truncation, generic at/join/push/pop, toString/toLocaleString, and ordered
 forEach/every/some callback traversal, find/findIndex/findLast/findLastIndex,
 includes/indexOf/lastIndexOf searches, reduce/reduceRight accumulators, sparse reverse, fill/copyWithin range mutations, shift/unshift front mutations, and sort/toSorted and toReversed/with/toSpliced copies, plus keys/values/entries
-iteration. All run unchanged with
-the upstream harness in both default and strict Script modes.
+iteration and live mapped/unmapped arguments. The 153 String files now include
+String iterator conversion, ancestry, branding, and surrogate-pair traversal.
+The 34 Symbol files cover identity, construction, boxing, descriptions, registry
+access, branded methods, and conversion hooks. These files run unchanged with
+the upstream harness in their prescribed default/strict Script modes.
 
 ## Scope and maintenance
 
@@ -87,15 +90,16 @@ by upstream `INTERPRETING.md`. These bounded host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 1505 variants from 767 reviewed sources: the eleven
+The `spite-test262` command runs 1611 variants from 826 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 22 Error tests, 83 Object tests,
-147 String tests, and 370 Array tests.
+153 String and String iterator tests, 389 Array and Array iterator tests,
+and 34 Symbol tests.
 That means four raw positives,
-1429 positives using the upstream harness, and 72 reviewed parse-negative variants.
+1535 positives using the upstream harness, and 72 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the

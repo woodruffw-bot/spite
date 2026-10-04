@@ -40,7 +40,7 @@ impl std::error::Error for ConversionError {}
 /// A supported ECMAScript value.
 ///
 /// Object handles are unrooted; retain a host root across explicit collection.
-/// Symbol values preserve identity; global exposure and some intrinsic hooks are pending.
+/// Symbol values preserve identity across realms and host threads.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// The undefined value.
