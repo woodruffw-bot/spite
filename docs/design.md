@@ -353,6 +353,12 @@ presence/value live and deletes a target when its source is absent. Overlapping
 forward destinations traverse backward; identical indices still perform reads
 and writes. u64 cursors retain the full ToLength range without allocating index
 lists. Both methods retain partial effects on failure and never assign length.
+Shift/unshift (23.1.3.27/37) share copyWithin's live HasProperty/Get plus
+Set/DeletePropertyOrThrow operation. Shift retains the initial first value,
+moves left, deletes the last property, then assigns length. Unshift validates
+the safe-integer length bound before moving right, inserts arguments in order,
+and finally assigns length. Zero arguments skip movement but still assign
+length. Earlier writes/deletions remain visible after any later failure.
 Array calls and construction observe newTarget.prototype before validating
 the argument count/length (23.1.1.1). A lone Number supplies a sparse length; any
 other single value becomes an element without coercion. Element creation uses

@@ -65,16 +65,8 @@ impl Realm {
             } else {
                 offset
             };
-            let from_key = JsString::from((start + offset).to_string().as_str());
-            let to_key = JsString::from((target + offset).to_string().as_str());
-            // Even identical source/target indices perform these operations.
-            // Reads are live, and copying a hole deletes an own target property.
-            if self.has_property(&object, &from_key, span)? {
-                let value = self.get_property(&object, &from_key, span)?;
-                self.set_property_or_throw(&object, to_key, value, span)?;
-            } else {
-                self.delete_property_or_throw(&object, &to_key, span)?;
-            }
+            // Even identical source/target indices perform property operations.
+            self.copy_array_element(&object, start + offset, target + offset, span)?;
         }
         Ok(Value::Object(object))
     }

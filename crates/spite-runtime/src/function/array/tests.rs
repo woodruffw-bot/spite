@@ -715,3 +715,47 @@ fn range_mutations_bound_traversal_and_charge_fill_value_copies() {
     ));
     check(&mut realm, "a[0]===0 && a[1]===0");
 }
+
+#[test]
+fn recursive_front_mutations_stop_on_a_two_mebibyte_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for (setup,call) in [
+                ("let a=[1];Object.defineProperty(a,'0',{get:()=>a.shift()})", "a.shift()"),
+                ("let a={length:0};Object.defineProperty(a,'length',{get:()=>0,set:()=>Array.prototype.unshift.call(a)})", "Array.prototype.unshift.call(a)"),
+                ("let a=[1];Object.defineProperty(a,'0',{get:()=>a.unshift(7)})", "a.unshift(7)"),
+            ] {
+                let mut realm=Realm::default();realm.eval(setup).unwrap();realm.eval("let flag=0").unwrap();
+                assert!(matches!(realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
+                check(&mut realm,"flag===0 && [1].shift()===1");
+            }
+        }).unwrap().join().unwrap();
+}
+
+#[test]
+fn front_movement_bounds_huge_ranges_and_retains_completed_effects_on_host_abort() {
+    for (setup, call, expected) in [
+        (
+            "let o={0:1,1:7,length:Infinity}",
+            "Array.prototype.shift.call(o)",
+            "o[0]===7 && o.length===Infinity",
+        ),
+        (
+            "let o={9007199254740989:7,length:9007199254740990}",
+            "Array.prototype.unshift.call(o,1)",
+            "o[9007199254740990]===7 && o.length===9007199254740990 && !Object.hasOwn(o,'0')",
+        ),
+    ] {
+        let mut realm = Realm::default();
+        realm.eval(setup).unwrap();
+        realm.eval("let flag=0").unwrap();
+        realm.limits.max_steps = 10_000;
+        assert!(matches!(
+            realm.eval(&format!("try{{{call};}}catch{{flag=1;}}finally{{flag=2;}}")),
+            Err(Error::Limit { .. })
+        ));
+        realm.limits.max_steps = 100_000;
+        check(&mut realm, &format!("flag===0 && ({expected})"));
+    }
+}

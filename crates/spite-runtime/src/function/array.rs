@@ -3,6 +3,7 @@
 mod access;
 mod callback;
 mod find;
+mod front;
 mod literal;
 mod mutation;
 mod range;
@@ -35,6 +36,25 @@ impl ArrayIntrinsics {
 }
 
 impl Realm {
+    // Shared by copyWithin, shift, and unshift. Only own target properties are
+    // deleted for source holes; inherited source values are read and copied.
+    fn copy_array_element(
+        &mut self,
+        object: &ObjectHandle,
+        from: u64,
+        to: u64,
+        span: Span,
+    ) -> Result<(), Error> {
+        let from_key = JsString::from(from.to_string().as_str());
+        let to_key = JsString::from(to.to_string().as_str());
+        if self.has_property(object, &from_key, span)? {
+            let value = self.get_property(object, &from_key, span)?;
+            self.set_property_or_throw(object, to_key, value, span)
+        } else {
+            self.delete_property_or_throw(object, &to_key, span)
+        }
+    }
+
     pub(super) fn array_intrinsics(
         &mut self,
         object_prototype: &ObjectHandle,
@@ -81,6 +101,8 @@ impl Realm {
             Builtin::ArrayAt,
             Builtin::ArrayPush,
             Builtin::ArrayPop,
+            Builtin::ArrayShift,
+            Builtin::ArrayUnshift,
             Builtin::ArrayReverse,
             Builtin::ArrayFill,
             Builtin::ArrayCopyWithin,

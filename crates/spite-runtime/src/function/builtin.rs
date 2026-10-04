@@ -192,6 +192,8 @@ impl Realm {
             Builtin::ArrayToString => self.array_to_string(this, span),
             Builtin::ArrayPush => self.array_push(this, arguments, span),
             Builtin::ArrayPop => self.array_pop(this, span),
+            Builtin::ArrayShift => self.array_shift(this, span),
+            Builtin::ArrayUnshift => self.array_unshift(this, arguments, span),
             Builtin::ArrayReverse => self.array_reverse(this, span),
             Builtin::ArrayFill => self.array_fill(
                 this,

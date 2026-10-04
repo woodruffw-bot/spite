@@ -681,3 +681,17 @@ script-pass	795f4c3da04222ce4ed3e69c98d0fb84643920d69184bf0fc93cfe71bd3c153a	tes
 script-pass	deee854b86eae951fa7f95b648b160199faac4176b37b50256c470d216c26553	test/built-ins/Array/prototype/copyWithin/return-abrupt-from-this-length.js
 script-pass	fe4b892eb2827eae3c0b056d3560dd6f3290deec4f1479a82f345a3e69ddafa5	test/built-ins/Array/prototype/copyWithin/return-abrupt-from-this.js
 script-pass	f0ffee48f3ffb7b92c3898e93c66343542dbbe6a799b1ad51f7baa8b84c0aabb	test/built-ins/Array/prototype/copyWithin/return-this.js
+script-pass	beee05743ad7a8d8e7cb04cdcb9ff13032e86b993cbb27349db5cf93826fac62	test/built-ins/Array/prototype/shift/call-with-boolean.js
+script-pass	b5cbffe79a8a241ae39c1a4bcd580ed65223a94f8278a7681df3b9888073f6e5	test/built-ins/Array/prototype/shift/set-length-zero-array-is-frozen.js
+script-pass	78401e074e283220eb7e0acf0ec74a5fa8db6214b97f3a98fa425d4a2e3c7703	test/built-ins/Array/prototype/shift/set-length-zero-array-length-is-non-writable.js
+script-pass	bf2b8da77f14a9ff2edc7bf90cd5158b0dec50e2f39b5fb8071e80bb1a9f99b3	test/built-ins/Array/prototype/shift/throws-when-this-value-length-is-writable-false.js
+script-pass	3c3e91995472f5ae77c57f86020414feb4b671c192cdc4248f3c1a98e42e29de	test/built-ins/Array/prototype/unshift/call-with-boolean.js
+script-pass	70ce2fa0a12ec9607ab4cf6718f38970f962318d4e155316f57509fa7e060ce9	test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
+script-pass	e2ea600face7d29892f139b4ed8cf1d2c3468b475123fee4f3494697c3af5f97	test/built-ins/Array/prototype/unshift/set-length-zero-array-is-frozen.js
+script-pass	4a97f9c1556b579a3d8673cf86f95d42d26a3ca1928122dc658d4dd6a5995507	test/built-ins/Array/prototype/unshift/set-length-zero-array-length-is-non-writable.js
+script-pass	28283b53d3a3a0ce0e7764d5c8bb804d7856d5fb7ce44254e90f1611396cdd53	test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
+script-pass	423ff1ef1dc0cfd5bdf11390d49dbe47d02077fb718261311f8054a976512856	test/built-ins/Array/prototype/unshift/throws-with-string-receiver.js
+script-pass	eb7c118f7ce5ba5f23c2f40bb89c0d556fc612ec09ed5a1f0e8bed65d2a15143	test/built-ins/Array/prototype/shift/S15.4.4.9_A1.1_T1.js
+script-pass	ca8b85e2f5694f7858cb63e649a3616002caad81149ceec14156dd07e3bcfa6f	test/built-ins/Array/prototype/shift/S15.4.4.9_A1.2_T1.js
+script-pass	0c445456e166f372bf123a7011dd6cd889fa6dd5ea362bbe9d2c3c97162ede0e	test/built-ins/Array/prototype/unshift/S15.4.4.13_A1_T1.js
+script-pass	33d0bffa2bcd9d84869863a409730a62707520ec35901d25375c01a56d560970	test/built-ins/Array/prototype/unshift/S15.4.4.13_A1_T2.js

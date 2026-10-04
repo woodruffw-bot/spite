@@ -660,3 +660,17 @@ test/built-ins/Array/prototype/copyWithin/return-abrupt-from-target.js	-	-	-
 test/built-ins/Array/prototype/copyWithin/return-abrupt-from-this-length.js	-	-	-
 test/built-ins/Array/prototype/copyWithin/return-abrupt-from-this.js	-	-	-
 test/built-ins/Array/prototype/copyWithin/return-this.js	-	-	-
+test/built-ins/Array/prototype/shift/call-with-boolean.js	-	-	-
+test/built-ins/Array/prototype/shift/set-length-zero-array-is-frozen.js	-	-	-
+test/built-ins/Array/prototype/shift/set-length-zero-array-length-is-non-writable.js	-	-	-
+test/built-ins/Array/prototype/shift/throws-when-this-value-length-is-writable-false.js	-	-	-
+test/built-ins/Array/prototype/unshift/call-with-boolean.js	-	-	-
+test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js	-	-	-
+test/built-ins/Array/prototype/unshift/set-length-zero-array-is-frozen.js	-	-	-
+test/built-ins/Array/prototype/unshift/set-length-zero-array-length-is-non-writable.js	-	-	-
+test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js	-	-	-
+test/built-ins/Array/prototype/unshift/throws-with-string-receiver.js	-	-	-
+test/built-ins/Array/prototype/shift/S15.4.4.9_A1.1_T1.js	-	-	-
+test/built-ins/Array/prototype/shift/S15.4.4.9_A1.2_T1.js	-	-	-
+test/built-ins/Array/prototype/unshift/S15.4.4.13_A1_T1.js	-	-	-
+test/built-ins/Array/prototype/unshift/S15.4.4.13_A1_T2.js	-	-	-

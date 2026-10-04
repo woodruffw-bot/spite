@@ -66,6 +66,8 @@ pub(crate) enum Builtin {
     ArrayAt,
     ArrayPush,
     ArrayPop,
+    ArrayShift,
+    ArrayUnshift,
     ArrayReverse,
     ArrayFill,
     ArrayCopyWithin,
@@ -150,6 +152,8 @@ impl Builtin {
             Self::ArrayJoin => "join",
             Self::ArrayPush => "push",
             Self::ArrayPop => "pop",
+            Self::ArrayShift => "shift",
+            Self::ArrayUnshift => "unshift",
             Self::ArrayReverse => "reverse",
             Self::ArrayFill => "fill",
             Self::ArrayCopyWithin => "copyWithin",
@@ -232,6 +236,7 @@ impl Builtin {
             | Self::ArrayJoin
             | Self::ArrayAt
             | Self::ArrayPush
+            | Self::ArrayUnshift
             | Self::ArrayFill
             | Self::ArrayForEach
             | Self::ArrayEvery
