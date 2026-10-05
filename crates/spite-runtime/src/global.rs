@@ -243,6 +243,15 @@ impl Realm {
     }
 
     pub(super) fn create_global_var(&mut self, name: &str, span: Span) -> Result<(), Error> {
+        self.create_global_var_binding(name, false, span)
+    }
+
+    pub(super) fn create_global_var_binding(
+        &mut self,
+        name: &str,
+        deletable: bool,
+        span: Span,
+    ) -> Result<(), Error> {
         // 9.1.1.4.16: preserve existing own properties, including accessors and
         // configurable properties. Only newly created Script vars are fixed.
         if self.global_own(name, span)?.is_none() && self.global_extensible(span)? {
@@ -255,7 +264,7 @@ impl Realm {
                         value: Some(Value::Undefined),
                         writable: Some(true),
                         enumerable: Some(true),
-                        configurable: Some(false),
+                        configurable: Some(deletable),
                     },
                     budget,
                 )
@@ -271,6 +280,16 @@ impl Realm {
         value: Value,
         span: Span,
     ) -> Result<(), Error> {
+        self.create_global_function_binding(name, value, false, span)
+    }
+
+    pub(super) fn create_global_function_binding(
+        &mut self,
+        name: &str,
+        value: Value,
+        deletable: bool,
+        span: Span,
+    ) -> Result<(), Error> {
         let descriptor = if self
             .global_own(name, span)?
             .is_none_or(|property| property.configurable())
@@ -279,7 +298,7 @@ impl Realm {
                 value: Some(value),
                 writable: Some(true),
                 enumerable: Some(true),
-                configurable: Some(false),
+                configurable: Some(deletable),
             }
         } else {
             DataDescriptor {

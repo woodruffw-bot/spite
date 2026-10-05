@@ -16,9 +16,12 @@ impl Parser {
     ) -> Result<Rc<Function>, Diagnostic> {
         self.enter()?;
         let previous = self.allow_new_target;
+        let previous_super = self.allow_super_property;
         self.allow_new_target = true;
+        self.allow_super_property = false;
         let result = self.ordinary_function_inner(require_name);
         self.allow_new_target = previous;
+        self.allow_super_property = previous_super;
         self.depth -= 1;
         result
     }

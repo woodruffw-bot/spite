@@ -8,7 +8,7 @@ not an alternative language specification.
 
 | Area | Implemented behavior |
 | --- | --- |
-| Source | UTF-8 Scripts and lossless UTF-16 dynamic Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
+| Source | UTF-8 Scripts and lossless UTF-16 eval/Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
 | Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
@@ -34,7 +34,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
-| Eval | Standard intrinsic metadata and global binding, non-String identity return without coercion; String compilation/execution remains Unsupported |
+| Eval | Standard intrinsic metadata, non-String identity returns and indirect String execution, global lookup, fresh lexical/strict var environments, configurable global declarations, exact UTF-16 source, and restored caller scopes |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
@@ -48,8 +48,16 @@ This host has no active debugging facility (ECMA-262 14.16.1).
 Five eval regressions cover non-String primitives and object identity without
 conversion, direct/indirect and call/apply/bound calls, metadata/descriptors,
 construction rejection after argument effects, global preservation/replacement
-and deletion, shadowing, collection, and String Unsupported results that bypass
-JavaScript handlers. Eval-specific String environments remain open.
+and deletion, shadowing, collection, and direct String Unsupported results that
+bypass JavaScript handlers. Four UTF-16 Script parser regressions and two inspected
+insta snapshots cover shared Script grammar, exact source values, constructor and
+control-flow early errors, and super's method/arrow context boundaries. Eleven
+indirect-eval runtime regressions cover call classification, global lookup and this,
+own strictness, completion values, declaration descriptors and preflight failures,
+fresh lexical environments and TDZs, captured closures, live initializer references,
+source preservation, caller restoration after throws, collection, unlimited default
+source sizes, shared opt-in work/source/heap quotas, and native re-entry guards.
+Direct String eval's caller environments and declaration rules remain open.
 
 With statements now use live Object Environment Records (14.11, 9.1.1.2).
 Four parser regressions and two inspected insta snapshots cover grammar, strict
@@ -972,7 +980,7 @@ tests distinguish heap owners and reused generations while deduplicating clones.
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes,
 regular expressions, for-await-of, generators,
-async functions, promises, modules, standard library objects, String eval, agents, shared
+async functions, promises, modules, standard library objects, direct String eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral
 Numbers exactly, and accepts Boolean/BigInt/integer-string values through ToBigInt.

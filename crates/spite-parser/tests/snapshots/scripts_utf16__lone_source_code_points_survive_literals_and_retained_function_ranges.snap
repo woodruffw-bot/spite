@@ -1,0 +1,105 @@
+---
+source: crates/spite-parser/tests/scripts_utf16.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    String(
+                                        "\ud800\ufffd",
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 6,
+                                    end: 14,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 15,
+            },
+        },
+        Statement {
+            kind: Function(
+                Function {
+                    name: Some(
+                        FunctionName {
+                            name: "f",
+                            span: Span {
+                                start: 24,
+                                end: 25,
+                            },
+                        },
+                    ),
+                    parameters: [],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Template {
+                                                elements: [
+                                                    TemplateElement {
+                                                        cooked: Some(
+                                                            "\udfff",
+                                                        ),
+                                                        raw: "\udfff",
+                                                        span: Span {
+                                                            start: 36,
+                                                            end: 39,
+                                                        },
+                                                    },
+                                                ],
+                                                substitutions: [],
+                                            },
+                                            span: Span {
+                                                start: 35,
+                                                end: 40,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 28,
+                                    end: 41,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function f(){return `\udfff`;}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 15,
+                end: 42,
+            },
+        },
+    ],
+    strict: false,
+}

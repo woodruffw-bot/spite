@@ -47,11 +47,26 @@ pub fn parse_script_with_source_limit(
 /// [`DiagnosticKind::Unsupported`] where they can be recognized.
 pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
     let mut parser = Parser::new(source)?;
+    parse_script_contents(&mut parser)
+}
+
+/// Parses a Script from UTF-16, preserving lone surrogate source code points.
+///
+/// Scalar spans use UTF-8 lengths; each lone surrogate occupies three bytes.
+/// Strictness comes from the Script's directive prologue. Return and new.target
+/// remain invalid outside their own function contexts, including in arrows.
+pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
+    let mut parser =
+        Parser::from_source(std::rc::Rc::new(source::SourceText::from_utf16(source)?))?;
+    parse_script_contents(&mut parser)
+}
+
+fn parse_script_contents(parser: &mut Parser) -> Result<Script, Diagnostic> {
     let mut statements = Vec::new();
     while parser.current().kind != Kind::Eof {
         statements.push(parser.statement(true)?);
     }
-    let strict = has_use_strict(&statements, source);
+    let strict = has_use_strict(&statements, parser.source.lexical_text());
     if strict {
         reject_legacy_tokens(&parser.tokens)?;
     }
@@ -108,6 +123,7 @@ struct Parser {
     allow_in: bool,
     allow_return: bool,
     allow_new_target: bool,
+    allow_super_property: bool,
 }
 
 impl Parser {
@@ -134,6 +150,7 @@ impl Parser {
             allow_in: true,
             allow_return: false,
             allow_new_target: false,
+            allow_super_property: false,
         })
     }
 
@@ -947,6 +964,23 @@ impl Parser {
             ),
             Kind::Word(name) if name == "instanceof" => {
                 Err(early(span, "unexpected binary operator"))
+            }
+            Kind::Word(name) if name == "super" => {
+                // 19.2.1.1 and 15.2/15.4: arrows inherit the enclosing method
+                // context, but ordinary functions and indirect eval do not.
+                if self.at(".") || self.at("[") {
+                    if self.allow_super_property {
+                        Err(Diagnostic::new(
+                            DiagnosticKind::Unsupported,
+                            span,
+                            "super property access is not implemented",
+                        ))
+                    } else {
+                        Err(early(span, "super property access outside a method"))
+                    }
+                } else {
+                    Err(early(span, "super call requires a derived constructor"))
+                }
             }
             Kind::Word(_) | Kind::Punct("/") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,

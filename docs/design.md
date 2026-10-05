@@ -85,16 +85,42 @@ and update targets, rejects ungrouped optional constructors and direct tagged
 chains even across line breaks, and leaves grouped calls/construction/tags legal.
 Flat steps do not consume recursive syntax depth; runtime traversal is iterative.
 Host quotas remain opt-in, with no default chain, work, or heap allowance.
-Private fields, super, async contexts, and String eval await their own implementations.
+Private fields, super execution, async contexts, and direct String eval await their
+own implementations.
 
 The eval intrinsic is a non-constructible built-in function with standard name,
 length, prototype, and global property attributes (19.2.1). PerformEval returns
 non-String input unchanged before coercion, compilation, or scope creation
 (19.2.1.1). This applies to direct and indirect calls, including boxed Strings.
-String input reports Unsupported until compilation and eval-specific declaration
-and environment rules exist. Global declarations preserve the intrinsic value;
+Direct String input reports Unsupported until caller-environment inheritance and
+declaration checks are implemented. Global declarations preserve the intrinsic value;
 ordinary assignment can replace it, and deletion follows configurable-property
 semantics. The retained intrinsic remains a collection root after replacement.
+
+Indirect String eval parses a lossless UTF-16 Script and derives strictness solely
+from its own directives (19.2.1.1). An environment reference named eval whose
+value is the retained intrinsic selects direct eval, including parenthesized,
+escaped, local, and with bindings (13.3.6.1). Property, comma, optional, bound,
+call/apply, and Reflect forms use ordinary indirect dispatch. All argument effects
+precede this dispatch; non-String input is never coerced.
+
+Indirect eval creates a fresh lexical environment over GlobalEnv. Non-strict vars
+and functions use GlobalEnv; strict eval uses the fresh environment for both
+lexical and var declarations. EvalDeclarationInstantiation checks all global
+lexical conflicts and var/function declaration permissions before mutation,
+selects the last function declaration of each name, and initializes only the
+selected functions. New global bindings are configurable; existing var properties
+and restricted function descriptors retain their original attributes (19.2.1.3,
+9.1.1.4.16–17). Eval functions capture the fresh lexical environment, including
+closures retained after an abrupt completion. Lexical declarations never enter
+the persistent global declaration record.
+
+Eval returns Script completion values, replacing empty results with undefined.
+The caller's scopes and strictness are restored on success, JavaScript exceptions,
+Unsupported, and Limit. Parsing and execution share the caller's opted-in work
+allowance; eval does not reset it. Source-size quotas use the same encoded-byte
+accounting as Function compilation. Native call/evaluation guards still bound
+recursive re-entry, and all host quotas remain opt-in.
 
 Tagged templates parse as call/member expressions with unconverted substitution
 arguments (13.3.11). Validate each tag and substitution in its surrounding strict

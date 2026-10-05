@@ -7,6 +7,7 @@ mod test_support;
 mod assignment_pattern;
 mod binding;
 mod environment;
+mod eval;
 mod for_in;
 mod for_of;
 mod function;
@@ -120,7 +121,7 @@ impl std::error::Error for Error {}
 /// They do not alter ECMAScript exceptions or disable platform safety checks.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Limits {
-    /// Optional maximum encoded bytes in Script or dynamic Function source.
+    /// Optional maximum encoded bytes in Script, eval, or dynamic Function source.
     /// Scalars use UTF-8 lengths; each lone surrogate occupies three bytes.
     pub max_source_bytes: Option<usize>,
     /// Optional maximum work per Script, including bindings, clauses, and arithmetic.
@@ -160,6 +161,14 @@ enum Reference<'a> {
 }
 
 impl Reference<'_> {
+    fn is_eval_environment_reference(&self) -> bool {
+        matches!(
+            self,
+            Self::Lexical(_, "eval")
+                | Self::ObjectBinding { name: "eval", .. }
+                | Self::Global("eval")
+        )
+    }
     // ECMA-262 13.3.6.2 / 9.1.1.2.10: environment calls use WithBaseObject.
     fn call_receiver(self) -> Value {
         match self {
@@ -1223,16 +1232,28 @@ impl Realm {
                 self.construct(constructor, values, expr.span)?
             }
             ExprKind::Call { callee, arguments } => {
-                let (function, this) = if reference_expression(callee) {
+                let (function, this, direct_eval) = if reference_expression(callee) {
                     let mut reference = self.reference(callee)?;
                     let function = self.get(&mut reference, callee.span)?;
+                    // 13.3.6.1: even a with binding or a local named eval is
+                    // direct when its non-property reference denotes %eval%.
+                    let direct_eval = reference.is_eval_environment_reference()
+                        && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
                     let this = reference.call_receiver();
-                    (function, this)
+                    (function, this, direct_eval)
                 } else {
-                    (self.expression(callee)?, Value::Undefined)
+                    (self.expression(callee)?, Value::Undefined, false)
                 };
                 let values = self.argument_list(arguments)?;
-                self.call(function, this, values, expr.span)?
+                if direct_eval {
+                    self.perform_eval(
+                        values.into_iter().next().unwrap_or(Value::Undefined),
+                        true,
+                        expr.span,
+                    )?
+                } else {
+                    self.call(function, this, values, expr.span)?
+                }
             }
             ExprKind::TaggedTemplate {
                 tag,

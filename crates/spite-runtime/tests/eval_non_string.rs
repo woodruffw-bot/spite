@@ -53,13 +53,14 @@ fn declarations_preserve_the_intrinsic_and_assignment_can_replace_it() {
 }
 
 #[test]
-fn string_evaluation_remains_a_host_unsupported_result_after_argument_effects() {
+fn direct_string_evaluation_remains_unsupported_after_argument_effects() {
     for source in [
         "eval('')",
         "eval('1')",
-        "(0,eval)('1')",
-        "eval.call(null,'1')",
-        "eval.bind(null)('1')",
+        "(eval)('1')",
+        "e\\u0076al('1')",
+        "function f(eval){return eval('1');}f(globalThis.eval)",
+        "with({eval:globalThis.eval}){eval('1');}",
     ] {
         assert!(
             matches!(
