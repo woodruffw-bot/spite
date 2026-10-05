@@ -1,4 +1,4 @@
-//! Flat ClassUnion and ClassStringDisjunction grammar in UnicodeSetsMode.
+//! UnicodeSetsMode class grammar with iterative nesting and string containment.
 
 use super::{Failure, Pattern, syntax, unsupported};
 
@@ -7,20 +7,146 @@ enum Operand {
     Set { may_contain_strings: bool },
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SetMode {
+    Empty,
+    Single,
+    Union,
+    Intersection,
+    Subtraction,
+}
+
+struct Class {
+    invert: bool,
+    mode: SetMode,
+    need_operand: bool,
+    may_contain_strings: bool,
+    last_character: Option<u32>,
+    last_range: bool,
+}
+
+impl Class {
+    fn new(invert: bool) -> Self {
+        Self {
+            invert,
+            mode: SetMode::Empty,
+            need_operand: true,
+            may_contain_strings: false,
+            last_character: None,
+            last_range: false,
+        }
+    }
+
+    fn operand(&mut self, operand: Operand) {
+        let (character, strings) = match operand {
+            Operand::Character(character) => (Some(character), false),
+            Operand::Set {
+                may_contain_strings,
+            } => (None, may_contain_strings),
+        };
+        // MayContainStrings is union OR, intersection AND, subtraction's left
+        // value. It is conservative syntax analysis, independent of matching.
+        // https://262.ecma-international.org/17.0/#sec-static-semantics-maycontainstrings
+        match self.mode {
+            SetMode::Empty => {
+                self.mode = SetMode::Single;
+                self.may_contain_strings = strings;
+            }
+            SetMode::Single | SetMode::Union => self.may_contain_strings |= strings,
+            SetMode::Intersection => self.may_contain_strings &= strings,
+            SetMode::Subtraction => {}
+        }
+        self.last_character = character;
+        self.last_range = false;
+        self.need_operand = false;
+    }
+}
+
 impl Pattern {
     pub(super) fn unicode_sets_class(&mut self) -> Result<(), Failure> {
         // https://262.ecma-international.org/17.0/#sec-patterns
-        // The enclosing '[' is consumed. This step supports flat ClassUnion;
-        // nested operands and ClassIntersection/Subtraction remain explicit gaps.
-        let invert = self.eat(b'^');
-        let mut may_contain_strings = false;
-        while !self.eat(b']') {
-            self.set_operator_gap()?;
-            let left = self.set_operand()?;
-            self.set_operator_gap()?;
+        // The enclosing '[' is consumed. Each frame retains the enclosing
+        // expression while a NestedClass operand is scanned, without recursion.
+        let mut current = Class::new(self.eat(b'^'));
+        let mut parents = Vec::new();
+        loop {
+            if self.peek().is_none() {
+                return Err(syntax("unterminated regular expression Unicode class"));
+            }
+            if self.eat(b']') {
+                if current.need_operand && current.mode != SetMode::Empty {
+                    return Err(syntax(
+                        "regular expression Unicode class operator requires an operand",
+                    ));
+                }
+                if current.invert && current.may_contain_strings {
+                    return Err(syntax(
+                        "negated regular expression class may contain strings",
+                    ));
+                }
+                let strings = !current.invert && current.may_contain_strings;
+                let Some(parent) = parents.pop() else {
+                    return Ok(());
+                };
+                current = parent;
+                current.operand(Operand::Set {
+                    may_contain_strings: strings,
+                });
+                continue;
+            }
+            if current.need_operand {
+                if self.eat(b'[') {
+                    parents.push(current);
+                    current = Class::new(self.eat(b'^'));
+                } else {
+                    current.operand(self.set_operand()?);
+                }
+                continue;
+            }
+            let operator = if self.points[self.pos..].starts_with(&[0x26, 0x26]) {
+                // ClassIntersection explicitly excludes a third unescaped '&'.
+                if self.points.get(self.pos + 2) == Some(&0x26) {
+                    return Err(syntax(
+                        "invalid regular expression Unicode class intersection",
+                    ));
+                }
+                Some(SetMode::Intersection)
+            } else if self.points[self.pos..].starts_with(&[0x2d, 0x2d]) {
+                Some(SetMode::Subtraction)
+            } else {
+                None
+            };
+            if let Some(operator) = operator {
+                if current.last_range
+                    || (current.mode != SetMode::Single && current.mode != operator)
+                {
+                    return Err(syntax(
+                        "regular expression Unicode class cannot mix unions, ranges and set operators",
+                    ));
+                }
+                self.pos += 2;
+                current.mode = operator;
+                current.need_operand = true;
+                continue;
+            }
             if self.eat(b'-') {
-                let right = self.set_operand()?;
-                let (Operand::Character(left), Operand::Character(right)) = (left, right) else {
+                let Some(left) = current.last_character else {
+                    return Err(syntax(
+                        "regular expression Unicode class range requires character endpoints",
+                    ));
+                };
+                if matches!(current.mode, SetMode::Intersection | SetMode::Subtraction) {
+                    return Err(syntax(
+                        "regular expression Unicode class cannot mix unions, ranges and set operators",
+                    ));
+                }
+                // A NestedClass is an operand, never a ClassSetCharacter.
+                if self.peek() == Some(0x5b) {
+                    return Err(syntax(
+                        "regular expression Unicode class range requires character endpoints",
+                    ));
+                }
+                let Operand::Character(right) = self.set_operand()? else {
                     return Err(syntax(
                         "regular expression Unicode class range requires character endpoints",
                     ));
@@ -28,42 +154,24 @@ impl Pattern {
                 if left > right {
                     return Err(syntax("regular expression Unicode class range is reversed"));
                 }
-            } else if let Operand::Set {
-                may_contain_strings: strings,
-            } = left
-            {
-                may_contain_strings |= strings;
+                current.last_character = None;
+                current.last_range = true;
+                continue;
             }
+            match current.mode {
+                SetMode::Single => current.mode = SetMode::Union,
+                SetMode::Union => {}
+                _ => {
+                    return Err(syntax(
+                        "regular expression Unicode class cannot mix unions, ranges and set operators",
+                    ));
+                }
+            }
+            current.need_operand = true;
         }
-        // MayContainStrings for a union is true if any operand may contain
-        // strings. Empty ClassContents and character ranges contribute false.
-        // https://262.ecma-international.org/17.0/#sec-static-semantics-maycontainstrings
-        // https://262.ecma-international.org/17.0/#sec-patterns-static-semantics-early-errors
-        if invert && may_contain_strings {
-            return Err(syntax(
-                "negated regular expression class may contain strings",
-            ));
-        }
-        Ok(())
-    }
-
-    fn set_operator_gap(&self) -> Result<(), Failure> {
-        if self.points[self.pos..].starts_with(&[0x26, 0x26])
-            || self.points[self.pos..].starts_with(&[0x2d, 0x2d])
-        {
-            return Err(unsupported(
-                "regular expression Unicode class set operators are not implemented",
-            ));
-        }
-        Ok(())
     }
 
     fn set_operand(&mut self) -> Result<Operand, Failure> {
-        if self.peek() == Some(0x5b) {
-            return Err(unsupported(
-                "regular expression nested Unicode class validation is not implemented",
-            ));
-        }
         if self.peek() == Some(0x5c) {
             match self.points.get(self.pos + 1) {
                 Some(0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57) => {

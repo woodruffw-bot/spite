@@ -72,13 +72,20 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
 
 #[test]
 fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching_gaps() {
-    for pattern in ["[z-a]", r"[^\q{}]", r"[a-\d]", "[!!]"] {
+    for pattern in ["[z-a]", r"[^\q{}]", r"[a-\d]", "[!!]", "[a&&]", "[a&&b--c]"] {
         let code = format!("effects=1; /{pattern}/v;");
         check(&format!(
             "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
         ));
     }
-    for pattern in ["[a-z]", r"[\q{a|b}]", r"[^\q{a|b}]"] {
+    for pattern in [
+        "[a-z]",
+        r"[\q{a|b}]",
+        r"[^\q{a|b}]",
+        "[a&&b]",
+        "[[a]b]",
+        r"[^\q{ab}&&a]",
+    ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         let code = format!("marker=1; /{pattern}/v;");

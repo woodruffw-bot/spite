@@ -1,0 +1,62 @@
+---
+source: crates/spite-parser/tests/regexp_sets.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 8,
+        },
+        message: "regular expression Unicode class operator requires an operand",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "invalid regular expression Unicode class intersection",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 12,
+        },
+        message: "regular expression Unicode class cannot mix unions, ranges and set operators",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 11,
+        },
+        message: "regular expression Unicode class cannot mix unions, ranges and set operators",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "regular expression Unicode class range requires character endpoints",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 17,
+        },
+        message: "negated regular expression class may contain strings",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "regular expression Unicode class cannot mix unions, ranges and set operators",
+    },
+]

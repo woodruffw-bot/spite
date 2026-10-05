@@ -151,7 +151,7 @@ fn raw_lone_surrogate_names_and_unsupported_productions_keep_distinct_outcomes()
             );
         }
     }
-    for source in [r"/(?<a>\p{Invalid})/u", r"/(?<a>[a&&])/v"] {
+    for source in [r"/(?<a>\p{Invalid})/u", r"/(?<a>[\p{Invalid}])/v"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported

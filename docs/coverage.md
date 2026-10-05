@@ -247,8 +247,8 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Nested UnicodeSetsMode
-classes, set operators, Unicode properties, matching, intrinsics and grammar-driven
+No RegExp literal AST or execution pass is exposed. Unicode properties, matching,
+intrinsics and grammar-driven
 reusable cover lookahead remain pending. Unimplemented Pattern productions still
 produce Unsupported and cannot receive parse-negative credit.
 
@@ -296,10 +296,9 @@ hexadecimal escapes. Three parser regressions cover these distinctions, grammar
 entry points, raw unpaired UTF-16, and a 100,000-character class without a default
 quota. The new range diagnostic snapshot and updated lexical-goal snapshot were
 inspected. Eval rejects reversed and set-valued ranges as SyntaxError before
-effects; valid classes still reach host Unsupported for matching. UnicodeSetsMode
-class nesting and operators and Unicode property escapes remain unsupported
-and receive no negative credit. Corpus inventories, runtime defaults, native guards and dependencies are
-unchanged.
+effects; valid classes still reach host Unsupported for matching. Unicode property
+escapes remain unsupported and receive no negative credit. Corpus inventories,
+runtime defaults, native guards and dependencies are unchanged.
 
 Named captures validate IdentifierStartChar/IdentifierPartChar with Unicode
 escapes and astral code points, including paired raw units without u/v. Group-name
@@ -314,7 +313,7 @@ these rules, malformed names, raw lone surrogates, all grammar entry points,
 20,000 nested named captures and 20,000 alternatives without default quotas. The
 new diagnostic snapshot was inspected. Eval rejects invalid and duplicate names
 before source effects; valid alternative-separated names still produce host
-Unsupported for matching. Unicode property and nested UnicodeSetsMode gaps cannot
+Unsupported for matching. Unicode property gaps cannot
 receive negative credit. Corpus inventories, defaults, native guards and
 dependencies are unchanged.
 
@@ -328,10 +327,25 @@ from a literal subsequent caret. Four parser regressions cover these rules,
 ordinary/u/v distinctions, exact diagnostics across grammar entry points, and
 100,000-character class strings. The new diagnostic snapshot was inspected.
 Eval rejects supported v-class errors before effects, while valid unions retain
-host Unsupported for matching. Nested classes, intersections, subtraction and
-Unicode property escapes still produce Unsupported and cannot receive negative
-credit. Corpus inventories, runtime defaults, native guards and dependencies are
-unchanged.
+host Unsupported for matching. Nested classes and set operators were excluded
+from this initial step. Unicode property escapes produce Unsupported and cannot
+receive negative credit. Corpus inventories, runtime defaults, native guards and
+dependencies are unchanged.
+
+UnicodeSetsMode nested classes, intersections and subtraction now use an iterative
+class frame stack. Operator expressions require operands, excluding ranges and
+implicit unions; mixed intersection/subtraction and a third unescaped ampersand
+are rejected. MayContainStrings follows the specification's OR for unions, AND
+for intersections and left operand for subtraction, independently of whether
+actual matching could cancel string sets. Inverted inner classes reject strings
+before enclosing operators combine their results. Three additional parser
+regressions cover nested grammar, the complete empty/single/multiple string
+containment matrix, exact diagnostic entry points, 20,000 nested classes and
+20,000 intersection operands without a default quota. The new diagnostic snapshot
+was inspected. Eval rejects missing operands and mixed operators before effects;
+valid nesting and operators retain host Unsupported for matching. Unicode
+properties still receive no negative credit. Corpus inventories, runtime defaults,
+native guards and dependencies are unchanged.
 
 106 unchanged core Pattern originals add 212 reviewed parse-negative variants
 covering scoped modifiers, quantifier placement/bounds, assertion quantifiers,

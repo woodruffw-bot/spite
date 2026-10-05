@@ -90,9 +90,11 @@ values. Capture names decode identifier code points, and named references resolv
 against all captures. Duplicate names require a separating disjunction under
 MightBothParticipate; names in successive terms remain conflicting. Flat
 UnicodeSetsMode unions validate scalar ranges, reserved punctuation and string
-disjunctions, rejecting inversion when MayContainStrings is true. Nested classes,
-set operators and Unicode properties remain Unsupported, as does matching after
-the supported grammar validates.
+disjunctions, rejecting inversion when MayContainStrings is true. Nested classes
+use iterative frames; intersections combine string containment with AND, while
+subtraction retains the left operand's result. Operator expressions exclude
+implicit unions and ranges. Unicode property validation and matching remain
+Unsupported after the supported grammar validates.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
 and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
 Computed class accessor lookahead parses its name with the expression grammar and

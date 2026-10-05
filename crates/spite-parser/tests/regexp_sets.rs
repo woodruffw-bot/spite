@@ -146,15 +146,8 @@ fn flat_class_grammar_errors_share_exact_diagnostics() {
 }
 
 #[test]
-fn nested_classes_operators_and_property_gaps_cannot_receive_negative_credit() {
-    for pattern in [
-        "[[]]",
-        "[a&&]",
-        "[a--]",
-        "[a&&b--c]",
-        r"[\p{Invalid}]",
-        r"[\P{Invalid}]",
-    ] {
+fn property_gaps_cannot_receive_negative_credit() {
+    for pattern in [r"[\p{Invalid}]", r"[\P{Invalid}]"] {
         assert_eq!(
             parse_script(&format!("/{pattern}/v")).unwrap_err().kind,
             DiagnosticKind::Unsupported,
@@ -164,5 +157,139 @@ fn nested_classes_operators_and_property_gaps_cannot_receive_negative_credit() {
     assert_eq!(
         parse_script("/[a-z]/uv").unwrap_err().message,
         "regular expression flags u and v are mutually exclusive"
+    );
+}
+
+#[test]
+fn nested_classes_and_set_operators_obey_operand_and_range_grammar() {
+    for pattern in [
+        "[[]]",
+        "[[a]b]",
+        "[[^a]&&[b]]",
+        "[a&&b&&c]",
+        "[a--b--c]",
+        "[[a-z]&&[a-m]]",
+        "[a&&[b--c]]",
+        r"[\d--[a-z]]",
+        r"[\q{ab}&&a]",
+        r"[^\q{ab}&&a]",
+        r"[^\q{a}--\q{bc}]",
+        r"[\q{ab}--\q{ab}]",
+        r"[\q{ab}&&\q{cd}]",
+        r"[a&&\&]",
+    ] {
+        validates(pattern);
+    }
+    for pattern in [
+        "[ab&&c]",
+        "[a&&bc]",
+        "[a--bc]",
+        "[a&&b--c]",
+        "[a--b&&c]",
+        "[a-b&&c]",
+        "[a&&b-c]",
+        "[a-b--c]",
+        "[[a]-b]",
+        "[a-[b]]",
+        "[a--]",
+        "[--a]",
+        "[a&&]",
+        "[&&a]",
+        "[a&&&b]",
+        "[a&&[b]c]",
+        "[a-b-c]",
+        r"[a-\q{b}]",
+        r"[[^\q{ab}]&&a]",
+    ] {
+        let source = format!("/{pattern}/v");
+        let expected = parse_script(&source).unwrap_err();
+        assert_eq!(expected.kind, DiagnosticKind::Syntax, "{source}");
+        assert_eq!(
+            parse_script_utf16(&JsString::from(source.as_str())).unwrap_err(),
+            expected
+        );
+        assert_eq!(
+            parse_eval_utf16(&JsString::from(source.as_str()), EvalContext::default()).unwrap_err(),
+            expected
+        );
+    }
+    let errors: Vec<_> = [
+        "/[a&&]/v",
+        "/[a&&&b]/v",
+        "/[a&&b--c]/v",
+        "/[a-b&&c]/v",
+        "/[[a]-b]/v",
+        r"/[[^\q{ab}]&&a]/v",
+        "/[a&&bc]/v",
+    ]
+    .into_iter()
+    .map(|source| parse_script(source).unwrap_err())
+    .collect();
+    insta::assert_debug_snapshot!(errors);
+}
+
+#[test]
+fn string_containment_follows_union_intersection_and_subtraction_static_rules() {
+    for (left, left_strings) in [("a", false), ("", true), ("ab", true)] {
+        for (right, right_strings) in [("b", false), ("", true), ("cd", true)] {
+            for (operator, strings) in [
+                ("", left_strings || right_strings),
+                ("&&", left_strings && right_strings),
+                ("--", left_strings),
+            ] {
+                let union = format!(r"[\q{{{left}}}{operator}\q{{{right}}}]");
+                validates(&union);
+                let inverted = format!(r"/[^\q{{{left}}}{operator}\q{{{right}}}]/v");
+                let error = parse_script(&inverted).unwrap_err();
+                assert_eq!(
+                    error.kind,
+                    if strings {
+                        DiagnosticKind::Syntax
+                    } else {
+                        DiagnosticKind::Unsupported
+                    },
+                    "{inverted}"
+                );
+                assert_eq!(
+                    error.message,
+                    if strings {
+                        "negated regular expression class may contain strings"
+                    } else {
+                        "regular expression matching is not implemented"
+                    }
+                );
+            }
+        }
+    }
+    // Subtraction retains the left operand's conservative result even if the
+    // two string sets could cancel completely during actual matching.
+    assert_eq!(
+        parse_script(r"/[^\q{ab}--\q{ab}]/v").unwrap_err().kind,
+        DiagnosticKind::Syntax
+    );
+    validates(r"[^[\q{ab}]&&[a]]");
+    validates(r"[^[\q{ab}]&&[\q{cd}]&&a]");
+    assert_eq!(
+        parse_script(r"/[^[[\q{ab}]&&[\q{cd}]]]/v")
+            .unwrap_err()
+            .kind,
+        DiagnosticKind::Syntax
+    );
+}
+
+#[test]
+fn nested_unicode_classes_are_iterative_without_a_default_depth_quota() {
+    let pattern = format!("{}a{}", "[".repeat(20_000), "]".repeat(20_000));
+    validates(&pattern);
+    let mut pattern = "a".to_owned();
+    for _ in 0..20_000 {
+        pattern.push_str("&&a");
+    }
+    validates(&format!("[{pattern}]"));
+    assert_eq!(
+        parse_dynamic_function("x", "return /[a&&]/v;")
+            .unwrap_err()
+            .kind,
+        DiagnosticKind::Syntax
     );
 }
