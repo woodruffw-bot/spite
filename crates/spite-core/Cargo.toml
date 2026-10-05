@@ -6,6 +6,9 @@ rust-version.workspace = true
 repository.workspace = true
 publish.workspace = true
 
+[dependencies]
+spite-bigint.workspace = true
+
 [dev-dependencies]
 insta.workspace = true
 

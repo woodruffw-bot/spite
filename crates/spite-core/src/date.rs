@@ -2,9 +2,11 @@
 //!
 //! These operations use the proleptic Gregorian calendar, an epoch at the start
 //! of 1970, and exactly 86,400 seconds per day. Interchange string syntax records
-//! local or explicit zones; zone resolution, MakeDay and JavaScript intrinsics
+//! local or explicit zones; zone resolution and JavaScript intrinsics
 //! are separate implementation steps.
 
+mod make_day;
+pub use make_day::make_day;
 mod parse;
 pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
 mod utc_string;

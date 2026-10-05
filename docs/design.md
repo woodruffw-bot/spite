@@ -42,7 +42,7 @@ measurements identify a problem and conformance tests protect the behavior.
 | --- | --- | --- |
 | `spite-bigint` | Bounded arbitrary-precision integer arithmetic | std |
 | `spite-heap` | Safe generational storage, explicit roots, and bounded tracing | std |
-| `spite-core` | Source locations, UTF-16 strings, shared language primitives | std |
+| `spite-core` | Source locations, UTF-16 strings, shared language primitives | std, bigint |
 | `spite-parser` | Lexical grammar, AST, parsing, static semantics and early errors | core |
 | `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, heap, parser |
 | `spite` | Small embedding facade and command-line host | core, parser, runtime |
@@ -2318,7 +2318,26 @@ containing both TimeClip endpoints; DayFromYear uses the specified Gregorian
 leap-cycle formula with floor division for negative years. Month/day and weekday
 fields follow the proleptic Gregorian calendar with 86,400 seconds per day and
 no leap-second instants. The shared helper accepts clipped integral milliseconds;
-MakeDay for arbitrary numeric arguments and local zones remain separate steps.
+Numeric MakeDay normalization is shared; local zones remain a separate step.
+
+MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
+by 12 with floor, converts that quotient to Number, adds the year using Number
+arithmetic, and retains the exact Euclidean month remainder. Native integers
+handle common inputs; the existing workspace BigInt implementation handles
+larger finite Numbers. DayFromYear's Gregorian expression also uses mathematical
+integer arithmetic and rounds once. No year or month input cap is imposed.
+
+For an i32 normalized year, a finite first-day time exists: neighboring time
+values are less than one UTC day apart and the calendar day number is exact.
+Larger years explicitly check the rounded month boundary and its neighboring
+time values against the requested day and adjacent year boundaries. These checks
+handle skipped day numbers and rounded year-boundary plateaus using Day's Number
+division and YearFromTime's largest-integral-Number rule. A valid month boundary
+can exceed TimeClip, and a huge day component can cancel it before final clipping.
+MakeDay retains ordered Number addition/subtraction and rejects non-finite input
+or an impossible calendar witness with NaN. Its native integer work budget is
+optional; runtime callers must leave intermediate magnitude unlimited rather
+than apply a JavaScript BigInt value quota to Number calendar arithmetic.
 
 Date Time String Format parsing borrows UTF-16 code units and accepts exactly the
 edition-17 date-only/time forms, four-digit or signed six-digit years, and numeric

@@ -493,8 +493,7 @@ cover signed zero, fractions, non-finite input and overflow, both ±8.64×10¹�
 endpoints, pre-epoch fields, year zero and leap centuries, complete positive and
 negative 400-year cycles, and observable floating-point operation order. Fixed
 UTC examples and 4,109 full-domain sample/boundary timestamps were also checked
-against Node's Date getters. MakeDay for arbitrary numeric arguments and local
-time zones remain pending.
+against Node's Date getters. Local time zones remain pending.
 Date interchange string syntax now parses directly from UTF-16 with exact
 element widths, expanded years, defaults, explicit offsets and unresolved local
 date-times. Five regressions include two reviewed insta snapshots for accepted
@@ -504,8 +503,7 @@ calendar normalization and offset adjustment before final range validation.
 Six additional regressions cover numeric MakeFullYear adjustment, preserved
 interchange years 0–99, signed offsets, leap/calendar-day and hour-24 rollover,
 both clipped endpoints with offsets, unresolved local forms, and invalid native
-records/extreme years without overflow. Local zone resolution, MakeDay for
-arbitrary numeric arguments remain pending.
+records/extreme years without overflow. Local zone resolution remains pending.
 A separate reference check round-tripped 4,103 Node ISO strings spanning the
 clipped domain to their exact original time values.
 Canonical ISO formatting now emits full UTC fields, millisecond precision and
@@ -571,11 +569,22 @@ days, both clipped endpoints and an out-of-range intermediate month boundary,
 mutating/throwing hooks, invalid-date revival, receiver branding, frozen slots,
 ignored extra arguments and normal-stack recovery. A reference check matched
 Node's return values and final timestamps for 4,216 random, boundary and
-non-finite cases. General numeric MakeDay, other calendar setters and local zones
-remain pending; default quotas and native-stack guards are unchanged.
+non-finite cases. Runtime numeric calendar construction, other calendar setters
+and local zones remain pending; default quotas and native-stack guards are unchanged.
 All seven whole upstream setUTCDate programs were reviewed and vendored unchanged,
 adding 14 normal/strict positives for metadata, conversion order and captured-time
 mutation. The pin and eight harness files are unchanged.
+Shared MakeDay now implements exact mathematical month division and Gregorian
+year arithmetic before Number rounding, finite first-day witness checks, and
+ordered day addition without premature TimeClip or input caps. Six regressions
+cover literal short years, fractions and negative month rollover, leap centuries,
+range endpoints and intermediate boundaries, overflow and impossible witnesses,
+huge month/year and year/day cancellation, exact Gregorian rounding, and opt-in
+work failures distinct from NaN. The existing workspace BigInt crate supplies
+wide intermediate integers; no external dependency or default quota is added.
+An independent check matched 4,096 Node calendar cases, 1,024 exact huge-month
+cancellations and 2,048 expanded calendar-witness searches. Runtime wiring for
+numeric UTC construction and remaining calendar setters is the next step.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
