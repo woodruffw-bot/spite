@@ -6001,3 +6001,109 @@ test/language/literals/regexp/regexp-first-char-no-paragraph-separator.js	691	69
 test/language/literals/regexp/regexp-source-char-no-line-separator.js	561	568	line terminator in regular expression literal
 test/language/literals/regexp/early-err-bad-flag.js	505	509	invalid regular expression flag
 test/language/literals/regexp/early-err-dup-flag.js	486	492	duplicate regular expression flag
+test/language/literals/regexp/early-err-arithmetic-modifiers-add-remove-i.js	620	630	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-add-remove-m.js	620	630	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-add-remove-multi-duplicate.js	620	632	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-add-remove-s.js	620	630	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-both-empty.js	596	604	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-code-point-repeat-i-1.js	606	616	duplicate regular expression modifier
+test/language/literals/regexp/early-err-arithmetic-modifiers-code-point-repeat-i-2.js	606	618	duplicate regular expression modifier
+test/language/literals/regexp/early-err-arithmetic-modifiers-no-colon-1.js	457	466	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-no-colon-2.js	457	464	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-no-colon-3.js	457	464	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-arbitrary.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-combining-i.js	606	617	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-combining-m.js	606	617	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-combining-s.js	606	617	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-d.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-g.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-non-display-1.js	606	616	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-non-display-2.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-non-flag.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-u.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-uppercase-I.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-y.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-zwj.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-zwnbsp.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-other-code-point-zwnj.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-add-remove-i.js	620	630	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-add-remove-m.js	620	630	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-add-remove-multi-duplicate.js	620	632	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-add-remove-s.js	620	630	invalid regular expression modifier groups
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-code-point-repeat-i-1.js	606	616	duplicate regular expression modifier
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-code-point-repeat-i-2.js	606	618	duplicate regular expression modifier
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-arbitrary.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-combining-i.js	606	617	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-combining-m.js	606	617	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-combining-s.js	606	617	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-d.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-g.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-non-display-1.js	606	616	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-non-display-2.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-non-flag.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-u.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-uppercase-I.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-y.js	606	615	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-zwj.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-zwnbsp.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-other-code-point-zwnj.js	606	618	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-should-not-case-fold-i.js	514	523	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-should-not-case-fold-m.js	514	523	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-should-not-case-fold-s.js	514	523	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-should-not-unicode-case-fold-i.js	514	524	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-reverse-should-not-unicode-case-fold-s.js	514	524	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-should-not-case-fold-i.js	514	523	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-should-not-case-fold-m.js	514	523	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-should-not-case-fold-s.js	514	523	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-should-not-unicode-case-fold-i.js	514	524	invalid regular expression group prefix
+test/language/literals/regexp/early-err-arithmetic-modifiers-should-not-unicode-case-fold-s.js	514	524	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-code-point-repeat-i-1.js	745	754	duplicate regular expression modifier
+test/language/literals/regexp/early-err-modifiers-code-point-repeat-i-2.js	745	756	duplicate regular expression modifier
+test/language/literals/regexp/early-err-modifiers-other-code-point-arbitrary.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-combining-i.js	745	755	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-combining-m.js	745	755	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-combining-s.js	745	755	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-d.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-g.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-non-display-1.js	745	754	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-non-display-2.js	745	756	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-non-flag.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-u.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-uppercase-I.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-y.js	745	753	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-zwj.js	745	756	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-zwnbsp.js	745	756	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-other-code-point-zwnj.js	745	756	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-case-fold-i.js	653	661	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-case-fold-m.js	653	661	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-case-fold-s.js	653	661	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-unicode-case-fold-i.js	653	662	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-unicode-case-fold-s.js	653	662	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-unicode-escape-i.js	655	669	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-unicode-escape-m.js	655	669	invalid regular expression group prefix
+test/language/literals/regexp/early-err-modifiers-should-not-unicode-escape-s.js	655	669	invalid regular expression group prefix
+test/language/literals/regexp/early-err-pattern.js	550	553	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-braced-quantifier-exact.js	732	737	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-braced-quantifier-lower.js	733	739	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-braced-quantifier-range.js	726	733	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-optional-lookbehind.js	485	495	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-optional-negative-lookbehind.js	485	495	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-quantifier-out-of-order.js	844	852	regular expression quantifier bounds are reversed
+test/language/literals/regexp/invalid-range-lookbehind.js	485	499	regular expression quantifier requires an atom
+test/language/literals/regexp/invalid-range-negative-lookbehind.js	485	499	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-class-escape.js	512	518	invalid regular expression control escape
+test/language/literals/regexp/u-invalid-extended-pattern-char.js	483	487	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-identity-escape.js	569	574	invalid regular expression identity escape
+test/language/literals/regexp/u-invalid-legacy-octal-escape.js	651	656	regular expression backreference exceeds the capture count
+test/language/literals/regexp/u-invalid-oob-decimal-escape.js	542	547	regular expression backreference exceeds the capture count
+test/language/literals/regexp/u-invalid-optional-lookahead.js	486	496	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-optional-lookbehind.js	485	496	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-optional-negative-lookahead.js	486	496	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-optional-negative-lookbehind.js	485	496	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-quantifier-out-of-order.js	691	700	regular expression quantifier bounds are reversed
+test/language/literals/regexp/u-invalid-range-lookahead.js	486	500	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-range-lookbehind.js	485	500	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-range-negative-lookahead.js	486	500	regular expression quantifier requires an atom
+test/language/literals/regexp/u-invalid-range-negative-lookbehind.js	485	500	regular expression quantifier requires an atom
+test/language/literals/regexp/u-unicode-esc-bounds.js	480	493	regular expression Unicode escape is out of range
+test/language/literals/regexp/u-unicode-esc-non-hex.js	320	329	invalid regular expression Unicode escape

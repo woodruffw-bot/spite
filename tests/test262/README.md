@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6021 unmodified test fixtures and eight harness files come from
+These 6127 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -58,6 +58,25 @@ parsing in IsValidRegularExpressionLiteral and do not require RegExp execution.
 Both whole programs and their metadata were reviewed; all source bytes,
 assertions, the pin, eight helpers, and unlimited defaults are unchanged. Native
 regressions separately cover every allowed flag subset and the u/v exclusion.
+
+## RegExp core Pattern review
+
+106 unchanged originals add 212 reviewed parse-negative variants in the two
+Script modes. They cover scoped modifier grammar and its duplicate/overlap/empty
+list early errors, quantifier placement and reversed decimal bounds, forbidden
+assertion quantifiers, control/identity/Unicode escapes, and numbered references
+beyond the final capture count. Every reviewed error checks the complete literal's
+byte span and the exact diagnostic. These are supported Pattern rejections, with
+no matching or RegExp object execution credit.
+
+All 112 candidate programs and metadata were reviewed. Four character-class range
+cases await class validation. Two escaped overlap cases are excluded because the
+forbidden modifier escape masks the intended enabled/disabled overlap; separate
+originals directly test forbidden modifier escapes. Historic descriptions and
+unexpanded global-modifier placeholder comments retain their original bytes.
+Both toolchains pass the selected variants with no other outcome. The pin, all
+assertions and metadata, eight helpers, runtime defaults and native guards are
+unchanged.
 
 ## Statement parser tests
 
@@ -1383,7 +1402,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 11482 variants from 6002 reviewed sources: the eleven
+The `spite-test262` command runs 11694 variants from 6108 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1409,14 +1428,14 @@ parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
 parse-negative), and 48 private element parse-negative files, and 56 private-field
 execution files, and 128 private method/accessor execution files, and 83 WeakSet
-files, and 36 RegExp lexical-boundary/flag files (eighteen positives and eighteen parse
-negatives).
+files, and 142 RegExp literal boundary, flag, and core Pattern files (eighteen positives and
+124 parse negatives).
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-10605 positives using the upstream harness, 869 reviewed parse-negative variants,
+10605 positives using the upstream harness, 1081 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
