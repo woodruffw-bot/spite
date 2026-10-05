@@ -6492,3 +6492,10 @@ test/built-ins/Date/prototype/setUTCSeconds/length.js	-	-	-
 test/built-ins/Date/prototype/setUTCSeconds/name.js	-	-	-
 test/built-ins/Date/prototype/setUTCSeconds/not-a-constructor.js	-	-	-
 test/built-ins/Date/prototype/setUTCSeconds/prop-desc.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/day-names.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/length.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/month-names.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/name.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/negative-year.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/not-a-constructor.js	-	-	-
+test/built-ins/Date/prototype/toUTCString/prop-desc.js	-	-	-
