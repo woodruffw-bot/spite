@@ -57,6 +57,10 @@ pub(crate) struct Lexer {
     pos: usize,
 }
 
+// Only positions produced by this scanner are used to restore its input cursor.
+#[derive(Clone, Copy)]
+pub(super) struct Checkpoint(usize);
+
 use spite_core::{
     is_identifier_part as id_continue, is_identifier_start as id_start,
     is_line_terminator as is_line, is_whitespace as is_space,
@@ -67,9 +71,13 @@ impl Lexer {
         Self { source, pos: 0 }
     }
 
-    pub fn at(source: std::rc::Rc<SourceText>, pos: usize) -> Self {
-        debug_assert!(source.lexical_text().is_char_boundary(pos));
-        Self { source, pos }
+    pub fn checkpoint(&self) -> Checkpoint {
+        Checkpoint(self.pos)
+    }
+
+    pub fn restore(&mut self, checkpoint: Checkpoint) {
+        debug_assert!(self.source.lexical_text().is_char_boundary(checkpoint.0));
+        self.pos = checkpoint.0;
     }
     fn rest(&self) -> &str {
         &self.source.lexical_text()[self.pos..]
@@ -661,6 +669,51 @@ mod tests {
 
     fn scan(source: &str, goal: Goal) -> Result<Token, Diagnostic> {
         Lexer::new(std::rc::Rc::new(SourceText::from_str(source))).next(goal)
+    }
+
+    #[test]
+    fn checkpoints_replay_trivia_and_lossless_utf16_under_a_different_goal() {
+        let mut units: Vec<_> = "/* comment */\n /".encode_utf16().collect();
+        units.extend([0xd800, 0x78]);
+        units.extend("/g + 1".encode_utf16());
+        let source =
+            std::rc::Rc::new(SourceText::from_utf16(&JsString::from_code_units(units)).unwrap());
+        let mut lexer = Lexer::new(source);
+        let checkpoint = lexer.checkpoint();
+        let division = lexer.next(Goal::Div).unwrap();
+        assert_eq!(division.kind, Kind::Punct("/"));
+        assert!(division.newline);
+        assert!(lexer.next(Goal::Div).is_err());
+        lexer.restore(checkpoint);
+        let regexp = lexer.next(Goal::RegExp).unwrap();
+        assert!(regexp.newline);
+        assert_eq!(regexp.span.start, division.span.start);
+        assert_eq!(
+            regexp.kind,
+            Kind::RegExp {
+                body: JsString::from_code_units(vec![0xd800, 0x78]),
+                flags: JsString::from("g"),
+            }
+        );
+        assert_eq!(lexer.next(Goal::Div).unwrap().kind, Kind::Punct("+"));
+        lexer.restore(checkpoint);
+        let replayed = lexer.next(Goal::RegExp).unwrap();
+        assert_eq!(replayed.kind, regexp.kind);
+        assert_eq!(replayed.span, regexp.span);
+        assert_eq!(replayed.newline, regexp.newline);
+    }
+
+    #[test]
+    fn initial_checkpoint_preserves_hashbang_placement_after_a_failed_goal() {
+        let mut lexer = Lexer::new(std::rc::Rc::new(SourceText::from_str("#! comment\n/a/")));
+        let checkpoint = lexer.checkpoint();
+        assert!(lexer.next(Goal::Div).is_err());
+        lexer.restore(checkpoint);
+        let token = lexer.next(Goal::HashbangOrRegExp).unwrap();
+        assert!(matches!(token.kind, Kind::RegExp { .. }));
+        assert!(token.newline);
+        assert_eq!(token.span, Span::new(11, 14));
+        assert_eq!(lexer.next(Goal::Div).unwrap().kind, Kind::Eof);
     }
 
     #[test]

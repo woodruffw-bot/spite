@@ -5,6 +5,7 @@ mod arrow;
 mod assignment_pattern;
 pub mod ast;
 mod binding;
+mod checkpoint;
 mod class;
 mod construction;
 mod dynamic_function;
@@ -182,6 +183,7 @@ struct Parser {
     computed_class_name: Option<(usize, usize, PropertyName)>,
     lookahead_error: Option<Diagnostic>,
     tokens: Vec<Token>,
+    scan_checkpoints: Vec<checkpoint::ScanCheckpoint>,
     index: usize,
     depth: usize,
     allow_in: bool,
@@ -201,6 +203,7 @@ impl Parser {
 
     fn from_source(source: std::rc::Rc<source::SourceText>) -> Result<Self, Diagnostic> {
         let mut lexer = Lexer::new(source.clone());
+        let checkpoint = checkpoint::ScanCheckpoint::new(&lexer, &[]);
         let token = lexer.next(Goal::HashbangOrRegExp)?;
         let template_braces = if matches!(token.kind, Kind::Template { tail: false, .. }) {
             vec![0]
@@ -215,6 +218,7 @@ impl Parser {
             computed_class_name: None,
             lookahead_error: None,
             tokens,
+            scan_checkpoints: vec![checkpoint],
             index: 0,
             depth: 0,
             allow_in: true,
@@ -254,32 +258,19 @@ impl Parser {
             {
                 return None;
             }
-            let token = match self.scan_token() {
-                Ok(token) => token,
-                Err(error) => {
-                    let span = error.span;
-                    self.lookahead_error = Some(error);
-                    Token {
-                        kind: Kind::Eof,
-                        span,
-                        newline: false,
-                        escaped: false,
-                        legacy: false,
-                    }
-                }
-            };
-            self.tokens.push(token);
+            let _ = self.cache_next_token(false);
         }
         self.tokens.get(index)
     }
 
     // Cached cover lookahead still balances substitutions. The lexer has no
     // brace state: the parser selects the supported Div/TemplateTail goal.
-    fn scan_token(&mut self) -> Result<Token, Diagnostic> {
-        let goal = if self.template_braces.last() == Some(&0) {
-            Goal::TemplateTail
-        } else {
-            Goal::Div
+    fn scan_token(&mut self, regexp: bool) -> Result<Token, Diagnostic> {
+        let goal = match (regexp, self.template_braces.last() == Some(&0)) {
+            (false, false) => Goal::Div,
+            (false, true) => Goal::TemplateTail,
+            (true, false) => Goal::RegExp,
+            (true, true) => Goal::RegExpOrTemplateTail,
         };
         let token = self.lexer.next(goal)?;
         match &token.kind {
@@ -1265,23 +1256,20 @@ impl Parser {
             // JavaScript. That diagnostic belongs to the wrong lexical goal.
             self.lookahead_error = None;
         }
-        if let Kind::RegExp { body, flags } = &self.current().kind {
-            return regexp::literal_diagnostic(body, flags, span);
+        if !matches!(self.current().kind, Kind::RegExp { .. }) {
+            if let Err(error) = self.rescan_regexp() {
+                return error;
+            }
         }
-        let goal = if self.template_braces.is_empty() {
-            Goal::RegExp
-        } else {
-            Goal::RegExpOrTemplateTail
+        let Token {
+            kind: Kind::RegExp { body, flags },
+            span,
+            ..
+        } = self.current()
+        else {
+            unreachable!("RegExp goal at a primary-expression solidus");
         };
-        match Lexer::at(self.source.clone(), span.start).next(goal) {
-            Ok(Token {
-                kind: Kind::RegExp { body, flags },
-                span,
-                ..
-            }) => regexp::literal_diagnostic(&body, &flags, span),
-            Ok(_) => unreachable!("RegExp goal at a primary-expression solidus"),
-            Err(error) => error,
-        }
+        regexp::literal_diagnostic(body, flags, *span)
     }
 }
 

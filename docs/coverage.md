@@ -248,8 +248,21 @@ its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
 No RegExp literal AST or execution pass is exposed. Matching, intrinsics and
-grammar-driven reusable cover lookahead remain pending. Matching still produces
+grammar-driven cover lookahead remain pending. Matching still produces
 Unsupported and cannot receive positive execution credit.
+
+Scanner checkpoints now retain input positions and parser-owned template context
+before every token's trivia. Primary-expression RegExp rescans restore those
+checkpoints, truncate the division suffix, and cache the replacement token so
+subsequent scanning resumes after the literal. Failures retain an authoritative
+diagnostic and EOF sentinel. Five internal scanner/parser regressions exercise
+failed Div-goal lookahead, continuation after replacement, nested template tails,
+line-terminator trivia, lossless UTF-16, hashbang placement and failed RegExp
+rescans. An additional public regression and inspected diagnostic snapshot cover
+exact property errors in arrow, object, computed class and template contexts
+across Script, UTF-16, eval and dynamic Function entry points. Grammar-driven
+arrow/destructuring covers, matching and RegExp objects remain pending. Corpus
+inventories, runtime defaults, native guards and dependencies are unchanged.
 
 Literal flag validation implements IsValidRegularExpressionLiteral's allowed
 `d g i m s u v y` code points and duplicate rejection, followed by ParsePattern's

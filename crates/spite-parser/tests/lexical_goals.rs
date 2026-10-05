@@ -160,6 +160,42 @@ fn computed_accessor_lookahead_preserves_field_asi_and_private_name_uses() {
 }
 
 #[test]
+fn goal_rescans_keep_property_diagnostics_across_cover_and_template_contexts() {
+    let sources = [
+        r"(x = /[\p{Invalid}]/u) => x",
+        r"({x: /\p{WSpace}/v})",
+        r"`outer${ { key: /\p{Invalid}/u } }tail`",
+        r"class C { get [/\p{Invalid}/u]() {} }",
+        r"(x = /\p{gc=Latin}/u)",
+    ];
+    let errors: Vec<_> = sources
+        .into_iter()
+        .map(|source| {
+            let error = parse_script(source).unwrap_err();
+            assert_eq!(error.kind, DiagnosticKind::Syntax, "{source}");
+            assert!(
+                error.message.contains("Unicode property"),
+                "{source}: {error:?}"
+            );
+            let utf16 = JsString::from(source);
+            assert_eq!(parse_script_utf16(&utf16).unwrap_err(), error);
+            assert_eq!(
+                parse_eval_utf16(&utf16, EvalContext::default()).unwrap_err(),
+                error
+            );
+            assert_eq!(
+                parse_dynamic_function("x", &format!("return {source};"))
+                    .unwrap_err()
+                    .kind,
+                DiagnosticKind::Syntax
+            );
+            error
+        })
+        .collect();
+    insta::assert_debug_snapshot!(errors);
+}
+
+#[test]
 fn malformed_literal_boundary_diagnostics_snapshot() {
     let sources = [
         "/",

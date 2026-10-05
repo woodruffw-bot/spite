@@ -1,0 +1,46 @@
+---
+source: crates/spite-parser/tests/lexical_goals.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 5,
+            end: 21,
+        },
+        message: "unknown regular expression Unicode property",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 5,
+            end: 18,
+        },
+        message: "unknown regular expression Unicode property",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 16,
+            end: 30,
+        },
+        message: "unknown regular expression Unicode property",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 15,
+            end: 29,
+        },
+        message: "unknown regular expression Unicode property",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 5,
+            end: 20,
+        },
+        message: "unknown regular expression Unicode property value",
+    },
+]

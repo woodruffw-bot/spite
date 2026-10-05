@@ -36,6 +36,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Validate flat UnicodeSetsMode class unions, ranges, reserved punctuation, string disjunctions, and inversion early errors.
 - [x] Validate nested UnicodeSetsMode classes, intersection/subtraction grammar, and their MayContainStrings semantics without native recursion.
 - [x] Validate RegExp Unicode property expressions, exact edition-17 aliases, pinned Unicode values, and v-mode string-property early errors.
+- [x] Restore scanner checkpoints and template substitution context when primary-expression RegExp goals replace cached division lookahead.
 - [x] Parse untagged template literals with cooked/raw text and nested substitutions.
 - [x] Evaluate untagged template substitutions and string conversion.
 - [x] Add tagged templates with call/member precedence, raw/cooked components, frozen per-realm template objects, and parse-site identity.

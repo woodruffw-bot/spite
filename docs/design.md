@@ -74,9 +74,12 @@ boundary; a synthetic EOF cannot make a lexical failure successful. Ordinary
 cursor operations remain infallible to keep recursive grammar frames small.
 The scanner accepts each of the five lexical goals explicitly and has no template
 brace state. Parser-owned substitution context selects Div/TemplateTail while
-caching lookahead. Initial input uses HashbangOrRegExp. A primary-expression
-solidus is scanned with a RegExp goal; braces, backticks, and quotes inside its
-body cannot replace the literal's diagnostic with an unrelated JavaScript error.
+caching lookahead. Every cached token retains the scanner position and template
+context from before its trivia. Initial input uses HashbangOrRegExp. A
+primary-expression solidus restores that checkpoint and replaces its cached
+division suffix with a RegExp token. Subsequent scanning resumes after the full
+literal with the restored substitution context; braces, backticks, and quotes
+inside its body cannot substitute unrelated JavaScript diagnostics.
 This scanner implements token boundaries only. Literal validation rejects unknown
 or repeated flags and simultaneous u/v modes before Pattern parsing. The separate
 Pattern validator traverses groups iteratively, validates assertions, quantifiers,
@@ -98,8 +101,8 @@ case-sensitive edition-17 property aliases and pinned Unicode 18 general-categor
 and script values. String properties require v mode, cannot use P escapes, and
 participate in class MayContainStrings analysis. Matching remains Unsupported
 after the supported grammar validates.
-Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
-and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
+Before returning executable RegExp ASTs, complete grammar-driven cover lookahead.
+Arrow and destructuring covers still balance raw Div-goal tokens.
 Computed class accessor lookahead parses its name with the expression grammar and
 retains that AST and its private-name uses for the ensuing accessor or ASI field.
 Nested computed names are parsed once.
