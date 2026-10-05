@@ -6166,3 +6166,139 @@ test/language/literals/regexp/named-groups/invalid-punctuator-within-groupspecif
 test/language/literals/regexp/named-groups/invalid-punctuator-within-groupspecifier.js	323	333	invalid regular expression group name identifier
 test/language/literals/regexp/named-groups/invalid-unterminated-groupspecifier-u.js	323	332	invalid regular expression group name identifier
 test/language/literals/regexp/named-groups/invalid-unterminated-groupspecifier.js	323	331	invalid regular expression group name identifier
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F-negated.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid-negated.js	450	470	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid.js	450	470	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N-negated.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No-negated.js	450	465	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No.js	450	465	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T-negated.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y-negated.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y.js	450	464	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes-negated.js	450	466	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes.js	450	466	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/character-class-range-end.js	524	538	regular expression class range requires character endpoints
+test/built-ins/RegExp/property-escapes/character-class-range-no-dash-end.js	521	540	regular expression class range requires character endpoints
+test/built-ins/RegExp/property-escapes/character-class-range-no-dash-start.js	521	540	regular expression class range requires character endpoints
+test/built-ins/RegExp/property-escapes/character-class-range-start.js	524	538	regular expression class range requires character endpoints
+test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit-negated.js	491	505	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit.js	491	505	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit-negated.js	491	505	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit.js	491	505	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-negated.js	491	512	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script.js	491	512	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script-negated.js	491	512	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script.js	491	512	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation-negated.js	491	522	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation.js	491	522	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-empty-negated.js	491	500	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-empty.js	491	500	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-invalid-negated.js	491	507	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/grammar-extension-invalid.js	491	507	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/grammar-extension-no-braces-negated.js	491	496	regular expression Unicode property requires braces
+test/built-ins/RegExp/property-escapes/grammar-extension-no-braces-value-negated.js	491	497	regular expression Unicode property requires braces
+test/built-ins/RegExp/property-escapes/grammar-extension-no-braces-value.js	491	497	regular expression Unicode property requires braces
+test/built-ins/RegExp/property-escapes/grammar-extension-no-braces.js	491	496	regular expression Unicode property requires braces
+test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only-negated.js	491	505	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only.js	491	505	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-separator-negated.js	491	521	invalid regular expression Unicode property expression
+test/built-ins/RegExp/property-escapes/grammar-extension-separator-only-negated.js	491	499	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-separator-only.js	491	499	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-separator.js	491	521	invalid regular expression Unicode property expression
+test/built-ins/RegExp/property-escapes/grammar-extension-unclosed-negated.js	491	497	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-unclosed.js	491	497	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/grammar-extension-unopened-negated.js	491	497	regular expression Unicode property requires braces
+test/built-ins/RegExp/property-escapes/grammar-extension-unopened.js	491	497	regular expression Unicode property requires braces
+test/built-ins/RegExp/property-escapes/loose-matching-01-negated.js	440	482	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/loose-matching-01.js	440	482	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/loose-matching-02-negated.js	440	458	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/loose-matching-02.js	440	458	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/loose-matching-03-negated.js	440	450	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-03.js	440	450	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-04-negated.js	440	455	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-04.js	440	455	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-05-negated.js	440	452	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-05.js	440	452	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-06-negated.js	440	482	invalid regular expression Unicode property expression
+test/built-ins/RegExp/property-escapes/loose-matching-06.js	440	482	invalid regular expression Unicode property expression
+test/built-ins/RegExp/property-escapes/loose-matching-07-negated.js	440	466	invalid regular expression Unicode property expression
+test/built-ins/RegExp/property-escapes/loose-matching-07.js	440	466	invalid regular expression Unicode property expression
+test/built-ins/RegExp/property-escapes/loose-matching-08-negated.js	440	450	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-08.js	440	450	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-09-negated.js	440	452	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-09.js	440	452	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-10-negated.js	440	455	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-10.js	440	455	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-11-negated.js	440	466	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/loose-matching-11.js	440	466	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/loose-matching-12-negated.js	440	465	unknown regular expression Unicode property value
+test/built-ins/RegExp/property-escapes/loose-matching-12.js	440	465	unknown regular expression Unicode property value
+test/built-ins/RegExp/property-escapes/loose-matching-13-negated.js	440	456	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-13.js	440	456	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-14-negated.js	440	456	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/loose-matching-14.js	440	456	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals-negated.js	416	440	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals.js	416	440	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-negated.js	416	439	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category.js	416	439	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals-negated.js	416	430	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals.js	416	430	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-negated.js	416	429	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script.js	416	429	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals-negated.js	416	441	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals.js	416	441	expected regular expression Unicode property identifier
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-negated.js	416	440	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions.js	416	440	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-existent-binary-property-negated.js	413	441	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-existent-binary-property.js	413	441	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/non-existent-property-and-value-negated.js	420	442	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/non-existent-property-and-value.js	420	442	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/non-existent-property-existing-value-negated.js	413	442	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/non-existent-property-existing-value.js	413	442	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion-negated.js	472	500	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion.js	472	500	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC-negated.js	472	493	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC.js	472	493	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD-negated.js	472	493	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD.js	472	493	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC-negated.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD-negated.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure-negated.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion-negated.js	472	505	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion.js	472	505	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link-negated.js	472	492	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link.js	472	492	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen-negated.js	472	485	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen.js	472	485	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic-negated.js	472	495	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic.js	472	495	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point-negated.js	472	513	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point.js	472	513	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend-negated.js	472	500	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend.js	472	500	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue-negated.js	472	496	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue.js	472	496	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start-negated.js	472	493	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start.js	472	493	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase-negated.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math-negated.js	472	489	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math.js	472	489	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase-negated.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase.js	472	494	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark-negated.js	472	507	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark.js	472	507	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value-negated.js	433	451	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value.js	433	451	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure-negated.js	433	455	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure.js	433	455	unknown regular expression Unicode property
+test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-negated.js	433	461	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value-negated.js	433	461	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value.js	433	461	unknown regular expression Unicode property name
+test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break.js	433	450	unknown regular expression Unicode property
