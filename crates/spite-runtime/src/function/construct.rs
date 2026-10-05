@@ -1,4 +1,4 @@
-//! Base ordinary construction and iterative bound forwarding (10.2.2, 10.4.1.2).
+//! Ordinary construction and iterative bound/default forwarding (10.2.2, 10.4.1.2).
 
 use super::{Builtin, Callable};
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
@@ -22,7 +22,15 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.enter_call(span)?;
-        let result = self.construct_inner(function, arguments, new_target, span);
+        let mut fields = Vec::new();
+        let result = self
+            .construct_inner(function, arguments, new_target, &mut fields, span)
+            .and_then(|value| {
+                for fields in fields.iter().rev() {
+                    self.initialize_fields(&value, fields)?;
+                }
+                Ok(value)
+            });
         self.call_depth -= 1;
         result
     }
@@ -32,6 +40,7 @@ impl Realm {
         function: Value,
         mut arguments: Vec<Value>,
         new_target: Option<ObjectHandle>,
+        fields: &mut Vec<std::rc::Rc<[super::ClassField]>>,
         span: Span,
     ) -> Result<Value, Error> {
         self.check_argument_count(arguments.len(), span)?;
@@ -111,9 +120,16 @@ impl Realm {
                     let Value::Object(superclass) = superclass else {
                         unreachable!("constructor")
                     };
+                    if !class.fields.is_empty() {
+                        fields.try_reserve(1).map_err(|_| Error::Limit {
+                            span,
+                            message: "derived field forwarding capacity exceeded".into(),
+                        })?;
+                        fields.push(class.fields);
+                    }
                     function = superclass;
-                    // Fields/private elements are unsupported, so there is no
-                    // per-class initialization after this tail construction.
+                    // Initialize each default class's own fields, from the
+                    // superclass outward, after this forwarded construction.
                 }
                 Callable::ClassConstructor(class) if class.derived => {
                     return self.call_ordinary(
@@ -124,6 +140,7 @@ impl Realm {
                             new_target: Some(new_target),
                             home_object: Some(class.method.home_object),
                             derived_constructor: Some(function),
+                            class_field_initializer: false,
                         },
                         arguments.into_iter(),
                         span,
@@ -269,6 +286,9 @@ impl Realm {
         };
         let instance = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let this = Value::Object(instance);
+        // Base instance elements precede FunctionDeclarationInstantiation,
+        // including parameter defaults, and use their own initializer context.
+        self.initialize_instance_fields(&this, &function, span)?;
         let result = self.call_ordinary(
             code,
             function,
@@ -277,6 +297,7 @@ impl Realm {
                 new_target: Some(new_target),
                 home_object,
                 derived_constructor: None,
+                class_field_initializer: false,
             },
             arguments.into_iter(),
             span,

@@ -126,7 +126,7 @@ Script {
                         ),
                     },
                     elements: [
-                        ClassElement {
+                        Method {
                             is_static: false,
                             property: ObjectProperty {
                                 name: Literal(

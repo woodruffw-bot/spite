@@ -42,7 +42,7 @@ pub struct FunctionName {
     pub span: Span,
 }
 
-/// A class without fields, private elements, or static blocks.
+/// A class without private elements or static blocks.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Class {
     /// Internal class binding, also the declaration binding when present.
@@ -53,19 +53,58 @@ pub struct Class {
     pub default_constructor: bool,
     /// Explicit constructor, or an empty default constructor body.
     pub constructor: Rc<Function>,
-    /// Non-constructor methods and accessors in source order.
+    /// Non-constructor methods, accessors, and public fields in source order.
     pub elements: Vec<ClassElement>,
     /// Complete class definition source text.
     pub source: FunctionSource,
 }
 
-/// An instance or static ordinary class method/accessor.
+/// An instance or static ordinary method/accessor or public field.
 #[derive(Clone, Debug, PartialEq)]
-pub struct ClassElement {
-    /// Whether the property is defined on the constructor.
-    pub is_static: bool,
-    /// Method syntax and key; kind is Method, Getter, or Setter.
-    pub property: ObjectProperty,
+pub enum ClassElement {
+    /// Ordinary method or accessor syntax.
+    Method {
+        /// Whether the property is defined on the constructor.
+        is_static: bool,
+        /// Method syntax and key; kind is Method, Getter, or Setter.
+        property: ObjectProperty,
+    },
+    /// Public field syntax; an absent initializer supplies undefined.
+    Field {
+        /// Whether the field is initialized on the constructor.
+        is_static: bool,
+        /// Literal or computed field name.
+        name: PropertyName,
+        /// AssignmentExpression evaluated in a fresh initializer context.
+        initializer: Option<Rc<Expr>>,
+        /// Complete field range, including its semicolon when present.
+        span: Span,
+    },
+}
+
+impl ClassElement {
+    /// Whether this element belongs to the constructor rather than instances.
+    pub fn is_static(&self) -> bool {
+        match self {
+            Self::Method { is_static, .. } | Self::Field { is_static, .. } => *is_static,
+        }
+    }
+
+    /// Literal or computed element name.
+    pub fn name(&self) -> &PropertyName {
+        match self {
+            Self::Method { property, .. } => &property.name,
+            Self::Field { name, .. } => name,
+        }
+    }
+
+    /// Complete element range.
+    pub fn span(&self) -> Span {
+        match self {
+            Self::Method { property, .. } => property.span,
+            Self::Field { span, .. } => *span,
+        }
+    }
 }
 
 /// Shared syntax for an ordinary function, method, or accessor body.

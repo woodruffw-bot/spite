@@ -89,11 +89,7 @@ impl Parser {
             let mut kind = PropertyKind::Method;
             if !token.escaped && !self.at("(") {
                 if let Kind::Word(prefix) = &token.kind {
-                    if matches!(prefix.as_str(), "get" | "set")
-                        && !self.at(";")
-                        && !self.at("}")
-                        && !self.at("=")
-                    {
+                    if matches!(prefix.as_str(), "get" | "set") && self.class_method_name_ahead() {
                         kind = if prefix == "get" {
                             PropertyKind::Getter
                         } else {
@@ -106,7 +102,10 @@ impl Parser {
                                 "private class elements are not implemented",
                             ));
                         }
-                    } else if prefix == "async" && !self.current().newline {
+                    } else if prefix == "async"
+                        && !self.current().newline
+                        && (self.at("*") || self.class_method_name_ahead())
+                    {
                         return Err(early_unsupported(
                             token.span,
                             "async methods are not implemented",
@@ -117,7 +116,28 @@ impl Parser {
             let name_span = token.span;
             let property_name = self.object_property_name(token)?;
             if !self.at("(") {
-                return Err(self.unsupported("class fields are not implemented"));
+                if kind != PropertyKind::Method {
+                    return Err(self.error("class accessor requires parameters"));
+                }
+                if matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor") || (is_static && name == &JsString::from("prototype")))
+                {
+                    return Err(early(name_span, "invalid class field name"));
+                }
+                let initializer = if self.eat("=") {
+                    Some(Rc::new(self.class_field_initializer()?))
+                } else {
+                    None
+                };
+                if !(self.eat(";") || self.at("}") || self.current().newline) {
+                    return Err(self.error("expected class field terminator"));
+                }
+                elements.push(ClassElement::Field {
+                    is_static,
+                    name: property_name,
+                    initializer,
+                    span: Span::new(element_start, self.tokens[self.index - 1].span.end),
+                });
+                continue;
             }
             let is_constructor = !is_static
                 && matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor"));
@@ -140,7 +160,7 @@ impl Parser {
                 };
                 constructor = Some(function);
             } else {
-                elements.push(ClassElement {
+                elements.push(ClassElement::Method {
                     is_static,
                     property: ObjectProperty {
                         name: property_name,
@@ -181,6 +201,61 @@ impl Parser {
             source,
         }))
     }
+
+    fn class_field_initializer(&mut self) -> Result<Expr, Diagnostic> {
+        // ContainsArguments crosses arrows and computed method names, while
+        // ordinary functions/method bodies establish their own boundary (15.7.2).
+        let previous = (
+            self.allow_new_target,
+            self.allow_super_property,
+            self.allow_super_call,
+            self.allow_arguments,
+        );
+        self.allow_new_target = true;
+        self.allow_super_property = true;
+        self.allow_super_call = false;
+        self.allow_arguments = false;
+        let result = self.expression_with_in(2, true);
+        (
+            self.allow_new_target,
+            self.allow_super_property,
+            self.allow_super_call,
+            self.allow_arguments,
+        ) = previous;
+        result
+    }
+
+    fn class_method_name_ahead(&self) -> bool {
+        let start = self.index;
+        let end = match &self.current().kind {
+            Kind::Word(_) | Kind::Literal(_) => start + 1,
+            Kind::Punct("#") => return true,
+            Kind::Punct("[") => {
+                let mut depth = 0usize;
+                let mut end = None;
+                for (index, token) in self.tokens.iter().enumerate().skip(start) {
+                    match token.kind {
+                        Kind::Punct("[") => depth += 1,
+                        Kind::Punct("]") => {
+                            depth -= 1;
+                            if depth == 0 {
+                                end = Some(index + 1);
+                                break;
+                            }
+                        }
+                        Kind::Eof => break,
+                        _ => {}
+                    }
+                }
+                let Some(end) = end else { return false };
+                end
+            }
+            _ => return false,
+        };
+        self.tokens
+            .get(end)
+            .is_some_and(|token| token.kind == Kind::Punct("("))
+    }
 }
 
 fn early_unsupported(span: Span, message: &str) -> Diagnostic {
@@ -196,13 +271,24 @@ pub(super) fn validate_class(class: &Class) -> Result<(), Diagnostic> {
     }
     function::validate_method(&class.constructor, true)?;
     for element in &class.elements {
-        if let PropertyName::Computed(key) = &element.property.name {
+        if let PropertyName::Computed(key) = element.name() {
             validate_expr(key, true)?;
         }
-        let ExprKind::Function(method) = &element.property.value.kind else {
-            unreachable!("method syntax")
-        };
-        function::validate_method(method, true)?;
+        match element {
+            ClassElement::Method { property, .. } => {
+                let ExprKind::Function(method) = &property.value.kind else {
+                    unreachable!("method syntax")
+                };
+                function::validate_method(method, true)?;
+            }
+            ClassElement::Field {
+                initializer: Some(initializer),
+                ..
+            } => validate_expr(initializer, true)?,
+            ClassElement::Field {
+                initializer: None, ..
+            } => {}
+        }
     }
     Ok(())
 }

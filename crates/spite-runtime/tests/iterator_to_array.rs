@@ -113,7 +113,7 @@ fn large_default_inputs_work_and_opted_in_failures_skip_cleanup_and_handlers() {
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
     realm
-        .eval("let flag=0,i={next:()=>Function('class C{field;}'),return:()=>{flag=3;return {};}}")
+        .eval("let flag=0,i={next:()=>Function('class C{#field;}'),return:()=>{flag=3;return {};}}")
         .unwrap();
     assert!(matches!(
         realm.eval("try{Iterator.prototype.toArray.call(i);}catch{flag=1;}finally{flag=2;}"),

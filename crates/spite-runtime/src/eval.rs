@@ -62,7 +62,7 @@ impl Realm {
             // GetThisEnvironment skips declarative/with/arrow environments.
             let mut next = self.scopes.last().cloned();
             while let Some(environment) = next {
-                let (function, method, derived, outer) =
+                let (function, method, derived, field, outer) =
                     self.object_work(span, |objects, budget| {
                         budget.charge(1)?;
                         let record = objects.environment(&environment)?;
@@ -70,6 +70,7 @@ impl Realm {
                             record.this.is_some(),
                             record.home_object.is_some(),
                             record.derived_constructor.is_some(),
+                            record.class_field_initializer,
                             record.outer.clone(),
                         ))
                     })?;
@@ -77,6 +78,7 @@ impl Realm {
                     context.in_function = true;
                     context.in_method = method;
                     context.in_derived_constructor = derived;
+                    context.in_class_field_initializer = field;
                     break;
                 }
                 next = outer;

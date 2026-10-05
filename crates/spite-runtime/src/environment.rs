@@ -36,6 +36,7 @@ pub(crate) struct Environment {
     pub home_object: Option<Handle>,
     // The active derived constructor, needed by GetSuperConstructor through arrows/eval.
     pub derived_constructor: Option<Handle>,
+    pub class_field_initializer: bool,
 }
 
 #[derive(Default)]
@@ -43,6 +44,7 @@ pub(crate) struct FunctionContext {
     pub new_target: Option<Handle>,
     pub home_object: Option<Handle>,
     pub derived_constructor: Option<Handle>,
+    pub class_field_initializer: bool,
 }
 
 impl Trace for Environment {

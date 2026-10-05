@@ -27,7 +27,7 @@ not an alternative language specification.
 | Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
 | Math | Fixed constants/tag, abs/sign, integral and binary32/binary16 rounding, extrema, clz32/imul, pow/sqrt/cbrt/hypot, logarithmic/exponential, trigonometric/hyperbolic methods, exact iterable sumPrecise, realm-specific random sequences, and complete own reflection |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/pattern/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
-| Classes | Base/derived declarations and expressions, ordered heritage and prototype checks, explicit/default constructors, uninitialized this and super calls, strict instance/static methods and accessors, class-name TDZs, immutable internal names, inferred names, descriptors, newTarget, and exact source retention |
+| Classes | Base/derived declarations and expressions, ordered heritage and prototype checks, explicit/default constructors, uninitialized this and super calls, strict instance/static methods and accessors, class-name TDZs, immutable internal names, inferred names, public instance/static fields, descriptors, newTarget, and exact source retention |
 | Properties | Ordinary own/inherited and super references, separate super receivers, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, non-strict with, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers and object/array binding patterns bind supported throws |
@@ -1026,7 +1026,7 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, fields, private elements, static blocks,
+Array.fromAsync, private elements, static blocks,
 regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -1276,7 +1276,7 @@ TDZs and ordering, name inference before static overrides, accessor merging,
 Symbol/lone-surrogate keys, exact class/method source, eval/Function compilation,
 super properties, abrupt context restoration, collection, checked home-object
 handles, and opt-in name limits. Parser AST/diagnostic snapshots cover constructor,
-strictness, scope, and declaration errors. Unsupported fields, private
+strictness, scope, and declaration errors. Unsupported private
 elements, static blocks, and async/generator methods retain no conformance credit.
 Five additional recursive class construction/method/computed-name/eval cases run
 on two-mebibyte native stacks with the existing 32-call, 64-evaluation, and
@@ -1307,7 +1307,7 @@ AST/diagnostic snapshots check inherited constructor context, method/function
 boundaries, heritage precedence, and forbidden new/assignment/optional super calls.
 Four additional recursive derived construction/default/eval cases exercise the
 existing native-stack guards on two-mebibyte threads with normal debug profiles.
-Existing host-abort controls now use unimplemented fields as their source gap.
+Existing host-abort controls use unimplemented private elements as their source gap.
 
 Sixteen unchanged class heritage/derived originals add 32 variants: 30 harness
 positives and two reviewed strict-mode parse negatives. They cover constructor and
@@ -1320,3 +1320,18 @@ whole sources, producing 78 variants: 74 positives and four parse negatives.
 The remaining 34 sources require generator or async methods and receive no credit.
 All source bytes, Git blob hashes, assertions, metadata, helpers, and the pin are
 unchanged; both toolchains pass the 32 added variants under ordinary defaults.
+
+Public-field regressions cover literal/computed/Symbol/UTF-16 names, undefined
+initializers, own data descriptors and inherited setter bypass, key/method ordering
+before static initialization, internal class-name initialization and inferred names,
+base initialization before parameter defaults, derived initialization after super
+binds this, abrupt partial initialization and repeated super calls, constructor
+object returns, default forwarding through a hundred classes, and bound/custom
+newTarget construction. Initializer environments preserve strict this, super,
+undefined new.target, lexical captures, function/class name inference, and direct
+eval's arguments restriction through arrows and computed method names. Native
+controls check descriptor rejection after initializer effects, collection, invalid
+field edges before mutation, host-abort restoration, and unchanged opt-in quotas.
+AST/diagnostic snapshots cover field/method lookahead, ASI, initializer boundaries,
+forbidden literal names, arguments, and super calls. Four more recursion cases
+exercise instance/static/derived/eval initializers on two-mebibyte debug stacks.

@@ -196,7 +196,7 @@ fn unlimited_flat_patterns_and_opted_in_host_aborts_keep_distinct_semantics() {
     );
     let mut realm = Realm::default();
     realm.eval("let flag=0,closed=0,iterator={next(){return{done:false,value:undefined};},return(){closed++;return {};},[Symbol.iterator](){return this;}};").unwrap();
-    assert!(matches!(realm.eval("try{try{throw iterator;}catch([x=Function('class C{field;}')]){}}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{try{throw iterator;}catch([x=Function('class C{#field;}')]){}}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
     assert_eq!(
         realm.eval("flag===0 && closed===0 && typeof x==='undefined'"),
         Ok(Value::Boolean(true))

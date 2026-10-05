@@ -371,6 +371,21 @@ impl Trace for OrdinaryObject {
             .chain(self.set.iter().flat_map(|data| data.trace()))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))
+            .chain(self.callable.iter().flat_map(|callable| {
+                let fields = match callable {
+                    Callable::ClassConstructor(class) => class.fields.as_ref(),
+                    _ => &[],
+                };
+                fields
+                    .iter()
+                    .filter_map(|field| field.initializer.as_ref())
+                    .flat_map(|initializer| {
+                        [
+                            Some(&initializer.environment.0),
+                            Some(&initializer.home_object),
+                        ]
+                    })
+            }))
             .chain(self.parameter_map.iter().flat_map(|map| {
                 std::iter::once(Some(&map.environment.0)).chain(map.names.values().map(|_| None))
             }))

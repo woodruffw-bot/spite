@@ -2,14 +2,16 @@
 
 use crate::{Error, Realm, Value, environment::BindingState, object::DataDescriptor};
 use spite_core::{JsString, PropertyKey};
-use spite_parser::ast::{Class, Expr, ExprKind, PropertyName};
+use spite_parser::ast::{Class, ClassElement, Expr, ExprKind, PropertyName};
 use std::collections::BTreeMap;
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub(crate) struct ClassConstructor {
     pub method: super::MethodFunction,
     pub derived: bool,
     pub default: bool,
+    pub fields: Rc<[super::ClassField]>,
 }
 
 impl Realm {
@@ -129,26 +131,60 @@ impl Realm {
                 .unwrap_or_else(|| PropertyKey::from(""));
             // SetFunctionName precedes every computed name and static method.
             self.set_function_name(&function, name, None, span)?;
+            let mut instance_fields = Vec::new();
+            let mut static_fields = Vec::new();
             for element in &syntax.elements {
-                let property = &element.property;
-                self.tick(property.span)?;
-                let key = match &property.name {
-                    PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,
+                let span = element.span();
+                self.tick(span)?;
+                let key = match element.name() {
+                    PropertyName::Literal(literal) => self.literal_value(literal, span)?,
                     PropertyName::Computed(expression) => self.expression(expression)?,
                 };
-                let key = self.property_key(key, property.span)?;
-                let home = if element.is_static {
+                let key = self.property_key(key, span)?;
+                let home = if element.is_static() {
                     &function
                 } else {
                     &prototype
                 };
-                self.define_method_property(home, key, property, false)?;
+                match element {
+                    ClassElement::Method { property, .. } => {
+                        self.define_method_property(home, key, property, false)?;
+                    }
+                    ClassElement::Field { initializer, .. } => {
+                        let field = super::ClassField {
+                            name: key,
+                            initializer: initializer.as_ref().map(|expression| {
+                                super::class_field::FieldInitializer {
+                                    expression: expression.clone(),
+                                    environment: environment.clone(),
+                                    home_object: home.clone(),
+                                }
+                            }),
+                            span,
+                        };
+                        let fields = if element.is_static() {
+                            &mut static_fields
+                        } else {
+                            &mut instance_fields
+                        };
+                        self.object_work(span, |_, budget| budget.charge(1))?;
+                        fields.try_reserve(1).map_err(|_| Error::Limit {
+                            span,
+                            message: "class field allocation capacity exceeded".into(),
+                        })?;
+                        fields.push(field);
+                    }
+                }
             }
-            Ok(Value::Object(function))
+            self.object_work(span, |objects, budget| {
+                objects.set_class_fields(&function, instance_fields.into(), budget)
+            })?;
+            Ok((function, static_fields))
         })();
         self.strict = previous_strict;
         self.scopes.pop();
-        let value = result?;
+        let (function, static_fields) = result?;
+        let value = Value::Object(function);
         // The name remains uninitialized during *all* computed names. Methods
         // capture this immutable binding, not the mutable declaration binding.
         if let Some(name) = &syntax.name {
@@ -160,6 +196,9 @@ impl Realm {
                 .expect("class name")
                 .value = Some(value.clone());
         }
+        // Initialize the internal class name before static initializers. All
+        // computed names and method definitions have already completed (15.7.14).
+        self.initialize_fields(&value, &static_fields)?;
         Ok(value)
     }
 

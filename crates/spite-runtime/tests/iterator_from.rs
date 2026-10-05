@@ -183,7 +183,7 @@ fn cached_callables_and_sources_survive_collection_after_public_deletion() {
 fn host_failures_skip_handlers_and_recursive_next_restores_native_call_state() {
     let mut realm = Realm::default();
     realm
-        .eval("let flag=0,w=Iterator.from({next:()=>Function('class C{field;}'),return:()=>{flag=3;}})")
+        .eval("let flag=0,w=Iterator.from({next:()=>Function('class C{#field;}'),return:()=>{flag=3;}})")
         .unwrap();
     assert!(matches!(
         realm.eval("try{w.next();}catch{flag=1;}finally{flag=2;}"),

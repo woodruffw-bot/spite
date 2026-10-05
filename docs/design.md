@@ -1135,7 +1135,7 @@ other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported class fields, private elements, static
+function context. Unsupported private elements, static
 blocks, generator/async functions, and native-stack exhaustion remain separate
 diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
@@ -2047,9 +2047,9 @@ their home object. Calling a class throws TypeError after evaluating arguments;
 its callable metadata still permits apply to read the argument list first.
 Construction shares ordinary base allocation, newTarget prototype selection,
 strict parameter/body execution, and object-versus-primitive return rules. The
-empty default constructor implements the base branch of 15.7.14 without fields;
-fields, private elements, and static blocks remain
-Unsupported. Existing native-stack guards and opt-in quotas are unchanged.
+empty default constructor implements the base branch of 15.7.14 and initializes
+instance fields. Private elements and static blocks remain Unsupported. Existing
+native-stack guards and opt-in quotas are unchanged.
 
 Class constructors inherit Function.prototype and own a non-writable,
 non-enumerable, non-configurable prototype property. Their prototype's constructor
@@ -2085,9 +2085,39 @@ undefined returns after restoring the caller context (10.2.2).
 
 Default derived constructors forward argument Lists directly, without invoking
 Array's iterator. Bound/default forwarding shares the iterative construction
-loop; no instance elements require work on return because fields and private
-elements are unsupported. Explicit constructors, superclass calls, and recursive
-computed names retain the existing call/evaluation/parser stack guards. The
+loop; pending default-constructor fields initialize on the returned object in
+superclass-to-subclass order. Private elements remain unsupported. Explicit
+constructors, superclass calls, and recursive computed names retain the existing call/evaluation/parser stack guards. The
 SuperCall expression uses the small call dispatch path to avoid retaining the
 general debug expression frame during recursive construction. Heritage, super,
 and default forwarding introduce no default resource quotas.
+
+## Public class fields
+
+ClassFieldDefinitionEvaluation evaluates and converts every public key alongside
+method definitions before any static initializer runs (15.7.10/14). Field records
+hold immutable shared syntax, the strict class lexical environment, and the instance
+prototype or constructor as home object. Constructors retain their instance record
+List in shared storage and trace initializer environments/home objects. Every edge
+is validated before installing the List; opted-in work exhaustion leaves it intact.
+The internal class name is initialized before static fields run, even when a static
+initializer subsequently throws and leaves the outer declaration binding in its TDZ.
+
+DefineField evaluates an initializer in its own strict function environment, with
+initialized this, an undefined new.target, a super property binding, and the field
+name used by NamedEvaluation (7.3.32, 15.2.3). It omits declaration instantiation;
+the initializer closure is internal and cannot be obtained by JavaScript. Arrows
+inherit that environment. Parsing and direct eval reject ContainsArguments through
+arrows and computed method names while ordinary function/method bodies establish
+new boundaries. Super calls are forbidden in initializer context. Caller scopes,
+strictness, and variable environments restore after language and host failures.
+
+CreateDataPropertyOrThrow defines an enumerable/writable/configurable own property
+without invoking inherited setters. Initializers run before descriptor rejection;
+fields that precede an abrupt completion remain installed. Base fields initialize
+before parameter defaults/body execution. Explicit derived fields initialize after
+BindThisValue and before SuperCall returns; failure leaves this initialized, and
+repeated super calls never repeat fields. Returning an object without super skips
+derived fields. Default derived construction retains pending field Lists in the
+iterative forwarding loop and initializes them from the superclass outward on the
+actual returned object, without Array iteration or a default resource quota.

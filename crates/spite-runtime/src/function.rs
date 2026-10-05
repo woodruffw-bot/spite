@@ -15,6 +15,8 @@ mod bound;
 mod builtin;
 mod class;
 pub(crate) use class::ClassConstructor;
+mod class_field;
+pub(crate) use class_field::ClassField;
 mod construct;
 mod dynamic;
 mod error;
@@ -1280,6 +1282,7 @@ impl Realm {
                             new_target: None,
                             home_object: Some(method.home_object),
                             derived_constructor: None,
+                            class_field_initializer: false,
                         },
                         arguments,
                         span,

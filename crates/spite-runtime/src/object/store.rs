@@ -434,8 +434,30 @@ impl Objects {
                 },
                 derived,
                 default,
+                fields: std::rc::Rc::from([]),
             },
         )));
+        Ok(())
+    }
+
+    pub(crate) fn set_class_fields(
+        &mut self,
+        function: &Handle,
+        fields: std::rc::Rc<[crate::function::ClassField]>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        for field in fields.iter() {
+            budget.charge(1)?;
+            if let Some(initializer) = &field.initializer {
+                self.environment(&initializer.environment)?;
+                self.inspect(&initializer.home_object)?;
+            }
+        }
+        let Some(Callable::ClassConstructor(class)) = &mut self.object_mut(function)?.callable
+        else {
+            return Err(Error::WrongKind);
+        };
+        class.fields = fields;
         Ok(())
     }
 
@@ -530,6 +552,7 @@ impl Objects {
         record.new_target = context.new_target;
         record.home_object = context.home_object;
         record.derived_constructor = context.derived_constructor;
+        record.class_field_initializer = context.class_field_initializer;
         Ok(environment)
     }
 
@@ -570,6 +593,7 @@ impl Objects {
                 new_target: None,
                 home_object: None,
                 derived_constructor: None,
+                class_field_initializer: false,
             },
         ))?))
     }

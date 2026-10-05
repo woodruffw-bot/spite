@@ -147,9 +147,11 @@ impl Parser {
         let previous = self.allow_new_target;
         let previous_super = self.allow_super_property;
         let previous_super_call = self.allow_super_call;
+        let previous_arguments = self.allow_arguments;
         self.allow_new_target = true;
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
+        self.allow_arguments = true;
         let result = (|| {
             let parameters = match kind {
                 PropertyKind::Getter => {
@@ -193,6 +195,7 @@ impl Parser {
         self.allow_new_target = previous;
         self.allow_super_property = previous_super;
         self.allow_super_call = previous_super_call;
+        self.allow_arguments = previous_arguments;
         self.depth -= 1;
         result
     }

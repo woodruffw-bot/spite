@@ -76,6 +76,8 @@ pub struct EvalContext {
     pub in_method: bool,
     /// Whether that function is a derived class constructor.
     pub in_derived_constructor: bool,
+    /// Whether the nearest non-arrow function is a class field initializer.
+    pub in_class_field_initializer: bool,
 }
 
 /// Parses lossless UTF-16 eval code with inherited strictness and caller context.
@@ -87,6 +89,7 @@ pub fn parse_eval_utf16(source: &JsString, context: EvalContext) -> Result<Scrip
     parser.allow_new_target = context.in_function;
     parser.allow_super_property = context.in_method;
     parser.allow_super_call = context.in_derived_constructor;
+    parser.allow_arguments = !context.in_class_field_initializer;
     parse_script_contents_with_strictness(&mut parser, context.strict)
 }
 
@@ -161,6 +164,7 @@ struct Parser {
     allow_new_target: bool,
     allow_super_property: bool,
     allow_super_call: bool,
+    allow_arguments: bool,
 }
 
 impl Parser {
@@ -189,6 +193,7 @@ impl Parser {
             allow_new_target: false,
             allow_super_property: false,
             allow_super_call: false,
+            allow_arguments: true,
         })
     }
 
@@ -586,6 +591,14 @@ impl Parser {
     }
 
     fn make_expr(&self, kind: ExprKind, span: Span) -> Result<Expr, Diagnostic> {
+        if !self.allow_arguments
+            && matches!(&kind, ExprKind::Identifier(name) if name == "arguments")
+        {
+            return Err(early(
+                span,
+                "arguments is not allowed in a class field initializer",
+            ));
+        }
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::Update { argument, .. } => argument.depth,
@@ -599,11 +612,16 @@ impl Parser {
                 .elements
                 .iter()
                 .map(|element| {
-                    let key = match &element.property.name {
+                    let key = match element.name() {
                         PropertyName::Computed(key) => key.depth,
                         PropertyName::Literal(_) => 0,
                     };
-                    key.max(element.property.value.depth)
+                    key.max(match element {
+                        ClassElement::Method { property, .. } => property.value.depth,
+                        ClassElement::Field { initializer, .. } => initializer
+                            .as_ref()
+                            .map_or(0, |expression| expression.depth),
+                    })
                 })
                 .chain(
                     class

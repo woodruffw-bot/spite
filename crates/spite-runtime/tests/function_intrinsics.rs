@@ -74,11 +74,11 @@ fn complete_own_reflection_and_integrity_operations_do_not_invoke_accessors() {
 #[test]
 fn unsupported_dynamic_syntax_skips_handlers_after_argument_effects() {
     for expression in [
-        "Function((flag=3,'class C{field;}'))",
-        "new Function((flag=3,'class C{field;}'))",
-        "Function.call(null,(flag=3,'class C{field;}'))",
-        "new (Function.bind(null))((flag=3,'class C{field;}'))",
-        "Reflect.construct(Function,[(flag=3,'class C{field;}')])",
+        "Function((flag=3,'class C{#field;}'))",
+        "new Function((flag=3,'class C{#field;}'))",
+        "Function.call(null,(flag=3,'class C{#field;}'))",
+        "new (Function.bind(null))((flag=3,'class C{#field;}'))",
+        "Reflect.construct(Function,[(flag=3,'class C{#field;}')])",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();

@@ -108,7 +108,7 @@ Script {
                         ),
                     },
                     elements: [
-                        ClassElement {
+                        Method {
                             is_static: true,
                             property: ObjectProperty {
                                 name: Literal(
@@ -166,7 +166,7 @@ Script {
                                 },
                             },
                         },
-                        ClassElement {
+                        Method {
                             is_static: false,
                             property: ObjectProperty {
                                 name: Computed(

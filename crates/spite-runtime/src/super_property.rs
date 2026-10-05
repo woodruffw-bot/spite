@@ -67,6 +67,9 @@ impl Realm {
                 "derived constructor this is already initialized",
             ));
         }
+        // BindThisValue precedes instance initialization. A throwing initializer
+        // leaves this initialized; a repeated super call never reruns the fields.
+        self.initialize_instance_fields(&instance, &function, span)?;
         Ok(instance)
     }
 

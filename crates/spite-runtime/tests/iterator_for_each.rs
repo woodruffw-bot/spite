@@ -140,7 +140,7 @@ fn large_default_iterations_work_and_host_failures_bypass_handlers_and_closing()
         .unwrap();
     assert!(matches!(
         realm.eval(
-            "try{Iterator.prototype.forEach.call(i,()=>Function('class C{field;}'));}catch{flag=1;}finally{flag=2;}"
+            "try{Iterator.prototype.forEach.call(i,()=>Function('class C{#field;}'));}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Unsupported { .. })
     ));

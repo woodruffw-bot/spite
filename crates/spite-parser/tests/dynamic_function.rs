@@ -103,7 +103,7 @@ fn combined_early_errors_use_body_strictness_and_parameter_bindings() {
 #[test]
 fn unsupported_syntax_and_native_stack_guards_keep_their_categories() {
     for (parameters, body) in [
-        ("", "class C {field;}"),
+        ("", "class C {#field;}"),
         ("", "function* f(){}"),
         ("", "async function f(){}"),
         ("x = (async function(){})", "return x;"),

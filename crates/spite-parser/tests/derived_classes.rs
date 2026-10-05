@@ -28,6 +28,7 @@ fn derived_class_syntax_snapshot_and_inherited_context() {
         in_function: true,
         in_method: true,
         in_derived_constructor: true,
+        in_class_field_initializer: false,
     };
     assert!(parse_eval_utf16(&JsString::from("()=>super(...[1]);"), context).is_ok());
     assert_eq!(

@@ -1,0 +1,171 @@
+---
+source: crates/spite-parser/tests/class_fields.rs
+expression: errors
+---
+[
+    (
+        "class C { constructor; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 10,
+                end: 21,
+            },
+            message: "invalid class field name",
+        },
+    ),
+    (
+        "class C { 'constructor'=1; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 10,
+                end: 23,
+            },
+            message: "invalid class field name",
+        },
+    ),
+    (
+        "class C { static constructor=1; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 17,
+                end: 28,
+            },
+            message: "invalid class field name",
+        },
+    ),
+    (
+        "class C { static prototype; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 17,
+                end: 26,
+            },
+            message: "invalid class field name",
+        },
+    ),
+    (
+        "class C { x=arguments; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 12,
+                end: 21,
+            },
+            message: "arguments is not allowed in a class field initializer",
+        },
+    ),
+    (
+        "class C { x=arg\\u0075ments; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 12,
+                end: 26,
+            },
+            message: "arguments is not allowed in a class field initializer",
+        },
+    ),
+    (
+        "class C { x=()=>arguments; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 16,
+                end: 25,
+            },
+            message: "arguments is not allowed in a class field initializer",
+        },
+    ),
+    (
+        "class C { x=({arguments}); }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 23,
+            },
+            message: "arguments is not allowed in a class field initializer",
+        },
+    ),
+    (
+        "class C { x=({[arguments](){}}); }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 24,
+            },
+            message: "arguments is not allowed in a class field initializer",
+        },
+    ),
+    (
+        "class C { x=class extends arguments{}; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 26,
+                end: 35,
+            },
+            message: "arguments is not allowed in a class field initializer",
+        },
+    ),
+    (
+        "class C extends B { x=super(); }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 22,
+                end: 27,
+            },
+            message: "super call requires a derived constructor",
+        },
+    ),
+    (
+        "class C { static x=()=>super(); }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 23,
+                end: 28,
+            },
+            message: "super call requires a derived constructor",
+        },
+    ),
+    (
+        "class C { x=1 y=2; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 15,
+            },
+            message: "expected class field terminator",
+        },
+    ),
+    (
+        "class C { x=1, y=2; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 13,
+                end: 14,
+            },
+            message: "expected class field terminator",
+        },
+    ),
+    (
+        "class C { x=delete value; }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 19,
+                end: 24,
+            },
+            message: "cannot delete an identifier in strict mode",
+        },
+    ),
+]

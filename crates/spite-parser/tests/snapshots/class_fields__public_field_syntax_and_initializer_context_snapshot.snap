@@ -1,0 +1,133 @@
+---
+source: crates/spite-parser/tests/class_fields.rs
+expression: "parse_script(\"class C { x; static [1]=()=>this; y=super.z; }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Class(
+                Class {
+                    name: Some(
+                        FunctionName {
+                            name: "C",
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                    ),
+                    heritage: None,
+                    default_constructor: true,
+                    constructor: Function {
+                        name: None,
+                        parameters: [],
+                        body: FunctionBody {
+                            statements: [],
+                            strict: false,
+                        },
+                        source: FunctionSource(
+                            "class C { x; static [1]=()=>this; y=super.z; }",
+                        ),
+                    },
+                    elements: [
+                        Field {
+                            is_static: false,
+                            name: Literal(
+                                String(
+                                    "x",
+                                ),
+                            ),
+                            initializer: None,
+                            span: Span {
+                                start: 10,
+                                end: 12,
+                            },
+                        },
+                        Field {
+                            is_static: true,
+                            name: Computed(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            1.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 21,
+                                        end: 22,
+                                    },
+                                },
+                            ),
+                            initializer: Some(
+                                Expr {
+                                    depth: 2,
+                                    kind: Arrow {
+                                        parameters: [],
+                                        body: Expression(
+                                            Expr {
+                                                depth: 1,
+                                                kind: This,
+                                                span: Span {
+                                                    start: 28,
+                                                    end: 32,
+                                                },
+                                            },
+                                        ),
+                                        source: FunctionSource(
+                                            "()=>this",
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 24,
+                                        end: 32,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 13,
+                                end: 33,
+                            },
+                        },
+                        Field {
+                            is_static: false,
+                            name: Literal(
+                                String(
+                                    "y",
+                                ),
+                            ),
+                            initializer: Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: SuperProperty(
+                                        Literal(
+                                            String(
+                                                "z",
+                                            ),
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 36,
+                                        end: 43,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 34,
+                                end: 44,
+                            },
+                        },
+                    ],
+                    source: FunctionSource(
+                        "class C { x; static [1]=()=>this; y=super.z; }",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 46,
+            },
+        },
+    ],
+    strict: false,
+}

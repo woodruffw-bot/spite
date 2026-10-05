@@ -9,6 +9,7 @@ fn direct_eval_inherits_strictness_and_constructor_context_without_allowing_retu
         in_function: true,
         in_method: false,
         in_derived_constructor: false,
+        in_class_field_initializer: false,
     };
     let script = parse_eval_utf16(
         &JsString::from("let target=new.target;(()=>target);"),
