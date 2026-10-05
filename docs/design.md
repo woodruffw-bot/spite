@@ -2302,3 +2302,21 @@ validates object keys and values, brands, work and reservations before mutation.
 JavaScript WeakMap intrinsics remain pending until Symbol-key reachability is
 implemented; the internal object-key APIs are private and temporarily allow dead
 code for that staged integration.
+
+## Date time values
+
+Shared Date arithmetic implements TimeClip, MakeTime and MakeDate (21.4.1).
+TimeClip enforces the specification's inclusive ±8.64×10¹⁵-millisecond domain,
+truncates finite fractions, and canonicalizes zero. MakeTime truncates each input
+and preserves the specified floating-point operation order; MakeDate rejects
+non-finite inputs/results and leaves clipping to its caller. These are Date's
+numeric semantics, not embedding quotas.
+
+UTC decomposition uses exact integer Euclidean division for pre-epoch days and
+time within a day. YearFromTime uses binary search between January boundaries
+containing both TimeClip endpoints; DayFromYear uses the specified Gregorian
+leap-cycle formula with floor division for negative years. Month/day and weekday
+fields follow the proleptic Gregorian calendar with 86,400 seconds per day and
+no leap-second instants. The shared helper accepts clipped integral milliseconds;
+JavaScript conversion, MakeDay, parsing, local zones and Date intrinsics remain
+separate steps.

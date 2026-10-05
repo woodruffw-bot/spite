@@ -487,6 +487,14 @@ cycles and back-edges, newly activated maps, host roots, Symbol value release,
 generation reuse, invalid handles/brands, and opt-in failures before mutation.
 The object and heap-entry trace adapters forward conditional edges and cleanup;
 JavaScript WeakMap exposure and Symbol keys remain pending.
+The shared Date foundation implements TimeClip, MakeTime, MakeDate and exact UTC
+calendar decomposition for clipped integral milliseconds. Eight regressions
+cover signed zero, fractions, non-finite input and overflow, both ±8.64×10¹⁵
+endpoints, pre-epoch fields, year zero and leap centuries, complete positive and
+negative 400-year cycles, and observable floating-point operation order. Fixed
+UTC examples and 4,109 full-domain sample/boundary timestamps were also checked
+against Node's Date getters. JavaScript Date intrinsics, MakeDay, parsing and local
+time zones remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

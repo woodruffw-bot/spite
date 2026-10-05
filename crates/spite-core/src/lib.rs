@@ -2,6 +2,7 @@
 
 mod case;
 mod case_data;
+pub mod date;
 mod normalization;
 mod normalization_data;
 mod symbol;
