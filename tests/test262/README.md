@@ -51,8 +51,8 @@ millisecond setter directories. 28 unchanged programs add 56 normal/strict
 positives for intrinsic metadata, ordered conversion before invalid-date checks,
 and capturing the original time before hooks mutate the Date. Invalid-date hooks
 may install a valid time that survives the setter's NaN return. Eight whole
-programs require pending numeric Date.UTC construction and remain outside the
-corpus. This addition uses the same pin and harness files.
+programs required numeric Date.UTC construction and were held out for follow-up.
+This addition uses the same pin and harness files.
 
 A UTC string review read all nine whole programs in toUTCString. Seven newly
 vendored originals add 14 normal/strict positives for weekday/month names,

@@ -294,7 +294,6 @@ fn unsupported_calendar_and_local_operations_remain_host_failures_and_keep_coerc
     for source in [
         "Date()",
         "new Date(2026,0)",
-        "Date.UTC(2026)",
         "Date.parse('1970-01-01T00:00')",
         "new Date('1970-01-01T00:00')",
         "new Date(0).getFullYear()",

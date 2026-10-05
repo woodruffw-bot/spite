@@ -2374,7 +2374,7 @@ in 21.4.3.2; other legacy formats remain outside the parser.
 
 The runtime materializes the complete edition-17 Date constructor/prototype
 property graph. Instances have a distinct [[DateValue]] slot containing a clipped
-Number or NaN; Date.prototype has no slot. Timestamp/copy construction, Date.now,
+Number or NaN; Date.prototype has no slot. Timestamp/copy construction, Date.now, Date.UTC,
 UTC/offset Date.parse, UTC getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
 and @@toPrimitive are implemented. Constructor input conversion precedes
 new-target prototype lookup; copying another Date bypasses its conversion hooks.
@@ -2391,7 +2391,7 @@ toJSON boxes its receiver, requests a numeric primitive and returns null for
 non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
 methods return "Invalid Date". Finite local/legacy string operations, local zone
-resolution, numeric calendar construction and calendar setters remain explicit
+resolution, numeric Date construction and remaining calendar setters remain explicit
 Unsupported. UTC hour/minute/second/millisecond setters capture the time value
 before ordered argument conversion and retain omitted fields from that captured
 instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
@@ -2409,3 +2409,13 @@ and clip only the final timestamp. The intermediate month boundary can lie
 outside TimeClip, including April 1 at the minimum supported timestamp; it is
 still finite. This implements setUTCDate completely without imposing extra
 input bounds or substituting for general numeric MakeDay.
+
+Date.UTC (21.4.3.4) converts the mandatory year and every present optional
+component in order, including conversions after an earlier NaN. Absent month/
+time fields default to zero and absent date defaults to one; explicit undefined
+still converts to NaN. MakeFullYear adjusts the input year before month carry,
+then shared MakeDay/MakeTime/MakeDate preserve the specified arithmetic order
+and TimeClip applies only to the final combined timestamp. Excess arguments
+are evaluated by the caller and ignored by the intrinsic. Native calendar
+integer work shares the optional evaluation budget, with no BigInt magnitude
+quota on Number intermediates and no default resource quotas.

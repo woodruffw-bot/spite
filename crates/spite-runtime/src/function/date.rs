@@ -7,8 +7,8 @@ use crate::{
 use spite_core::{
     JsString, Span, WellKnownSymbol,
     date::{
-        MS_PER_DAY, UtcDateTime, format_iso_date_time, format_utc_date_string, make_date,
-        make_time, parse_date_time_string, parse_utc_date_string, time_clip,
+        MS_PER_DAY, UtcDateTime, format_iso_date_time, format_utc_date_string, make_date, make_day,
+        make_full_year, make_time, parse_date_time_string, parse_utc_date_string, time_clip,
     },
 };
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -357,16 +357,29 @@ impl Realm {
             .map(Value::Object)
     }
 
+    #[inline(never)]
     pub(super) fn date_utc(
         &mut self,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
-        for argument in arguments.take(6) {
-            self.number(argument, span)?;
+        // 21.4.3.4: every present component converts in order, even after an
+        // earlier NaN. Absent optional elements retain their numeric defaults.
+        let mut fields = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0];
+        fields[0] = self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
+        for (field, argument) in fields[1..].iter_mut().zip(arguments) {
+            *field = self.number(argument, span)?;
         }
-        Err(Self::unsupported(span, "numeric Date calendar arithmetic"))
+        // Date Number arithmetic may use wide native integers internally;
+        // a JavaScript BigInt value quota does not apply to those intermediates.
+        let mut budget = spite_bigint::Budget::with_limits(None, self.remaining_steps);
+        let day = make_day(make_full_year(fields[0]), fields[1], fields[2], &mut budget);
+        self.remaining_steps = budget.remaining_work();
+        let day = day.map_err(|error| Self::integer_error(error, span))?;
+        Ok(Value::Number(time_clip(make_date(
+            day,
+            make_time(fields[3], fields[4], fields[5], fields[6]),
+        ))))
     }
 
     fn this_date_value(&mut self, value: &Value, span: Span) -> Result<f64, Error> {

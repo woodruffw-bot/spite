@@ -126,3 +126,31 @@ fn utc_string_output_uses_exact_year_width_for_opt_in_quotas() {
         )))
     );
 }
+
+#[test]
+fn utc_number_calendar_work_ignores_bigint_value_quotas_and_preserves_opt_in_work_failures() {
+    let mut realm = Realm::default();
+    realm.limits.max_bigint_bits = Some(0);
+    assert_eq!(
+        realm.eval("Date.UTC(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)"),
+        Ok(Value::Number(-62146137600000.0))
+    );
+    realm.remaining_steps = Some(1000);
+    assert!(matches!(
+        realm.date_utc(
+            vec![
+                Value::Number(-f64::MAX / 12.0),
+                Value::Number(f64::MAX),
+                Value::Number(1.0)
+            ]
+            .into_iter(),
+            Span { start: 0, end: 0 },
+        ),
+        Err(Error::Limit { .. })
+    ));
+    realm.remaining_steps = None;
+    assert_eq!(
+        realm.eval("Date.UTC(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)"),
+        Ok(Value::Number(-62146137600000.0))
+    );
+}

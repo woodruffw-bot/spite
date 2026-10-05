@@ -543,8 +543,8 @@ An independent reference check matched Node's UTC setter return values and final
 timestamps for 4,289 random, range-boundary, non-finite and cancellation cases.
 28 unchanged upstream UTC time setter programs add 56 normal/strict positives for
 metadata, conversion order and captured-time mutation. The review read all 36
-whole files in those four setter directories; eight require pending numeric
-Date.UTC construction and remain outside the corpus. The pin and eight harness
+whole files in those four setter directories; eight required numeric Date.UTC
+construction and were held out for follow-up. The pin and eight harness
 files are unchanged.
 Standard toUTCString formatting and parsing of its own output cover the complete
 clipped domain, English day/month names, year zero and signed minimum-four-digit
@@ -569,7 +569,7 @@ days, both clipped endpoints and an out-of-range intermediate month boundary,
 mutating/throwing hooks, invalid-date revival, receiver branding, frozen slots,
 ignored extra arguments and normal-stack recovery. A reference check matched
 Node's return values and final timestamps for 4,216 random, boundary and
-non-finite cases. Runtime numeric calendar construction, other calendar setters
+non-finite cases. Numeric Date construction, other calendar setters
 and local zones remain pending; default quotas and native-stack guards are unchanged.
 All seven whole upstream setUTCDate programs were reviewed and vendored unchanged,
 adding 14 normal/strict positives for metadata, conversion order and captured-time
@@ -583,8 +583,18 @@ huge month/year and year/day cancellation, exact Gregorian rounding, and opt-in
 work failures distinct from NaN. The existing workspace BigInt crate supplies
 wide intermediate integers; no external dependency or default quota is added.
 An independent check matched 4,096 Node calendar cases, 1,024 exact huge-month
-cancellations and 2,048 expanded calendar-witness searches. Runtime wiring for
-numeric UTC construction and remaining calendar setters is the next step.
+cancellations and 2,048 expanded calendar-witness searches. Remaining calendar
+setters and local numeric construction are pending.
+Date.UTC now converts all present numeric components in order, applies absent
+defaults and input-year adjustment, and clips only after shared calendar/time
+arithmetic. Six runtime regressions cover undefined/omitted fields, short years,
+fractions and rollover, both range endpoints, floating evaluation order, NaN
+and abrupt coercion ordering, ignored arguments, huge valid cancellations and
+normal-stack recovery. A private regression verifies that Number calendar work
+ignores BigInt value-magnitude quotas and reports opt-in work failure as a host
+limit. A reference check matched 4,152 Node results spanning ordinary, random,
+non-finite, clipped-boundary and floating-order cases. The intrinsic property
+graph, default quotas and native-stack guards are unchanged.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
