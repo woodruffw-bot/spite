@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5317 unmodified test fixtures and eight harness files come from
+These 5449 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1086,6 +1086,38 @@ Unsupported syntax, setup failures, host limits, or unrelated outer parse failur
 cannot satisfy that expectation. Parse negatives still require exact reviewed
 source spans and diagnostics.
 
+## Direct eval execution fixtures
+
+The selection adds 131 unchanged direct-eval originals and the indirect
+`global-env-rec-eval.js` original, whose caller requires direct String eval.
+Their 180 variants comprise 178 harness positives and two runtime negatives.
+They cover caller lookup through functions, catch, with, and nested eval; inherited
+strictness; this/new.target; completion values; fresh lexical bindings and TDZs;
+variable/function declaration instantiation, preflight conflicts, last-function
+precedence, mutable and deletable local bindings, and default-parameter arguments
+conflicts in ordinary functions, methods, and arrows. Nine historically Annex-B
+labelled strict block/switch controls exercise core lexical function scope.
+
+The direct directory contains 286 candidates. The complete synchronous ordinary,
+arrow, and method programs and their metadata were reviewed; actual async/generator
+function forms identify 144 generated exclusions even where feature tags are
+absent. Another generator declaration, two class programs, two outer Modules,
+one valid super-property program, and five global property-helper programs remain
+excluded as whole files without credit. The unchanged helper requires complete
+global intrinsic reflection for those five. No assertion or source was rewritten.
+Original Git blob hashes verify every source. Both stable and MSRV pass all 180
+new variants with ordinary unlimited defaults; the pin and eight helpers are
+unchanged.
+
+The two new runtime-negative originals test inherited strict parse errors and
+non-strict variable collisions with global lexical bindings. Both are valid outer
+Scripts; only the intended runtime SyntaxError satisfies the original metadata.
+The intrinsic/indirect cohort above now also includes the newly eligible nested
+caller original: 58 sources and 114 variants. Thirteen candidates from that review
+remain excluded; the remaining direct-eval dependency uses private identifiers.
+The combined eval inventory is 189 sources and 292 variants, with 186 positive
+and three runtime-negative originals.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -1107,7 +1139,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10163 variants from 5298 reviewed sources: the eleven
+The `spite-test262` command runs 10343 variants from 5430 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1126,14 +1158,14 @@ files (142 positive and 12 parse-negative), and 77 var declaration pattern
 files (71 positive and six parse-negative), and 507 formal binding pattern
 files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
-files (426 positive and 88 parse-negative), and 57 eval intrinsic/indirect
-files (56 positive and one runtime-negative). The method/accessor files
+files (426 positive and 88 parse-negative), and 189 eval intrinsic/direct/indirect
+files (186 positive and three runtime-negative). The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-9464 positives using the upstream harness, 693 reviewed parse-negative variants,
-and two runtime-negative variants.
+9642 positives using the upstream harness, 693 reviewed parse-negative variants,
+and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the

@@ -34,13 +34,13 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
-| Eval | Standard intrinsic metadata, non-String identity returns and indirect String execution, global lookup, fresh lexical/strict var environments, configurable global declarations, exact UTF-16 source, and restored caller scopes |
+| Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10163 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10343 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -64,17 +64,22 @@ lookup, strict local vars, fresh lexicals and TDZs, preflight lexical/catch/para
 conflicts, deletable declarations, preserved mapped parameters, live with references,
 ordinary/arrow default and body environments, this/new.target, nested eval, abrupt
 caller restoration, exact UTF-16 source, collection, and shared opt-in limits.
-The unchanged pinned inventory adds eight eval intrinsic and 49 indirect eval
-sources: 110 harness-positive and two runtime-negative variants. All 71 candidates
-were reviewed; fourteen whole files remain excluded without credit (six global
-reflection, two module, two class, one generator, one cross-realm, and two direct
-String eval dependencies, including one private-identifier test). Historical
-descriptions/Annex-B labels are preserved, with actual call forms and strict block
-semantics reviewed separately. The single runtime-negative original has a valid
-outer Script and throws SyntaxError while compiling its invalid eval input.
-The inventory distinguishes its runtime phase, and the runner requires the
-original expected constructor name. Both stable and MSRV pass all 112 variants
-under ordinary unlimited defaults; the pin and eight helpers are unchanged.
+The unchanged pinned inventory contains eight eval intrinsic, 50 indirect eval,
+and 131 direct eval sources: 288 harness-positive and four runtime-negative
+variants. The direct selection reviews whole synchronous ordinary/arrow/method
+programs, including default-parameter arguments conflicts, lexical and variable
+scope, declaration preflight, deletable bindings, this/new.target, and early
+errors. Its 155 excluded whole files require async/generator execution (145),
+modules (two), classes (two), valid super property execution (one), or complete
+global reflection through the unchanged property helper (five). Thirteen other
+intrinsic/indirect candidates remain excluded without credit, including private
+identifiers and cross-realm execution. Historical descriptions and Annex-B labels
+are preserved; strict block/switch controls exercise core lexical function scope.
+All three runtime-negative originals have valid outer Scripts and require
+SyntaxError during eval compilation or declaration instantiation. The inventory
+preserves each runtime phase, and the runner requires the original expected
+constructor name. Both stable and MSRV pass the 180 newly added variants under
+ordinary unlimited defaults; the pin and eight helpers are unchanged.
 
 With statements now use live Object Environment Records (14.11, 9.1.1.2).
 Four parser regressions and two inspected insta snapshots cover grammar, strict
@@ -1185,8 +1190,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 10163 variants are four raw positives, 9464 positives using the upstream
-harness, 693 reviewed parse negatives, and two runtime negatives. Component fixtures and harness files do
+Rust. Its 10343 variants are four raw positives, 9642 positives using the upstream
+harness, 693 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol
