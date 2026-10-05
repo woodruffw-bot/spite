@@ -1,4 +1,4 @@
-//! UTC time setters retain the original timestamp through observable coercion.
+//! UTC setters retain the original timestamp through observable coercion.
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
@@ -15,6 +15,145 @@ fn check(source: &str) {
         Ok(Value::Boolean(true)),
         "{source}"
     );
+}
+
+#[test]
+fn utc_day_setter_normalizes_days_and_preserves_the_original_time_of_day() {
+    for (original, date, expected) in [
+        (
+            "2000-02-29T12:34:56.789Z",
+            "1.9",
+            "2000-02-01T12:34:56.789Z",
+        ),
+        ("2000-02-29T12:34:56.789Z", "0", "2000-01-31T12:34:56.789Z"),
+        ("2000-02-29T12:34:56.789Z", "30", "2000-03-01T12:34:56.789Z"),
+        ("1900-02-28T12:34:56.789Z", "29", "1900-03-01T12:34:56.789Z"),
+        (
+            "2000-01-01T00:00:00.001Z",
+            "-1.9",
+            "1999-12-30T00:00:00.001Z",
+        ),
+        ("1969-12-31T23:59:59.999Z", "0", "1969-11-30T23:59:59.999Z"),
+        (
+            "0000-01-01T00:00:00.000Z",
+            "0",
+            "-000001-12-31T00:00:00.000Z",
+        ),
+    ] {
+        check(&format!(
+            "let d=new Date('{original}'); d.setUTCDate({date})===d.getTime() && d.toISOString()==='{expected}'"
+        ));
+    }
+    for date in ["0", "-0", "0.9", "-0.9", "null", "false"] {
+        check(&format!(
+            "let d=new Date(0);d.setUTCDate({date})===-86400000 && d.getTime()===-86400000"
+        ));
+    }
+    for date in [
+        "",
+        "undefined",
+        "NaN",
+        "Infinity",
+        "-Infinity",
+        "Number.MAX_VALUE",
+        "-Number.MAX_VALUE",
+    ] {
+        check(&format!(
+            "let d=new Date(0);Number.isNaN(d.setUTCDate({date})) && Number.isNaN(d.getTime())"
+        ));
+    }
+}
+
+#[test]
+fn utc_day_setter_clips_only_after_month_day_and_time_of_day_are_combined() {
+    check(
+        "let d=new Date(-8640000000000000); d.setUTCDate(20)===-8640000000000000 && d.setUTCDate(21)===-8639999913600000 && Number.isNaN(d.setUTCDate(19)) && Number.isNaN(d.getTime())",
+    );
+    check(
+        "let d=new Date(8640000000000000); d.setUTCDate(13.9)===8640000000000000 && d.setUTCDate(12)===8639999913600000 && Number.isNaN(d.setUTCDate(14)) && Number.isNaN(d.getTime())",
+    );
+    check(
+        "let d=new Date(-8640000000000000+1);d.setUTCDate(20.9)===-8640000000000000+1 && d.getUTCMilliseconds()===1",
+    );
+    check(
+        "let d=new Date(8640000000000000-1);d.setUTCDate(12)===8640000000000000-1 && Number.isNaN(d.setUTCDate(13))",
+    );
+}
+
+#[test]
+fn utc_day_setter_captures_the_month_and_time_before_converting_the_day() {
+    check(
+        "let d=new Date('2000-02-29T12:34:56.789Z'),calls=0,hint='';let arg={[Symbol.toPrimitive](h){calls++;hint=h;d.setTime(0);return 31;}};let result=d.setUTCDate(arg);result===d.getTime() && calls===1 && hint==='number' && d.toISOString()==='2000-03-02T12:34:56.789Z'",
+    );
+    check(
+        "let d=new Date(0),calls=0;d.setUTCDate({valueOf(){calls++;d.setTime(NaN);return 2;}})===86400000 && d.getTime()===86400000 && calls===1",
+    );
+    check(
+        "let d=new Date(NaN),calls=0;Number.isNaN(d.setUTCDate({valueOf(){calls++;d.setTime(9);return 1;}})) && calls===1 && d.getTime()===9",
+    );
+    check(
+        "let d=new Date(7),caught=false;try{d.setUTCDate({valueOf(){d.setTime(77);throw 9;}});}catch(e){caught=e===9;}caught && d.getTime()===77",
+    );
+}
+
+#[test]
+fn utc_day_setter_checks_brand_before_coercion_and_can_mutate_frozen_slots() {
+    for receiver in [
+        "undefined",
+        "null",
+        "0",
+        "'1970'",
+        "1n",
+        "Symbol()",
+        "{}",
+        "Date.prototype",
+        "Object.create(new Date(0))",
+    ] {
+        assert!(
+            matches!(
+                Realm::default().eval(&format!(
+                    "Date.prototype.setUTCDate.call({receiver},{{valueOf(){{throw 7;}}}})"
+                )),
+                Err(Error::Exception {
+                    kind: ExceptionKind::TypeError,
+                    ..
+                })
+            ),
+            "{receiver}"
+        );
+    }
+    for time in ["0", "NaN"] {
+        for value in ["1n", "Symbol()"] {
+            assert!(matches!(
+                Realm::default().eval(&format!("new Date({time}).setUTCDate({value})")),
+                Err(Error::Exception {
+                    kind: ExceptionKind::TypeError,
+                    ..
+                })
+            ));
+        }
+    }
+    check(
+        "let d=new Date(0);Object.setPrototypeOf(d,null);Object.freeze(d);Date.prototype.setUTCDate.call(d,2)===86400000 && Object.isFrozen(d) && Date.prototype.getTime.call(d)===86400000",
+    );
+    check(
+        "let d=new Date(0),count=0;d.setUTCDate(1,count++,{valueOf(){throw 7;}})===0 && count===1 && d.getTime()===0",
+    );
+}
+
+#[test]
+fn recursive_day_coercion_uses_existing_stack_guards_and_restores_call_state() {
+    let mut realm = Realm::default();
+    realm
+        .eval("var flag=0;let d=new Date(7),arg={valueOf(){return d.setUTCDate(arg);}}")
+        .unwrap();
+    assert!(matches!(
+        realm.eval("try{d.setUTCDate(arg);}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert_eq!(realm.eval("d.getTime()"), Ok(Value::Number(7.0)));
+    assert_eq!(realm.eval("d.setUTCDate(1)"), Ok(Value::Number(7.0)));
 }
 
 #[test]

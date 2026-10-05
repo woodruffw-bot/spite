@@ -300,7 +300,7 @@ fn unsupported_calendar_and_local_operations_remain_host_failures_and_keep_coerc
         "new Date(0).getFullYear()",
         "new Date(0).toString()",
         "new Date(0)+1",
-        "new Date(0).setUTCDate(2)",
+        "new Date(0).setUTCMonth(2)",
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();

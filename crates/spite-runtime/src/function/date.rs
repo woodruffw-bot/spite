@@ -440,6 +440,17 @@ impl Realm {
                 self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
                 Ok(Value::Number(value))
             }
+            Method::SetUtcDate => {
+                let Value::Object(object) = this else {
+                    unreachable!("Date brand");
+                };
+                self.date_set_utc_date(
+                    object,
+                    time,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
             Method::SetUtcHours
             | Method::SetUtcMinutes
             | Method::SetUtcSeconds
@@ -524,6 +535,32 @@ impl Realm {
                 "Date calendar mutation and local/legacy string operations",
             )),
         }
+    }
+
+    // 21.4.4.27: the captured year/month are already normalized, so their
+    // month's first day follows exactly from Day(t) and DateFromTime(t).
+    // Retain MakeDay's ordered Number additions and the captured time of day.
+    #[inline(never)]
+    fn date_set_utc_date(
+        &mut self,
+        object: ObjectHandle,
+        time: f64,
+        date: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let date = self.number(date, span)?;
+        if time.is_nan() {
+            return Ok(Value::Number(f64::NAN));
+        }
+        let time = time as i64;
+        let fields = UtcDateTime::from_time_value(time).expect("clipped Date value");
+        // At the lower TimeClip boundary the month's first day is outside
+        // the clipped domain, but is still a valid finite intermediate time.
+        let first_day = time.div_euclid(MS_PER_DAY) - i64::from(fields.day) + 1;
+        let day = (first_day as f64 + date.trunc()) - 1.0;
+        let value = time_clip(make_date(day, time.rem_euclid(MS_PER_DAY) as f64));
+        self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
+        Ok(Value::Number(value))
     }
 
     // 21.4.4.29–30, 31 and 33: capture [[DateValue]] before any conversion.

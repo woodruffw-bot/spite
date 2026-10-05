@@ -2380,3 +2380,13 @@ For a captured NaN time, all present arguments still convert before returning
 NaN without writing the slot; conversion hooks may have installed a valid time.
 Pending numeric constructors still perform ordered argument conversions,
 including later abrupt completions after earlier NaN results.
+
+setUTCDate (21.4.4.27) likewise captures the original timestamp before ToNumber
+and returns NaN without writing when that captured value was invalid. Its year
+and month are already normalized, so the first day of the month follows exactly
+from the captured UTC day number and day of month. Add the truncated date and
+subtract one using ordered Number arithmetic, retain the captured time of day,
+and clip only the final timestamp. The intermediate month boundary can lie
+outside TimeClip, including April 1 at the minimum supported timestamp; it is
+still finite. This implements setUTCDate completely without imposing extra
+input bounds or substituting for general numeric MakeDay.

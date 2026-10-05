@@ -564,6 +564,15 @@ Seven unchanged pinned toUTCString programs add 14 normal/strict positives for
 weekday/month names, negative-year widths and metadata. All nine whole files
 were reviewed: invalid-date was already included, and format requires pending
 RegExp.exec. The pin and eight harness files are unchanged.
+setUTCDate now preserves the captured year/month/time through day conversion,
+normalizes day rollover with ordered Number arithmetic and clips only the final
+timestamp. Five regressions cover leap centuries and year zero, signed/fractional
+days, both clipped endpoints and an out-of-range intermediate month boundary,
+mutating/throwing hooks, invalid-date revival, receiver branding, frozen slots,
+ignored extra arguments and normal-stack recovery. A reference check matched
+Node's return values and final timestamps for 4,216 random, boundary and
+non-finite cases. General numeric MakeDay, other calendar setters and local zones
+remain pending; default quotas and native-stack guards are unchanged.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
