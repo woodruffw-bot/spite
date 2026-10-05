@@ -1026,7 +1026,7 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, private methods/accessors,
+Array.fromAsync,
 regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -1276,8 +1276,8 @@ TDZs and ordering, name inference before static overrides, accessor merging,
 Symbol/lone-surrogate keys, exact class/method source, eval/Function compilation,
 super properties, abrupt context restoration, collection, checked home-object
 handles, and opt-in name limits. Parser AST/diagnostic snapshots cover constructor,
-strictness, scope, and declaration errors. Unsupported private
-methods/accessors and async/generator methods retain no conformance credit.
+strictness, scope, and declaration errors. Unsupported async/generator methods
+retain no conformance credit.
 Five additional recursive class construction/method/computed-name/eval cases run
 on two-mebibyte native stacks with the existing 32-call, 64-evaluation, and
 64-parser nesting guards.
@@ -1377,8 +1377,8 @@ fields/methods/accessors, optional access and brand-check precedence, forward
 references through functions and nested classes, heritage scope, getter/setter
 pairs, escaped duplicates, private constructor names, deletion, and super access.
 Assignment, update, destructuring, loop, call, construction, and tagged-template
-targets retain private references. Private methods/accessors remain Unsupported
-and receive no positive execution credit.
+targets retain private references. Async/generator private methods remain
+Unsupported and receive no positive execution credit.
 Nested private class scopes exercise the unchanged parser guard on two-mebibyte
 threads. Dynamic Function and UTF-16 Script goals accept the same private grammar;
 host-abort controls retain unimplemented generator sources after this parser step.
@@ -1425,3 +1425,21 @@ duplicate stamping, missing/primitive receivers, and assignment/destructuring/lo
 ordering. No unsupported feature receives credit. Both toolchains pass every
 added variant with ordinary defaults; all source bytes, Git blobs, assertions,
 metadata, helpers, and the pin remain unchanged.
+
+Private-method/accessor regressions cover shared identities, strict receivers,
+non-construction, name/length/exact source, accessor metadata and reversed pairs,
+own/fresh brands, inheritance/shadowing, nested class capture, method writes,
+missing getters/setters, receiver preservation, compound/logical updates,
+destructuring/loops, abrupt exception identity, super/new.target, and direct eval.
+Instance/static brands install before all fields/blocks; partial field failure
+retains every method brand, while duplicate stamping rejects before initializer
+effects. Default-derived forwarding covers 100 methods-only classes, bound/custom
+newTarget, base parameter timing, explicit derived super, and object returns that
+skip super. Frozen receivers and reflection remain independent of private storage.
+Collection retains methods, accessors, captures, and home objects, then reclaims
+cycles. Checked-edge tests reject foreign/stale/non-callable/non-object handles
+and work failures before replacing class records or adding an instance brand.
+Four private method/getter/setter/eval recursion cases run on two-mebibyte
+normal-debug stacks with the unchanged guards. Async/generator private methods
+retain host-failure controls. This implementation leaves the pinned inventory
+unchanged.

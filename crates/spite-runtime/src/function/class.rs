@@ -11,7 +11,7 @@ pub(crate) struct ClassConstructor {
     pub method: super::MethodFunction,
     pub derived: bool,
     pub default: bool,
-    pub fields: Rc<[super::ClassField]>,
+    pub elements: super::class_field::InstanceElements,
 }
 
 impl Realm {
@@ -154,6 +154,8 @@ impl Realm {
             // SetFunctionName precedes every computed name and static method.
             self.set_function_name(&function, name, None, span)?;
             let mut instance_fields = Vec::new();
+            let mut instance_methods = Vec::new();
+            let mut static_methods = Vec::new();
             let mut static_elements = Vec::new();
             for element in &syntax.elements {
                 let span = element.span();
@@ -195,15 +197,19 @@ impl Realm {
                     &prototype
                 };
                 match element {
-                    ClassElement::Method { property, .. } => {
-                        let super::class_field::ClassFieldName::Public(key) = name else {
-                            return Err(Self::unsupported(
-                                span,
-                                "private methods and accessors are not implemented",
-                            ));
-                        };
-                        self.define_method_property(home, key, property, false)?;
-                    }
+                    ClassElement::Method { property, .. } => match name {
+                        super::class_field::ClassFieldName::Public(key) => {
+                            self.define_method_property(home, key, property, false)?
+                        }
+                        super::class_field::ClassFieldName::Private(name) => {
+                            let container = if element.is_static() {
+                                &mut static_methods
+                            } else {
+                                &mut instance_methods
+                            };
+                            self.private_method_definition(home, name, property, container)?;
+                        }
+                    },
                     ClassElement::Field { initializer, .. } => {
                         let field = super::ClassField {
                             name,
@@ -238,11 +244,14 @@ impl Realm {
             self.object_work(span, |objects, budget| {
                 objects.set_class_fields(&function, instance_fields.into(), budget)
             })?;
-            Ok((function, static_elements))
+            self.object_work(span, |objects, budget| {
+                objects.set_class_private_methods(&function, instance_methods.into(), budget)
+            })?;
+            Ok((function, static_methods, static_elements))
         })();
         self.strict = previous_strict;
         self.scopes.truncate(scope_depth);
-        let (function, static_elements) = result?;
+        let (function, static_methods, static_elements) = result?;
         let value = Value::Object(function);
         // The name remains uninitialized during *all* computed names. Methods
         // capture this immutable binding, not the mutable declaration binding.
@@ -257,6 +266,7 @@ impl Realm {
         }
         // Initialize the internal class name before static initializers. All
         // computed names and method definitions have already completed (15.7.14).
+        self.initialize_private_methods(&value, &static_methods, span)?;
         self.initialize_static_elements(&value, static_elements)?;
         Ok(value)
     }

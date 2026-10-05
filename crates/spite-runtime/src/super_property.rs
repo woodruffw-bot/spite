@@ -69,7 +69,7 @@ impl Realm {
         }
         // BindThisValue precedes instance initialization. A throwing initializer
         // leaves this initialized; a repeated super call never reruns the fields.
-        self.initialize_instance_fields(&instance, &function, span)?;
+        self.initialize_instance_elements(&instance, &function, span)?;
         Ok(instance)
     }
 

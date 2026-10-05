@@ -71,7 +71,7 @@ pub struct OrdinaryObject {
     prototype: Option<Handle>,
     extensible: bool,
     properties: Vec<(PropertyKey, Property)>,
-    private_fields: Vec<(crate::private::PrivateName, Value)>,
+    private_elements: Vec<(crate::private::PrivateName, private::PrivateElement)>,
     max_properties: Option<usize>,
     callable: Option<Callable>,
     constructible: bool,
@@ -102,7 +102,7 @@ impl OrdinaryObject {
             prototype,
             extensible: true,
             properties: Vec::new(),
-            private_fields: Vec::new(),
+            private_elements: Vec::new(),
             max_properties,
             callable: None,
             constructible: false,
@@ -371,9 +371,9 @@ impl Trace for OrdinaryObject {
             .chain(self.error_data.then_some(None))
             .chain(self.raw_json.then_some(None))
             .chain(
-                self.private_fields
+                self.private_elements
                     .iter()
-                    .flat_map(|(_, value)| value.trace()),
+                    .flat_map(|(_, element)| element.trace()),
             )
             .chain(self.map.iter().flat_map(|data| data.trace()))
             .chain(self.set.iter().flat_map(|data| data.trace()))
@@ -381,7 +381,7 @@ impl Trace for OrdinaryObject {
             .chain(home_object.map(Some))
             .chain(self.callable.iter().flat_map(|callable| {
                 let fields = match callable {
-                    Callable::ClassConstructor(class) => class.fields.as_ref(),
+                    Callable::ClassConstructor(class) => class.elements.fields.as_ref(),
                     _ => &[],
                 };
                 fields
@@ -393,6 +393,13 @@ impl Trace for OrdinaryObject {
                             Some(&initializer.home_object),
                         ]
                     })
+            }))
+            .chain(self.callable.iter().flat_map(|callable| {
+                let methods = match callable {
+                    Callable::ClassConstructor(class) => class.elements.private_methods.as_ref(),
+                    _ => &[],
+                };
+                methods.iter().flat_map(|method| method.kind.trace())
             }))
             .chain(self.parameter_map.iter().flat_map(|map| {
                 std::iter::once(Some(&map.environment.0)).chain(map.names.values().map(|_| None))

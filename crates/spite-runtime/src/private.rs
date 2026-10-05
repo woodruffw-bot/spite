@@ -1,6 +1,9 @@
 //! Private names, ResolvePrivateIdentifier, PrivateGet/Set, and private-in (6.2.10/9.2/13.10).
 
-use crate::{Error, ExceptionKind, Realm, Value};
+use crate::{
+    Error, ExceptionKind, ObjectHandle, Realm, Value,
+    object::{GetAction, SetAction},
+};
 use spite_core::{JsString, JsSymbol, Span};
 use std::collections::BTreeSet;
 
@@ -16,6 +19,31 @@ impl PrivateName {
     pub(crate) fn description(&self) -> &JsString {
         self.0.description().expect("private name description")
     }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) enum PrivateMethodKind {
+    Method(ObjectHandle),
+    Accessor {
+        get: Option<ObjectHandle>,
+        set: Option<ObjectHandle>,
+    },
+}
+
+impl PrivateMethodKind {
+    pub(crate) fn trace(&self) -> impl Iterator<Item = Option<&ObjectHandle>> {
+        let edges = match self {
+            Self::Method(method) => [Some(method), None],
+            Self::Accessor { get, set } => [get.as_ref(), set.as_ref()],
+        };
+        edges.into_iter()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct PrivateMethod {
+    pub name: PrivateName,
+    pub kind: PrivateMethodKind,
 }
 
 impl Realm {
@@ -65,16 +93,21 @@ impl Realm {
         // GetValue permits omitting an unobservable fresh primitive wrapper
         // (6.2.5.5). Such a wrapper cannot contain a private element.
         if let Value::Object(object) = base {
-            if let Some(value) = self.object_work(span, |objects, budget| {
-                objects.private_field_get(object, name, budget)
+            if let Some(action) = self.object_work(span, |objects, budget| {
+                objects.private_get(object, name, budget)
             })? {
-                return Ok(value);
+                return match action {
+                    GetAction::Value(value) => Ok(value),
+                    GetAction::Call(getter) => {
+                        self.call(Value::Object(getter), base.clone(), Vec::new(), span)
+                    }
+                };
             }
         }
         Err(Self::exception(
             ExceptionKind::TypeError,
             span,
-            "object lacks private field",
+            "object lacks private element or getter",
         ))
     }
 
@@ -86,16 +119,25 @@ impl Realm {
         span: Span,
     ) -> Result<(), Error> {
         if let Value::Object(object) = base {
-            if self.object_work(span, |objects, budget| {
-                objects.private_field_set(object, name, value, budget)
-            })? {
-                return Ok(());
+            let action = self.object_work(span, |objects, budget| {
+                objects.private_set(object, name, &value, budget)
+            })?;
+            match action {
+                SetAction::Done(true) => return Ok(()),
+                SetAction::Call(setter) => {
+                    self.call(Value::Object(setter), base.clone(), vec![value], span)?;
+                    return Ok(());
+                }
+                SetAction::Done(false) => {}
+                SetAction::ArrayLength(_) => {
+                    unreachable!("private writes do not target array length")
+                }
             }
         }
         Err(Self::exception(
             ExceptionKind::TypeError,
             span,
-            "object lacks private field",
+            "private element is absent or cannot be written",
         ))
     }
 
@@ -115,7 +157,7 @@ impl Realm {
         let name = self.resolve_private_name(name, span)?;
         self.object_work(span, |objects, budget| {
             objects
-                .private_field_has(&object, &name, budget)
+                .private_has(&object, &name, budget)
                 .map(Value::Boolean)
         })
     }

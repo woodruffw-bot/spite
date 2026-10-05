@@ -1,42 +1,73 @@
-//! Own private field storage; independent of properties and extensibility (7.3.27–31).
+//! Own private element storage; independent of properties and extensibility (7.3.27–31).
 
-use super::{Budget, Error, Objects};
-use crate::{Value, private::PrivateName};
-use spite_heap::Handle;
+use super::{Budget, Error, GetAction, Objects, SetAction};
+use crate::{
+    Value,
+    private::{PrivateMethod, PrivateMethodKind, PrivateName},
+};
+use spite_heap::{Handle, Trace};
+
+#[derive(Debug)]
+pub(super) enum PrivateElement {
+    Field(Value),
+    Method(PrivateMethodKind),
+}
+
+impl PrivateElement {
+    pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
+        let edges = match self {
+            Self::Field(value) => [value.trace().next().flatten(), None],
+            Self::Method(PrivateMethodKind::Method(method)) => [Some(method), None],
+            Self::Method(PrivateMethodKind::Accessor { get, set }) => [get.as_ref(), set.as_ref()],
+        };
+        edges.into_iter()
+    }
+}
 
 impl Objects {
-    fn private_field_index(
+    fn private_element_index(
         &self,
         object: &Handle,
         name: &PrivateName,
         budget: &mut Budget,
     ) -> Result<Option<usize>, Error> {
-        let fields = &self.inspect(object)?.private_fields;
+        let fields = &self.inspect(object)?.private_elements;
         budget.charge(fields.len().checked_add(1).ok_or(Error::WorkLimit)?)?;
         Ok(fields.iter().position(|(key, _)| key == name))
     }
 
-    pub(crate) fn private_field_has(
+    pub(crate) fn private_has(
         &self,
         object: &Handle,
         name: &PrivateName,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
-        Ok(self.private_field_index(object, name, budget)?.is_some())
+        Ok(self.private_element_index(object, name, budget)?.is_some())
     }
 
-    pub(crate) fn private_field_get(
+    pub(crate) fn private_get(
         &self,
         object: &Handle,
         name: &PrivateName,
         budget: &mut Budget,
-    ) -> Result<Option<Value>, Error> {
-        let Some(index) = self.private_field_index(object, name, budget)? else {
+    ) -> Result<Option<GetAction>, Error> {
+        let Some(index) = self.private_element_index(object, name, budget)? else {
             return Ok(None);
         };
-        let value = &self.inspect(object)?.private_fields[index].1;
-        budget.value(value)?;
-        Ok(Some(value.clone()))
+        Ok(match &self.inspect(object)?.private_elements[index].1 {
+            PrivateElement::Field(value) => {
+                budget.value(value)?;
+                Some(GetAction::Value(value.clone()))
+            }
+            PrivateElement::Method(PrivateMethodKind::Method(method)) => {
+                budget.charge(1)?;
+                Some(GetAction::Value(Value::Object(method.clone())))
+            }
+            PrivateElement::Method(PrivateMethodKind::Accessor { get, .. }) => {
+                budget.charge(1)?;
+                get.clone().map(GetAction::Call)
+            }
+        })
     }
 
     pub(crate) fn private_field_add(
@@ -46,36 +77,85 @@ impl Objects {
         value: Value,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
-        if self.private_field_index(object, &name, budget)?.is_some() {
+        if self.private_element_index(object, &name, budget)?.is_some() {
             return Ok(false);
         }
         budget.value(&value)?;
         if let Value::Object(handle) = &value {
             self.inspect(handle)?;
         }
-        let fields = &mut self.object_mut(object)?.private_fields;
+        let fields = &mut self.object_mut(object)?.private_elements;
         fields
             .try_reserve(1)
             .map_err(|_| Error::Heap(spite_heap::Error::Capacity))?;
-        fields.push((name, value));
+        fields.push((name, PrivateElement::Field(value)));
         Ok(true)
     }
 
-    pub(crate) fn private_field_set(
+    pub(crate) fn private_set(
         &mut self,
         object: &Handle,
         name: &PrivateName,
-        value: Value,
+        value: &Value,
+        budget: &mut Budget,
+    ) -> Result<SetAction, Error> {
+        let Some(index) = self.private_element_index(object, name, budget)? else {
+            return Ok(SetAction::Done(false));
+        };
+        match &self.inspect(object)?.private_elements[index].1 {
+            PrivateElement::Method(PrivateMethodKind::Method(_)) => Ok(SetAction::Done(false)),
+            PrivateElement::Method(PrivateMethodKind::Accessor { set, .. }) => {
+                budget.charge(1)?;
+                Ok(set.clone().map_or(SetAction::Done(false), SetAction::Call))
+            }
+            PrivateElement::Field(_) => {
+                budget.value(value)?;
+                if let Value::Object(handle) = value {
+                    self.inspect(handle)?;
+                }
+                self.object_mut(object)?.private_elements[index].1 =
+                    PrivateElement::Field(value.clone());
+                Ok(SetAction::Done(true))
+            }
+        }
+    }
+
+    pub(super) fn check_private_method(
+        &self,
+        kind: &PrivateMethodKind,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        budget.charge(1)?;
+        for handle in kind.trace().flatten() {
+            budget.charge(1)?;
+            if !self.inspect(handle)?.is_callable() {
+                return Err(Error::NotCallable);
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) fn private_method_add(
+        &mut self,
+        object: &Handle,
+        method: &PrivateMethod,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
-        let Some(index) = self.private_field_index(object, name, budget)? else {
+        if self
+            .private_element_index(object, &method.name, budget)?
+            .is_some()
+        {
             return Ok(false);
-        };
-        budget.value(&value)?;
-        if let Value::Object(handle) = &value {
-            self.inspect(handle)?;
         }
-        self.object_mut(object)?.private_fields[index].1 = value;
+        self.check_private_method(&method.kind, budget)?;
+        let elements = &mut self.object_mut(object)?.private_elements;
+        elements
+            .try_reserve(1)
+            .map_err(|_| Error::Heap(spite_heap::Error::Capacity))?;
+        elements.push((
+            method.name.clone(),
+            PrivateElement::Method(method.kind.clone()),
+        ));
         Ok(true)
     }
 }
@@ -103,12 +183,12 @@ mod tests {
         );
         assert!(
             !objects
-                .private_field_has(&child, &name, &mut unlimited())
+                .private_has(&child, &name, &mut unlimited())
                 .unwrap()
         );
         assert!(
             !objects
-                .private_field_has(&parent, &other, &mut unlimited())
+                .private_has(&parent, &other, &mut unlimited())
                 .unwrap()
         );
         assert!(
@@ -116,16 +196,17 @@ mod tests {
                 .private_field_add(&parent, name.clone(), Value::Number(8.0), &mut unlimited())
                 .unwrap()
         );
-        assert!(
+        assert_eq!(
             objects
-                .private_field_set(&parent, &name, Value::Number(9.0), &mut unlimited())
-                .unwrap()
+                .private_set(&parent, &name, &Value::Number(9.0), &mut unlimited())
+                .unwrap(),
+            SetAction::Done(true)
         );
         assert_eq!(
             objects
-                .private_field_get(&parent, &name, &mut unlimited())
+                .private_get(&parent, &name, &mut unlimited())
                 .unwrap(),
-            Some(Value::Number(9.0))
+            Some(GetAction::Value(Value::Number(9.0)))
         );
         assert_eq!(objects.inspect(&parent).unwrap().property_count(), 0);
     }
@@ -150,10 +231,10 @@ mod tests {
             (environment.0, Error::WrongKind),
         ] {
             assert_eq!(
-                objects.private_field_set(
+                objects.private_set(
                     &object,
                     &name,
-                    Value::Object(bad.clone()),
+                    &Value::Object(bad.clone()),
                     &mut unlimited()
                 ),
                 Err(expected)
@@ -168,19 +249,19 @@ mod tests {
                 Err(expected)
             );
             assert_eq!(
-                objects.private_field_has(&bad, &name, &mut unlimited()),
+                objects.private_has(&bad, &name, &mut unlimited()),
                 Err(expected)
             );
             assert_eq!(
                 objects
-                    .private_field_get(&object, &name, &mut unlimited())
+                    .private_get(&object, &name, &mut unlimited())
                     .unwrap(),
-                Some(Value::Number(7.0))
+                Some(GetAction::Value(Value::Number(7.0)))
             );
-            assert_eq!(objects.inspect(&object).unwrap().private_fields.len(), 1);
+            assert_eq!(objects.inspect(&object).unwrap().private_elements.len(), 1);
         }
         assert_eq!(
-            objects.private_field_set(&object, &name, Value::Number(9.0), &mut Budget::new(2)),
+            objects.private_set(&object, &name, &Value::Number(9.0), &mut Budget::new(2)),
             Err(Error::WorkLimit)
         );
         assert_eq!(
@@ -193,14 +274,14 @@ mod tests {
             Err(Error::WorkLimit)
         );
         assert_eq!(
-            objects.private_field_get(&object, &name, &mut Budget::new(2)),
+            objects.private_get(&object, &name, &mut Budget::new(2)),
             Err(Error::WorkLimit)
         );
         assert_eq!(
             objects
-                .private_field_get(&object, &name, &mut unlimited())
+                .private_get(&object, &name, &mut unlimited())
                 .unwrap(),
-            Some(Value::Number(7.0))
+            Some(GetAction::Value(Value::Number(7.0)))
         );
     }
 
@@ -228,7 +309,7 @@ mod tests {
             .unwrap();
         assert_eq!(objects.collect([&object], 100).unwrap().live, 2);
         objects
-            .private_field_set(&object, &name, Value::Undefined, &mut unlimited())
+            .private_set(&object, &name, &Value::Undefined, &mut unlimited())
             .unwrap();
         assert_eq!(objects.collect([&object], 100).unwrap().reclaimed, 1);
         assert!(objects.inspect(&child).is_err());

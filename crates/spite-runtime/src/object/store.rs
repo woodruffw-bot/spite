@@ -434,7 +434,7 @@ impl Objects {
                 },
                 derived,
                 default,
-                fields: std::rc::Rc::from([]),
+                elements: Default::default(),
             },
         )));
         Ok(())
@@ -457,7 +457,24 @@ impl Objects {
         else {
             return Err(Error::WrongKind);
         };
-        class.fields = fields;
+        class.elements.fields = fields;
+        Ok(())
+    }
+
+    pub(crate) fn set_class_private_methods(
+        &mut self,
+        function: &Handle,
+        methods: std::rc::Rc<[crate::private::PrivateMethod]>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        for method in methods.iter() {
+            self.check_private_method(&method.kind, budget)?;
+        }
+        let Some(Callable::ClassConstructor(class)) = &mut self.object_mut(function)?.callable
+        else {
+            return Err(Error::WrongKind);
+        };
+        class.elements.private_methods = methods;
         Ok(())
     }
 

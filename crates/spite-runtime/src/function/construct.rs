@@ -22,12 +22,12 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.enter_call(span)?;
-        let mut fields = Vec::new();
+        let mut elements = Vec::new();
         let result = self
-            .construct_inner(function, arguments, new_target, &mut fields, span)
+            .construct_inner(function, arguments, new_target, &mut elements, span)
             .and_then(|value| {
-                for fields in fields.iter().rev() {
-                    self.initialize_fields(&value, fields)?;
+                for pending in elements.iter().rev() {
+                    self.initialize_elements(&value, pending, span)?;
                 }
                 Ok(value)
             });
@@ -40,7 +40,7 @@ impl Realm {
         function: Value,
         mut arguments: Vec<Value>,
         new_target: Option<ObjectHandle>,
-        fields: &mut Vec<std::rc::Rc<[super::ClassField]>>,
+        elements: &mut Vec<super::class_field::InstanceElements>,
         span: Span,
     ) -> Result<Value, Error> {
         self.check_argument_count(arguments.len(), span)?;
@@ -120,15 +120,17 @@ impl Realm {
                     let Value::Object(superclass) = superclass else {
                         unreachable!("constructor")
                     };
-                    if !class.fields.is_empty() {
-                        fields.try_reserve(1).map_err(|_| Error::Limit {
+                    if !class.elements.fields.is_empty()
+                        || !class.elements.private_methods.is_empty()
+                    {
+                        elements.try_reserve(1).map_err(|_| Error::Limit {
                             span,
-                            message: "derived field forwarding capacity exceeded".into(),
+                            message: "derived element forwarding capacity exceeded".into(),
                         })?;
-                        fields.push(class.fields);
+                        elements.push(class.elements);
                     }
                     function = superclass;
-                    // Initialize each default class's own fields, from the
+                    // Initialize each default class's own elements, from the
                     // superclass outward, after this forwarded construction.
                 }
                 Callable::ClassConstructor(class) if class.derived => {
@@ -288,7 +290,7 @@ impl Realm {
         let this = Value::Object(instance);
         // Base instance elements precede FunctionDeclarationInstantiation,
         // including parameter defaults, and use their own initializer context.
-        self.initialize_instance_fields(&this, &function, span)?;
+        self.initialize_instance_elements(&this, &function, span)?;
         let result = self.call_ordinary(
             code,
             function,

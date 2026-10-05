@@ -1,13 +1,13 @@
-//! Parsed private syntax must preserve host failures until execution is implemented.
+//! Unimplemented async/generator private methods remain host failures.
 
 use spite_runtime::{Error, Realm, Value};
 
 #[test]
-fn incomplete_private_execution_is_distinct_from_early_errors() {
+fn unsupported_private_function_kinds_are_distinct_from_early_errors() {
     for source in [
-        "class C{#m(){}}",
-        "class C{get #x(){}set #x(v){}}",
-        "class C{static #m(){}}",
+        "eval('class C{async #m(){}}');",
+        "eval('class C{*#m(){}}');",
+        "eval('class C{static async #m(){}}');",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();

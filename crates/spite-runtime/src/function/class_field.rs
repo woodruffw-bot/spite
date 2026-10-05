@@ -114,30 +114,55 @@ pub(crate) struct ClassField {
     pub span: Span,
 }
 
+#[derive(Clone, Debug, Default)]
+pub(crate) struct InstanceElements {
+    pub fields: Rc<[ClassField]>,
+    pub private_methods: Rc<[crate::private::PrivateMethod]>,
+}
+
 impl Realm {
+    pub(super) fn instance_elements(
+        &mut self,
+        constructor: &ObjectHandle,
+        span: Span,
+    ) -> Result<InstanceElements, Error> {
+        self.object_work(span, |objects, _| {
+            let Some(super::Callable::ClassConstructor(class)) =
+                objects.inspect(constructor)?.callable()
+            else {
+                return Ok(InstanceElements::default());
+            };
+            Ok(class.elements.clone())
+        })
+    }
+
+    #[cfg(test)]
     pub(super) fn instance_fields(
         &mut self,
         constructor: &ObjectHandle,
         span: Span,
     ) -> Result<Rc<[ClassField]>, Error> {
-        self.object_work(span, |objects, _| {
-            let Some(super::Callable::ClassConstructor(class)) =
-                objects.inspect(constructor)?.callable()
-            else {
-                return Ok(Rc::from([]));
-            };
-            Ok(class.fields.clone())
-        })
+        Ok(self.instance_elements(constructor, span)?.fields)
     }
 
-    pub(crate) fn initialize_instance_fields(
+    pub(crate) fn initialize_instance_elements(
         &mut self,
         receiver: &Value,
         constructor: &ObjectHandle,
         span: Span,
     ) -> Result<(), Error> {
-        let fields = self.instance_fields(constructor, span)?;
-        self.initialize_fields(receiver, &fields)
+        let elements = self.instance_elements(constructor, span)?;
+        self.initialize_elements(receiver, &elements, span)
+    }
+
+    pub(super) fn initialize_elements(
+        &mut self,
+        receiver: &Value,
+        elements: &InstanceElements,
+        span: Span,
+    ) -> Result<(), Error> {
+        self.initialize_private_methods(receiver, &elements.private_methods, span)?;
+        self.initialize_fields(receiver, &elements.fields)
     }
 
     pub(super) fn initialize_fields(

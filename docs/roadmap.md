@@ -173,7 +173,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add public instance/static fields with ordered computed names, initializer environments, data-property creation, and base/derived construction timing.
 - [x] Parse private fields/methods/accessors, private references and brand checks, with lexical class scope and early errors.
 - [x] Execute instance/static private fields with private-name environments, brand checks, ordered initialization, direct eval, and tracing.
-- [ ] Execute private methods/accessors with brands installed before fields, private calls and writes, and tracing.
+- [x] Execute private methods/accessors with brands installed before fields, private calls and writes, and tracing.
 - [x] Add static initialization blocks with their scope, early errors, and ordered class evaluation.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.

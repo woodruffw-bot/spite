@@ -2047,7 +2047,7 @@ its callable metadata still permits apply to read the argument list first.
 Construction shares ordinary base allocation, newTarget prototype selection,
 strict parameter/body execution, and object-versus-primitive return rules. The
 empty default constructor implements the base branch of 15.7.14 and initializes
-instance fields. Private methods/accessors remain Unsupported. Existing
+instance elements. Async/generator methods remain Unsupported. Existing
 native-stack guards and opt-in quotas are unchanged.
 
 Class constructors inherit Function.prototype and own a non-writable,
@@ -2198,5 +2198,33 @@ private spellings before declaration instantiation or execution (19.2.1.3).
 Its parsed references resolve through the captured runtime namespace; indirect
 eval and dynamic Function inherit no caller private names. Nested class names can
 shadow eval's inherited names only within their body. Parser API context booleans
-remain separate from the supplied name set. Private methods/accessors remain
-Unsupported until their initialization and access semantics are implemented.
+remain separate from the supplied name set.
+
+## Private methods and accessors
+
+Private methods/accessors use the same opaque names and own private storage as
+fields (6.2.11/7.3.27–31). A method record retains one shared non-constructible
+strict method function. An accessor record retains getter/setter handles; paired
+declarations merge at their first list position, in either source order (15.7.14).
+SetFunctionName uses `#name`, with `get`/`set` prefixes for accessor functions.
+Private methods retain exact source, home objects, ordinary arguments, and
+captured lexical/private scope through the existing method call machinery.
+
+InitializeInstanceElements installs every private method/accessor before any
+field initializer, before base parameters and after derived BindThisValue
+(7.3.33/10.2.2). The default-derived forwarding queue retains both method and
+field lists, including classes with methods only, and initializes superclass
+elements before subclass elements. Static private methods/accessors install after
+internal class-name initialization and before all ordered static fields/blocks.
+Duplicate method/accessor installation throws TypeError before field effects.
+Ordinary extensibility and property capacity do not restrict private elements.
+
+PrivateGet returns shared method values or calls an accessor getter with the
+original object after releasing storage borrows. PrivateSet rejects method writes
+and absent setters with TypeError or invokes the setter with that receiver and
+the assigned value. An absent getter also throws TypeError; private-in observes
+the accessor's brand regardless of which functions exist. Assignment retains
+right-side-before-write ordering, while compound/logical updates use normal
+GetValue ordering. Object and constructor records trace method/getter/setter
+handles. Checked storage validates every callable edge and work budget before
+mutation. Recursive calls/accessors use the unchanged native-stack guards.
