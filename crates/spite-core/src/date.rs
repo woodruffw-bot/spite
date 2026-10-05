@@ -30,6 +30,20 @@ fn integer(value: f64) -> f64 {
     if value == 0.0 { 0.0 } else { value }
 }
 
+/// Applies MakeFullYear, interpreting integer years 0 through 99 as 1900 through 1999.
+///
+/// NaN remains NaN; other inputs truncate toward zero, including signed zero.
+/// Infinities remain infinite. Interchange string years do not use this operation.
+/// See [MakeFullYear](https://262.ecma-international.org/17.0/#sec-makefullyear).
+pub fn make_full_year(year: f64) -> f64 {
+    let year = integer(year);
+    if (0.0..=99.0).contains(&year) {
+        1900.0 + year
+    } else {
+        year
+    }
+}
+
 /// Applies MakeTime to numeric components, preserving ordered Number arithmetic.
 ///
 /// Non-finite inputs yield NaN. Finite inputs are truncated individually before

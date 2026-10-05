@@ -156,3 +156,147 @@ fn unpaired_surrogates_cannot_become_format_elements_or_disappear_in_conversion(
         assert_eq!(parse_date_time_string(&source), None);
     }
 }
+
+fn parsed(source: &str) -> DateTimeString {
+    parse_date_time_string(&JsString::from(source)).unwrap()
+}
+
+#[test]
+fn utc_forms_convert_defaults_extended_years_and_offsets_without_short_year_adjustment() {
+    for (source, expected) in [
+        ("1970", 0.0),
+        ("1970T00:00Z", 0.0),
+        ("1970-02", 2_678_400_000.0),
+        ("1969-12-31T23:59:59.999Z", -1.0),
+        ("1970-01-01T00:00+05:30", -19_800_000.0),
+        ("1970-01-01T00:00-05:30", 19_800_000.0),
+        ("0000", -62_167_219_200_000.0),
+        ("+000000", -62_167_219_200_000.0),
+        ("-000001", -62_198_755_200_000.0),
+    ] {
+        assert_eq!(parsed(source).utc_time_value(), Some(expected), "{source}");
+    }
+    assert_eq!(parsed("1970").utc_time_value().unwrap().to_bits(), 0);
+    for source in ["0001", "0099", "+000001", "-000001"] {
+        let value = parsed(source);
+        let time = value.utc_time_value().unwrap();
+        assert_eq!(
+            super::super::UtcDateTime::from_time_value(time as i64)
+                .unwrap()
+                .year,
+            value.year
+        );
+    }
+}
+
+#[test]
+fn end_of_day_and_calendar_day_elements_normalize_before_conversion() {
+    assert_eq!(
+        parsed("1995-02-04T24:00Z").utc_time_value(),
+        Some(791_942_400_000.0)
+    );
+    assert_eq!(
+        parsed("1995-02-04T24:00Z").utc_time_value(),
+        parsed("1995-02-05T00:00Z").utc_time_value()
+    );
+    assert_eq!(
+        parsed("2000-02-30").utc_time_value(),
+        Some(951_868_800_000.0)
+    );
+    assert_eq!(
+        parsed("1900-02-29").utc_time_value(),
+        parsed("1900-03-01").utc_time_value()
+    );
+    assert_eq!(
+        parsed("2000-02-29").utc_time_value(),
+        Some(951_782_400_000.0)
+    );
+}
+
+#[test]
+fn utc_range_checks_follow_offset_adjustment_at_both_endpoints() {
+    for (source, expected) in [
+        ("-271821-04-20T00:00:00Z", -8_640_000_000_000_000.0),
+        ("+275760-09-13T00:00:00Z", 8_640_000_000_000_000.0),
+        ("+275760-09-12T24:00Z", 8_640_000_000_000_000.0),
+        ("-271821-04-19T23:59:59.999-00:01", -8_639_999_999_940_001.0),
+        ("+275760-09-13T00:00:00.001+00:01", 8_639_999_999_940_001.0),
+    ] {
+        assert_eq!(parsed(source).utc_time_value(), Some(expected), "{source}");
+    }
+    for source in [
+        "-271821-04-19T23:59:59.999Z",
+        "+275760-09-13T00:00:00.001Z",
+        "-271821-04-20T00:00+00:01",
+        "+275760-09-13T00:00-00:01",
+        "+999999",
+        "-999999",
+    ] {
+        assert!(
+            parsed(source).utc_time_value().unwrap().is_nan(),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn local_forms_require_resolution_instead_of_substituting_a_utc_instant() {
+    for source in [
+        "1970T00:00",
+        "2000-02-29T12:34:56.789",
+        "+275760-09-13T00:00",
+    ] {
+        assert_eq!(parsed(source).utc_time_value(), None);
+    }
+}
+
+#[test]
+fn externally_constructed_invalid_records_and_extreme_years_do_not_overflow() {
+    let base = parsed("1970-01-01T00:00Z");
+    let invalid = [
+        DateTimeString { month: 12, ..base },
+        DateTimeString { day: 0, ..base },
+        DateTimeString { day: 32, ..base },
+        DateTimeString { hour: 25, ..base },
+        DateTimeString { minute: 60, ..base },
+        DateTimeString { second: 60, ..base },
+        DateTimeString {
+            millisecond: 1000,
+            ..base
+        },
+        DateTimeString {
+            hour: 24,
+            minute: 1,
+            ..base
+        },
+        DateTimeString {
+            hour: 24,
+            second: 1,
+            ..base
+        },
+        DateTimeString {
+            hour: 24,
+            millisecond: 1,
+            ..base
+        },
+        DateTimeString {
+            zone: DateTimeZone::OffsetMinutes(1440),
+            ..base
+        },
+        DateTimeString {
+            zone: DateTimeZone::OffsetMinutes(i16::MIN),
+            ..base
+        },
+        DateTimeString {
+            year: i32::MIN,
+            ..base
+        },
+        DateTimeString {
+            year: i32::MAX,
+            ..base
+        },
+    ];
+    for value in invalid {
+        assert!(value.utc_time_value().unwrap().is_nan(), "{value:?}");
+    }
+}

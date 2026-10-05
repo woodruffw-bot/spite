@@ -1,6 +1,26 @@
 use super::*;
 
 #[test]
+fn full_year_adjustment_follows_truncation_and_preserves_non_short_years() {
+    for year in [0.0, -0.0, 0.99, -0.99] {
+        assert_eq!(make_full_year(year), 1900.0);
+    }
+    for (year, expected) in [
+        (1.99, 1901.0),
+        (99.99, 1999.0),
+        (100.99, 100.0),
+        (-1.99, -1.0),
+        (2000.99, 2000.0),
+        (1e100, 1e100),
+    ] {
+        assert_eq!(make_full_year(year), expected);
+    }
+    assert!(make_full_year(f64::NAN).is_nan());
+    assert_eq!(make_full_year(f64::INFINITY), f64::INFINITY);
+    assert_eq!(make_full_year(f64::NEG_INFINITY), f64::NEG_INFINITY);
+}
+
+#[test]
 fn clipping_truncates_toward_zero_and_canonicalizes_both_zero_signs() {
     for value in [
         0.0,

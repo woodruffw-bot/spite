@@ -2330,3 +2330,12 @@ and the UTC/local distinction: absent zones mean UTC for date-only forms and
 unresolved local time for date-time forms. Expanded years can exceed TimeClip's
 domain at this syntax stage; calendar/zone conversion and time-value clipping
 remain separate. No implementation-specific fallback formats are added.
+
+UTC and explicit-offset interchange fields convert with exact widened integer
+arithmetic through calendar rollover and zone adjustment. Only then enforce
+TimeClip's range and convert the accepted integral milliseconds to Number;
+nominal fields outside the range can still describe an in-range UTC instant after
+their offset. Invalid native field records and out-of-range instants yield NaN,
+while valid local forms report that zone resolution is required. MakeFullYear
+separately truncates numeric input and maps years 0–99 to 1900–1999; interchange
+years preserve their literal year, including zero and 1–99.

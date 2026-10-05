@@ -15,8 +15,9 @@ pub enum DateTimeZone {
 
 /// Syntactically valid interchange date/time fields, with absent-element defaults.
 ///
-/// Expanded years can lie outside TimeClip's domain. Converting fields into a
-/// time value, including calendar normalization and zone resolution, is separate.
+/// Expanded years can lie outside TimeClip's domain. UTC and explicit-offset
+/// forms can be converted with [`Self::utc_time_value`]; local forms require host
+/// zone resolution.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct DateTimeString {
     /// Four-digit or signed six-digit year, including zero and negative years.
@@ -35,6 +36,59 @@ pub struct DateTimeString {
     pub millisecond: u16,
     /// UTC, explicit offset, or unresolved local time.
     pub zone: DateTimeZone,
+}
+
+impl DateTimeString {
+    /// Converts UTC or explicit-offset fields to a clipped time value.
+    ///
+    /// Returns `Some(NaN)` for invalid field records or out-of-range instants,
+    /// and `None` for valid local forms that need host zone resolution. Day 29–31
+    /// and hour 24 normalize through calendar arithmetic. The offset is applied
+    /// before the range check, including at TimeClip endpoints. Integer work
+    /// stays exact until the final conversion of an in-range time value.
+    /// See [Date.parse](https://262.ecma-international.org/17.0/#sec-date.parse).
+    pub fn utc_time_value(&self) -> Option<f64> {
+        if self.month > 11
+            || !(1..=31).contains(&self.day)
+            || self.hour > 24
+            || self.minute > 59
+            || self.second > 59
+            || self.millisecond > 999
+            || (self.hour == 24 && (self.minute != 0 || self.second != 0 || self.millisecond != 0))
+        {
+            return Some(f64::NAN);
+        }
+        let offset = match self.zone {
+            DateTimeZone::Utc => 0,
+            DateTimeZone::OffsetMinutes(offset) if (-1439..=1439).contains(&offset) => offset,
+            DateTimeZone::OffsetMinutes(_) => return Some(f64::NAN),
+            DateTimeZone::Local => return None,
+        };
+        let day = super::day_from_year(self.year)
+            + super::month_lengths(self.year)
+                .into_iter()
+                .take(usize::from(self.month))
+                .map(i64::from)
+                .sum::<i64>()
+            + i64::from(self.day)
+            - 1;
+        // Even an externally constructed i32 year fits this widened arithmetic.
+        // Offset adjustment must precede clipping; a nominal local value just
+        // outside the domain can still represent an in-range UTC instant.
+        let time = i128::from(day) * i128::from(super::MS_PER_DAY)
+            + i128::from(self.hour) * 3_600_000
+            + i128::from(self.minute) * 60_000
+            + i128::from(self.second) * 1_000
+            + i128::from(self.millisecond)
+            - i128::from(offset) * 60_000;
+        let maximum = i128::from(super::MAX_TIME_VALUE);
+        Some(if (-maximum..=maximum).contains(&time) {
+            // Every accepted integral millisecond is exactly representable.
+            time as f64
+        } else {
+            f64::NAN
+        })
+    }
 }
 
 /// Parses the edition-17 Date Time String Format and its absent-element defaults.

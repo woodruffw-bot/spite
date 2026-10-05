@@ -499,8 +499,15 @@ Date interchange string syntax now parses directly from UTF-16 with exact
 element widths, expanded years, defaults, explicit offsets and unresolved local
 date-times. Five regressions include two reviewed insta snapshots for accepted
 forms and rejected syntax, all absent-zone form combinations, offset boundaries,
-and unpaired surrogates. Calendar normalization, out-of-range instant handling,
-zone resolution and Date.parse exposure remain pending.
+and unpaired surrogates. UTC and explicit-offset fields now convert through exact
+calendar normalization and offset adjustment before final range validation.
+Six additional regressions cover numeric MakeFullYear adjustment, preserved
+interchange years 0–99, signed offsets, leap/calendar-day and hour-24 rollover,
+both clipped endpoints with offsets, unresolved local forms, and invalid native
+records/extreme years without overflow. Local zone resolution, MakeDay for
+arbitrary numeric arguments, and Date.parse exposure remain pending.
+A separate reference check round-tripped 4,103 Node ISO strings spanning the
+clipped domain to their exact original time values.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
