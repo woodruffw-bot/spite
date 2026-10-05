@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5985 unmodified test fixtures and eight harness files come from
+These 6019 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -27,6 +27,27 @@ tokens, without evaluating the sources. The original sources are never rewritten
 to make them executable, and they do not contribute to an execution pass count.
 Unicode 18 additions are covered separately by the pinned UCD tables and local
 parser tests. Each test group checks its reviewed manifest inventory.
+
+## RegExp lexical boundary review
+
+Thirty-four unchanged originals add 68 variants: eighteen harness positives and
+sixteen reviewed parse negatives, each in both Script modes. Positive programs
+verify that `//` starts a comment and that eval throws SyntaxError for forbidden
+line terminators in literal bodies and backslash sequences. Negative programs
+reject the intended malformed tokens, unterminated comment, or leading dot after
+an empty-literal comment; exact diagnostic messages and byte spans are recorded.
+Historical CR-labelled files containing LF retain their original bytes and are
+checked at the actual LF. Native regressions independently cover all four line
+terminators and UTF-16 preservation.
+
+The focused review read 53 complete legacy/boundary programs. Eighteen whole files
+require RegExp execution, including one negative whose initial complete literal
+would otherwise mask the intended later error. One paragraph-separator program
+contains an earlier line separator, so it cannot verify the intended separator
+and is excluded. This is not a complete RegExp directory review. No Pattern,
+flag-validity, matching, or RegExp object execution receives credit. Original
+sources, assertions, metadata, the existing pin, eight helpers, and unlimited
+runtime defaults are unchanged.
 
 ## Statement parser tests
 
@@ -1352,7 +1373,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 11410 variants from 5966 reviewed sources: the eleven
+The `spite-test262` command runs 11478 variants from 6000 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1378,13 +1399,14 @@ parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
 parse-negative), and 48 private element parse-negative files, and 56 private-field
 execution files, and 128 private method/accessor execution files, and 83 WeakSet
-files.
+files, and 34 RegExp lexical-boundary files (eighteen positives and sixteen parse
+negatives).
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-10569 positives using the upstream harness, 833 reviewed parse-negative variants,
+10605 positives using the upstream harness, 865 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

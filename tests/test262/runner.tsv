@@ -5965,3 +5965,37 @@ test/built-ins/Set/prototype/union/subclass-receiver-methods.js	-	-	-
 test/built-ins/Set/prototype/union/subclass-symbol-species.js	-	-	-
 test/built-ins/Set/prototype/union/subclass.js	-	-	-
 test/built-ins/Set/prototype/values/does-not-have-setdata-internal-slot-weakset.js	-	-	-
+test/language/literals/regexp/7.8.5-1.js	-	-	-
+test/language/literals/regexp/7.8.5-1gs.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.2_T1.js	521	525	unterminated comment
+test/language/literals/regexp/S7.8.5_A1.2_T2.js	613	617	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A1.2_T3.js	617	618	expected an expression
+test/language/literals/regexp/S7.8.5_A1.2_T4.js	562	563	expected an expression
+test/language/literals/regexp/S7.8.5_A1.3_T1.js	700	702	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A1.3_T2.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.3_T3.js	701	703	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A1.3_T4.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.3_T5.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.3_T6.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.5_T1.js	498	501	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A1.5_T2.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.5_T3.js	497	500	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A1.5_T4.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.5_T5.js	-	-	-
+test/language/literals/regexp/S7.8.5_A1.5_T6.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.2_T1.js	500	505	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A2.3_T1.js	630	633	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A2.3_T2.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.3_T3.js	631	634	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A2.3_T4.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.3_T5.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.3_T6.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.5_T1.js	561	565	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A2.5_T2.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.5_T3.js	561	565	line terminator in regular expression literal
+test/language/literals/regexp/S7.8.5_A2.5_T4.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.5_T5.js	-	-	-
+test/language/literals/regexp/S7.8.5_A2.5_T6.js	-	-	-
+test/language/literals/regexp/regexp-first-char-no-line-separator.js	691	695	line terminator in regular expression literal
+test/language/literals/regexp/regexp-first-char-no-paragraph-separator.js	691	695	line terminator in regular expression literal
+test/language/literals/regexp/regexp-source-char-no-line-separator.js	561	568	line terminator in regular expression literal
