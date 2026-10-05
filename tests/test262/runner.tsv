@@ -5561,3 +5561,27 @@ test/language/expressions/class/elements/static-field-init-this-inside-arrow-fun
 test/language/expressions/class/elements/static-field-init-with-this.js	-	-	-
 test/language/expressions/class/elements/static-field-redeclaration.js	-	-	-
 test/language/expressions/class/elements/super-access-from-arrow-func-on-field.js	-	-	-
+test/language/statements/class/static-init-abrupt.js	-	-	-
+test/language/statements/class/static-init-await-binding-invalid.js	715	720	invalid class binding identifier
+test/language/statements/class/static-init-await-binding-valid.js	-	-	-
+test/language/statements/class/static-init-expr-new-target.js	-	-	-
+test/language/statements/class/static-init-expr-this.js	-	-	-
+test/language/statements/class/static-init-invalid-arguments.js	554	568	arguments is not allowed in class initialization
+test/language/statements/class/static-init-invalid-label-dup.js	565	566	duplicate label
+test/language/statements/class/static-init-invalid-lex-dup.js	602	603	duplicate lexical binding
+test/language/statements/class/static-init-invalid-lex-var.js	698	699	var declaration conflicts with lexical binding
+test/language/statements/class/static-init-invalid-return.js	515	521	return outside a function body
+test/language/statements/class/static-init-invalid-super-call.js	507	512	super call requires a derived constructor
+test/language/statements/class/static-init-invalid-undefined-break-target.js	611	612	undefined label
+test/language/statements/class/static-init-invalid-undefined-continue-target.js	631	632	undefined label
+test/language/statements/class/static-init-scope-lex-close.js	-	-	-
+test/language/statements/class/static-init-scope-lex-derived.js	-	-	-
+test/language/statements/class/static-init-scope-lex-open.js	-	-	-
+test/language/statements/class/static-init-scope-var-close.js	-	-	-
+test/language/statements/class/static-init-scope-var-derived.js	-	-	-
+test/language/statements/class/static-init-scope-var-open.js	-	-	-
+test/language/statements/class/static-init-sequence.js	-	-	-
+test/language/statements/class/static-init-statement-list-optional.js	-	-	-
+test/language/statements/class/static-init-super-property.js	-	-	-
+test/language/expressions/class/static-init-await-binding.js	562	567	invalid class binding identifier
+test/language/expressions/class/static-init-await-reference.js	-	-	-
