@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5449 unmodified test fixtures and eight harness files come from
+These 5476 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1060,7 +1060,8 @@ unchanged. Unsupported syntax cannot satisfy a negative.
 
 ## Eval intrinsic and indirect execution fixtures
 
-The selection adds eight eval intrinsic sources and 49 indirect eval sources,
+The initial selection added eight eval intrinsic sources and 49 indirect eval
+sources,
 producing 112 variants: 110 harness positives and two runtime negatives. They
 cover metadata and construction rejection, non-String identity returns, global
 lookup and this, own strictness, empty/value completions, fresh lexical environments
@@ -1068,7 +1069,8 @@ and TDZs, global lexical conflicts, var/function instantiation, and last-functio
 precedence. Three historically Annex-B-labelled strict block/switch controls
 exercise core lexical function scope and do not require legacy extensions.
 
-All 71 candidates were reviewed. Fourteen remain excluded as whole files without
+All 71 candidates were reviewed. Fourteen were initially excluded as whole files
+without
 credit: six require complete global reflection through the unchanged property
 helper, two require modules, two classes, one generators, one another realm, and
 two direct String eval (one also uses private identifiers). Historical descriptions
@@ -1088,7 +1090,7 @@ source spans and diagnostics.
 
 ## Direct eval execution fixtures
 
-The selection adds 131 unchanged direct-eval originals and the indirect
+The first direct-eval selection added 131 unchanged originals and the indirect
 `global-env-rec-eval.js` original, whose caller requires direct String eval.
 Their 180 variants comprise 178 harness positives and two runtime negatives.
 They cover caller lookup through functions, catch, with, and nested eval; inherited
@@ -1102,9 +1104,9 @@ The direct directory contains 286 candidates. The complete synchronous ordinary,
 arrow, and method programs and their metadata were reviewed; actual async/generator
 function forms identify 144 generated exclusions even where feature tags are
 absent. Another generator declaration, two class programs, two outer Modules,
-one valid super-property program, and five global property-helper programs remain
-excluded as whole files without credit. The unchanged helper requires complete
-global intrinsic reflection for those five. No assertion or source was rewritten.
+and five global property-helper programs remain excluded as whole files without
+credit. The now-supported super-property original is reviewed below. The unchanged
+helper requires complete global intrinsic reflection for those five. No assertion or source was rewritten.
 Original Git blob hashes verify every source. Both stable and MSRV pass all 180
 new variants with ordinary unlimited defaults; the pin and eight helpers are
 unchanged.
@@ -1115,8 +1117,34 @@ Scripts; only the intended runtime SyntaxError satisfies the original metadata.
 The intrinsic/indirect cohort above now also includes the newly eligible nested
 caller original: 58 sources and 114 variants. Thirteen candidates from that review
 remain excluded; the remaining direct-eval dependency uses private identifiers.
-The combined eval inventory is 189 sources and 292 variants, with 186 positive
-and three runtime-negative originals.
+The combined eval inventory now includes the super-property original reviewed
+below: 190 sources and 294 variants, with 187 positive and three runtime-negative
+originals.
+
+## Super property fixtures
+
+The selection adds 27 unchanged originals: 22 from the super-expression directory,
+four from object method definitions, and the direct-eval `super-prop-method.js`
+original. Their 50 variants comprise 46 harness positives and four reviewed parse
+negatives. They cover dot/computed references, home-prototype lookup, actual call
+and accessor receivers, strict/non-strict writes, null bases, abrupt key evaluation
+and conversion, arrows/eval/default parameters, and internal prototype lookup
+without public `__proto__` access. Four 2024 originals check that GetSuperBase
+precedes ToPropertyKey for reads, writes, compound assignment, and increments.
+Historical algorithm excerpts are preserved; current edition-17 behavior governs
+execution. The poisoned public `__proto__` test exercises core internal operations
+without depending on Annex B accessor semantics.
+
+The reviewed synchronous originals retain every statement and metadata field.
+Actual whole-program forms exclude 72 class-dependent super originals, one also
+requiring another realm, plus four async and four generator method originals.
+Four of the excluded method programs have parse-negative metadata; unsupported
+syntax cannot satisfy those negatives. The two retained parse negatives reject
+SuperCall in ordinary object method bodies/defaults at the reviewed `super` token
+with the exact diagnostic. No assertions, sources, helpers, or metadata were
+rewritten. Git blob hashes verify every source. Both stable and MSRV pass all 50
+variants under ordinary unlimited defaults; the existing pin and eight helpers
+are unchanged.
 
 ## Scope and maintenance
 
@@ -1139,7 +1167,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10343 variants from 5430 reviewed sources: the eleven
+The `spite-test262` command runs 10393 variants from 5457 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1149,7 +1177,7 @@ tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding
 430 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
-34 Symbol tests, 23 object method/accessor tests, and 75 for-of files (53 positive
+34 Symbol tests, 27 object method/accessor tests, and 75 for-of files (53 positive
 and 22 parse-negative), plus seven rest-parameter positives and twelve parameter
 parse negatives, and 56 for-in files (36 positive and 20 parse-negative), plus
 101 with-statement files (85 positive and 16 parse-negative), and 82 catch-binding
@@ -1158,13 +1186,14 @@ files (142 positive and 12 parse-negative), and 77 var declaration pattern
 files (71 positive and six parse-negative), and 507 formal binding pattern
 files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
-files (426 positive and 88 parse-negative), and 189 eval intrinsic/direct/indirect
-files (186 positive and three runtime-negative). The method/accessor files
+files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
+files (187 positive and three runtime-negative), and 22 super-expression positives.
+The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-9642 positives using the upstream harness, 693 reviewed parse-negative variants,
+9688 positives using the upstream harness, 697 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

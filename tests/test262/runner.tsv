@@ -5429,3 +5429,30 @@ test/language/eval-code/direct/var-env-var-strict-caller-3.js	-	-	-
 test/language/eval-code/direct/var-env-var-strict-caller.js	-	-	-
 test/language/eval-code/direct/var-env-var-strict-source.js	-	-	-
 test/language/eval-code/indirect/global-env-rec-eval.js	-	-	-
+test/language/expressions/super/prop-dot-obj-null-proto.js	-	-	-
+test/language/expressions/super/prop-dot-obj-ref-non-strict.js	-	-	-
+test/language/expressions/super/prop-dot-obj-ref-strict.js	-	-	-
+test/language/expressions/super/prop-dot-obj-ref-this.js	-	-	-
+test/language/expressions/super/prop-dot-obj-val-from-arrow.js	-	-	-
+test/language/expressions/super/prop-dot-obj-val-from-eval.js	-	-	-
+test/language/expressions/super/prop-dot-obj-val.js	-	-	-
+test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-getvalue.js	-	-	-
+test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putvalue-compound-assign.js	-	-	-
+test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putvalue-increment.js	-	-	-
+test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putvalue.js	-	-	-
+test/language/expressions/super/prop-expr-obj-err.js	-	-	-
+test/language/expressions/super/prop-expr-obj-key-err.js	-	-	-
+test/language/expressions/super/prop-expr-obj-null-proto.js	-	-	-
+test/language/expressions/super/prop-expr-obj-ref-non-strict.js	-	-	-
+test/language/expressions/super/prop-expr-obj-ref-strict.js	-	-	-
+test/language/expressions/super/prop-expr-obj-ref-this.js	-	-	-
+test/language/expressions/super/prop-expr-obj-unresolvable.js	-	-	-
+test/language/expressions/super/prop-expr-obj-val-from-arrow.js	-	-	-
+test/language/expressions/super/prop-expr-obj-val-from-eval.js	-	-	-
+test/language/expressions/super/prop-expr-obj-val.js	-	-	-
+test/language/expressions/super/prop-poisoned-underscore-proto.js	-	-	-
+test/language/expressions/object/method-definition/name-super-call-body.js	382	387	super call requires a derived constructor
+test/language/expressions/object/method-definition/name-super-call-param.js	382	387	super call requires a derived constructor
+test/language/expressions/object/method-definition/name-super-prop-body.js	-	-	-
+test/language/expressions/object/method-definition/name-super-prop-param.js	-	-	-
+test/language/eval-code/direct/super-prop-method.js	-	-	-
