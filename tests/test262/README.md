@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6526 unmodified test fixtures and eight harness files come from
+These 6551 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -64,6 +64,14 @@ The setUTCDate review read all seven whole programs in its directory. All seven
 unchanged originals add 14 normal/strict positives for argument conversion order,
 capturing the stored time before mutating hooks and intrinsic metadata. The pin
 and eight harness files are unchanged.
+
+A numeric UTC review read all 17 whole Date.UTC programs, then revisited the eight
+UTC time setter rollover programs previously held out for Date.UTC. All 25
+unchanged originals add 50 normal/strict positives for coercion order/errors,
+absent defaults, short years, fractional/non-finite components, clipping, ordered
+floating arithmetic, metadata and UTC time rollover. All 36 programs in the four
+UTC time setter directories are now included. The pin and eight harness files
+are unchanged.
 
 ## RegExp lexical boundary review
 
@@ -1482,7 +1490,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 12492 variants from 6507 reviewed sources: the eleven
+The `spite-test262` command runs 12542 variants from 6532 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1503,7 +1511,7 @@ files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
 files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
 files (187 positive and three runtime-negative), and 22 super-expression positives,
-and 204 Date timestamp/UTC/metadata files, and 39 class
+and 229 Date timestamp/UTC/metadata files, and 39 class
 definition/name-binding/strict-mode files (37 positive and two
 parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
@@ -1516,7 +1524,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11015 positives using the upstream harness, 1469 reviewed parse-negative variants,
+11065 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
