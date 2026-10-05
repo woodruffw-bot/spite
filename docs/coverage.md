@@ -493,8 +493,14 @@ cover signed zero, fractions, non-finite input and overflow, both ±8.64×10¹�
 endpoints, pre-epoch fields, year zero and leap centuries, complete positive and
 negative 400-year cycles, and observable floating-point operation order. Fixed
 UTC examples and 4,109 full-domain sample/boundary timestamps were also checked
-against Node's Date getters. JavaScript Date intrinsics, MakeDay, parsing and local
-time zones remain pending.
+against Node's Date getters. JavaScript Date intrinsics, MakeDay, instant
+conversion and local time zones remain pending.
+Date interchange string syntax now parses directly from UTF-16 with exact
+element widths, expanded years, defaults, explicit offsets and unresolved local
+date-times. Five regressions include two reviewed insta snapshots for accepted
+forms and rejected syntax, all absent-zone form combinations, offset boundaries,
+and unpaired surrogates. Calendar normalization, out-of-range instant handling,
+zone resolution and Date.parse exposure remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

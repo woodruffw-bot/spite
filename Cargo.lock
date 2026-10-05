@@ -112,6 +112,9 @@ version = "0.1.0"
 [[package]]
 name = "spite-core"
 version = "0.1.0"
+dependencies = [
+ "insta",
+]
 
 [[package]]
 name = "spite-heap"

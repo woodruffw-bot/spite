@@ -2318,5 +2318,15 @@ containing both TimeClip endpoints; DayFromYear uses the specified Gregorian
 leap-cycle formula with floor division for negative years. Month/day and weekday
 fields follow the proleptic Gregorian calendar with 86,400 seconds per day and
 no leap-second instants. The shared helper accepts clipped integral milliseconds;
-JavaScript conversion, MakeDay, parsing, local zones and Date intrinsics remain
+JavaScript conversion, MakeDay, instant conversion, local zones and Date intrinsics remain
 separate steps.
+
+Date Time String Format parsing borrows UTF-16 code units and accepts exactly the
+edition-17 date-only/time forms, four-digit or signed six-digit years, and numeric
+offsets (21.4.1, 21.4.3.2). It rejects negative expanded zero, non-ASCII digits,
+nonconforming separators/widths, leap seconds and out-of-bounds elements. Hour 24
+requires zero minutes, seconds and milliseconds. Parsed fields retain defaults
+and the UTC/local distinction: absent zones mean UTC for date-only forms and
+unresolved local time for date-time forms. Expanded years can exceed TimeClip's
+domain at this syntax stage; calendar/zone conversion and time-value clipping
+remain separate. No implementation-specific fallback formats are added.

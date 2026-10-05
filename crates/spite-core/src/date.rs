@@ -1,8 +1,12 @@
 //! UTC calendar decomposition and Date time-value arithmetic (21.4.1).
 //!
 //! These operations use the proleptic Gregorian calendar, an epoch at the start
-//! of 1970, and exactly 86,400 seconds per day. Local time zones, Date parsing,
-//! MakeDay and JavaScript intrinsics are separate implementation steps.
+//! of 1970, and exactly 86,400 seconds per day. Interchange string syntax records
+//! local or explicit zones; zone resolution, MakeDay and JavaScript intrinsics
+//! are separate implementation steps.
+
+mod parse;
+pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
 
 /// Milliseconds in an ECMAScript day; leap seconds are not represented.
 pub const MS_PER_DAY: i64 = 86_400_000;
