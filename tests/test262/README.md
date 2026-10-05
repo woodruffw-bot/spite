@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 3904 unmodified test fixtures and eight harness files come from
+These 4411 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -992,6 +992,31 @@ Git blob identities and SHA-256 digests verify every vendored original. The pin,
 eight helpers, and ordinary unlimited defaults are retained. Var loop-pattern
 fixtures remain a separate upstream review.
 
+## Formal binding pattern review
+
+The existing pin adds 154 function-declaration, 154 function-expression, and 199
+arrow parameter sources. Their 1,006 variants include 852 positives using the
+unchanged harness and 154 reviewed parse negatives. They cover object/array
+parameters, nested defaults and patterns, top-level defaults, iterator acquisition
+and closing, elisions, anonymous function naming, rest bindings, property reads
+and abrupt completion, and invocation of the original body exactly once.
+
+All 603 originals in these three directories were reviewed. Eighty-four require
+generators and twelve require classes; they remain excluded as complete files
+without credit. Exact source-body comparisons account for the declaration,
+expression, and arrow context templates. Original metadata and case algorithms
+are compared separately, including the default/non-default pairs. Comparisons
+never rewrite the stored fixtures, which retain their original Git blob hashes.
+The pin and eight harness files are unchanged.
+
+Six malformed rest cases occur in each default/non-default function context and
+reject the intended equals or comma. The 45 additional arrow negatives reject
+literal/escaped reserved identifiers, with eight original onlyStrict flags.
+These negatives exercise binding parameters through the arrow cover grammar;
+their historical destructuring-assignment feature tag does not add general
+assignment-pattern execution. Unsupported syntax cannot satisfy a negative.
+Method/setter patterns and other formal rest originals remain separate reviews.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -1013,7 +1038,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 7500 variants from 3885 reviewed sources: the eleven
+The `spite-test262` command runs 8506 variants from 4392 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1029,12 +1054,13 @@ parse negatives, and 56 for-in files (36 positive and 20 parse-negative), plus
 101 with-statement files (85 positive and 16 parse-negative), and 82 catch-binding
 files (71 positive and 11 parse-negative), and 154 lexical declaration pattern
 files (142 positive and 12 parse-negative), and 77 var declaration pattern
-files (71 positive and six parse-negative). The method/accessor files
+files (71 positive and six parse-negative), and 507 formal binding pattern
+files (426 positive and 81 parse-negative). The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-7231 positives using the upstream harness, and 265 reviewed parse-negative variants.
+8083 positives using the upstream harness, and 419 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the

@@ -39,7 +39,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 7500 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 8506 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -128,7 +128,19 @@ TDZ, anonymous names, rest Arrays and observable iterator hooks, unmapped
 arguments and arguments-name suppression, length/source metadata, closures from
 computed keys and nested defaults, iterator close/error precedence, escaped
 partial initialization and collection, and a 12,000-name parameter pattern under
-ordinary unlimited defaults. The original parameter fixture review is separate.
+ordinary unlimited defaults.
+The unchanged pinned corpus adds 507 formal-pattern sources: 154 function
+declarations, 154 function expressions, and 199 arrows. Their 1,006 variants
+comprise 852 harness positives and 154 reviewed parse negatives. All 603 originals
+were reviewed; 84 generator-dependent and twelve class-dependent originals remain
+excluded as whole files without credit. Exact comparison verifies the repeated
+context templates, metadata, and case algorithms against the reviewed originals.
+The six rest grammar cases reject the intended equals/comma in each default and
+non-default context; 45 additional arrow negatives reject reserved identifiers,
+with the original eight onlyStrict flags preserved. Both stable and MSRV pass
+these variants plus 921 catch, declaration, and Function control variants under
+the existing pin, helpers, and unlimited defaults. Method/setter parameter and
+other formal rest fixtures remain separate reviews.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -940,8 +952,8 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 241 retained entries outside the per-Script work
-allowance; opted-in allocation/property quotas still apply.
+Realm initialization creates 308 retained entries outside per-Script work
+accounting; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early
 errors, including the required non-browser rejection of conflicting var names.
@@ -952,7 +964,7 @@ intrinsic prototypes even after global constructor bindings are replaced. Rethro
 preserve object identity. Allocation/string limits during materialization remain
 host aborts and skip pending handlers and finalizers. Uncaught built-in failures
 retain their host-facing Rust category and source span.
-Catch binding patterns remain unsupported.
+Catch patterns use the shared destructuring binding implementation described above.
 
 Recognized missing features return Unsupported. Because the grammar is incomplete,
 a syntax diagnostic alone does not prove arbitrary input violates ECMA-262. The
@@ -1092,8 +1104,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 7500 variants are four raw positives, 7231 positives using the upstream
-harness, and 265 reviewed parse negatives. Component fixtures and harness files do
+Rust. Its 8506 variants are four raw positives, 8083 positives using the upstream
+harness, and 419 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol
