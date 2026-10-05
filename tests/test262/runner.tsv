@@ -5585,3 +5585,51 @@ test/language/statements/class/static-init-statement-list-optional.js	-	-	-
 test/language/statements/class/static-init-super-property.js	-	-	-
 test/language/expressions/class/static-init-await-binding.js	562	567	invalid class binding identifier
 test/language/expressions/class/static-init-await-reference.js	-	-	-
+test/language/statements/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-chained-usage.js	1673	1677	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-function-expression.js	1637	1641	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-recursive.js	1664	1668	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage.js	1621	1625	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/grammar-private-field-super-access.js	683	684	super cannot access private properties
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-get-field.js	814	816	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-get-get.js	786	788	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-field.js	811	813	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-get.js	796	798	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-meth.js	780	782	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-set.js	797	799	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-staticfield.js	838	840	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-staticmeth.js	843	845	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-set-field.js	814	816	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-set-set.js	787	789	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-constructor.js	638	650	invalid private class element name
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-error.js	741	742	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-in-computed-property-missing.js	1631	1633	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-meth-constructor.js	669	681	invalid private class element name
+test/language/statements/class/elements/syntax/early-errors/grammar-static-privatename-constructor.js	666	678	invalid private class element name
+test/language/statements/class/elements/syntax/early-errors/super-private-access-invalid.js	717	718	super cannot access private properties
+test/language/statements/class/elements/fields-duplicate-privatenames.js	553	555	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-chained-usage.js	1678	1682	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-function-expression.js	1642	1646	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-recursive.js	1669	1673	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage.js	1626	1630	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-field-super-access.js	688	689	super cannot access private properties
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-get-field.js	819	821	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-get-get.js	791	793	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-field.js	816	818	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-get.js	801	803	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-meth.js	785	787	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-set.js	802	804	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-staticfield.js	843	845	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-meth-staticmeth.js	848	850	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-set-field.js	819	821	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-set-set.js	792	794	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-constructor.js	643	655	invalid private class element name
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-error.js	746	747	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-in-computed-property-missing.js	1636	1638	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-meth-constructor.js	674	686	invalid private class element name
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-privatename-constructor.js	671	683	invalid private class element name
+test/language/expressions/class/elements/syntax/early-errors/super-private-access-invalid.js	722	723	super cannot access private properties
+test/language/expressions/class/elements/fields-duplicate-privatenames.js	559	561	duplicate private class element
+test/language/statements/class/private-non-static-getter-static-setter-early-error.js	435	437	duplicate private class element
+test/language/statements/class/private-non-static-setter-static-getter-early-error.js	438	440	duplicate private class element
+test/language/statements/class/private-static-getter-non-static-setter-early-error.js	437	439	duplicate private class element
+test/language/statements/class/private-static-setter-non-static-getter-early-error.js	438	440	duplicate private class element
