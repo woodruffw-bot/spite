@@ -2318,8 +2318,7 @@ containing both TimeClip endpoints; DayFromYear uses the specified Gregorian
 leap-cycle formula with floor division for negative years. Month/day and weekday
 fields follow the proleptic Gregorian calendar with 86,400 seconds per day and
 no leap-second instants. The shared helper accepts clipped integral milliseconds;
-JavaScript conversion, MakeDay, instant conversion, local zones and Date intrinsics remain
-separate steps.
+MakeDay for arbitrary numeric arguments and local zones remain separate steps.
 
 Date Time String Format parsing borrows UTF-16 code units and accepts exactly the
 edition-17 date-only/time forms, four-digit or signed six-digit years, and numeric
@@ -2344,5 +2343,26 @@ Canonical ISO formatting decomposes a clipped integral time value and emits the
 finite toISOString form (21.4.4.36): four year digits for 0–9999, otherwise a sign
 and six digits, followed by full UTC date/time fields, three millisecond digits,
 and Z. Output has 24 or 27 UTF-16 code units and preserves every supported
-millisecond. Invalid native time values are rejected before formatting. Date
-branding, JavaScript RangeErrors and intrinsic exposure remain runtime steps.
+millisecond. Invalid native time values are rejected before formatting.
+
+The runtime materializes the complete edition-17 Date constructor/prototype
+property graph. Instances have a distinct [[DateValue]] slot containing a clipped
+Number or NaN; Date.prototype has no slot. Timestamp/copy construction, Date.now,
+UTC/offset Date.parse, UTC getters, getTime/valueOf, setTime, toISOString, toJSON
+and @@toPrimitive are implemented. Constructor input conversion precedes
+new-target prototype lookup; copying another Date bypasses its conversion hooks.
+setTime checks the receiver before converting input and stores only after that
+conversion succeeds. UTC getters and ISO formatting use the shared exact helpers.
+ISO output checks optional string/work quotas before allocation; an invalid Date
+throws RangeError. Object.prototype.toString recognizes the slot independently
+of prototype identity and still observes @@toStringTag.
+
+Date's generic @@toPrimitive treats default as string and enters
+OrdinaryToPrimitive directly, avoiding redispatch through its own hook. Generic
+toJSON boxes its receiver, requests a numeric primitive and returns null for
+non-finite Numbers before looking up toISOString; other primitive results invoke
+that method on the boxed original object with no arguments. Invalid Date string
+methods return "Invalid Date". Finite local/legacy string operations, local zone
+resolution, numeric calendar construction and calendar setters remain explicit
+Unsupported. Pending numeric constructors still perform ordered argument
+conversions, including later abrupt completions after earlier NaN results.

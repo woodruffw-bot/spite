@@ -110,7 +110,17 @@ impl Realm {
                 "Symbol.toPrimitive returned an object",
             ));
         }
-        // OrdinaryToPrimitive, 7.1.1.1, retains receiver and hint order.
+        self.ordinary_to_primitive(object, hint, span)
+    }
+
+    // Date's @@toPrimitive must enter the ordinary algorithm directly rather
+    // than redispatching its own hook through ToPrimitive (7.1.1.1, 21.4.4.45).
+    pub(super) fn ordinary_to_primitive(
+        &mut self,
+        object: ObjectHandle,
+        hint: Hint,
+        span: Span,
+    ) -> Result<Value, Error> {
         let names = match hint {
             Hint::String => ["toString", "valueOf"],
             Hint::Default | Hint::Number => ["valueOf", "toString"],

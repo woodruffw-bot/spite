@@ -1776,8 +1776,7 @@ fn reference_expression(expr: &Expr) -> bool {
 fn standard_global(name: &str) -> bool {
     matches!(
         name,
-        "Date"
-            | "RegExp"
+        "RegExp"
             | "Int8Array"
             | "Uint8Array"
             | "Uint8ClampedArray"

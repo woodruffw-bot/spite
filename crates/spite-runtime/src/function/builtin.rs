@@ -17,6 +17,14 @@ impl Realm {
     ) -> Result<Value, Error> {
         match builtin {
             Builtin::Eval => unreachable!("eval dispatched without a native-algorithm frame"),
+            Builtin::Date => Err(Self::unsupported(span, "local Date string formatting")),
+            Builtin::DateNow => Ok(Value::Number(super::date::current_time_value())),
+            Builtin::DateParse => {
+                let text = self.string(arguments.next().unwrap_or(Value::Undefined), span)?;
+                self.parse_date_value(&text, span).map(Value::Number)
+            }
+            Builtin::DateUtc => self.date_utc(arguments, span),
+            Builtin::DateMethod(method) => self.date_method(method, this, arguments, span),
             Builtin::Set => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

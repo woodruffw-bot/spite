@@ -1,4 +1,5 @@
 //! Direct PerformEval's caller and declaration semantics (19.2.1.1–3).
+mod common;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 
@@ -350,7 +351,7 @@ fn direct_eval_shares_opt_in_limits_and_restores_state_after_host_failures() {
         ),
         (
             Limits {
-                max_heap_entries: Some(314),
+                max_heap_entries: Some(common::REALM_ENTRIES),
                 ..Limits::default()
             },
             "try{eval('7;');}catch{marker=1;}finally{marker=2;}",

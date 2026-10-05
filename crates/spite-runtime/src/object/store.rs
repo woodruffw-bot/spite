@@ -248,6 +248,7 @@ impl Objects {
                 | Builtin::WeakSet
                 | Builtin::Map
                 | Builtin::Boolean
+                | Builtin::Date
                 | Builtin::Function
                 | Builtin::Iterator
                 | Builtin::Number
@@ -287,6 +288,24 @@ impl Objects {
         value: f64,
     ) -> Result<Handle, Error> {
         self.create_wrapper(prototype, PrimitiveData::Number(value))
+    }
+
+    pub(crate) fn create_date(&mut self, prototype: &Handle, value: f64) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        let mut object =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        object.date_value = Some(Box::new(spite_core::date::time_clip(value)));
+        Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    pub(crate) fn set_date_value(&mut self, object: &Handle, value: f64) -> Result<(), Error> {
+        let slot = self
+            .object_mut(object)?
+            .date_value
+            .as_mut()
+            .ok_or(Error::WrongKind)?;
+        **slot = spite_core::date::time_clip(value);
+        Ok(())
     }
 
     pub(crate) fn create_symbol(

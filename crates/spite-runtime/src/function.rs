@@ -20,6 +20,7 @@ pub(crate) use class_field::ClassField;
 mod class_private;
 mod class_static;
 mod construct;
+mod date;
 mod dynamic;
 mod error;
 mod instance;
@@ -145,6 +146,11 @@ pub(crate) enum Builtin {
     Boolean,
     BooleanToString,
     BooleanValueOf,
+    Date,
+    DateNow,
+    DateParse,
+    DateUtc,
+    DateMethod(date::Method),
     BigInt,
     BigIntToString,
     BigIntToLocaleString,
@@ -400,6 +406,11 @@ impl Builtin {
             | Self::SymbolValueOf
             | Self::StringValueOf => "valueOf",
             Self::Boolean => "Boolean",
+            Self::Date => "Date",
+            Self::DateNow => "now",
+            Self::DateParse => "parse",
+            Self::DateUtc => "UTC",
+            Self::DateMethod(method) => method.name(),
             Self::BigInt => "BigInt",
             Self::BigIntAsIntN => "asIntN",
             Self::BigIntAsUintN => "asUintN",
@@ -590,6 +601,10 @@ impl Builtin {
 
     fn length(self) -> f64 {
         match self {
+            Self::Date | Self::DateUtc => 7.0,
+            Self::DateNow => 0.0,
+            Self::DateParse => 1.0,
+            Self::DateMethod(method) => method.length(),
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
             Self::SetAdd
             | Self::WeakSetAdd
@@ -853,6 +868,7 @@ pub(super) struct Intrinsics {
     pub function_has_instance: ObjectHandle,
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
+    pub date: date::DateIntrinsics,
     pub bigint: bigint::BigIntIntrinsics,
     pub number: number::NumberIntrinsics,
     pub string: string::StringIntrinsics,
@@ -891,6 +907,7 @@ impl Intrinsics {
         ]
         .into_iter()
         .chain(self.boolean.roots())
+        .chain(self.date.roots())
         .chain(self.bigint.roots())
         .chain(self.number.roots())
         .chain(self.errors.roots())
@@ -1029,6 +1046,7 @@ impl Realm {
             )
         })?;
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
+        let date = self.date_intrinsics(&object_prototype, &function_prototype, span)?;
         let bigint = self.bigint_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         let eval = self.new_builtin(&function_prototype, Builtin::Eval, span)?;
@@ -1087,6 +1105,7 @@ impl Realm {
             function_has_instance,
             function_to_string,
             boolean,
+            date,
             bigint,
             number,
             string,

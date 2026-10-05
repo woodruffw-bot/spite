@@ -24,6 +24,8 @@ impl Realm {
                 "Function"
             } else if record.is_error() {
                 "Error"
+            } else if record.date_value().is_some() {
+                "Date"
             } else if record.boolean_data().is_some() {
                 "Boolean"
             } else if record.number_data().is_some() {

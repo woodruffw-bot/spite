@@ -286,6 +286,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.
 - [x] Convert UTC/explicit-offset Date strings with calendar rollover and final time-range validation, and implement numeric MakeFullYear adjustment.
 - [x] Format canonical UTC Date interchange strings with millisecond precision and signed six-digit expanded years.
+- [x] Add Date intrinsic metadata, timestamp/copy construction, Date.now, UTC/offset Date.parse, UTC getters, setTime, ISO/JSON conversion and generic primitive conversion.
+- [ ] Add Date numeric calendar construction, calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.

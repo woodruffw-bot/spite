@@ -78,6 +78,7 @@ pub struct OrdinaryObject {
     callable: Option<Callable>,
     constructible: bool,
     primitive_data: Option<PrimitiveData>,
+    date_value: Option<Box<f64>>,
     error_data: bool,
     raw_json: bool,
     map: Option<Box<map::MapData>>,
@@ -111,6 +112,7 @@ impl OrdinaryObject {
             callable: None,
             constructible: false,
             primitive_data: None,
+            date_value: None,
             error_data: false,
             raw_json: false,
             map: None,
@@ -220,6 +222,10 @@ impl OrdinaryObject {
             Some(PrimitiveData::Number(value)) => Some(*value),
             _ => None,
         }
+    }
+
+    pub(crate) fn date_value(&self) -> Option<f64> {
+        self.date_value.as_deref().copied()
     }
 
     pub(crate) fn callable(&self) -> Option<&Callable> {

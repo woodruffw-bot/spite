@@ -493,8 +493,8 @@ cover signed zero, fractions, non-finite input and overflow, both ±8.64×10¹�
 endpoints, pre-epoch fields, year zero and leap centuries, complete positive and
 negative 400-year cycles, and observable floating-point operation order. Fixed
 UTC examples and 4,109 full-domain sample/boundary timestamps were also checked
-against Node's Date getters. JavaScript Date intrinsics, MakeDay, instant
-conversion and local time zones remain pending.
+against Node's Date getters. MakeDay for arbitrary numeric arguments and local
+time zones remain pending.
 Date interchange string syntax now parses directly from UTF-16 with exact
 element widths, expanded years, defaults, explicit offsets and unresolved local
 date-times. Five regressions include two reviewed insta snapshots for accepted
@@ -505,7 +505,7 @@ Six additional regressions cover numeric MakeFullYear adjustment, preserved
 interchange years 0–99, signed offsets, leap/calendar-day and hour-24 rollover,
 both clipped endpoints with offsets, unresolved local forms, and invalid native
 records/extreme years without overflow. Local zone resolution, MakeDay for
-arbitrary numeric arguments, and Date.parse exposure remain pending.
+arbitrary numeric arguments remain pending.
 A separate reference check round-tripped 4,103 Node ISO strings spanning the
 clipped domain to their exact original time values.
 Canonical ISO formatting now emits full UTC fields, millisecond precision and
@@ -513,7 +513,19 @@ four-digit/signed six-digit years across the clipped domain. A reviewed insta
 snapshot covers exact strings at epoch/year-width/range boundaries and invalid
 native values; a 4,096-case regression checks parse/format round trips and fixed
 ASCII output widths. All 4,103 reference ISO strings also matched Node's formatter
-output exactly. Date.prototype.toISOString exposure remains pending.
+output exactly.
+Date runtime regressions cover the complete constructor/prototype property graph,
+timestamp clipping, absent/undefined construction, copy bypass of hooks, default
+versus string/number conversion hints, input/new-target ordering, subclass slots
+and collection roots, branded receivers independent of prototype identity, UTC
+fields and both range endpoints, transactional setTime conversion, expanded ISO
+strings, generic toJSON and JSON serialization, invalid-date strings and
+RangeErrors, optional output quotas, and call-state recovery. Pending local time,
+numeric calendar construction, calendar setters and legacy string operations
+report Unsupported; regressions verify that host failures bypass JavaScript
+catch/finally and that numeric constructor conversions retain their order.
+The realm's complete Date metadata graph adds 49 objects, bringing the shared
+initialized-realm entry count to 363. No host quotas are enabled by default.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
