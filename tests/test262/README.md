@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5709 unmodified test fixtures and eight harness files come from
+These 5837 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1240,8 +1240,9 @@ stamping, missing brands and primitive receivers, and assignment/destructuring/
 loop evaluation order. The cohort includes six previously excluded public-field
 dependencies and the static block's private-scope dependency.
 
-The focused review read 65 complete programs. Nine remain excluded without credit:
-four need async execution, two private methods, and one requests the historical
+The focused review read 65 complete programs. Two private-method dependencies are
+now in the method/accessor cohort; seven remain excluded without credit:
+four need async execution, and one requests the historical
 host extension that forbids private elements on non-extensible objects. Core
 ECMA-262 allows private fields on those objects. Two nested-static originals call
 the absent `methodAccess` member in their TypeError assertion, so that assertion
@@ -1250,6 +1251,26 @@ to make it eligible. This selection does not claim whole-directory coverage.
 Both toolchains pass all 112 selected variants under ordinary unlimited defaults;
 Git blob hashes, source bytes, assertions, metadata, helpers, and the pin are
 unchanged.
+
+## Private method and accessor execution fixtures
+
+128 unchanged originals add 256 harness-positive variants. They cover private
+instance/static methods and accessors, shared method identities, fresh class
+brands, superclass/subclass receivers, nested/ordinary/arrow capture, cross-kind
+shadowing, direct eval in methods and initializers, name/length metadata,
+ordinary-property separation, repeated method/accessor stamping, method write
+rejection, missing getters/setters, computed names, and abrupt getter/setter calls.
+Two earlier private-field dependencies are included in this cohort.
+
+The focused review read 133 complete programs. Four whole files require Annex B
+`__lookupGetter__`/`__lookupSetter__` helpers and remain excluded. One static-setter
+program calls the absent `getWithEval` member in its TypeError assertion; that
+assertion does not verify the intended setter brand check, so the unchanged file
+also remains excluded. Earlier static-field programs with a similar unrelated
+TypeError remain outside this selection. No upstream file is rewritten to pass.
+Both toolchains pass every selected variant with ordinary unlimited defaults.
+Git blob hashes, source bytes, assertions, metadata, helpers, and pin are unchanged;
+this is a focused inventory, not a whole-directory coverage claim.
 
 ## Private element early-error fixtures
 
@@ -1288,7 +1309,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10858 variants from 5690 reviewed sources: the eleven
+The `spite-test262` command runs 11114 variants from 5818 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1313,13 +1334,13 @@ and 39 class definition/name-binding/strict-mode files (37 positive and two
 parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
 parse-negative), and 48 private element parse-negative files, and 56 private-field
-execution files.
+execution files, and 128 private method/accessor execution files.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-10017 positives using the upstream harness, 833 reviewed parse-negative variants,
+10273 positives using the upstream harness, 833 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

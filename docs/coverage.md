@@ -41,7 +41,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10858 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11114 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1212,7 +1212,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 10858 variants are four raw positives, 10017 positives using the upstream
+Rust. Its 11114 variants are four raw positives, 10273 positives using the upstream
 harness, 833 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
@@ -1415,8 +1415,9 @@ strictness.
 
 Fifty-six unchanged private-field originals add 112 harness-positive variants.
 The focused review read 65 complete programs, including six earlier public-field
-dependencies and one static-block dependency. Nine whole files remain excluded:
-four async programs, two private-method programs, one host-specific historical
+dependencies and one static-block dependency. Two private-method dependencies are
+now in the method/accessor cohort; seven whole files remain excluded:
+four async programs, one host-specific historical
 non-extensibility extension, and two programs whose TypeError assertion invokes
 an absent method instead of exercising the intended brand check. Selected sources
 cover instance/static access, nested/ordinary/arrow capture, direct eval, optional
@@ -1441,5 +1442,17 @@ cycles. Checked-edge tests reject foreign/stale/non-callable/non-object handles
 and work failures before replacing class records or adding an instance brand.
 Four private method/getter/setter/eval recursion cases run on two-mebibyte
 normal-debug stacks with the unchanged guards. Async/generator private methods
-retain host-failure controls. This implementation leaves the pinned inventory
-unchanged.
+retain host-failure controls.
+
+128 unchanged private-method/accessor originals add 256 harness-positive variants.
+The focused review read 133 complete programs, including two earlier private-field
+dependencies. Four whole files requiring Annex B lookup helpers remain excluded;
+one static-setter program calls an absent getter method, so its TypeError cannot
+verify the intended setter brand check. Selected sources cover instance/static
+methods/accessors, shared/fresh identity, inheritance/receivers, nested/ordinary/
+arrow capture, cross-kind shadowing, direct eval and initializer visibility,
+name/length metadata, ordinary-property separation, repeated stamping, method
+writes, missing getters/setters, computed names, and abrupt calls. Both toolchains
+pass every added variant with ordinary defaults. No unsupported feature receives
+credit; all source bytes, Git blobs, assertions, metadata, helpers, and the pin
+remain unchanged. This does not claim complete elements-directory coverage.
