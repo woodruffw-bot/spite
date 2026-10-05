@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5956 unmodified test fixtures and eight harness files come from
+These 5985 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -921,20 +921,28 @@ aborts, and normal-debug stack safety.
 
 ## Set and Set Iterator review
 
-Three hundred twenty-four unchanged sources comprise 313 Set and 11 Set Iterator
+Three hundred fifty-three unchanged sources comprise 342 Set and 11 Set Iterator
 files. Another twelve Map receiver-brand files use Set instances. Together they
-add 670 variants: two Set forEach files prescribe a single Script mode and every
+add 728 variants: two Set forEach files prescribe a single Script mode and every
 other source runs in both modes. Coverage includes construction and cached adder
 ordering, canonical primitive/Object/Symbol identity, live iteration and callback
 mutation, iterator closing, all seven set-like combination/predicate algorithms,
 observable size/has/keys order, duplicate keys, snapshot versus live membership,
 intrinsic results, branding, complete reflection, species, and non-construction.
-All bytes are verified against the original Git blob identities. Seventy reviewed
-Set originals require classes, generators, WeakSet, typed arrays, WeakRef,
+All bytes are verified against the original Git blob identities. Forty-one reviewed
+Set originals require generators, weak/typed collections, WeakRef,
 cross-realm support, or complete global reflection and remain excluded without
 credit. This includes unused generator methods: whole files are retained or
 excluded, never rewritten. The pin, eight original helpers, and unlimited defaults
 are unchanged.
+
+The class/WeakSet revisit adds 29 originals and 58 variants: seven WeakSet
+receiver-brand programs and 22 class programs covering set-like acquisition
+order, overridden subclass methods, ignored species, and intrinsic results.
+The focused review read 48 whole Set/Map programs. Seventeen generator programs
+and two mixed valid-value/key programs requiring typed arrays, WeakMap, or WeakRef
+remain excluded. No Map original is added by this revisit; no program, assertion,
+metadata, helper, or runtime default is changed.
 
 ## Function construction and reflection review
 
@@ -1344,13 +1352,13 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 11352 variants from 5937 reviewed sources: the eleven
+The `spite-test262` command runs 11410 variants from 5966 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 200 Map and Map Iterator tests, 191 Function builtin tests, 324 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
+tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 200 Map and Map Iterator tests, 191 Function builtin tests, 353 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
 430 String and String iterator tests, 713 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
@@ -1376,7 +1384,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-10511 positives using the upstream harness, 833 reviewed parse-negative variants,
+10569 positives using the upstream harness, 833 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
