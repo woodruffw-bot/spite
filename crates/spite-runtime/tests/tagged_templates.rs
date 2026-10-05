@@ -164,7 +164,7 @@ fn large_default_templates_and_opt_in_host_failures_preserve_prior_effects() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{Function`x${flag=7}`;}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{(()=>Function('class C{}'))`x${flag=7}`;}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(7.0)));

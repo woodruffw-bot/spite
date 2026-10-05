@@ -970,8 +970,9 @@ The Function global exposes the intrinsic constructor with standard name, length
 and immutable prototype descriptors, inheriting the callable Function.prototype.
 The prototype's writable/configurable constructor link completes its own-key
 reflection and integrity operations (20.2.2.2, 20.2.3.1). The constructor has
-call/construct metadata for branding and newTarget validation, while invoking it
-returns Unsupported until dynamic global-scope compilation is implemented.
+call/construct metadata for branding and newTarget validation. Ordinary dynamic
+calls and construction compile well-formed UTF-16 source in the realm's global
+environment, with the body alone controlling strictness (20.2.1.1.1).
 
 The parser's dynamic Function entry point (20.2.1.1.1) first parses the joined
 FormalParameters text and line-feed-delimited FunctionBody as separate goals.
@@ -982,9 +983,22 @@ ranges and retained source belong to that combined allocation. Identifier/defaul
 rest parameters share the existing function grammar; new.target and return use
 function context. Unsupported binding patterns, classes, generator/async functions,
 and native-stack exhaustion remain separate diagnostic categories. This UTF-8
-parser entry point does not itself enable runtime string compilation.
-This gap is never converted to a JavaScript TypeError or accepted as a passing
-negative. The constructor and prototype remain intrinsic roots after deletion.
+parser entry point supplies ordinary runtime string compilation.
+
+CreateDynamicFunction converts parameter arguments in order, then the body, before
+parsing or reading newTarget.prototype. Calling uses the retained intrinsic Function
+constructor as newTarget; bound construction preserves the existing forwarding rules.
+Successful parsing precedes observable prototype selection, with a retained intrinsic
+Function.prototype fallback. Allocation shares OrdinaryFunctionCreate/MakeConstructor
+with an explicit global environment and body strictness, so caller locals, strictness,
+and a named-expression self binding cannot leak into the result. Functions retain
+standard anonymous source text and ordinary constructor/prototype metadata. The
+default host permits string compilation; optional source/work/string/heap quotas
+remain host aborts. Source inputs containing unpaired surrogates report Unsupported
+after all conversions because the parser currently retains UTF-8 source text;
+escaped surrogate literals within well-formed source execute normally. The source
+representation gap is never replaced with lossy text or a JavaScript SyntaxError.
+The constructor and prototype remain intrinsic roots after public deletion.
 
 Native Object.prototype.valueOf returns fresh Boolean/Number/String wrappers for their primitive
 receivers; other primitive wrappers remain Unsupported. Arrow closures use the same callable dispatch with

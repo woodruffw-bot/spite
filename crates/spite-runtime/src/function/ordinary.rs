@@ -188,7 +188,6 @@ impl Realm {
         self.ensure_object_intrinsics(span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         let function_prototype = intrinsics.function_prototype.clone();
-        let object_prototype = intrinsics.object_prototype.clone();
         let mut environment = self.scopes.last().expect("active environment").clone();
         // 15.2.5: a named expression captures a private immutable self binding.
         let local_name = syntax.name.as_ref().filter(|_| expression);
@@ -206,15 +205,50 @@ impl Realm {
                 objects.create_environment(Some(environment), bindings, budget)
             })?;
         }
+        let value = self.allocate_ordinary_function(
+            syntax,
+            environment.clone(),
+            &function_prototype,
+            self.strict || syntax.body.is_strict(),
+            span,
+        )?;
+        if let Some(name) = local_name {
+            self.objects
+                .environment_mut(&environment)
+                .expect("function name environment")
+                .bindings
+                .get_mut(&name.name)
+                .expect("local name exists")
+                .value = Some(value.clone());
+        }
+        Ok(value)
+    }
+
+    // OrdinaryFunctionCreate / MakeConstructor with an explicit environment,
+    // strictness, and [[Prototype]]; dynamic functions capture only GlobalEnv.
+    pub(super) fn allocate_ordinary_function(
+        &mut self,
+        syntax: &Function,
+        environment: EnvironmentHandle,
+        prototype: &ObjectHandle,
+        strict: bool,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let object_prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .object_prototype
+            .clone();
         let code = ScriptFunction {
-            environment: environment.clone(),
+            environment,
             parameters: syntax.parameters.clone(),
             body: ArrowBody::Block(syntax.body.clone()),
             source: syntax.source.clone(),
-            strict: self.strict || syntax.body.is_strict(),
+            strict,
         };
         let function = self.object_work(span, |objects, _| {
-            objects.create_ordinary_function(&function_prototype, code)
+            objects.create_ordinary_function(prototype, code)
         })?;
         let length = syntax
             .parameters
@@ -257,17 +291,7 @@ impl Realm {
                 budget,
             )
         })?;
-        let value = Value::Object(function);
-        if let Some(name) = local_name {
-            self.objects
-                .environment_mut(&environment)
-                .expect("function name environment")
-                .bindings
-                .get_mut(&name.name)
-                .expect("local name exists")
-                .value = Some(value.clone());
-        }
-        Ok(value)
+        Ok(Value::Object(function))
     }
 
     pub(crate) fn initialize_functions<'a>(

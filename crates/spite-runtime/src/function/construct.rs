@@ -64,10 +64,7 @@ impl Realm {
             })?;
             match callable {
                 Callable::Builtin(Builtin::Function) => {
-                    return Err(Self::unsupported(
-                        span,
-                        "dynamic Function construction is not implemented",
-                    ));
+                    return self.dynamic_function(Some(new_target), arguments.into_iter(), span);
                 }
                 Callable::Bound(bound) => {
                     let count = bound

@@ -110,10 +110,7 @@ impl Realm {
                 matches!(builtin, Builtin::EncodeUriComponent),
                 span,
             ),
-            Builtin::Function => Err(Self::unsupported(
-                span,
-                "dynamic Function construction is not implemented",
-            )),
+            Builtin::Function => self.dynamic_function(None, arguments, span),
             Builtin::FunctionCall
             | Builtin::FunctionApply
             | Builtin::FunctionBind

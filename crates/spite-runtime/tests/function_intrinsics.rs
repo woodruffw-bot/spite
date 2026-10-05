@@ -1,4 +1,4 @@
-//! Function intrinsic graph and metadata, with dynamic compilation still a gap.
+//! Function intrinsic graph, metadata, and unsupported compilation failures.
 
 mod common;
 use common::REALM_ENTRIES;
@@ -72,13 +72,13 @@ fn complete_own_reflection_and_integrity_operations_do_not_invoke_accessors() {
 }
 
 #[test]
-fn dynamic_call_and_construction_remain_host_gaps_and_skip_handlers() {
+fn unsupported_dynamic_syntax_skips_handlers_after_argument_effects() {
     for expression in [
-        "Function(flag=3)",
-        "new Function(flag=3)",
-        "Function.call(null,flag=3)",
-        "new (Function.bind(null))(flag=3)",
-        "Reflect.construct(Function,[flag=3])",
+        "Function((flag=3,'class C{}'))",
+        "new Function((flag=3,'class C{}'))",
+        "Function.call(null,(flag=3,'class C{}'))",
+        "new (Function.bind(null))((flag=3,'class C{}'))",
+        "Reflect.construct(Function,[(flag=3,'class C{}')])",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();
@@ -105,5 +105,5 @@ fn intrinsic_constructor_and_prototype_survive_deleted_public_links() {
         .unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     assert_eq!(realm.eval("F.prototype===p && Object.getPrototypeOf(F)===p && F instanceof F && p()===undefined && typeof Function==='undefined'"),Ok(Value::Boolean(true)));
-    assert!(matches!(realm.eval("F()"), Err(Error::Unsupported { .. })));
+    assert_eq!(realm.eval("F('return 7')()"), Ok(Value::Number(7.0)));
 }

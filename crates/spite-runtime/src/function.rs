@@ -14,6 +14,7 @@ mod boolean;
 mod bound;
 mod builtin;
 mod construct;
+mod dynamic;
 mod error;
 mod instance;
 mod iterator;
@@ -890,7 +891,7 @@ impl Realm {
         let function_prototype =
             self.new_builtin(&object_prototype, Builtin::FunctionPrototype, span)?;
         // 20.2.2.2 / 20.2.3.1: expose the intrinsic graph independently of
-        // dynamic Function compilation, which remains an explicit host gap.
+        // dynamic Function compilation and newTarget prototype fallback.
         let function_constructor =
             self.new_builtin(&function_prototype, Builtin::Function, span)?;
         self.object_work(span, |objects, budget| {

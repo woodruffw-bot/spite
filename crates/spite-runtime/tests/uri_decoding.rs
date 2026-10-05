@@ -232,7 +232,9 @@ fn large_default_inputs_and_opted_in_host_failures_keep_their_distinct_behavior(
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{decodeURI({toString(){Function();}});}catch{flag=1;}finally{flag=2;}"),
+        realm.eval(
+            "try{decodeURI({toString(){Function('class C{}');}});}catch{flag=1;}finally{flag=2;}"
+        ),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

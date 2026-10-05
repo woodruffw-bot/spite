@@ -117,7 +117,7 @@ impl std::error::Error for Error {}
 /// They do not alter ECMAScript exceptions or disable platform safety checks.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Limits {
-    /// Optional maximum UTF-8 bytes in source passed to [`Realm::eval`].
+    /// Optional maximum UTF-8 bytes in Script or dynamic Function source.
     pub max_source_bytes: Option<usize>,
     /// Optional maximum work per Script, including bindings, clauses, and arithmetic.
     /// Defaults to `None`, which disables the execution work limit.

@@ -169,7 +169,7 @@ fn function_metadata_is_readonly_but_configurable() {
 }
 
 #[test]
-fn function_constructor_identity_is_exposed_while_dynamic_compilation_is_guarded() {
+fn function_constructor_identity_is_exposed_and_compiles_ordinary_bodies() {
     assert_eq!(
         Realm::default().eval("'constructor' in ({}).toString"),
         Ok(Value::Boolean(true))
@@ -178,10 +178,10 @@ fn function_constructor_identity_is_exposed_while_dynamic_compilation_is_guarded
         Realm::default().eval("({}).toString.constructor===Function"),
         Ok(Value::Boolean(true))
     );
-    assert!(matches!(
-        Realm::default().eval("Function('return 1;')"),
-        Err(Error::Unsupported { .. })
-    ));
+    assert_eq!(
+        Realm::default().eval("Function('return 1;')()"),
+        Ok(Value::Number(1.0))
+    );
 }
 
 #[test]

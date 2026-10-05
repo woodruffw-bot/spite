@@ -220,8 +220,10 @@ fn large_default_inputs_work_and_host_aborts_skip_handlers_and_cleanup() {
         assert!(matches!(realm.eval(&format!("try{{Iterator.prototype.{method}.call(i,()=>{continuing});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Limit{..})));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
         for body in [
-            format!("Iterator.prototype.{method}.call(i,Function)"),
-            format!("i.return=Function;Iterator.prototype.{method}.call(i,()=>{predicate})"),
+            format!("Iterator.prototype.{method}.call(i,()=>Function('class C{{}}'))"),
+            format!(
+                "i.return=()=>Function('class C{{}}');Iterator.prototype.{method}.call(i,()=>{predicate})"
+            ),
         ] {
             let mut realm = Realm::default();
             realm.eval("let flag=0,i={next:()=>({done:false,value:7}),return:()=>{flag=3;return {};}};").unwrap();
