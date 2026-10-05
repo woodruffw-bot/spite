@@ -47,11 +47,12 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse/evaluate non-strict with statements using live object bindings, Symbol.unscopables, implicit call receivers, and restored completion scopes.
 - [x] Handle optional-binding catch clauses and catch-finally completions.
 - [x] Parse catch binding identifiers and validate catch scope conflicts.
+- [x] Parse/evaluate object and array catch binding patterns with nested/default/rest targets, temporal dead zones, and iterator closing.
 - [x] Execute catch binding identifiers for implemented thrown values, including objects.
 - [x] Bind built-in exceptions as JavaScript Error objects in catch clauses.
 - [x] Add Error/NativeError constructors, causes, ErrorData identity, and standard methods.
 - [x] Add AggregateError with ordered message/cause initialization and an intrinsic errors Array from synchronous IteratorToList.
-- [ ] Add remaining statements, catch patterns, and completions.
+- [ ] Complete remaining statement early errors and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.

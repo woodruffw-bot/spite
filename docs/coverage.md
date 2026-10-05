@@ -29,7 +29,7 @@ not an alternative language specification.
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
-| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, non-strict with, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, non-strict with, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers and object/array binding patterns bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
@@ -55,6 +55,17 @@ after language exceptions and opted-in host aborts. Strict closures distinguish
 disappeared bindings from non-writable properties. Annex B extensions are excluded.
 An additional heap regression validates foreign/stale/wrong-kind binding objects,
 opted-in work exhaustion, and tracing of the binding object and outer environment.
+
+Catch binding patterns now implement ordered computed keys, shorthand, nested
+patterns/defaults, array elisions, and object/array rest (14.3.3, 14.15.2). Seven
+parser regressions and two inspected insta snapshots cover grammar, BoundNames,
+duplicates, strict/default validation, lexical/var conflicts, and native depth.
+Nine runtime regressions cover GetV receiver/order, temporal dead zones, default
+function names, exact String/Symbol rest exclusions and live descriptors, primitive
+and nullish sources, cached iterator methods, skipped elision value getters,
+normal/abrupt closing and nested throw precedence, captured scopes and collection,
+a 12,000-name pattern with ordinary unlimited defaults, and opted-in host aborts.
+Declaration, function-parameter, and assignment patterns remain separate gaps.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -832,8 +843,8 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, derived construction, classes, destructuring, regular
-expressions, for-await-of, catch patterns, generators,
+Array.fromAsync, derived construction, classes, destructuring in declarations,
+parameters and assignments, regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral

@@ -1,0 +1,132 @@
+---
+source: crates/spite-parser/tests/catch_patterns.rs
+expression: "parse_script(\"try {} catch ({[key]: [x = 1, ...xs], ...rest}) {}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Try {
+                body: Statement {
+                    kind: Block(
+                        [],
+                    ),
+                    span: Span {
+                        start: 4,
+                        end: 6,
+                    },
+                },
+                handler: Some(
+                    CatchClause {
+                        parameter: Some(
+                            BindingPattern {
+                                kind: Object {
+                                    properties: [
+                                        BindingProperty {
+                                            key: Computed(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "key",
+                                                    ),
+                                                    span: Span {
+                                                        start: 16,
+                                                        end: 19,
+                                                    },
+                                                },
+                                            ),
+                                            element: BindingElement {
+                                                pattern: BindingPattern {
+                                                    kind: Array {
+                                                        elements: [
+                                                            Some(
+                                                                BindingElement {
+                                                                    pattern: BindingPattern {
+                                                                        kind: Identifier(
+                                                                            "x",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 23,
+                                                                            end: 24,
+                                                                        },
+                                                                    },
+                                                                    initializer: Some(
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Literal(
+                                                                                Number(
+                                                                                    1.0,
+                                                                                ),
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 27,
+                                                                                end: 28,
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ],
+                                                        rest: Some(
+                                                            BindingPattern {
+                                                                kind: Identifier(
+                                                                    "xs",
+                                                                ),
+                                                                span: Span {
+                                                                    start: 33,
+                                                                    end: 35,
+                                                                },
+                                                            },
+                                                        ),
+                                                    },
+                                                    span: Span {
+                                                        start: 22,
+                                                        end: 36,
+                                                    },
+                                                },
+                                                initializer: None,
+                                            },
+                                        },
+                                    ],
+                                    rest: Some(
+                                        BindingPattern {
+                                            kind: Identifier(
+                                                "rest",
+                                            ),
+                                            span: Span {
+                                                start: 41,
+                                                end: 45,
+                                            },
+                                        },
+                                    ),
+                                },
+                                span: Span {
+                                    start: 14,
+                                    end: 46,
+                                },
+                            },
+                        ),
+                        body: Statement {
+                            kind: Block(
+                                [],
+                            ),
+                            span: Span {
+                                start: 48,
+                                end: 50,
+                            },
+                        },
+                        span: Span {
+                            start: 7,
+                            end: 50,
+                        },
+                    },
+                ),
+                finalizer: None,
+            },
+            span: Span {
+                start: 0,
+                end: 50,
+            },
+        },
+    ],
+    strict: false,
+}

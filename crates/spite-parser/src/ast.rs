@@ -296,15 +296,100 @@ pub enum StatementKind {
     Return(Option<Expr>),
 }
 
-/// A catch clause with an optional binding identifier.
+/// A catch clause with an optional binding identifier or pattern.
 #[derive(Clone, Debug, PartialEq)]
 pub struct CatchClause {
-    /// The catch binding, whose initializer is always absent.
-    pub parameter: Option<Binding>,
+    /// The catch binding identifier or pattern, without a top-level initializer.
+    pub parameter: Option<BindingPattern>,
     /// Catch block, with its own lexical environment inside the parameter's scope.
     pub body: Box<Statement>,
     /// Source range including the catch keyword, parameter, and block.
     pub span: Span,
+}
+
+/// A binding identifier or destructuring binding pattern.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BindingPattern {
+    /// Binding syntax.
+    pub kind: BindingPatternKind,
+    /// Source range of the identifier or complete pattern.
+    pub span: Span,
+}
+
+impl BindingPattern {
+    /// Collects bound identifier names and their source ranges in source order.
+    pub fn bound_names(&self) -> Vec<(&str, Span)> {
+        let mut pending = vec![self];
+        let mut names = Vec::new();
+        while let Some(pattern) = pending.pop() {
+            match &pattern.kind {
+                BindingPatternKind::Identifier(name) => names.push((name.as_str(), pattern.span)),
+                BindingPatternKind::Object { properties, rest } => {
+                    if let Some(rest) = rest {
+                        pending.push(rest);
+                    }
+                    pending.extend(
+                        properties
+                            .iter()
+                            .rev()
+                            .map(|property| &property.element.pattern),
+                    );
+                }
+                BindingPatternKind::Array { elements, rest } => {
+                    if let Some(rest) = rest {
+                        pending.push(rest);
+                    }
+                    pending.extend(
+                        elements
+                            .iter()
+                            .rev()
+                            .flatten()
+                            .map(|element| &element.pattern),
+                    );
+                }
+            }
+        }
+        names
+    }
+}
+
+/// The syntax of a binding identifier or pattern.
+#[derive(Clone, Debug, PartialEq)]
+pub enum BindingPatternKind {
+    /// A decoded identifier name.
+    Identifier(String),
+    /// Ordered object properties and an optional final rest identifier.
+    Object {
+        /// Properties in source order, including shorthand entries.
+        properties: Vec<BindingProperty>,
+        /// Rest binding, whose kind is always Identifier.
+        rest: Option<Box<BindingPattern>>,
+    },
+    /// Ordered iterator elements, elisions, and an optional final rest target.
+    Array {
+        /// Elements in source order; None consumes an iterator step as an elision.
+        elements: Vec<Option<BindingElement>>,
+        /// Rest identifier or nested pattern.
+        rest: Option<Box<BindingPattern>>,
+    },
+}
+
+/// One object binding property.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BindingProperty {
+    /// Literal or computed property key.
+    pub key: PropertyName,
+    /// Bound target and optional default initializer.
+    pub element: BindingElement,
+}
+
+/// A binding target with an optional default initializer.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BindingElement {
+    /// Bound identifier or nested pattern.
+    pub pattern: BindingPattern,
+    /// Evaluated only when the corresponding value is undefined.
+    pub initializer: Option<Expr>,
 }
 
 /// A switch clause and its statement list.

@@ -3,6 +3,7 @@
 mod array;
 mod arrow;
 pub mod ast;
+mod binding;
 mod construction;
 mod dynamic_function;
 mod function;
@@ -279,22 +280,9 @@ impl Parser {
             let handler = if self.at("catch") {
                 let start = self.bump().span.start;
                 let parameter = if self.eat("(") {
-                    if self.at("[") || self.at("{") {
-                        return Err(self.unsupported("catch binding patterns are not implemented"));
-                    }
-                    let token = self.bump();
-                    let Kind::Word(name) = token.kind else {
-                        return Err(early(token.span, "expected catch binding identifier"));
-                    };
-                    if reserved(&name) {
-                        return Err(early(token.span, "invalid catch binding identifier"));
-                    }
+                    let parameter = self.binding_pattern()?;
                     self.expect(")")?;
-                    Some(Binding {
-                        name,
-                        span: token.span,
-                        initializer: None,
-                    })
+                    Some(parameter)
                 } else {
                     None
                 };
@@ -1277,7 +1265,14 @@ fn validate_statement<'a>(
             validate_statement(body, strict, control, labels)?;
             if let Some(handler) = handler {
                 if let Some(parameter) = &handler.parameter {
-                    validate_binding(parameter, strict)?;
+                    binding::validate_pattern(parameter, strict)?;
+                    let names = parameter.bound_names();
+                    let mut seen = BTreeSet::new();
+                    for &(name, span) in &names {
+                        if !seen.insert(name) {
+                            return Err(early(span, "duplicate catch binding"));
+                        }
+                    }
                     let StatementKind::Block(statements) = &handler.body.kind else {
                         unreachable!("catch requires a block");
                     };
@@ -1285,7 +1280,7 @@ fn validate_statement<'a>(
                     // redeclare a simple catch parameter is not enabled by this host.
                     for statement in statements {
                         for (name, span) in block_lexical_names(statement) {
-                            if name == parameter.name {
+                            if seen.contains(name) {
                                 return Err(early(
                                     span,
                                     "catch parameter conflicts with lexical declaration",
@@ -1296,7 +1291,7 @@ fn validate_statement<'a>(
                     let mut declarations = Vec::new();
                     handler.body.collect_var_declarations(&mut declarations);
                     for binding in declarations {
-                        if binding.name == parameter.name {
+                        if seen.contains(binding.name.as_str()) {
                             return Err(early(
                                 binding.span,
                                 "catch parameter conflicts with var declaration",

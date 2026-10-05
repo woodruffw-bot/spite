@@ -10,6 +10,10 @@ pub(crate) struct IteratorRecord {
 }
 
 impl IteratorRecord {
+    pub(crate) fn is_done(&self) -> bool {
+        self.done
+    }
+
     pub(super) fn uninitialized(iterator: ObjectHandle) -> Self {
         Self {
             iterator,
@@ -120,6 +124,23 @@ impl Realm {
             record.done = true;
         }
         result
+    }
+
+    /// IteratorStep for a binding elision: done is read but value is skipped.
+    pub(crate) fn iterator_skip_value(
+        &mut self,
+        record: &mut IteratorRecord,
+        span: Span,
+    ) -> Result<(), Error> {
+        debug_assert!(!record.done);
+        let result = (|| {
+            self.object_work(span, |_, budget| budget.value(&record.next))?;
+            self.iterator_step_direct(record.iterator.clone(), record.next.clone(), span)
+        })();
+        if !matches!(&result, Ok(Some(_))) {
+            record.done = true;
+        }
+        result.map(|_| ())
     }
 
     pub(crate) fn iterator_step_value_direct(

@@ -120,12 +120,7 @@ fn invalid_bindings_and_strict_reserved_names_are_early_errors() {
         );
     }
     for parameter in ["[e]", "{e}"] {
-        assert_eq!(
-            parse_script(&format!("try {{}} catch ({parameter}) {{}}"))
-                .unwrap_err()
-                .kind,
-            DiagnosticKind::Unsupported
-        );
+        assert!(parse_script(&format!("try {{}} catch ({parameter}) {{}}")).is_ok());
     }
     for source in [
         "try {} catch (e) ;",

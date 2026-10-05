@@ -101,7 +101,10 @@ impl Parser {
         self.make_expr(ExprKind::Object(properties), Span::new(start, end))
     }
 
-    fn object_property_name(&mut self, token: Token) -> Result<PropertyName, Diagnostic> {
+    pub(super) fn object_property_name(
+        &mut self,
+        token: Token,
+    ) -> Result<PropertyName, Diagnostic> {
         Ok(match token.kind {
             Kind::Word(name) => {
                 PropertyName::Literal(Literal::String(JsString::from(name.as_str())))

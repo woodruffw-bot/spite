@@ -269,10 +269,29 @@ on every exit, including a host abort.
 
 A catch parameter creates a mutable declarative binding in an environment outside
 the catch block's lexical environment. Restore both before a finalizer or outer
-handler runs. Thrown values, including object identities, are bound without
-coercion. Built-in exceptions materialize as Error instances when a binding needs
+handler runs. Identifiers bind thrown values, including object identities,
+directly. Built-in exceptions materialize as Error instances when a binding needs
 their JavaScript value; catch clauses without a parameter need no such value. The optional
 Annex B rule permitting var to redeclare a catch parameter is not enabled.
+
+Catch parameters share binding-pattern syntax for object properties, computed
+keys, shorthand, array elisions, nested defaults, and rest targets (14.3.3).
+BoundNames are collected in source order; duplicates and conflicts with the
+catch block's lexical/var declarations are early errors. Every name begins
+uninitialized in the catch environment before evaluating keys or defaults.
+Defaults run only for undefined values, and identifier defaults use named
+evaluation for anonymous functions. Object properties use GetV with their
+original primitive/object receiver. Object rest uses shared CopyDataProperties
+with a hash set of exact excluded String/Symbol keys, an intrinsic ordinary
+result, snapshot own keys, and live enumerable descriptors/values. Array patterns
+acquire a synchronous iterator and cache next once; elisions skip value getters.
+Step/value errors mark the iterator done. Partial normal consumption and binding
+failures close active iterators with the standard completion precedence; nested
+iterators close from inside out. Rest Arrays use the retained intrinsic prototype
+and own data definitions. Binding recursion shares the existing evaluator
+native-stack guard across callback reentry. Host aborts restore the catch scope
+and skip JavaScript cleanup. Patterns in declarations, parameters, and assignment
+remain separate implementation work.
 
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.

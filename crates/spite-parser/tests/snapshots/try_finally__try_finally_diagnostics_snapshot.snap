@@ -44,11 +44,11 @@ expression: errors
         message: "duplicate lexical binding",
     },
     Diagnostic {
-        kind: Unsupported,
+        kind: Syntax,
         span: Span {
-            start: 14,
-            end: 15,
+            start: 17,
+            end: 18,
         },
-        message: "catch binding patterns are not implemented",
+        message: "duplicate catch binding",
     },
 ]

@@ -39,13 +39,14 @@ Script {
                 handler: Some(
                     CatchClause {
                         parameter: Some(
-                            Binding {
-                                name: "e",
+                            BindingPattern {
+                                kind: Identifier(
+                                    "e",
+                                ),
                                 span: Span {
                                     start: 24,
                                     end: 30,
                                 },
-                                initializer: None,
                             },
                         ),
                         body: Statement {

@@ -4,6 +4,7 @@
 #[path = "../tests/common/mod.rs"]
 mod test_support;
 
+mod binding;
 mod environment;
 mod for_in;
 mod for_of;
@@ -1168,19 +1169,23 @@ impl Realm {
             } => self.materialize_exception(kind, message, span)?,
             _ => unreachable!("only language throws enter a catch clause"),
         };
-        self.tick(parameter.span)?;
-        self.push_scope(
-            BTreeMap::from([(
-                parameter.name.clone(),
+        let mut bindings = BTreeMap::new();
+        for (name, span) in parameter.bound_names() {
+            self.object_work(span, |_, budget| budget.charge(name.len() + 1))?;
+            bindings.insert(
+                name.to_owned(),
                 BindingState {
-                    value: Some(value),
+                    value: None,
                     mutable: true,
                     strict: true,
                 },
-            )]),
-            handler.span,
-        )?;
-        let result = self.statement(&handler.body);
+            );
+        }
+        self.push_scope(bindings, handler.span)?;
+        let environment = self.scopes.last().expect("catch environment").clone();
+        let result = self
+            .initialize_pattern(parameter, value, &environment)
+            .and_then(|()| self.statement(&handler.body));
         self.scopes.pop();
         result
     }
