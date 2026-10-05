@@ -85,15 +85,14 @@ and update targets, rejects ungrouped optional constructors and direct tagged
 chains even across line breaks, and leaves grouped calls/construction/tags legal.
 Flat steps do not consume recursive syntax depth; runtime traversal is iterative.
 Host quotas remain opt-in, with no default chain, work, or heap allowance.
-Private fields, super execution, async contexts, and direct String eval await their
+Private fields, super execution, and async contexts await their
 own implementations.
 
 The eval intrinsic is a non-constructible built-in function with standard name,
 length, prototype, and global property attributes (19.2.1). PerformEval returns
 non-String input unchanged before coercion, compilation, or scope creation
 (19.2.1.1). This applies to direct and indirect calls, including boxed Strings.
-Direct String input reports Unsupported until caller-environment inheritance and
-declaration checks are implemented. Global declarations preserve the intrinsic value;
+Global declarations preserve the intrinsic value;
 ordinary assignment can replace it, and deletion follows configurable-property
 semantics. The retained intrinsic remains a collection root after replacement.
 
@@ -115,9 +114,29 @@ and restricted function descriptors retain their original attributes (19.2.1.3,
 closures retained after an abrupt completion. Lexical declarations never enter
 the persistent global declaration record.
 
+Direct String eval inherits the caller's strictness, lexical chain, and variable
+environment (19.2.1.1). A fresh lexical environment holds let/const declarations;
+strict eval also declares vars/functions there. Non-strict eval checks every
+intervening declarative environment for var/function conflicts before creating
+bindings, including TDZ, parameter, and catch bindings. With environments are
+skipped without object hooks; initializer references still resolve live through
+them. The core specification's catch conflict rule applies without Annex B.
+New local eval var/function bindings are deletable; existing bindings keep their
+mutability and deletion attributes, including mapped parameter bindings.
+
+Function calls retain an explicit VariableEnvironment independently of nested
+lexical scopes. Sloppy formal parameter expressions use a separate parameter
+environment over the initial callee environment; direct eval during defaults
+declares vars outside parameter bindings. FunctionDeclarationInstantiation then
+creates a separate body variable environment (10.2.11). This applies to ordinary
+functions and arrows. Direct eval inherits this/new.target through the nearest
+non-arrow function and uses the method's retained home object for HasSuperBinding.
+Return remains invalid at eval's Script level. Valid super execution remains
+Unsupported; super outside methods and new.target outside functions are SyntaxError.
+
 Eval returns Script completion values, replacing empty results with undefined.
-The caller's scopes and strictness are restored on success, JavaScript exceptions,
-Unsupported, and Limit. Parsing and execution share the caller's opted-in work
+The caller's scopes, variable environment, and strictness are restored on success,
+JavaScript exceptions, Unsupported, and Limit. Parsing and execution share the caller's opted-in work
 allowance; eval does not reset it. Source-size quotas use the same encoded-byte
 accounting as Function compilation. Native call/evaluation guards still bound
 recursive re-entry, and all host quotas remain opt-in.

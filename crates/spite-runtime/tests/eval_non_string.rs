@@ -53,14 +53,13 @@ fn declarations_preserve_the_intrinsic_and_assignment_can_replace_it() {
 }
 
 #[test]
-fn direct_string_evaluation_remains_unsupported_after_argument_effects() {
+fn unsupported_eval_syntax_preserves_argument_effects_and_bypasses_handlers() {
     for source in [
-        "eval('')",
-        "eval('1')",
-        "(eval)('1')",
-        "e\\u0076al('1')",
-        "function f(eval){return eval('1');}f(globalThis.eval)",
-        "with({eval:globalThis.eval}){eval('1');}",
+        "eval('class C{}')",
+        "(eval)('class C{}')",
+        "e\\u0076al('class C{}')",
+        "function f(eval){return eval('class C{}');}f(globalThis.eval)",
+        "with({eval:globalThis.eval}){eval('class C{}');}",
     ] {
         assert!(
             matches!(
@@ -73,7 +72,7 @@ fn direct_string_evaluation_remains_unsupported_after_argument_effects() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{eval((flag=7,'1'));}catch(e){flag=1;}finally{flag=2;}"),
+        realm.eval("try{eval((flag=7,'class C{}'));}catch(e){flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(7.0)));

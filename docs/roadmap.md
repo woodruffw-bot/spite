@@ -100,7 +100,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [x] Expose the eval intrinsic with standard metadata, global binding behavior, and the non-String identity branch of PerformEval.
 - [x] Execute indirect String eval with lossless Script compilation, global lookup, fresh lexical/strict var environments, configurable global declarations, and restored caller contexts.
-- [ ] Execute direct String eval with caller strictness, declaration checks, and lexical/variable/this environment inheritance.
+- [x] Execute direct String eval with caller strictness, declaration checks, and lexical/variable/this environment inheritance.
 - [x] Store declarative environments in the traced heap with stable identity and outer links.
 - [x] Parse expression-bodied arrows with simple parameters, early errors, and exact source text.
 - [x] Execute arrow closures with shared bindings, names, metadata, and source stringification.

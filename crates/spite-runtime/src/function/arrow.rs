@@ -78,14 +78,27 @@ impl Realm {
                 .map(|parameter| &parameter.binding().pattern),
             true,
         )?;
+        let separate_parameters =
+            !arrow.strict && arrow.parameters.iter().any(Parameter::contains_expression);
+        let mut bindings = bindings;
+        let parameters = if separate_parameters {
+            std::mem::take(&mut bindings)
+        } else {
+            BTreeMap::new()
+        };
         let environment = self.object_work(span, |objects, budget| {
             objects.create_environment(Some(arrow.environment), bindings, budget)
         })?;
         let caller_strict = self.strict;
         let caller_depth = self.scopes.len();
+        let caller_variable = self.variable_environment.replace(environment.clone());
         self.scopes.push(environment);
         self.strict = arrow.strict;
         let result = (|| {
+            if separate_parameters {
+                // 10.2.11: defaults' eval vars go outside parameter bindings.
+                self.push_scope(parameters, span)?;
+            }
             self.initialize_parameters(&arrow.parameters, &mut arguments)?;
             self.instantiate_function_vars(&arrow.parameters, &arrow.body, span)?;
             match &arrow.body {
@@ -94,6 +107,7 @@ impl Realm {
             }
         })();
         self.strict = caller_strict;
+        self.variable_environment = caller_variable;
         self.scopes.truncate(caller_depth);
         result
     }
@@ -157,6 +171,7 @@ impl Realm {
             self.push_scope(BTreeMap::new(), span)?;
         }
         let environment = self.scopes.last().expect("var environment").clone();
+        self.variable_environment = Some(environment.clone());
         if let ArrowBody::Block(body) = body {
             let functions = body.function_declarations();
             let function_names: std::collections::BTreeSet<_> = functions
@@ -209,6 +224,7 @@ impl Realm {
                         BindingState {
                             value: Some(value),
                             mutable: true,
+                            deletable: false,
                             strict: true,
                         },
                     );

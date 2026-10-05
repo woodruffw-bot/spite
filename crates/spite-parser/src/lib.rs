@@ -61,12 +61,44 @@ pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
     parse_script_contents(&mut parser)
 }
 
+/// Caller context used by direct eval's Script early errors (19.2.1.1).
+///
+/// Arrows inherit the nearest non-arrow function's new.target and super context.
+/// Classes, derived constructors, and private environments remain unsupported.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct EvalContext {
+    /// Whether the direct caller executes strict code.
+    pub strict: bool,
+    /// Whether GetThisEnvironment identifies a non-arrow function environment.
+    pub in_function: bool,
+    /// Whether that function environment has a super binding.
+    pub in_method: bool,
+}
+
+/// Parses lossless UTF-16 eval code with inherited strictness and caller context.
+///
+/// Return remains invalid at the Script level, even when the caller is a function.
+pub fn parse_eval_utf16(source: &JsString, context: EvalContext) -> Result<Script, Diagnostic> {
+    let mut parser =
+        Parser::from_source(std::rc::Rc::new(source::SourceText::from_utf16(source)?))?;
+    parser.allow_new_target = context.in_function;
+    parser.allow_super_property = context.in_method;
+    parse_script_contents_with_strictness(&mut parser, context.strict)
+}
+
 fn parse_script_contents(parser: &mut Parser) -> Result<Script, Diagnostic> {
+    parse_script_contents_with_strictness(parser, false)
+}
+
+fn parse_script_contents_with_strictness(
+    parser: &mut Parser,
+    inherited_strict: bool,
+) -> Result<Script, Diagnostic> {
     let mut statements = Vec::new();
     while parser.current().kind != Kind::Eof {
         statements.push(parser.statement(true)?);
     }
-    let strict = has_use_strict(&statements, parser.source.lexical_text());
+    let strict = inherited_strict || has_use_strict(&statements, parser.source.lexical_text());
     if strict {
         reject_legacy_tokens(&parser.tokens)?;
     }

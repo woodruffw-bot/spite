@@ -240,6 +240,8 @@ impl Completion {
 #[derive(Debug)]
 pub struct Realm {
     scopes: Vec<EnvironmentHandle>,
+    // Lexical scopes may nest without changing the current VariableEnvironment.
+    variable_environment: Option<EnvironmentHandle>,
     global_object: Option<ObjectHandle>,
     unsupported_host_globals: BTreeSet<String>,
     limits: Limits,
@@ -263,6 +265,7 @@ impl Realm {
     pub fn new(limits: Limits) -> Self {
         Self {
             scopes: Vec::new(),
+            variable_environment: None,
             global_object: None,
             unsupported_host_globals: BTreeSet::new(),
             limits,
@@ -304,6 +307,7 @@ impl Realm {
     /// Evaluates a Script already validated by the parser.
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
         self.initialize_realm()?;
+        self.variable_environment = self.scopes.first().cloned();
         self.remaining_steps = self.limits.max_steps;
         self.strict = script.is_strict();
         self.instantiate_global(script)?;
@@ -526,6 +530,7 @@ impl Realm {
                     BindingState {
                         value: None,
                         mutable,
+                        deletable: false,
                         strict: true,
                     },
                 );
@@ -984,6 +989,7 @@ impl Realm {
                 BindingState {
                     value: Some(value),
                     mutable: true,
+                    deletable: false,
                     strict: true,
                 },
             );
@@ -1181,6 +1187,7 @@ impl Realm {
                 BindingState {
                     value: None,
                     mutable: true,
+                    deletable: false,
                     strict: true,
                 },
             );
@@ -1378,7 +1385,19 @@ impl Realm {
                             }
                             deleted
                         }
-                        Reference::Lexical(..) => false,
+                        Reference::Lexical(environment, name) => {
+                            let bindings = &mut self
+                                .objects
+                                .environment_mut(&environment)
+                                .expect("resolved environment")
+                                .bindings;
+                            if bindings.get(name).is_none_or(|binding| binding.deletable) {
+                                bindings.remove(name);
+                                true
+                            } else {
+                                false
+                            }
+                        }
                         Reference::ObjectBinding { object, name } => self.delete_property_value(
                             &Value::Object(object),
                             &JsString::from(name),

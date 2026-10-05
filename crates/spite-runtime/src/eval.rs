@@ -1,8 +1,11 @@
-//! Indirect PerformEval and EvalDeclarationInstantiation (19.2.1.1–3).
+//! PerformEval and EvalDeclarationInstantiation (19.2.1.1–3).
 
-use crate::{BindingState, CompletionKind, Error, ExceptionKind, Realm, Value, standard_global};
+use crate::{
+    BindingState, CompletionKind, Error, ExceptionKind, Realm, Reference, Value,
+    environment::EnvironmentHandle, standard_global,
+};
 use spite_core::{DiagnosticKind, Span};
-use spite_parser::{ast::Script, parse_script_utf16};
+use spite_parser::{EvalContext, ast::Script, parse_eval_utf16};
 use std::collections::BTreeSet;
 
 impl Realm {
@@ -16,12 +19,24 @@ impl Realm {
         let Value::String(source) = value else {
             return Ok(value);
         };
+        // Indirect calls already pass through call(); direct eval bypasses it.
+        // Both forms must share the native-stack guard and caller's work budget.
         if direct {
-            return Err(Self::unsupported(
-                span,
-                "direct String eval is not implemented",
-            ));
+            self.enter_call(span)?;
         }
+        let result = self.eval_string(&source, direct, span);
+        if direct {
+            self.call_depth -= 1;
+        }
+        result
+    }
+
+    fn eval_string(
+        &mut self,
+        source: &spite_core::JsString,
+        direct: bool,
+        span: Span,
+    ) -> Result<Value, Error> {
         let bytes = char::decode_utf16(source.code_units().iter().copied())
             .try_fold(0usize, |n, point| {
                 n.checked_add(point.map_or(3, char::len_utf8))
@@ -41,40 +56,87 @@ impl Realm {
             });
         }
         self.object_work(span, |_, budget| budget.charge(bytes))?;
-        let script = parse_script_utf16(&source).map_err(|diagnostic| match diagnostic.kind {
-            DiagnosticKind::Syntax => {
-                Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
+        let mut context = EvalContext::default();
+        if direct {
+            context.strict = self.strict;
+            // GetThisEnvironment skips declarative/with/arrow environments.
+            let mut next = self.scopes.last().cloned();
+            while let Some(environment) = next {
+                let (function, method, outer) = self.object_work(span, |objects, budget| {
+                    budget.charge(1)?;
+                    let record = objects.environment(&environment)?;
+                    Ok((
+                        record.this.is_some(),
+                        record.home_object.is_some(),
+                        record.outer.clone(),
+                    ))
+                })?;
+                if function {
+                    context.in_function = true;
+                    context.in_method = method;
+                    break;
+                }
+                next = outer;
             }
-            DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
-            DiagnosticKind::Limit => Error::Limit {
-                span,
-                message: diagnostic.message,
-            },
-        })?;
+        }
+        let script =
+            parse_eval_utf16(source, context).map_err(|diagnostic| match diagnostic.kind {
+                DiagnosticKind::Syntax => {
+                    Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
+                }
+                DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
+                DiagnosticKind::Limit => Error::Limit {
+                    span,
+                    message: diagnostic.message,
+                },
+            })?;
         if script.statements().is_empty() {
             return Ok(Value::Undefined);
         }
         let global = self.scopes.first().expect("global environment").clone();
+        let outer = if direct {
+            self.scopes
+                .last()
+                .expect("caller lexical environment")
+                .clone()
+        } else {
+            global.clone()
+        };
         let lexical = self.object_work(span, |objects, budget| {
-            objects.create_environment(Some(global.clone()), Default::default(), budget)
+            objects.create_environment(Some(outer), Default::default(), budget)
         })?;
-        // Eval starts from GlobalEnv, never the caller's function/with chain.
-        // Keep the caller's allowance and native-depth guards, restoring its
-        // environment and strictness even after JavaScript or host failures.
+        let variable = if script.is_strict() {
+            lexical.clone()
+        } else if direct {
+            self.variable_environment
+                .as_ref()
+                .expect("caller variable environment")
+                .clone()
+        } else {
+            global.clone()
+        };
+        // The lexical chain retains the direct caller; indirect eval starts from
+        // GlobalEnv. Restore all caller state after language and host failures.
         let caller = std::mem::replace(&mut self.scopes, vec![global, lexical]);
         let caller_strict = std::mem::replace(&mut self.strict, script.is_strict());
+        let caller_variable = self.variable_environment.replace(variable.clone());
         let result = (|| {
-            self.instantiate_indirect_eval(&script)?;
+            self.instantiate_eval(&script, &variable)?;
             let completion = self.statements(script.statements())?;
             debug_assert_eq!(completion.kind, CompletionKind::Normal);
             Ok(completion.value.unwrap_or(Value::Undefined))
         })();
         self.scopes = caller;
         self.strict = caller_strict;
+        self.variable_environment = caller_variable;
         result
     }
 
-    fn instantiate_indirect_eval(&mut self, script: &Script) -> Result<(), Error> {
+    fn instantiate_eval(
+        &mut self,
+        script: &Script,
+        variable: &EnvironmentHandle,
+    ) -> Result<(), Error> {
         // Last declarations win; instantiate only their function objects.
         let mut seen = BTreeSet::new();
         let mut functions: Vec<_> = script
@@ -94,30 +156,42 @@ impl Realm {
             .collect();
         functions.reverse();
         let variables = script.var_declarations();
+        let global = self.scopes.first().expect("global environment") == variable;
+        let names: Vec<_> = variables
+            .iter()
+            .map(|binding| (binding.name, binding.span))
+            .chain(functions.iter().map(|function| {
+                let name = function.name.as_ref().expect("named declaration");
+                (name.name.as_str(), name.span)
+            }))
+            .collect();
         if !self.strict {
-            let global = self.scopes.first().expect("global environment").clone();
-            for (name, range) in variables
-                .iter()
-                .map(|binding| (binding.name, binding.span))
-                .chain(functions.iter().map(|function| {
-                    let name = function.name.as_ref().expect("named declaration");
-                    (name.name.as_str(), name.span)
-                }))
-            {
-                self.tick(range)?;
-                if self
-                    .objects
-                    .environment(&global)
-                    .expect("global environment")
-                    .bindings
-                    .contains_key(name)
-                {
-                    return Err(Self::exception(
-                        ExceptionKind::SyntaxError,
-                        range,
-                        "eval var declaration conflicts with global lexical binding",
-                    ));
+            if global {
+                self.check_eval_conflicts(variable, &names)?;
+            }
+            // No Annex B catch exception. Object Environment Records are skipped
+            // without invoking getters, HasProperty, or Symbol.unscopables.
+            let mut environment = self
+                .scopes
+                .last()
+                .expect("eval lexical environment")
+                .clone();
+            while &environment != variable {
+                let (object, outer) =
+                    self.object_work(script.statements()[0].span, |objects, budget| {
+                        budget.charge(1)?;
+                        let record = objects.environment(&environment)?;
+                        Ok((record.binding_object.is_some(), record.outer.clone()))
+                    })?;
+                if !object {
+                    self.check_eval_conflicts(&environment, &names)?;
                 }
+                environment = outer.expect("variable environment is an ancestor");
+            }
+        }
+        if global {
+            // Complete every global check before creating any binding.
+            for &(name, range) in &names {
                 if (standard_global(name) || self.unsupported_host_globals.contains(name))
                     && self.global_own(name, range)?.is_none()
                     && !seen.contains(name)
@@ -128,7 +202,6 @@ impl Realm {
                     ));
                 }
             }
-            // Complete every declaration check before creating global bindings.
             for function in &functions {
                 let name = function.name.as_ref().expect("named declaration");
                 if !self.can_declare_global_function(&name.name, name.span)? {
@@ -152,48 +225,83 @@ impl Realm {
             }
         }
         self.instantiate(script.statements().iter(), false, false)?;
-        let lexical = self
-            .scopes
-            .last()
-            .expect("eval lexical environment")
-            .clone();
         for function in functions {
             let name = function.name.as_ref().expect("named declaration");
             let value = self.ordinary_function(function, false, name.span)?;
-            if self.strict {
-                self.objects
-                    .environment_mut(&lexical)
-                    .expect("eval lexical environment")
-                    .bindings
-                    .insert(
-                        name.name.clone(),
-                        BindingState {
-                            value: Some(value),
-                            mutable: true,
-                            strict: false,
-                        },
-                    );
-            } else {
+            if global {
                 self.create_global_function_binding(&name.name, value, true, name.span)?;
+            } else {
+                let exists = self
+                    .objects
+                    .environment(variable)
+                    .expect("eval variable environment")
+                    .bindings
+                    .contains_key(&name.name);
+                if exists {
+                    self.put(
+                        Reference::Lexical(variable.clone(), &name.name),
+                        value,
+                        name.span,
+                    )?;
+                } else {
+                    self.objects
+                        .environment_mut(variable)
+                        .expect("eval variable environment")
+                        .bindings
+                        .insert(
+                            name.name.clone(),
+                            BindingState {
+                                value: Some(value),
+                                mutable: true,
+                                deletable: true,
+                                strict: false,
+                            },
+                        );
+                }
             }
         }
         for binding in variables {
             if seen.contains(binding.name) {
                 continue;
             }
-            if self.strict {
+            if global {
+                self.create_global_var_binding(binding.name, true, binding.span)?;
+            } else {
                 self.objects
-                    .environment_mut(&lexical)
-                    .expect("eval lexical environment")
+                    .environment_mut(variable)
+                    .expect("eval variable environment")
                     .bindings
                     .entry(binding.name.to_owned())
                     .or_insert(BindingState {
                         value: Some(Value::Undefined),
                         mutable: true,
+                        deletable: true,
                         strict: false,
                     });
-            } else {
-                self.create_global_var_binding(binding.name, true, binding.span)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn check_eval_conflicts(
+        &mut self,
+        environment: &EnvironmentHandle,
+        names: &[(&str, Span)],
+    ) -> Result<(), Error> {
+        for &(name, span) in names {
+            self.tick(span)?;
+            if self
+                .objects
+                .environment(environment)
+                .expect("eval environment")
+                .bindings
+                .contains_key(name)
+            {
+                return Err(Self::exception(
+                    ExceptionKind::SyntaxError,
+                    span,
+                    "eval var declaration conflicts with lexical binding",
+                ));
             }
         }
         Ok(())

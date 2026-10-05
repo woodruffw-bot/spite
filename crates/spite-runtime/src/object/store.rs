@@ -468,23 +468,28 @@ impl Objects {
         outer: EnvironmentHandle,
         bindings: BTreeMap<String, BindingState>,
         this: Value,
-        new_target: Option<Handle>,
+        context: crate::environment::FunctionContext,
         budget: &mut Budget,
     ) -> Result<EnvironmentHandle, Error> {
         budget.value(&this)?;
         if let Value::Object(handle) = &this {
             self.inspect(handle)?;
         }
-        if let Some(target) = &new_target {
+        if let Some(target) = &context.new_target {
             budget.charge(1)?;
             if !self.inspect(target)?.is_constructor() {
                 return Err(Error::WrongKind);
             }
         }
+        if let Some(home) = &context.home_object {
+            budget.charge(1)?;
+            self.inspect(home)?;
+        }
         let environment = self.create_environment(Some(outer), bindings, budget)?;
         let record = self.environment_mut(&environment)?;
         record.this = Some(this);
-        record.new_target = new_target;
+        record.new_target = context.new_target;
+        record.home_object = context.home_object;
         Ok(environment)
     }
 
@@ -523,6 +528,7 @@ impl Objects {
                 binding_object: None,
                 this: None,
                 new_target: None,
+                home_object: None,
             },
         ))?))
     }

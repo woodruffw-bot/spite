@@ -1206,7 +1206,7 @@ impl Realm {
         result
     }
 
-    fn enter_call(&mut self, span: Span) -> Result<(), Error> {
+    pub(super) fn enter_call(&mut self, span: Span) -> Result<(), Error> {
         // Calls and construction share a bound. Bound/call/apply tail transfers
         // stay iterative; user code and getter/coercion re-entry grow the stack.
         if self.call_depth >= 32 {
@@ -1248,13 +1248,30 @@ impl Realm {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
-                    return self.call_ordinary(code, callee, this, None, arguments, span);
+                    return self.call_ordinary(
+                        code,
+                        callee,
+                        this,
+                        Default::default(),
+                        arguments,
+                        span,
+                    );
                 }
                 Some(Callable::Method(method)) => {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
-                    return self.call_ordinary(method.code, callee, this, None, arguments, span);
+                    return self.call_ordinary(
+                        method.code,
+                        callee,
+                        this,
+                        crate::environment::FunctionContext {
+                            new_target: None,
+                            home_object: Some(method.home_object),
+                        },
+                        arguments,
+                        span,
+                    );
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound

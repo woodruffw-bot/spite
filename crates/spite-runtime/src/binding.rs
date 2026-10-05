@@ -23,6 +23,7 @@ impl Realm {
                     BindingState {
                         value: None,
                         mutable,
+                        deletable: false,
                         strict: true,
                     },
                 );

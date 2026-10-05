@@ -1,0 +1,70 @@
+---
+source: crates/spite-parser/tests/eval_context.rs
+expression: diagnostics
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "with statements are not allowed in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 4,
+            end: 8,
+        },
+        message: "invalid binding in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 3,
+        },
+        message: "legacy numeric literals and escapes are forbidden in strict code",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "legacy numeric literals and escapes are forbidden in strict code",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 7,
+            end: 8,
+        },
+        message: "cannot delete an identifier in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "return outside a function body",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "super property access outside a method",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "super call requires a derived constructor",
+    },
+]

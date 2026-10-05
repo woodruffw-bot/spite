@@ -11,6 +11,7 @@ pub(crate) struct EnvironmentHandle(pub(crate) Handle);
 pub(crate) struct BindingState {
     pub value: Option<Value>,
     pub mutable: bool,
+    pub deletable: bool,
     // Immutable named-function bindings reject writes only from strict code.
     pub strict: bool,
 }
@@ -25,6 +26,14 @@ pub(crate) struct Environment {
     pub this: Option<Value>,
     // None means undefined for ordinary calls; declarative environments ignore it.
     pub new_target: Option<Handle>,
+    // MakeMethod's home object supplies HasSuperBinding for direct eval.
+    pub home_object: Option<Handle>,
+}
+
+#[derive(Default)]
+pub(crate) struct FunctionContext {
+    pub new_target: Option<Handle>,
+    pub home_object: Option<Handle>,
 }
 
 impl Trace for Environment {
@@ -32,6 +41,7 @@ impl Trace for Environment {
         std::iter::once(self.outer.as_ref().map(|outer| &outer.0))
             .chain(std::iter::once(self.binding_object.as_ref()))
             .chain(std::iter::once(self.new_target.as_ref()))
+            .chain(std::iter::once(self.home_object.as_ref()))
             .chain(std::iter::once(self.this.as_ref().and_then(
                 |value| match value {
                     Value::Object(handle) => Some(handle),
@@ -62,6 +72,7 @@ mod tests {
         BindingState {
             value: Some(value),
             mutable: true,
+            deletable: false,
             strict: true,
         }
     }
@@ -257,6 +268,7 @@ mod tests {
                     BindingState {
                         value: None,
                         mutable: true,
+                        deletable: false,
                         strict: true,
                     },
                 )

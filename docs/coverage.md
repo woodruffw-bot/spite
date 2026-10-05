@@ -48,7 +48,7 @@ This host has no active debugging facility (ECMA-262 14.16.1).
 Five eval regressions cover non-String primitives and object identity without
 conversion, direct/indirect and call/apply/bound calls, metadata/descriptors,
 construction rejection after argument effects, global preservation/replacement
-and deletion, shadowing, collection, and direct String Unsupported results that
+and deletion, shadowing, collection, and unsupported eval syntax results that
 bypass JavaScript handlers. Four UTF-16 Script parser regressions and two inspected
 insta snapshots cover shared Script grammar, exact source values, constructor and
 control-flow early errors, and super's method/arrow context boundaries. Eleven
@@ -57,7 +57,13 @@ own strictness, completion values, declaration descriptors and preflight failure
 fresh lexical environments and TDZs, captured closures, live initializer references,
 source preservation, caller restoration after throws, collection, unlimited default
 source sizes, shared opt-in work/source/heap quotas, and native re-entry guards.
-Direct String eval's caller environments and declaration rules remain open.
+Two direct-eval parser regressions and two inspected insta snapshots cover inherited
+strictness, new.target, invalid return, and method/arrow super context boundaries.
+Twelve runtime regressions cover direct reference forms, ordered arguments, caller
+lookup, strict local vars, fresh lexicals and TDZs, preflight lexical/catch/parameter
+conflicts, deletable declarations, preserved mapped parameters, live with references,
+ordinary/arrow default and body environments, this/new.target, nested eval, abrupt
+caller restoration, exact UTF-16 source, collection, and shared opt-in limits.
 The unchanged pinned inventory adds eight eval intrinsic and 49 indirect eval
 sources: 110 harness-positive and two runtime-negative variants. All 71 candidates
 were reviewed; fourteen whole files remain excluded without credit (six global
@@ -908,7 +914,7 @@ Array/raw descriptors, constructor/species/setter bypass, repeated parse-site
 identity across functions and syntax clones, separate parses/realms, cache tracing
 through collection, and opt-in host failures without partial cached templates.
 Parser AST/diagnostic snapshots cover syntax, strict errors, and invalid targets.
-Proper tail calls, eval, and JavaScript cross-realm hooks remain separate work.
+Proper tail calls and JavaScript cross-realm hooks remain separate work.
 
 Global encodeURI/encodeURIComponent use string-hint ToString once, preserve the
 specified ASCII escape sets, and emit uppercase UTF-8 percent escapes without
@@ -991,7 +997,7 @@ tests distinguish heap owners and reused generations while deduplicating clones.
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes,
 regular expressions, for-await-of, generators,
-async functions, promises, modules, standard library objects, direct String eval, agents, shared
+async functions, promises, modules, standard library objects, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral
 Numbers exactly, and accepts Boolean/BigInt/integer-string values through ToBigInt.

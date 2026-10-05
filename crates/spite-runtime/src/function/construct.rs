@@ -106,7 +106,10 @@ impl Realm {
                         code,
                         function,
                         this.clone(),
-                        Some(new_target),
+                        crate::environment::FunctionContext {
+                            new_target: Some(new_target),
+                            home_object: None,
+                        },
                         arguments.into_iter(),
                         span,
                     )?;

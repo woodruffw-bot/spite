@@ -15,7 +15,7 @@ impl Realm {
         code: ScriptFunction,
         callee: ObjectHandle,
         this: Value,
-        new_target: Option<ObjectHandle>,
+        context: crate::environment::FunctionContext,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
@@ -71,6 +71,7 @@ impl Realm {
                 BindingState {
                     value: None,
                     mutable: !code.strict,
+                    deletable: false,
                     strict: code.strict,
                 },
             );
@@ -83,16 +84,11 @@ impl Realm {
             BTreeMap::new()
         };
         let environment = self.object_work(span, |objects, budget| {
-            objects.create_function_environment(
-                code.environment,
-                bindings,
-                this,
-                new_target,
-                budget,
-            )
+            objects.create_function_environment(code.environment, bindings, this, context, budget)
         })?;
         let caller_depth = self.scopes.len();
         let caller_strict = self.strict;
+        let caller_variable = self.variable_environment.replace(environment.clone());
         self.scopes.push(environment);
         self.strict = code.strict;
         let result = (|| {
@@ -125,6 +121,7 @@ impl Realm {
             self.function_body(body, span)
         })();
         self.strict = caller_strict;
+        self.variable_environment = caller_variable;
         self.scopes.truncate(caller_depth);
         result
     }
@@ -188,6 +185,7 @@ impl Realm {
                 BindingState {
                     value: None,
                     mutable: false,
+                    deletable: false,
                     strict: false,
                 },
             )]);
