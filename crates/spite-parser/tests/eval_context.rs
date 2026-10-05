@@ -1,6 +1,7 @@
 //! Direct eval's inherited Script early errors (19.2.1.1).
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{EvalContext, parse_eval_utf16};
+use spite_parser::{EvalContext, parse_eval_utf16, parse_eval_utf16_with_private_names};
+use std::collections::BTreeSet;
 
 #[test]
 fn direct_eval_inherits_strictness_and_constructor_context_without_allowing_return() {
@@ -69,6 +70,54 @@ fn method_context_does_not_cross_ordinary_functions() {
     );
     assert_eq!(
         parse_eval_utf16(&JsString::from("()=>new.target"), EvalContext::default())
+            .unwrap_err()
+            .kind,
+        DiagnosticKind::Syntax
+    );
+}
+
+#[test]
+fn eval_private_names_cross_functions_and_allow_class_body_shadowing() {
+    let names = BTreeSet::from(["#x".into(), "#y".into()]);
+    for source in [
+        "this.#x; #y in this;",
+        "function f(o){return o.#x;} (()=>this.#y);",
+        "class C extends (this.#x){#x;read(o){return o.#x;}}",
+        "class C{read(o){return o.#y;}#x;}",
+        "class C{#x;make(){return class{read(o){return o.#x;}};}}",
+    ] {
+        assert!(
+            parse_eval_utf16_with_private_names(
+                &JsString::from(source),
+                EvalContext::default(),
+                &names
+            )
+            .is_ok(),
+            "{source}"
+        );
+    }
+    let diagnostics: Vec<_> = [
+        "o.#missing",
+        "function f(o){return #missing in o;}",
+        "class C extends (o.#missing){#missing;}",
+        "class C{read(o){return o.#missing;}}",
+        "delete o.#x",
+    ]
+    .into_iter()
+    .map(|source| {
+        let error = parse_eval_utf16_with_private_names(
+            &JsString::from(source),
+            EvalContext::default(),
+            &names,
+        )
+        .unwrap_err();
+        assert_eq!(error.kind, DiagnosticKind::Syntax, "{source}");
+        error
+    })
+    .collect();
+    insta::assert_debug_snapshot!(diagnostics);
+    assert_eq!(
+        parse_eval_utf16(&JsString::from("o.#x"), EvalContext::default())
             .unwrap_err()
             .kind,
         DiagnosticKind::Syntax

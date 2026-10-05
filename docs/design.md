@@ -85,8 +85,8 @@ and update targets, rejects ungrouped optional constructors and direct tagged
 chains even across line breaks, and leaves grouped calls/construction/tags legal.
 Flat steps do not consume recursive syntax depth; runtime traversal is iterative.
 Host quotas remain opt-in, with no default chain, work, or heap allowance.
-Private fields, derived-constructor super calls, and async contexts await their
-own implementations.
+Private access retains its private reference and receiver through optional calls.
+Async contexts await their own implementation.
 
 The eval intrinsic is a non-constructible built-in function with standard name,
 length, prototype, and global property attributes (19.2.1). PerformEval returns
@@ -1135,8 +1135,7 @@ other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported private elements, static
-blocks, generator/async functions, and native-stack exhaustion remain separate
+function context. Unsupported generator/async functions and native-stack exhaustion remain separate
 diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
 
@@ -2048,7 +2047,7 @@ its callable metadata still permits apply to read the argument list first.
 Construction shares ordinary base allocation, newTarget prototype selection,
 strict parameter/body execution, and object-versus-primitive return rules. The
 empty default constructor implements the base branch of 15.7.14 and initializes
-instance fields. Private elements remain Unsupported. Existing
+instance fields. Private methods/accessors remain Unsupported. Existing
 native-stack guards and opt-in quotas are unchanged.
 
 Class constructors inherit Function.prototype and own a non-writable,
@@ -2086,7 +2085,7 @@ undefined returns after restoring the caller context (10.2.2).
 Default derived constructors forward argument Lists directly, without invoking
 Array's iterator. Bound/default forwarding shares the iterative construction
 loop; pending default-constructor fields initialize on the returned object in
-superclass-to-subclass order. Private elements remain unsupported. Explicit
+superclass-to-subclass order, including private fields. Explicit
 constructors, superclass calls, and recursive computed names retain the existing call/evaluation/parser stack guards. The
 SuperCall expression uses the small call dispatch path to avoid retaining the
 general debug expression frame during recursive construction. Heritage, super,
@@ -2162,5 +2161,42 @@ through functions and nested classes without making a class's names visible in
 its own heritage (AllPrivateIdentifiersValid, 16.1.1). Duplicate names fail except
 for one getter/setter pair with matching staticness. Escapes normalize before
 comparison; private constructor names, deletion, and super access are early errors.
-Execution and direct eval's private environment remain Unsupported until private
-storage and runtime name resolution are implemented.
+
+## Private fields and environments
+
+Each ClassDefinitionEvaluation creates fresh opaque private-name identities
+(6.2.10/15.7.14). The identities use allocation identity internally and never
+become JavaScript Symbols or ordinary property keys. A transparent heap
+environment contains the private namespace and links to the class-name lexical
+environment. It is created after heritage evaluation, so heritage closures retain
+the outer private scope even when the body declares the same spelling. Body code,
+computed keys, constructors, methods, fields, and blocks capture the child record;
+the internal class binding still belongs to its parent. Private resolution follows
+the captured chain iteratively, across ordinary function boundaries.
+
+Private fields occupy separate own storage. PrivateElementFind compares identity
+without searching prototypes. Add rejects duplicate names after evaluating the
+initializer, and get/set reject missing brands with TypeError (7.3.27–31).
+Extensibility and ordinary property descriptors do not affect private fields;
+reflection, serialization, and copying never enumerate them. Storage checks object
+handles and opt-in work budgets before mutation and traces every stored object
+value, including cycles. Private fields do not consume ordinary property capacity.
+Public/private instance fields share ordered initialization before base parameters
+and after derived BindThisValue; default forwarding initializes superclass fields
+before subclass fields. Static fields and blocks retain their source order.
+
+Private references preserve the receiver for calls and defer brand errors to
+GetValue/PutValue, so assignment evaluates its right side before a failed write.
+Fresh primitive wrappers cannot contain private elements and are omitted under
+the GetValue/PutValue notes (6.2.5.5–6). Private-in evaluates its right side, requires
+an Object, then resolves the private identity and tests its own storage (13.10).
+Field NamedEvaluation uses the private description, including `#`, for inferred
+function/class names without exposing the private identity.
+
+Direct eval validates every private identifier against the caller's visible
+private spellings before declaration instantiation or execution (19.2.1.3).
+Its parsed references resolve through the captured runtime namespace; indirect
+eval and dynamic Function inherit no caller private names. Nested class names can
+shadow eval's inherited names only within their body. Parser API context booleans
+remain separate from the supplied name set. Private methods/accessors remain
+Unsupported until their initialization and access semantics are implemented.

@@ -35,11 +35,21 @@ impl Realm {
                 },
             );
         }
+        let scope_depth = self.scopes.len();
         self.push_scope(bindings, span)?;
-        let environment = self.scopes.last().expect("class environment").clone();
+        let class_environment = self.scopes.last().expect("class environment").clone();
         let previous_strict = self.strict;
         self.strict = true;
         let result = (|| {
+            let mut private_names = BTreeMap::new();
+            for element in &syntax.elements {
+                if let Some(PropertyName::Private(name)) = element.name() {
+                    self.object_work(name.span, |_, budget| budget.charge(name.name.len() + 1))?;
+                    private_names
+                        .entry(name.name.clone())
+                        .or_insert_with(|| crate::private::PrivateName::new(&name.name));
+                }
+            }
             let (function_prototype, prototype_parent) = if let Some(heritage) = &syntax.heritage {
                 let superclass = self.expression(heritage)?;
                 if matches!(superclass, Value::Null) {
@@ -87,6 +97,18 @@ impl Realm {
                     Some(intrinsics.object_prototype.clone()),
                 )
             };
+            // Heritage runs with the outer private environment (15.7.14).
+            // Use a separate child record so heritage closures cannot later
+            // acquire the class body's shadowing private names.
+            if !private_names.is_empty() {
+                self.push_scope(BTreeMap::new(), span)?;
+                let environment = self.scopes.last().expect("class private environment");
+                self.objects
+                    .environment_mut(environment)
+                    .expect("class private environment")
+                    .private_names = private_names;
+            }
+            let environment = self.scopes.last().expect("class body environment").clone();
             let Value::Object(function) = self.allocate_ordinary_function(
                 &syntax.constructor,
                 environment.clone(),
@@ -154,17 +176,19 @@ impl Realm {
                     });
                     continue;
                 }
-                let key = match element.name().expect("field or method key") {
-                    PropertyName::Private(_) => {
-                        return Err(Self::unsupported(
-                            span,
-                            "private elements are not implemented",
-                        ));
+                let name = match element.name().expect("field or method key") {
+                    PropertyName::Private(name) => super::class_field::ClassFieldName::Private(
+                        self.resolve_private_name(&name.name, name.span)?,
+                    ),
+                    name => {
+                        let key = match name {
+                            PropertyName::Literal(literal) => self.literal_value(literal, span)?,
+                            PropertyName::Computed(expression) => self.expression(expression)?,
+                            PropertyName::Private(_) => unreachable!("private name handled"),
+                        };
+                        super::class_field::ClassFieldName::Public(self.property_key(key, span)?)
                     }
-                    PropertyName::Literal(literal) => self.literal_value(literal, span)?,
-                    PropertyName::Computed(expression) => self.expression(expression)?,
                 };
-                let key = self.property_key(key, span)?;
                 let home = if element.is_static() {
                     &function
                 } else {
@@ -172,11 +196,17 @@ impl Realm {
                 };
                 match element {
                     ClassElement::Method { property, .. } => {
+                        let super::class_field::ClassFieldName::Public(key) = name else {
+                            return Err(Self::unsupported(
+                                span,
+                                "private methods and accessors are not implemented",
+                            ));
+                        };
                         self.define_method_property(home, key, property, false)?;
                     }
                     ClassElement::Field { initializer, .. } => {
                         let field = super::ClassField {
-                            name: key,
+                            name,
                             initializer: initializer.as_ref().map(|expression| {
                                 super::class_field::FieldInitializer {
                                     expression: expression.clone(),
@@ -211,14 +241,14 @@ impl Realm {
             Ok((function, static_elements))
         })();
         self.strict = previous_strict;
-        self.scopes.pop();
+        self.scopes.truncate(scope_depth);
         let (function, static_elements) = result?;
         let value = Value::Object(function);
         // The name remains uninitialized during *all* computed names. Methods
         // capture this immutable binding, not the mutable declaration binding.
         if let Some(name) = &syntax.name {
             self.objects
-                .environment_mut(&environment)
+                .environment_mut(&class_environment)
                 .expect("class environment")
                 .bindings
                 .get_mut(&name.name)

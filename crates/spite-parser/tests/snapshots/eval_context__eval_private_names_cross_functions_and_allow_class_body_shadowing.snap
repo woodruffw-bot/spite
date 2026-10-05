@@ -1,0 +1,46 @@
+---
+source: crates/spite-parser/tests/eval_context.rs
+expression: diagnostics
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 2,
+            end: 10,
+        },
+        message: "private identifier is not declared in an enclosing class",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 21,
+            end: 29,
+        },
+        message: "private identifier is not declared in an enclosing class",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 19,
+            end: 27,
+        },
+        message: "private identifier is not declared in an enclosing class",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 25,
+            end: 33,
+        },
+        message: "private identifier is not declared in an enclosing class",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 7,
+            end: 11,
+        },
+        message: "cannot delete a private element",
+    },
+]

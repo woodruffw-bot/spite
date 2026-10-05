@@ -25,11 +25,12 @@ impl Realm {
             reference = match &step.kind {
                 ChainStepKind::Property(name) => {
                     let key = match name {
-                        PropertyName::Private(_) => {
-                            return Err(Self::unsupported(
-                                step.span,
-                                "private elements are not implemented",
-                            ));
+                        PropertyName::Private(name) => {
+                            reference = Reference::Private {
+                                base: value,
+                                name: self.resolve_private_name(&name.name, name.span)?,
+                            };
+                            continue;
                         }
                         PropertyName::Literal(literal) => self.literal_value(literal, step.span)?,
                         PropertyName::Computed(expression) => self.expression(expression)?,

@@ -29,6 +29,7 @@ pub(crate) use iterator::{
     HelperStatus, IteratorHelper, IteratorWrapper, LimitKind, StringIterator,
 };
 pub(crate) use map::CollectionKey;
+mod private;
 mod set;
 pub(crate) use set::SetData;
 mod entry;
@@ -70,6 +71,7 @@ pub struct OrdinaryObject {
     prototype: Option<Handle>,
     extensible: bool,
     properties: Vec<(PropertyKey, Property)>,
+    private_fields: Vec<(crate::private::PrivateName, Value)>,
     max_properties: Option<usize>,
     callable: Option<Callable>,
     constructible: bool,
@@ -100,6 +102,7 @@ impl OrdinaryObject {
             prototype,
             extensible: true,
             properties: Vec::new(),
+            private_fields: Vec::new(),
             max_properties,
             callable: None,
             constructible: false,
@@ -367,6 +370,11 @@ impl Trace for OrdinaryObject {
             .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
             .chain(self.raw_json.then_some(None))
+            .chain(
+                self.private_fields
+                    .iter()
+                    .flat_map(|(_, value)| value.trace()),
+            )
             .chain(self.map.iter().flat_map(|data| data.trace()))
             .chain(self.set.iter().flat_map(|data| data.trace()))
             .chain(std::iter::once(capture))

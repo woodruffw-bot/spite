@@ -10,6 +10,16 @@ pub(super) struct PrivateScope {
 }
 
 impl Parser {
+    pub(super) fn inherit_private_names(&mut self, names: &std::collections::BTreeSet<String>) {
+        self.private_scopes.push(PrivateScope {
+            declarations: names
+                .iter()
+                .map(|name| (name.clone(), (false, PropertyKind::Data)))
+                .collect(),
+            uses: Vec::new(),
+        });
+    }
+
     pub(super) fn private_identifier(&mut self) -> Result<PrivateIdentifier, Diagnostic> {
         let hash = self.bump();
         self.private_identifier_after_hash(hash)

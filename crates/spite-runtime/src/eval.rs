@@ -5,7 +5,7 @@ use crate::{
     environment::EnvironmentHandle, standard_global,
 };
 use spite_core::{DiagnosticKind, Span};
-use spite_parser::{EvalContext, ast::Script, parse_eval_utf16};
+use spite_parser::{EvalContext, ast::Script, parse_eval_utf16_with_private_names};
 use std::collections::BTreeSet;
 
 impl Realm {
@@ -84,8 +84,13 @@ impl Realm {
                 next = outer;
             }
         }
-        let script =
-            parse_eval_utf16(source, context).map_err(|diagnostic| match diagnostic.kind {
+        let private_names = if direct {
+            self.eval_private_names(span)?
+        } else {
+            BTreeSet::new()
+        };
+        let script = parse_eval_utf16_with_private_names(source, context, &private_names).map_err(
+            |diagnostic| match diagnostic.kind {
                 DiagnosticKind::Syntax => {
                     Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
                 }
@@ -94,7 +99,8 @@ impl Realm {
                     span,
                     message: diagnostic.message,
                 },
-            })?;
+            },
+        )?;
         if script.statements().is_empty() {
             return Ok(Value::Undefined);
         }

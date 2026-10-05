@@ -588,6 +588,7 @@ impl Objects {
             Environment {
                 outer,
                 bindings,
+                private_names: BTreeMap::new(),
                 binding_object: None,
                 this: None,
                 new_target: None,

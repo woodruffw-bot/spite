@@ -14,6 +14,7 @@ mod function;
 mod global;
 mod iterator_count;
 mod optional_chain;
+mod private;
 mod super_property;
 mod with;
 use environment::{BindingState, EnvironmentHandle};
@@ -159,6 +160,10 @@ enum Reference<'a> {
         // creating the reference. GetValue caches the converted property key.
         key: Value,
     },
+    Private {
+        base: Value,
+        name: private::PrivateName,
+    },
     SuperProperty {
         base: Value,
         key: Value,
@@ -178,7 +183,7 @@ impl Reference<'_> {
     // ECMA-262 13.3.6.2 / 9.1.1.2.10: environment calls use WithBaseObject.
     fn call_receiver(self) -> Value {
         match self {
-            Self::Property { base, .. } => base,
+            Self::Property { base, .. } | Self::Private { base, .. } => base,
             Self::SuperProperty { this_value, .. } => this_value,
             Self::ObjectBinding { object, .. } => Value::Object(object),
             _ => Value::Undefined,
@@ -1084,11 +1089,9 @@ impl Realm {
             ExprKind::Member(base, name) => {
                 let base = self.expression(base)?;
                 let key = match name {
-                    PropertyName::Private(_) => {
-                        return Err(Self::unsupported(
-                            target.span,
-                            "private elements are not implemented",
-                        ));
+                    PropertyName::Private(name) => {
+                        let name = self.resolve_private_name(&name.name, name.span)?;
+                        return Ok(Reference::Private { base, name });
                     }
                     PropertyName::Literal(literal) => self.literal_value(literal, target.span)?,
                     PropertyName::Computed(expression) => self.expression(expression)?,
@@ -1109,6 +1112,7 @@ impl Realm {
                 let key = self.reference_key(key, span)?;
                 self.get_property_value(base, &key, span)
             }
+            Reference::Private { base, name } => self.private_get(base, name, span),
             Reference::SuperProperty {
                 base,
                 key,
@@ -1151,6 +1155,7 @@ impl Realm {
     fn put(&mut self, reference: Reference<'_>, value: Value, span: Span) -> Result<(), Error> {
         match reference {
             Reference::Value(_) => unreachable!("parser rejects optional-chain assignment targets"),
+            Reference::Private { base, name } => self.private_set(&base, &name, value, span)?,
             Reference::Property { base, mut key } => {
                 Self::require_object_coercible(&base, span)?;
                 let key = self.reference_key(&mut key, span)?;
@@ -1381,11 +1386,9 @@ impl Realm {
                 Value::String(JsString::from_code_units(units))
             }
             ExprKind::Literal(literal) => self.literal_value(literal, expr.span)?,
-            ExprKind::PrivateIn { .. } => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "private brand checks are not implemented",
-                ));
+            ExprKind::PrivateIn { name, value } => {
+                let value = self.expression(value)?;
+                self.private_in(&name.name, value, expr.span)?
             }
             ExprKind::Identifier(name) => {
                 let mut reference = self.resolve(name, expr.span)?;
@@ -1466,6 +1469,9 @@ impl Realm {
                     let reference = self.reference(inner)?;
                     let deleted = match reference {
                         Reference::Value(_) => true,
+                        Reference::Private { .. } => {
+                            unreachable!("parser rejects private deletion")
+                        }
                         Reference::SuperProperty { .. } => {
                             // 13.5.1.2: fail before ToObject or ToPropertyKey.
                             return Err(Self::exception(

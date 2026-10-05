@@ -170,7 +170,7 @@ fn language_and_host_failures_restore_the_callers_context() {
     );
     let mut realm = Realm::default();
     realm
-        .eval("let flag=0;class C{x=eval('class P{#x;}');}")
+        .eval("let flag=0;class C{x=eval('function* gap(){}');}")
         .unwrap();
     assert!(matches!(
         realm.eval("try{new C;}catch{flag=1;}finally{flag=2;}"),

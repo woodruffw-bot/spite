@@ -66,7 +66,7 @@ pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
 /// Caller context used by direct eval's Script early errors (19.2.1.1).
 ///
 /// Arrows inherit the nearest non-arrow function's new.target and super context.
-/// Private environments remain unsupported.
+/// Private names are supplied separately to [`parse_eval_utf16_with_private_names`].
 #[derive(Clone, Copy, Debug, Default)]
 pub struct EvalContext {
     /// Whether the direct caller executes strict code.
@@ -85,13 +85,29 @@ pub struct EvalContext {
 ///
 /// Return remains invalid at the Script level, even when the caller is a function.
 pub fn parse_eval_utf16(source: &JsString, context: EvalContext) -> Result<Script, Diagnostic> {
+    parse_eval_utf16_with_private_names(source, context, &BTreeSet::new())
+}
+
+/// Parses eval code with the private identifier spellings visible to its caller.
+///
+/// Names include the leading `#`. This validates lexical availability only;
+/// private identity and receiver brand checks belong to runtime evaluation.
+pub fn parse_eval_utf16_with_private_names(
+    source: &JsString,
+    context: EvalContext,
+    private_names: &BTreeSet<String>,
+) -> Result<Script, Diagnostic> {
     let mut parser =
         Parser::from_source(std::rc::Rc::new(source::SourceText::from_utf16(source)?))?;
     parser.allow_new_target = context.in_function;
     parser.allow_super_property = context.in_method;
     parser.allow_super_call = context.in_derived_constructor;
     parser.allow_arguments = !context.in_class_field_initializer;
-    parse_script_contents_with_strictness(&mut parser, context.strict)
+    parser.inherit_private_names(private_names);
+    let script = parse_script_contents_with_strictness(&mut parser, context.strict)?;
+    let scope = parser.private_scopes.pop().expect("eval private scope");
+    parser.finish_private_scope(scope)?;
+    Ok(script)
 }
 
 fn parse_script_contents(parser: &mut Parser) -> Result<Script, Diagnostic> {

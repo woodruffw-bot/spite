@@ -108,7 +108,8 @@ fn static_language_and_host_failures_restore_the_caller() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{class C{static{eval('class P{#x;}');}}}catch{flag=1;}finally{flag=2;}"),
+        realm
+            .eval("try{class C{static{eval('function* gap(){}');}}}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

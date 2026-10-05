@@ -5,11 +5,9 @@ use spite_runtime::{Error, Realm, Value};
 #[test]
 fn incomplete_private_execution_is_distinct_from_early_errors() {
     for source in [
-        "class C{#x;}",
         "class C{#m(){}}",
         "class C{get #x(){}set #x(v){}}",
-        "class C{[({m(o){return o.#x;}}).m({})](){}#x;}",
-        "class C{[#x in {}](){}#x;}",
+        "class C{static #m(){}}",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();

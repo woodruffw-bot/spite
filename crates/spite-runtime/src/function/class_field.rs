@@ -1,4 +1,4 @@
-//! Public ClassFieldDefinitionEvaluation, DefineField, and instance initialization.
+//! ClassFieldDefinitionEvaluation, DefineField, and instance initialization.
 
 use crate::{Error, ObjectHandle, Realm, Value, environment::EnvironmentHandle};
 use spite_core::{PropertyKey, Span};
@@ -54,7 +54,7 @@ mod tests {
             ),
         ] {
             let fields: Rc<[ClassField]> = vec![ClassField {
-                name: PropertyKey::from("wrong"),
+                name: ClassFieldName::Public(PropertyKey::from("wrong")),
                 initializer: Some(FieldInitializer {
                     expression: original.expression.clone(),
                     environment,
@@ -93,8 +93,23 @@ mod tests {
 }
 
 #[derive(Clone, Debug)]
+pub(crate) enum ClassFieldName {
+    Public(PropertyKey),
+    Private(crate::private::PrivateName),
+}
+
+impl ClassFieldName {
+    fn initializer_name(&self) -> PropertyKey {
+        match self {
+            Self::Public(key) => key.clone(),
+            Self::Private(name) => PropertyKey::String(name.description().clone()),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub(crate) struct ClassField {
-    pub name: PropertyKey,
+    pub name: ClassFieldName,
     pub initializer: Option<FieldInitializer>,
     pub span: Span,
 }
@@ -136,24 +151,43 @@ impl Realm {
         for field in fields {
             self.tick(field.span)?;
             let value = if let Some(initializer) = &field.initializer {
-                self.field_initializer(initializer, receiver, field.name.clone(), field.span)?
+                self.field_initializer(
+                    initializer,
+                    receiver,
+                    field.name.initializer_name(),
+                    field.span,
+                )?
             } else {
                 Value::Undefined
             };
-            // DefineField uses CreateDataPropertyOrThrow, without inherited
-            // setters, and observes descriptor failures after the initializer.
-            self.define_property_or_throw(
-                receiver,
-                field.name.clone(),
-                crate::object::DataDescriptor {
-                    value: Some(value),
-                    writable: Some(true),
-                    enumerable: Some(true),
-                    configurable: Some(true),
+            // DefineField evaluates the initializer before either the duplicate
+            // private-name check or public CreateDataPropertyOrThrow.
+            match &field.name {
+                ClassFieldName::Private(name) => {
+                    let added = self.object_work(field.span, |objects, budget| {
+                        objects.private_field_add(receiver, name.clone(), value, budget)
+                    })?;
+                    if !added {
+                        return Err(Self::exception(
+                            crate::ExceptionKind::TypeError,
+                            field.span,
+                            "object already has private field",
+                        ));
+                    }
                 }
-                .into(),
-                field.span,
-            )?;
+                ClassFieldName::Public(key) => self.define_property_or_throw(
+                    receiver,
+                    key.clone(),
+                    crate::object::DataDescriptor {
+                        value: Some(value),
+                        writable: Some(true),
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    }
+                    .into(),
+                    field.span,
+                )?,
+            }
         }
         Ok(())
     }
