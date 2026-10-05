@@ -211,6 +211,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add sparse Array concat with species results, ordered spreadability hooks, and strict length writes.
 - [x] Add Array flat/flatMap with species results, iterative sparse flattening, and ordered mapper calls.
 - [x] Add Array splice with sparse species results, ordered moves/deletes, and strict length writes.
+- [x] Integrate Array species construction with class constructors, ordered field/private-brand initialization, and abrupt completions.
 - [x] Complete Array prototype method materialization and enable full reflection/integrity operations.
 - [ ] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add the Reflect object, array-like apply calls, and construction with explicit newTarget and bound forwarding.

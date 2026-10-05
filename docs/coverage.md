@@ -1309,6 +1309,16 @@ Four additional recursive derived construction/default/eval cases exercise the
 existing native-stack guards on two-mebibyte threads with normal debug profiles.
 Host-abort controls use unimplemented generators as their source gap.
 
+Array species construction is integrated with class constructors for map, filter,
+slice, concat, flat, flatMap, and splice. Regressions cover inherited species and
+fresh Array subclasses, constructor arguments/new.target, superclass and derived
+private-element order, default forwarding with a poisoned Array iterator, custom
+class species returning ordinary objects, and intrinsic fallback for null species.
+Returned non-extensible objects still receive private elements before failed
+indexed definitions. Abrupt field initialization preserves prior fields and method
+brands without visiting source elements; collection retains escaped results and
+private captures, then reclaims their cycles.
+
 Sixteen unchanged class heritage/derived originals add 32 variants: 30 harness
 positives and two reviewed strict-mode parse negatives. They cover constructor and
 instance prototype links, superclass and prototype validation/effects, explicit and
