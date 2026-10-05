@@ -410,6 +410,27 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
+    pub(crate) fn make_class_constructor(
+        &mut self,
+        function: &Handle,
+        home_object: &Handle,
+    ) -> Result<(), Error> {
+        // Validate every edge and the function kind before changing the object.
+        self.inspect(home_object)?;
+        let object = self.object_mut(function)?;
+        if !matches!(object.callable, Some(Callable::Ordinary(_))) {
+            return Err(Error::WrongKind);
+        }
+        let Some(Callable::Ordinary(code)) = object.callable.take() else {
+            unreachable!("validated ordinary function");
+        };
+        object.callable = Some(Callable::ClassConstructor(Box::new(MethodFunction {
+            code,
+            home_object: home_object.clone(),
+        })));
+        Ok(())
+    }
+
     pub(crate) fn create_bound(
         &mut self,
         bound: BoundFunction,

@@ -276,6 +276,9 @@ impl Realm {
         name: impl Into<spite_core::PropertyKey>,
     ) -> Result<Value, Error> {
         let name = name.into();
+        if super::class::anonymous_class(expression) {
+            return self.named_class_expression(expression, name);
+        }
         let value = self.expression(expression)?;
         if anonymous_definition(expression) {
             let Value::Object(function) = &value else {

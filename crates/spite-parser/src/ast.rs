@@ -42,6 +42,28 @@ pub struct FunctionName {
     pub span: Span,
 }
 
+/// A class without heritage, fields, private elements, or static blocks.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Class {
+    /// Internal class binding, also the declaration binding when present.
+    pub name: Option<FunctionName>,
+    /// Explicit constructor, or an empty default constructor body.
+    pub constructor: Rc<Function>,
+    /// Non-constructor methods and accessors in source order.
+    pub elements: Vec<ClassElement>,
+    /// Complete class definition source text.
+    pub source: FunctionSource,
+}
+
+/// An instance or static ordinary class method/accessor.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ClassElement {
+    /// Whether the property is defined on the constructor.
+    pub is_static: bool,
+    /// Method syntax and key; kind is Method, Getter, or Setter.
+    pub property: ObjectProperty,
+}
+
 /// Shared syntax for an ordinary function, method, or accessor body.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
@@ -177,7 +199,8 @@ impl Statement {
             | StatementKind::Continue(_)
             | StatementKind::Throw(_)
             | StatementKind::Return(_)
-            | StatementKind::Function(_) => {}
+            | StatementKind::Function(_)
+            | StatementKind::Class(_) => {}
         }
     }
 }
@@ -193,6 +216,8 @@ pub enum StatementKind {
     Expression(Expr),
     /// An ordinary function declaration; its syntax always has a name.
     Function(Rc<Function>),
+    /// A class declaration with a mutable lexical declaration binding.
+    Class(Rc<Class>),
     /// A variable declaration in the surrounding variable environment.
     Var(Vec<BindingElement>),
     /// A lexical declaration.
@@ -678,6 +703,11 @@ pub struct FunctionSource {
 }
 
 impl FunctionSource {
+    /// Returns the original encoded byte range of this definition.
+    pub fn span(&self) -> Span {
+        self.span
+    }
+
     /// Returns original UTF-8 source, or `None` if it contains lone surrogates.
     pub fn as_str(&self) -> Option<&str> {
         self.text.as_utf8(self.span.start..self.span.end)
@@ -804,6 +834,8 @@ pub enum ExprKind {
     },
     /// An ordinary function expression with optional local name.
     Function(Rc<Function>),
+    /// A base class expression, with an optional immutable internal binding.
+    Class(Rc<Class>),
     /// An assignment whose value is the original RHS after destructuring writes.
     DestructuringAssign {
         /// Object or array assignment pattern.

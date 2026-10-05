@@ -6,7 +6,9 @@ use crate::{
 };
 use spite_bigint::BigInt;
 use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span, WellKnownSymbol};
-use spite_parser::ast::{ExprKind, Literal, ObjectElement, PropertyKind, PropertyName};
+use spite_parser::ast::{
+    ExprKind, Literal, ObjectElement, ObjectProperty, PropertyKind, PropertyName,
+};
 
 pub(super) enum Hint {
     Default,
@@ -485,6 +487,47 @@ impl Realm {
         Ok(PropertyKey::String(key))
     }
 
+    pub(crate) fn define_method_property(
+        &mut self,
+        object: &ObjectHandle,
+        key: PropertyKey,
+        property: &ObjectProperty,
+        enumerable: bool,
+    ) -> Result<(), Error> {
+        let ExprKind::Function(syntax) = &property.value.kind else {
+            unreachable!("method syntax");
+        };
+        let function =
+            self.method_function(syntax, object, key.clone(), property.kind, property.span)?;
+        let descriptor = match property.kind {
+            PropertyKind::Method => DataDescriptor {
+                value: Some(Value::Object(function)),
+                writable: Some(true),
+                enumerable: Some(enumerable),
+                configurable: Some(true),
+            }
+            .into(),
+            PropertyKind::Getter => PropertyDescriptor {
+                kind: DescriptorKind::Accessor {
+                    get: Some(Some(function)),
+                    set: None,
+                },
+                enumerable: Some(enumerable),
+                configurable: Some(true),
+            },
+            PropertyKind::Setter => PropertyDescriptor {
+                kind: DescriptorKind::Accessor {
+                    get: None,
+                    set: Some(Some(function)),
+                },
+                enumerable: Some(enumerable),
+                configurable: Some(true),
+            },
+            _ => unreachable!("method property kind"),
+        };
+        self.define_property_or_throw(object, key, descriptor, property.span)
+    }
+
     pub(super) fn object_literal(
         &mut self,
         properties: &[ObjectElement],
@@ -512,43 +555,7 @@ impl Realm {
                 property.kind,
                 PropertyKind::Method | PropertyKind::Getter | PropertyKind::Setter
             ) {
-                let ExprKind::Function(syntax) = &property.value.kind else {
-                    unreachable!("method syntax");
-                };
-                let function = self.method_function(
-                    syntax,
-                    &object,
-                    key.clone(),
-                    property.kind,
-                    property.span,
-                )?;
-                let descriptor = match property.kind {
-                    PropertyKind::Method => DataDescriptor {
-                        value: Some(Value::Object(function)),
-                        writable: Some(true),
-                        enumerable: Some(true),
-                        configurable: Some(true),
-                    }
-                    .into(),
-                    PropertyKind::Getter => PropertyDescriptor {
-                        kind: DescriptorKind::Accessor {
-                            get: Some(Some(function)),
-                            set: None,
-                        },
-                        enumerable: Some(true),
-                        configurable: Some(true),
-                    },
-                    PropertyKind::Setter => PropertyDescriptor {
-                        kind: DescriptorKind::Accessor {
-                            get: None,
-                            set: Some(Some(function)),
-                        },
-                        enumerable: Some(true),
-                        configurable: Some(true),
-                    },
-                    _ => unreachable!("method property kind"),
-                };
-                self.define_property_or_throw(&object, key, descriptor, property.span)?;
+                self.define_method_property(&object, key, property, true)?;
                 continue;
             }
             let value = if property.kind == PropertyKind::Prototype {

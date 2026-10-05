@@ -81,7 +81,7 @@ expression: errors
             start: 12,
             end: 13,
         },
-        message: "unexpected character",
+        message: "super cannot access private properties",
     },
     Diagnostic {
         kind: Syntax,

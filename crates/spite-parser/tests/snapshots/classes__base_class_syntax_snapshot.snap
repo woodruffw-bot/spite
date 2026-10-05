@@ -1,0 +1,224 @@
+---
+source: crates/spite-parser/tests/classes.rs
+expression: "parse_script(\"class C { constructor(x=1){this.x=x;} static get v(){return 2;} [3](){} }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Class(
+                Class {
+                    name: Some(
+                        FunctionName {
+                            name: "C",
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                    ),
+                    constructor: Function {
+                        name: None,
+                        parameters: [
+                            Ordinary(
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 22,
+                                            end: 23,
+                                        },
+                                    },
+                                    initializer: Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Number(
+                                                    1.0,
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 24,
+                                                end: 25,
+                                            },
+                                        },
+                                    ),
+                                },
+                            ),
+                        ],
+                        body: FunctionBody {
+                            statements: [
+                                Statement {
+                                    kind: Expression(
+                                        Expr {
+                                            depth: 3,
+                                            kind: Assign(
+                                                Expr {
+                                                    depth: 2,
+                                                    kind: Member(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: This,
+                                                            span: Span {
+                                                                start: 27,
+                                                                end: 31,
+                                                            },
+                                                        },
+                                                        Literal(
+                                                            String(
+                                                                "x",
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 27,
+                                                        end: 33,
+                                                    },
+                                                },
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "x",
+                                                    ),
+                                                    span: Span {
+                                                        start: 34,
+                                                        end: 35,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 27,
+                                                end: 35,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 27,
+                                        end: 36,
+                                    },
+                                },
+                            ],
+                            strict: false,
+                        },
+                        source: FunctionSource(
+                            "class C { constructor(x=1){this.x=x;} static get v(){return 2;} [3](){} }",
+                        ),
+                    },
+                    elements: [
+                        ClassElement {
+                            is_static: true,
+                            property: ObjectProperty {
+                                name: Literal(
+                                    String(
+                                        "v",
+                                    ),
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 1,
+                                                                    kind: Literal(
+                                                                        Number(
+                                                                            2.0,
+                                                                        ),
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 60,
+                                                                        end: 61,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 53,
+                                                            end: 62,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "get v(){return 2;}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 45,
+                                        end: 63,
+                                    },
+                                },
+                                kind: Getter,
+                                span: Span {
+                                    start: 38,
+                                    end: 63,
+                                },
+                            },
+                        },
+                        ClassElement {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Computed(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                3.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 65,
+                                            end: 66,
+                                        },
+                                    },
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [],
+                                            body: FunctionBody {
+                                                statements: [],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "[3](){}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 64,
+                                        end: 71,
+                                    },
+                                },
+                                kind: Method,
+                                span: Span {
+                                    start: 64,
+                                    end: 71,
+                                },
+                            },
+                        },
+                    ],
+                    source: FunctionSource(
+                        "class C { constructor(x=1){this.x=x;} static get v(){return 2;} [3](){} }",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 73,
+            },
+        },
+    ],
+    strict: false,
+}

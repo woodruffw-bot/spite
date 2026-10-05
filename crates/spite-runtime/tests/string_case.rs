@@ -199,6 +199,6 @@ fn large_default_expansions_work_and_opted_in_failures_skip_language_cleanup() {
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
-    assert!(matches!(realm.eval("try{String.prototype.toUpperCase.call({toString(){Function('class C{}');}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
+    assert!(matches!(realm.eval("try{String.prototype.toUpperCase.call({toString(){Function('class C extends Object{}');}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }

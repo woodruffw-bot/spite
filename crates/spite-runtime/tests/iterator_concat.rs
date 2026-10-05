@@ -213,7 +213,7 @@ fn host_failures_complete_resumes_skip_handlers_and_do_not_run_cleanup() {
         Ok(Value::Boolean(true))
     );
     let mut realm = Realm::default();
-    realm.eval("let flag=0,w=Iterator.concat({[Symbol.iterator]:()=>({next:()=>Function('class C{}'),return:()=>{flag=3;return {};}})})").unwrap();
+    realm.eval("let flag=0,w=Iterator.concat({[Symbol.iterator]:()=>({next:()=>Function('class C extends Object{}'),return:()=>{flag=3;return {};}})})").unwrap();
     assert!(matches!(
         realm.eval("try{w.next();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })

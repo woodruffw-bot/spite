@@ -86,38 +86,19 @@ impl Realm {
                     // [[BoundThis]] is ignored during construction.
                 }
                 Callable::Ordinary(code) => {
-                    // GetPrototypeFromConstructor / OrdinaryCreateFromConstructor
-                    // (10.1.13–14). All exposed function objects belong to this realm.
-                    let prototype =
-                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
-                    let prototype = if let Value::Object(prototype) = prototype {
-                        prototype
-                    } else {
-                        self.intrinsics
-                            .as_ref()
-                            .expect("initialized realm")
-                            .object_prototype
-                            .clone()
-                    };
-                    let instance =
-                        self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
-                    let this = Value::Object(instance);
-                    let result = self.call_ordinary(
-                        code,
+                    return self.construct_base_function(
+                        code, function, new_target, None, arguments, span,
+                    );
+                }
+                Callable::ClassConstructor(method) => {
+                    return self.construct_base_function(
+                        method.code,
                         function,
-                        this.clone(),
-                        crate::environment::FunctionContext {
-                            new_target: Some(new_target),
-                            home_object: None,
-                        },
-                        arguments.into_iter(),
+                        new_target,
+                        Some(method.home_object),
+                        arguments,
                         span,
-                    )?;
-                    return Ok(if matches!(result, Value::Object(_)) {
-                        result
-                    } else {
-                        this
-                    });
+                    );
                 }
                 Callable::Builtin(Builtin::Object) => {
                     return self.object_constructor(
@@ -224,6 +205,47 @@ impl Realm {
                 _ => unreachable!("constructibility is enabled only for known constructors"),
             }
         }
+    }
+
+    fn construct_base_function(
+        &mut self,
+        code: super::ScriptFunction,
+        function: ObjectHandle,
+        new_target: ObjectHandle,
+        home_object: Option<ObjectHandle>,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 10.2.2, 10.1.13–14: allocate before binding parameters or running the
+        // body; base constructors ignore primitive returns, including null.
+        let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
+        let prototype = if let Value::Object(prototype) = prototype {
+            prototype
+        } else {
+            self.intrinsics
+                .as_ref()
+                .expect("initialized realm")
+                .object_prototype
+                .clone()
+        };
+        let instance = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let this = Value::Object(instance);
+        let result = self.call_ordinary(
+            code,
+            function,
+            this.clone(),
+            crate::environment::FunctionContext {
+                new_target: Some(new_target),
+                home_object,
+            },
+            arguments.into_iter(),
+            span,
+        )?;
+        Ok(if matches!(result, Value::Object(_)) {
+            result
+        } else {
+            this
+        })
     }
 
     pub(crate) fn is_constructor(&mut self, value: &Value, span: Span) -> Result<bool, Error> {

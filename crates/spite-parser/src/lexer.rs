@@ -163,9 +163,18 @@ impl<'a> Lexer<'a> {
                 "++", "--", "**", "==", "!=", "<=", ">=", "&&", "||", "??", "<<", ">>", "+=", "-=",
                 "*=", "/=", "%=", "&=", "|=", "^=", "?.", "(", ")", "{", "}", "[", "]", ";", ",",
                 ":", "?", "+", "-", "*", "/", "%", "!", "~", "<", ">", "&", "|", "^", "=", ".",
+                "#",
             ];
             let Some(punct) = PUNCT.iter().find(|p| {
                 self.rest().starts_with(**p)
+                    // Leave private names for an Unsupported parser diagnostic;
+                    // non-initial hashbangs and malformed bare # stay Syntax.
+                    && !(**p == "#"
+                        && !self
+                            .rest()
+                            .chars()
+                            .nth(1)
+                            .is_some_and(|c| id_start(c) || c == '\\'))
                     && !(**p == "?."
                         && self
                             .rest()

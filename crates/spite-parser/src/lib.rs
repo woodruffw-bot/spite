@@ -5,6 +5,7 @@ mod arrow;
 mod assignment_pattern;
 pub mod ast;
 mod binding;
+mod class;
 mod construction;
 mod dynamic_function;
 mod function;
@@ -318,6 +319,8 @@ impl Parser {
                 return Err(self.error("function declaration requires a statement list"));
             }
             StatementKind::Function(self.ordinary_function(true)?)
+        } else if self.at("class") {
+            StatementKind::Class(self.class_definition(true)?)
         } else if self.eat("var") {
             let bindings = self.binding_list(false, false, false)?;
             self.semicolon()?;
@@ -493,8 +496,7 @@ impl Parser {
             StatementKind::Throw(expr)
         } else {
             if let Kind::Word(word) = &self.current().kind {
-                if !self.current().escaped && matches!(word.as_str(), "class" | "import" | "export")
-                {
+                if !self.current().escaped && matches!(word.as_str(), "import" | "export") {
                     return Err(self.unsupported("statement is not implemented"));
                 }
             }
@@ -586,6 +588,25 @@ impl Parser {
                 .parameters
                 .iter()
                 .map(Parameter::expression_depth)
+                .max()
+                .unwrap_or(0),
+            ExprKind::Class(class) => class
+                .elements
+                .iter()
+                .map(|element| {
+                    let key = match &element.property.name {
+                        PropertyName::Computed(key) => key.depth,
+                        PropertyName::Literal(_) => 0,
+                    };
+                    key.max(element.property.value.depth)
+                })
+                .chain(
+                    class
+                        .constructor
+                        .parameters
+                        .iter()
+                        .map(Parameter::expression_depth),
+                )
                 .max()
                 .unwrap_or(0),
             ExprKind::Arrow {
@@ -687,6 +708,9 @@ impl Parser {
 
     fn member_property_name(&mut self) -> Result<PropertyName, Diagnostic> {
         Ok(if self.eat(".") {
+            if self.at("#") {
+                return Err(self.unsupported("private property access is not implemented"));
+            }
             let token = self.bump();
             let name = match token.kind {
                 Kind::Word(name) => JsString::from(name.as_str()),
@@ -927,6 +951,11 @@ impl Parser {
     }
 
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
+        if self.at("class") {
+            let class = self.class_definition(false)?;
+            let span = class.source.span;
+            return self.make_expr(ExprKind::Class(class), span);
+        }
         if self.at_async_function() {
             return Err(self.unsupported("async functions are not implemented"));
         }
@@ -1010,6 +1039,17 @@ impl Parser {
                 // context, but ordinary functions and indirect eval do not.
                 if self.at(".") || self.at("[") {
                     if self.allow_super_property {
+                        if self.at(".")
+                            && self
+                                .tokens
+                                .get(self.index + 1)
+                                .is_some_and(|token| token.kind == Kind::Punct("#"))
+                        {
+                            return Err(early(
+                                self.tokens[self.index + 1].span,
+                                "super cannot access private properties",
+                            ));
+                        }
                         let name = self.member_property_name()?;
                         let span = Span::new(span.start, self.tokens[self.index - 1].span.end);
                         self.make_expr(ExprKind::SuperProperty(name), span)
@@ -1020,7 +1060,7 @@ impl Parser {
                     Err(early(span, "super call requires a derived constructor"))
                 }
             }
-            Kind::Word(_) | Kind::Punct("/") => Err(Diagnostic::new(
+            Kind::Word(_) | Kind::Punct("/" | "#") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
                 "expression form is not implemented",
@@ -1071,6 +1111,7 @@ fn member_base(expr: &Expr) -> bool {
                 ..
             }
             | ExprKind::Function(_)
+            | ExprKind::Class(_)
     )
 }
 
@@ -1253,6 +1294,7 @@ fn block_lexical_names(statement: &Statement) -> impl Iterator<Item = (&str, Spa
     };
     let function_name = match &statement.kind {
         StatementKind::Function(function) => function.name.as_ref(),
+        StatementKind::Class(class) => class.name.as_ref(),
         _ => None,
     };
     bindings
@@ -1318,6 +1360,7 @@ fn validate_statement<'a>(
 ) -> Result<(), Diagnostic> {
     match &statement.kind {
         StatementKind::Function(function) => function::validate_function(function, strict)?,
+        StatementKind::Class(class) => class::validate_class(class)?,
         StatementKind::Var(bindings) => validate_var_bindings(bindings, strict)?,
         StatementKind::Expression(expr)
         | StatementKind::Throw(expr)
@@ -1622,6 +1665,7 @@ fn labels_iteration(mut statement: &Statement) -> bool {
 fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
     match &expr.kind {
         ExprKind::Function(function) => function::validate_function(function, strict)?,
+        ExprKind::Class(class) => class::validate_class(class)?,
         ExprKind::Arrow {
             parameters, body, ..
         } => {

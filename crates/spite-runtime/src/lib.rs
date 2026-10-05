@@ -713,6 +713,19 @@ impl Realm {
             StatementKind::Empty | StatementKind::Debugger => Ok(Completion::normal(None)),
             // 15.2.6: declaration evaluation is empty; instantiation made the value.
             StatementKind::Function(_) => Ok(Completion::normal(None)),
+            StatementKind::Class(class) => {
+                let value = self.class_definition(class, None)?;
+                let name = class.name.as_ref().expect("class declaration name");
+                let environment = self.scopes.last().expect("declaration environment");
+                self.objects
+                    .environment_mut(environment)
+                    .expect("declaration environment")
+                    .bindings
+                    .get_mut(&name.name)
+                    .expect("instantiated class binding")
+                    .value = Some(value);
+                Ok(Completion::normal(None))
+            }
             StatementKind::Expression(_) => {
                 unreachable!("expression statement dispatched separately")
             }
@@ -1313,6 +1326,7 @@ impl Realm {
             ExprKind::This => self.this_value(expr.span)?,
             ExprKind::NewTarget => self.new_target_value(expr.span)?,
             ExprKind::Function(function) => self.ordinary_function(function, true, expr.span)?,
+            ExprKind::Class(class) => self.class_definition(class, None)?,
             ExprKind::Arrow {
                 parameters,
                 body,
@@ -1709,6 +1723,7 @@ fn lexical_declarations(
     };
     let function = match &statement.kind {
         StatementKind::Function(function) if functions => function.name.as_ref(),
+        StatementKind::Class(class) => class.name.as_ref(),
         _ => None,
     };
     bindings

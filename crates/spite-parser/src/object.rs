@@ -129,7 +129,11 @@ impl Parser {
         })
     }
 
-    fn object_method(&mut self, start: usize, kind: PropertyKind) -> Result<Expr, Diagnostic> {
+    pub(super) fn object_method(
+        &mut self,
+        start: usize,
+        kind: PropertyKind,
+    ) -> Result<Expr, Diagnostic> {
         self.enter()?;
         let previous = self.allow_new_target;
         let previous_super = self.allow_super_property;

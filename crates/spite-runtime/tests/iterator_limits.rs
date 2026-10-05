@@ -257,7 +257,7 @@ fn opted_in_work_and_unsupported_failures_complete_resumes_without_javascript_cl
             Ok(Value::Boolean(true))
         );
         let mut realm = Realm::default();
-        realm.eval(&format!("let flag=0,h=Iterator.prototype.{method}.call({{next:()=>Function('class C{{}}'),return:()=>{{flag=3;return {{}};}}}},1);")).unwrap();
+        realm.eval(&format!("let flag=0,h=Iterator.prototype.{method}.call({{next:()=>Function('class C extends Object{{}}'),return:()=>{{flag=3;return {{}};}}}},1);")).unwrap();
         assert!(matches!(
             realm.eval("try{h.next();}catch{flag=1;}finally{flag=2;}"),
             Err(Error::Unsupported { .. })
@@ -270,7 +270,7 @@ fn opted_in_work_and_unsupported_failures_complete_resumes_without_javascript_cl
         realm
             .eval("let flag=0,i={get next(){flag=4;throw 7;},return(){flag=3;return {};}}")
             .unwrap();
-        assert!(matches!(realm.eval(&format!("try{{Iterator.prototype.{method}.call(i,{{valueOf:()=>Function('class C{{}}')}});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported{..})));
+        assert!(matches!(realm.eval(&format!("try{{Iterator.prototype.{method}.call(i,{{valueOf:()=>Function('class C extends Object{{}}')}});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported{..})));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
 }

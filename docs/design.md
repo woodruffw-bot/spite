@@ -1135,8 +1135,9 @@ other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported classes, generator/async functions,
-and native-stack exhaustion remain separate diagnostic categories. UTF-8 and
+function context. Unsupported class heritage, fields, private elements, static
+blocks, generator/async functions, and native-stack exhaustion remain separate
+diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
 
 Source storage uses unchanged scalar UTF-8 text plus an ordered table of lone
@@ -2030,3 +2031,35 @@ Results are allocated with the retained intrinsic Set prototype after traversal,
 bypassing public constructors, species, and add. Snapshots preserve vacant positions
 and checked capacity/work; there are no default host limits. The complete edition-17
 Set/Set Iterator inventories support ordinary reflection and integrity operations.
+
+
+## Base classes
+
+Base ClassDefinitionEvaluation (15.7.14–16) creates a declarative environment
+with an initially uninitialized, immutable internal class-name binding. Computed
+names execute in that environment under strict mode, retaining the outer this,
+new.target, and super context. The name is initialized only after every method
+has been defined. Class declarations separately initialize their mutable lexical
+binding in the enclosing environment and produce an empty statement completion.
+Every language or host failure restores the enclosing environment and strictness.
+
+Explicit and synthesized empty base constructors use shared ordinary function
+code with a distinct class-constructor callable kind and the class prototype as
+their home object. Calling a class throws TypeError after evaluating arguments;
+its callable metadata still permits apply to read the argument list first.
+Construction shares ordinary base allocation, newTarget prototype selection,
+strict parameter/body execution, and object-versus-primitive return rules. The
+empty default constructor implements the base branch of 15.7.14 without fields;
+heritage, derived constructors, fields, private elements, and static blocks remain
+Unsupported. Existing native-stack guards and opt-in quotas are unchanged.
+
+Class constructors inherit Function.prototype and own a non-writable,
+non-enumerable, non-configurable prototype property. Their prototype's constructor
+link and instance/static method properties are writable, non-enumerable, and
+configurable. Accessor pairs use the shared method descriptor algorithm. Methods
+remain non-constructible and retain their home object. Internal environment and
+home-object edges are traced, including unreachable constructor/prototype cycles.
+Class and constructor stringification retain the complete class source; method
+source excludes the static modifier. Anonymous class name inference supplies the
+name before computed names and static definitions, allowing a static name method
+to replace it without creating an internal binding for the inferred name.

@@ -1,0 +1,182 @@
+---
+source: crates/spite-parser/tests/classes.rs
+expression: errors
+---
+[
+    (
+        "class {}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 7,
+            },
+            message: "class declaration requires a name",
+        },
+    ),
+    (
+        "class eval {}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 10,
+            },
+            message: "invalid binding in strict mode",
+        },
+    ),
+    (
+        "class let {}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 9,
+            },
+            message: "invalid binding in strict mode",
+        },
+    ),
+    (
+        "class C { constructor(){} constructor(){} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 26,
+                end: 37,
+            },
+            message: "invalid or duplicate class constructor",
+        },
+    ),
+    (
+        "class C { get constructor(){} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 25,
+            },
+            message: "invalid or duplicate class constructor",
+        },
+    ),
+    (
+        "class C { static prototype(){} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 17,
+                end: 26,
+            },
+            message: "static class method cannot be named prototype",
+        },
+    ),
+    (
+        "class C { m(a,a){} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 15,
+            },
+            message: "duplicate lexical binding",
+        },
+    ),
+    (
+        "class C { m(x=1){'use strict';} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 10,
+                end: 31,
+            },
+            message: "use strict directive with non-simple parameters",
+        },
+    ),
+    (
+        "class C { m(){with({}){} } }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 24,
+            },
+            message: "with statements are not allowed in strict mode",
+        },
+    ),
+    (
+        "class C { [077](){} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 11,
+                end: 14,
+            },
+            message: "legacy numeric literals and escapes are forbidden in strict code",
+        },
+    ),
+    (
+        "class C { m(){return function(){return super.x;};} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 39,
+                end: 44,
+            },
+            message: "super property access outside a method",
+        },
+    ),
+    (
+        "class C { constructor(){super();} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 24,
+                end: 29,
+            },
+            message: "super call requires a derived constructor",
+        },
+    ),
+    (
+        "class C{} var C;",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 15,
+            },
+            message: "var declaration conflicts with lexical binding",
+        },
+    ),
+    (
+        "{ let C; class C{} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 16,
+            },
+            message: "duplicate lexical binding",
+        },
+    ),
+    (
+        "if(true) class C{}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 9,
+                end: 14,
+            },
+            message: "declaration requires a statement list",
+        },
+    ),
+    (
+        "class C { [new.target](){} }",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 11,
+                end: 21,
+            },
+            message: "new.target requires an enclosing non-arrow function",
+        },
+    ),
+]

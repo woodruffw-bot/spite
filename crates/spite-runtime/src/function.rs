@@ -13,6 +13,7 @@ mod bigint;
 mod boolean;
 mod bound;
 mod builtin;
+mod class;
 mod construct;
 mod dynamic;
 mod error;
@@ -790,6 +791,7 @@ pub(crate) enum Callable {
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
     Method(Box<MethodFunction>),
+    ClassConstructor(Box<MethodFunction>),
 }
 
 pub(super) enum FunctionText {
@@ -805,7 +807,9 @@ impl Callable {
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
-            Self::Method(method) => FunctionText::Script(method.code.source.clone()),
+            Self::Method(method) | Self::ClassConstructor(method) => {
+                FunctionText::Script(method.code.source.clone())
+            }
         }
     }
 }
@@ -1243,6 +1247,13 @@ impl Realm {
             };
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
+                Some(Callable::ClassConstructor(_)) => {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "class constructor requires new",
+                    ));
+                }
                 Some(Callable::Arrow(arrow)) => return self.call_arrow(arrow, arguments, span),
                 Some(Callable::Ordinary(code)) => {
                     let Value::Object(callee) = function else {
