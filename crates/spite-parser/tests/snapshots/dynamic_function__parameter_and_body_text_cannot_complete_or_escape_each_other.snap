@@ -1,0 +1,78 @@
+---
+source: crates/spite-parser/tests/dynamic_function.rs
+expression: diagnostics
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 2,
+        },
+        message: "unterminated comment",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 1,
+            end: 2,
+        },
+        message: "unexpected token after function parameters",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 1,
+            end: 2,
+        },
+        message: "expected an expression",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 3,
+            end: 3,
+        },
+        message: "expected an expression",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 7,
+            end: 8,
+        },
+        message: "unexpected token after function parameters",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 2,
+            end: 3,
+        },
+        message: "invalid function parameter",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 10,
+            end: 10,
+        },
+        message: "expected an expression",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 25,
+            end: 31,
+        },
+        message: "break requires an enclosing loop or switch",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 25,
+            end: 34,
+        },
+        message: "continue requires an enclosing loop",
+    },
+]

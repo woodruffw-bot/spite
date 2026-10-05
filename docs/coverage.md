@@ -157,7 +157,11 @@ name/length/prototype descriptors, inherited branding, and complete own reflecti
 Tests cover prototype constructor links, restricted accessors, integrity operations,
 newTarget validation, and collection after public deletion. Calling or constructing
 Function still returns Unsupported until dynamic global-scope compilation is
-implemented; catch/finally cannot disguise that gap as a JavaScript exception.
+implemented. The parser can independently validate dynamic Function parameter and
+body grammar goals, combine their early errors with body-derived strictness, and
+retain the standard anonymous source text. Insta snapshots cover its AST/source
+and syntax injection diagnostics. Runtime string compilation remains open.
+Catch/finally cannot disguise that gap as a JavaScript exception.
 
 Arrows with identifier parameters and expression or block bodies execute with shared lexical captures,
 fresh mutable parameter bindings, missing/extra argument handling, inherited and

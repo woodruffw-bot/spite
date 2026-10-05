@@ -67,8 +67,22 @@ impl Parser {
         invalid_name: &str,
     ) -> Result<Rc<[Parameter]>, Diagnostic> {
         self.expect("(")?;
+        let parameters = self.formal_parameter_list(invalid_name, true)?;
+        self.expect(")")?;
+        Ok(parameters)
+    }
+
+    pub(super) fn formal_parameter_list(
+        &mut self,
+        invalid_name: &str,
+        parenthesized: bool,
+    ) -> Result<Rc<[Parameter]>, Diagnostic> {
         let mut parameters = Vec::new();
-        while !self.at(")") {
+        while if parenthesized {
+            !self.at(")")
+        } else {
+            self.current().kind != Kind::Eof
+        } {
             if self.eat("...") {
                 let binding = self.formal_parameter(invalid_name, false)?;
                 parameters.push(Parameter::Rest(binding));
@@ -82,7 +96,6 @@ impl Parser {
                 break;
             }
         }
-        self.expect(")")?;
         Ok(parameters.into())
     }
 
@@ -124,6 +137,15 @@ impl Parser {
 
     fn function_body_inner(&mut self) -> Result<FunctionBody, Diagnostic> {
         self.expect("{")?;
+        let body = self.function_body_contents(true)?;
+        self.expect("}")?;
+        Ok(body)
+    }
+
+    pub(super) fn function_body_contents(
+        &mut self,
+        braced: bool,
+    ) -> Result<FunctionBody, Diagnostic> {
         let token_start = self.index;
         let previous_return = self.allow_return;
         let previous_in = self.allow_in;
@@ -131,7 +153,11 @@ impl Parser {
         self.allow_in = true;
         let result = (|| {
             let mut statements = Vec::new();
-            while !self.at("}") {
+            while if braced {
+                !self.at("}")
+            } else {
+                self.current().kind != Kind::Eof
+            } {
                 if self.current().kind == Kind::Eof {
                     return Err(self.error("unterminated function body"));
                 }
@@ -141,7 +167,6 @@ impl Parser {
             if strict {
                 reject_legacy_tokens(&self.tokens[token_start..self.index])?;
             }
-            self.expect("}")?;
             Ok(FunctionBody {
                 statements: statements.into(),
                 strict,

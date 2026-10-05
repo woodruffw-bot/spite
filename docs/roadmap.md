@@ -161,6 +161,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.
 - [ ] Implement dynamic Function construction and global-scope compilation.
+- [x] Parse dynamic Function parameter/body grammar goals independently, then validate combined early errors and retain standard anonymous source text.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.
 - [x] Add bound callable objects, capture tracing, and Function.prototype bind.

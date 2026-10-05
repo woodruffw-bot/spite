@@ -4,6 +4,7 @@ mod array;
 mod arrow;
 pub mod ast;
 mod construction;
+mod dynamic_function;
 mod function;
 mod iteration;
 pub mod json;
@@ -11,6 +12,8 @@ mod lexer;
 mod object;
 mod optional_chain;
 mod template;
+
+pub use dynamic_function::parse_dynamic_function;
 
 use ast::*;
 use lexer::{Kind, Lexer, Token};
@@ -40,25 +43,7 @@ pub fn parse_script_with_source_limit(
 /// This is not yet a complete ECMAScript parser. Unsupported features produce
 /// [`DiagnosticKind::Unsupported`] where they can be recognized.
 pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
-    let mut lexer = Lexer::new(source);
-    let mut tokens = Vec::new();
-    loop {
-        let token = lexer.next()?;
-        let done = token.kind == Kind::Eof;
-        tokens.push(token);
-        if done {
-            break;
-        }
-    }
-    let mut parser = Parser {
-        source: std::rc::Rc::from(source),
-        tokens,
-        index: 0,
-        depth: 0,
-        allow_in: true,
-        allow_return: false,
-        allow_new_target: false,
-    };
+    let mut parser = Parser::new(source)?;
     let mut statements = Vec::new();
     while parser.current().kind != Kind::Eof {
         statements.push(parser.statement(true)?);
@@ -123,6 +108,28 @@ struct Parser {
 }
 
 impl Parser {
+    fn new(source: &str) -> Result<Self, Diagnostic> {
+        let mut lexer = Lexer::new(source);
+        let mut tokens = Vec::new();
+        loop {
+            let token = lexer.next()?;
+            let done = token.kind == Kind::Eof;
+            tokens.push(token);
+            if done {
+                break;
+            }
+        }
+        Ok(Self {
+            source: std::rc::Rc::from(source),
+            tokens,
+            index: 0,
+            depth: 0,
+            allow_in: true,
+            allow_return: false,
+            allow_new_target: false,
+        })
+    }
+
     fn current(&self) -> &Token {
         &self.tokens[self.index]
     }
@@ -838,6 +845,15 @@ impl Parser {
         Ok(left)
     }
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
+        if self.at("async")
+            && self.tokens.get(self.index + 1).is_some_and(|token| {
+                !token.newline
+                    && !token.escaped
+                    && matches!(&token.kind, Kind::Word(name) if name == "function")
+            })
+        {
+            return Err(self.unsupported("async functions are not implemented"));
+        }
         if self.at("function") {
             return self.function_expression();
         }

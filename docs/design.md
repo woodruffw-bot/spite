@@ -972,6 +972,17 @@ The prototype's writable/configurable constructor link completes its own-key
 reflection and integrity operations (20.2.2.2, 20.2.3.1). The constructor has
 call/construct metadata for branding and newTarget validation, while invoking it
 returns Unsupported until dynamic global-scope compilation is implemented.
+
+The parser's dynamic Function entry point (20.2.1.1.1) first parses the joined
+FormalParameters text and line-feed-delimited FunctionBody as separate goals.
+Neither input can terminate a wrapper or complete an unterminated comment in the
+other. It then parses the prescribed `function anonymous` source and validates
+combined parameter/body early errors with no inherited caller strictness. Source
+ranges and retained source belong to that combined allocation. Identifier/default/
+rest parameters share the existing function grammar; new.target and return use
+function context. Unsupported binding patterns, classes, generator/async functions,
+and native-stack exhaustion remain separate diagnostic categories. This UTF-8
+parser entry point does not itself enable runtime string compilation.
 This gap is never converted to a JavaScript TypeError or accepted as a passing
 negative. The constructor and prototype remain intrinsic roots after deletion.
 
