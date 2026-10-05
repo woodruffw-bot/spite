@@ -240,6 +240,11 @@ impl Parser {
                     .tokens
                     .get(self.index + 1)
                     .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))));
+        // 14.5's ExpressionStatement lookahead cannot turn declarations into
+        // statements, even when the declaration's body is not implemented yet.
+        if !allow_declaration && (self.at("class") || self.at_async_function()) {
+            return Err(self.error("declaration requires a statement list"));
+        }
         let kind = if self.eat(";") {
             StatementKind::Empty
         } else if self.eat("{") {
@@ -382,6 +387,12 @@ impl Parser {
             self.expect(")")?;
             let body = Box::new(self.statement(false)?);
             StatementKind::While { test, body }
+        } else if self.eat("with") {
+            self.expect("(")?;
+            let object = self.expression_with_in(1, true)?;
+            self.expect(")")?;
+            let body = Box::new(self.statement(false)?);
+            StatementKind::With { object, body }
         } else if self.eat("do") {
             let body = Box::new(self.statement(false)?);
             self.expect("while")?;
@@ -439,8 +450,7 @@ impl Parser {
             StatementKind::Throw(expr)
         } else {
             if let Kind::Word(word) = &self.current().kind {
-                if !self.current().escaped
-                    && matches!(word.as_str(), "class" | "with" | "import" | "export")
+                if !self.current().escaped && matches!(word.as_str(), "class" | "import" | "export")
                 {
                     return Err(self.unsupported("statement is not implemented"));
                 }
@@ -844,14 +854,17 @@ impl Parser {
         }
         Ok(left)
     }
-    fn prefix(&mut self) -> Result<Expr, Diagnostic> {
-        if self.at("async")
+    fn at_async_function(&self) -> bool {
+        self.at("async")
             && self.tokens.get(self.index + 1).is_some_and(|token| {
                 !token.newline
                     && !token.escaped
                     && matches!(&token.kind, Kind::Word(name) if name == "function")
             })
-        {
+    }
+
+    fn prefix(&mut self) -> Result<Expr, Diagnostic> {
+        if self.at_async_function() {
             return Err(self.unsupported("async functions are not implemented"));
         }
         if self.at("function") {
@@ -1244,6 +1257,17 @@ fn validate_statement<'a>(
         }
         StatementKind::Block(body) => {
             validate_scope(body, strict, control, labels, ScopeKind::Block)?
+        }
+        StatementKind::With { object, body } => {
+            // ECMA-262 14.11.1: this grammar is available only in non-strict code.
+            if strict {
+                return Err(early(
+                    statement.span,
+                    "with statements are not allowed in strict mode",
+                ));
+            }
+            validate_expr(object, strict)?;
+            validate_statement(body, strict, control, labels)?;
         }
         StatementKind::Try {
             body,

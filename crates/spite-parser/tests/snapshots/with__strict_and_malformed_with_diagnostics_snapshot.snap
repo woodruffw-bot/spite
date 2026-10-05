@@ -1,0 +1,62 @@
+---
+source: crates/spite-parser/tests/with.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 14,
+            end: 25,
+        },
+        message: "with statements are not allowed in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 29,
+            end: 41,
+        },
+        message: "with statements are not allowed in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 6,
+            end: 7,
+        },
+        message: "expected an expression",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 14,
+            end: 15,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 10,
+            end: 18,
+        },
+        message: "function declaration requires a statement list",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 10,
+            end: 15,
+        },
+        message: "declaration requires a statement list",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 10,
+            end: 15,
+        },
+        message: "declaration requires a statement list",
+    },
+]

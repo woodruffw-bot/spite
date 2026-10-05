@@ -44,6 +44,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse try-finally blocks and validate their scopes and control targets.
 - [x] Evaluate finalizers and their normal and abrupt completion overrides.
 - [x] Implement debugger statements with no active debugging facility.
+- [x] Parse/evaluate non-strict with statements using live object bindings, Symbol.unscopables, implicit call receivers, and restored completion scopes.
 - [x] Handle optional-binding catch clauses and catch-finally completions.
 - [x] Parse catch binding identifiers and validate catch scope conflicts.
 - [x] Execute catch binding identifiers for implemented thrown values, including objects.

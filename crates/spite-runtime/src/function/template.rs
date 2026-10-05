@@ -1,8 +1,6 @@
 //! Tagged call evaluation and the realm's template registry (13.3.11, 13.2.8.4).
 
-use crate::{
-    Error, ObjectHandle, Realm, Reference, Value, object::DataDescriptor, reference_expression,
-};
+use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor, reference_expression};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{Expr, TemplateElement};
 use std::rc::Rc;
@@ -18,10 +16,7 @@ impl Realm {
         let (function, this) = if reference_expression(tag) {
             let mut reference = self.reference(tag)?;
             let function = self.get(&mut reference, tag.span)?;
-            let this = match reference {
-                Reference::Property { base, .. } => base,
-                _ => Value::Undefined,
-            };
+            let this = reference.call_receiver();
             (function, this)
         } else {
             (self.expression(tag)?, Value::Undefined)

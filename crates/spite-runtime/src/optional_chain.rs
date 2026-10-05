@@ -34,10 +34,7 @@ impl Realm {
                     Reference::Property { base: value, key }
                 }
                 ChainStepKind::Call(arguments) => {
-                    let this = match reference {
-                        Reference::Property { base, .. } => base,
-                        _ => Value::Undefined,
-                    };
+                    let this = reference.call_receiver();
                     let arguments = self.argument_list(arguments)?;
                     Reference::Value(self.call(value, this, arguments, step.span)?)
                 }

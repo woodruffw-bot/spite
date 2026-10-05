@@ -488,6 +488,19 @@ impl Objects {
         Ok(environment)
     }
 
+    pub(crate) fn create_with_environment(
+        &mut self,
+        outer: Option<EnvironmentHandle>,
+        object: Handle,
+        budget: &mut Budget,
+    ) -> Result<EnvironmentHandle, Error> {
+        budget.charge(1)?;
+        self.inspect(&object)?;
+        let environment = self.create_environment(outer, BTreeMap::new(), budget)?;
+        self.environment_mut(&environment)?.binding_object = Some(object);
+        Ok(environment)
+    }
+
     pub(crate) fn create_environment(
         &mut self,
         outer: Option<EnvironmentHandle>,
@@ -507,6 +520,7 @@ impl Objects {
             Environment {
                 outer,
                 bindings,
+                binding_object: None,
                 this: None,
                 new_target: None,
             },

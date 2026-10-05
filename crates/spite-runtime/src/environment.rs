@@ -1,4 +1,4 @@
-//! Declarative environment identity and tracing, shared with the object heap.
+//! Environment identity and tracing, shared with the object heap.
 
 use crate::Value;
 use spite_heap::{Handle, Trace};
@@ -19,6 +19,8 @@ pub(crate) struct BindingState {
 pub(crate) struct Environment {
     pub outer: Option<EnvironmentHandle>,
     pub bindings: BTreeMap<String, BindingState>,
+    // Some only for with environments; their properties are resolved live.
+    pub binding_object: Option<Handle>,
     // None for declarative/arrow environments; Some(undefined) is a real binding.
     pub this: Option<Value>,
     // None means undefined for ordinary calls; declarative environments ignore it.
@@ -28,6 +30,7 @@ pub(crate) struct Environment {
 impl Trace for Environment {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         std::iter::once(self.outer.as_ref().map(|outer| &outer.0))
+            .chain(std::iter::once(self.binding_object.as_ref()))
             .chain(std::iter::once(self.new_target.as_ref()))
             .chain(std::iter::once(self.this.as_ref().and_then(
                 |value| match value {
@@ -191,6 +194,46 @@ mod tests {
         ));
         assert_eq!(
             objects.create_environment(Some(environment), BTreeMap::new(), &mut Budget::new(100)),
+            Err(ObjectError::Heap(spite_heap::Error::StaleHandle))
+        );
+    }
+
+    #[test]
+    fn with_environment_validates_and_traces_binding_object_and_outer_identity() {
+        let mut objects = Objects::new(8, 0);
+        let object = objects.create(None).unwrap();
+        let outer = objects
+            .create_environment(None, BTreeMap::new(), &mut Budget::new(100))
+            .unwrap();
+        assert_eq!(
+            objects.create_with_environment(None, outer.0.clone(), &mut Budget::new(100)),
+            Err(ObjectError::WrongKind)
+        );
+        let foreign = Objects::new(1, 0).create(None).unwrap();
+        assert_eq!(
+            objects.create_with_environment(None, foreign, &mut Budget::new(100)),
+            Err(ObjectError::Heap(spite_heap::Error::ForeignHandle))
+        );
+        assert_eq!(
+            objects.create_with_environment(None, object.clone(), &mut Budget::new(0)),
+            Err(ObjectError::WorkLimit)
+        );
+        let environment = objects
+            .create_with_environment(Some(outer.clone()), object.clone(), &mut Budget::new(100))
+            .unwrap();
+        let garbage = objects.create(None).unwrap();
+        let record = objects.environment(&environment).unwrap();
+        assert_eq!(record.binding_object.as_ref(), Some(&object));
+        assert_eq!(record.outer.as_ref(), Some(&outer));
+        assert!(record.this.is_none() && record.new_target.is_none() && record.bindings.is_empty());
+        let collection = objects.collect([&environment.0], 100).unwrap();
+        assert_eq!((collection.live, collection.reclaimed), (3, 1));
+        assert!(objects.inspect(&object).is_ok());
+        assert!(objects.environment(&outer).is_ok());
+        assert!(objects.inspect(&garbage).is_err());
+        assert_eq!(objects.collect([], 100).unwrap().reclaimed, 3);
+        assert_eq!(
+            objects.create_with_environment(None, object, &mut Budget::new(100)),
             Err(ObjectError::Heap(spite_heap::Error::StaleHandle))
         );
     }

@@ -11,6 +11,7 @@ mod function;
 mod global;
 mod iterator_count;
 mod optional_chain;
+mod with;
 use environment::{BindingState, EnvironmentHandle};
 pub mod object;
 mod realm_object;
@@ -140,6 +141,10 @@ pub struct Limits {
 enum Reference<'a> {
     Value(Value),
     Lexical(EnvironmentHandle, &'a str),
+    ObjectBinding {
+        object: ObjectHandle,
+        name: &'a str,
+    },
     Global(&'a str),
     Unresolvable(&'a str),
     UnsupportedGlobal(&'a str),
@@ -149,6 +154,17 @@ enum Reference<'a> {
         // creating the reference. GetValue caches the converted property key.
         key: Value,
     },
+}
+
+impl Reference<'_> {
+    // ECMA-262 13.3.6.2 / 9.1.1.2.10: environment calls use WithBaseObject.
+    fn call_receiver(self) -> Value {
+        match self {
+            Self::Property { base, .. } => base,
+            Self::ObjectBinding { object, .. } => Value::Object(object),
+            _ => Value::Undefined,
+        }
+    }
 }
 
 // Implemented statement completions. Throws already carry a non-empty value in
@@ -722,6 +738,9 @@ impl Realm {
                 self.scopes.pop();
                 result
             }
+            StatementKind::With { object, body } => {
+                self.with_statement(object, body, statement.span)
+            }
             StatementKind::Try {
                 body,
                 handler,
@@ -992,7 +1011,14 @@ impl Realm {
             if scope.bindings.contains_key(name) {
                 return Ok(Reference::Lexical(handle, name));
             }
+            // Release the heap borrow before observable unscopables getters.
+            let object = scope.binding_object.clone();
             next = scope.outer.clone();
+            if let Some(object) = object {
+                if self.with_has_binding(&object, name, span)? {
+                    return Ok(Reference::ObjectBinding { object, name });
+                }
+            }
         }
         if (standard_global(name) || self.unsupported_host_globals.contains(name))
             && self.global_own(name, span)?.is_none()
@@ -1036,6 +1062,7 @@ impl Realm {
                 let key = self.reference_key(key, span)?;
                 self.get_property_value(base, &key, span)
             }
+            Reference::ObjectBinding { object, name } => self.with_get_binding(object, name, span),
             Reference::Lexical(handle, name) => self
                 .objects
                 .environment(handle)
@@ -1076,6 +1103,9 @@ impl Realm {
                         "property is not writable",
                     ));
                 }
+            }
+            Reference::ObjectBinding { object, name } => {
+                self.with_set_binding(&object, name, value, span)?
             }
             Reference::Lexical(handle, name) => {
                 let binding = self
@@ -1196,10 +1226,7 @@ impl Realm {
                 let (function, this) = if reference_expression(callee) {
                     let mut reference = self.reference(callee)?;
                     let function = self.get(&mut reference, callee.span)?;
-                    let this = match reference {
-                        Reference::Property { base, .. } => base,
-                        _ => Value::Undefined,
-                    };
+                    let this = reference.call_receiver();
                     (function, this)
                 } else {
                     (self.expression(callee)?, Value::Undefined)
@@ -1326,6 +1353,11 @@ impl Realm {
                             deleted
                         }
                         Reference::Lexical(..) => false,
+                        Reference::ObjectBinding { object, name } => self.delete_property_value(
+                            &Value::Object(object),
+                            &JsString::from(name),
+                            inner.span,
+                        )?,
                         Reference::Global(name) => {
                             let object = Value::Object(self.global_object());
                             self.delete_property_value(&object, &JsString::from(name), inner.span)?
@@ -1340,16 +1372,17 @@ impl Realm {
                     };
                     return Ok(Value::Boolean(deleted));
                 }
-                if *op == UnaryOp::Typeof {
-                    if let Some(name) = identifier(inner) {
-                        if matches!(self.resolve(name, expr.span)?, Reference::Unresolvable(_)) {
-                            let value = Value::String(JsString::from("undefined"));
-                            self.check_string(&value, expr.span)?;
-                            return Ok(value);
-                        }
+                let value = if *op == UnaryOp::Typeof && identifier(inner).is_some() {
+                    // Resolve once: object-environment lookup can execute getters.
+                    let mut reference = self.reference(inner)?;
+                    if matches!(reference, Reference::Unresolvable(_)) {
+                        Value::Undefined
+                    } else {
+                        self.get(&mut reference, inner.span)?
                     }
-                }
-                let value = self.expression(inner)?;
+                } else {
+                    self.expression(inner)?
+                };
                 match op {
                     UnaryOp::Plus => Value::Number(self.number(value, expr.span)?),
                     UnaryOp::Minus => match self.numeric(value, expr.span)? {

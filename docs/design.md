@@ -286,6 +286,22 @@ of a stack index. Name lookup follows outer links with bounded work, preparing f
 closures that execute under a different caller. Per-iteration let environments
 copy bindings into a fresh identity with the same outer link (14.7.4.4).
 
+Non-strict with statements evaluate and box their expression before entering an
+Object Environment Record (14.11). Its binding object is traced alongside its
+outer environment. Name lookup checks own and inherited properties regardless of
+enumerability, then reads Symbol.unscopables and the named exclusion using ordinary
+Get semantics (9.1.1.2.1). Missing properties skip these observable reads. Resolved
+object bindings retain their original object identity through assignment RHS
+effects; GetBindingValue and SetMutableBinding recheck property existence without
+repeating the unscopables lookup. Strict closures may capture these environments:
+disappeared bindings throw ReferenceError, while rejected strict writes throw
+TypeError (9.1.1.2.5–6). Identifier calls, optional calls, and tagged calls use the
+binding object as their implicit receiver. The record supplies neither this nor
+new.target, and dynamically constructed Function bodies retain global scope.
+Typeof resolves an identifier only once. Every completion restores the outer
+scope; empty body completions become undefined. Strict with statements and bare
+function/lexical declarations are syntax errors; Annex B extensions are excluded.
+
 Realm initialization runs on first evaluation, after parsing succeeds. It creates
 the global lexical environment, implemented intrinsics, and an ordinary global
 object whose prototype is Object.prototype (9.3.1). This fixed graph runs no user

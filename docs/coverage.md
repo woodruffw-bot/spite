@@ -29,7 +29,7 @@ not an alternative language specification.
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
-| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
+| Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, non-strict with, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
@@ -43,6 +43,18 @@ not an alternative language specification.
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
+
+With statements now use live Object Environment Records (14.11, 9.1.1.2).
+Four parser regressions and two inspected insta snapshots cover grammar, strict
+early errors, nested declaration conflicts, and control targets. Nine runtime
+regressions cover own/inherited/nonenumerable bindings, live unscopables truthiness
+and receiver-aware getters, single-resolution typeof, mutation between lookup and
+Get/Set/delete, ordinary/optional/tagged call receivers, closure capture and GC,
+global dynamic Function scope, primitive boxing, and completion/scope restoration
+after language exceptions and opted-in host aborts. Strict closures distinguish
+disappeared bindings from non-writable properties. Annex B extensions are excluded.
+An additional heap regression validates foreign/stale/wrong-kind binding objects,
+opted-in work exhaustion, and tracing of the binding object and outer environment.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words

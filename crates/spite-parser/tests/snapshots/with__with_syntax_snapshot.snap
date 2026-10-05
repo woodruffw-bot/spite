@@ -1,0 +1,84 @@
+---
+source: crates/spite-parser/tests/with.rs
+expression: "parse_script(\"with (object) { var x = value; x; }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: With {
+                object: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "object",
+                    ),
+                    span: Span {
+                        start: 6,
+                        end: 12,
+                    },
+                },
+                body: Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Var(
+                                    [
+                                        Binding {
+                                            name: "x",
+                                            span: Span {
+                                                start: 20,
+                                                end: 21,
+                                            },
+                                            initializer: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "value",
+                                                    ),
+                                                    span: Span {
+                                                        start: 24,
+                                                        end: 29,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ],
+                                ),
+                                span: Span {
+                                    start: 16,
+                                    end: 30,
+                                },
+                            },
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 31,
+                                            end: 32,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 31,
+                                    end: 33,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 14,
+                        end: 35,
+                    },
+                },
+            },
+            span: Span {
+                start: 0,
+                end: 35,
+            },
+        },
+    ],
+    strict: false,
+}

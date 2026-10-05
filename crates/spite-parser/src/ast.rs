@@ -134,6 +134,7 @@ impl Statement {
             }
             StatementKind::While { body, .. }
             | StatementKind::DoWhile { body, .. }
+            | StatementKind::With { body, .. }
             | StatementKind::Labelled { body, .. } => body.collect_var_declarations(declarations),
             StatementKind::For {
                 initializer, body, ..
@@ -203,6 +204,13 @@ pub enum StatementKind {
     },
     /// A block with its own lexical environment.
     Block(Vec<Statement>),
+    /// A non-strict statement whose object supplies additional identifier bindings.
+    With {
+        /// Value converted to the binding object.
+        object: Expr,
+        /// Statement evaluated inside the object environment.
+        body: Box<Statement>,
+    },
     /// A try statement with a catch clause, a finally clause, or both.
     Try {
         /// Protected block.
