@@ -39,6 +39,7 @@ mod string;
 mod symbol;
 mod template;
 mod uri;
+mod weak_set;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
 pub(crate) use bound::BoundFunction;
@@ -274,6 +275,10 @@ pub(crate) enum Builtin {
     ParseFloat,
     ParseInt,
     Set,
+    WeakSet,
+    WeakSetAdd,
+    WeakSetDelete,
+    WeakSetHas,
     SetAdd,
     SetClear,
     SetDelete,
@@ -534,6 +539,10 @@ impl Builtin {
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
             Self::Set => "Set",
+            Self::WeakSet => "WeakSet",
+            Self::WeakSetAdd => "add",
+            Self::WeakSetDelete => "delete",
+            Self::WeakSetHas => "has",
             Self::SetAdd => "add",
             Self::SetClear => "clear",
             Self::SetDelete => "delete",
@@ -583,6 +592,9 @@ impl Builtin {
         match self {
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
             Self::SetAdd
+            | Self::WeakSetAdd
+            | Self::WeakSetDelete
+            | Self::WeakSetHas
             | Self::SetDelete
             | Self::SetForEach
             | Self::SetHas
@@ -852,6 +864,7 @@ pub(super) struct Intrinsics {
     pub json: json::JsonIntrinsics,
     pub map: map::MapIntrinsics,
     pub set: set::SetIntrinsics,
+    pub weak_set: weak_set::WeakSetIntrinsics,
 }
 
 impl Intrinsics {
@@ -891,6 +904,7 @@ impl Intrinsics {
         .chain(self.json.roots())
         .chain(self.map.roots())
         .chain(self.set.roots())
+        .chain(self.weak_set.roots())
     }
 }
 
@@ -1048,6 +1062,7 @@ impl Realm {
             &iterator.prototype,
             span,
         )?;
+        let weak_set = self.weak_set_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -1083,6 +1098,7 @@ impl Realm {
             json,
             map,
             set,
+            weak_set,
         });
         Ok(object_prototype)
     }

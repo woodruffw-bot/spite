@@ -187,6 +187,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Set", Value::Object(set), true, span)?;
+        let weak_set = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .weak_set
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "WeakSet", Value::Object(weak_set), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

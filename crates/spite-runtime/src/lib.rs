@@ -1791,7 +1791,6 @@ fn standard_global(name: &str) -> bool {
             | "Float32Array"
             | "Float64Array"
             | "WeakMap"
-            | "WeakSet"
             | "ArrayBuffer"
             | "SharedArrayBuffer"
             | "DataView"

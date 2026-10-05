@@ -34,6 +34,7 @@ mod set;
 pub(crate) use set::SetData;
 mod entry;
 mod store;
+mod weak_set;
 pub use descriptor::{
     AccessorProperty, DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor,
 };
@@ -80,6 +81,7 @@ pub struct OrdinaryObject {
     raw_json: bool,
     map: Option<Box<map::MapData>>,
     set: Option<Box<SetData>>,
+    weak_set: Option<Box<weak_set::WeakSetData>>,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
     arguments: bool,
@@ -111,6 +113,7 @@ impl OrdinaryObject {
             raw_json: false,
             map: None,
             set: None,
+            weak_set: None,
             immutable_prototype: false,
             arguments: false,
             parameter_map: None,
@@ -377,6 +380,7 @@ impl Trace for OrdinaryObject {
             )
             .chain(self.map.iter().flat_map(|data| data.trace()))
             .chain(self.set.iter().flat_map(|data| data.trace()))
+            .chain(self.weak_set.iter().flat_map(|data| data.trace()))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))
             .chain(self.callable.iter().flat_map(|callable| {

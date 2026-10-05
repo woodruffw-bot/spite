@@ -128,12 +128,20 @@ impl Realm {
                 "Symbol.keyFor requires a Symbol primitive",
             ));
         };
-        if self.registry_work(span, |registry, budget| registry.contains(&symbol, budget))? {
+        if self.symbol_is_registered(&symbol, span)? {
             // The immutable description is the registered key. Copy after unlock.
             self.symbol_string(&symbol, "", "", span).map(Value::String)
         } else {
             Ok(Value::Undefined)
         }
+    }
+
+    pub(crate) fn symbol_is_registered(
+        &mut self,
+        symbol: &JsSymbol,
+        span: Span,
+    ) -> Result<bool, Error> {
+        self.registry_work(span, |registry, budget| registry.contains(symbol, budget))
     }
 }
 

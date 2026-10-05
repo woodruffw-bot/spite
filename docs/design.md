@@ -2228,3 +2228,16 @@ right-side-before-write ordering, while compound/logical updates use normal
 GetValue ordering. Object and constructor records trace method/getter/setter
 handles. Checked storage validates every callable edge and work budget before
 mutation. Recursive calls/accessors use the unchanged native-stack guards.
+
+WeakSet stores a hash index of checked generational object handles and weak
+Symbol identities (24.4). Its object handles are unrooted and excluded from Trace;
+Symbol keys use weak Arc references with allocation identity preserved after
+death. CanBeHeldWeakly consults the internal global Symbol registry, without
+calling the public Symbol.keyFor property. Well-known symbols are valid keys.
+Hash lookup is sublinear; periodic pruning after a proportional number of new
+insertions provides amortized cleanup, with all work/reservation failures checked
+before changing the index. Collection charges for weak storage without marking
+keys. Presenting a live key preserves identity through cleanup; no enumeration or
+liveness observation is exposed. Constructor acquisition and iterator closing
+follow the ordinary Set sequence, including host-abort propagation and default
+derived forwarding. WeakMap's ephemerons and WeakRef/finalization remain separate.

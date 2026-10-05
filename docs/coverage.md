@@ -38,6 +38,7 @@ not an alternative language specification.
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
+| WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
@@ -1478,3 +1479,16 @@ writes, missing getters/setters, computed names, and abrupt calls. Both toolchai
 pass every added variant with ordinary defaults. No unsupported feature receives
 credit; all source bytes, Git blobs, assertions, metadata, helpers, and the pin
 remain unchanged. This does not claim complete elements-directory coverage.
+
+WeakSet implements edition-17 CanBeHeldWeakly for objects and non-registered
+symbols, including well-known symbols. Its hash index stores untraced checked
+object identities and weak Arc-backed Symbol identities; neither keeps keys
+reachable. Amortized pruning removes dead entries without scanning on every
+access. Storage regressions check foreign/stale handles, work failures before
+mutation, generation reuse, failed collection before sweep, and Symbol release.
+Ten runtime regressions cover identity and absent coercion, invalid keys and own
+brands, ordered/cached adder and iterator acquisition, abrupt iterator closing,
+partial escaped sets, bound/derived/custom-newTarget construction, metadata and
+full reflection/integrity, collection of key cycles, large unlimited collections,
+opted-in host aborts, and native re-entry on two-mebibyte threads. WeakMap,
+WeakRef, and FinalizationRegistry remain separate implementation work.

@@ -4,7 +4,7 @@ use crate::JsString;
 use std::{
     fmt,
     hash::{Hash, Hasher},
-    sync::Arc,
+    sync::{Arc, Weak},
 };
 
 /// An immutable ECMAScript Symbol identity with an optional UTF-16 description.
@@ -24,6 +24,40 @@ impl JsSymbol {
     /// Borrows the description without copying its UTF-16 code units.
     pub fn description(&self) -> Option<&JsString> {
         self.0.as_ref().as_ref()
+    }
+
+    /// Creates an identity reference that does not keep this symbol alive.
+    pub fn downgrade(&self) -> WeakJsSymbol {
+        WeakJsSymbol(Arc::downgrade(&self.0))
+    }
+}
+
+/// A non-owning Symbol identity for weak collections.
+///
+/// Equality and hashing preserve allocation identity even after the last strong
+/// reference is dropped. The weak allocation prevents address reuse until every
+/// weak reference is dropped; no address is exposed as a JavaScript value.
+#[derive(Clone, Debug)]
+pub struct WeakJsSymbol(Weak<Option<JsString>>);
+
+impl WeakJsSymbol {
+    /// Returns the symbol if another strong reference still keeps it alive.
+    pub fn upgrade(&self) -> Option<JsSymbol> {
+        self.0.upgrade().map(JsSymbol)
+    }
+}
+
+impl PartialEq for WeakJsSymbol {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.ptr_eq(&other.0)
+    }
+}
+
+impl Eq for WeakJsSymbol {}
+
+impl Hash for WeakJsSymbol {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.as_ptr().hash(state);
     }
 }
 
@@ -149,6 +183,21 @@ impl From<&str> for PropertyKey {
 mod tests {
     use super::*;
     use std::collections::{HashMap, HashSet};
+
+    #[test]
+    fn weak_symbols_preserve_identity_without_retaining_values() {
+        let symbol = JsSymbol::new(Some(JsString::from("key")));
+        let weak = symbol.downgrade();
+        assert_eq!(weak.upgrade(), Some(symbol.clone()));
+        let mut keys = HashSet::new();
+        assert!(keys.insert(weak.clone()));
+        assert!(!keys.insert(symbol.downgrade()));
+        assert!(keys.insert(JsSymbol::new(symbol.description().cloned()).downgrade()));
+        drop(symbol);
+        assert_eq!(weak.upgrade(), None);
+        assert!(keys.contains(&weak));
+        assert_eq!(keys.len(), 2);
+    }
 
     #[test]
     fn equal_descriptions_do_not_alias_and_clones_preserve_identity() {

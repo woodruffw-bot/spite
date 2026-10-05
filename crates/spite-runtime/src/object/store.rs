@@ -245,6 +245,7 @@ impl Objects {
         object.constructible = matches!(
             builtin,
             Builtin::Set
+                | Builtin::WeakSet
                 | Builtin::Map
                 | Builtin::Boolean
                 | Builtin::Function

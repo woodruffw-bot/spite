@@ -241,7 +241,7 @@ fn direct_eval_shares_opt_in_limits_and_restores_state_after_host_failures() {
         ),
         (
             Limits {
-                max_heap_entries: Some(309),
+                max_heap_entries: Some(314),
                 ..Limits::default()
             },
             "try{eval('7;');}catch{marker=1;}finally{marker=2;}",

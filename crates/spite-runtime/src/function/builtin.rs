@@ -22,6 +22,18 @@ impl Realm {
                 span,
                 "Set requires construction",
             )),
+            Builtin::WeakSet => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "WeakSet requires construction",
+            )),
+            Builtin::WeakSetAdd | Builtin::WeakSetDelete | Builtin::WeakSetHas => self
+                .weak_set_method(
+                    builtin,
+                    this,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                ),
             Builtin::SetAdd
             | Builtin::SetClear
             | Builtin::SetDelete
