@@ -6111,3 +6111,58 @@ test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-a.js	998	
 test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-ab.js	1012	1022	regular expression class range requires character endpoints
 test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-b.js	998	1007	regular expression class range requires character endpoints
 test/language/literals/regexp/u-invalid-non-empty-class-ranges.js	978	987	regular expression class range requires character endpoints
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-2-u.js	588	604	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-2.js	588	603	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-3-u.js	588	604	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-3.js	588	603	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-4-u.js	588	604	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-4.js	588	603	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-5.js	588	602	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-u.js	588	603	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname-without-group-u.js	588	596	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-dangling-groupname.js	588	602	regular expression named backreference has no capture
+test/language/literals/regexp/named-groups/invalid-duplicate-groupspecifier-2-u.js	588	612	regular expression capture names might both participate
+test/language/literals/regexp/named-groups/invalid-duplicate-groupspecifier-2.js	588	611	regular expression capture names might both participate
+test/language/literals/regexp/named-groups/invalid-duplicate-groupspecifier-u.js	588	605	regular expression capture names might both participate
+test/language/literals/regexp/named-groups/invalid-duplicate-groupspecifier.js	588	604	regular expression capture names might both participate
+test/language/literals/regexp/named-groups/invalid-empty-groupspecifier-u.js	323	332	empty regular expression group name
+test/language/literals/regexp/named-groups/invalid-empty-groupspecifier.js	323	331	empty regular expression group name
+test/language/literals/regexp/named-groups/invalid-identity-escape-in-capture-u.js	319	330	invalid regular expression identity escape
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-2-u.js	319	333	unterminated regular expression group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-2.js	319	332	unterminated regular expression group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-3-u.js	319	333	empty regular expression group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-3.js	319	332	empty regular expression group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-4.js	319	332	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-5.js	319	332	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-6.js	319	330	regular expression named backreference requires a group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-u.js	319	331	regular expression named backreference requires a group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-without-group-2-u.js	319	326	empty regular expression group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-without-group-3-u.js	319	324	regular expression named backreference requires a group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname-without-group-u.js	319	326	unterminated regular expression group name
+test/language/literals/regexp/named-groups/invalid-incomplete-groupname.js	319	330	regular expression named backreference requires a group name
+test/language/literals/regexp/named-groups/invalid-lone-surrogate-groupname.js	-	-	-
+test/language/literals/regexp/named-groups/invalid-non-id-continue-groupspecifier-4-u.js	323	334	regular expression group name requires a Unicode escape
+test/language/literals/regexp/named-groups/invalid-non-id-continue-groupspecifier-4.js	323	333	regular expression group name requires a Unicode escape
+test/language/literals/regexp/named-groups/invalid-non-id-continue-groupspecifier.js	323	335	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-2-u.js	323	336	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-2.js	323	335	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-3.js	323	344	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-4-u.js	323	339	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-4.js	323	338	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-5-u.js	323	339	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-5.js	323	338	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-6.js	323	341	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-7.js	323	342	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-8-u.js	323	333	regular expression group name requires a Unicode escape
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-8.js	323	332	regular expression group name requires a Unicode escape
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-9-u.js	323	343	regular expression Unicode escape is out of range
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier-u.js	323	335	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-non-id-start-groupspecifier.js	323	334	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-numeric-groupspecifier-u.js	323	335	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-numeric-groupspecifier.js	323	334	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-punctuator-starting-groupspecifier-u.js	323	334	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-punctuator-starting-groupspecifier.js	323	333	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-punctuator-within-groupspecifier-u.js	323	334	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-punctuator-within-groupspecifier.js	323	333	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-unterminated-groupspecifier-u.js	323	332	invalid regular expression group name identifier
+test/language/literals/regexp/named-groups/invalid-unterminated-groupspecifier.js	323	331	invalid regular expression group name identifier
