@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5837 unmodified test fixtures and eight harness files come from
+These 5873 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -73,7 +73,7 @@ String comparison failure formatting now executes JSON.stringify and produces
 ordinary assertion failures. Array.fromAsync, additional includes, async completion,
 and agent helpers remain separate harness gaps.
 
-The 677 Array and Array iterator files cover call/new construction, of, branding, literal elisions,
+The 713 Array and Array iterator files cover call/new construction, of, branding, literal elisions,
 indexed growth, truncation, generic at/join/push/pop, toString/toLocaleString, and ordered
 forEach/every/some callback traversal, find/findIndex/findLast/findLastIndex,
 includes/indexOf/lastIndexOf searches, reduce/reduceRight accumulators, species-aware map/filter/slice/concat/flat/flatMap/splice, sparse reverse, fill/copyWithin range mutations, shift/unshift front mutations, and sort/toSorted and toReversed/with/toSpliced copies, plus keys/values/entries
@@ -93,8 +93,9 @@ arguments and result identity, non-Array receivers, failed own data definitions,
 live sparse callback visits, slice range signs and omitted ends, inherited
 read-only output indices, and Array length RangeErrors before copying.
 
-Reviewed candidates requiring `isConstructor.js`/Reflect, `propertyHelper.js`,
-foreign realms, proxies, or resizable buffers remain outside this corpus. Their
+The later Array species/intrinsic review adds the species/non-construction
+candidates using `isConstructor.js` and Reflect. Other reviewed candidates
+requiring foreign realms, proxies, or resizable buffers remain outside this corpus. Their
 sources are not rewritten and their outcomes are not counted as passes. The
 existing native and Script regressions cover additional ordering, partial effects,
 custom-result descriptors, and host limits.
@@ -109,9 +110,9 @@ mapped/unmapped arguments, length coercion failures, and failed result definitio
 The near-safe-integer-length test throws from its first indexed getter, so it
 checks full-width length handling without an unbounded scan.
 
-Candidates requiring classes, proxies, foreign realms, typed arrays, RegExp,
-`isConstructor.js`/Reflect, or `propertyHelper.js` remain outside this corpus.
-The spreadable-function candidate requires the missing `Function` global. The
+Remaining concat candidates require proxies, foreign realms, typed arrays, or
+RegExp. The later Array species/intrinsic review adds the class, spreadable-function,
+constructor-helper, and property-helper candidates that can now run unchanged. The
 4,000-hole sparse-object fixture now runs unchanged in both Script modes under
 the default runtime configuration, with host resource quotas disabled.
 Local runtime regressions also cover safe-integer overflow before indexed reads,
@@ -127,8 +128,9 @@ receivers, poisoned source lengths, callback exceptions, species fallback and
 construction failures, and failed output definitions. The 10,001-index sparse
 flatMap input runs unchanged under the ordinary runtime defaults.
 
-Reviewed candidates requiring typed arrays, proxies/Reflect, `isConstructor.js`,
-or `propertyHelper.js` remain outside this corpus. Local runtime regressions
+Remaining flat/flatMap candidates require typed arrays or proxies. The later
+Array species/intrinsic review adds the constructor-helper and property-helper
+candidates that can now run unchanged. Local runtime regressions
 cover metadata and descriptors, sparse live mutations, aliased species results,
 safe-integer overflow, and iterative traversal of deeply nested Arrays.
 
@@ -141,11 +143,29 @@ full-width indices near 2^53-1, shrinking/growing sparse movement, constructor
 and species failures/fallback, custom species identity and arguments, failed
 result definitions, and strict final length writes including zero arguments.
 
-Reviewed candidates requiring for-in, Math.pow, foreign realms, proxies/Reflect,
-`isConstructor.js`, `proxyTrapsHelper.js`, or `propertyHelper.js` remain outside
+Remaining splice candidates require foreign realms or proxies, including the
+unchanged `proxyTrapsHelper.js` include. The later Array species/intrinsic review
+adds the for-in, Math.pow, constructor-helper, and property-helper candidates that
+can now run unchanged. These remaining candidates stay outside
 this corpus. Sources are unchanged; no default quotas or test allowances are
 introduced. Local runtime regressions also cover species aliasing, partial
 mutations on failure, and complete Array prototype reflection/integrity operations.
+
+## Array species and intrinsic review
+
+Thirty-six additional unchanged originals add 72 Script/StrictScript variants:
+two each for map, filter, and slice, eleven concat, five flat, six flatMap, and
+eight splice. They cover non-constructor species and method construction rejection,
+custom species/new.target, replacement of configurable non-writable result indices,
+inherited read-only indices, native metadata/descriptors, a non-Array class receiver,
+spreadable functions, splice result descriptors, and Array length rejection before
+source mutation. They use the existing unchanged constructor, property, and Array
+comparison helpers. The 65 whole-program reviews retain 36 originals and exclude
+29 requiring foreign realms (ten), proxies (fourteen), typed arrays (four), or
+RegExp (one). This completes the supported selection from the concat, flat,
+flatMap, and splice directories at the existing pin; the map/filter/slice revisit
+is limited to their constructor/species/non-construction candidates. No source,
+assertion, flag, helper, pin, runtime default, or resource allowance is changed.
 
 ## BigInt API review
 
@@ -1309,14 +1329,14 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 11114 variants from 5818 reviewed sources: the eleven
+The `spite-test262` command runs 11186 variants from 5854 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
 tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 200 Map and Map Iterator tests, 191 Function builtin tests, 324 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
-430 String and String iterator tests, 677 Array and Array iterator tests
+430 String and String iterator tests, 713 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
 34 Symbol tests, 27 object method/accessor tests, and 75 for-of files (53 positive
@@ -1340,7 +1360,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-10273 positives using the upstream harness, 833 reviewed parse-negative variants,
+10345 positives using the upstream harness, 833 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

@@ -41,7 +41,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11114 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11186 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1097,7 +1097,7 @@ Number tests, ten numeric parsing tests, five global numeric predicate tests, 58
 width reduction, formatting, and receiver-brand tests, plus 173 Object descriptor,
 prototype, extensibility, creation, copying, key enumeration, integrity, and SameValue tests, and
 430 String wrapper, raw construction, character, search, sequence, trimming, repetition, padding, Unicode
-well-formedness, conversion, and String iteration tests in both Script modes. Another 677 Array and Array iterator
+well-formedness, conversion, and String iteration tests in both Script modes. Another 713 Array and Array iterator
 files cover construction, of, isArray, literal elisions and spread (including
 fifteen nested object-spread files), length/index boundaries,
 truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, toString/toLocaleString, find/findIndex/findLast/findLastIndex, and ordered forEach/every/some
@@ -1212,7 +1212,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 11114 variants are four raw positives, 10273 positives using the upstream
+Rust. Its 11186 variants are four raw positives, 10345 positives using the upstream
 harness, 833 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
@@ -1318,6 +1318,18 @@ Returned non-extensible objects still receive private elements before failed
 indexed definitions. Abrupt field initialization preserves prior fields and method
 brands without visiting source elements; collection retains escaped results and
 private captures, then reclaims their cycles.
+
+Thirty-six more unchanged Array originals add 72 harness-positive variants:
+two each map/filter/slice, eleven concat, five flat, six flatMap, and eight splice.
+They cover species constructor rejection, custom construction/new.target, result
+descriptors and configurable read-only replacement, inherited indices, method
+metadata/non-construction, non-Array class receivers, spreadable functions, and
+splice creation failures before source mutation. Whole-program review of 65
+candidates excludes ten foreign-realm, fourteen Proxy, four typed-array, and one
+RegExp originals. The concat/flat/flatMap/splice directory inventories are complete
+at the pin; the map/filter/slice revisit covers constructor/species candidates.
+Both stable and MSRV pass all 72 variants with unchanged bytes, helpers, flags,
+pin, and unlimited default quotas.
 
 Sixteen unchanged class heritage/derived originals add 32 variants: 30 harness
 positives and two reviewed strict-mode parse negatives. They cover constructor and
