@@ -3469,3 +3469,105 @@ test/built-ins/Function/prototype/toString/S15.3.4.2_A9.js	-	-	-
 test/built-ins/Function/prototype/toString/name.js	-	-	-
 test/built-ins/Function/prototype/toString/not-a-constructor.js	-	-	-
 test/built-ins/Map/prototype/getOrInsertComputed/different-types-function-callbackfn-does-not-throw.js	-	-	-
+test/language/statements/with/12.10-0-1.js	-	-	-
+test/language/statements/with/12.10-0-10.js	-	-	-
+test/language/statements/with/12.10-0-11.js	-	-	-
+test/language/statements/with/12.10-0-12.js	-	-	-
+test/language/statements/with/12.10-0-3.js	-	-	-
+test/language/statements/with/12.10-0-7.js	-	-	-
+test/language/statements/with/12.10-0-8.js	-	-	-
+test/language/statements/with/12.10-0-9.js	-	-	-
+test/language/statements/with/12.10-2-1.js	-	-	-
+test/language/statements/with/12.10-2-2.js	-	-	-
+test/language/statements/with/12.10-2-3.js	-	-	-
+test/language/statements/with/12.10-2-4.js	-	-	-
+test/language/statements/with/12.10-2-5.js	-	-	-
+test/language/statements/with/12.10-7-1.js	-	-	-
+test/language/statements/with/12.10.1-13-s.js	-	-	-
+test/language/statements/with/12.10.1-4-s.js	-	-	-
+test/language/statements/with/12.10.1-5-s.js	-	-	-
+test/language/statements/with/12.10.1-8-s.js	-	-	-
+test/language/statements/with/S12.10_A3.10_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.10_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.10_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.10_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.10_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.11_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.11_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.11_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.11_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.11_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.12_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.12_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.12_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.12_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.12_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.1_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.1_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.1_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.2_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.2_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.2_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.2_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.2_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.3_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.3_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.3_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.3_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.4_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.4_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.4_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.4_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.4_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.5_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.5_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.5_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.5_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.5_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.6_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.6_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.6_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.7_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.7_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.7_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.7_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.7_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.8_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.8_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.8_T3.js	-	-	-
+test/language/statements/with/S12.10_A3.8_T4.js	-	-	-
+test/language/statements/with/S12.10_A3.8_T5.js	-	-	-
+test/language/statements/with/S12.10_A3.9_T1.js	-	-	-
+test/language/statements/with/S12.10_A3.9_T2.js	-	-	-
+test/language/statements/with/S12.10_A3.9_T3.js	-	-	-
+test/language/statements/with/binding-blocked-by-unscopables.js	-	-	-
+test/language/statements/with/binding-not-blocked-by-unscopables-falsey-prop.js	-	-	-
+test/language/statements/with/binding-not-blocked-by-unscopables-non-obj.js	-	-	-
+test/language/statements/with/get-mutable-binding-binding-deleted-in-get-unscopables-strict-mode.js	-	-	-
+test/language/statements/with/get-mutable-binding-binding-deleted-in-get-unscopables.js	-	-	-
+test/language/statements/with/let-block-with-newline.js	-	-	-
+test/language/statements/with/let-identifier-with-newline.js	-	-	-
+test/language/statements/with/scope-var-close.js	-	-	-
+test/language/statements/with/set-mutable-binding-binding-deleted-in-get-unscopables-strict-mode.js	-	-	-
+test/language/statements/with/set-mutable-binding-binding-deleted-in-get-unscopables.js	-	-	-
+test/language/statements/with/unscopables-get-err.js	-	-	-
+test/language/statements/with/unscopables-inc-dec.js	-	-	-
+test/language/statements/with/unscopables-not-referenced-for-undef.js	-	-	-
+test/language/statements/with/unscopables-prop-get-err.js	-	-	-
+test/built-ins/Function/StrictFunction_reservedwords_with.js	-	-	-
+test/language/statements/with/12.10.1-11gs.js	328	341	with statements are not allowed in strict mode
+test/language/statements/with/decl-async-fun.js	543	548	declaration requires a statement list
+test/language/statements/with/decl-async-gen.js	544	549	declaration requires a statement list
+test/language/statements/with/decl-cls.js	346	351	declaration requires a statement list
+test/language/statements/with/decl-const.js	356	361	lexical declaration requires a statement list
+test/language/statements/with/decl-fun.js	349	357	function declaration requires a statement list
+test/language/statements/with/decl-gen.js	373	381	function declaration requires a statement list
+test/language/statements/with/decl-let.js	358	359	expected a semicolon or line terminator
+test/language/statements/with/labelled-fn-stmt.js	768	776	labelled functions are not allowed
+test/language/statements/with/let-array-with-newline.js	599	602	expression statement cannot start with let [
+test/language/statements/with/strict-fn-decl-nested-1.js	432	443	with statements are not allowed in strict mode
+test/language/statements/with/strict-fn-decl-nested-2.js	413	424	with statements are not allowed in strict mode
+test/language/statements/with/strict-fn-decl.js	377	388	with statements are not allowed in strict mode
+test/language/statements/with/strict-fn-expr.js	380	391	with statements are not allowed in strict mode
+test/language/statements/with/strict-fn-method.js	388	397	with statements are not allowed in strict mode
+test/language/statements/with/strict-script.js	353	365	with statements are not allowed in strict mode
