@@ -5479,3 +5479,19 @@ test/language/statements/class/definition/setters-restricted-ids.js	-	-	-
 test/language/statements/class/name-binding/basic.js	-	-	-
 test/language/statements/class/name-binding/const.js	-	-	-
 test/language/statements/class/name-binding/expression.js	-	-	-
+test/language/statements/class/definition/constructable-but-no-prototype.js	-	-	-
+test/language/statements/class/definition/invalid-extends.js	-	-	-
+test/language/statements/class/definition/numeric-property-names.js	-	-	-
+test/language/statements/class/definition/prototype-getter.js	-	-	-
+test/language/statements/class/definition/prototype-setter.js	-	-	-
+test/language/statements/class/definition/prototype-wiring.js	-	-	-
+test/language/statements/class/definition/side-effects-in-extends.js	-	-	-
+test/language/statements/class/definition/side-effects-in-property-define.js	-	-	-
+test/language/statements/class/definition/this-access-restriction-2.js	-	-	-
+test/language/statements/class/definition/this-access-restriction.js	-	-	-
+test/language/statements/class/definition/this-check-ordering.js	-	-	-
+test/language/statements/class/name-binding/in-extends-expression-assigned.js	-	-	-
+test/language/statements/class/name-binding/in-extends-expression-grouped.js	-	-	-
+test/language/statements/class/name-binding/in-extends-expression.js	-	-	-
+test/language/statements/class/strict-mode/arguments-callee.js	-	-	-
+test/language/statements/class/strict-mode/with.js	315	325	with statements are not allowed in strict mode

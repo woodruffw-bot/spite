@@ -41,7 +41,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10439 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10471 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1212,8 +1212,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 10439 variants are four raw positives, 9732 positives using the upstream
-harness, 699 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
+Rust. Its 10471 variants are four raw positives, 9762 positives using the upstream
+harness, 701 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol
@@ -1276,7 +1276,7 @@ TDZs and ordering, name inference before static overrides, accessor merging,
 Symbol/lone-surrogate keys, exact class/method source, eval/Function compilation,
 super properties, abrupt context restoration, collection, checked home-object
 handles, and opt-in name limits. Parser AST/diagnostic snapshots cover constructor,
-strictness, scope, and declaration errors. Unsupported heritage, fields, private
+strictness, scope, and declaration errors. Unsupported fields, private
 elements, static blocks, and async/generator methods retain no conformance credit.
 Five additional recursive class construction/method/computed-name/eval cases run
 on two-mebibyte native stacks with the existing 32-call, 64-evaluation, and
@@ -1287,10 +1287,10 @@ Twenty-three unchanged class definition/name-binding originals add 46 variants:
 construction, strict code, instance/static method/accessor descriptors and names,
 prototype rejection, restricted properties, and immutable internal class bindings.
 All 73 originals in the three reviewed definition/name-binding/strict-mode
-directories were read as complete programs. Fifty whole files remain excluded
-without credit: 22 require generator methods, twelve async methods, and sixteen
-heritage/derived construction. This includes nine async parse negatives, six
-generator parse negatives, and one heritage-dependent strict-mode parse negative.
+directories were read as complete programs. Thirty-four whole files remain excluded
+without credit: 22 require generator methods and twelve async methods, including
+nine async parse negatives and six generator parse negatives. The sixteen heritage
+originals are now retained below.
 Two retained accessor originals carry historical generator annotations but use
 ordinary class accessors only. The retained ordinary duplicate-parameter negative
 checks its exact original token and message in both Script modes. Every Git blob,
@@ -1308,3 +1308,15 @@ boundaries, heritage precedence, and forbidden new/assignment/optional super cal
 Four additional recursive derived construction/default/eval cases exercise the
 existing native-stack guards on two-mebibyte threads with normal debug profiles.
 Existing host-abort controls now use unimplemented fields as their source gap.
+
+Sixteen unchanged class heritage/derived originals add 32 variants: 30 harness
+positives and two reviewed strict-mode parse negatives. They cover constructor and
+instance prototype links, superclass and prototype validation/effects, explicit and
+default construction, uninitialized and repeated super calls, name-binding heritage
+TDZs, super methods, inherited strict code, and restricted arguments properties.
+The original nested with statement is checked at its exact byte range and diagnostic
+in both Script modes. The three reviewed class directories now retain 39 of 73
+whole sources, producing 78 variants: 74 positives and four parse negatives.
+The remaining 34 sources require generator or async methods and receive no credit.
+All source bytes, Git blob hashes, assertions, metadata, helpers, and the pin are
+unchanged; both toolchains pass the 32 added variants under ordinary defaults.

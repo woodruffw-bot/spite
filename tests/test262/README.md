@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5499 unmodified test fixtures and eight harness files come from
+These 5515 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1157,19 +1157,35 @@ Symbol names, restricted function properties, computed static prototype rejectio
 and captured immutable class names in declarations and expressions.
 
 All 73 originals in the definition, name-binding, and strict-mode directories were
-reviewed with their complete programs and metadata. Fifty remain excluded as
-whole files without credit: 22 contain generator methods, twelve contain async
-methods, and sixteen require heritage/derived construction. The two retained
-computed static accessor rejection originals have historical generator feature
+reviewed with their complete programs and metadata. Thirty-four remain excluded as
+whole files without credit: 22 contain generator methods and twelve contain async
+methods. The sixteen heritage/derived originals are retained below. The two
+retained computed static accessor rejection originals have historical generator feature
 annotations but contain only ordinary accessors; the original metadata is retained.
-Nine excluded async negatives and six generator negatives receive no credit;
-the strict-mode negative also requires unsupported heritage. The retained ordinary
-method negative checks the duplicate parameter at bytes 667–668 and the exact
+Nine excluded async negatives and six generator negatives receive no credit.
+The retained ordinary method negative checks the duplicate parameter at bytes 667–668 and the exact
 parser diagnostic; the strict variant adds only the prescribed directive prefix.
 
 Git blob hashes verify every source at the existing pin. Both stable and MSRV pass
 all 46 variants with ordinary unlimited defaults. No source, assertion, metadata,
 harness helper, or pin was changed.
+
+## Class heritage fixtures
+
+Sixteen more unchanged originals from the same reviewed directories add 32 variants:
+30 harness positives and two parse negatives. They cover superclass/prototype
+validation, constructor and instance prototype links, superclass evaluation effects,
+explicit/default construction, uninitialized and repeated super calls, immutable
+class names and heritage TDZs, numeric super methods, strict inherited constructors,
+and restricted arguments properties. The strict-mode negative checks the complete
+with statement in a function nested within ClassHeritage, at its reviewed original
+byte range and exact diagnostic; neither variant receives unsupported-feature credit.
+
+These bring the class cohort to 39 sources and 78 variants: 74 positives and four
+parse negatives. The remaining 34 whole-file exclusions require generator or async
+methods. Git blob hashes verify every original at the existing pin. Both stable and
+MSRV pass all 32 added variants with ordinary unlimited defaults. Sources, assertions,
+metadata, helpers, and the pin remain unchanged.
 
 ## Scope and maintenance
 
@@ -1192,7 +1208,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10439 variants from 5480 reviewed sources: the eleven
+The `spite-test262` command runs 10471 variants from 5496 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1213,13 +1229,14 @@ files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
 files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
 files (187 positive and three runtime-negative), and 22 super-expression positives,
-and 23 base-class files (22 positive and one parse-negative).
+and 39 class definition/name-binding/strict-mode files (37 positive and two
+parse-negative).
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-9732 positives using the upstream harness, 699 reviewed parse-negative variants,
+9762 positives using the upstream harness, 701 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
