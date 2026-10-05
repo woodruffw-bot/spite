@@ -10,7 +10,7 @@ not an alternative language specification.
 | --- | --- |
 | Source | UTF-8 Scripts and lossless UTF-16 eval/Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
-| Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
+| Lexical grammar | On-demand parser lookahead, ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
@@ -222,6 +222,17 @@ Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
 into identifiers or stand in for grammar keywords. Unicode property tables are
 generated from pinned data and do not depend on the Rust toolchain version.
+
+The parser now owns the scanner and requests cached lookahead only as needed.
+All Script, lossless UTF-16, eval, and dynamic Function entry points propagate
+encountered lexical failures, including failures that appear syntactically to
+terminate input or occur during cover/computed-name lookahead. Three regressions
+and an inspected diagnostic snapshot exercise these boundaries and preserve
+Unsupported for recognized unavailable syntax before unrequested invalid input.
+Consumed tokens retain strict legacy checks, exact source spans, escapes, and
+line-terminator trivia. The existing native-depth guard is unchanged. Template
+brace tracking still belongs to the scanner; grammar-driven lexical goals and
+RegExp literals remain separate work.
 
 Each production crate currently depends only on std and workspace crates. The
 design permits regex and jiff when needed. Neither has been added. insta remains

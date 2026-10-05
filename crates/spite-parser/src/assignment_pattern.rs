@@ -6,12 +6,13 @@ impl Parser {
     // Refine an object/array cover only when the complete outer literal is
     // followed by assignment or a for-in/of delimiter. Ordinary literals keep
     // their own grammar, including prototype setters and initialized shorthand.
-    pub(super) fn pattern_cover_end(&self) -> Option<usize> {
+    pub(super) fn pattern_cover_end(&mut self) -> Option<usize> {
         if !matches!(self.current().kind, Kind::Punct("{" | "[")) {
             return None;
         }
         let mut pending = Vec::new();
-        for (index, token) in self.tokens.iter().enumerate().skip(self.index) {
+        let mut index = self.index;
+        while let Some(token) = self.token_at(index) {
             match token.kind {
                 Kind::Punct("(") => pending.push(")"),
                 Kind::Punct("[") => pending.push("]"),
@@ -27,6 +28,7 @@ impl Parser {
                 Kind::Eof => return None,
                 _ => {}
             }
+            index += 1;
         }
         None
     }
@@ -113,7 +115,7 @@ impl Parser {
             // A literal followed by member/call/template syntax is part of a
             // reference expression rather than a nested AssignmentPattern.
             if !matches!(
-                self.tokens.get(end + 1).map(|t| &t.kind),
+                self.token_at(end + 1).map(|t| &t.kind),
                 Some(Kind::Punct("." | "[" | "(" | "?.")) | Some(Kind::Template { .. })
             ) {
                 return self

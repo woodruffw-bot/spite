@@ -290,7 +290,7 @@ impl Parser {
         result
     }
 
-    fn class_method_name_ahead(&self) -> bool {
+    fn class_method_name_ahead(&mut self) -> bool {
         let start = self.index;
         let end = match &self.current().kind {
             Kind::Word(_) | Kind::Literal(_) => start + 1,
@@ -298,7 +298,8 @@ impl Parser {
             Kind::Punct("[") => {
                 let mut depth = 0usize;
                 let mut end = None;
-                for (index, token) in self.tokens.iter().enumerate().skip(start) {
+                let mut index = start;
+                while let Some(token) = self.token_at(index) {
                     match token.kind {
                         Kind::Punct("[") => depth += 1,
                         Kind::Punct("]") => {
@@ -311,14 +312,14 @@ impl Parser {
                         Kind::Eof => break,
                         _ => {}
                     }
+                    index += 1;
                 }
                 let Some(end) = end else { return false };
                 end
             }
             _ => return false,
         };
-        self.tokens
-            .get(end)
+        self.token_at(end)
             .is_some_and(|token| token.kind == Kind::Punct("("))
     }
 }

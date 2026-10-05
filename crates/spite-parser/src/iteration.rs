@@ -54,7 +54,7 @@ impl Parser {
         }
         self.expect("(")?;
         if let Some(end) = self.pattern_cover_end() {
-            if self.tokens.get(end + 1).is_some_and(|token| {
+            if self.token_at(end + 1).is_some_and(|token| {
                 !token.escaped
                     && matches!(&token.kind, Kind::Word(name) if name == "in" || name == "of")
             }) {
@@ -86,8 +86,7 @@ impl Parser {
         } else if self.at("const")
             || (self.at("let")
                 && self
-                    .tokens
-                    .get(self.index + 1)
+                    .token_at(self.index + 1)
                     .is_some_and(|t| match &t.kind {
                         Kind::Word(name) => !reserved(name),
                         Kind::Punct("[" | "{") => true,

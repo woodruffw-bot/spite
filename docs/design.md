@@ -67,9 +67,14 @@ tails. Preserve whether trivia contains a line terminator. Do not approximate AS
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,
 and context-sensitive syntax. Keep parentheses where early errors depend on them.
 
-The current eager scanner tracks braces in template substitutions. Before adding
-RegExp literals, move lexical-goal selection into the parser so braces and
-backticks inside a RegExp body cannot affect template scanning.
+The parser owns its source scanner and caches tokens as syntactic lookahead
+demands them. Consumed tokens retain spans and strict legacy-token evidence.
+Scanner failures terminate lookahead and are reported at every public parsing
+boundary; a synthetic EOF cannot make a lexical failure successful. Ordinary
+cursor operations remain infallible to keep recursive grammar frames small.
+The scanner still tracks braces in template substitutions. Before adding RegExp
+literals, move lexical-goal selection into the parser so braces and backticks
+inside a RegExp body cannot affect template scanning.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

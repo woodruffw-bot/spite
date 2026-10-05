@@ -49,7 +49,8 @@ pub fn parse_script_with_source_limit(
 /// [`DiagnosticKind::Unsupported`] where they can be recognized.
 pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
     let mut parser = Parser::new(source)?;
-    parse_script_contents(&mut parser)
+    let result = parse_script_contents(&mut parser);
+    parser.finish(result)
 }
 
 /// Parses a Script from UTF-16, preserving lone surrogate source code points.
@@ -60,7 +61,8 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
 pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
     let mut parser =
         Parser::from_source(std::rc::Rc::new(source::SourceText::from_utf16(source)?))?;
-    parse_script_contents(&mut parser)
+    let result = parse_script_contents(&mut parser);
+    parser.finish(result)
 }
 
 /// Caller context used by direct eval's Script early errors (19.2.1.1).
@@ -104,7 +106,8 @@ pub fn parse_eval_utf16_with_private_names(
     parser.allow_super_call = context.in_derived_constructor;
     parser.allow_arguments = !context.in_class_field_initializer;
     parser.inherit_private_names(private_names);
-    let script = parse_script_contents_with_strictness(&mut parser, context.strict)?;
+    let result = parse_script_contents_with_strictness(&mut parser, context.strict);
+    let script = parser.finish(result)?;
     let scope = parser.private_scopes.pop().expect("eval private scope");
     parser.finish_private_scope(scope)?;
     Ok(script)
@@ -173,6 +176,8 @@ fn reject_legacy_tokens(tokens: &[Token]) -> Result<(), Diagnostic> {
 
 struct Parser {
     source: std::rc::Rc<source::SourceText>,
+    lexer: Lexer,
+    lexical_error: Option<Diagnostic>,
     tokens: Vec<Token>,
     index: usize,
     depth: usize,
@@ -192,18 +197,12 @@ impl Parser {
     }
 
     fn from_source(source: std::rc::Rc<source::SourceText>) -> Result<Self, Diagnostic> {
-        let mut lexer = Lexer::new(&source);
-        let mut tokens = Vec::new();
-        loop {
-            let token = lexer.next()?;
-            let done = token.kind == Kind::Eof;
-            tokens.push(token);
-            if done {
-                break;
-            }
-        }
+        let mut lexer = Lexer::new(source.clone());
+        let tokens = vec![lexer.next()?];
         Ok(Self {
             source,
+            lexer,
+            lexical_error: None,
             tokens,
             index: 0,
             depth: 0,
@@ -221,6 +220,47 @@ impl Parser {
     fn current(&self) -> &Token {
         &self.tokens[self.index]
     }
+
+    // A scanner failure terminates lookahead and is reported at each public
+    // parsing boundary, even if the syntactic parser accepts the EOF sentinel
+    // or produces a secondary diagnostic. Keeping ordinary cursor operations
+    // infallible avoids growing every recursive grammar frame with error paths.
+    fn finish<T>(&self, result: Result<T, Diagnostic>) -> Result<T, Diagnostic> {
+        match &self.lexical_error {
+            Some(error) => Err(error.clone()),
+            None => result,
+        }
+    }
+
+    // Cache only the lookahead demanded by the syntactic grammar. Consumed
+    // tokens remain available for exact spans and strict legacy-token checks.
+    fn token_at(&mut self, index: usize) -> Option<&Token> {
+        while index >= self.tokens.len() {
+            if self
+                .tokens
+                .last()
+                .is_some_and(|token| token.kind == Kind::Eof)
+            {
+                return None;
+            }
+            let token = match self.lexer.next() {
+                Ok(token) => token,
+                Err(error) => {
+                    let span = error.span;
+                    self.lexical_error = Some(error);
+                    Token {
+                        kind: Kind::Eof,
+                        span,
+                        newline: false,
+                        escaped: false,
+                        legacy: false,
+                    }
+                }
+            };
+            self.tokens.push(token);
+        }
+        self.tokens.get(index)
+    }
     // Grammar terminals cannot contain Unicode escapes (ECMA-262 5.1.5.1).
     fn at(&self, text: &str) -> bool {
         match &self.current().kind {
@@ -232,6 +272,7 @@ impl Parser {
     fn bump(&mut self) -> Token {
         let token = self.current().clone();
         if token.kind != Kind::Eof {
+            let _ = self.token_at(self.index + 1);
             self.index += 1;
         }
         token
@@ -291,8 +332,7 @@ impl Parser {
         let start = self.current().span.start;
         if matches!(&self.current().kind, Kind::Word(name) if !reserved(name))
             && self
-                .tokens
-                .get(self.index + 1)
+                .token_at(self.index + 1)
                 .is_some_and(|t| t.kind == Kind::Punct(":"))
         {
             let label = self.label_identifier()?;
@@ -315,8 +355,7 @@ impl Parser {
         if !allow_declaration
             && self.at("let")
             && self
-                .tokens
-                .get(self.index + 1)
+                .token_at(self.index + 1)
                 .is_some_and(|t| t.kind == Kind::Punct("["))
         {
             return Err(self.error("expression statement cannot start with let ["));
@@ -325,8 +364,7 @@ impl Parser {
             || (allow_declaration
                 && self.at("let")
                 && self
-                    .tokens
-                    .get(self.index + 1)
+                    .token_at(self.index + 1)
                     .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))));
         // 14.5's ExpressionStatement lookahead cannot turn declarations into
         // statements, even when the declaration's body is not implemented yet.
@@ -829,8 +867,7 @@ impl Parser {
             )?
         } else if minimum <= 2 {
             if self.pattern_cover_end().is_some_and(|end| {
-                self.tokens
-                    .get(end + 1)
+                self.token_at(end + 1)
                     .is_some_and(|token| token.kind == Kind::Punct("="))
             }) {
                 let pattern = self.assignment_pattern()?;
@@ -1022,9 +1059,9 @@ impl Parser {
         }
         Ok(left)
     }
-    fn at_async_function(&self) -> bool {
+    fn at_async_function(&mut self) -> bool {
         self.at("async")
-            && self.tokens.get(self.index + 1).is_some_and(|token| {
+            && self.token_at(self.index + 1).is_some_and(|token| {
                 !token.newline
                     && !token.escaped
                     && matches!(&token.kind, Kind::Word(name) if name == "function")
@@ -1126,8 +1163,7 @@ impl Parser {
                     if self.allow_super_property {
                         if self.at(".")
                             && self
-                                .tokens
-                                .get(self.index + 1)
+                                .token_at(self.index + 1)
                                 .is_some_and(|token| token.kind == Kind::Punct("#"))
                         {
                             return Err(early(

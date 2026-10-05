@@ -40,7 +40,8 @@ fn parse_sources(
     let parameters = Rc::new(parameters);
     let mut parser = Parser::from_source(parameters.clone())?;
     parser.allow_new_target = true;
-    parser.formal_parameter_list("invalid function parameter identifier", false)?;
+    let result = parser.formal_parameter_list("invalid function parameter identifier", false);
+    parser.finish(result)?;
     if parser.current().kind != Kind::Eof {
         return Err(parser.error("unexpected token after function parameters"));
     }
@@ -50,14 +51,16 @@ fn parse_sources(
     let body = Rc::new(source::SourceText::join(&[&newline, &body, &newline])?);
     let mut parser = Parser::from_source(body.clone())?;
     parser.allow_new_target = true;
-    parser.function_body_contents(false)?;
+    let result = parser.function_body_contents(false);
+    parser.finish(result)?;
 
     let prefix = source::SourceText::from_str("function anonymous(");
     let middle = source::SourceText::from_str("\n) {");
     let suffix = source::SourceText::from_str("}");
     let source = source::SourceText::join(&[&prefix, &parameters, &middle, &body, &suffix])?;
     let mut parser = Parser::from_source(Rc::new(source))?;
-    let function = parser.ordinary_function(false)?;
+    let result = parser.ordinary_function(false);
+    let function = parser.finish(result)?;
     if parser.current().kind != Kind::Eof {
         return Err(parser.error("unexpected token after dynamic function"));
     }

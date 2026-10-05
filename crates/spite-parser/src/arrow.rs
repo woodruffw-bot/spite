@@ -4,15 +4,16 @@ use super::*;
 
 impl Parser {
     // Recognize a complete parameter cover before consuming it. Parenthesis
-    // scans are bounded by the already bounded token stream and parser depth.
-    fn arrow_head_end(&self, start: usize) -> Option<usize> {
-        let token = self.tokens.get(start)?;
+    // scans demand tokens only through the closing parenthesis and arrow.
+    fn arrow_head_end(&mut self, start: usize) -> Option<usize> {
+        let token = self.token_at(start)?;
         let end = match &token.kind {
             Kind::Word(_) => start,
             Kind::Punct("(") => {
                 let mut depth = 0usize;
                 let mut end = None;
-                for (index, token) in self.tokens.iter().enumerate().skip(start) {
+                let mut index = start;
+                while let Some(token) = self.token_at(index) {
                     match token.kind {
                         Kind::Punct("(") => depth += 1,
                         Kind::Punct(")") => {
@@ -25,17 +26,20 @@ impl Parser {
                         Kind::Eof => break,
                         _ => {}
                     }
+                    index += 1;
                 }
                 end?
             }
             _ => return None,
         };
-        (self.tokens.get(end + 1)?.kind == Kind::Punct("=>")).then_some(end)
+        (self.token_at(end + 1)?.kind == Kind::Punct("=>")).then_some(end)
     }
 
     pub(super) fn arrow_expression(&mut self) -> Result<Option<Expr>, Diagnostic> {
         if self.at("async")
-            && !self.tokens[self.index + 1].newline
+            && self
+                .token_at(self.index + 1)
+                .is_some_and(|token| !token.newline)
             && self.arrow_head_end(self.index + 1).is_some()
         {
             return Err(self.unsupported("async arrow functions are not implemented"));

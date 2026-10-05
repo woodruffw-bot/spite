@@ -25,8 +25,8 @@ pub(crate) struct Token {
     pub legacy: bool,
 }
 
-pub(crate) struct Lexer<'a> {
-    source: &'a SourceText,
+pub(crate) struct Lexer {
+    source: std::rc::Rc<SourceText>,
     pos: usize,
     template_braces: Vec<usize>,
 }
@@ -36,15 +36,15 @@ use spite_core::{
     is_line_terminator as is_line, is_whitespace as is_space,
 };
 
-impl<'a> Lexer<'a> {
-    pub fn new(source: &'a SourceText) -> Self {
+impl Lexer {
+    pub fn new(source: std::rc::Rc<SourceText>) -> Self {
         Self {
             source,
             pos: 0,
             template_braces: Vec::new(),
         }
     }
-    fn rest(&self) -> &'a str {
+    fn rest(&self) -> &str {
         &self.source.lexical_text()[self.pos..]
     }
     fn peek(&self) -> Option<char> {
@@ -632,8 +632,8 @@ mod tests {
     }
 
     fn tokens(source: &str) -> Result<Vec<Kind>, Diagnostic> {
-        let source = SourceText::from_str(source);
-        let mut lexer = Lexer::new(&source);
+        let source = std::rc::Rc::new(SourceText::from_str(source));
+        let mut lexer = Lexer::new(source);
         let mut tokens = Vec::new();
         loop {
             let token = lexer.next()?;

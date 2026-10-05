@@ -17,8 +17,7 @@ impl Parser {
         if require_name
             && !self.allow_await_identifier
             && self
-                .tokens
-                .get(self.index + 1)
+                .token_at(self.index + 1)
                 .is_some_and(|token| matches!(&token.kind, Kind::Word(name) if name == "await"))
         {
             return Err(early(
