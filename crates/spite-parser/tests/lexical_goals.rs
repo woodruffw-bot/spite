@@ -14,9 +14,7 @@ fn literal_contents_do_not_substitute_unrelated_javascript_diagnostics() {
         "({x: /`}/})",
         "class C { get [/`}/]() {} }",
         "`a${/[}`]/g}b`",
-        "/a/qq",
         "/(/",
-        "/a/uv",
     ];
     let errors: Vec<_> = sources
         .into_iter()
@@ -47,6 +45,79 @@ fn literal_boundaries_are_shared_by_script_eval_and_function_goals() {
         assert_eq!(
             parse_dynamic_function(parameters, body).unwrap_err().kind,
             DiagnosticKind::Unsupported
+        );
+    }
+}
+
+#[test]
+fn every_flag_subset_uses_exactly_one_unicode_mode() {
+    let flags = b"dgimsuvy";
+    for subset in 0u16..256 {
+        let flags: String = flags
+            .iter()
+            .enumerate()
+            .filter_map(|(index, flag)| (subset & (1 << index) != 0).then_some(char::from(*flag)))
+            .collect();
+        let source = format!("/a/{flags}");
+        let error = parse_script(&source).unwrap_err();
+        assert_eq!(
+            error.kind,
+            if flags.contains('u') && flags.contains('v') {
+                DiagnosticKind::Syntax
+            } else {
+                DiagnosticKind::Unsupported
+            },
+            "{source}"
+        );
+    }
+    for flags in ["yvsmigd", "yusmigd"] {
+        assert_eq!(
+            parse_script(&format!("/a/{flags}")).unwrap_err().kind,
+            DiagnosticKind::Unsupported
+        );
+    }
+}
+
+#[test]
+fn flag_early_errors_precede_unimplemented_pattern_validation() {
+    let sources = [
+        "/./G",
+        "/./gig",
+        "/a/qq",
+        "/a/uv",
+        "/a/vu",
+        "/a/uvq",
+        "/a/uvgg",
+        "/(/q",
+        "/./0",
+        "/./$",
+        "/./é",
+        "/./𐐀",
+        "let x = /a/gg;",
+        "class C { get [/a/qq]() {} }",
+        "`a${/a/uv}b`",
+    ];
+    let errors: Vec<_> = sources
+        .into_iter()
+        .map(|source| {
+            let error = parse_script(source).unwrap_err();
+            assert_eq!(error.kind, DiagnosticKind::Syntax, "{source}");
+            assert_eq!(
+                parse_script_utf16(&JsString::from(source)).unwrap_err(),
+                error
+            );
+            assert_eq!(
+                parse_eval_utf16(&JsString::from(source), EvalContext::default()).unwrap_err(),
+                error
+            );
+            error
+        })
+        .collect();
+    insta::assert_debug_snapshot!(errors);
+    for (parameters, body) in [("x = /./G", "return x;"), ("x", "return /./gig;")] {
+        assert_eq!(
+            parse_dynamic_function(parameters, body).unwrap_err().kind,
+            DiagnosticKind::Syntax
         );
     }
 }

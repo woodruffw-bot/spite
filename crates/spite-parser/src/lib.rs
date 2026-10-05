@@ -15,6 +15,7 @@ mod lexer;
 mod object;
 mod optional_chain;
 mod private;
+mod regexp;
 mod source;
 mod template;
 
@@ -1251,8 +1252,8 @@ impl Parser {
         }
     }
 
-    // Only boundary scanning exists so far. Never expose a literal AST or
-    // credit Pattern early errors before the ECMAScript Pattern parser exists.
+    // Boundary and flag validation precede the missing Pattern grammar. Never
+    // expose a literal AST or credit Pattern early errors before it exists.
     fn regexp_diagnostic(&mut self) -> Diagnostic {
         let span = self.current().span;
         if self
@@ -1264,24 +1265,23 @@ impl Parser {
             // JavaScript. That diagnostic belongs to the wrong lexical goal.
             self.lookahead_error = None;
         }
-        let span = if matches!(self.current().kind, Kind::RegExp { .. }) {
-            span
+        if let Kind::RegExp { flags, .. } = &self.current().kind {
+            return regexp::literal_diagnostic(flags, span);
+        }
+        let goal = if self.template_braces.is_empty() {
+            Goal::RegExp
         } else {
-            let goal = if self.template_braces.is_empty() {
-                Goal::RegExp
-            } else {
-                Goal::RegExpOrTemplateTail
-            };
-            match Lexer::at(self.source.clone(), span.start).next(goal) {
-                Ok(token) => token.span,
-                Err(error) => return error,
-            }
+            Goal::RegExpOrTemplateTail
         };
-        Diagnostic::new(
-            DiagnosticKind::Unsupported,
-            span,
-            "regular expression pattern validation and matching are not implemented",
-        )
+        match Lexer::at(self.source.clone(), span.start).next(goal) {
+            Ok(Token {
+                kind: Kind::RegExp { flags, .. },
+                span,
+                ..
+            }) => regexp::literal_diagnostic(&flags, span),
+            Ok(_) => unreachable!("RegExp goal at a primary-expression solidus"),
+            Err(error) => error,
+        }
     }
 }
 

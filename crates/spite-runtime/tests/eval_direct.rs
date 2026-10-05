@@ -26,6 +26,22 @@ fn direct_reference_forms_use_caller_bindings_after_all_argument_effects() {
 }
 
 #[test]
+fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_host_failures() {
+    for flags in ["G", "gig", "uv", "vu"] {
+        check(&format!(
+            "let effects=0,caught=false;try{{eval('effects=1; /./{flags};');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+        ));
+    }
+    let mut realm = Realm::default();
+    realm.eval("var marker=0;").unwrap();
+    assert!(matches!(
+        realm.eval("try{eval('marker=1; /./g;');}catch{marker=2;}finally{marker=3;}"),
+        Err(Error::Unsupported { .. })
+    ));
+    assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+}
+
+#[test]
 fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable() {
     check(
         "function f(){eval('var x=7;function g(){return x;}function g(){return x+1;}');return x===7 && g()===8 && delete x && delete g && typeof x==='undefined' && typeof g==='undefined';}f() && typeof x==='undefined' && typeof g==='undefined'",

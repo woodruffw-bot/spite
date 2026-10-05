@@ -77,8 +77,10 @@ brace state. Parser-owned substitution context selects Div/TemplateTail while
 caching lookahead. Initial input uses HashbangOrRegExp. A primary-expression
 solidus is scanned with a RegExp goal; braces, backticks, and quotes inside its
 body cannot replace the literal's diagnostic with an unrelated JavaScript error.
-This scanner implements token boundaries only. RegExp literals still produce
-Unsupported until the separate Pattern grammar and matching semantics exist.
+This scanner implements token boundaries only. Literal validation rejects unknown
+or repeated flags and simultaneous u/v modes before Pattern parsing. Literals with
+valid flags still produce Unsupported until the separate Pattern grammar and
+matching semantics exist.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
 and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
 Computed class accessor lookahead parses its name with the expression grammar and

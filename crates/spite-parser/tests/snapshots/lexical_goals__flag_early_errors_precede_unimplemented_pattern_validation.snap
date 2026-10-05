@@ -1,0 +1,126 @@
+---
+source: crates/spite-parser/tests/lexical_goals.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "duplicate regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "regular expression flags u and v are mutually exclusive",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "regular expression flags u and v are mutually exclusive",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "duplicate regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 8,
+            end: 13,
+        },
+        message: "duplicate regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 15,
+            end: 20,
+        },
+        message: "invalid regular expression flag",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 4,
+            end: 9,
+        },
+        message: "regular expression flags u and v are mutually exclusive",
+    },
+]

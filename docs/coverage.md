@@ -247,10 +247,21 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed: Pattern grammar, flag validity,
-Pattern early errors, matching, intrinsics, and grammar-driven reusable cover
-lookahead remain pending. Lexically complete invalid patterns/flags still produce
+No RegExp literal AST or execution pass is exposed: Pattern grammar, Pattern early
+errors, matching, intrinsics, and grammar-driven reusable cover lookahead remain
+pending. Lexically complete invalid patterns with valid flags still produce
 Unsupported and cannot receive parse-negative credit.
+
+Literal flag validation implements IsValidRegularExpressionLiteral's allowed
+`d g i m s u v y` code points and duplicate rejection, followed by ParsePattern's
+u/v exclusion. Unknown or duplicate flags take precedence over incompatible
+Unicode modes; flag rejection precedes the missing Pattern grammar. Two parser
+regressions cover every flag subset, reordered valid flags, non-ASCII and astral
+flags, validation order, templates/computed keys, and UTF-16, eval, and dynamic
+Function entry points. The new flag diagnostic snapshot and the reduced Pattern
+gap snapshot were inspected. An eval regression verifies that flag errors become
+SyntaxError before source effects, while valid-flag Pattern gaps bypass JavaScript
+catch/finally as host Unsupported. Runtime defaults and native guards are unchanged.
 
 34 unchanged RegExp lexical-boundary originals add 68 Script/StrictScript variants:
 36 harness positives and 32 reviewed parse negatives. Programs verify comment

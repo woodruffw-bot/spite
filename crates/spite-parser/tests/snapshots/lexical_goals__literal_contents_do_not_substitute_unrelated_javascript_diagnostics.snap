@@ -55,23 +55,7 @@ expression: errors
         kind: Unsupported,
         span: Span {
             start: 0,
-            end: 5,
-        },
-        message: "regular expression pattern validation and matching are not implemented",
-    },
-    Diagnostic {
-        kind: Unsupported,
-        span: Span {
-            start: 0,
             end: 3,
-        },
-        message: "regular expression pattern validation and matching are not implemented",
-    },
-    Diagnostic {
-        kind: Unsupported,
-        span: Span {
-            start: 0,
-            end: 5,
         },
         message: "regular expression pattern validation and matching are not implemented",
     },
