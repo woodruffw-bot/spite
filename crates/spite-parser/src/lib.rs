@@ -65,7 +65,7 @@ pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
 /// Caller context used by direct eval's Script early errors (19.2.1.1).
 ///
 /// Arrows inherit the nearest non-arrow function's new.target and super context.
-/// Classes, derived constructors, and private environments remain unsupported.
+/// Class heritage, derived constructors, and private environments remain unsupported.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct EvalContext {
     /// Whether the direct caller executes strict code.

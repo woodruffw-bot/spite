@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5476 unmodified test fixtures and eight harness files come from
+These 5499 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1146,6 +1146,31 @@ rewritten. Git blob hashes verify every source. Both stable and MSRV pass all 50
 variants under ordinary unlimited defaults; the existing pin and eight helpers
 are unchanged.
 
+## Base class fixtures
+
+The selection adds 23 unchanged originals from the class definition and name-binding
+inventories: 22 harness-positive sources and one reviewed ordinary-method duplicate
+parameter negative. Their 46 variants comprise 44 positives and two parse negatives.
+They cover base/default construction, prototype and constructor attributes,
+strict constructors, instance/static methods and accessors, descriptor merging,
+Symbol names, restricted function properties, computed static prototype rejection,
+and captured immutable class names in declarations and expressions.
+
+All 73 originals in the definition, name-binding, and strict-mode directories were
+reviewed with their complete programs and metadata. Fifty remain excluded as
+whole files without credit: 22 contain generator methods, twelve contain async
+methods, and sixteen require heritage/derived construction. The two retained
+computed static accessor rejection originals have historical generator feature
+annotations but contain only ordinary accessors; the original metadata is retained.
+Nine excluded async negatives and six generator negatives receive no credit;
+the strict-mode negative also requires unsupported heritage. The retained ordinary
+method negative checks the duplicate parameter at bytes 667–668 and the exact
+parser diagnostic; the strict variant adds only the prescribed directive prefix.
+
+Git blob hashes verify every source at the existing pin. Both stable and MSRV pass
+all 46 variants with ordinary unlimited defaults. No source, assertion, metadata,
+harness helper, or pin was changed.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -1167,7 +1192,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10393 variants from 5457 reviewed sources: the eleven
+The `spite-test262` command runs 10439 variants from 5480 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1187,13 +1212,14 @@ files (71 positive and six parse-negative), and 507 formal binding pattern
 files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
 files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
-files (187 positive and three runtime-negative), and 22 super-expression positives.
+files (187 positive and three runtime-negative), and 22 super-expression positives,
+and 23 base-class files (22 positive and one parse-negative).
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-9688 positives using the upstream harness, 697 reviewed parse-negative variants,
+9732 positives using the upstream harness, 699 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

@@ -5456,3 +5456,26 @@ test/language/expressions/object/method-definition/name-super-call-param.js	382	
 test/language/expressions/object/method-definition/name-super-prop-body.js	-	-	-
 test/language/expressions/object/method-definition/name-super-prop-param.js	-	-	-
 test/language/eval-code/direct/super-prop-method.js	-	-	-
+test/language/statements/class/definition/accessors.js	-	-	-
+test/language/statements/class/definition/basics.js	-	-	-
+test/language/statements/class/definition/constructor-property.js	-	-	-
+test/language/statements/class/definition/constructor-strict-by-default.js	-	-	-
+test/language/statements/class/definition/constructor.js	-	-	-
+test/language/statements/class/definition/early-errors-class-method-duplicate-parameters.js	667	668	duplicate lexical binding
+test/language/statements/class/definition/fn-name-accessor-get.js	-	-	-
+test/language/statements/class/definition/fn-name-accessor-set.js	-	-	-
+test/language/statements/class/definition/fn-name-method.js	-	-	-
+test/language/statements/class/definition/getters-non-configurable-err.js	-	-	-
+test/language/statements/class/definition/getters-prop-desc.js	-	-	-
+test/language/statements/class/definition/getters-restricted-ids.js	-	-	-
+test/language/statements/class/definition/implicit-constructor.js	-	-	-
+test/language/statements/class/definition/methods-named-eval-arguments.js	-	-	-
+test/language/statements/class/definition/methods-restricted-properties.js	-	-	-
+test/language/statements/class/definition/methods.js	-	-	-
+test/language/statements/class/definition/prototype-property.js	-	-	-
+test/language/statements/class/definition/setters-non-configurable-err.js	-	-	-
+test/language/statements/class/definition/setters-prop-desc.js	-	-	-
+test/language/statements/class/definition/setters-restricted-ids.js	-	-	-
+test/language/statements/class/name-binding/basic.js	-	-	-
+test/language/statements/class/name-binding/const.js	-	-	-
+test/language/statements/class/name-binding/expression.js	-	-	-
