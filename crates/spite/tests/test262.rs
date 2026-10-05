@@ -25,6 +25,7 @@ fn pinned_test262_raw_scripts() {
                 | "parser-pass"
                 | "parse-syntax-error"
                 | "script-pass"
+                | "script-runtime-error"
                 | "harness"
         ) {
             continue;
