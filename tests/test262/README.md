@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5653 unmodified test fixtures and eight harness files come from
+These 5709 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1197,7 +1197,7 @@ base constructor timing, static this/eval/arrows, inferred class names, repeated
 super calls, and automatic semicolon insertion.
 
 The focused review read 72 complete originals from the two elements directories;
-six also contain private fields and remain excluded as whole files without credit.
+six also contain private fields and are now vendored in the private-field cohort.
 This is a focused review, not a whole-directory execution count. Two retained
 accessor-named originals carry decorator annotations but contain only ordinary
 newline-separated public fields. Two ASI negatives carry generator annotations:
@@ -1222,10 +1222,32 @@ lexical/var conflict, return, super call, or undefined control target at its exa
 byte range and message in both Script modes.
 
 All 29 static-init originals in the declaration/expression class root directories
-were read as complete programs. Five whole files remain excluded without credit:
+were read as complete programs. Four whole files remain excluded without credit:
 two combine ordinary arguments checks with generator/async function or method
-forms, one requires an async function, one a generator, and one private fields.
+forms, one requires an async function, and one a generator. The private-scope
+original is now vendored in the private-field cohort.
 Both toolchains pass all 48 selected variants under ordinary unlimited defaults.
+Git blob hashes, source bytes, assertions, metadata, helpers, and the pin are
+unchanged.
+
+## Private field execution fixtures
+
+Fifty-six unchanged originals add 112 harness-positive variants. They cover
+instance/static fields, nested class and ordinary/arrow function capture, optional
+access, private-name identity, inheritance, direct eval in methods/initializers/
+blocks, inferred name/length metadata, ordinary-property separation, duplicate
+stamping, missing brands and primitive receivers, and assignment/destructuring/
+loop evaluation order. The cohort includes six previously excluded public-field
+dependencies and the static block's private-scope dependency.
+
+The focused review read 65 complete programs. Nine remain excluded without credit:
+four need async execution, two private methods, and one requests the historical
+host extension that forbids private elements on non-extensible objects. Core
+ECMA-262 allows private fields on those objects. Two nested-static originals call
+the absent `methodAccess` member in their TypeError assertion, so that assertion
+cannot establish the intended private brand check. No upstream source is edited
+to make it eligible. This selection does not claim whole-directory coverage.
+Both toolchains pass all 112 selected variants under ordinary unlimited defaults;
 Git blob hashes, source bytes, assertions, metadata, helpers, and the pin are
 unchanged.
 
@@ -1266,7 +1288,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10746 variants from 5634 reviewed sources: the eleven
+The `spite-test262` command runs 10858 variants from 5690 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1290,13 +1312,14 @@ files (187 positive and three runtime-negative), and 22 super-expression positiv
 and 39 class definition/name-binding/strict-mode files (37 positive and two
 parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
-parse-negative), and 48 private element parse-negative files.
+parse-negative), and 48 private element parse-negative files, and 56 private-field
+execution files.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-9905 positives using the upstream harness, 833 reviewed parse-negative variants,
+10017 positives using the upstream harness, 833 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
