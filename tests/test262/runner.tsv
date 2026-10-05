@@ -6499,3 +6499,10 @@ test/built-ins/Date/prototype/toUTCString/name.js	-	-	-
 test/built-ins/Date/prototype/toUTCString/negative-year.js	-	-	-
 test/built-ins/Date/prototype/toUTCString/not-a-constructor.js	-	-	-
 test/built-ins/Date/prototype/toUTCString/prop-desc.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/arg-coercion-order.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/date-value-read-before-tonumber-when-date-is-invalid.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/date-value-read-before-tonumber-when-date-is-valid.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/length.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/name.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/not-a-constructor.js	-	-	-
+test/built-ins/Date/prototype/setUTCDate/prop-desc.js	-	-	-
