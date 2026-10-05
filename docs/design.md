@@ -1791,3 +1791,30 @@ GroupBy checks its safe-integer index before stepping, closes callback errors,
 uses canonical collection keys without coercion, and materializes retained intrinsic
 Map and Array objects after exhaustion without reading public constructors or set.
 The complete edition-17 Map and Map Iterator inventories support ordinary reflection.
+
+## Set keyed collections
+
+Set (24.2) shares Map's canonical key identity rules and uses its own ordered
+hash-indexed SetData slot. Its distinct brand and iterator state reject Map,
+prototype, and inherited lookalikes. Deletion and clear retain vacant positions
+without retaining values; live iterators and forEach resume the original ordered
+list and observe appends/reinsertions. Completed iterators release their source.
+Set values/keys/Symbol.iterator share one native function identity. Construction
+caches add and next, closes adder throws, and propagates next/done/value failures
+without cleanup. Methods mutate frozen instances' internal slots normally.
+
+GetSetRecord reads and converts size, rejects NaN and negative integral sizes,
+then reads and validates has before keys. It accepts arbitrary set-like objects,
+including Map. Combination/predicate methods check the receiver's brand before
+any other-object reads and preserve the exact size-dependent branch and order.
+Difference traverses copied data for its has branch, while intersection, subset,
+and disjoint predicates traverse live receiver data after observable has calls.
+Union and symmetricDifference copy the receiver only after keys and cached-next
+acquisition. Other-key duplicates are deduplicated, zero is canonicalized, and
+symmetricDifference checks the receiver's live membership at each key. Superset
+and disjoint predicates close key iterators on normal short-circuit returns;
+cleanup errors replace those returns. Step failures propagate without closing.
+Results are allocated with the retained intrinsic Set prototype after traversal,
+bypassing public constructors, species, and add. Snapshots preserve vacant positions
+and checked capacity/work; there are no default host limits. The complete edition-17
+Set/Set Iterator inventories support ordinary reflection and integrity operations.

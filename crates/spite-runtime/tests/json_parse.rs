@@ -1,6 +1,8 @@
-//! ParseJSON materialization; serialization remains open.
+//! ParseJSON materialization and opt-in host quota regressions.
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
+
+mod common;
 
 fn check(source: &str) {
     assert_eq!(
@@ -127,7 +129,9 @@ fn deep_default_values_and_opted_in_host_aborts_are_safe() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::new(Limits {
-        max_heap_entries: Some(300),
+        // Initialize the full intrinsic graph, then exhaust this opted-in quota
+        // during JSON array materialization.
+        max_heap_entries: Some(common::REALM_ENTRIES + 32),
         ..Limits::default()
     });
     realm.eval("let flag=0;").unwrap();

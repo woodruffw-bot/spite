@@ -178,6 +178,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Map", Value::Object(map), true, span)?;
+        let set = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .set
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "Set", Value::Object(set), true, span)?;
         self.global_object = Some(object);
         Ok(())
     }

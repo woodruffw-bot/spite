@@ -13,6 +13,7 @@ pub(crate) use helper::{
 pub(super) enum IteratorState {
     Array(ArrayIterator),
     Map(MapIterator),
+    Set(SetIterator),
     String(StringIterator),
     Wrapper(Box<IteratorWrapper>),
     Helper(Box<IteratorHelper>),
@@ -23,6 +24,7 @@ impl IteratorState {
         let (first, second) = match self {
             Self::Array(state) => (state.array.as_ref(), None),
             Self::Map(state) => (state.map.as_ref(), None),
+            Self::Set(state) => (state.set.as_ref(), None),
             Self::String(_) | Self::Helper(_) => (None, None),
             Self::Wrapper(state) => (
                 Some(&state.iterator),
@@ -66,6 +68,13 @@ pub(crate) struct MapIterator {
     pub kind: ArrayIterationKind,
 }
 
+#[derive(Clone, Debug)]
+pub(crate) struct SetIterator {
+    pub set: Option<Handle>,
+    pub next_index: usize,
+    pub kind: ArrayIterationKind,
+}
+
 #[derive(Debug)]
 pub(crate) struct StringIterator {
     string: Option<JsString>,
@@ -73,6 +82,40 @@ pub(crate) struct StringIterator {
 }
 
 impl Objects {
+    pub(crate) fn create_set_iterator(
+        &mut self,
+        prototype: &Handle,
+        set: &Handle,
+        kind: ArrayIterationKind,
+    ) -> Result<Handle, Error> {
+        if !self.inspect(set)?.is_set() {
+            return Err(Error::WrongKind);
+        }
+        let iterator = self.create(Some(prototype))?;
+        self.object_mut(&iterator)?.iterator = Some(IteratorState::Set(SetIterator {
+            set: Some(set.clone()),
+            next_index: 0,
+            kind,
+        }));
+        Ok(iterator)
+    }
+
+    pub(crate) fn update_set_iterator(
+        &mut self,
+        iterator: &Handle,
+        index: Option<usize>,
+    ) -> Result<(), Error> {
+        let Some(IteratorState::Set(state)) = &mut self.object_mut(iterator)?.iterator else {
+            return Err(Error::WrongKind);
+        };
+        if let Some(index) = index {
+            state.next_index = index;
+        } else {
+            state.set = None;
+        }
+        Ok(())
+    }
+
     pub(crate) fn create_map_iterator(
         &mut self,
         prototype: &Handle,

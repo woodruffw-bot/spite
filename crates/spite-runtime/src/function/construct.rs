@@ -126,6 +126,13 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::Set) => {
+                    return self.set_constructor(
+                        new_target,
+                        arguments.into_iter().next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::Map) => {
                     return self.map_constructor(
                         new_target,

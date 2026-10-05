@@ -16,12 +16,55 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::Set => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Set requires construction",
+            )),
+            Builtin::SetAdd
+            | Builtin::SetClear
+            | Builtin::SetDelete
+            | Builtin::SetHas
+            | Builtin::SetSize => self.set_method(
+                builtin,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::SetForEach => self.set_for_each(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::SetEntries | Builtin::SetValues => self.set_iterator(
+                this,
+                if matches!(builtin, Builtin::SetEntries) {
+                    crate::object::ArrayIterationKind::KeyValue
+                } else {
+                    crate::object::ArrayIterationKind::Value
+                },
+                span,
+            ),
+            Builtin::SetIteratorNext => self.set_iterator_next(this, span),
+            Builtin::SetDifference
+            | Builtin::SetIntersection
+            | Builtin::SetUnion
+            | Builtin::SetSymmetricDifference
+            | Builtin::SetIsDisjointFrom
+            | Builtin::SetIsSubsetOf
+            | Builtin::SetIsSupersetOf => self.set_combine(
+                builtin,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::Map => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
                 "Map requires construction",
             )),
-            Builtin::MapSpecies => Ok(this),
+            Builtin::MapSpecies | Builtin::SetSpecies => Ok(this),
             Builtin::MapClear
             | Builtin::MapDelete
             | Builtin::MapGet

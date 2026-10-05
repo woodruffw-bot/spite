@@ -26,6 +26,7 @@ mod number;
 mod object;
 mod ordinary;
 mod reflect;
+mod set;
 mod spread;
 mod string;
 mod symbol;
@@ -264,6 +265,24 @@ pub(crate) enum Builtin {
     NumberToLocaleString,
     ParseFloat,
     ParseInt,
+    Set,
+    SetAdd,
+    SetClear,
+    SetDelete,
+    SetEntries,
+    SetForEach,
+    SetHas,
+    SetValues,
+    SetSize,
+    SetSpecies,
+    SetIteratorNext,
+    SetDifference,
+    SetIntersection,
+    SetUnion,
+    SetSymmetricDifference,
+    SetIsDisjointFrom,
+    SetIsSubsetOf,
+    SetIsSupersetOf,
     Map,
     MapClear,
     MapDelete,
@@ -506,6 +525,24 @@ impl Builtin {
             | Self::BigIntToLocaleString => "toLocaleString",
             Self::ParseFloat => "parseFloat",
             Self::ParseInt => "parseInt",
+            Self::Set => "Set",
+            Self::SetAdd => "add",
+            Self::SetClear => "clear",
+            Self::SetDelete => "delete",
+            Self::SetEntries => "entries",
+            Self::SetForEach => "forEach",
+            Self::SetHas => "has",
+            Self::SetValues => "values",
+            Self::SetSize => "get size",
+            Self::SetSpecies => "get [Symbol.species]",
+            Self::SetIteratorNext => "next",
+            Self::SetDifference => "difference",
+            Self::SetIntersection => "intersection",
+            Self::SetUnion => "union",
+            Self::SetSymmetricDifference => "symmetricDifference",
+            Self::SetIsDisjointFrom => "isDisjointFrom",
+            Self::SetIsSubsetOf => "isSubsetOf",
+            Self::SetIsSupersetOf => "isSupersetOf",
             Self::Map => "Map",
             Self::MapClear => "clear",
             Self::MapDelete => "delete",
@@ -536,6 +573,17 @@ impl Builtin {
     fn length(self) -> f64 {
         match self {
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
+            Self::SetAdd
+            | Self::SetDelete
+            | Self::SetForEach
+            | Self::SetHas
+            | Self::SetDifference
+            | Self::SetIntersection
+            | Self::SetUnion
+            | Self::SetSymmetricDifference
+            | Self::SetIsDisjointFrom
+            | Self::SetIsSubsetOf
+            | Self::SetIsSupersetOf => 1.0,
             Self::MapDelete | Self::MapForEach | Self::MapGet | Self::MapHas => 1.0,
             Self::MapSet
             | Self::MapGetOrInsert
@@ -790,6 +838,7 @@ pub(super) struct Intrinsics {
     pub math: math::MathIntrinsics,
     pub json: json::JsonIntrinsics,
     pub map: map::MapIntrinsics,
+    pub set: set::SetIntrinsics,
 }
 
 impl Intrinsics {
@@ -827,6 +876,7 @@ impl Intrinsics {
         .chain(self.math.roots())
         .chain(self.json.roots())
         .chain(self.map.roots())
+        .chain(self.set.roots())
     }
 }
 
@@ -977,6 +1027,12 @@ impl Realm {
             &iterator.prototype,
             span,
         )?;
+        let set = self.set_intrinsics(
+            &object_prototype,
+            &function_prototype,
+            &iterator.prototype,
+            span,
+        )?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -1010,6 +1066,7 @@ impl Realm {
             math,
             json,
             map,
+            set,
         });
         Ok(object_prototype)
     }

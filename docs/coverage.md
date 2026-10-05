@@ -35,6 +35,7 @@ not an alternative language specification.
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
+| Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
@@ -1012,3 +1013,13 @@ exact callback arguments/receivers, callback mutation/reentry, computed insertio
 intrinsic group materialization, metadata, garbage-collection retention/release,
 foreign/stale handle rejection, a 20,000-entry default Map, and opt-in host aborts.
 The GroupBy safe-integer guard is checked directly before the next step.
+
+Set regressions cover primitive types and Object/Symbol identities, NaN and positive
+zero, wide BigInt values, ordered deletion/reinsertion, frozen instances, cached
+adder/iterator order, closing precedence, own brands and distinct iterator brands,
+live callbacks/cursors, set-like size conversion and getter order, exact branch
+selection, duplicate other keys, snapshot/live mutation rules, normal short-circuit
+closing errors, unclosed step failures, intrinsic result allocation, metadata,
+garbage-collection retention/release, foreign/stale values, a 20,000-value default
+Set, and opted-in aborts. Storage snapshots retain vacant positions without retaining
+deleted values and fail before live mutation when their work allowance is exhausted.

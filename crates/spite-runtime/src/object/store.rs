@@ -244,7 +244,8 @@ impl Objects {
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
-            Builtin::Map
+            Builtin::Set
+                | Builtin::Map
                 | Builtin::Boolean
                 | Builtin::Function
                 | Builtin::Iterator
