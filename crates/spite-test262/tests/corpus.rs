@@ -58,9 +58,9 @@ fn pinned_corpus_runs_all_reviewed_variants() {
 
 #[test]
 fn command_reports_successful_variants_and_counts() {
-    // The pinned library test above and CI's standalone command both run the
-    // entire corpus. A minimal corpus exercises CLI formatting/exit behavior
-    // without an additional execution of every exhaustive upstream loop.
+    // The pinned test above runs the entire corpus, including in CI's optimized
+    // conformance profile. A minimal corpus exercises CLI formatting/exit behavior
+    // without a duplicate execution of every exhaustive upstream loop.
     let corpus = TemporaryCorpus::new(
         "/*---\nflags: [raw]\n---*/\n1",
         "test/example.js\t-\t-\t-\n",

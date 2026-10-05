@@ -1150,7 +1150,18 @@ Run `cargo run -p spite-test262 --locked -- tests/test262` from the repository r
 Every selected file and non-passing result is reported. Missing files, invalid
 metadata, unsupported features, limits, setup failures, unverified diagnostics,
 and unexpected outcomes cannot produce a successful gate. GitHub Actions runs
-this command in every platform/toolchain test configuration.
+the complete pinned corpus integration test once in every platform/toolchain
+configuration, with the same inventory and outcome checks. Its `conformance`
+profile optimizes exhaustive loops while retaining debug assertions and overflow
+checks. All other unit, integration, CLI, and documentation tests use their ordinary
+profiles. The complete corpus test is excluded from the initial workspace command
+and executed explicitly afterward; no fixture or execution variant is omitted.
+
+Run that CI gate locally with
+`cargo test -p spite-test262 --profile conformance --test corpus --locked pinned_corpus_runs_all_reviewed_variants -- --exact`.
+Main-branch CI runs are allowed to finish when later commits arrive, so incremental
+pushes cannot repeatedly cancel every complete result. Superseded branch runs
+still cancel.
 
 These results do not measure whole-suite conformance. Other tests require grammar,
 objects, functions, or harness facilities that have not been implemented yet.

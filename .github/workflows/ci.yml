@@ -7,7 +7,8 @@ on:
 permissions: {}
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Main commits get independent runs; superseded branch runs share a group.
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ github.ref == 'refs/heads/main' && github.sha || 'latest' }}
   cancel-in-progress: true
 
 env:
@@ -38,7 +39,8 @@ jobs:
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
-        run: cargo +"$TOOLCHAIN" test --workspace --all-targets --locked
+        # The complete corpus test runs once below, in an optimized profile.
+        run: cargo +"$TOOLCHAIN" test --workspace --all-targets --locked -- --skip pinned_corpus_runs_all_reviewed_variants
       - name: Run documentation tests
         shell: bash
         env:
@@ -48,7 +50,7 @@ jobs:
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
-        run: cargo +"$TOOLCHAIN" run -p spite-test262 --locked -- tests/test262
+        run: cargo +"$TOOLCHAIN" test -p spite-test262 --profile conformance --test corpus --locked pinned_corpus_runs_all_reviewed_variants -- --exact
 
   quality:
     runs-on: ubuntu-latest

@@ -24,3 +24,12 @@ unused_must_use = "deny"
 
 [workspace.lints.clippy]
 all = "warn"
+
+# Exhaustive Test262 loops need optimized execution without relaxing checks.
+[profile.conformance]
+inherits = "dev"
+opt-level = 2
+debug = 0
+debug-assertions = true
+overflow-checks = true
+incremental = false
