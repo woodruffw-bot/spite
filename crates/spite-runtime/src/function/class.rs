@@ -1,9 +1,16 @@
-//! Base ClassDefinitionEvaluation and immutable internal names (15.7.14–16).
+//! ClassDefinitionEvaluation and immutable internal names (15.7.14–16).
 
 use crate::{Error, Realm, Value, environment::BindingState, object::DataDescriptor};
 use spite_core::{JsString, PropertyKey};
 use spite_parser::ast::{Class, Expr, ExprKind, PropertyName};
 use std::collections::BTreeMap;
+
+#[derive(Clone, Debug)]
+pub(crate) struct ClassConstructor {
+    pub method: super::MethodFunction,
+    pub derived: bool,
+    pub default: bool,
+}
 
 impl Realm {
     pub(crate) fn class_definition(
@@ -31,12 +38,53 @@ impl Realm {
         let previous_strict = self.strict;
         self.strict = true;
         let result = (|| {
-            let function_prototype = self
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .function_prototype
-                .clone();
+            let (function_prototype, prototype_parent) = if let Some(heritage) = &syntax.heritage {
+                let superclass = self.expression(heritage)?;
+                if matches!(superclass, Value::Null) {
+                    (
+                        self.intrinsics
+                            .as_ref()
+                            .expect("initialized")
+                            .function_prototype
+                            .clone(),
+                        None,
+                    )
+                } else {
+                    if !self.is_constructor(&superclass, heritage.span)? {
+                        return Err(Self::exception(
+                            crate::ExceptionKind::TypeError,
+                            heritage.span,
+                            "class superclass is not a constructor",
+                        ));
+                    }
+                    let Value::Object(superclass) = superclass else {
+                        unreachable!("constructor object")
+                    };
+                    let prototype = self.get_property(
+                        &superclass,
+                        &JsString::from("prototype"),
+                        heritage.span,
+                    )?;
+                    let prototype = match prototype {
+                        Value::Object(prototype) => Some(prototype),
+                        Value::Null => None,
+                        _ => {
+                            return Err(Self::exception(
+                                crate::ExceptionKind::TypeError,
+                                heritage.span,
+                                "class superclass prototype is not an object or null",
+                            ));
+                        }
+                    };
+                    (superclass, prototype)
+                }
+            } else {
+                let intrinsics = self.intrinsics.as_ref().expect("initialized");
+                (
+                    intrinsics.function_prototype.clone(),
+                    Some(intrinsics.object_prototype.clone()),
+                )
+            };
             let Value::Object(function) = self.allocate_ordinary_function(
                 &syntax.constructor,
                 environment.clone(),
@@ -53,7 +101,15 @@ impl Realm {
                 unreachable!("new constructor prototype");
             };
             let changed = self.object_work(span, |objects, budget| {
-                objects.make_class_constructor(&function, &prototype)?;
+                let changed =
+                    objects.set_prototype(&prototype, prototype_parent.as_ref(), budget)?;
+                debug_assert!(changed, "fresh class prototype");
+                objects.make_class_constructor(
+                    &function,
+                    &prototype,
+                    syntax.heritage.is_some(),
+                    syntax.default_constructor,
+                )?;
                 objects.define(
                     &function,
                     JsString::from("prototype"),
@@ -166,7 +222,9 @@ mod tests {
             ),
         ] {
             assert_eq!(
-                realm.objects.make_class_constructor(&function, &home),
+                realm
+                    .objects
+                    .make_class_constructor(&function, &home, false, false),
                 Err(expected)
             );
             assert!(matches!(
@@ -175,7 +233,9 @@ mod tests {
             ));
         }
         assert_eq!(
-            realm.objects.make_class_constructor(&method, &home),
+            realm
+                .objects
+                .make_class_constructor(&method, &home, false, false),
             Err(ObjectError::WrongKind)
         );
         assert!(matches!(
@@ -184,14 +244,44 @@ mod tests {
         ));
         realm
             .objects
-            .make_class_constructor(&function, &home)
+            .make_class_constructor(&function, &home, false, false)
             .unwrap();
         let Some(Callable::ClassConstructor(method)) =
             realm.objects.inspect(&function).unwrap().callable()
         else {
             panic!("class constructor")
         };
-        assert_eq!(method.home_object, home);
+        assert_eq!(method.method.home_object, home);
+    }
+
+    #[test]
+    fn derived_environment_checks_constructor_handles_before_allocation() {
+        let mut realm = Realm::default();
+        let constructor = object(realm.eval("class C extends Object{};C").unwrap());
+        let non_constructor = object(realm.eval("let notConstructor={};notConstructor").unwrap());
+        let stale = object(realm.eval("({})").unwrap());
+        let before = realm.collect(usize::MAX).unwrap().live;
+        let mut other = Realm::default();
+        let foreign = object(other.eval("class C{};C").unwrap());
+        for (derived, expected) in [
+            (foreign, ObjectError::Heap(spite_heap::Error::ForeignHandle)),
+            (stale, ObjectError::Heap(spite_heap::Error::StaleHandle)),
+            (non_constructor, ObjectError::WrongKind),
+        ] {
+            let result = realm.objects.create_function_environment(
+                realm.scopes.last().unwrap().clone(),
+                BTreeMap::new(),
+                Value::Undefined,
+                crate::environment::FunctionContext {
+                    new_target: Some(constructor.clone()),
+                    derived_constructor: Some(derived),
+                    ..Default::default()
+                },
+                &mut crate::object::Budget::new(100),
+            );
+            assert_eq!(result, Err(expected));
+            assert_eq!(realm.collect(usize::MAX).unwrap().live, before);
+        }
     }
 
     #[test]

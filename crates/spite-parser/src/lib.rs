@@ -65,7 +65,7 @@ pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
 /// Caller context used by direct eval's Script early errors (19.2.1.1).
 ///
 /// Arrows inherit the nearest non-arrow function's new.target and super context.
-/// Class heritage, derived constructors, and private environments remain unsupported.
+/// Private environments remain unsupported.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct EvalContext {
     /// Whether the direct caller executes strict code.
@@ -74,6 +74,8 @@ pub struct EvalContext {
     pub in_function: bool,
     /// Whether that function environment has a super binding.
     pub in_method: bool,
+    /// Whether that function is a derived class constructor.
+    pub in_derived_constructor: bool,
 }
 
 /// Parses lossless UTF-16 eval code with inherited strictness and caller context.
@@ -84,6 +86,7 @@ pub fn parse_eval_utf16(source: &JsString, context: EvalContext) -> Result<Scrip
         Parser::from_source(std::rc::Rc::new(source::SourceText::from_utf16(source)?))?;
     parser.allow_new_target = context.in_function;
     parser.allow_super_property = context.in_method;
+    parser.allow_super_call = context.in_derived_constructor;
     parse_script_contents_with_strictness(&mut parser, context.strict)
 }
 
@@ -157,6 +160,7 @@ struct Parser {
     allow_return: bool,
     allow_new_target: bool,
     allow_super_property: bool,
+    allow_super_call: bool,
 }
 
 impl Parser {
@@ -184,6 +188,7 @@ impl Parser {
             allow_return: false,
             allow_new_target: false,
             allow_super_property: false,
+            allow_super_call: false,
         })
     }
 
@@ -607,6 +612,7 @@ impl Parser {
                         .iter()
                         .map(Parameter::expression_depth),
                 )
+                .chain(class.heritage.iter().map(|heritage| heritage.depth))
                 .max()
                 .unwrap_or(0),
             ExprKind::Arrow {
@@ -635,6 +641,11 @@ impl Parser {
                 PropertyName::Computed(key) => key.depth,
                 PropertyName::Literal(_) => 0,
             },
+            ExprKind::SuperCall(arguments) => arguments
+                .iter()
+                .map(|argument| argument.expression().depth)
+                .max()
+                .unwrap_or(0),
             ExprKind::Call { callee, arguments } => arguments
                 .iter()
                 .map(|argument| argument.expression().depth)
@@ -1037,7 +1048,11 @@ impl Parser {
             Kind::Word(name) if name == "super" => {
                 // 19.2.1.1 and 15.2/15.4: arrows inherit the enclosing method
                 // context, but ordinary functions and indirect eval do not.
-                if self.at(".") || self.at("[") {
+                if self.at("(") && self.allow_super_call {
+                    let arguments = self.arguments()?;
+                    let span = Span::new(span.start, self.tokens[self.index - 1].span.end);
+                    self.make_expr(ExprKind::SuperCall(arguments), span)
+                } else if self.at(".") || self.at("[") {
                     if self.allow_super_property {
                         if self.at(".")
                             && self
@@ -1112,6 +1127,7 @@ fn member_base(expr: &Expr) -> bool {
             }
             | ExprKind::Function(_)
             | ExprKind::Class(_)
+            | ExprKind::SuperCall(_)
     )
 }
 
@@ -1763,6 +1779,11 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
             }
         }
         ExprKind::SuperProperty(PropertyName::Computed(key)) => validate_expr(key, strict)?,
+        ExprKind::SuperCall(arguments) => {
+            for argument in arguments {
+                validate_expr(argument.expression(), strict)?;
+            }
+        }
         ExprKind::Call { callee, arguments } => {
             validate_expr(callee, strict)?;
             for argument in arguments {

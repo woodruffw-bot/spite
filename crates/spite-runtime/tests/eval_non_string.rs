@@ -55,11 +55,11 @@ fn declarations_preserve_the_intrinsic_and_assignment_can_replace_it() {
 #[test]
 fn unsupported_eval_syntax_preserves_argument_effects_and_bypasses_handlers() {
     for source in [
-        "eval('class C extends Object{}')",
-        "(eval)('class C extends Object{}')",
-        "e\\u0076al('class C extends Object{}')",
-        "function f(eval){return eval('class C extends Object{}');}f(globalThis.eval)",
-        "with({eval:globalThis.eval}){eval('class C extends Object{}');}",
+        "eval('class C{field;}')",
+        "(eval)('class C{field;}')",
+        "e\\u0076al('class C{field;}')",
+        "function f(eval){return eval('class C{field;}');}f(globalThis.eval)",
+        "with({eval:globalThis.eval}){eval('class C{field;}');}",
     ] {
         assert!(
             matches!(
@@ -72,9 +72,7 @@ fn unsupported_eval_syntax_preserves_argument_effects_and_bypasses_handlers() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval(
-            "try{eval((flag=7,'class C extends Object{}'));}catch(e){flag=1;}finally{flag=2;}"
-        ),
+        realm.eval("try{eval((flag=7,'class C{field;}'));}catch(e){flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(7.0)));

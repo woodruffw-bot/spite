@@ -14,6 +14,7 @@ mod boolean;
 mod bound;
 mod builtin;
 mod class;
+pub(crate) use class::ClassConstructor;
 mod construct;
 mod dynamic;
 mod error;
@@ -791,7 +792,7 @@ pub(crate) enum Callable {
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
     Method(Box<MethodFunction>),
-    ClassConstructor(Box<MethodFunction>),
+    ClassConstructor(Box<ClassConstructor>),
 }
 
 pub(super) enum FunctionText {
@@ -807,9 +808,8 @@ impl Callable {
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
-            Self::Method(method) | Self::ClassConstructor(method) => {
-                FunctionText::Script(method.code.source.clone())
-            }
+            Self::Method(method) => FunctionText::Script(method.code.source.clone()),
+            Self::ClassConstructor(class) => FunctionText::Script(class.method.code.source.clone()),
         }
     }
 }
@@ -1279,6 +1279,7 @@ impl Realm {
                         crate::environment::FunctionContext {
                             new_target: None,
                             home_object: Some(method.home_object),
+                            derived_constructor: None,
                         },
                         arguments,
                         span,

@@ -169,7 +169,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
 - [x] Execute super property references in object methods, accessors, arrows, and direct eval with receiver preservation, ordered computed names, and strict write/delete errors.
 - [x] Parse/evaluate base class declarations and expressions with strict constructors/methods, instance/static accessors, class-name TDZs, immutable internal names, and standard construction/metadata/source semantics.
-- [ ] Add class heritage and derived constructors with ordered superclass evaluation, super calls, and uninitialized this bindings.
+- [x] Add class heritage and derived constructors with ordered superclass evaluation, super calls, and uninitialized this bindings.
 - [ ] Add instance/static fields, private elements, and static initialization blocks.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.

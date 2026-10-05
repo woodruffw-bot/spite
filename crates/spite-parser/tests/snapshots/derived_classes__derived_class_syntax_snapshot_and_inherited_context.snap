@@ -1,0 +1,202 @@
+---
+source: crates/spite-parser/tests/derived_classes.rs
+expression: "parse_script(\"class D extends B { constructor(x=()=>super(1)){x();} m(){return super.x;} }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Class(
+                Class {
+                    name: Some(
+                        FunctionName {
+                            name: "D",
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                    ),
+                    heritage: Some(
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "B",
+                            ),
+                            span: Span {
+                                start: 16,
+                                end: 17,
+                            },
+                        },
+                    ),
+                    default_constructor: false,
+                    constructor: Function {
+                        name: None,
+                        parameters: [
+                            Ordinary(
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 32,
+                                            end: 33,
+                                        },
+                                    },
+                                    initializer: Some(
+                                        Expr {
+                                            depth: 3,
+                                            kind: Arrow {
+                                                parameters: [],
+                                                body: Expression(
+                                                    Expr {
+                                                        depth: 2,
+                                                        kind: SuperCall(
+                                                            [
+                                                                Expression(
+                                                                    Expr {
+                                                                        depth: 1,
+                                                                        kind: Literal(
+                                                                            Number(
+                                                                                1.0,
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 44,
+                                                                            end: 45,
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        ),
+                                                        span: Span {
+                                                            start: 38,
+                                                            end: 46,
+                                                        },
+                                                    },
+                                                ),
+                                                source: FunctionSource(
+                                                    "()=>super(1)",
+                                                ),
+                                            },
+                                            span: Span {
+                                                start: 34,
+                                                end: 46,
+                                            },
+                                        },
+                                    ),
+                                },
+                            ),
+                        ],
+                        body: FunctionBody {
+                            statements: [
+                                Statement {
+                                    kind: Expression(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Call {
+                                                callee: Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "x",
+                                                    ),
+                                                    span: Span {
+                                                        start: 48,
+                                                        end: 49,
+                                                    },
+                                                },
+                                                arguments: [],
+                                            },
+                                            span: Span {
+                                                start: 48,
+                                                end: 51,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 48,
+                                        end: 52,
+                                    },
+                                },
+                            ],
+                            strict: false,
+                        },
+                        source: FunctionSource(
+                            "class D extends B { constructor(x=()=>super(1)){x();} m(){return super.x;} }",
+                        ),
+                    },
+                    elements: [
+                        ClassElement {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Literal(
+                                    String(
+                                        "m",
+                                    ),
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 1,
+                                                                    kind: SuperProperty(
+                                                                        Literal(
+                                                                            String(
+                                                                                "x",
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 65,
+                                                                        end: 72,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 58,
+                                                            end: 73,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "m(){return super.x;}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 54,
+                                        end: 74,
+                                    },
+                                },
+                                kind: Method,
+                                span: Span {
+                                    start: 54,
+                                    end: 74,
+                                },
+                            },
+                        },
+                    ],
+                    source: FunctionSource(
+                        "class D extends B { constructor(x=()=>super(1)){x();} m(){return super.x;} }",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 76,
+            },
+        },
+    ],
+    strict: false,
+}

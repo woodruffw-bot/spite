@@ -185,6 +185,6 @@ fn default_list_size_is_unrestricted_and_opted_in_host_failures_bypass_cleanup()
     assert_eq!(realm.eval("flag===0 && !closed"), Ok(Value::Boolean(true)));
     let mut realm = Realm::default();
     realm.eval("let flag=0,closed=false;").unwrap();
-    assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){Function('class C extends Object{}');},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
+    assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){Function('class C{field;}');},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
     assert_eq!(realm.eval("flag===0 && !closed"), Ok(Value::Boolean(true)));
 }

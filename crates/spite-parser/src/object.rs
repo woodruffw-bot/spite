@@ -134,11 +134,22 @@ impl Parser {
         start: usize,
         kind: PropertyKind,
     ) -> Result<Expr, Diagnostic> {
+        self.method_definition(start, kind, false)
+    }
+
+    pub(super) fn method_definition(
+        &mut self,
+        start: usize,
+        kind: PropertyKind,
+        allow_super_call: bool,
+    ) -> Result<Expr, Diagnostic> {
         self.enter()?;
         let previous = self.allow_new_target;
         let previous_super = self.allow_super_property;
+        let previous_super_call = self.allow_super_call;
         self.allow_new_target = true;
         self.allow_super_property = true;
+        self.allow_super_call = allow_super_call;
         let result = (|| {
             let parameters = match kind {
                 PropertyKind::Getter => {
@@ -181,6 +192,7 @@ impl Parser {
         })();
         self.allow_new_target = previous;
         self.allow_super_property = previous_super;
+        self.allow_super_call = previous_super_call;
         self.depth -= 1;
         result
     }

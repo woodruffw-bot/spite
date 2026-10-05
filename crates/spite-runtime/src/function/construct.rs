@@ -90,12 +90,51 @@ impl Realm {
                         code, function, new_target, None, arguments, span,
                     );
                 }
-                Callable::ClassConstructor(method) => {
+                Callable::ClassConstructor(class) if class.derived && class.default => {
+                    // The default derived closure forwards the argument List;
+                    // no rest binding or Array iterator is observable (15.7.14).
+                    let superclass = self.object_work(span, |objects, budget| {
+                        budget.charge(1)?;
+                        Ok(objects
+                            .inspect(&function)?
+                            .prototype()
+                            .cloned()
+                            .map_or(Value::Null, Value::Object))
+                    })?;
+                    if !self.is_constructor(&superclass, span)? {
+                        return Err(Self::exception(
+                            ExceptionKind::TypeError,
+                            span,
+                            "class superclass is not a constructor",
+                        ));
+                    }
+                    let Value::Object(superclass) = superclass else {
+                        unreachable!("constructor")
+                    };
+                    function = superclass;
+                    // Fields/private elements are unsupported, so there is no
+                    // per-class initialization after this tail construction.
+                }
+                Callable::ClassConstructor(class) if class.derived => {
+                    return self.call_ordinary(
+                        class.method.code,
+                        function.clone(),
+                        Value::Undefined,
+                        crate::environment::FunctionContext {
+                            new_target: Some(new_target),
+                            home_object: Some(class.method.home_object),
+                            derived_constructor: Some(function),
+                        },
+                        arguments.into_iter(),
+                        span,
+                    );
+                }
+                Callable::ClassConstructor(class) => {
                     return self.construct_base_function(
-                        method.code,
+                        class.method.code,
                         function,
                         new_target,
-                        Some(method.home_object),
+                        Some(class.method.home_object),
                         arguments,
                         span,
                     );
@@ -237,6 +276,7 @@ impl Realm {
             crate::environment::FunctionContext {
                 new_target: Some(new_target),
                 home_object,
+                derived_constructor: None,
             },
             arguments.into_iter(),
             span,

@@ -155,11 +155,7 @@ fn default_source_sizes_are_unlimited_and_compiled_code_survives_collection() {
 
 #[test]
 fn unsupported_source_is_a_host_abort_after_all_observable_conversions() {
-    for body in [
-        "class C extends Object{}",
-        "function* g(){}",
-        "async function f(){}",
-    ] {
+    for body in ["class C{field;}", "function* g(){}", "async function f(){}"] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();
         let body = format!("'{body}'");

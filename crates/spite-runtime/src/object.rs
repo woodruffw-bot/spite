@@ -353,15 +353,13 @@ impl Trace for OrdinaryObject {
             Some(Callable::Arrow(function)) | Some(Callable::Ordinary(function)) => {
                 Some(&function.environment.0)
             }
-            Some(Callable::Method(method) | Callable::ClassConstructor(method)) => {
-                Some(&method.code.environment.0)
-            }
+            Some(Callable::Method(method)) => Some(&method.code.environment.0),
+            Some(Callable::ClassConstructor(class)) => Some(&class.method.code.environment.0),
             Some(Callable::Builtin(_)) | None => None,
         };
         let home_object = match &self.callable {
-            Some(Callable::Method(method) | Callable::ClassConstructor(method)) => {
-                Some(&method.home_object)
-            }
+            Some(Callable::Method(method)) => Some(&method.home_object),
+            Some(Callable::ClassConstructor(class)) => Some(&class.method.home_object),
             _ => None,
         };
         std::iter::once(self.prototype.as_ref())

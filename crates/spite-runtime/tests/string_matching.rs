@@ -186,7 +186,7 @@ fn opted_in_and_unsupported_hook_failures_bypass_handlers() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();
-        assert!(matches!(realm.eval(&format!("try{{'x'.{method}({{[Symbol.{method}](){{Function('class C extends Object{{}}');}}}});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported {..})));
+        assert!(matches!(realm.eval(&format!("try{{'x'.{method}({{[Symbol.{method}](){{Function('class C{{field;}}');}}}});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported {..})));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
 }

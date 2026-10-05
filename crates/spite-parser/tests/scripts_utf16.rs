@@ -63,7 +63,7 @@ fn top_level_eval_goals_keep_control_and_constructor_early_errors() {
         .collect();
     insta::assert_debug_snapshot!(diagnostics);
     assert_eq!(
-        parse_script_utf16(&JsString::from("class C extends Object{}"))
+        parse_script_utf16(&JsString::from("class C{field;}"))
             .unwrap_err()
             .kind,
         DiagnosticKind::Unsupported

@@ -192,7 +192,7 @@ fn large_default_outputs_are_allowed_and_opted_in_host_failures_abort_handlers()
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval(
-            "try{encodeURI({toString(){Function('class C extends Object{}');}});}catch{flag=1;}finally{flag=2;}"
+            "try{encodeURI({toString(){Function('class C{field;}');}});}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Unsupported { .. })
     ));

@@ -1279,10 +1279,12 @@ impl Realm {
         self.enter_evaluation(expr.span)?;
         // Debug builds reserve space for every general expression branch. Do
         // not retain that frame through calls and recursive eval compilation.
-        let result = if let ExprKind::Call { callee, arguments } = &expr.kind {
-            self.call_expression(callee, arguments, expr.span)
-        } else {
-            self.expression_inner(expr)
+        let result = match &expr.kind {
+            ExprKind::Call { callee, arguments } => {
+                self.call_expression(callee, arguments, expr.span)
+            }
+            ExprKind::SuperCall(arguments) => self.super_call(arguments, expr.span),
+            _ => self.expression_inner(expr),
         };
         self.evaluation_depth -= 1;
         result
@@ -1339,7 +1341,9 @@ impl Realm {
                 let values = self.argument_list(arguments.as_deref().unwrap_or(&[]))?;
                 self.construct(constructor, values, expr.span)?
             }
-            ExprKind::Call { .. } => unreachable!("call dispatched separately"),
+            ExprKind::Call { .. } | ExprKind::SuperCall(_) => {
+                unreachable!("call dispatched separately")
+            }
             ExprKind::TaggedTemplate {
                 tag,
                 elements,

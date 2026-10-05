@@ -17,23 +17,32 @@ pub(crate) struct BindingState {
 }
 
 #[derive(Debug)]
+pub(crate) enum ThisBinding {
+    Uninitialized,
+    Initialized(Value),
+}
+
+#[derive(Debug)]
 pub(crate) struct Environment {
     pub outer: Option<EnvironmentHandle>,
     pub bindings: BTreeMap<String, BindingState>,
     // Some only for with environments; their properties are resolved live.
     pub binding_object: Option<Handle>,
-    // None for declarative/arrow environments; Some(undefined) is a real binding.
-    pub this: Option<Value>,
+    // None for declarative/arrow environments; derived constructors start in TDZ.
+    pub this: Option<ThisBinding>,
     // None means undefined for ordinary calls; declarative environments ignore it.
     pub new_target: Option<Handle>,
     // MakeMethod's home object supplies HasSuperBinding for direct eval.
     pub home_object: Option<Handle>,
+    // The active derived constructor, needed by GetSuperConstructor through arrows/eval.
+    pub derived_constructor: Option<Handle>,
 }
 
 #[derive(Default)]
 pub(crate) struct FunctionContext {
     pub new_target: Option<Handle>,
     pub home_object: Option<Handle>,
+    pub derived_constructor: Option<Handle>,
 }
 
 impl Trace for Environment {
@@ -42,9 +51,10 @@ impl Trace for Environment {
             .chain(std::iter::once(self.binding_object.as_ref()))
             .chain(std::iter::once(self.new_target.as_ref()))
             .chain(std::iter::once(self.home_object.as_ref()))
+            .chain(std::iter::once(self.derived_constructor.as_ref()))
             .chain(std::iter::once(self.this.as_ref().and_then(
                 |value| match value {
-                    Value::Object(handle) => Some(handle),
+                    ThisBinding::Initialized(Value::Object(handle)) => Some(handle),
                     _ => None,
                 },
             )))

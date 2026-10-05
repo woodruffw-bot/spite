@@ -62,18 +62,21 @@ impl Realm {
             // GetThisEnvironment skips declarative/with/arrow environments.
             let mut next = self.scopes.last().cloned();
             while let Some(environment) = next {
-                let (function, method, outer) = self.object_work(span, |objects, budget| {
-                    budget.charge(1)?;
-                    let record = objects.environment(&environment)?;
-                    Ok((
-                        record.this.is_some(),
-                        record.home_object.is_some(),
-                        record.outer.clone(),
-                    ))
-                })?;
+                let (function, method, derived, outer) =
+                    self.object_work(span, |objects, budget| {
+                        budget.charge(1)?;
+                        let record = objects.environment(&environment)?;
+                        Ok((
+                            record.this.is_some(),
+                            record.home_object.is_some(),
+                            record.derived_constructor.is_some(),
+                            record.outer.clone(),
+                        ))
+                    })?;
                 if function {
                     context.in_function = true;
                     context.in_method = method;
+                    context.in_derived_constructor = derived;
                     break;
                 }
                 next = outer;

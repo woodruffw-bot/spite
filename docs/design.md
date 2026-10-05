@@ -1135,7 +1135,7 @@ other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported class heritage, fields, private elements, static
+function context. Unsupported class fields, private elements, static
 blocks, generator/async functions, and native-stack exhaustion remain separate
 diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
@@ -1918,7 +1918,6 @@ checks against other engines are supplementary evidence, never the specification
 - [Living specification](https://tc39.es/ecma262/)
 - [Test262 execution rules](https://github.com/tc39/test262/blob/main/INTERPRETING.md)
 
-
 JSON text has a dedicated ECMA-404 parser (25.5.1, ParseJSON). It accepts exactly
 JSON whitespace, decimal numbers, double-quoted strings and JSON escapes, and
 object/array/literal grammar; ECMAScript extensions are syntax errors. Keep UTF-16
@@ -2032,7 +2031,6 @@ bypassing public constructors, species, and add. Snapshots preserve vacant posit
 and checked capacity/work; there are no default host limits. The complete edition-17
 Set/Set Iterator inventories support ordinary reflection and integrity operations.
 
-
 ## Base classes
 
 Base ClassDefinitionEvaluation (15.7.14–16) creates a declarative environment
@@ -2050,7 +2048,7 @@ its callable metadata still permits apply to read the argument list first.
 Construction shares ordinary base allocation, newTarget prototype selection,
 strict parameter/body execution, and object-versus-primitive return rules. The
 empty default constructor implements the base branch of 15.7.14 without fields;
-heritage, derived constructors, fields, private elements, and static blocks remain
+fields, private elements, and static blocks remain
 Unsupported. Existing native-stack guards and opt-in quotas are unchanged.
 
 Class constructors inherit Function.prototype and own a non-writable,
@@ -2063,3 +2061,33 @@ Class and constructor stringification retain the complete class source; method
 source excludes the static modifier. Anonymous class name inference supplies the
 name before computed names and static definitions, allowing a static name method
 to replace it without creating an internal binding for the inferred name.
+
+## Class heritage and derived constructors
+
+ClassHeritage evaluates in the strict class-name environment (15.7.14). Null gives
+instances a null prototype while the constructor inherits Function.prototype.
+Other values must be constructors before their prototype property is read; that
+property must be an object or null. Both constructor and instance prototype links
+are established before computed class elements run. Every failure restores the
+outer class evaluation context and leaves an uninitialized declaration binding.
+
+Derived function environments distinguish uninitialized this from an initialized
+undefined receiver. They retain and trace the active derived constructor for
+GetSuperConstructor through arrows and direct eval. SuperCall (13.3.7.1) captures
+the active constructor's internal prototype before evaluating arguments, validates
+constructibility afterward, and forwards the current newTarget. BindThisValue
+runs after construction, so repeated super calls still evaluate arguments and
+run the superclass before throwing ReferenceError. Reads of this and super
+properties throw before initialization, including before computed property names.
+Derived constructors return objects directly, reject other non-undefined returns
+with TypeError, and resolve the saved function environment's this binding for
+undefined returns after restoring the caller context (10.2.2).
+
+Default derived constructors forward argument Lists directly, without invoking
+Array's iterator. Bound/default forwarding shares the iterative construction
+loop; no instance elements require work on return because fields and private
+elements are unsupported. Explicit constructors, superclass calls, and recursive
+computed names retain the existing call/evaluation/parser stack guards. The
+SuperCall expression uses the small call dispatch path to avoid retaining the
+general debug expression frame during recursive construction. Heritage, super,
+and default forwarding introduce no default resource quotas.

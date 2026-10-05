@@ -241,9 +241,9 @@ fn large_default_inputs_skip_empty_inners_iteratively_and_host_failures_skip_cle
         );
     }
     for mapper in [
-        "()=>Function('class C extends Object{}')",
-        "()=>({[Symbol.iterator]:()=>Function('class C extends Object{}')})",
-        "()=>({next:()=>Function('class C extends Object{}'),return(){flag=4;return {};}})",
+        "()=>Function('class C{field;}')",
+        "()=>({[Symbol.iterator]:()=>Function('class C{field;}')})",
+        "()=>({next:()=>Function('class C{field;}'),return(){flag=4;return {};}})",
     ] {
         let mut realm = Realm::default();
         realm.eval(&format!("let flag=0,h=Iterator.prototype.flatMap.call({{next:()=>({{done:false,value:7}}),return(){{flag=3;return {{}};}}}},{mapper});")).unwrap();
@@ -257,7 +257,7 @@ fn large_default_inputs_skip_empty_inners_iteratively_and_host_failures_skip_cle
         );
     }
     let mut realm = Realm::default();
-    realm.eval("let flag=0,h=Iterator.prototype.flatMap.call({next:()=>({done:false,value:7}),return(){flag=3;return {}; }},()=>({next:()=>({done:false,value:8}),return:()=>Function('class C extends Object{}')}));h.next();").unwrap();
+    realm.eval("let flag=0,h=Iterator.prototype.flatMap.call({next:()=>({done:false,value:7}),return(){flag=3;return {}; }},()=>({next:()=>({done:false,value:8}),return:()=>Function('class C{field;}')}));h.next();").unwrap();
     assert!(matches!(
         realm.eval("try{h.return();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })

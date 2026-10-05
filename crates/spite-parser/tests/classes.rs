@@ -57,8 +57,8 @@ fn class_early_errors_snapshot() {
 #[test]
 fn incomplete_class_features_never_receive_negative_test_credit() {
     for source in [
-        "class C extends Object {}",
-        "let C=class extends null {};",
+        "class C extends Object {x;}",
+        "let C=class extends null {x;};",
         "class C{x;}",
         "class C{static;}",
         "class C{get;set=1;}",

@@ -19,6 +19,7 @@ impl Realm {
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        let derived = context.derived_constructor.is_some();
         let this = if code.strict {
             this
         } else {
@@ -89,6 +90,7 @@ impl Realm {
         let caller_depth = self.scopes.len();
         let caller_strict = self.strict;
         let caller_variable = self.variable_environment.replace(environment.clone());
+        let constructor_environment = derived.then(|| environment.clone());
         self.scopes.push(environment);
         self.strict = code.strict;
         let result = (|| {
@@ -123,28 +125,62 @@ impl Realm {
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
         self.scopes.truncate(caller_depth);
-        result
+        if let Some(environment) = constructor_environment {
+            match result? {
+                value @ Value::Object(_) => Ok(value),
+                Value::Undefined => self.function_this_binding(&environment, span),
+                _ => Err(Self::exception(
+                    crate::ExceptionKind::TypeError,
+                    span,
+                    "derived constructor returned a primitive",
+                )),
+            }
+        } else {
+            result
+        }
     }
 
     pub(crate) fn this_value(&mut self, span: Span) -> Result<Value, Error> {
         let mut next = self.scopes.last().cloned();
         while let Some(environment) = next {
-            let (value, outer) = self.object_work(span, |objects, budget| {
+            let (function, outer) = self.object_work(span, |objects, _| {
                 let environment = objects.environment(&environment)?;
-                let value = if let Some(value) = &environment.this {
-                    budget.value(value)?;
-                    Some(value.clone())
-                } else {
-                    None
-                };
-                Ok((value, environment.outer.clone()))
+                Ok((environment.this.is_some(), environment.outer.clone()))
             })?;
-            if let Some(value) = value {
-                return Ok(value);
+            if function {
+                return self.function_this_binding(&environment, span);
             }
             next = outer;
         }
         Ok(Value::Object(self.global_object()))
+    }
+
+    pub(crate) fn function_this_binding(
+        &mut self,
+        environment: &EnvironmentHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let value = self.object_work(span, |objects, budget| {
+            match objects
+                .environment(environment)?
+                .this
+                .as_ref()
+                .expect("function this binding")
+            {
+                crate::environment::ThisBinding::Initialized(value) => {
+                    budget.value(value)?;
+                    Ok(Some(value.clone()))
+                }
+                crate::environment::ThisBinding::Uninitialized => Ok(None),
+            }
+        })?;
+        value.ok_or_else(|| {
+            Self::exception(
+                crate::ExceptionKind::ReferenceError,
+                span,
+                "derived constructor this is uninitialized",
+            )
+        })
     }
 
     pub(crate) fn new_target_value(&mut self, span: Span) -> Result<Value, Error> {

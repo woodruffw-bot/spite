@@ -1,4 +1,4 @@
-//! Base class definitions and their strict early errors (15.7).
+//! Class definitions and their strict early errors (15.7).
 
 use super::*;
 use std::rc::Rc;
@@ -34,9 +34,21 @@ impl Parser {
                 span: token.span,
             })
         };
-        if self.at("extends") {
-            return Err(self.unsupported("class heritage is not implemented"));
-        }
+        let heritage = if self.eat("extends") {
+            let expression = self.expression_with_in(17, true)?;
+            if matches!(
+                expression.kind,
+                ExprKind::Unary(..) | ExprKind::Update { .. }
+            ) {
+                return Err(early(
+                    expression.span,
+                    "class heritage requires a left-hand-side expression",
+                ));
+            }
+            Some(expression)
+        } else {
+            None
+        };
         self.expect("{")?;
         let mut constructor = None;
         let mut elements = Vec::new();
@@ -120,7 +132,8 @@ impl Parser {
                     "static class method cannot be named prototype",
                 ));
             }
-            let value = self.object_method(method_start, kind)?;
+            let value =
+                self.method_definition(method_start, kind, is_constructor && heritage.is_some())?;
             if is_constructor {
                 let ExprKind::Function(function) = value.kind else {
                     unreachable!("method syntax")
@@ -146,6 +159,7 @@ impl Parser {
             text: self.source.clone(),
             span: Span::new(start, self.tokens[self.index - 1].span.end),
         };
+        let default_constructor = constructor.is_none();
         let mut constructor = constructor.unwrap_or_else(|| {
             Rc::new(Function {
                 name: None,
@@ -160,6 +174,8 @@ impl Parser {
         Rc::make_mut(&mut constructor).source = source.clone();
         Ok(Rc::new(Class {
             name,
+            heritage,
+            default_constructor,
             constructor,
             elements,
             source,
@@ -172,6 +188,9 @@ fn early_unsupported(span: Span, message: &str) -> Diagnostic {
 }
 
 pub(super) fn validate_class(class: &Class) -> Result<(), Diagnostic> {
+    if let Some(heritage) = &class.heritage {
+        validate_expr(heritage, true)?;
+    }
     if let Some(name) = &class.name {
         validate_binding_name(&name.name, name.span, true)?;
     }

@@ -2,9 +2,74 @@
 
 use crate::{Error, Realm, Reference, Value};
 use spite_core::Span;
-use spite_parser::ast::PropertyName;
+use spite_parser::ast::{Argument, PropertyName};
 
 impl Realm {
+    pub(super) fn super_call(
+        &mut self,
+        arguments: &[Argument],
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.tick(span)?;
+        let mut next = self.scopes.last().cloned();
+        let (environment, function, new_target) = loop {
+            let environment = next.expect("validated derived constructor context");
+            let (function_environment, function, target, outer) =
+                self.object_work(span, |objects, budget| {
+                    budget.charge(1)?;
+                    let record = objects.environment(&environment)?;
+                    Ok((
+                        record.this.is_some(),
+                        record.derived_constructor.clone(),
+                        record.new_target.clone(),
+                        record.outer.clone(),
+                    ))
+                })?;
+            if function_environment {
+                break (
+                    environment,
+                    function.expect("derived constructor"),
+                    target.expect("constructor newTarget"),
+                );
+            }
+            next = outer;
+        };
+        // GetSuperConstructor precedes arguments. A repeated super call still
+        // evaluates arguments and constructs before BindThisValue rejects it.
+        let superclass = self.object_work(span, |objects, _| {
+            Ok(objects
+                .inspect(&function)?
+                .prototype()
+                .cloned()
+                .map_or(Value::Null, Value::Object))
+        })?;
+        let values = self.argument_list(arguments)?;
+        let instance =
+            self.construct_with_new_target(superclass, values, Some(new_target), span)?;
+        let initialized = self.object_work(span, |objects, budget| {
+            budget.value(&instance)?;
+            let record = objects.environment_mut(&environment)?;
+            if !matches!(
+                record.this,
+                Some(crate::environment::ThisBinding::Uninitialized)
+            ) {
+                return Ok(false);
+            }
+            record.this = Some(crate::environment::ThisBinding::Initialized(
+                instance.clone(),
+            ));
+            Ok(true)
+        })?;
+        if !initialized {
+            return Err(Self::exception(
+                crate::ExceptionKind::ReferenceError,
+                span,
+                "derived constructor this is already initialized",
+            ));
+        }
+        Ok(instance)
+    }
+
     pub(super) fn super_property_reference<'a>(
         &mut self,
         name: &'a PropertyName,

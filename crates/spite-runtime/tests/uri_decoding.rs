@@ -233,7 +233,7 @@ fn large_default_inputs_and_opted_in_host_failures_keep_their_distinct_behavior(
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval(
-            "try{decodeURI({toString(){Function('class C extends Object{}');}});}catch{flag=1;}finally{flag=2;}"
+            "try{decodeURI({toString(){Function('class C{field;}');}});}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Unsupported { .. })
     ));

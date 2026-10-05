@@ -16,6 +16,8 @@ Script {
                             },
                         },
                     ),
+                    heritage: None,
+                    default_constructor: false,
                     constructor: Function {
                         name: None,
                         parameters: [

@@ -183,7 +183,7 @@ fn strings_preserve_utf16_and_escapes() {
 
 #[test]
 fn unsupported_features_remain_distinct() {
-    for source in ["class C extends Object {}", "function* f() {}"] {
+    for source in ["class C {field;}", "function* f() {}"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

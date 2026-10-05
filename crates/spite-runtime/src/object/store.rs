@@ -414,6 +414,8 @@ impl Objects {
         &mut self,
         function: &Handle,
         home_object: &Handle,
+        derived: bool,
+        default: bool,
     ) -> Result<(), Error> {
         // Validate every edge and the function kind before changing the object.
         self.inspect(home_object)?;
@@ -424,10 +426,16 @@ impl Objects {
         let Some(Callable::Ordinary(code)) = object.callable.take() else {
             unreachable!("validated ordinary function");
         };
-        object.callable = Some(Callable::ClassConstructor(Box::new(MethodFunction {
-            code,
-            home_object: home_object.clone(),
-        })));
+        object.callable = Some(Callable::ClassConstructor(Box::new(
+            crate::function::ClassConstructor {
+                method: MethodFunction {
+                    code,
+                    home_object: home_object.clone(),
+                },
+                derived,
+                default,
+            },
+        )));
         Ok(())
     }
 
@@ -506,11 +514,22 @@ impl Objects {
             budget.charge(1)?;
             self.inspect(home)?;
         }
+        if let Some(constructor) = &context.derived_constructor {
+            budget.charge(1)?;
+            if !self.inspect(constructor)?.is_constructor() {
+                return Err(Error::WrongKind);
+            }
+        }
         let environment = self.create_environment(Some(outer), bindings, budget)?;
         let record = self.environment_mut(&environment)?;
-        record.this = Some(this);
+        record.this = Some(if context.derived_constructor.is_some() {
+            crate::environment::ThisBinding::Uninitialized
+        } else {
+            crate::environment::ThisBinding::Initialized(this)
+        });
         record.new_target = context.new_target;
         record.home_object = context.home_object;
+        record.derived_constructor = context.derived_constructor;
         Ok(environment)
     }
 
@@ -550,6 +569,7 @@ impl Objects {
                 this: None,
                 new_target: None,
                 home_object: None,
+                derived_constructor: None,
             },
         ))?))
     }

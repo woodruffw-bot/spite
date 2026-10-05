@@ -42,11 +42,15 @@ pub struct FunctionName {
     pub span: Span,
 }
 
-/// A class without heritage, fields, private elements, or static blocks.
+/// A class without fields, private elements, or static blocks.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Class {
     /// Internal class binding, also the declaration binding when present.
     pub name: Option<FunctionName>,
+    /// Superclass expression, absent for a base class.
+    pub heritage: Option<Expr>,
+    /// Whether the constructor body was synthesized for an omitted constructor.
+    pub default_constructor: bool,
     /// Explicit constructor, or an empty default constructor body.
     pub constructor: Rc<Function>,
     /// Non-constructor methods and accessors in source order.
@@ -818,6 +822,8 @@ pub enum ExprKind {
     Member(Box<Expr>, PropertyName),
     /// A property reference through the enclosing method's home-object prototype.
     SuperProperty(PropertyName),
+    /// A derived constructor's super call, also permitted in its arrows/eval.
+    SuperCall(Vec<Argument>),
     /// A call with an ordered list of ordinary and spread arguments.
     Call {
         /// Expression whose value is called; references retain their receiver.
