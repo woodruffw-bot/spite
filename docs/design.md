@@ -529,9 +529,8 @@ handles, and rejects cross-heap handles without a global identity counter.
 
 Slots have an optional host-configured upper bound. Reuse increments the
 generation; a generation that cannot increment retires its slot permanently.
-Every access
-checks heap identity, generation, and occupancy. Heap-owned values cannot be
-reached through stale handles, including after slot reuse.
+Every access checks heap identity, generation, and occupancy. Heap-owned values
+cannot be reached through stale handles, including after slot reuse.
 
 Add a non-moving mark-and-sweep collector with caller-supplied roots and iterative
 edge traversal. Charge collection work before each scan or edge traversal. If
@@ -547,6 +546,12 @@ ignored across generation reuse. Foreign keys and invalid active values abort
 before sweeping. Ephemeron inspections and activations consume caller-selected
 collection work; scratch and sweep free-list allocations are checked before
 removal. WeakMap's JavaScript intrinsics and Symbol-key reachability remain pending.
+After marking reaches its fixpoint, reachable containers can remove entries
+whose keys were not retained. Cleanup work is prepaid during enumeration, and
+validated key generations prevent reused slots from preserving stale entries.
+Cleanup performs no allocation or graph additions and runs only after every
+fallible check. This also releases primitive values physically owned by inactive
+entries; an unrooted heap handle alone would not release those Rust values.
 Allocation initially never invokes collection implicitly. Before integrating
 collection into evaluation, explicitly root environment bindings, intrinsics,
 pending completions, suspended frames, expression temporaries, and host-held

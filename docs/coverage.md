@@ -474,6 +474,12 @@ activation. Scratch state and sweep free-list growth use checked reservations
 before removing any values. Runtime WeakMap intrinsics and Symbol-key reachability
 remain pending; corpus inventories, runtime defaults and native guards are
 unchanged.
+Successful marking additionally supports allocation-free removal of inactive
+entries from reachable containers. Six cleanup regressions check primitive value
+ownership, stale generations alongside live replacements, late key activation,
+all insufficient work budgets, invalid handles, and unreachable containers.
+Cleanup runs after the complete reachability fixpoint and all fallible checks;
+failed collection preserves entries as well as heap values and generations.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

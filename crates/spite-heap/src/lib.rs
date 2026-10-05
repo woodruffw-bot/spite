@@ -97,6 +97,16 @@ pub trait Trace {
     fn ephemerons(&self) -> impl Iterator<Item = (&Handle, Option<&Handle>)> {
         std::iter::empty()
     }
+
+    /// Removes entries whose keys the completed mark does not retain.
+    ///
+    /// Called only for reachable containers that enumerated ephemerons, after
+    /// every fallible collection check and before sweeping. Inspect only the
+    /// entries returned by [`Self::ephemerons`], with bounded work per entry.
+    /// Do not allocate, add graph edges, or change retained entries. The default
+    /// keeps unrooted handles; containers that own primitive values should
+    /// override this method to release those values when their keys disappear.
+    fn retain_ephemerons(&mut self, _retain: impl Fn(&Handle) -> bool) {}
 }
 
 /// The result of a completed mark-and-sweep collection.
@@ -106,7 +116,7 @@ pub struct Collection {
     pub reclaimed: usize,
     /// Number of values remaining reachable from the supplied roots.
     pub live: usize,
-    /// Work used by slot scans, roots, values, fields, and activated ephemerons.
+    /// Work used by slot scans, roots, values, fields, and ephemeron processing.
     pub work_used: usize,
 }
 
@@ -275,6 +285,10 @@ impl<T: Trace> Heap<T> {
         // waiting edge nor its Handle identity token keeps the key alive.
         // https://262.ecma-international.org/17.0/#sec-weakmap-objects
         let mut waiting: HashMap<usize, Vec<&Handle>> = HashMap::new();
+        // Save validated key generations separately from the values so cleanup
+        // can borrow a container mutably without borrowing the heap for lookup.
+        let mut key_generations = HashMap::new();
+        let mut containers = Vec::new();
         for root in roots {
             charge(&mut remaining, 1)?;
             self.mark(root, &mut marked, &mut pending)?;
@@ -297,20 +311,33 @@ impl<T: Trace> Heap<T> {
                     self.mark(edge, &mut marked, &mut pending)?;
                 }
             }
+            let mut has_ephemerons = false;
             for (key, edge) in value.ephemerons() {
-                charge(&mut remaining, 1)?;
-                let key = match self.index(key) {
+                // Prepay cleanup now: no work-limit error may occur after it
+                // starts releasing stored values, even for stale weak keys.
+                charge(&mut remaining, 2)?;
+                if !has_ephemerons {
+                    charge(&mut remaining, 1)?;
+                    containers.try_reserve(1).map_err(|_| Error::Capacity)?;
+                    containers.push(index);
+                    has_ephemerons = true;
+                }
+                let key_index = match self.index(key) {
                     Ok(index) => index,
                     Err(Error::StaleHandle) => continue,
                     Err(error) => return Err(error),
                 };
+                key_generations
+                    .try_reserve(1)
+                    .map_err(|_| Error::Capacity)?;
+                key_generations.insert(key_index, key.generation);
                 if let Some(edge) = edge {
-                    if marked[key] {
+                    if marked[key_index] {
                         charge(&mut remaining, 1)?;
                         self.mark(edge, &mut marked, &mut pending)?;
                     } else {
                         waiting.try_reserve(1).map_err(|_| Error::Capacity)?;
-                        let values = waiting.entry(key).or_default();
+                        let values = waiting.entry(key_index).or_default();
                         values.try_reserve(1).map_err(|_| Error::Capacity)?;
                         values.push(edge);
                     }
@@ -318,6 +345,17 @@ impl<T: Trace> Heap<T> {
             }
         }
         drop(waiting);
+        for index in containers {
+            let value = self.slots[index]
+                .value
+                .as_mut()
+                .expect("marked container is occupied");
+            value.retain_ephemerons(|key| {
+                Rc::ptr_eq(&self.owner, &key.owner)
+                    && key_generations.get(&key.slot) == Some(&key.generation)
+                    && marked[key.slot]
+            });
+        }
         let before = self.live;
         for (index, reached) in marked.into_iter().enumerate() {
             if !reached && self.slots[index].value.is_some() {
