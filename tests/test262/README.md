@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5873 unmodified test fixtures and eight harness files come from
+These 5956 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -904,6 +904,21 @@ exercises only Map and needs no WeakMap implementation. The published edition-17
 baseline includes both insertion methods. The pin, eight original harness files,
 and unlimited defaults are unchanged.
 
+## WeakSet review
+
+Eighty-three unchanged originals add 166 harness-positive variants, with every
+file running in both Script modes. They cover constructor and iterator acquisition,
+cached adders and closing on failures, object/non-registered/well-known Symbol
+keys, registered Symbol rejection, identity/duplicate additions, branded method
+receivers, add/has/delete return values, metadata/descriptors, and method
+construction rejection. The complete 85-file directory review excludes the
+cross-realm newTarget program and the global descriptor program whose unchanged
+property helper requires complete global enumeration. Neither receives credit.
+All original bytes, assertions, metadata, eight helpers, the pin, and unlimited
+runtime defaults are unchanged. Native regressions separately exercise weak
+reachability, generation reuse, Symbol release, key cycles, pruning, opted-in
+aborts, and normal-debug stack safety.
+
 ## Set and Set Iterator review
 
 Three hundred twenty-four unchanged sources comprise 313 Set and 11 Set Iterator
@@ -1329,7 +1344,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 11186 variants from 5854 reviewed sources: the eleven
+The `spite-test262` command runs 11352 variants from 5937 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1354,13 +1369,14 @@ and 39 class definition/name-binding/strict-mode files (37 positive and two
 parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
 parse-negative), and 48 private element parse-negative files, and 56 private-field
-execution files, and 128 private method/accessor execution files.
+execution files, and 128 private method/accessor execution files, and 83 WeakSet
+files.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-10345 positives using the upstream harness, 833 reviewed parse-negative variants,
+10511 positives using the upstream harness, 833 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

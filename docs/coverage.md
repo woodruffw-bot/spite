@@ -42,7 +42,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11186 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11352 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1213,7 +1213,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 11186 variants are four raw positives, 10345 positives using the upstream
+Rust. Its 11352 variants are four raw positives, 10511 positives using the upstream
 harness, 833 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
@@ -1492,3 +1492,14 @@ partial escaped sets, bound/derived/custom-newTarget construction, metadata and
 full reflection/integrity, collection of key cycles, large unlimited collections,
 opted-in host aborts, and native re-entry on two-mebibyte threads. WeakMap,
 WeakRef, and FinalizationRegistry remain separate implementation work.
+
+83 unchanged WeakSet originals add 166 harness-positive variants, all in both
+Script modes. The complete 85-file directory review excludes one cross-realm
+newTarget program and one global property-helper program requiring complete
+global enumeration. Selected originals cover construction and iterator failures,
+object/non-registered/well-known Symbol keys, registered Symbol rejection,
+identity and duplicate additions, add/has/delete return values and receiver
+brands, metadata, descriptors, and method construction rejection. Both toolchains
+pass every new variant with the existing unchanged pin and eight helpers. GC and
+host-abort behavior are exercised by the native storage/runtime regressions;
+the upstream programs and assertions are preserved byte for byte.
