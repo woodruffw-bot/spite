@@ -8,6 +8,9 @@
 mod parse;
 pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
 
+use crate::JsString;
+use std::fmt::Write;
+
 /// Milliseconds in an ECMAScript day; leap seconds are not represented.
 pub const MS_PER_DAY: i64 = 86_400_000;
 /// The inclusive absolute time-value boundary prescribed by TimeClip.
@@ -70,6 +73,36 @@ pub fn make_date(day: f64, time: f64) -> f64 {
     }
     let time = day * MS_PER_DAY as f64 + time;
     if time.is_finite() { time } else { f64::NAN }
+}
+
+/// Formats a clipped integral time value as the canonical UTC interchange string.
+///
+/// Returns `None` outside the clipped domain. Years 0–9999 use four digits;
+/// other years use a sign and six digits. Output always includes seconds, three
+/// millisecond digits, and Z, matching the finite branch of
+/// [Date.prototype.toISOString](https://262.ecma-international.org/17.0/#sec-date.prototype.toisostring).
+pub fn format_iso_date_time(time: i64) -> Option<JsString> {
+    let date = UtcDateTime::from_time_value(time)?;
+    let mut text = String::with_capacity(27);
+    if (0..=9999).contains(&date.year) {
+        write!(text, "{:04}", date.year).expect("writing a numeric year to String is infallible");
+    } else {
+        let sign = if date.year < 0 { '-' } else { '+' };
+        write!(text, "{sign}{:06}", date.year.unsigned_abs())
+            .expect("writing a numeric year to String is infallible");
+    }
+    write!(
+        text,
+        "-{:02}-{:02}T{:02}:{:02}:{:02}.{:03}Z",
+        date.month + 1,
+        date.day,
+        date.hour,
+        date.minute,
+        date.second,
+        date.millisecond,
+    )
+    .expect("writing numeric date fields to String is infallible");
+    Some(JsString::from(text.as_str()))
 }
 
 /// UTC calendar fields for one finite, integral, clipped time value.

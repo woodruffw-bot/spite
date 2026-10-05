@@ -199,3 +199,50 @@ fn make_date_preserves_signed_zero_and_defers_clipping_of_finite_results() {
     }
     assert!(make_date(f64::MAX, -f64::MAX).is_nan());
 }
+
+#[test]
+fn canonical_iso_format_snapshot() {
+    use std::fmt::Write;
+
+    let mut report = String::new();
+    for time in [
+        -MAX_TIME_VALUE,
+        -MAX_TIME_VALUE + 1,
+        -62_198_755_200_000,
+        -62_167_219_200_000,
+        -1,
+        0,
+        1,
+        951_782_400_000,
+        253_402_300_799_999,
+        253_402_300_800_000,
+        MAX_TIME_VALUE - 1,
+        MAX_TIME_VALUE,
+        -MAX_TIME_VALUE - 1,
+        MAX_TIME_VALUE + 1,
+        i64::MIN,
+        i64::MAX,
+    ] {
+        writeln!(report, "{time} => {:?}", format_iso_date_time(time)).unwrap();
+    }
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn canonical_iso_strings_round_trip_across_the_complete_clipped_domain() {
+    let mut state = 2026_u64;
+    let width = (2 * MAX_TIME_VALUE + 1) as u64;
+    for _ in 0..4096 {
+        state = state
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1);
+        let time = (state % width) as i64 - MAX_TIME_VALUE;
+        let text = format_iso_date_time(time).unwrap();
+        assert!(matches!(text.len(), 24 | 27));
+        assert!(text.code_units().iter().all(|unit| *unit <= 0x7f));
+        assert_eq!(
+            parse_date_time_string(&text).unwrap().utc_time_value(),
+            Some(time as f64)
+        );
+    }
+}

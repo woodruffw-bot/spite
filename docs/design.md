@@ -2339,3 +2339,10 @@ their offset. Invalid native field records and out-of-range instants yield NaN,
 while valid local forms report that zone resolution is required. MakeFullYear
 separately truncates numeric input and maps years 0–99 to 1900–1999; interchange
 years preserve their literal year, including zero and 1–99.
+
+Canonical ISO formatting decomposes a clipped integral time value and emits the
+finite toISOString form (21.4.4.36): four year digits for 0–9999, otherwise a sign
+and six digits, followed by full UTC date/time fields, three millisecond digits,
+and Z. Output has 24 or 27 UTF-16 code units and preserves every supported
+millisecond. Invalid native time values are rejected before formatting. Date
+branding, JavaScript RangeErrors and intrinsic exposure remain runtime steps.

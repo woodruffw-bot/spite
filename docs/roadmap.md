@@ -285,6 +285,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.
 - [x] Convert UTC/explicit-offset Date strings with calendar rollover and final time-range validation, and implement numeric MakeFullYear adjustment.
+- [x] Format canonical UTC Date interchange strings with millisecond precision and signed six-digit expanded years.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.

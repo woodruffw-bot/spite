@@ -508,6 +508,12 @@ records/extreme years without overflow. Local zone resolution, MakeDay for
 arbitrary numeric arguments, and Date.parse exposure remain pending.
 A separate reference check round-tripped 4,103 Node ISO strings spanning the
 clipped domain to their exact original time values.
+Canonical ISO formatting now emits full UTC fields, millisecond precision and
+four-digit/signed six-digit years across the clipped domain. A reviewed insta
+snapshot covers exact strings at epoch/year-width/range boundaries and invalid
+native values; a 4,096-case regression checks parse/format round trips and fixed
+ASCII output widths. All 4,103 reference ISO strings also matched Node's formatter
+output exactly. Date.prototype.toISOString exposure remains pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
