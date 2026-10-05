@@ -16,10 +16,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
-            Builtin::Eval => {
-                let value = arguments.next().unwrap_or(Value::Undefined);
-                self.perform_eval(value, false, span)
-            }
+            Builtin::Eval => unreachable!("eval dispatched without a native-algorithm frame"),
             Builtin::Set => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

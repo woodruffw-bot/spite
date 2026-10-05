@@ -1299,6 +1299,11 @@ impl Realm {
                 }
             };
             let result = match builtin {
+                // Eval compiles and executes more Script code. Do not retain
+                // the large native-algorithm dispatch frame during re-entry.
+                Builtin::Eval => {
+                    self.perform_eval(arguments.next().unwrap_or(Value::Undefined), false, span)
+                }
                 Builtin::FunctionCall => {
                     // 20.2.3.3 is a tail call. Transfer ownership of the receiver and
                     // advance the argument iterator without Rust stack recursion.

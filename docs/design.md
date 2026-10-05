@@ -1780,6 +1780,12 @@ environments and otherwise resolves to the realm's global this value.
 Every call restores caller strictness and active scopes on success or abrupt exit.
 The evaluator bounds combined statement/expression nesting across calls to 64,
 as well as call re-entry; ordinary user tail calls await explicit execution frames.
+Call expressions and expression statements use separate small dispatch frames.
+Indirect eval bypasses the native-algorithm match frame, so recursive Script
+compilation/execution does not retain storage for unrelated expression, statement,
+or builtin branches. This keeps the existing native-depth guards effective on a
+2 MiB embedding-thread stack, including ordinary debug builds. Quotas and guard
+thresholds are unchanged.
 
 With simple parameter lists, block bodies instantiate all function vars in the
 parameter environment before execution, preserving existing parameter values

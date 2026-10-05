@@ -318,6 +318,10 @@ selection, standard length/name metadata, and iterative invocation. Captured
 object edges survive collection and unreachable cycles are reclaimed. Re-entrant
 getter/coercion calls have a host nesting limit of 32; tail transfers are iterative. Embedding threads require
 at least a 2 MiB native stack, exercised by recursion regressions in CI.
+Those regressions include direct and indirect eval through property, optional,
+call/apply/Reflect, and bound forms, conditional/sequence execution, mixed function
+calls, and nested eval/Function compilation. They verify host errors before stack
+exhaustion, handler/finalizer bypass, and usable realm state afterward.
 
 The Function global exposes the standard intrinsic constructor/prototype graph,
 name/length/prototype descriptors, inherited branding, and complete own reflection.

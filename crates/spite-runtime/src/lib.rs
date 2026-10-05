@@ -683,7 +683,14 @@ impl Realm {
         labels: &[&str],
     ) -> Result<Completion, Error> {
         self.enter_evaluation(statement.span)?;
-        let result = self.statement_inner(statement, labels);
+        // Keep recursive expression statements out of the large general frame.
+        let result = if let StatementKind::Expression(expression) = &statement.kind {
+            self.tick(statement.span)
+                .and_then(|()| self.expression(expression))
+                .map(|value| Completion::normal(Some(value)))
+        } else {
+            self.statement_inner(statement, labels)
+        };
         self.evaluation_depth -= 1;
         result
     }
@@ -699,7 +706,9 @@ impl Realm {
             StatementKind::Empty | StatementKind::Debugger => Ok(Completion::normal(None)),
             // 15.2.6: declaration evaluation is empty; instantiation made the value.
             StatementKind::Function(_) => Ok(Completion::normal(None)),
-            StatementKind::Expression(expr) => Ok(Completion::normal(Some(self.expression(expr)?))),
+            StatementKind::Expression(_) => {
+                unreachable!("expression statement dispatched separately")
+            }
             StatementKind::Break(target) | StatementKind::Continue(target) => Ok(Completion {
                 kind: if matches!(statement.kind, StatementKind::Break(_)) {
                     CompletionKind::Break
@@ -1215,9 +1224,47 @@ impl Realm {
 
     fn expression(&mut self, expr: &Expr) -> Result<Value, Error> {
         self.enter_evaluation(expr.span)?;
-        let result = self.expression_inner(expr);
+        // Debug builds reserve space for every general expression branch. Do
+        // not retain that frame through calls and recursive eval compilation.
+        let result = if let ExprKind::Call { callee, arguments } = &expr.kind {
+            self.call_expression(callee, arguments, expr.span)
+        } else {
+            self.expression_inner(expr)
+        };
         self.evaluation_depth -= 1;
         result
+    }
+
+    fn call_expression(
+        &mut self,
+        callee: &Expr,
+        arguments: &[spite_parser::ast::Argument],
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.tick(span)?;
+        let (function, this, direct_eval) = if reference_expression(callee) {
+            let mut reference = self.reference(callee)?;
+            let function = self.get(&mut reference, callee.span)?;
+            // 13.3.6.1: with/local eval references are direct for %eval%.
+            let direct_eval = reference.is_eval_environment_reference()
+                && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
+            let this = reference.call_receiver();
+            (function, this, direct_eval)
+        } else {
+            (self.expression(callee)?, Value::Undefined, false)
+        };
+        let values = self.argument_list(arguments)?;
+        let result = if direct_eval {
+            self.perform_eval(
+                values.into_iter().next().unwrap_or(Value::Undefined),
+                true,
+                span,
+            )?
+        } else {
+            self.call(function, this, values, span)?
+        };
+        self.check_string(&result, span)?;
+        Ok(result)
     }
 
     fn expression_inner(&mut self, expr: &Expr) -> Result<Value, Error> {
@@ -1238,30 +1285,7 @@ impl Realm {
                 let values = self.argument_list(arguments.as_deref().unwrap_or(&[]))?;
                 self.construct(constructor, values, expr.span)?
             }
-            ExprKind::Call { callee, arguments } => {
-                let (function, this, direct_eval) = if reference_expression(callee) {
-                    let mut reference = self.reference(callee)?;
-                    let function = self.get(&mut reference, callee.span)?;
-                    // 13.3.6.1: even a with binding or a local named eval is
-                    // direct when its non-property reference denotes %eval%.
-                    let direct_eval = reference.is_eval_environment_reference()
-                        && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
-                    let this = reference.call_receiver();
-                    (function, this, direct_eval)
-                } else {
-                    (self.expression(callee)?, Value::Undefined, false)
-                };
-                let values = self.argument_list(arguments)?;
-                if direct_eval {
-                    self.perform_eval(
-                        values.into_iter().next().unwrap_or(Value::Undefined),
-                        true,
-                        expr.span,
-                    )?
-                } else {
-                    self.call(function, this, values, expr.span)?
-                }
-            }
+            ExprKind::Call { .. } => unreachable!("call dispatched separately"),
             ExprKind::TaggedTemplate {
                 tag,
                 elements,
