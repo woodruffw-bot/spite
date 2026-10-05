@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 5515 unmodified test fixtures and eight harness files come from
+These 5581 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1187,6 +1187,29 @@ methods. Git blob hashes verify every original at the existing pin. Both stable 
 MSRV pass all 32 added variants with ordinary unlimited defaults. Sources, assertions,
 metadata, helpers, and the pin remain unchanged.
 
+## Public field execution and ASI fixtures
+
+Sixty-six unchanged public-field originals add 131 variants: 115 harness positives
+and sixteen parse negatives. Their complete declarations/expressions cover own
+property descriptors, inherited setter bypass, frozen receivers, field ordering,
+computed key conversion and abrupt completion, repeated fields, per-instance values,
+base constructor timing, static this/eval/arrows, inferred class names, repeated
+super calls, and automatic semicolon insertion.
+
+The focused review read 72 complete originals from the two elements directories;
+six also contain private fields and remain excluded as whole files without credit.
+This is a focused review, not a whole-directory execution count. Two retained
+accessor-named originals carry decorator annotations but contain only ordinary
+newline-separated public fields. Two ASI negatives carry generator annotations:
+the star continues the initializer as multiplication and cannot begin a method.
+Their intended rejection is the following body brace. The other six ASI negatives
+check that brace or the same-line method name, with exact original ranges and
+messages in both Script modes. Unsupported syntax never satisfies these reviews.
+
+Both stable and MSRV pass all 131 variants under ordinary unlimited defaults.
+Git blob hashes verify every unchanged source at the existing pin. Every assertion,
+metadata field, helper, and the pin is retained.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -1208,7 +1231,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 10471 variants from 5496 reviewed sources: the eleven
+The `spite-test262` command runs 10602 variants from 5562 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1230,13 +1253,14 @@ files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
 files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
 files (187 positive and three runtime-negative), and 22 super-expression positives,
 and 39 class definition/name-binding/strict-mode files (37 positive and two
+parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative).
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-9762 positives using the upstream harness, 701 reviewed parse-negative variants,
+9877 positives using the upstream harness, 717 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

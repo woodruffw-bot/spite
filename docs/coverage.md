@@ -41,7 +41,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10471 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10602 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1212,8 +1212,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 10471 variants are four raw positives, 9762 positives using the upstream
-harness, 701 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
+Rust. Its 10602 variants are four raw positives, 9877 positives using the upstream
+harness, 717 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol
@@ -1335,3 +1335,17 @@ field edges before mutation, host-abort restoration, and unchanged opt-in quotas
 AST/diagnostic snapshots cover field/method lookahead, ASI, initializer boundaries,
 forbidden literal names, arguments, and super calls. Four more recursion cases
 exercise instance/static/derived/eval initializers on two-mebibyte debug stacks.
+
+Sixty-six unchanged public-field execution/ASI originals add 131 variants: 115
+harness positives and sixteen parse negatives. The focused whole-program review
+covers 72 declaration/expression originals; six require private fields and are
+excluded without credit. This does not claim complete elements-directory coverage.
+Selected programs cover descriptor creation, inherited setter bypass, frozen
+receivers, definition/initialization order, key conversion and abrupt completion,
+repeated fields, instance values, base construction, static this/eval/arrows,
+class names, repeated super calls, and ASI. Two decorator-annotated originals use
+ordinary newline-separated fields. Two generator-annotated ASI negatives parse
+the star as multiplication and reject the following brace; no unsupported method
+is credited. All eight negative originals check exact original ranges/messages in
+both Script modes. Both toolchains pass every added variant with ordinary defaults;
+Git blobs, source bytes, assertions, metadata, helpers, and the pin are unchanged.

@@ -5495,3 +5495,69 @@ test/language/statements/class/name-binding/in-extends-expression-grouped.js	-	-
 test/language/statements/class/name-binding/in-extends-expression.js	-	-	-
 test/language/statements/class/strict-mode/arguments-callee.js	-	-	-
 test/language/statements/class/strict-mode/with.js	315	325	with statements are not allowed in strict mode
+test/language/statements/class/elements/abrupt-completition-on-field-initializer.js	-	-	-
+test/language/statements/class/elements/class-field-on-frozen-objects.js	-	-	-
+test/language/statements/class/elements/computed-name-toprimitive-symbol.js	-	-	-
+test/language/statements/class/elements/computed-name-toprimitive.js	-	-	-
+test/language/statements/class/elements/computed-property-abrupt-completition.js	-	-	-
+test/language/statements/class/elements/ctor-called-after-fields-init.js	-	-	-
+test/language/statements/class/elements/field-declaration.js	-	-	-
+test/language/statements/class/elements/field-definition-accessor-no-line-terminator.js	-	-	-
+test/language/statements/class/elements/fielddefinition-initializer-abrupt-completion.js	-	-	-
+test/language/statements/class/elements/fields-asi-1.js	-	-	-
+test/language/statements/class/elements/fields-asi-2.js	-	-	-
+test/language/statements/class/elements/fields-asi-3.js	412	413	expected class field terminator
+test/language/statements/class/elements/fields-asi-4.js	424	425	expected class field terminator
+test/language/statements/class/elements/fields-asi-5.js	-	-	-
+test/language/statements/class/elements/fields-asi-same-line-1.js	402	408	expected class field terminator
+test/language/statements/class/elements/fields-asi-same-line-2.js	424	430	expected class field terminator
+test/language/statements/class/elements/init-err-evaluation.js	-	-	-
+test/language/statements/class/elements/init-value-defined-after-class.js	-	-	-
+test/language/statements/class/elements/init-value-incremental.js	-	-	-
+test/language/statements/class/elements/intercalated-static-non-static-computed-fields.js	-	-	-
+test/language/statements/class/elements/public-class-field-initialization-on-super-class-with-setter.js	-	-	-
+test/language/statements/class/elements/redeclaration-symbol.js	-	-	-
+test/language/statements/class/elements/redeclaration.js	-	-	-
+test/language/statements/class/elements/static-as-valid-instance-field-assigned.js	-	-	-
+test/language/statements/class/elements/static-as-valid-instance-field.js	-	-	-
+test/language/statements/class/elements/static-as-valid-static-field-assigned.js	-	-	-
+test/language/statements/class/elements/static-as-valid-static-field.js	-	-	-
+test/language/statements/class/elements/static-field-declaration.js	-	-	-
+test/language/statements/class/elements/static-field-init-this-inside-arrow-function.js	-	-	-
+test/language/statements/class/elements/static-field-init-with-this.js	-	-	-
+test/language/statements/class/elements/static-field-initializer-error.js	-	-	-
+test/language/statements/class/elements/static-field-redeclaration.js	-	-	-
+test/language/statements/class/elements/static-fielddefinition-initializer-abrupt-completion.js	-	-	-
+test/language/statements/class/elements/super-access-from-arrow-func-on-field.js	-	-	-
+test/language/statements/class/elements/super-fielddefinition-initializer-abrupt-completion.js	-	-	-
+test/language/expressions/class/elements/class-name-static-initializer-anonymous.js	-	-	-
+test/language/expressions/class/elements/class-name-static-initializer-decl.js	-	-	-
+test/language/expressions/class/elements/class-name-static-initializer-expr.js	-	-	-
+test/language/expressions/class/elements/computed-name-toprimitive-symbol.js	-	-	-
+test/language/expressions/class/elements/computed-name-toprimitive.js	-	-	-
+test/language/expressions/class/elements/ctor-called-after-fields-init.js	-	-	-
+test/language/expressions/class/elements/field-declaration.js	-	-	-
+test/language/expressions/class/elements/field-definition-accessor-no-line-terminator.js	-	-	-
+test/language/expressions/class/elements/fields-asi-1.js	-	-	-
+test/language/expressions/class/elements/fields-asi-2.js	-	-	-
+test/language/expressions/class/elements/fields-asi-3.js	418	419	expected class field terminator
+test/language/expressions/class/elements/fields-asi-4.js	430	431	expected class field terminator
+test/language/expressions/class/elements/fields-asi-5.js	-	-	-
+test/language/expressions/class/elements/fields-asi-same-line-1.js	408	414	expected class field terminator
+test/language/expressions/class/elements/fields-asi-same-line-2.js	430	436	expected class field terminator
+test/language/expressions/class/elements/fields-run-once-on-double-super.js	-	-	-
+test/language/expressions/class/elements/init-err-evaluation.js	-	-	-
+test/language/expressions/class/elements/init-value-defined-after-class.js	-	-	-
+test/language/expressions/class/elements/init-value-incremental.js	-	-	-
+test/language/expressions/class/elements/intercalated-static-non-static-computed-fields.js	-	-	-
+test/language/expressions/class/elements/redeclaration-symbol.js	-	-	-
+test/language/expressions/class/elements/redeclaration.js	-	-	-
+test/language/expressions/class/elements/static-as-valid-instance-field-assigned.js	-	-	-
+test/language/expressions/class/elements/static-as-valid-instance-field.js	-	-	-
+test/language/expressions/class/elements/static-as-valid-static-field-assigned.js	-	-	-
+test/language/expressions/class/elements/static-as-valid-static-field.js	-	-	-
+test/language/expressions/class/elements/static-field-declaration.js	-	-	-
+test/language/expressions/class/elements/static-field-init-this-inside-arrow-function.js	-	-	-
+test/language/expressions/class/elements/static-field-init-with-this.js	-	-	-
+test/language/expressions/class/elements/static-field-redeclaration.js	-	-	-
+test/language/expressions/class/elements/super-access-from-arrow-func-on-field.js	-	-	-
