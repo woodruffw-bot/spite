@@ -1,7 +1,9 @@
-//! Literal flags and the unnamed Pattern grammar with ordinary class ranges.
+//! Literal flags and core Pattern validation with ordinary classes and names.
 
-use spite_core::{Diagnostic, DiagnosticKind, JsString, Span, is_identifier_part};
-use std::{cmp::Ordering, ops::Range};
+use spite_core::{
+    Diagnostic, DiagnosticKind, JsString, Span, is_identifier_part, is_identifier_start,
+};
+use std::{cmp::Ordering, collections::HashSet, mem, ops::Range};
 
 type Failure = (DiagnosticKind, &'static str);
 
@@ -17,6 +19,61 @@ fn unsupported(message: &'static str) -> Failure {
 struct Mode {
     unicode: bool,
     sets: bool,
+}
+
+#[derive(Default)]
+struct Names {
+    alternatives: HashSet<String>,
+    current: HashSet<String>,
+}
+
+impl Names {
+    fn add(&mut self, name: String) -> Result<(), Failure> {
+        if !self.current.insert(name) {
+            return Err(syntax(
+                "regular expression capture names might both participate",
+            ));
+        }
+        Ok(())
+    }
+
+    fn extend(&mut self, names: HashSet<String>) -> Result<(), Failure> {
+        // Captures in separate terms of one alternative can both participate,
+        // even when each term contains its own inner disjunction.
+        if !self.current.is_disjoint(&names) {
+            return Err(syntax(
+                "regular expression capture names might both participate",
+            ));
+        }
+        union_names(&mut self.current, names);
+        Ok(())
+    }
+
+    fn next_alternative(&mut self) {
+        // A separating disjunction permits repeated names across alternatives.
+        // https://262.ecma-international.org/17.0/#sec-mightbothparticipate
+        union_names(&mut self.alternatives, mem::take(&mut self.current));
+    }
+
+    fn finish(mut self) -> HashSet<String> {
+        self.next_alternative();
+        self.alternatives
+    }
+}
+
+fn union_names(target: &mut HashSet<String>, mut source: HashSet<String>) {
+    // Move the larger allocation rather than rehashing every name at each
+    // enclosing group. This also keeps deeply nested names iterative.
+    if target.len() < source.len() {
+        mem::swap(target, &mut source);
+    }
+    target.extend(source);
+}
+
+#[derive(Default)]
+struct Group {
+    assertion: bool,
+    names: Names,
 }
 
 pub(super) fn literal_diagnostic(body: &JsString, flags: &JsString, span: Span) -> Diagnostic {
@@ -64,6 +121,7 @@ struct Pattern {
     mode: Mode,
     captures: u32,
     largest_reference: Option<Range<usize>>,
+    named_references: HashSet<String>,
 }
 
 impl Pattern {
@@ -90,6 +148,7 @@ impl Pattern {
             mode,
             captures: 0,
             largest_reference: None,
+            named_references: HashSet::new(),
         }
     }
 
@@ -108,26 +167,47 @@ impl Pattern {
 
     fn validate(&mut self) -> Result<(), Failure> {
         // https://262.ecma-international.org/17.0/#sec-patterns
-        // Each entry records whether the enclosing group is an Assertion. The
-        // grammar is traversed iteratively, without a native recursion quota.
+        // Each entry retains the enclosing disjunction's names and whether the
+        // group is an Assertion. No native recursion quota is required.
         let mut groups = Vec::new();
+        let mut current = Group::default();
         let mut can_quantify = false;
         while let Some(point) = self.peek() {
             self.pos += 1;
             match point {
                 0x28 => {
                     // (
-                    groups.push(self.group()?);
+                    let (assertion, name) = self.group()?;
+                    if let Some(name) = name {
+                        // The GroupSpecifier is outside its own Disjunction.
+                        // Its name can therefore participate with any inner name.
+                        current.names.add(name)?;
+                    }
+                    groups.push(mem::replace(
+                        &mut current,
+                        Group {
+                            assertion,
+                            names: Names::default(),
+                        },
+                    ));
                     can_quantify = false;
                 }
                 0x29 => {
                     // )
-                    let Some(assertion) = groups.pop() else {
+                    let Some(parent) = groups.pop() else {
                         return Err(syntax("unmatched regular expression closing parenthesis"));
                     };
-                    can_quantify = !assertion;
+                    can_quantify = !current.assertion;
+                    let names = current.names.finish();
+                    current = parent;
+                    current.names.extend(names)?;
                 }
-                0x7c | 0x5e | 0x24 => can_quantify = false, // | ^ $
+                0x7c => {
+                    // |
+                    current.names.next_alternative();
+                    can_quantify = false;
+                }
+                0x5e | 0x24 => can_quantify = false, // ^ $
                 0x2a | 0x2b | 0x3f | 0x7b => {
                     // * + ? {
                     if !can_quantify {
@@ -153,6 +233,14 @@ impl Pattern {
         if !groups.is_empty() {
             return Err(syntax("unterminated regular expression group"));
         }
+        let names = current.names.finish();
+        // GroupSpecifiersThatMatch permits forward and alternative references.
+        // https://262.ecma-international.org/17.0/#sec-groupspecifiersthatmatch
+        if !self.named_references.is_subset(&names) {
+            return Err(syntax(
+                "regular expression named backreference has no capture",
+            ));
+        }
         // DecimalEscape permits forward references. Compare only after the
         // complete supported Pattern has established its capture count.
         if let Some(reference) = &self.largest_reference {
@@ -166,26 +254,31 @@ impl Pattern {
         Ok(())
     }
 
-    fn group(&mut self) -> Result<bool, Failure> {
+    fn capture(&mut self) -> Result<(), Failure> {
+        // The specification rejects CountLeftCapturingParens >= 2^32 - 1.
+        // This is a grammar early error, not a host resource quota.
+        if self.captures == u32::MAX - 1 {
+            return Err(syntax("too many regular expression capturing groups"));
+        }
+        self.captures += 1;
+        Ok(())
+    }
+
+    fn group(&mut self) -> Result<(bool, Option<String>), Failure> {
         if !self.eat(b'?') {
-            // The specification rejects CountLeftCapturingParens >= 2^32 - 1.
-            // This is a grammar early error, not a host resource quota.
-            if self.captures == u32::MAX - 1 {
-                return Err(syntax("too many regular expression capturing groups"));
-            }
-            self.captures += 1;
-            return Ok(false);
+            self.capture()?;
+            return Ok((false, None));
         }
         if self.eat(b'=') || self.eat(b'!') {
-            return Ok(true);
+            return Ok((true, None));
         }
         if self.eat(b'<') {
             if self.eat(b'=') || self.eat(b'!') {
-                return Ok(true);
+                return Ok((true, None));
             }
-            return Err(unsupported(
-                "regular expression named capture validation is not implemented",
-            ));
+            let name = self.group_name()?;
+            self.capture()?;
+            return Ok((false, Some(name)));
         }
         // Includes (?:...), whose first modifier list is empty.
         let enabled = self.modifiers()?;
@@ -200,7 +293,55 @@ impl Pattern {
         if disabled.is_some_and(|disabled| enabled | disabled == 0 || enabled & disabled != 0) {
             return Err(syntax("invalid regular expression modifier groups"));
         }
-        Ok(false)
+        Ok((false, None))
+    }
+
+    // The opening '<' has been consumed. CapturingGroupName decodes all names
+    // without normalizing or case-folding their identifier code points.
+    fn group_name(&mut self) -> Result<String, Failure> {
+        // https://262.ecma-international.org/17.0/#sec-regexpidentifiercodepoint
+        // https://262.ecma-international.org/17.0/#sec-static-semantics-capturinggroupname
+        let mut name = String::new();
+        loop {
+            let Some(mut point) = self.peek() else {
+                return Err(syntax("unterminated regular expression group name"));
+            };
+            self.pos += 1;
+            if point == u32::from(b'>') {
+                if name.is_empty() {
+                    return Err(syntax("empty regular expression group name"));
+                }
+                return Ok(name);
+            }
+            if point == u32::from(b'\\') {
+                if !self.eat(b'u') {
+                    return Err(syntax(
+                        "regular expression group name requires a Unicode escape",
+                    ));
+                }
+                // RegExpIdentifierStart/Part explicitly use +UnicodeMode for
+                // escapes even when the enclosing Pattern has no u/v flag.
+                point = self.unicode_escape(true)?;
+            } else if !self.mode.unicode && (0xd800..=0xdbff).contains(&point) {
+                if let Some(trail) = self
+                    .peek()
+                    .filter(|point| (0xdc00..=0xdfff).contains(point))
+                {
+                    self.pos += 1;
+                    point = 0x10000 + (point - 0xd800) * 0x400 + trail - 0xdc00;
+                }
+            }
+            let Some(character) = char::from_u32(point).filter(|character| {
+                if name.is_empty() {
+                    is_identifier_start(*character)
+                } else {
+                    is_identifier_part(*character)
+                }
+            }) else {
+                return Err(syntax("invalid regular expression group name identifier"));
+            };
+            name.push(character);
+        }
     }
 
     fn modifiers(&mut self) -> Result<u8, Failure> {
@@ -276,9 +417,13 @@ impl Pattern {
                 ));
             }
             0x6b => {
-                return Err(unsupported(
-                    "regular expression named backreference validation is not implemented",
-                ));
+                if !self.eat(b'<') {
+                    return Err(syntax(
+                        "regular expression named backreference requires a group name",
+                    ));
+                }
+                let name = self.group_name()?;
+                self.named_references.insert(name);
             }
             _ => {
                 self.character_escape(point)?;
@@ -320,47 +465,7 @@ impl Pattern {
                 Ok(0)
             }
             0x78 => self.hex_digits(2), // x Hex2Digits
-            0x75 => {
-                // u Hex4Digits, or u{CodePoint} in either Unicode mode
-                if self.mode.unicode && self.eat(b'{') {
-                    let start = self.pos;
-                    let mut value = 0u32;
-                    while let Some(digit) = self.peek().and_then(hex_value) {
-                        value = value
-                            .checked_mul(16)
-                            .and_then(|v| v.checked_add(digit))
-                            .filter(|v| *v <= 0x10ffff)
-                            .ok_or_else(|| {
-                                syntax("regular expression Unicode escape is out of range")
-                            })?;
-                        self.pos += 1;
-                    }
-                    if self.pos == start || !self.eat(b'}') {
-                        return Err(syntax("invalid regular expression Unicode escape"));
-                    }
-                    Ok(value)
-                } else {
-                    let lead = self.hex_digits(4)?;
-                    if self.mode.unicode && (0xd800..=0xdbff).contains(&lead) {
-                        // Pair only the nearest following \\u HexTrailSurrogate,
-                        // never a brace escape or a raw surrogate source unit.
-                        let trail = self.points[self.pos..]
-                            .strip_prefix(&[0x5c, 0x75])
-                            .and_then(|rest| rest.get(..4))
-                            .and_then(|hex| {
-                                hex.iter().try_fold(0u32, |value, point| {
-                                    Some(value * 16 + hex_value(*point)?)
-                                })
-                            })
-                            .filter(|value| (0xdc00..=0xdfff).contains(value));
-                        if let Some(trail) = trail {
-                            self.pos += 6;
-                            return Ok(0x10000 + (lead - 0xd800) * 0x400 + trail - 0xdc00);
-                        }
-                    }
-                    Ok(lead)
-                }
-            }
+            0x75 => self.unicode_escape(self.mode.unicode),
             _ => {
                 let valid = if self.mode.unicode {
                     matches!(
@@ -390,6 +495,44 @@ impl Pattern {
                 }
                 Ok(point)
             }
+        }
+    }
+
+    fn unicode_escape(&mut self, unicode: bool) -> Result<u32, Failure> {
+        if unicode && self.eat(b'{') {
+            let start = self.pos;
+            let mut value = 0u32;
+            while let Some(digit) = self.peek().and_then(hex_value) {
+                value = value
+                    .checked_mul(16)
+                    .and_then(|v| v.checked_add(digit))
+                    .filter(|v| *v <= 0x10ffff)
+                    .ok_or_else(|| syntax("regular expression Unicode escape is out of range"))?;
+                self.pos += 1;
+            }
+            if self.pos == start || !self.eat(b'}') {
+                return Err(syntax("invalid regular expression Unicode escape"));
+            }
+            Ok(value)
+        } else {
+            let lead = self.hex_digits(4)?;
+            if unicode && (0xd800..=0xdbff).contains(&lead) {
+                // Pair only the nearest following \\u HexTrailSurrogate,
+                // never a brace escape or a raw surrogate source unit.
+                let trail = self.points[self.pos..]
+                    .strip_prefix(&[0x5c, 0x75])
+                    .and_then(|rest| rest.get(..4))
+                    .and_then(|hex| {
+                        hex.iter()
+                            .try_fold(0u32, |value, point| Some(value * 16 + hex_value(*point)?))
+                    })
+                    .filter(|value| (0xdc00..=0xdfff).contains(value));
+                if let Some(trail) = trail {
+                    self.pos += 6;
+                    return Ok(0x10000 + (lead - 0xd800) * 0x400 + trail - 0xdc00);
+                }
+            }
+            Ok(lead)
         }
     }
 

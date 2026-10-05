@@ -174,13 +174,7 @@ fn malformed_core_patterns_have_shared_syntax_diagnostics() {
 
 #[test]
 fn unsupported_pattern_productions_do_not_receive_negative_credit() {
-    for source in [
-        "/[a&&]/v",
-        "/(?<a>a)(?<a>b)/u",
-        r"/\k<missing>/",
-        r"/\p{Invalid}/u",
-        r"/\P{Invalid}/v",
-    ] {
+    for source in ["/[a&&]/v", r"/\p{Invalid}/u", r"/\P{Invalid}/v"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

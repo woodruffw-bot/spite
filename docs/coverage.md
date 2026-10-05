@@ -247,8 +247,8 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. UnicodeSetsMode classes, named
-captures/references, Unicode properties, matching, intrinsics, and grammar-driven
+No RegExp literal AST or execution pass is exposed. UnicodeSetsMode classes,
+Unicode properties, matching, intrinsics, and grammar-driven
 reusable cover lookahead remain pending. Unimplemented Pattern productions still
 produce Unsupported and cannot receive parse-negative credit.
 
@@ -300,6 +300,23 @@ effects; valid classes still reach host Unsupported for matching. UnicodeSetsMod
 classes and Unicode property escapes remain unsupported and receive no negative
 credit. Corpus inventories, runtime defaults, native guards and dependencies are
 unchanged.
+
+Named captures validate IdentifierStartChar/IdentifierPartChar with Unicode
+escapes and astral code points, including paired raw units without u/v. Group-name
+escapes always use UnicodeMode as required by their productions. Names retain
+their decoded spelling without normalization or case folding. Named forward
+references resolve against all captures; named captures also contribute to the
+numbered capture count. Alternative name sets implement MightBothParticipate:
+a separating disjunction permits duplicates, while successive terms and names
+enclosing their own disjunction conflict. Sets move through the iterative group
+stack without repeatedly copying all inner names. Five parser regressions cover
+these rules, malformed names, raw lone surrogates, all grammar entry points,
+20,000 nested named captures and 20,000 alternatives without default quotas. The
+new diagnostic snapshot was inspected. Eval rejects invalid and duplicate names
+before source effects; valid alternative-separated names still produce host
+Unsupported for matching. Unicode property and UnicodeSetsMode gaps cannot
+receive negative credit. Corpus inventories, defaults, native guards and
+dependencies are unchanged.
 
 106 unchanged core Pattern originals add 212 reviewed parse-negative variants
 covering scoped modifiers, quantifier placement/bounds, assertion quantifiers,

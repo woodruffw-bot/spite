@@ -32,6 +32,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reject invalid and repeated RegExp literal flags and simultaneous u/v Unicode modes before Pattern parsing.
 - [x] Validate core RegExp groups, assertions, quantifiers, scoped modifiers, character escapes, and numbered backreferences without native recursion.
 - [x] Validate ordinary RegExp character classes, character-valued range endpoints, and range ordering with Unicode surrogate escape pairing.
+- [x] Validate RegExp capture names, named forward references, and alternative-sensitive duplicate-name early errors.
 - [x] Parse untagged template literals with cooked/raw text and nested substitutions.
 - [x] Evaluate untagged template substitutions and string conversion.
 - [x] Add tagged templates with call/member precedence, raw/cooked components, frozen per-realm template objects, and parse-site identity.

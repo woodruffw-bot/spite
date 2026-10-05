@@ -43,12 +43,21 @@ fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_ho
 
 #[test]
 fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_gaps() {
-    for pattern in ["(", "a{2,1}", "(?=a)*", "(?i-i:a)", "[z-a]", "[a-\\\\d]"] {
+    for pattern in [
+        "(",
+        "a{2,1}",
+        "(?=a)*",
+        "(?i-i:a)",
+        "[z-a]",
+        "[a-\\\\d]",
+        "(?<a>a)(?<a>b)",
+        "(?<42>a)",
+    ] {
         check(&format!(
             "let effects=0,caught=false;try{{eval('effects=1; /{pattern}/;');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
         ));
     }
-    for pattern in ["(?:a)*", "[a-z]", "(?<a>a)(?<a>b)"] {
+    for pattern in ["(?:a)*", "[a-z]", "(?<a>a)|(?<a>b)"] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         assert!(matches!(
