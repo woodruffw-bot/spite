@@ -172,7 +172,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add class heritage and derived constructors with ordered superclass evaluation, super calls, and uninitialized this bindings.
 - [x] Add public instance/static fields with ordered computed names, initializer environments, data-property creation, and base/derived construction timing.
 - [ ] Add private fields, methods/accessors, and private-name environments and brand checks.
-- [ ] Add static initialization blocks with their scope, early errors, and ordered class evaluation.
+- [x] Add static initialization blocks with their scope, early errors, and ordered class evaluation.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.
 - [x] Implement ordinary dynamic Function calls/construction with ordered conversion, global scope, and well-formed UTF-16 source.

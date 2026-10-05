@@ -1,0 +1,177 @@
+---
+source: crates/spite-parser/tests/class_static_blocks.rs
+expression: "parse_script(\"class C { static x=1; static { var x=2; this.y=x; } static {} }\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Class(
+                Class {
+                    name: Some(
+                        FunctionName {
+                            name: "C",
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                    ),
+                    heritage: None,
+                    default_constructor: true,
+                    constructor: Function {
+                        name: None,
+                        parameters: [],
+                        body: FunctionBody {
+                            statements: [],
+                            strict: false,
+                        },
+                        source: FunctionSource(
+                            "class C { static x=1; static { var x=2; this.y=x; } static {} }",
+                        ),
+                    },
+                    elements: [
+                        Field {
+                            is_static: true,
+                            name: Literal(
+                                String(
+                                    "x",
+                                ),
+                            ),
+                            initializer: Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            1.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 19,
+                                        end: 20,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 10,
+                                end: 21,
+                            },
+                        },
+                        StaticBlock {
+                            body: FunctionBody {
+                                statements: [
+                                    Statement {
+                                        kind: Var(
+                                            [
+                                                BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Identifier(
+                                                            "x",
+                                                        ),
+                                                        span: Span {
+                                                            start: 35,
+                                                            end: 36,
+                                                        },
+                                                    },
+                                                    initializer: Some(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Literal(
+                                                                Number(
+                                                                    2.0,
+                                                                ),
+                                                            ),
+                                                            span: Span {
+                                                                start: 37,
+                                                                end: 38,
+                                                            },
+                                                        },
+                                                    ),
+                                                },
+                                            ],
+                                        ),
+                                        span: Span {
+                                            start: 31,
+                                            end: 39,
+                                        },
+                                    },
+                                    Statement {
+                                        kind: Expression(
+                                            Expr {
+                                                depth: 3,
+                                                kind: Assign(
+                                                    Expr {
+                                                        depth: 2,
+                                                        kind: Member(
+                                                            Expr {
+                                                                depth: 1,
+                                                                kind: This,
+                                                                span: Span {
+                                                                    start: 40,
+                                                                    end: 44,
+                                                                },
+                                                            },
+                                                            Literal(
+                                                                String(
+                                                                    "y",
+                                                                ),
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 40,
+                                                            end: 46,
+                                                        },
+                                                    },
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "x",
+                                                        ),
+                                                        span: Span {
+                                                            start: 47,
+                                                            end: 48,
+                                                        },
+                                                    },
+                                                ),
+                                                span: Span {
+                                                    start: 40,
+                                                    end: 48,
+                                                },
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 40,
+                                            end: 49,
+                                        },
+                                    },
+                                ],
+                                strict: false,
+                            },
+                            span: Span {
+                                start: 22,
+                                end: 51,
+                            },
+                        },
+                        StaticBlock {
+                            body: FunctionBody {
+                                statements: [],
+                                strict: false,
+                            },
+                            span: Span {
+                                start: 52,
+                                end: 61,
+                            },
+                        },
+                    ],
+                    source: FunctionSource(
+                        "class C { static x=1; static { var x=2; this.y=x; } static {} }",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 63,
+            },
+        },
+    ],
+    strict: false,
+}

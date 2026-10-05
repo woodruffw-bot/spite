@@ -25,7 +25,7 @@ impl Parser {
             let Kind::Word(name) = token.kind else {
                 return Err(early(token.span, "expected a class binding identifier"));
             };
-            if reserved(&name) {
+            if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
                 return Err(early(token.span, "invalid class binding identifier"));
             }
             validate_binding_name(&name, token.span, true)?;
@@ -69,7 +69,12 @@ impl Parser {
                 && !self.at("=");
             if is_static {
                 if self.at("{") {
-                    return Err(self.unsupported("class static blocks are not implemented"));
+                    let body = self.class_static_block()?;
+                    elements.push(ClassElement::StaticBlock {
+                        body,
+                        span: Span::new(element_start, self.tokens[self.index - 1].span.end),
+                    });
+                    continue;
                 }
                 token = self.bump();
             }
@@ -225,6 +230,53 @@ impl Parser {
         result
     }
 
+    fn class_static_block(&mut self) -> Result<FunctionBody, Diagnostic> {
+        self.enter()?;
+        let previous = (
+            self.allow_return,
+            self.allow_in,
+            self.allow_new_target,
+            self.allow_super_property,
+            self.allow_super_call,
+            self.allow_arguments,
+            self.allow_await_identifier,
+        );
+        self.allow_return = false;
+        self.allow_in = true;
+        self.allow_new_target = true;
+        self.allow_super_property = true;
+        self.allow_super_call = false;
+        self.allow_arguments = false;
+        self.allow_await_identifier = false;
+        let result = (|| {
+            self.expect("{")?;
+            let mut statements = Vec::new();
+            while !self.at("}") {
+                if self.current().kind == Kind::Eof {
+                    return Err(self.error("unterminated static initialization block"));
+                }
+                statements.push(self.statement(true)?);
+            }
+            self.expect("}")?;
+            let strict = has_use_strict(&statements, self.source.lexical_text());
+            Ok(FunctionBody {
+                statements: statements.into(),
+                strict,
+            })
+        })();
+        (
+            self.allow_return,
+            self.allow_in,
+            self.allow_new_target,
+            self.allow_super_property,
+            self.allow_super_call,
+            self.allow_arguments,
+            self.allow_await_identifier,
+        ) = previous;
+        self.depth -= 1;
+        result
+    }
+
     fn class_method_name_ahead(&self) -> bool {
         let start = self.index;
         let end = match &self.current().kind {
@@ -271,7 +323,7 @@ pub(super) fn validate_class(class: &Class) -> Result<(), Diagnostic> {
     }
     function::validate_method(&class.constructor, true)?;
     for element in &class.elements {
-        if let PropertyName::Computed(key) = element.name() {
+        if let Some(PropertyName::Computed(key)) = element.name() {
             validate_expr(key, true)?;
         }
         match element {
@@ -288,6 +340,9 @@ pub(super) fn validate_class(class: &Class) -> Result<(), Diagnostic> {
             ClassElement::Field {
                 initializer: None, ..
             } => {}
+            ClassElement::StaticBlock { body, .. } => {
+                function::validate_body(body, true, &BTreeSet::new())?
+            }
         }
     }
     Ok(())

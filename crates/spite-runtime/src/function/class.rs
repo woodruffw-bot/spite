@@ -132,11 +132,29 @@ impl Realm {
             // SetFunctionName precedes every computed name and static method.
             self.set_function_name(&function, name, None, span)?;
             let mut instance_fields = Vec::new();
-            let mut static_fields = Vec::new();
+            let mut static_elements = Vec::new();
             for element in &syntax.elements {
                 let span = element.span();
                 self.tick(span)?;
-                let key = match element.name() {
+                if let ClassElement::StaticBlock { body, .. } = element {
+                    static_elements.try_reserve(1).map_err(|_| Error::Limit {
+                        span,
+                        message: "static initialization allocation capacity exceeded".into(),
+                    })?;
+                    static_elements.push(super::class_static::StaticElement::Block {
+                        code: super::ScriptFunction {
+                            environment: environment.clone(),
+                            parameters: Rc::from([]),
+                            body: spite_parser::ast::ArrowBody::Block(body.clone()),
+                            source: syntax.source.clone(),
+                            strict: true,
+                        },
+                        home_object: function.clone(),
+                        span,
+                    });
+                    continue;
+                }
+                let key = match element.name().expect("field or method key") {
                     PropertyName::Literal(literal) => self.literal_value(literal, span)?,
                     PropertyName::Computed(expression) => self.expression(expression)?,
                 };
@@ -162,28 +180,33 @@ impl Realm {
                             }),
                             span,
                         };
-                        let fields = if element.is_static() {
-                            &mut static_fields
-                        } else {
-                            &mut instance_fields
-                        };
                         self.object_work(span, |_, budget| budget.charge(1))?;
-                        fields.try_reserve(1).map_err(|_| Error::Limit {
-                            span,
-                            message: "class field allocation capacity exceeded".into(),
-                        })?;
-                        fields.push(field);
+                        if element.is_static() {
+                            static_elements.try_reserve(1).map_err(|_| Error::Limit {
+                                span,
+                                message: "static initialization allocation capacity exceeded"
+                                    .into(),
+                            })?;
+                            static_elements.push(super::class_static::StaticElement::Field(field));
+                        } else {
+                            instance_fields.try_reserve(1).map_err(|_| Error::Limit {
+                                span,
+                                message: "class field allocation capacity exceeded".into(),
+                            })?;
+                            instance_fields.push(field);
+                        }
                     }
+                    ClassElement::StaticBlock { .. } => unreachable!("static block handled"),
                 }
             }
             self.object_work(span, |objects, budget| {
                 objects.set_class_fields(&function, instance_fields.into(), budget)
             })?;
-            Ok((function, static_fields))
+            Ok((function, static_elements))
         })();
         self.strict = previous_strict;
         self.scopes.pop();
-        let (function, static_fields) = result?;
+        let (function, static_elements) = result?;
         let value = Value::Object(function);
         // The name remains uninitialized during *all* computed names. Methods
         // capture this immutable binding, not the mutable declaration binding.
@@ -198,7 +221,7 @@ impl Realm {
         }
         // Initialize the internal class name before static initializers. All
         // computed names and method definitions have already completed (15.7.14).
-        self.initialize_fields(&value, &static_fields)?;
+        self.initialize_static_elements(&value, static_elements)?;
         Ok(value)
     }
 

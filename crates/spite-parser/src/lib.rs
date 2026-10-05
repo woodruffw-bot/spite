@@ -165,6 +165,7 @@ struct Parser {
     allow_super_property: bool,
     allow_super_call: bool,
     allow_arguments: bool,
+    allow_await_identifier: bool,
 }
 
 impl Parser {
@@ -194,6 +195,7 @@ impl Parser {
             allow_super_property: false,
             allow_super_call: false,
             allow_arguments: true,
+            allow_await_identifier: true,
         })
     }
 
@@ -582,10 +584,14 @@ impl Parser {
     fn label_identifier(&mut self) -> Result<Label, Diagnostic> {
         let token = self.bump();
         match token.kind {
-            Kind::Word(name) if !reserved(&name) => Ok(Label {
-                name,
-                span: token.span,
-            }),
+            Kind::Word(name)
+                if !reserved(&name) && (name != "await" || self.allow_await_identifier) =>
+            {
+                Ok(Label {
+                    name,
+                    span: token.span,
+                })
+            }
             _ => Err(early(token.span, "invalid label identifier")),
         }
     }
@@ -596,7 +602,15 @@ impl Parser {
         {
             return Err(early(
                 span,
-                "arguments is not allowed in a class field initializer",
+                "arguments is not allowed in class initialization",
+            ));
+        }
+        if !self.allow_await_identifier
+            && matches!(&kind, ExprKind::Identifier(name) if name == "await")
+        {
+            return Err(early(
+                span,
+                "await is not allowed in a static initialization block",
             ));
         }
         let depth = 1 + match &kind {
@@ -613,14 +627,15 @@ impl Parser {
                 .iter()
                 .map(|element| {
                     let key = match element.name() {
-                        PropertyName::Computed(key) => key.depth,
-                        PropertyName::Literal(_) => 0,
+                        Some(PropertyName::Computed(key)) => key.depth,
+                        Some(PropertyName::Literal(_)) | None => 0,
                     };
                     key.max(match element {
                         ClassElement::Method { property, .. } => property.value.depth,
                         ClassElement::Field { initializer, .. } => initializer
                             .as_ref()
                             .map_or(0, |expression| expression.depth),
+                        ClassElement::StaticBlock { .. } => 0,
                     })
                 })
                 .chain(

@@ -1,0 +1,193 @@
+---
+source: crates/spite-parser/tests/class_static_blocks.rs
+expression: errors
+---
+[
+    (
+        "class C{static{return;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 21,
+            },
+            message: "return outside a function body",
+        },
+    ),
+    (
+        "class C{static{arguments;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 24,
+            },
+            message: "arguments is not allowed in class initialization",
+        },
+    ),
+    (
+        "class C{static{()=>arguments;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 19,
+                end: 28,
+            },
+            message: "arguments is not allowed in class initialization",
+        },
+    ),
+    (
+        "class C extends B{static{super();}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 25,
+                end: 30,
+            },
+            message: "super call requires a derived constructor",
+        },
+    ),
+    (
+        "class C{static{await;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 20,
+            },
+            message: "await is not allowed in a static initialization block",
+        },
+    ),
+    (
+        "class C{static{aw\\u0061it;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 25,
+            },
+            message: "await is not allowed in a static initialization block",
+        },
+    ),
+    (
+        "class C{static{var await;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 19,
+                end: 24,
+            },
+            message: "invalid binding identifier",
+        },
+    ),
+    (
+        "class C{static{let {await}={};}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 20,
+                end: 25,
+            },
+            message: "invalid binding identifier",
+        },
+    ),
+    (
+        "class C{static{class await{}}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 21,
+                end: 26,
+            },
+            message: "invalid class binding identifier",
+        },
+    ),
+    (
+        "class C{static{function await(){}}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 24,
+                end: 29,
+            },
+            message: "invalid function binding identifier",
+        },
+    ),
+    (
+        "class C{static{(await)=>1;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 16,
+                end: 21,
+            },
+            message: "invalid arrow binding identifier",
+        },
+    ),
+    (
+        "class C{static{await:;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 20,
+            },
+            message: "invalid label identifier",
+        },
+    ),
+    (
+        "outer:while(true){class C{static{break outer;}}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 39,
+                end: 44,
+            },
+            message: "undefined label",
+        },
+    ),
+    (
+        "while(true){class C{static{continue;}}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 27,
+                end: 36,
+            },
+            message: "continue requires an enclosing loop",
+        },
+    ),
+    (
+        "class C{static{let x;var x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 25,
+                end: 26,
+            },
+            message: "var declaration conflicts with lexical binding",
+        },
+    ),
+    (
+        "class C{static{let x;let x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 25,
+                end: 26,
+            },
+            message: "duplicate lexical binding",
+        },
+    ),
+    (
+        "class C{static{with({}){}}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 25,
+            },
+            message: "with statements are not allowed in strict mode",
+        },
+    ),
+]

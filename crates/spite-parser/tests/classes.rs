@@ -57,7 +57,6 @@ fn class_early_errors_snapshot() {
 #[test]
 fn incomplete_class_features_never_receive_negative_test_credit() {
     for source in [
-        "class C{static{}}",
         "class C{#x;}",
         "class C{m(){return this.#x;} #x;}",
         "class C{get #x(){}}",

@@ -17,6 +17,7 @@ mod class;
 pub(crate) use class::ClassConstructor;
 mod class_field;
 pub(crate) use class_field::ClassField;
+mod class_static;
 mod construct;
 mod dynamic;
 mod error;

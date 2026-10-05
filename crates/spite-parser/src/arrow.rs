@@ -60,14 +60,22 @@ impl Parser {
             .into()
         };
         self.expect("=>")?;
-        let (body, end) = if self.at("{") {
-            let body = self.function_body()?;
-            (ArrowBody::Block(body), self.tokens[self.index - 1].span.end)
-        } else {
-            let body = self.expression(2)?;
-            let end = body.span.end;
-            (ArrowBody::Expression(std::rc::Rc::new(body)), end)
-        };
+        // Arrow parameters inherit Await, but concise/block bodies use ~Await
+        // even within static initialization (15.3 grammar).
+        let previous_await = self.allow_await_identifier;
+        self.allow_await_identifier = true;
+        let result = (|| {
+            Ok(if self.at("{") {
+                let body = self.function_body()?;
+                (ArrowBody::Block(body), self.tokens[self.index - 1].span.end)
+            } else {
+                let body = self.expression(2)?;
+                let end = body.span.end;
+                (ArrowBody::Expression(std::rc::Rc::new(body)), end)
+            })
+        })();
+        self.allow_await_identifier = previous_await;
+        let (body, end) = result?;
         let span = Span::new(start, end);
         let source = FunctionSource {
             text: self.source.clone(),

@@ -42,7 +42,7 @@ pub struct FunctionName {
     pub span: Span,
 }
 
-/// A class without private elements or static blocks.
+/// A class without private elements.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Class {
     /// Internal class binding, also the declaration binding when present.
@@ -53,7 +53,7 @@ pub struct Class {
     pub default_constructor: bool,
     /// Explicit constructor, or an empty default constructor body.
     pub constructor: Rc<Function>,
-    /// Non-constructor methods, accessors, and public fields in source order.
+    /// Non-constructor methods, accessors, public fields, and static blocks in source order.
     pub elements: Vec<ClassElement>,
     /// Complete class definition source text.
     pub source: FunctionSource,
@@ -80,6 +80,13 @@ pub enum ClassElement {
         /// Complete field range, including its semicolon when present.
         span: Span,
     },
+    /// Static initialization statements with their own function scope.
+    StaticBlock {
+        /// Statement list with no top-level return.
+        body: FunctionBody,
+        /// Complete static block range, including the modifier and braces.
+        span: Span,
+    },
 }
 
 impl ClassElement {
@@ -87,14 +94,16 @@ impl ClassElement {
     pub fn is_static(&self) -> bool {
         match self {
             Self::Method { is_static, .. } | Self::Field { is_static, .. } => *is_static,
+            Self::StaticBlock { .. } => true,
         }
     }
 
     /// Literal or computed element name.
-    pub fn name(&self) -> &PropertyName {
+    pub fn name(&self) -> Option<&PropertyName> {
         match self {
-            Self::Method { property, .. } => &property.name,
-            Self::Field { name, .. } => name,
+            Self::Method { property, .. } => Some(&property.name),
+            Self::Field { name, .. } => Some(name),
+            Self::StaticBlock { .. } => None,
         }
     }
 
@@ -103,6 +112,7 @@ impl ClassElement {
         match self {
             Self::Method { property, .. } => property.span,
             Self::Field { span, .. } => *span,
+            Self::StaticBlock { span, .. } => *span,
         }
     }
 }

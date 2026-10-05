@@ -1026,7 +1026,7 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, private elements, static blocks,
+Array.fromAsync, private elements,
 regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
@@ -1277,7 +1277,7 @@ Symbol/lone-surrogate keys, exact class/method source, eval/Function compilation
 super properties, abrupt context restoration, collection, checked home-object
 handles, and opt-in name limits. Parser AST/diagnostic snapshots cover constructor,
 strictness, scope, and declaration errors. Unsupported private
-elements, static blocks, and async/generator methods retain no conformance credit.
+elements and async/generator methods retain no conformance credit.
 Five additional recursive class construction/method/computed-name/eval cases run
 on two-mebibyte native stacks with the existing 32-call, 64-evaluation, and
 64-parser nesting guards.
@@ -1349,3 +1349,15 @@ the star as multiplication and reject the following brace; no unsupported method
 is credited. All eight negative originals check exact original ranges/messages in
 both Script modes. Both toolchains pass every added variant with ordinary defaults;
 Git blobs, source bytes, assertions, metadata, helpers, and the pin are unchanged.
+
+Static-block regressions cover source ordering among static fields and blocks,
+computed keys/methods before initialization, isolated lexical/var/function scopes,
+hoisting, strict constructor this, super receiver preservation, undefined
+new.target, internal class-name initialization and outer declaration TDZs, and
+construction from a block after all instance fields have been collected. Direct
+eval checks strict isolation and the zero-length arguments object; escaped arrows
+retain bindings and home objects through collection. Abrupt language/host failures
+preserve prior effects and restore caller context. AST/diagnostic snapshots cover
+empty blocks, function boundaries, forbidden return/arguments/super calls/await,
+lexical conflicts, and reset loop/label targets. Three additional recursive block,
+eval, and construction cases run on two-mebibyte stacks with the unchanged guards.

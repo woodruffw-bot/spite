@@ -14,20 +14,35 @@ impl Parser {
         &mut self,
         require_name: bool,
     ) -> Result<Rc<Function>, Diagnostic> {
+        if require_name
+            && !self.allow_await_identifier
+            && self
+                .tokens
+                .get(self.index + 1)
+                .is_some_and(|token| matches!(&token.kind, Kind::Word(name) if name == "await"))
+        {
+            return Err(early(
+                self.tokens[self.index + 1].span,
+                "invalid function binding identifier",
+            ));
+        }
         self.enter()?;
         let previous = self.allow_new_target;
         let previous_super = self.allow_super_property;
         let previous_super_call = self.allow_super_call;
         let previous_arguments = self.allow_arguments;
+        let previous_await = self.allow_await_identifier;
         self.allow_new_target = true;
         self.allow_super_property = false;
         self.allow_super_call = false;
         self.allow_arguments = true;
+        self.allow_await_identifier = true;
         let result = self.ordinary_function_inner(require_name);
         self.allow_new_target = previous;
         self.allow_super_property = previous_super;
         self.allow_super_call = previous_super_call;
         self.allow_arguments = previous_arguments;
+        self.allow_await_identifier = previous_await;
         self.depth -= 1;
         result
     }
@@ -120,7 +135,7 @@ impl Parser {
             let Kind::Word(name) = token.kind else {
                 return Err(early(token.span, "invalid function parameter"));
             };
-            if reserved(&name) {
+            if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
                 return Err(early(token.span, invalid_name));
             }
             BindingPattern {

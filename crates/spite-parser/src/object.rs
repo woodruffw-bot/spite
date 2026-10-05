@@ -148,10 +148,12 @@ impl Parser {
         let previous_super = self.allow_super_property;
         let previous_super_call = self.allow_super_call;
         let previous_arguments = self.allow_arguments;
+        let previous_await = self.allow_await_identifier;
         self.allow_new_target = true;
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
         self.allow_arguments = true;
+        self.allow_await_identifier = true;
         let result = (|| {
             let parameters = match kind {
                 PropertyKind::Getter => {
@@ -196,6 +198,7 @@ impl Parser {
         self.allow_super_property = previous_super;
         self.allow_super_call = previous_super_call;
         self.allow_arguments = previous_arguments;
+        self.allow_await_identifier = previous_await;
         self.depth -= 1;
         result
     }

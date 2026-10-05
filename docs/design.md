@@ -2048,7 +2048,7 @@ its callable metadata still permits apply to read the argument list first.
 Construction shares ordinary base allocation, newTarget prototype selection,
 strict parameter/body execution, and object-versus-primitive return rules. The
 empty default constructor implements the base branch of 15.7.14 and initializes
-instance fields. Private elements and static blocks remain Unsupported. Existing
+instance fields. Private elements remain Unsupported. Existing
 native-stack guards and opt-in quotas are unchanged.
 
 Class constructors inherit Function.prototype and own a non-writable,
@@ -2121,3 +2121,28 @@ repeated super calls never repeat fields. Returning an object without super skip
 derived fields. Default derived construction retains pending field Lists in the
 iterative forwarding loop and initializes them from the superclass outward on the
 actual returned object, without Array iteration or a default resource quota.
+
+## Static initialization blocks
+
+ClassStaticBlockDefinitionEvaluation creates internal strict function code with
+empty parameters, the class lexical environment, and the constructor as home
+object (15.7.11). Static blocks join static fields in the ordered initialization
+List. All computed keys and methods finish first; the internal class name is
+initialized before the List runs. An abrupt block preserves preceding effects
+and leaves an enclosing declaration binding uninitialized.
+
+EvaluateClassStaticBlockBody performs ordinary function declaration instantiation
+with an empty argument List, evaluates the statements, and discards normal values
+(15.2.3). Each block has its own lexical/variable scope. Its this is the constructor,
+new.target is undefined, and super properties retain the constructor as receiver.
+Escaping closures retain those bindings and use existing environment/home-object
+tracing. Caller context restores after language and host failures; execution uses
+the existing native-call guard and introduces no default quotas.
+
+Static block parsing resets return, loop, and label contexts and enforces strict
+declarations, ContainsArguments, SuperCall, and Await early errors. Ordinary
+functions/methods establish independent grammar contexts; arrow parameters inherit
+the block's Await restriction while their concise bodies reset it. Literal
+arguments references are forbidden, including through arrows. Direct eval instead
+uses its own grammar context and can observe the block's zero-length unmapped
+arguments object, as required by ordinary declaration instantiation.

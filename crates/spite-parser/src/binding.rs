@@ -25,7 +25,7 @@ impl Parser {
                 let element = if self.eat(":") {
                     self.binding_element()?
                 } else {
-                    let pattern = Self::binding_identifier_token(token)?;
+                    let pattern = self.binding_identifier_token(token)?;
                     let initializer = self.binding_initializer()?;
                     BindingElement {
                         pattern,
@@ -68,14 +68,15 @@ impl Parser {
     }
 
     fn binding_identifier(&mut self) -> Result<BindingPattern, Diagnostic> {
-        Self::binding_identifier_token(self.bump())
+        let token = self.bump();
+        self.binding_identifier_token(token)
     }
 
-    fn binding_identifier_token(token: Token) -> Result<BindingPattern, Diagnostic> {
+    fn binding_identifier_token(&self, token: Token) -> Result<BindingPattern, Diagnostic> {
         let Kind::Word(name) = token.kind else {
             return Err(early(token.span, "expected binding identifier"));
         };
-        if reserved(&name) {
+        if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
             return Err(early(token.span, "invalid binding identifier"));
         }
         Ok(BindingPattern {
