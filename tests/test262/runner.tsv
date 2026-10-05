@@ -6107,3 +6107,7 @@ test/language/literals/regexp/u-invalid-range-negative-lookahead.js	486	500	regu
 test/language/literals/regexp/u-invalid-range-negative-lookbehind.js	485	500	regular expression quantifier requires an atom
 test/language/literals/regexp/u-unicode-esc-bounds.js	480	493	regular expression Unicode escape is out of range
 test/language/literals/regexp/u-unicode-esc-non-hex.js	320	329	invalid regular expression Unicode escape
+test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-a.js	998	1007	regular expression class range requires character endpoints
+test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-ab.js	1012	1022	regular expression class range requires character endpoints
+test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-b.js	998	1007	regular expression class range requires character endpoints
+test/language/literals/regexp/u-invalid-non-empty-class-ranges.js	978	987	regular expression class range requires character endpoints

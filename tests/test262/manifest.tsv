@@ -6134,3 +6134,7 @@ parse-syntax-error	581f76bfd8a4dc6ac171569e06e7b30f1b086dcf5ad6a89c014ce13af2ae3
 parse-syntax-error	a9c75c54c9c89834f4df3a69422456901addca186dbb32ea3c3febd8a9bec924	test/language/literals/regexp/u-invalid-range-negative-lookbehind.js
 parse-syntax-error	66a2419b30d855c4fccfc19ab984dfed6311848808860c0345b0168dafd087a2	test/language/literals/regexp/u-unicode-esc-bounds.js
 parse-syntax-error	2e26e9aeb0676886c5bf30def9746876f4ea389ee512a0ddc55c478e466e767d	test/language/literals/regexp/u-unicode-esc-non-hex.js
+parse-syntax-error	2e5dcf8884883d47a63661bf4d14c31426a3d71871f0ed30dc531ea460ee4504	test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-a.js
+parse-syntax-error	fc91c92d3575fa83c2de5afbc463c57af85f2c54508e4f1220ba97dec83920c6	test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-ab.js
+parse-syntax-error	220427005be06fdf37b8f9af69103daadfd27486864088f0b9c223793bc32552	test/language/literals/regexp/u-invalid-non-empty-class-ranges-no-dash-b.js
+parse-syntax-error	279ab973429737924c192d98c7bfe8cb3b7c126c6be7233bc0493341701fbae9	test/language/literals/regexp/u-invalid-non-empty-class-ranges.js

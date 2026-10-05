@@ -42,7 +42,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11694 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11702 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -311,6 +311,15 @@ are required for every selected rejection on both toolchains. This adds no
 matching or RegExp object execution credit. Historical descriptions and modifier
 placeholder comments remain unchanged, along with source bytes, assertions,
 metadata, the pin, eight helpers, unlimited defaults and native guards.
+
+Four unchanged ordinary class-range originals add eight reviewed parse-negative
+variants for set-valued first, second and paired endpoints, including a literal
+dash endpoint. These are the four files excluded from the preceding core Pattern
+selection. All complete sources and metadata were reviewed; both toolchains
+verify the exact literal spans and expected endpoint diagnostic. Historical
+runtime-semantics wording and Annex B descriptions retain their original bytes.
+This provides no matching or RegExp object execution credit. The pin, assertions,
+metadata, eight helpers, runtime defaults and native guards are unchanged.
 
 34 unchanged RegExp lexical-boundary originals add 68 Script/StrictScript variants:
 36 harness positives and 32 reviewed parse negatives. Programs verify comment
@@ -1321,8 +1330,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 11694 variants are four raw positives, 10605 positives using the upstream
-harness, 1081 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
+Rust. Its 11702 variants are four raw positives, 10605 positives using the upstream
+harness, 1089 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol
