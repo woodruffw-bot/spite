@@ -78,9 +78,14 @@ caching lookahead. Initial input uses HashbangOrRegExp. A primary-expression
 solidus is scanned with a RegExp goal; braces, backticks, and quotes inside its
 body cannot replace the literal's diagnostic with an unrelated JavaScript error.
 This scanner implements token boundaries only. Literal validation rejects unknown
-or repeated flags and simultaneous u/v modes before Pattern parsing. Literals with
-valid flags still produce Unsupported until the separate Pattern grammar and
-matching semantics exist.
+or repeated flags and simultaneous u/v modes before Pattern parsing. The separate
+Pattern validator traverses groups iteratively, validates assertions, quantifiers,
+scoped modifiers and character escapes, and resolves numbered forward references
+against the final capture count. Decimal bounds are compared exactly without a
+machine-integer size limit. Non-Unicode patterns use individual UTF-16 units;
+u/v patterns decode pairs and retain lone surrogates. Annex B grammar extensions
+are excluded. Classes, named captures/references and Unicode properties remain
+Unsupported, as does matching even after the supported grammar validates.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
 and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
 Computed class accessor lookahead parses its name with the expression grammar and

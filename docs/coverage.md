@@ -247,15 +247,15 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed: Pattern grammar, Pattern early
-errors, matching, intrinsics, and grammar-driven reusable cover lookahead remain
-pending. Lexically complete invalid patterns with valid flags still produce
-Unsupported and cannot receive parse-negative credit.
+No RegExp literal AST or execution pass is exposed. Character classes, named
+captures/references, Unicode properties, matching, intrinsics, and grammar-driven
+reusable cover lookahead remain pending. Unimplemented Pattern productions still
+produce Unsupported and cannot receive parse-negative credit.
 
 Literal flag validation implements IsValidRegularExpressionLiteral's allowed
 `d g i m s u v y` code points and duplicate rejection, followed by ParsePattern's
 u/v exclusion. Unknown or duplicate flags take precedence over incompatible
-Unicode modes; flag rejection precedes the missing Pattern grammar. Two parser
+Unicode modes; flag rejection precedes Pattern validation. Two parser
 regressions cover every flag subset, reordered valid flags, non-ASCII and astral
 flags, validation order, templates/computed keys, and UTF-16, eval, and dynamic
 Function entry points. The new flag diagnostic snapshot and the reduced Pattern
@@ -267,6 +267,24 @@ Two unchanged literal flag originals add four parse-negative variants for upperc
 programs and metadata were reviewed. These checks precede Pattern parsing and
 provide no RegExp object or matching execution credit; original bytes, assertions,
 the pin, eight helpers, and unlimited defaults are preserved.
+
+The core Pattern validator implements unnamed capturing and noncapturing groups,
+alternatives, lookahead/lookbehind and boundary assertions, quantifier placement,
+lazy suffixes, exact arbitrary-length decimal bounds, scoped i/m/s modifiers and
+their duplicate/overlap early errors, character/control/hexadecimal/Unicode
+escapes, identity escapes, and numbered backreferences including forward uses.
+It follows the edition-17 core grammar without Annex B extensions. An iterative
+group stack accepts 20,000 nested captures; decimal comparisons do not convert
+bounds to machine integers. Unicode modes decode paired UTF-16 while retaining
+unpaired surrogates; ordinary mode uses separate units. The specification's
+capture-count early error is distinct from a host quota. Six parser regressions
+cover valid and malformed productions, all modifier-set combinations, large
+bounds and references, surrogate inputs, grammar entry points, and unsupported
+features that must not receive negative credit. The new diagnostic snapshot and
+updated boundary snapshot were inspected. Eval rejects malformed supported
+patterns as SyntaxError before effects; matching and unimplemented grammar gaps
+remain host Unsupported and bypass catch/finally. No default quota, native guard,
+fixture bytes, corpus count, intrinsic or dependency changes are introduced.
 
 34 unchanged RegExp lexical-boundary originals add 68 Script/StrictScript variants:
 36 harness positives and 32 reviewed parse negatives. Programs verify comment

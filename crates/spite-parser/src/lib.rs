@@ -1252,8 +1252,8 @@ impl Parser {
         }
     }
 
-    // Boundary and flag validation precede the missing Pattern grammar. Never
-    // expose a literal AST or credit Pattern early errors before it exists.
+    // Validate only implemented Pattern productions. No literal AST is exposed
+    // until matching and grammar-driven cover lookahead exist.
     fn regexp_diagnostic(&mut self) -> Diagnostic {
         let span = self.current().span;
         if self
@@ -1265,8 +1265,8 @@ impl Parser {
             // JavaScript. That diagnostic belongs to the wrong lexical goal.
             self.lookahead_error = None;
         }
-        if let Kind::RegExp { flags, .. } = &self.current().kind {
-            return regexp::literal_diagnostic(flags, span);
+        if let Kind::RegExp { body, flags } = &self.current().kind {
+            return regexp::literal_diagnostic(body, flags, span);
         }
         let goal = if self.template_braces.is_empty() {
             Goal::RegExp
@@ -1275,10 +1275,10 @@ impl Parser {
         };
         match Lexer::at(self.source.clone(), span.start).next(goal) {
             Ok(Token {
-                kind: Kind::RegExp { flags, .. },
+                kind: Kind::RegExp { body, flags },
                 span,
                 ..
-            }) => regexp::literal_diagnostic(&flags, span),
+            }) => regexp::literal_diagnostic(&body, &flags, span),
             Ok(_) => unreachable!("RegExp goal at a primary-expression solidus"),
             Err(error) => error,
         }

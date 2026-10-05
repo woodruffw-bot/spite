@@ -1,0 +1,54 @@
+---
+source: crates/spite-parser/tests/regexp_pattern.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 3,
+        },
+        message: "unterminated regular expression group",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 8,
+        },
+        message: "regular expression quantifier bounds are reversed",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 8,
+        },
+        message: "regular expression backreference exceeds the capture count",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "invalid regular expression modifier groups",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "invalid regular expression identity escape",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 8,
+        },
+        message: "regular expression quantifier requires an atom",
+    },
+]

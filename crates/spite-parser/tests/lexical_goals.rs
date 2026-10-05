@@ -9,12 +9,12 @@ use spite_parser::{
 fn literal_contents_do_not_substitute_unrelated_javascript_diagnostics() {
     let sources = [
         "/[}`]/g",
-        "let x = /=}/;",
-        "(x = /)/) => x",
-        "({x: /`}/})",
-        "class C { get [/`}/]() {} }",
+        "let x = /=\\}/;",
+        "(x = /\\)/) => x",
+        "({x: /`\\}/})",
+        "class C { get [/`\\}/]() {} }",
         "`a${/[}`]/g}b`",
-        "/(/",
+        "/(?:)/",
     ];
     let errors: Vec<_> = sources
         .into_iter()
