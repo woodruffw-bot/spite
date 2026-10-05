@@ -10,8 +10,11 @@ fn unicode_identifier_names_and_byte_spans() {
     let StatementKind::Lexical { bindings, .. } = &script.statements()[0].kind else {
         panic!("expected declaration")
     };
-    assert_eq!(bindings[0].name, "π");
-    assert_eq!(bindings[0].span, Span::new(4, 6));
+    assert_eq!(
+        bindings[0].pattern.kind,
+        BindingPatternKind::Identifier("π".into())
+    );
+    assert_eq!(bindings[0].pattern.span, Span::new(4, 6));
     let StatementKind::Expression(reference) = &script.statements()[1].kind else {
         panic!("expected reference")
     };
@@ -101,9 +104,12 @@ fn identifier_escapes_decode_names_and_preserve_source_spans() {
     let StatementKind::Lexical { bindings, .. } = &script.statements()[0].kind else {
         panic!("expected declaration")
     };
-    assert_eq!(bindings[0].name, "𐐀");
     assert_eq!(
-        &source[bindings[0].span.start..bindings[0].span.end],
+        bindings[0].pattern.kind,
+        BindingPatternKind::Identifier("𐐀".into())
+    );
+    assert_eq!(
+        &source[bindings[0].pattern.span.start..bindings[0].pattern.span.end],
         r"\u{10400}"
     );
     let StatementKind::Expression(reference) = &script.statements()[1].kind else {

@@ -51,9 +51,10 @@ impl Realm {
                     .name
                     .as_ref()
                     .is_some_and(|name| name.name == "arguments"),
-                spite_parser::ast::StatementKind::Lexical { bindings, .. } => {
-                    bindings.iter().any(|binding| binding.name == "arguments")
-                }
+                spite_parser::ast::StatementKind::Lexical { bindings, .. } => bindings
+                    .iter()
+                    .flat_map(|binding| binding.pattern.bound_names())
+                    .any(|(name, _)| name == "arguments"),
                 _ => false,
             });
         // 10.2.11: body lexical/function names suppress arguments when parameters

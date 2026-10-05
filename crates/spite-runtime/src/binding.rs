@@ -1,13 +1,36 @@
-//! BindingInitialization for catch identifiers and patterns (8.6.3, 14.3.3).
+//! BindingInitialization for declarative identifiers and patterns (8.6.3, 14.3.3).
 
 use crate::{
-    Error, ExceptionKind, Realm, Value, environment::EnvironmentHandle, object::DataDescriptor,
+    BindingState, Error, ExceptionKind, Realm, Value, environment::EnvironmentHandle,
+    object::DataDescriptor,
 };
 use spite_core::{JsString, PropertyKey, WellKnownSymbol};
 use spite_parser::ast::{BindingElement, BindingPattern, BindingPatternKind, PropertyName};
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 
 impl Realm {
+    pub(super) fn pattern_bindings<'a>(
+        &mut self,
+        patterns: impl IntoIterator<Item = &'a BindingPattern>,
+        mutable: bool,
+    ) -> Result<BTreeMap<String, BindingState>, Error> {
+        let mut bindings = BTreeMap::new();
+        for pattern in patterns {
+            for (name, span) in pattern.bound_names() {
+                self.object_work(span, |_, budget| budget.charge(name.len() + 1))?;
+                bindings.insert(
+                    name.to_owned(),
+                    BindingState {
+                        value: None,
+                        mutable,
+                        strict: true,
+                    },
+                );
+            }
+        }
+        Ok(bindings)
+    }
+
     pub(super) fn initialize_pattern(
         &mut self,
         pattern: &BindingPattern,
@@ -34,10 +57,10 @@ impl Realm {
             BindingPatternKind::Identifier(name) => {
                 self.objects
                     .environment_mut(environment)
-                    .expect("catch environment")
+                    .expect("binding environment")
                     .bindings
                     .get_mut(name)
-                    .expect("instantiated catch binding")
+                    .expect("instantiated binding")
                     .value = Some(value);
             }
             BindingPatternKind::Object { properties, rest } => {
@@ -159,7 +182,7 @@ impl Realm {
         Ok(())
     }
 
-    fn initialize_binding_element(
+    pub(super) fn initialize_binding_element(
         &mut self,
         element: &BindingElement,
         mut value: Value,

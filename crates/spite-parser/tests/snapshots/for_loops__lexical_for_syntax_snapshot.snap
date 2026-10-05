@@ -10,11 +10,15 @@ Script {
                     Lexical {
                         mutable: true,
                         bindings: [
-                            Binding {
-                                name: "i",
-                                span: Span {
-                                    start: 9,
-                                    end: 10,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "i",
+                                    ),
+                                    span: Span {
+                                        start: 9,
+                                        end: 10,
+                                    },
                                 },
                                 initializer: Some(
                                     Expr {
@@ -31,11 +35,15 @@ Script {
                                     },
                                 ),
                             },
-                            Binding {
-                                name: "j",
-                                span: Span {
-                                    start: 16,
-                                    end: 17,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "j",
+                                    ),
+                                    span: Span {
+                                        start: 16,
+                                        end: 17,
+                                    },
                                 },
                                 initializer: None,
                             },
@@ -76,11 +84,15 @@ Script {
                     Lexical {
                         mutable: false,
                         bindings: [
-                            Binding {
-                                name: "x",
-                                span: Span {
-                                    start: 40,
-                                    end: 41,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 40,
+                                        end: 41,
+                                    },
                                 },
                                 initializer: Some(
                                     Expr {

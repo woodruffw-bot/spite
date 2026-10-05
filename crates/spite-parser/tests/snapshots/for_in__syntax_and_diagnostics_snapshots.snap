@@ -160,13 +160,14 @@ Script {
                     kind: ForIn {
                         binding: Lexical {
                             mutable: true,
-                            binding: Binding {
-                                name: "y",
+                            binding: BindingPattern {
+                                kind: Identifier(
+                                    "y",
+                                ),
                                 span: Span {
                                     start: 61,
                                     end: 62,
                                 },
-                                initializer: None,
                             },
                         },
                         object: Expr {
@@ -212,13 +213,14 @@ Script {
             kind: ForIn {
                 binding: Lexical {
                     mutable: false,
-                    binding: Binding {
-                        name: "z",
+                    binding: BindingPattern {
+                        kind: Identifier(
+                            "z",
+                        ),
                         span: Span {
                             start: 96,
                             end: 97,
                         },
-                        initializer: None,
                     },
                 },
                 object: Expr {

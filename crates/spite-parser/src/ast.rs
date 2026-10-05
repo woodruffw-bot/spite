@@ -200,7 +200,7 @@ pub enum StatementKind {
         /// Whether bindings may be reassigned.
         mutable: bool,
         /// Bindings in source order.
-        bindings: Vec<Binding>,
+        bindings: Vec<BindingElement>,
     },
     /// A block with its own lexical environment.
     Block(Vec<Statement>),
@@ -415,7 +415,7 @@ pub enum ForInitializer {
         /// Whether bindings may be reassigned and are copied per iteration.
         mutable: bool,
         /// Bindings in source order.
-        bindings: Vec<Binding>,
+        bindings: Vec<BindingElement>,
     },
 }
 
@@ -430,8 +430,8 @@ pub enum ForBinding {
     Lexical {
         /// Whether the iteration binding may be reassigned.
         mutable: bool,
-        /// Binding identifier.
-        binding: Binding,
+        /// Binding identifier or pattern, without a top-level initializer.
+        binding: BindingPattern,
     },
 }
 

@@ -13,11 +13,15 @@ Script {
                                 kind: Lexical {
                                     mutable: true,
                                     bindings: [
-                                        Binding {
-                                            name: "x",
-                                            span: Span {
-                                                start: 10,
-                                                end: 11,
+                                        BindingElement {
+                                            pattern: BindingPattern {
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 10,
+                                                    end: 11,
+                                                },
                                             },
                                             initializer: Some(
                                                 Expr {
@@ -75,11 +79,15 @@ Script {
                                     kind: Lexical {
                                         mutable: true,
                                         bindings: [
-                                            Binding {
-                                                name: "x",
-                                                span: Span {
-                                                    start: 42,
-                                                    end: 43,
+                                            BindingElement {
+                                                pattern: BindingPattern {
+                                                    kind: Identifier(
+                                                        "x",
+                                                    ),
+                                                    span: Span {
+                                                        start: 42,
+                                                        end: 43,
+                                                    },
                                                 },
                                                 initializer: Some(
                                                     Expr {

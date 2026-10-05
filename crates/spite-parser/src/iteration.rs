@@ -147,25 +147,30 @@ impl Parser {
                 }
                 Ok(ForBinding::Assignment(expression))
             }
-            declaration => {
-                let (mutable, mut bindings) = match declaration {
-                    ForInitializer::Var(bindings) => (None, bindings),
-                    ForInitializer::Lexical { mutable, bindings } => (Some(mutable), bindings),
-                    ForInitializer::Expression(_) => unreachable!(),
-                };
+            ForInitializer::Var(mut bindings) => {
                 if bindings.len() != 1 {
                     return Err(early(bindings[1].span, invalid_binding));
                 }
                 if let Some(initializer) = &bindings[0].initializer {
-                    if is_of || mutable.is_some() {
+                    if is_of {
                         return Err(early(initializer.span, invalid_binding));
                     }
                 }
                 let binding = bindings.pop().expect("one binding");
-                Ok(match mutable {
-                    Some(mutable) => ForBinding::Lexical { mutable, binding },
-                    None => ForBinding::Var(binding),
-                })
+                Ok(ForBinding::Var(binding))
+            }
+            ForInitializer::Lexical {
+                mutable,
+                mut bindings,
+            } => {
+                if bindings.len() != 1 {
+                    return Err(early(bindings[1].pattern.span, invalid_binding));
+                }
+                if let Some(initializer) = &bindings[0].initializer {
+                    return Err(early(initializer.span, invalid_binding));
+                }
+                let binding = bindings.pop().expect("one binding").pattern;
+                Ok(ForBinding::Lexical { mutable, binding })
             }
         }
     }

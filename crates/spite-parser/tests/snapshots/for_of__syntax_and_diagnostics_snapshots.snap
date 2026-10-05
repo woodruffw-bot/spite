@@ -109,13 +109,14 @@ Script {
                             kind: ForOf {
                                 binding: Lexical {
                                     mutable: true,
-                                    binding: Binding {
-                                        name: "y",
+                                    binding: BindingPattern {
+                                        kind: Identifier(
+                                            "y",
+                                        ),
                                         span: Span {
                                             start: 55,
                                             end: 56,
                                         },
-                                        initializer: None,
                                     },
                                 },
                                 iterable: Expr {
@@ -167,13 +168,14 @@ Script {
             kind: ForOf {
                 binding: Lexical {
                     mutable: false,
-                    binding: Binding {
-                        name: "z",
+                    binding: BindingPattern {
+                        kind: Identifier(
+                            "z",
+                        ),
                         span: Span {
                             start: 92,
                             end: 93,
                         },
-                        initializer: None,
                     },
                 },
                 iterable: Expr {

@@ -217,11 +217,10 @@ pub(super) fn validate_body(
     for statement in body.statements() {
         if let StatementKind::Lexical { bindings, .. } = &statement.kind {
             for binding in bindings {
-                if parameters.contains(binding.name.as_str()) {
-                    return Err(early(
-                        binding.span,
-                        "lexical declaration conflicts with parameter",
-                    ));
+                for (name, span) in binding.pattern.bound_names() {
+                    if parameters.contains(name) {
+                        return Err(early(span, "lexical declaration conflicts with parameter"));
+                    }
                 }
             }
         }

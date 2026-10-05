@@ -1,9 +1,8 @@
 //! Synchronous ForIn/OfHeadEvaluation and ForIn/OfBodyEvaluation (14.7.5.6–7).
 
-use crate::{BindingState, Completion, Error, ExceptionKind, Realm, Value};
+use crate::{Completion, Error, ExceptionKind, Realm, Value};
 use spite_core::{Span, WellKnownSymbol};
 use spite_parser::ast::{Expr, ForBinding, Statement};
-use std::collections::BTreeMap;
 
 impl Realm {
     pub(super) fn for_of(
@@ -54,17 +53,8 @@ impl Realm {
         // Lexical names shadow outer bindings in the RHS but remain uninitialized.
         // Restore the outer environment before GetIterator, including on failure.
         if let ForBinding::Lexical { mutable, binding } = binding {
-            self.push_scope(
-                BTreeMap::from([(
-                    binding.name.clone(),
-                    BindingState {
-                        value: None,
-                        mutable: *mutable,
-                        strict: true,
-                    },
-                )]),
-                span,
-            )?;
+            let bindings = self.pattern_bindings([binding], *mutable)?;
+            self.push_scope(bindings, span)?;
             let result = self.expression(iterable);
             self.scopes.pop();
             result
@@ -83,18 +73,12 @@ impl Realm {
         match binding {
             ForBinding::Lexical { mutable, binding } => {
                 // Both let and const receive a new environment each iteration.
-                self.push_scope(
-                    BTreeMap::from([(
-                        binding.name.clone(),
-                        BindingState {
-                            value: Some(value),
-                            mutable: *mutable,
-                            strict: true,
-                        },
-                    )]),
-                    span,
-                )?;
-                let result = self.statement(body);
+                let bindings = self.pattern_bindings([binding], *mutable)?;
+                self.push_scope(bindings, span)?;
+                let environment = self.scopes.last().expect("iteration environment").clone();
+                let result = self
+                    .initialize_pattern(binding, value, &environment)
+                    .and_then(|()| self.statement(body));
                 self.scopes.pop();
                 result
             }

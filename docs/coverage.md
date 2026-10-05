@@ -65,7 +65,7 @@ function names, exact String/Symbol rest exclusions and live descriptors, primit
 and nullish sources, cached iterator methods, skipped elision value getters,
 normal/abrupt closing and nested throw precedence, captured scopes and collection,
 a 12,000-name pattern with ordinary unlimited defaults, and opted-in host aborts.
-Declaration, function-parameter, and assignment patterns remain separate gaps.
+Var declaration, function-parameter, and assignment patterns remain separate gaps.
 The unchanged pinned corpus adds 77 catch-destructuring sources and five reviewed
 catch-parameter early errors: 142 harness-positive and 20 parse-negative variants.
 All 93 destructuring originals were reviewed; fourteen require generators and
@@ -74,6 +74,19 @@ top-level try sources remain a separate review. Exact diagnostic spans identify
 strict binding names, duplicate/conflicting names, rest initializers, and non-final
 rest elements. Both stable and MSRV pass all 162 new variants with ordinary
 unlimited defaults and the existing pin and eight unchanged helpers.
+
+Lexical declaration patterns share the catch pattern grammar and initialization
+engine. Let/const declaration lists, three-clause loops, and for-in/of headers
+support nested/default/rest bindings. All bound names participate in early
+conflicts, declaration instantiation, RHS TDZs, and fresh iteration environments;
+const names are immutable. Six parser regressions and two inspected new insta
+snapshots cover these contexts, initializer requirements, BoundNames, conflicts,
+strictness, grammar parameters, and depth. Existing identifier snapshots retain
+their names and spans in the shared pattern AST. Nine runtime regressions cover
+ordered mixed declarations, named defaults, primitive receivers/rest, skipped
+elision getters and iterator closing, immutable names, arguments shadowing,
+per-iteration closures, partial initialization and captured TDZs across collection,
+global conflict checks, a 12,000-name default pattern, and opted-in host aborts.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -851,7 +864,7 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, derived construction, classes, destructuring in declarations,
+Array.fromAsync, derived construction, classes, destructuring in var declarations,
 parameters and assignments, regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

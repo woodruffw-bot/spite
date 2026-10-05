@@ -290,8 +290,22 @@ failures close active iterators with the standard completion precedence; nested
 iterators close from inside out. Rest Arrays use the retained intrinsic prototype
 and own data definitions. Binding recursion shares the existing evaluator
 native-stack guard across callback reentry. Host aborts restore the catch scope
-and skip JavaScript cleanup. Patterns in declarations, parameters, and assignment
-remain separate implementation work.
+and skip JavaScript cleanup.
+
+Let/const declarations use the same BindingElement/BindingPattern syntax and
+BindingInitialization (14.3.1). Every bound name participates in lexical,
+parameter, catch, and nested-var early conflicts; property keys are not names.
+Patterns require an initializer outside for-in/of declarations, and lexical
+BoundNames cannot contain let. Declaration instantiation creates all names before
+evaluating any initializer. Identifier initializers receive named evaluation;
+pattern initializers do not. Failed initialization preserves already initialized
+bindings and leaves later names in the temporal dead zone. Const bindings remain
+immutable. Three-clause let loops copy every bound name before the body and
+update; const loops retain one environment. For-in/of RHS evaluation shadows all
+names with uninitialized bindings, then each iteration creates and initializes a
+fresh environment. Binding failures restore scopes and close active for-of
+iterators with standard precedence. Empty patterns have no per-iteration names.
+Patterns in var declarations, parameters, and assignment remain separate work.
 
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.

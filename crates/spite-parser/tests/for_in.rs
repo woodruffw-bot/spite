@@ -82,7 +82,7 @@ fn invalid_targets_declarations_and_lexical_conflicts_are_syntax_errors() {
 #[test]
 fn binding_patterns_and_annex_b_initializers_remain_unsupported() {
     for source in [
-        "for(let [x] in {}) ;",
+        "for(var [x] in {}) ;",
         "for({x} in {}) ;",
         "for(var x=1 in {}) ;",
     ] {

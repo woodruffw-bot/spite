@@ -48,6 +48,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Handle optional-binding catch clauses and catch-finally completions.
 - [x] Parse catch binding identifiers and validate catch scope conflicts.
 - [x] Parse/evaluate object and array catch binding patterns with nested/default/rest targets, temporal dead zones, and iterator closing.
+- [x] Parse/evaluate let/const binding patterns in declaration lists and for/for-in/for-of headers, with all-name TDZs, immutable bindings, and per-iteration closure environments.
 - [x] Execute catch binding identifiers for implemented thrown values, including objects.
 - [x] Bind built-in exceptions as JavaScript Error objects in catch clauses.
 - [x] Add Error/NativeError constructors, causes, ErrorData identity, and standard methods.

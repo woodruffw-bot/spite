@@ -461,12 +461,44 @@ impl Parser {
         Ok(Box::new(self.statement(false)?))
     }
 
-    fn lexical_bindings(&mut self, for_header: bool) -> Result<(bool, Vec<Binding>), Diagnostic> {
+    fn lexical_bindings(
+        &mut self,
+        for_header: bool,
+    ) -> Result<(bool, Vec<BindingElement>), Diagnostic> {
         let mutable = self.eat("let");
         if !mutable {
             self.expect("const")?;
         }
-        Ok((mutable, self.binding_list(!mutable, for_header, true)?))
+        let mut bindings = Vec::new();
+        loop {
+            let pattern = self.binding_pattern()?;
+            for (name, span) in pattern.bound_names() {
+                if name == "let" {
+                    return Err(early(span, "invalid binding identifier"));
+                }
+            }
+            let initializer = if self.eat("=") {
+                Some(self.expression_with_in(2, !for_header)?)
+            } else {
+                None
+            };
+            if initializer.is_none() && !(for_header && (self.at("of") || self.at("in"))) {
+                if !matches!(pattern.kind, BindingPatternKind::Identifier(_)) {
+                    return Err(self.error("binding pattern requires an initializer"));
+                }
+                if !mutable {
+                    return Err(self.error("const requires an initializer"));
+                }
+            }
+            bindings.push(BindingElement {
+                pattern,
+                initializer,
+            });
+            if !self.eat(",") {
+                break;
+            }
+        }
+        Ok((mutable, bindings))
     }
 
     fn binding_list(
@@ -786,6 +818,9 @@ impl Parser {
             if minimum <= 2 && (self.at("=") || assignment_op.is_some()) {
                 if assignment_op.is_none() && matches!(left.kind, ExprKind::Array(_)) {
                     return Err(self.unsupported("array assignment patterns are not implemented"));
+                }
+                if assignment_op.is_none() && matches!(left.kind, ExprKind::Object(_)) {
+                    return Err(self.unsupported("object assignment patterns are not implemented"));
                 }
                 self.bump();
                 if !assignment_target(&left) {
@@ -1112,15 +1147,17 @@ fn early(span: Span, message: &str) -> Diagnostic {
 }
 
 fn validate_binding_names<'a>(
-    bindings: &'a [Binding],
+    bindings: &'a [BindingElement],
     strict: bool,
     names: &mut BTreeSet<&'a str>,
 ) -> Result<(), Diagnostic> {
     for binding in bindings {
-        if !names.insert(binding.name.as_str()) {
-            return Err(early(binding.span, "duplicate lexical binding"));
+        for (name, span) in binding.pattern.bound_names() {
+            if !names.insert(name) {
+                return Err(early(span, "duplicate lexical binding"));
+            }
         }
-        validate_binding(binding, strict)?;
+        binding::validate_pattern(&binding.pattern, strict)?;
     }
     Ok(())
 }
@@ -1171,7 +1208,7 @@ fn block_lexical_names(statement: &Statement) -> impl Iterator<Item = (&str, Spa
     };
     bindings
         .iter()
-        .map(|b| (b.name.as_str(), b.span))
+        .flat_map(|b| b.pattern.bound_names())
         .chain(function_name.map(|name| (name.name.as_str(), name.span)))
 }
 
@@ -1238,9 +1275,7 @@ fn validate_statement<'a>(
         | StatementKind::Return(Some(expr)) => validate_expr(expr, strict)?,
         StatementKind::Lexical { bindings, .. } => {
             for binding in bindings {
-                if let Some(expr) = &binding.initializer {
-                    validate_expr(expr, strict)?;
-                }
+                binding::validate_element(binding, strict)?;
             }
         }
         StatementKind::Block(body) => {
@@ -1403,11 +1438,17 @@ fn validate_statement<'a>(
                     }
                 }
                 ForBinding::Lexical { binding, .. } => {
-                    validate_binding(binding, strict)?;
+                    binding::validate_pattern(binding, strict)?;
+                    let mut names = BTreeSet::new();
+                    for (name, span) in binding.bound_names() {
+                        if !names.insert(name) {
+                            return Err(early(span, "duplicate lexical binding"));
+                        }
+                    }
                     let mut declarations = Vec::new();
                     body.collect_var_declarations(&mut declarations);
                     for declaration in declarations {
-                        if declaration.name == binding.name {
+                        if names.contains(declaration.name.as_str()) {
                             return Err(early(
                                 declaration.span,
                                 "var declaration conflicts with lexical for binding",

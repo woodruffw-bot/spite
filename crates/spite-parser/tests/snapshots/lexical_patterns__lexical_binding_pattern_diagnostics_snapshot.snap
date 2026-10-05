@@ -1,0 +1,62 @@
+---
+source: crates/spite-parser/tests/lexical_patterns.rs
+expression: "[\"let {x:let} = {};\", \"let [x,{a:x}] = [];\", \"const {} ;\",\n\"{let {x}={};if(false)var x;}\", \"function f(x){let {x}={};}\",\n\"for(let [x] of []) {with({})var x;}\",\n\"'use strict';let {[delete name]:x}={};\",].map(|source|\nparse_script(source).unwrap_err())"
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 7,
+            end: 10,
+        },
+        message: "invalid binding identifier",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 10,
+            end: 11,
+        },
+        message: "duplicate lexical binding",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 9,
+            end: 10,
+        },
+        message: "binding pattern requires an initializer",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 25,
+            end: 26,
+        },
+        message: "var declaration conflicts with lexical binding",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 19,
+            end: 20,
+        },
+        message: "lexical declaration conflicts with parameter",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 32,
+            end: 33,
+        },
+        message: "var declaration conflicts with lexical for binding",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 26,
+            end: 30,
+        },
+        message: "cannot delete an identifier in strict mode",
+    },
+]

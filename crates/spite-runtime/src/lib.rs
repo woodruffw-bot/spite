@@ -532,24 +532,11 @@ impl Realm {
         Ok(())
     }
 
-    fn initialize_bindings(&mut self, bindings: &[Binding]) -> Result<(), Error> {
+    fn initialize_bindings(&mut self, bindings: &[BindingElement]) -> Result<(), Error> {
+        let environment = self.scopes.last().expect("active environment").clone();
         for binding in bindings {
-            self.tick(binding.span)?;
-            let value = if let Some(expr) = &binding.initializer {
-                self.named_expression(expr, JsString::from(binding.name.as_str()))?
-            } else {
-                Value::Undefined
-            };
-            let handle = self.scopes.last().expect("a realm always has a scope");
-            let scope = &mut self
-                .objects
-                .environment_mut(handle)
-                .expect("active environment")
-                .bindings;
-            scope
-                .get_mut(&binding.name)
-                .expect("declaration was instantiated")
-                .value = Some(value);
+            self.tick(binding.pattern.span)?;
+            self.initialize_binding_element(binding, Value::Undefined, &environment)?;
         }
         Ok(())
     }
@@ -827,19 +814,10 @@ impl Realm {
                         self.for_body(test.as_ref(), update.as_ref(), body, &[], labels)
                     }
                     Some(ForInitializer::Lexical { mutable, bindings }) => {
-                        let scope = bindings
-                            .iter()
-                            .map(|binding| {
-                                (
-                                    binding.name.clone(),
-                                    BindingState {
-                                        value: None,
-                                        mutable: *mutable,
-                                        strict: true,
-                                    },
-                                )
-                            })
-                            .collect();
+                        let scope = self.pattern_bindings(
+                            bindings.iter().map(|binding| &binding.pattern),
+                            *mutable,
+                        )?;
                         self.push_scope(scope, statement.span)?;
                         let per_iteration = if *mutable { bindings.as_slice() } else { &[] };
                         let result = self.initialize_bindings(bindings).and_then(|()| {
@@ -935,7 +913,7 @@ impl Realm {
         test: Option<&Expr>,
         update: Option<&Expr>,
         body: &Statement,
-        per_iteration: &[Binding],
+        per_iteration: &[BindingElement],
         labels: &[&str],
     ) -> Result<Completion, Error> {
         let mut value = Value::Undefined;
@@ -961,31 +939,40 @@ impl Realm {
 
     // ECMA-262 14.7.4.4: copy let values into a fresh environment with the
     // same outer environment. Const declarations do not request this operation.
-    fn create_per_iteration_environment(&mut self, bindings: &[Binding]) -> Result<(), Error> {
+    fn create_per_iteration_environment(
+        &mut self,
+        bindings: &[BindingElement],
+    ) -> Result<(), Error> {
         if bindings.is_empty() {
             return Ok(());
         }
         let mut next = BTreeMap::new();
-        for binding in bindings {
-            self.tick(binding.span)?;
+        for (name, span) in bindings
+            .iter()
+            .flat_map(|binding| binding.pattern.bound_names())
+        {
+            self.tick(span)?;
             let handle = self.scopes.last().expect("loop environment exists");
             let scope = &self
                 .objects
                 .environment(handle)
                 .expect("active environment")
                 .bindings;
-            let value = scope[&binding.name]
+            let value = scope[name]
                 .value
                 .clone()
                 .expect("loop binding is initialized");
             next.insert(
-                binding.name.clone(),
+                name.to_owned(),
                 BindingState {
                     value: Some(value),
                     mutable: true,
                     strict: true,
                 },
             );
+        }
+        if next.is_empty() {
+            return Ok(());
         }
         let current = self.scopes.last().expect("loop environment exists");
         let outer = self
@@ -994,7 +981,7 @@ impl Realm {
             .expect("active environment")
             .outer
             .clone();
-        let next = self.object_work(bindings[0].span, |objects, budget| {
+        let next = self.object_work(bindings[0].pattern.span, |objects, budget| {
             objects.create_environment(outer, next, budget)
         })?;
         *self.scopes.last_mut().expect("loop environment exists") = next;
@@ -1601,7 +1588,8 @@ fn lexical_declarations(
     };
     bindings
         .iter()
-        .map(move |binding| (binding.name.as_str(), binding.span, mutable))
+        .flat_map(|binding| binding.pattern.bound_names())
+        .map(move |(name, span)| (name, span, mutable))
         .chain(function.map(|name| (name.name.as_str(), name.span, true)))
 }
 

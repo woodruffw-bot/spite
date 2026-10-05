@@ -80,8 +80,8 @@ fn pending_patterns_and_async_iteration_stay_unsupported() {
     for source in [
         "for([x] of []) ;",
         "for({x} of []) ;",
-        "for(let [x] of []) ;",
-        "for(const {x} of []) ;",
+        "for(var [x] of []) ;",
+        "for(var {x} of []) ;",
         "for await(x of []) ;",
     ] {
         assert_eq!(

@@ -128,7 +128,7 @@ pub(super) fn validate_pattern(pattern: &BindingPattern, strict: bool) -> Result
     Ok(())
 }
 
-fn validate_element(element: &BindingElement, strict: bool) -> Result<(), Diagnostic> {
+pub(super) fn validate_element(element: &BindingElement, strict: bool) -> Result<(), Diagnostic> {
     validate_pattern(&element.pattern, strict)?;
     if let Some(expression) = &element.initializer {
         validate_expr(expression, strict)?;

@@ -222,10 +222,11 @@ impl Realm {
         for statement in body.statements() {
             self.tick(statement.span)?;
             if let StatementKind::Lexical { bindings, .. } = &statement.kind {
-                for binding in bindings {
-                    self.object_work(binding.span, |_, budget| {
-                        budget.charge(binding.name.len() + 1)
-                    })?;
+                for (name, span) in bindings
+                    .iter()
+                    .flat_map(|binding| binding.pattern.bound_names())
+                {
+                    self.object_work(span, |_, budget| budget.charge(name.len() + 1))?;
                 }
             }
         }

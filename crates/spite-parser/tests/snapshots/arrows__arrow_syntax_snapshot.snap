@@ -8,11 +8,15 @@ Script {
             kind: Lexical {
                 mutable: true,
                 bindings: [
-                    Binding {
-                        name: "f",
-                        span: Span {
-                            start: 4,
-                            end: 5,
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "f",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
                         },
                         initializer: Some(
                             Expr {
@@ -94,11 +98,15 @@ Script {
             kind: Lexical {
                 mutable: true,
                 bindings: [
-                    Binding {
-                        name: "g",
-                        span: Span {
-                            start: 30,
-                            end: 31,
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "g",
+                            ),
+                            span: Span {
+                                start: 30,
+                                end: 31,
+                            },
                         },
                         initializer: Some(
                             Expr {
