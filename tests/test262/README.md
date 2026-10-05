@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 2962 unmodified test fixtures and eight harness files come from
+These 3298 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -69,9 +69,8 @@ definitions and is not parsed as test execution metadata.
 Local controls execute successful assertions and deliberately failing assertions
 against these exact harness files. Test262Error construction, native Error
 construction, and built-in exception catch/constructor checks execute normally.
-Formatting some failed comparisons still requires JSON or other missing
-standard APIs; those paths report Unsupported and fail the
-gate. Array.from/fromAsync, additional includes, async completion,
+String comparison failure formatting now executes JSON.stringify and produces
+ordinary assertion failures. Array.fromAsync, additional includes, async completion,
 and agent helpers remain separate harness gaps.
 
 The 677 Array and Array iterator files cover call/new construction, of, branding, literal elisions,
@@ -877,12 +876,30 @@ constructor and adder ordering, closing and abrupt results, canonical key types,
 insertion/update/deletion/clear order, live iterators and forEach mutation,
 getOrInsert and computed callback mutation, intrinsic groupBy, branding, complete
 reflection, species, and non-construction. All selected source bytes are verified
-against their upstream Git blob identities. Whole originals requiring Set/WeakMap
+against their upstream Git blob identities. Twelve Set receiver originals are added
+with the Set cohort below. Whole originals requiring WeakMap
 receivers, typed arrays, WeakRef, classes, dynamic Function, cross-realm support,
 or global reflection remain excluded without credit. One original tagged WeakMap
 exercises only Map and needs no WeakMap implementation. The published edition-17
 baseline includes both insertion methods. The pin, eight original harness files,
 and unlimited defaults are unchanged.
+
+## Set and Set Iterator review
+
+Three hundred twenty-four unchanged sources comprise 313 Set and 11 Set Iterator
+files. Another twelve Map receiver-brand files use Set instances. Together they
+add 670 variants: two Set forEach files prescribe a single Script mode and every
+other source runs in both modes. Coverage includes construction and cached adder
+ordering, canonical primitive/Object/Symbol identity, live iteration and callback
+mutation, iterator closing, all seven set-like combination/predicate algorithms,
+observable size/has/keys order, duplicate keys, snapshot versus live membership,
+intrinsic results, branding, complete reflection, species, and non-construction.
+All bytes are verified against the original Git blob identities. Seventy reviewed
+Set originals require classes, generators, WeakSet, typed arrays, WeakRef,
+cross-realm support, or complete global reflection and remain excluded without
+credit. This includes unused generator methods: whole files are retained or
+excluded, never rewritten. The pin, eight original helpers, and unlimited defaults
+are unchanged.
 
 ## Scope and maintenance
 
@@ -905,13 +922,13 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 5805 variants from 2943 reviewed sources: the eleven
+The `spite-test262` command runs 6475 variants from 3279 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 187 Map and Map Iterator tests, 48 BigInt API tests, 173 Object tests,
+tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 199 Map and Map Iterator tests, 324 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
 430 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
@@ -922,7 +939,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-5609 positives using the upstream harness, and 192 reviewed parse-negative variants.
+6279 positives using the upstream harness, and 192 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
@@ -957,5 +974,5 @@ review their metadata, update hashes and expectations, and rerun the checks.
 The pinned `compareArray.js` include is a compatibility file; its assertions
 are defined in `assert.js`. Successful comparisons execute unchanged. Numeric mismatch
 formatting executes map and reports the thrown Test262Error as a runtime failure.
-String SameValue mismatch formatting still requires JSON and remains Unsupported. Local
-controls cover these paths.
+String SameValue mismatch formatting executes JSON.stringify and produces ordinary
+assertion failures. Local controls cover these paths.

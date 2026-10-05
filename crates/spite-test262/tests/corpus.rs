@@ -46,8 +46,8 @@ fn pinned_corpus_runs_all_reviewed_variants() {
     let report = run_corpus(&pinned()).unwrap();
     assert!(report.is_success(), "{report:#?}");
     assert_eq!(report.revision, "7ab7fafa0003f73fc85c1b95d88094d33f7eb8bd");
-    assert_eq!(report.tests.len(), 2943);
-    assert_eq!(report.counts()["passed"], 5805);
+    assert_eq!(report.tests.len(), 3279);
+    assert_eq!(report.counts()["passed"], 6475);
     assert!(
         report
             .counts()
