@@ -5999,3 +5999,5 @@ test/language/literals/regexp/S7.8.5_A2.5_T6.js	-	-	-
 test/language/literals/regexp/regexp-first-char-no-line-separator.js	691	695	line terminator in regular expression literal
 test/language/literals/regexp/regexp-first-char-no-paragraph-separator.js	691	695	line terminator in regular expression literal
 test/language/literals/regexp/regexp-source-char-no-line-separator.js	561	568	line terminator in regular expression literal
+test/language/literals/regexp/early-err-bad-flag.js	505	509	invalid regular expression flag
+test/language/literals/regexp/early-err-dup-flag.js	486	492	duplicate regular expression flag

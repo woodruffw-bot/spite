@@ -42,7 +42,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11478 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 11482 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -262,6 +262,11 @@ Function entry points. The new flag diagnostic snapshot and the reduced Pattern
 gap snapshot were inspected. An eval regression verifies that flag errors become
 SyntaxError before source effects, while valid-flag Pattern gaps bypass JavaScript
 catch/finally as host Unsupported. Runtime defaults and native guards are unchanged.
+Two unchanged literal flag originals add four parse-negative variants for uppercase
+`G` and repeated `g` in `gig`, with exact literal spans and messages. Both whole
+programs and metadata were reviewed. These checks precede Pattern parsing and
+provide no RegExp object or matching execution credit; original bytes, assertions,
+the pin, eight helpers, and unlimited defaults are preserved.
 
 34 unchanged RegExp lexical-boundary originals add 68 Script/StrictScript variants:
 36 harness positives and 32 reviewed parse negatives. Programs verify comment
@@ -1272,8 +1277,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 11478 variants are four raw positives, 10605 positives using the upstream
-harness, 865 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
+Rust. Its 11482 variants are four raw positives, 10605 positives using the upstream
+harness, 869 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol

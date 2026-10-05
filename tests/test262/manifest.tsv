@@ -6026,3 +6026,5 @@ script-pass	d324e3e0177fde19a2865877858cfdbfe94f7179beaab42d79b0dd3505a57312	tes
 parse-syntax-error	26c777e56c75e12859778ff748120edc266833736197cc9b92a8bc4aa500236d	test/language/literals/regexp/regexp-first-char-no-line-separator.js
 parse-syntax-error	11144ba63b3bc1cbadecc18a1c4d70d30657304c55064e15439ac5100cee6f62	test/language/literals/regexp/regexp-first-char-no-paragraph-separator.js
 parse-syntax-error	2b99dec59fc89fa78146fe6243627beebfe0152595bdbe519b63545fd694e48b	test/language/literals/regexp/regexp-source-char-no-line-separator.js
+parse-syntax-error	72ec0a6b43627358c4c05ced1bfa2a96f3cb7828aca9754802cb422d3e0c8770	test/language/literals/regexp/early-err-bad-flag.js
+parse-syntax-error	0c13d5e66d9a89fce1cbbc144fed5753d78894f7b162ba989b46ef3dc0150e4c	test/language/literals/regexp/early-err-dup-flag.js
