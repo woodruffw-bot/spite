@@ -1,6 +1,169 @@
 use super::*;
 
 #[test]
+fn standard_utc_strings_cover_names_year_widths_and_range_boundaries() {
+    let mut report = String::new();
+    for text in [
+        "1970-01-01T00:00:00.000Z",
+        "1969-12-31T23:59:59.999Z",
+        "0000-01-01",
+        "0001-01-01",
+        "0099-01-01",
+        "9999-01-01",
+        "+010000-01-01",
+        "+100000-01-01",
+        "-000001-01-01",
+        "-000012-01-01",
+        "-000123-01-01",
+        "-001234-01-01",
+        "-012345-01-01",
+        "-123456-01-01",
+        "-271821-04-20",
+        "+275760-09-13",
+    ] {
+        let time = parse_date_time_string(&JsString::from(text))
+            .unwrap()
+            .utc_time_value()
+            .unwrap() as i64;
+        writeln!(
+            report,
+            "{text} => {}",
+            format_utc_date_string(time).unwrap().to_utf8().unwrap()
+        )
+        .unwrap();
+    }
+    for month in 0..12 {
+        let time = DateTimeString {
+            year: 2024,
+            month,
+            day: 1,
+            hour: 12,
+            minute: 34,
+            second: 56,
+            millisecond: 789,
+            zone: DateTimeZone::Utc,
+        }
+        .utc_time_value()
+        .unwrap() as i64;
+        writeln!(
+            report,
+            "{}",
+            format_utc_date_string(time).unwrap().to_utf8().unwrap()
+        )
+        .unwrap();
+    }
+    for day in 0..7 {
+        writeln!(
+            report,
+            "{}",
+            format_utc_date_string(day * MS_PER_DAY)
+                .unwrap()
+                .to_utf8()
+                .unwrap()
+        )
+        .unwrap();
+    }
+    for time in [i64::MIN, -MAX_TIME_VALUE - 1, MAX_TIME_VALUE + 1, i64::MAX] {
+        assert_eq!(format_utc_date_string(time), None);
+    }
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn standard_utc_strings_round_trip_whole_seconds_throughout_the_clipped_domain() {
+    let check = |time: i64| {
+        let text = format_utc_date_string(time).unwrap();
+        // The containing second is floored, including before the epoch.
+        assert_eq!(
+            parse_utc_date_string(&text),
+            Some(time.div_euclid(1000) * 1000),
+            "{text:?}"
+        );
+    };
+    for time in [
+        -MAX_TIME_VALUE,
+        -MAX_TIME_VALUE + 1,
+        -1001,
+        -1000,
+        -999,
+        -1,
+        0,
+        1,
+        999,
+        1000,
+        MAX_TIME_VALUE - 1,
+        MAX_TIME_VALUE,
+    ] {
+        check(time);
+    }
+    for year in 0..=99 {
+        let time = DateTimeString {
+            year,
+            month: 1,
+            day: 28,
+            hour: 12,
+            minute: 34,
+            second: 56,
+            millisecond: 0,
+            zone: DateTimeZone::Utc,
+        }
+        .utc_time_value()
+        .unwrap() as i64;
+        check(time);
+        let parsed = parse_utc_date_string(&format_utc_date_string(time).unwrap()).unwrap();
+        assert_eq!(UtcDateTime::from_time_value(parsed).unwrap().year, year);
+    }
+    let mut state = 2026_u64;
+    for _ in 0..4096 {
+        state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+        check((state % (2 * MAX_TIME_VALUE as u64 + 1)) as i64 - MAX_TIME_VALUE);
+    }
+}
+
+#[test]
+fn utc_string_parser_rejects_noncanonical_and_invalid_calendar_forms() {
+    for text in [
+        "Invalid Date",
+        "Thu, 01 Jan 1970 00:00:00 GMT ",
+        " Thu, 01 Jan 1970 00:00:00 GMT",
+        "thu, 01 Jan 1970 00:00:00 GMT",
+        "Thu 01 Jan 1970 00:00:00 GMT",
+        "Thu, 1 Jan 1970 00:00:00 GMT",
+        "Thu, 01 JAN 1970 00:00:00 GMT",
+        "Wed, 01 Jan 1970 00:00:00 GMT",
+        "Thu, 00 Jan 1970 00:00:00 GMT",
+        "Thu, 32 Jan 1970 00:00:00 GMT",
+        "Wed, 31 Apr 2024 00:00:00 GMT",
+        "Fri, 29 Feb 1900 00:00:00 GMT",
+        "Thu, 01 Jan 1970 24:00:00 GMT",
+        "Thu, 01 Jan 1970 00:60:00 GMT",
+        "Thu, 01 Jan 1970 00:00:60 GMT",
+        "Thu, 01 Jan 1970 00:00:00 UTC",
+        "Thu, 01 Jan 1970 00:00:00.000 GMT",
+        "Thu, 01 Jan +1970 00:00:00 GMT",
+        "Thu, 01 Jan 01970 00:00:00 GMT",
+        "Thu, 01 Jan 197 00:00:00 GMT",
+        "Sat, 01 Jan -0000 00:00:00 GMT",
+        "Sat, 01 Jan 1000000 00:00:00 GMT",
+        "Mon, 19 Apr -271821 23:59:59 GMT",
+        "Sat, 13 Sep 275760 00:00:01 GMT",
+    ] {
+        assert_eq!(parse_utc_date_string(&JsString::from(text)), None, "{text}");
+    }
+    let text = JsString::from("Thu, 01 Jan 1970 00:00:00 GMT");
+    for index in 0..text.len() {
+        for unit in [0, 0xd800, 0xdc00, 0xffff, 0xff10] {
+            let mut units = text.code_units().to_vec();
+            units[index] = unit;
+            assert_eq!(
+                parse_utc_date_string(&JsString::from_code_units(units)),
+                None
+            );
+        }
+    }
+}
+
+#[test]
 fn full_year_adjustment_follows_truncation_and_preserves_non_short_years() {
     for year in [0.0, -0.0, 0.99, -0.99] {
         assert_eq!(make_full_year(year), 1900.0);

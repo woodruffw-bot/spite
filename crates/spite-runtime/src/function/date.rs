@@ -7,8 +7,8 @@ use crate::{
 use spite_core::{
     JsString, Span, WellKnownSymbol,
     date::{
-        MS_PER_DAY, UtcDateTime, format_iso_date_time, make_date, make_time,
-        parse_date_time_string, time_clip,
+        MS_PER_DAY, UtcDateTime, format_iso_date_time, format_utc_date_string, make_date,
+        make_time, parse_date_time_string, parse_utc_date_string, time_clip,
     },
 };
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -294,12 +294,14 @@ impl Realm {
 
     pub(super) fn parse_date_value(&mut self, text: &JsString, span: Span) -> Result<f64, Error> {
         self.object_work(span, |_, budget| budget.charge(text.len()))?;
-        let Some(parsed) = parse_date_time_string(text) else {
-            return Ok(f64::NAN);
-        };
-        parsed
-            .utc_time_value()
-            .ok_or_else(|| Self::unsupported(span, "local Date time zone resolution"))
+        if let Some(parsed) = parse_date_time_string(text) {
+            return parsed
+                .utc_time_value()
+                .ok_or_else(|| Self::unsupported(span, "local Date time zone resolution"));
+        }
+        // 21.4.3.2 also requires parsing our own toUTCString output for Dates
+        // with zero milliseconds. No implementation-specific fallback is used.
+        Ok(parse_utc_date_string(text).map_or(f64::NAN, |time| time as f64))
     }
 
     #[inline(never)]
@@ -476,6 +478,21 @@ impl Realm {
             {
                 self.date_string_work(12, span)?;
                 Ok(Value::String(JsString::from("Invalid Date")))
+            }
+            Method::ToUtcString => {
+                let fields = UtcDateTime::from_time_value(time as i64).expect("clipped Date value");
+                let magnitude = fields.year.unsigned_abs();
+                let digits = if magnitude < 10_000 {
+                    4
+                } else if magnitude < 100_000 {
+                    5
+                } else {
+                    6
+                };
+                self.date_string_work(25 + digits + usize::from(fields.year < 0), span)?;
+                Ok(Value::String(
+                    format_utc_date_string(time as i64).expect("clipped Date value"),
+                ))
             }
             Method::GetUtcDate
             | Method::GetUtcDay

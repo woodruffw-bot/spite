@@ -2345,16 +2345,25 @@ and six digits, followed by full UTC date/time fields, three millisecond digits,
 and Z. Output has 24 or 27 UTF-16 code units and preserves every supported
 millisecond. Invalid native time values are rejected before formatting.
 
+Standard UTC formatting follows toUTCString (21.4.4.42), with English weekday/
+month names, seconds, GMT, and a minimum four-digit year prefixed only when
+negative. It omits milliseconds. Date.parse also accepts that canonical output,
+validating the calendar and weekday directly from UTF-16 without allocation.
+Years 0–99 remain literal, and negative instants round-trip to the containing
+second using floor division. This satisfies the standard UTC-output invariant
+in 21.4.3.2; other legacy formats remain outside the parser.
+
 The runtime materializes the complete edition-17 Date constructor/prototype
 property graph. Instances have a distinct [[DateValue]] slot containing a clipped
 Number or NaN; Date.prototype has no slot. Timestamp/copy construction, Date.now,
-UTC/offset Date.parse, UTC getters, getTime/valueOf, setTime, toISOString, toJSON
+UTC/offset Date.parse, UTC getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
 and @@toPrimitive are implemented. Constructor input conversion precedes
 new-target prototype lookup; copying another Date bypasses its conversion hooks.
 setTime checks the receiver before converting input and stores only after that
 conversion succeeds. UTC getters and ISO formatting use the shared exact helpers.
-ISO output checks optional string/work quotas before allocation; an invalid Date
-throws RangeError. Object.prototype.toString recognizes the slot independently
+ISO and standard UTC output check optional string/work quotas before allocation;
+an invalid Date throws RangeError for ISO and yields "Invalid Date" for UTC.
+Object.prototype.toString recognizes the slot independently
 of prototype identity and still observes @@toStringTag.
 
 Date's generic @@toPrimitive treats default as string and enters

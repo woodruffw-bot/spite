@@ -288,6 +288,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Format canonical UTC Date interchange strings with millisecond precision and signed six-digit expanded years.
 - [x] Add Date intrinsic metadata, timestamp/copy construction, Date.now, UTC/offset Date.parse, UTC getters, setTime, ISO/JSON conversion and generic primitive conversion.
 - [x] Implement Date UTC hour/minute/second/millisecond setters with captured time values, ordered coercion, omitted-field defaults and clipped rollover.
+- [x] Implement standard Date toUTCString formatting and parsing of its whole-second output across the complete clipped domain.
 - [ ] Add Date numeric calendar construction, calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.

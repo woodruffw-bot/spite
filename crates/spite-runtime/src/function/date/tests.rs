@@ -72,3 +72,57 @@ fn fixed_size_iso_output_obeys_opt_in_quotas_and_restores_call_state() {
         Ok(Value::String(JsString::from("+275760-09-13T00:00:00.000Z")))
     );
 }
+
+#[test]
+fn utc_string_output_uses_exact_year_width_for_opt_in_quotas() {
+    let mut realm = Realm::default();
+    realm
+        .eval("let d=new Date(0),lo=new Date(-8640000000000000);let flag=0")
+        .unwrap();
+    realm.limits.max_string_units = Some(29);
+    assert_eq!(
+        realm.eval("d.toUTCString()"),
+        Ok(Value::String(JsString::from(
+            "Thu, 01 Jan 1970 00:00:00 GMT"
+        )))
+    );
+    assert!(matches!(
+        realm.eval("try{lo.toUTCString();}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert_eq!(
+        realm.eval("lo.getTime()"),
+        Ok(Value::Number(-8640000000000000.0))
+    );
+    for (text, length) in [
+        ("9999-01-01", 29),
+        ("+010000-01-01", 30),
+        ("+100000-01-01", 31),
+        ("-000001-01-01", 30),
+        ("-012345-01-01", 31),
+        ("-123456-01-01", 32),
+    ] {
+        realm.limits.max_string_units = None;
+        realm
+            .eval(&format!("d.setTime(Date.parse('{text}'))"))
+            .unwrap();
+        realm.limits.max_string_units = Some(length - 1);
+        assert!(
+            matches!(realm.eval("d.toUTCString()"), Err(Error::Limit { .. })),
+            "{text}"
+        );
+        realm.limits.max_string_units = Some(length);
+        let Value::String(output) = realm.eval("d.toUTCString()").unwrap() else {
+            panic!("UTC string");
+        };
+        assert_eq!(output.len(), length, "{text}");
+    }
+    realm.limits.max_string_units = None;
+    assert_eq!(
+        realm.eval("lo.toUTCString()"),
+        Ok(Value::String(JsString::from(
+            "Tue, 20 Apr -271821 00:00:00 GMT"
+        )))
+    );
+}

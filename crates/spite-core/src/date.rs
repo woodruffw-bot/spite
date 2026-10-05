@@ -7,6 +7,8 @@
 
 mod parse;
 pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
+mod utc_string;
+pub use utc_string::{format_utc_date_string, parse_utc_date_string};
 
 use crate::JsString;
 use std::fmt::Write;

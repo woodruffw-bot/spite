@@ -548,6 +548,18 @@ metadata, conversion order and captured-time mutation. The review read all 36
 whole files in those four setter directories; eight require pending numeric
 Date.UTC construction and remain outside the corpus. The pin and eight harness
 files are unchanged.
+Standard toUTCString formatting and parsing of its own output cover the complete
+clipped domain, English day/month names, year zero and signed minimum-four-digit
+years. A reviewed insta snapshot covers names, year widths and both endpoints;
+4,096 samples plus short years and boundary cases check exact containing-second
+round trips. Regressions reject malformed UTF-16, invalid calendar days, weekday
+mismatches and noncanonical forms. Five runtime regressions cover receiver
+branding, ignored hooks/arguments, literal short years, string-hint conversion,
+abrupt completion and native-stack recovery. A private regression checks exact
+opt-in output quotas at every year width; default quotas remain disabled.
+An independent reference check matched 4,217 Node UTC strings and their exact
+containing-second round trips. Local Date strings and other legacy forms remain
+pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
