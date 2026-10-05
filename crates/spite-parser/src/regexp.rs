@@ -5,6 +5,8 @@ use spite_core::{
 };
 use std::{cmp::Ordering, collections::HashSet, mem, ops::Range};
 
+mod sets;
+
 type Failure = (DiagnosticKind, &'static str);
 
 fn syntax(message: &'static str) -> Failure {
@@ -555,9 +557,7 @@ impl Pattern {
         // https://262.ecma-international.org/17.0/#sec-patterns
         // https://262.ecma-international.org/17.0/#sec-patterns-static-semantics-early-errors
         if self.mode.sets {
-            return Err(unsupported(
-                "regular expression Unicode class set validation is not implemented",
-            ));
+            return self.unicode_sets_class();
         }
         self.eat(b'^');
         while !self.eat(b']') {

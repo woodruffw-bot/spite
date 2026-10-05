@@ -1,0 +1,62 @@
+---
+source: crates/spite-parser/tests/regexp_sets.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 8,
+        },
+        message: "regular expression Unicode class range is reversed",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 9,
+        },
+        message: "regular expression Unicode class range requires character endpoints",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "unescaped regular expression Unicode class syntax character",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "reserved double punctuation in regular expression Unicode class",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "negated regular expression class may contain strings",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 11,
+        },
+        message: "invalid regular expression identity escape",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "regular expression class string disjunction requires braces",
+    },
+]

@@ -88,9 +88,11 @@ are excluded. Ordinary character classes validate range endpoints and ordering;
 Unicode hex escapes pair adjacent lead/trail surrogates before determining range
 values. Capture names decode identifier code points, and named references resolve
 against all captures. Duplicate names require a separating disjunction under
-MightBothParticipate; names in successive terms remain conflicting. UnicodeSetsMode
-classes and Unicode properties remain Unsupported, as does matching after the
-supported grammar validates.
+MightBothParticipate; names in successive terms remain conflicting. Flat
+UnicodeSetsMode unions validate scalar ranges, reserved punctuation and string
+disjunctions, rejecting inversion when MayContainStrings is true. Nested classes,
+set operators and Unicode properties remain Unsupported, as does matching after
+the supported grammar validates.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
 and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
 Computed class accessor lookahead parses its name with the expression grammar and

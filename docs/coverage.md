@@ -247,8 +247,8 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. UnicodeSetsMode classes,
-Unicode properties, matching, intrinsics, and grammar-driven
+No RegExp literal AST or execution pass is exposed. Nested UnicodeSetsMode
+classes, set operators, Unicode properties, matching, intrinsics and grammar-driven
 reusable cover lookahead remain pending. Unimplemented Pattern productions still
 produce Unsupported and cannot receive parse-negative credit.
 
@@ -297,8 +297,8 @@ entry points, raw unpaired UTF-16, and a 100,000-character class without a defau
 quota. The new range diagnostic snapshot and updated lexical-goal snapshot were
 inspected. Eval rejects reversed and set-valued ranges as SyntaxError before
 effects; valid classes still reach host Unsupported for matching. UnicodeSetsMode
-classes and Unicode property escapes remain unsupported and receive no negative
-credit. Corpus inventories, runtime defaults, native guards and dependencies are
+class nesting and operators and Unicode property escapes remain unsupported
+and receive no negative credit. Corpus inventories, runtime defaults, native guards and dependencies are
 unchanged.
 
 Named captures validate IdentifierStartChar/IdentifierPartChar with Unicode
@@ -314,9 +314,24 @@ these rules, malformed names, raw lone surrogates, all grammar entry points,
 20,000 nested named captures and 20,000 alternatives without default quotas. The
 new diagnostic snapshot was inspected. Eval rejects invalid and duplicate names
 before source effects; valid alternative-separated names still produce host
-Unsupported for matching. Unicode property and UnicodeSetsMode gaps cannot
+Unsupported for matching. Unicode property and nested UnicodeSetsMode gaps cannot
 receive negative credit. Corpus inventories, defaults, native guards and
 dependencies are unchanged.
+
+Flat UnicodeSetsMode classes now validate ClassUnion operands and scalar ranges,
+ClassSetCharacter's syntax and reserved double punctuation, the additional
+reserved-punctuation escapes, and ClassStringDisjunction. Their MayContainStrings
+result distinguishes empty, single-code-point and longer strings, including paired
+surrogate escapes, without a default string-length quota. Inverted classes reject
+empty or multi-character alternatives; the leading inversion caret is distinct
+from a literal subsequent caret. Four parser regressions cover these rules,
+ordinary/u/v distinctions, exact diagnostics across grammar entry points, and
+100,000-character class strings. The new diagnostic snapshot was inspected.
+Eval rejects supported v-class errors before effects, while valid unions retain
+host Unsupported for matching. Nested classes, intersections, subtraction and
+Unicode property escapes still produce Unsupported and cannot receive negative
+credit. Corpus inventories, runtime defaults, native guards and dependencies are
+unchanged.
 
 106 unchanged core Pattern originals add 212 reviewed parse-negative variants
 covering scoped modifiers, quantifier placement/bounds, assertion quantifiers,

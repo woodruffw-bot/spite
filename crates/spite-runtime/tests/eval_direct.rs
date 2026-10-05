@@ -71,6 +71,28 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
 }
 
 #[test]
+fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching_gaps() {
+    for pattern in ["[z-a]", r"[^\q{}]", r"[a-\d]", "[!!]"] {
+        let code = format!("effects=1; /{pattern}/v;");
+        check(&format!(
+            "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+        ));
+    }
+    for pattern in ["[a-z]", r"[\q{a|b}]", r"[^\q{a|b}]"] {
+        let mut realm = Realm::default();
+        realm.eval("var marker=0;").unwrap();
+        let code = format!("marker=1; /{pattern}/v;");
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{eval({code:?});}}catch{{marker=2;}}finally{{marker=3;}}"
+            )),
+            Err(Error::Unsupported { .. })
+        ));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+    }
+}
+
+#[test]
 fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable() {
     check(
         "function f(){eval('var x=7;function g(){return x;}function g(){return x+1;}');return x===7 && g()===8 && delete x && delete g && typeof x==='undefined' && typeof g==='undefined';}f() && typeof x==='undefined' && typeof g==='undefined'",

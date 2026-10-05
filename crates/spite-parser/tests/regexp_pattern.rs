@@ -301,11 +301,16 @@ fn ordinary_classes_preserve_dash_backspace_and_set_escape_grammar() {
         }
     }
     // Ordinary classes do not acquire the UnicodeSetsMode grammar.
-    for pattern in ["[a&&b]", "[!!]", "[{}]", "[|]"] {
+    for (pattern, expected) in [
+        ("[a&&b]", DiagnosticKind::Unsupported),
+        ("[!!]", DiagnosticKind::Syntax),
+        ("[{}]", DiagnosticKind::Syntax),
+        ("[|]", DiagnosticKind::Syntax),
+    ] {
         matching_gap(pattern, "u");
         assert_eq!(
             parse_script(&format!("/{pattern}/v")).unwrap_err().kind,
-            DiagnosticKind::Unsupported
+            expected
         );
     }
     matching_gap(r"[\!\$]", "");
