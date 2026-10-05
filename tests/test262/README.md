@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 3298 unmodified test fixtures and eight harness files come from
+These 3489 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -878,7 +878,7 @@ getOrInsert and computed callback mutation, intrinsic groupBy, branding, complet
 reflection, species, and non-construction. All selected source bytes are verified
 against their upstream Git blob identities. Twelve Set receiver originals are added
 with the Set cohort below. Whole originals requiring WeakMap
-receivers, typed arrays, WeakRef, classes, dynamic Function, cross-realm support,
+receivers, typed arrays, WeakRef, classes, cross-realm support,
 or global reflection remain excluded without credit. One original tagged WeakMap
 exercises only Map and needs no WeakMap implementation. The published edition-17
 baseline includes both insertion methods. The pin, eight original harness files,
@@ -901,6 +901,25 @@ credit. This includes unused generator methods: whole files are retained or
 excluded, never rewritten. The pin, eight original helpers, and unlimited defaults
 are unchanged.
 
+## Function construction and reflection review
+
+One hundred ninety unchanged Function sources and one Map computed-callback
+source add 297 variants. Eighty-five originals prescribe a single Script mode;
+the other 106 run in both modes. They cover ordered source conversion, independent
+parameter/body grammar checks, combined early errors, global scope, calls and
+construction, custom newTarget prototypes, parameter and arguments behavior,
+constructor/prototype metadata, and exact ordinary function source retention.
+The Map original now exercises dynamically constructed callbacks unchanged.
+
+The 298 Function candidates were reviewed as whole files. The 108 excluded
+originals require eval, optional non-strict caller extensions, with statements,
+classes, generators, async functions, private elements, Proxy, foreign realms,
+complete global reflection, or nativeFunctionMatcher.js. That unchanged helper
+requires RegExp literals even in originals whose assertions otherwise use exact
+source strings. These exclusions receive no execution credit. Included source
+bytes match their upstream Git blob identities. The existing pin, eight unchanged
+helpers, and unlimited runtime defaults are retained.
+
 ## Scope and maintenance
 
 `Runner::default()` uses the ordinary runtime defaults: every `Limits` field is
@@ -922,13 +941,13 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 6475 variants from 3279 reviewed sources: the eleven
+The `spite-test262` command runs 6772 variants from 3470 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
 and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
 object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 199 Map and Map Iterator tests, 324 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
+tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 200 Map and Map Iterator tests, 190 Function builtin tests, 324 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
 430 String and String iterator tests, 677 Array and Array iterator tests
 (including fifteen nested object-spread files),
 19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
@@ -939,7 +958,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-6279 positives using the upstream harness, and 192 reviewed parse-negative variants.
+6576 positives using the upstream harness, and 192 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
