@@ -35,11 +35,7 @@ fn references_bindings_and_comma_rhs_are_supported() {
         assert!(parse_script(source).is_ok(), "{source}");
     }
     let script = parse_script("for(var x in {}) {var y;} for(let z in {}) {var a;}").unwrap();
-    let names: Vec<_> = script
-        .var_declarations()
-        .iter()
-        .map(|b| b.name.as_str())
-        .collect();
+    let names: Vec<_> = script.var_declarations().iter().map(|b| b.name).collect();
     assert_eq!(names, ["x", "y", "a"]);
 }
 
@@ -81,11 +77,7 @@ fn invalid_targets_declarations_and_lexical_conflicts_are_syntax_errors() {
 
 #[test]
 fn binding_patterns_and_annex_b_initializers_remain_unsupported() {
-    for source in [
-        "for(var [x] in {}) ;",
-        "for({x} in {}) ;",
-        "for(var x=1 in {}) ;",
-    ] {
+    for source in ["for({x} in {}) ;", "for(var x=1 in {}) ;"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

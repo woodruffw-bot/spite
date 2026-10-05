@@ -79,8 +79,8 @@ fn header_validation_and_label_contexts_are_preserved() {
 #[test]
 fn unsupported_header_forms_are_not_syntax_error_passes() {
     for source in [
-        "for (var [x] = y;;) ;",
-        "for (var {x} = y;;) ;",
+        "for (var [x] = class {};;) ;",
+        "for (var {x} = class {};;) ;",
         "for await (x of y) ;",
     ] {
         assert_eq!(

@@ -469,12 +469,23 @@ impl Parser {
         if !mutable {
             self.expect("const")?;
         }
+        Ok((mutable, self.binding_list(!mutable, for_header, true)?))
+    }
+
+    fn binding_list(
+        &mut self,
+        require_initializer: bool,
+        for_header: bool,
+        lexical: bool,
+    ) -> Result<Vec<BindingElement>, Diagnostic> {
         let mut bindings = Vec::new();
         loop {
             let pattern = self.binding_pattern()?;
-            for (name, span) in pattern.bound_names() {
-                if name == "let" {
-                    return Err(early(span, "invalid binding identifier"));
+            if lexical {
+                for (name, span) in pattern.bound_names() {
+                    if name == "let" {
+                        return Err(early(span, "invalid binding identifier"));
+                    }
                 }
             }
             let initializer = if self.eat("=") {
@@ -486,61 +497,12 @@ impl Parser {
                 if !matches!(pattern.kind, BindingPatternKind::Identifier(_)) {
                     return Err(self.error("binding pattern requires an initializer"));
                 }
-                if !mutable {
+                if require_initializer {
                     return Err(self.error("const requires an initializer"));
                 }
             }
             bindings.push(BindingElement {
                 pattern,
-                initializer,
-            });
-            if !self.eat(",") {
-                break;
-            }
-        }
-        Ok((mutable, bindings))
-    }
-
-    fn binding_list(
-        &mut self,
-        require_initializer: bool,
-        for_header: bool,
-        lexical: bool,
-    ) -> Result<Vec<Binding>, Diagnostic> {
-        let mut bindings = Vec::new();
-        loop {
-            if self.at("[") || self.at("{") {
-                return Err(self.unsupported("binding patterns are not implemented"));
-            }
-            let token = self.bump();
-            let Kind::Word(name) = token.kind else {
-                return Err(Diagnostic::new(
-                    DiagnosticKind::Syntax,
-                    token.span,
-                    "expected binding identifier",
-                ));
-            };
-            if reserved(&name) || (lexical && name == "let") {
-                return Err(Diagnostic::new(
-                    DiagnosticKind::Syntax,
-                    token.span,
-                    "invalid binding identifier",
-                ));
-            }
-            let initializer = if self.eat("=") {
-                Some(self.expression_with_in(2, !for_header)?)
-            } else {
-                None
-            };
-            if require_initializer
-                && initializer.is_none()
-                && !(for_header && (self.at("of") || self.at("in")))
-            {
-                return Err(self.error("const requires an initializer"));
-            }
-            bindings.push(Binding {
-                name,
-                span: token.span,
                 initializer,
             });
             if !self.eat(",") {
@@ -1173,12 +1135,9 @@ fn validate_binding_name(name: &str, span: Span, strict: bool) -> Result<(), Dia
     Ok(())
 }
 
-fn validate_var_bindings(bindings: &[Binding], strict: bool) -> Result<(), Diagnostic> {
+fn validate_var_bindings(bindings: &[BindingElement], strict: bool) -> Result<(), Diagnostic> {
     for binding in bindings {
-        validate_binding(binding, strict)?;
-        if let Some(expr) = &binding.initializer {
-            validate_expr(expr, strict)?;
-        }
+        binding::validate_element(binding, strict)?;
     }
     Ok(())
 }
@@ -1249,13 +1208,13 @@ fn validate_scope<'a>(
         declarations.clear();
         statement.collect_var_declarations(&mut declarations);
         for binding in &declarations {
-            if names.contains(binding.name.as_str()) {
+            if names.contains(binding.name) {
                 return Err(early(
                     binding.span,
                     "var declaration conflicts with lexical binding",
                 ));
             }
-            var_names.insert(binding.name.as_str());
+            var_names.insert(binding.name);
         }
         validate_statement(statement, strict, control, labels)?;
     }
@@ -1326,7 +1285,7 @@ fn validate_statement<'a>(
                     let mut declarations = Vec::new();
                     handler.body.collect_var_declarations(&mut declarations);
                     for binding in declarations {
-                        if seen.contains(binding.name.as_str()) {
+                        if seen.contains(binding.name) {
                             return Err(early(
                                 binding.span,
                                 "catch parameter conflicts with var declaration",
@@ -1369,7 +1328,7 @@ fn validate_statement<'a>(
                         body.collect_var_declarations(&mut declarations);
                         // ECMA-262 14.7.4.1: lexical header names cannot be vars in the body.
                         for binding in declarations {
-                            if names.contains(binding.name.as_str()) {
+                            if names.contains(binding.name) {
                                 return Err(early(
                                     binding.span,
                                     "var declaration conflicts with lexical for binding",
@@ -1419,7 +1378,7 @@ fn validate_statement<'a>(
                     validate_expr(target, strict)?;
                 }
                 ForBinding::Var(binding) => {
-                    validate_binding(binding, strict)?;
+                    binding::validate_pattern(&binding.pattern, strict)?;
                     if let Some(initializer) = &binding.initializer {
                         // Annex B's initialized for-in extension is not enabled. Keep its
                         // non-strict extension separate from core early errors.
@@ -1448,7 +1407,7 @@ fn validate_statement<'a>(
                     let mut declarations = Vec::new();
                     body.collect_var_declarations(&mut declarations);
                     for declaration in declarations {
-                        if names.contains(declaration.name.as_str()) {
+                        if names.contains(declaration.name) {
                             return Err(early(
                                 declaration.span,
                                 "var declaration conflicts with lexical for binding",

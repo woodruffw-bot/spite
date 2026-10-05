@@ -1,7 +1,7 @@
-//! BindingInitialization for declarative identifiers and patterns (8.6.3, 14.3.3).
+//! BindingInitialization for declarations and catch clauses (8.6.3, 14.3.3).
 
 use crate::{
-    BindingState, Error, ExceptionKind, Realm, Value, environment::EnvironmentHandle,
+    BindingState, Error, ExceptionKind, Realm, Reference, Value, environment::EnvironmentHandle,
     object::DataDescriptor,
 };
 use spite_core::{JsString, PropertyKey, WellKnownSymbol};
@@ -37,31 +37,71 @@ impl Realm {
         value: Value,
         environment: &EnvironmentHandle,
     ) -> Result<(), Error> {
+        self.binding_initialization(pattern, value, Some(environment), None)
+    }
+
+    pub(super) fn assign_pattern(
+        &mut self,
+        pattern: &BindingPattern,
+        value: Value,
+    ) -> Result<(), Error> {
+        self.binding_initialization(pattern, value, None, None)
+    }
+
+    fn binding_reference<'a>(
+        &mut self,
+        pattern: &'a BindingPattern,
+        environment: Option<&EnvironmentHandle>,
+    ) -> Result<Option<Reference<'a>>, Error> {
+        if environment.is_none() {
+            if let BindingPatternKind::Identifier(name) = &pattern.kind {
+                return self.resolve(name, pattern.span).map(Some);
+            }
+        }
+        Ok(None)
+    }
+
+    fn binding_initialization<'a>(
+        &mut self,
+        pattern: &'a BindingPattern,
+        value: Value,
+        environment: Option<&EnvironmentHandle>,
+        reference: Option<Reference<'a>>,
+    ) -> Result<(), Error> {
         // Share the evaluator's native-stack guard with reentrant defaults and
         // property/iterator hooks; this introduces no new host quota.
         self.enter_evaluation(pattern.span)?;
-        let result = self.initialize_pattern_inner(pattern, value, environment);
+        let result = self.initialize_pattern_inner(pattern, value, environment, reference);
         self.evaluation_depth -= 1;
         result
     }
 
-    fn initialize_pattern_inner(
+    fn initialize_pattern_inner<'a>(
         &mut self,
-        pattern: &BindingPattern,
+        pattern: &'a BindingPattern,
         value: Value,
-        environment: &EnvironmentHandle,
+        environment: Option<&EnvironmentHandle>,
+        reference: Option<Reference<'a>>,
     ) -> Result<(), Error> {
         let span = pattern.span;
         self.tick(span)?;
         match &pattern.kind {
             BindingPatternKind::Identifier(name) => {
-                self.objects
-                    .environment_mut(environment)
-                    .expect("binding environment")
-                    .bindings
-                    .get_mut(name)
-                    .expect("instantiated binding")
-                    .value = Some(value);
+                if let Some(environment) = environment {
+                    self.objects
+                        .environment_mut(environment)
+                        .expect("binding environment")
+                        .bindings
+                        .get_mut(name)
+                        .expect("instantiated binding")
+                        .value = Some(value);
+                } else {
+                    let reference = match reference {
+                        Some(reference) => reference,
+                        None => self.resolve(name, span)?,
+                    };
+                    self.put(reference, value, span)?;
+                }
             }
             BindingPatternKind::Object { properties, rest } => {
                 // GetV preserves the original primitive receiver. Empty object
@@ -84,8 +124,12 @@ impl Realm {
                         PropertyName::Computed(expression) => self.expression(expression)?,
                     };
                     let key = self.property_key(key_value, span)?;
+                    // KeyedBindingInitialization resolves SingleNameBinding before
+                    // GetV; with/unscopables hooks can mutate the source or target.
+                    let reference =
+                        self.binding_reference(&property.element.pattern, environment)?;
                     let next = self.get_property_value(&value, &key, span)?;
-                    self.initialize_binding_element(&property.element, next, environment)?;
+                    self.binding_element(&property.element, next, environment, reference)?;
                     if rest.is_some() {
                         self.object_work(span, |_, budget| {
                             budget.charge(match &key {
@@ -97,6 +141,7 @@ impl Realm {
                     }
                 }
                 if let Some(rest) = rest {
+                    let reference = self.binding_reference(rest, environment)?;
                     let prototype = self
                         .intrinsics
                         .as_ref()
@@ -106,7 +151,12 @@ impl Realm {
                     let object =
                         self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
                     self.copy_data_properties(&object, value, &excluded, span)?;
-                    self.initialize_pattern(rest, Value::Object(object), environment)?;
+                    self.binding_initialization(
+                        rest,
+                        Value::Object(object),
+                        environment,
+                        reference,
+                    )?;
                 }
             }
             BindingPatternKind::Array { elements, rest } => {
@@ -129,15 +179,18 @@ impl Realm {
                             }
                             continue;
                         };
+                        // Resolve before stepping even when the iterator is done.
+                        let reference = self.binding_reference(&element.pattern, environment)?;
                         let next = if iterator.is_done() {
                             Value::Undefined
                         } else {
                             self.iterator_step_value(&mut iterator, span)?
                                 .unwrap_or(Value::Undefined)
                         };
-                        self.initialize_binding_element(element, next, environment)?;
+                        self.binding_element(element, next, environment, reference)?;
                     }
                     if let Some(rest) = rest {
+                        let reference = self.binding_reference(rest, environment)?;
                         let Value::Object(array) = self.create_array_from_list([], span)? else {
                             unreachable!("intrinsic Array creation");
                         };
@@ -163,7 +216,12 @@ impl Realm {
                                 message: "binding array capacity exceeded".into(),
                             })?;
                         }
-                        self.initialize_pattern(rest, Value::Object(array), environment)?;
+                        self.binding_initialization(
+                            rest,
+                            Value::Object(array),
+                            environment,
+                            reference,
+                        )?;
                     }
                     Ok(())
                 })();
@@ -185,8 +243,18 @@ impl Realm {
     pub(super) fn initialize_binding_element(
         &mut self,
         element: &BindingElement,
-        mut value: Value,
+        value: Value,
         environment: &EnvironmentHandle,
+    ) -> Result<(), Error> {
+        self.binding_element(element, value, Some(environment), None)
+    }
+
+    fn binding_element<'a>(
+        &mut self,
+        element: &'a BindingElement,
+        mut value: Value,
+        environment: Option<&EnvironmentHandle>,
+        reference: Option<Reference<'a>>,
     ) -> Result<(), Error> {
         if matches!(value, Value::Undefined) {
             if let Some(initializer) = &element.initializer {
@@ -197,6 +265,6 @@ impl Realm {
                 };
             }
         }
-        self.initialize_pattern(&element.pattern, value, environment)
+        self.binding_initialization(&element.pattern, value, environment, reference)
     }
 }

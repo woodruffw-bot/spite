@@ -305,7 +305,23 @@ update; const loops retain one environment. For-in/of RHS evaluation shadows all
 names with uninitialized bindings, then each iteration creates and initializes a
 fresh environment. Binding failures restore scopes and close active for-of
 iterators with standard precedence. Empty patterns have no per-iteration names.
-Patterns in var declarations, parameters, and assignment remain separate work.
+Var declarations also use BindingElement/BindingPattern syntax (14.3.2).
+VarDeclaredNames collect every nested bound identifier, including repeats, while
+excluding nested functions. Script/function instantiation preinitializes the
+names to undefined; repeated targets assign the same binding in source order.
+Identifier declarations resolve before their initializer; pattern declarations
+evaluate their RHS before BindingInitialization with an undefined environment.
+This assignment mode uses ResolveBinding and PutValue. Single-name object
+elements resolve after key conversion and before GetV; array elements resolve
+before stepping even an exhausted iterator. Rest identifiers resolve before
+copying or consuming their source. A nested pattern resolves its own names when
+it is reached. Retaining those references preserves with/unscopables lookup
+order and binding-object identity across getters, defaults, and iterator hooks.
+Writes preserve strict errors, property setters, and mapped parameter aliases;
+abrupt binding writes close active iterators with incoming-throw precedence.
+Var loops retain one variable environment. Only identifier initialized for-in
+declarations are an optional Annex B form; initialized patterns are syntax errors.
+Patterns in parameters and assignment remain separate work.
 
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.

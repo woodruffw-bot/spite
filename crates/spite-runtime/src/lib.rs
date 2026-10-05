@@ -558,7 +558,7 @@ impl Realm {
                 .environment(&self.scopes[0])
                 .expect("global environment")
                 .bindings
-                .contains_key(&binding.name)
+                .contains_key(binding.name)
             {
                 return Err(Self::exception(
                     ExceptionKind::SyntaxError,
@@ -566,10 +566,10 @@ impl Realm {
                     "var declaration conflicts with global lexical binding",
                 ));
             }
-            if (standard_global(&binding.name)
-                || self.unsupported_host_globals.contains(&binding.name))
-                && self.global_own(&binding.name, binding.span)?.is_none()
-                && !function_names.contains(binding.name.as_str())
+            if (standard_global(binding.name)
+                || self.unsupported_host_globals.contains(binding.name))
+                && self.global_own(binding.name, binding.span)?.is_none()
+                && !function_names.contains(binding.name)
             {
                 return Err(Self::unsupported(
                     binding.span,
@@ -605,8 +605,8 @@ impl Realm {
             }
         }
         for binding in &declarations {
-            if !function_names.contains(binding.name.as_str())
-                && !self.can_declare_global_var(&binding.name, binding.span)?
+            if !function_names.contains(binding.name)
+                && !self.can_declare_global_var(binding.name, binding.span)?
             {
                 return Err(Self::exception(
                     ExceptionKind::TypeError,
@@ -618,22 +618,28 @@ impl Realm {
         self.instantiate(script.statements().iter(), true, false)?;
         self.initialize_functions(functions.iter().copied(), None)?;
         for binding in declarations {
-            if !function_names.contains(binding.name.as_str()) {
-                self.create_global_var(&binding.name, binding.span)?;
+            if !function_names.contains(binding.name) {
+                self.create_global_var(binding.name, binding.span)?;
             }
         }
         Ok(())
     }
 
-    fn evaluate_var_bindings(&mut self, bindings: &[Binding]) -> Result<(), Error> {
+    fn evaluate_var_bindings(&mut self, bindings: &[BindingElement]) -> Result<(), Error> {
         for binding in bindings {
-            self.tick(binding.span)?;
+            self.tick(binding.pattern.span)?;
             // ECMA-262 14.3.2.1: a declaration without an initializer does not
-            // assign, and an initializer resolves its reference before the RHS.
+            // assign. Identifier initializers resolve before the RHS; patterns
+            // perform BindingInitialization only after evaluating their RHS.
             if let Some(expr) = &binding.initializer {
-                let reference = self.resolve(&binding.name, binding.span)?;
-                let value = self.named_expression(expr, JsString::from(binding.name.as_str()))?;
-                self.put(reference, value, binding.span)?;
+                if let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
+                    let reference = self.resolve(name, binding.pattern.span)?;
+                    let value = self.named_expression(expr, JsString::from(name.as_str()))?;
+                    self.put(reference, value, binding.pattern.span)?;
+                } else {
+                    let value = self.expression(expr)?;
+                    self.assign_pattern(&binding.pattern, value)?;
+                }
             }
         }
         Ok(())

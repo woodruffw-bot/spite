@@ -47,11 +47,15 @@ Script {
                                     Statement {
                                         kind: Var(
                                             [
-                                                Binding {
-                                                    name: "y",
-                                                    span: Span {
-                                                        start: 27,
-                                                        end: 28,
+                                                BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Identifier(
+                                                            "y",
+                                                        ),
+                                                        span: Span {
+                                                            start: 27,
+                                                            end: 28,
+                                                        },
                                                     },
                                                     initializer: None,
                                                 },

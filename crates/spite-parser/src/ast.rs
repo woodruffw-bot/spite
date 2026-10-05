@@ -23,8 +23,8 @@ impl Script {
     pub fn function_declarations(&self) -> Vec<&Function> {
         functions_in(&self.statements)
     }
-    /// Returns Script-scoped var declarations in source order, including repeats.
-    pub fn var_declarations(&self) -> Vec<&Binding> {
+    /// Returns Script-scoped var names in source order, including repeats.
+    pub fn var_declarations(&self) -> Vec<BoundName<'_>> {
         let mut declarations = Vec::new();
         for statement in &self.statements {
             statement.collect_var_declarations(&mut declarations);
@@ -75,8 +75,8 @@ impl FunctionBody {
     pub fn function_declarations(&self) -> Vec<&Function> {
         functions_in(&self.statements)
     }
-    /// Returns function-scoped var declarations, excluding nested functions.
-    pub fn var_declarations(&self) -> Vec<&Binding> {
+    /// Returns function-scoped var names, excluding nested functions.
+    pub fn var_declarations(&self) -> Vec<BoundName<'_>> {
         let mut declarations = Vec::new();
         for statement in self.statements.iter() {
             statement.collect_var_declarations(&mut declarations);
@@ -114,9 +114,9 @@ pub struct Statement {
 }
 
 impl Statement {
-    pub(crate) fn collect_var_declarations<'a>(&'a self, declarations: &mut Vec<&'a Binding>) {
+    pub(crate) fn collect_var_declarations<'a>(&'a self, declarations: &mut Vec<BoundName<'a>>) {
         match &self.kind {
-            StatementKind::Var(bindings) => declarations.extend(bindings),
+            StatementKind::Var(bindings) => declarations.extend(variable_names(bindings)),
             StatementKind::Block(body) => {
                 for statement in body {
                     statement.collect_var_declarations(declarations);
@@ -140,14 +140,14 @@ impl Statement {
                 initializer, body, ..
             } => {
                 if let Some(ForInitializer::Var(bindings)) = initializer {
-                    declarations.extend(bindings);
+                    declarations.extend(variable_names(bindings));
                 }
                 body.collect_var_declarations(declarations);
             }
             StatementKind::ForOf { binding, body, .. }
             | StatementKind::ForIn { binding, body, .. } => {
                 if let ForBinding::Var(binding) = binding {
-                    declarations.push(binding);
+                    declarations.extend(variable_names(std::slice::from_ref(binding)));
                 }
                 body.collect_var_declarations(declarations);
             }
@@ -194,7 +194,7 @@ pub enum StatementKind {
     /// An ordinary function declaration; its syntax always has a name.
     Function(Rc<Function>),
     /// A variable declaration in the surrounding variable environment.
-    Var(Vec<Binding>),
+    Var(Vec<BindingElement>),
     /// A lexical declaration.
     Lexical {
         /// Whether bindings may be reassigned.
@@ -409,7 +409,7 @@ pub enum ForInitializer {
     /// An expression whose value is discarded.
     Expression(Expr),
     /// Variable declarations in the surrounding variable environment.
-    Var(Vec<Binding>),
+    Var(Vec<BindingElement>),
     /// A declaration in a new loop scope.
     Lexical {
         /// Whether bindings may be reassigned and are copied per iteration.
@@ -425,7 +425,7 @@ pub enum ForBinding {
     /// A reference evaluated anew after each iterator value is read.
     Assignment(Expr),
     /// A var binding in the surrounding variable environment, without initializer.
-    Var(Binding),
+    Var(BindingElement),
     /// A fresh lexical binding for each iteration, without initializer.
     Lexical {
         /// Whether the iteration binding may be reassigned.
@@ -453,6 +453,22 @@ pub struct Binding {
     pub span: Span,
     /// Initial value expression.
     pub initializer: Option<Expr>,
+}
+
+/// One decoded name from a declaration's BoundNames, retaining its source range.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct BoundName<'a> {
+    /// Identifier borrowed from its binding pattern.
+    pub name: &'a str,
+    /// Original identifier source range.
+    pub span: Span,
+}
+
+fn variable_names(bindings: &[BindingElement]) -> impl Iterator<Item = BoundName<'_>> {
+    bindings
+        .iter()
+        .flat_map(|binding| binding.pattern.bound_names())
+        .map(|(name, span)| BoundName { name, span })
 }
 
 /// An identifier formal parameter (15.2.3).

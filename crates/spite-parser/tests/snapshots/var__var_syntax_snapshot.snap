@@ -7,19 +7,27 @@ Script {
         Statement {
             kind: Var(
                 [
-                    Binding {
-                        name: "x",
-                        span: Span {
-                            start: 4,
-                            end: 5,
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
                         },
                         initializer: None,
                     },
-                    Binding {
-                        name: "y",
-                        span: Span {
-                            start: 7,
-                            end: 8,
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "y",
+                            ),
+                            span: Span {
+                                start: 7,
+                                end: 8,
+                            },
                         },
                         initializer: Some(
                             Expr {
@@ -48,11 +56,15 @@ Script {
                 initializer: Some(
                     Var(
                         [
-                            Binding {
-                                name: "i",
-                                span: Span {
-                                    start: 23,
-                                    end: 24,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "i",
+                                    ),
+                                    span: Span {
+                                        start: 23,
+                                        end: 24,
+                                    },
                                 },
                                 initializer: Some(
                                     Expr {
@@ -132,11 +144,15 @@ Script {
                 body: Statement {
                     kind: Var(
                         [
-                            Binding {
-                                name: "z",
-                                span: Span {
-                                    start: 46,
-                                    end: 47,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "z",
+                                    ),
+                                    span: Span {
+                                        start: 46,
+                                        end: 47,
+                                    },
                                 },
                                 initializer: Some(
                                     Expr {

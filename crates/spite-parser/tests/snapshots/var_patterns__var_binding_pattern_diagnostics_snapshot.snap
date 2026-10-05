@@ -1,0 +1,54 @@
+---
+source: crates/spite-parser/tests/var_patterns.rs
+expression: "[\"var [x];\", \"let x;var {a:x}={};\", \"try{}catch([x]){var {x}={};}\",\n\"'use strict';var {a:eval}={};\", \"for(var [x]=[] in {}) ;\",\n\"for(var [x,...rest,] of []) ;\",].map(|source|\nparse_script(source).unwrap_err())"
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 7,
+            end: 8,
+        },
+        message: "binding pattern requires an initializer",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 13,
+            end: 14,
+        },
+        message: "var declaration conflicts with lexical binding",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 21,
+            end: 22,
+        },
+        message: "catch parameter conflicts with var declaration",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 20,
+            end: 24,
+        },
+        message: "invalid binding in strict mode",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 12,
+            end: 14,
+        },
+        message: "for-in requires one binding without an initializer",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 18,
+            end: 19,
+        },
+        message: "expected ]",
+    },
+]

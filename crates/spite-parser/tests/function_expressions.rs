@@ -151,7 +151,7 @@ fn source_retention_and_var_collection_respect_function_boundaries() {
         script
             .var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["outer"]
     );
@@ -160,7 +160,7 @@ fn source_retention_and_var_collection_respect_function_boundaries() {
             .body
             .var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["inner"]
     );

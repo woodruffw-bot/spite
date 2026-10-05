@@ -80,8 +80,6 @@ fn pending_patterns_and_async_iteration_stay_unsupported() {
     for source in [
         "for([x] of []) ;",
         "for({x} of []) ;",
-        "for(var [x] of []) ;",
-        "for(var {x} of []) ;",
         "for await(x of []) ;",
     ] {
         assert_eq!(
@@ -100,10 +98,6 @@ fn pending_patterns_and_async_iteration_stay_unsupported() {
 #[test]
 fn var_declarations_include_headers_and_nested_bodies() {
     let script = parse_script("for(var x of []) {var y;} for(const a of []) {var z;}").unwrap();
-    let names: Vec<_> = script
-        .var_declarations()
-        .iter()
-        .map(|b| b.name.as_str())
-        .collect();
+    let names: Vec<_> = script.var_declarations().iter().map(|b| b.name).collect();
     assert_eq!(names, ["x", "y", "z"]);
 }

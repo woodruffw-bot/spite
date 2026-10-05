@@ -22,11 +22,15 @@ Script {
                             Statement {
                                 kind: Var(
                                     [
-                                        Binding {
-                                            name: "x",
-                                            span: Span {
-                                                start: 20,
-                                                end: 21,
+                                        BindingElement {
+                                            pattern: BindingPattern {
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 20,
+                                                    end: 21,
+                                                },
                                             },
                                             initializer: Some(
                                                 Expr {

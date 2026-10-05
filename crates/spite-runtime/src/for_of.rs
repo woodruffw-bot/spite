@@ -83,8 +83,7 @@ impl Realm {
                 result
             }
             ForBinding::Var(binding) => self
-                .resolve(&binding.name, binding.span)
-                .and_then(|reference| self.put(reference, value, binding.span))
+                .assign_pattern(&binding.pattern, value)
                 .and_then(|()| self.statement(body)),
             ForBinding::Assignment(target) => self
                 .reference(target)

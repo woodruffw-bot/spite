@@ -40,7 +40,7 @@ fn catch_parameters_have_a_separate_binding_scope() {
         script
             .var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["before", "inside", "after"]
     );

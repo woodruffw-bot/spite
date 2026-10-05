@@ -149,10 +149,12 @@ impl Parser {
             }
             ForInitializer::Var(mut bindings) => {
                 if bindings.len() != 1 {
-                    return Err(early(bindings[1].span, invalid_binding));
+                    return Err(early(bindings[1].pattern.span, invalid_binding));
                 }
                 if let Some(initializer) = &bindings[0].initializer {
-                    if is_of {
+                    if is_of
+                        || !matches!(bindings[0].pattern.kind, BindingPatternKind::Identifier(_))
+                    {
                         return Err(early(initializer.span, invalid_binding));
                     }
                 }

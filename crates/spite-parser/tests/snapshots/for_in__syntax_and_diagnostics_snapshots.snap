@@ -75,11 +75,15 @@ Script {
         Statement {
             kind: ForIn {
                 binding: Var(
-                    Binding {
-                        name: "x",
-                        span: Span {
-                            start: 36,
-                            end: 37,
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 36,
+                                end: 37,
+                            },
                         },
                         initializer: None,
                     },

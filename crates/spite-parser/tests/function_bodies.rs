@@ -123,7 +123,7 @@ fn script_and_function_var_lists_exclude_nested_functions() {
         script
             .var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["a"]
     );
@@ -140,7 +140,7 @@ fn script_and_function_var_lists_exclude_nested_functions() {
     assert_eq!(
         body.var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["b", "c"]
     );

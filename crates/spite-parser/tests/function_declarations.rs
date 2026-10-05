@@ -123,7 +123,7 @@ fn declaration_inventories_distinguish_functions_from_vars_and_nested_scopes() {
         script
             .var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["a"]
     );
@@ -139,7 +139,7 @@ fn declaration_inventories_distinguish_functions_from_vars_and_nested_scopes() {
     assert_eq!(
         body.var_declarations()
             .iter()
-            .map(|b| b.name.as_str())
+            .map(|b| b.name)
             .collect::<Vec<_>>(),
         ["b"]
     );

@@ -55,11 +55,15 @@ Script {
         Statement {
             kind: ForOf {
                 binding: Var(
-                    Binding {
-                        name: "v",
-                        span: Span {
-                            start: 28,
-                            end: 29,
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "v",
+                            ),
+                            span: Span {
+                                start: 28,
+                                end: 29,
+                            },
                         },
                         initializer: None,
                     },

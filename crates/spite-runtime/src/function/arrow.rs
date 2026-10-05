@@ -157,7 +157,7 @@ impl Realm {
             let variables = body.var_declarations();
             let declarations = variables
                 .iter()
-                .map(|binding| (binding.name.as_str(), binding.span))
+                .map(|binding| (binding.name, binding.span))
                 .chain(functions.iter().map(|function| {
                     let name = function.name.as_ref().expect("named declaration");
                     (name.name.as_str(), name.span)

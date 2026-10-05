@@ -65,7 +65,7 @@ function names, exact String/Symbol rest exclusions and live descriptors, primit
 and nullish sources, cached iterator methods, skipped elision value getters,
 normal/abrupt closing and nested throw precedence, captured scopes and collection,
 a 12,000-name pattern with ordinary unlimited defaults, and opted-in host aborts.
-Var declaration, function-parameter, and assignment patterns remain separate gaps.
+Function-parameter and assignment patterns remain separate gaps.
 The unchanged pinned corpus adds 77 catch-destructuring sources and five reviewed
 catch-parameter early errors: 142 harness-positive and 20 parse-negative variants.
 All 93 destructuring originals were reviewed; fourteen require generators and
@@ -96,6 +96,18 @@ diagnostics identify forbidden rest initializers or following elements at their
 original tokens. Both stable and MSRV pass the new 308 variants and the existing
 162 catch and 238 loop variants with ordinary unlimited defaults. Lexical loop
 pattern fixtures remain a separate review.
+
+Var declaration patterns now share the pattern engine while using ordered
+ResolveBinding/PutValue. Script/function hoisting collects every nested bound
+name, including repeats; statements and all synchronous loop declarations accept
+patterns. Six parser regressions and two inspected new insta snapshots cover
+grammar, missing initializers, strictness, every-name lexical/catch conflicts,
+VarDeclaredNames order, loop restrictions, and depth. Nine runtime regressions
+cover hoisting, repeated names, mapped arguments, RHS/reference order, computed
+keys, unscopables, references retained across source mutation, elisions, nested
+and rest bindings, strict writes and iterator closing, shared var loop scopes,
+partial writes and collection, early global conflicts, a 12,000-name pattern with
+ordinary unlimited defaults, and opt-in host aborts.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -873,8 +885,8 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, derived construction, classes, destructuring in var declarations,
-parameters and assignments, regular expressions, for-await-of, generators,
+Array.fromAsync, derived construction, classes, destructuring in parameters and
+assignments, regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral

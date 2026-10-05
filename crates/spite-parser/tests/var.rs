@@ -82,11 +82,7 @@ fn var_identifiers_and_initializers_obey_strict_mode() {
         );
     }
     for source in ["var [x] = y;", "var {x} = y;"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 
@@ -104,7 +100,7 @@ fn script_var_declarations_include_every_nested_statement_form_in_order() {
     let names: Vec<_> = script
         .var_declarations()
         .into_iter()
-        .map(|b| b.name.as_str())
+        .map(|b| b.name)
         .collect();
     assert_eq!(
         names,
