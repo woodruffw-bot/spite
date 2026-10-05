@@ -112,11 +112,15 @@ Script {
                                     kind: Arrow {
                                         parameters: [
                                             Ordinary(
-                                                Binding {
-                                                    name: "x",
-                                                    span: Span {
-                                                        start: 34,
-                                                        end: 35,
+                                                BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Identifier(
+                                                            "x",
+                                                        ),
+                                                        span: Span {
+                                                            start: 34,
+                                                            end: 35,
+                                                        },
                                                     },
                                                     initializer: None,
                                                 },

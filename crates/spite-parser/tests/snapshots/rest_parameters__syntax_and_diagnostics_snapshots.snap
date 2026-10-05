@@ -18,11 +18,15 @@ Script {
                     ),
                     parameters: [
                         Ordinary(
-                            Binding {
-                                name: "a",
-                                span: Span {
-                                    start: 11,
-                                    end: 12,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "a",
+                                    ),
+                                    span: Span {
+                                        start: 11,
+                                        end: 12,
+                                    },
                                 },
                                 initializer: Some(
                                     Expr {
@@ -41,11 +45,15 @@ Script {
                             },
                         ),
                         Rest(
-                            Binding {
-                                name: "rest",
-                                span: Span {
-                                    start: 18,
-                                    end: 22,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "rest",
+                                    ),
+                                    span: Span {
+                                        start: 18,
+                                        end: 22,
+                                    },
                                 },
                                 initializer: None,
                             },
@@ -106,21 +114,29 @@ Script {
                                 kind: Arrow {
                                     parameters: [
                                         Ordinary(
-                                            Binding {
-                                                name: "x",
-                                                span: Span {
-                                                    start: 45,
-                                                    end: 46,
+                                            BindingElement {
+                                                pattern: BindingPattern {
+                                                    kind: Identifier(
+                                                        "x",
+                                                    ),
+                                                    span: Span {
+                                                        start: 45,
+                                                        end: 46,
+                                                    },
                                                 },
                                                 initializer: None,
                                             },
                                         ),
                                         Rest(
-                                            Binding {
-                                                name: "xs",
-                                                span: Span {
-                                                    start: 50,
-                                                    end: 52,
+                                            BindingElement {
+                                                pattern: BindingPattern {
+                                                    kind: Identifier(
+                                                        "xs",
+                                                    ),
+                                                    span: Span {
+                                                        start: 50,
+                                                        end: 52,
+                                                    },
                                                 },
                                                 initializer: None,
                                             },
@@ -179,11 +195,15 @@ Script {
                                                         name: None,
                                                         parameters: [
                                                             Rest(
-                                                                Binding {
-                                                                    name: "values",
-                                                                    span: Span {
-                                                                        start: 66,
-                                                                        end: 72,
+                                                                BindingElement {
+                                                                    pattern: BindingPattern {
+                                                                        kind: Identifier(
+                                                                            "values",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 66,
+                                                                            end: 72,
+                                                                        },
                                                                     },
                                                                     initializer: None,
                                                                 },

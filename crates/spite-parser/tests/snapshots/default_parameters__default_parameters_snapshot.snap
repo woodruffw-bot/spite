@@ -11,11 +11,15 @@ Script {
                     kind: Arrow {
                         parameters: [
                             Ordinary(
-                                Binding {
-                                    name: "x",
-                                    span: Span {
-                                        start: 1,
-                                        end: 2,
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "x",
+                                        ),
+                                        span: Span {
+                                            start: 1,
+                                            end: 2,
+                                        },
                                     },
                                     initializer: Some(
                                         Expr {
@@ -34,11 +38,15 @@ Script {
                                 },
                             ),
                             Ordinary(
-                                Binding {
-                                    name: "y",
-                                    span: Span {
-                                        start: 8,
-                                        end: 9,
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "y",
+                                        ),
+                                        span: Span {
+                                            start: 8,
+                                            end: 9,
+                                        },
                                     },
                                     initializer: Some(
                                         Expr {
@@ -55,11 +63,15 @@ Script {
                                 },
                             ),
                             Ordinary(
-                                Binding {
-                                    name: "z",
-                                    span: Span {
-                                        start: 15,
-                                        end: 16,
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "z",
+                                        ),
+                                        span: Span {
+                                            start: 15,
+                                            end: 16,
+                                        },
                                     },
                                     initializer: None,
                                 },

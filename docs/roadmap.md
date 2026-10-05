@@ -103,6 +103,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add arrow block bodies, function-local declarations, strict directives, and return completions.
 - [x] Add default arrow parameters, ordered initialization, TDZ, and separate body var environments.
 - [x] Add identifier rest parameters with dense intrinsic Arrays, non-simple early errors, and unmapped arguments.
+- [x] Add function, arrow, method, and setter binding patterns with nested defaults, rest patterns, all-name early errors, and parameter-expression environments.
 - [x] Parse ordinary function expressions with shared parameters/bodies and function-specific early errors.
 - [x] Parse ordinary function declarations and validate Script/function versus block scope.
 - [x] Instantiate ordinary functions with metadata, prototype cycles, named-expression scopes, and declaration hoisting.

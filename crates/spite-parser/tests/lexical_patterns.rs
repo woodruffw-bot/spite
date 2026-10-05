@@ -122,7 +122,7 @@ fn bound_names_omit_property_keys_and_include_nested_and_rest_targets() {
 
 #[test]
 fn other_pattern_contexts_remain_explicitly_unsupported_and_depth_is_guarded() {
-    for source in ["function f({a}){}", "({a}=source);", "for([a] of []) ;"] {
+    for source in ["({a}=source);", "for([a] of []) ;"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

@@ -113,17 +113,10 @@ fn function_boundaries_reset_control_targets_and_grammar_restrictions() {
             "{source}"
         );
     }
-    for source in [
-        "(function*(){})",
-        "(function(...[a]){})",
-        "(function([a]){})",
-    ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
-    }
+    assert_eq!(
+        parse_script("(function*(){})").unwrap_err().kind,
+        DiagnosticKind::Unsupported
+    );
 }
 
 #[test]

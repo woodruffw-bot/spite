@@ -6,7 +6,7 @@ use crate::{
     object::DataDescriptor,
 };
 use spite_core::{JsString, Span};
-use spite_parser::ast::{ArrowBody, Function};
+use spite_parser::ast::{ArrowBody, Function, Parameter};
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Realm {
@@ -35,14 +35,12 @@ impl Realm {
             .parameters
             .iter()
             .any(|parameter| !parameter.is_simple());
-        let has_parameter_expressions = code
-            .parameters
-            .iter()
-            .any(|parameter| parameter.binding().initializer.is_some());
+        let has_parameter_expressions = code.parameters.iter().any(Parameter::contains_expression);
         let parameter_arguments = code
             .parameters
             .iter()
-            .any(|parameter| parameter.binding().name == "arguments");
+            .flat_map(|parameter| parameter.binding().pattern.bound_names())
+            .any(|(name, _)| name == "arguments");
         let body_arguments = body
             .statements()
             .iter()
@@ -61,21 +59,12 @@ impl Realm {
         // have no expressions; a parameter named arguments always suppresses it.
         let arguments_needed =
             !parameter_arguments && (has_parameter_expressions || !body_arguments);
-        let mut bindings = BTreeMap::new();
-        for parameter in code.parameters.iter() {
-            let parameter = parameter.binding();
-            self.object_work(parameter.span, |_, budget| {
-                budget.charge(parameter.name.len() + 1)
-            })?;
-            bindings.insert(
-                parameter.name.clone(),
-                BindingState {
-                    value: None,
-                    mutable: true,
-                    strict: true,
-                },
-            );
-        }
+        let mut bindings = self.pattern_bindings(
+            code.parameters
+                .iter()
+                .map(|parameter| &parameter.binding().pattern),
+            true,
+        )?;
         if arguments_needed {
             bindings.insert(
                 "arguments".into(),
@@ -254,7 +243,7 @@ impl Realm {
         let length = syntax
             .parameters
             .iter()
-            .take_while(|parameter| parameter.is_simple())
+            .take_while(|parameter| parameter.counts_toward_length())
             .count();
         self.define_builtin_property(
             &function,

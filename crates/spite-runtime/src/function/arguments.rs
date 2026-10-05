@@ -6,7 +6,7 @@ use crate::{
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
-use spite_parser::ast::Parameter;
+use spite_parser::ast::{BindingPatternKind, Parameter};
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Realm {
@@ -35,17 +35,20 @@ impl Realm {
                 "only simple lists have mapped arguments"
             );
             let parameter = parameter.binding();
-            self.object_work(parameter.span, |_, budget| {
-                budget.charge(parameter.name.len() + 1)
+            let BindingPatternKind::Identifier(name) = &parameter.pattern.kind else {
+                unreachable!("mapped arguments require identifier parameters")
+            };
+            self.object_work(parameter.pattern.span, |_, budget| {
+                budget.charge(name.len() + 1)
             })?;
             // A later duplicate suppresses every earlier occurrence, even when
             // the later parameter did not receive an argument (10.4.4.7).
-            if mapped.insert(parameter.name.as_str()) && index < arguments.len() {
+            if mapped.insert(name.as_str()) && index < arguments.len() {
                 let index = u32::try_from(index).map_err(|_| Error::Limit {
                     span,
                     message: "parameter index limit exceeded".into(),
                 })?;
-                names.insert(index, parameter.name.clone());
+                names.insert(index, name.clone());
             }
         }
         let Value::Object(handle) = &object else {

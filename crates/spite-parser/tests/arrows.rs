@@ -115,13 +115,7 @@ fn invalid_parameters_duplicate_names_and_strict_bindings_are_early_errors() {
 
 #[test]
 fn unimplemented_parameter_and_body_forms_remain_explicit_gaps() {
-    for source in [
-        "(...[xs])=>xs",
-        "([x])=>x",
-        "({x})=>x",
-        "async x=>x",
-        "async (x)=>x",
-    ] {
+    for source in ["async x=>x", "async (x)=>x"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,
@@ -136,7 +130,7 @@ fn arrow_diagnostics_snapshot() {
         "(x,x)=>x",
         "x\n=>x",
         "'use strict'; eval=>eval",
-        "(...[xs])=>xs",
+        "(...[xs],)=>xs",
     ]
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())

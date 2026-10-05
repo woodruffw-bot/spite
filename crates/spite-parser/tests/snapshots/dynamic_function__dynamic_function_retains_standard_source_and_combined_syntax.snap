@@ -14,11 +14,15 @@ Function {
     ),
     parameters: [
         Ordinary(
-            Binding {
-                name: "x",
-                span: Span {
-                    start: 19,
-                    end: 20,
+            BindingElement {
+                pattern: BindingPattern {
+                    kind: Identifier(
+                        "x",
+                    ),
+                    span: Span {
+                        start: 19,
+                        end: 20,
+                    },
                 },
                 initializer: Some(
                     Expr {
@@ -37,11 +41,15 @@ Function {
             },
         ),
         Rest(
-            Binding {
-                name: "rest",
-                span: Span {
-                    start: 29,
-                    end: 33,
+            BindingElement {
+                pattern: BindingPattern {
+                    kind: Identifier(
+                        "rest",
+                    ),
+                    span: Span {
+                        start: 29,
+                        end: 33,
+                    },
                 },
                 initializer: None,
             },

@@ -103,25 +103,29 @@ impl Parser {
         &mut self,
         invalid_name: &str,
         allow_default: bool,
-    ) -> Result<Binding, Diagnostic> {
-        if self.at("[") || self.at("{") {
-            return Err(self.unsupported("binding-pattern parameters are not implemented"));
-        }
-        let token = self.bump();
-        let Kind::Word(name) = token.kind else {
-            return Err(early(token.span, "invalid function parameter"));
+    ) -> Result<BindingElement, Diagnostic> {
+        let pattern = if self.at("[") || self.at("{") {
+            self.binding_pattern()?
+        } else {
+            let token = self.bump();
+            let Kind::Word(name) = token.kind else {
+                return Err(early(token.span, "invalid function parameter"));
+            };
+            if reserved(&name) {
+                return Err(early(token.span, invalid_name));
+            }
+            BindingPattern {
+                kind: BindingPatternKind::Identifier(name),
+                span: token.span,
+            }
         };
-        if reserved(&name) {
-            return Err(early(token.span, invalid_name));
-        }
         let initializer = if allow_default && self.eat("=") {
             Some(self.expression_with_in(2, true)?)
         } else {
             None
         };
-        Ok(Binding {
-            name,
-            span: token.span,
+        Ok(BindingElement {
+            pattern,
             initializer,
         })
     }
@@ -197,14 +201,13 @@ pub(super) fn validate_parameters(
     let mut names = BTreeSet::new();
     for parameter in parameters {
         let parameter = parameter.binding();
-        let duplicate = !names.insert(parameter.name.as_str());
-        if duplicate && (unique || strict || non_simple) {
-            return Err(early(parameter.span, "duplicate lexical binding"));
+        for (name, span) in parameter.pattern.bound_names() {
+            let duplicate = !names.insert(name);
+            if duplicate && (unique || strict || non_simple) {
+                return Err(early(span, "duplicate lexical binding"));
+            }
         }
-        validate_binding(parameter, strict)?;
-        if let Some(initializer) = &parameter.initializer {
-            validate_expr(initializer, strict)?;
-        }
+        binding::validate_element(parameter, strict)?;
     }
     Ok(names)
 }

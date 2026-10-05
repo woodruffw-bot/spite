@@ -64,11 +64,7 @@ fn defaults_require_parentheses_and_reject_duplicate_or_strictly_invalid_binding
         );
     }
     for source in ["(...[x])=>x", "([x]=[])=>x", "({x}={})=>x"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 

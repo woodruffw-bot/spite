@@ -18,11 +18,15 @@ Script {
                     ),
                     parameters: [
                         Ordinary(
-                            Binding {
-                                name: "x",
-                                span: Span {
-                                    start: 11,
-                                    end: 12,
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 11,
+                                        end: 12,
+                                    },
                                 },
                                 initializer: Some(
                                     Expr {

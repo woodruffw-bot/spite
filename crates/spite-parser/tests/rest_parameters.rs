@@ -64,13 +64,9 @@ fn rest_is_final_has_no_initializer_and_obeys_binding_rules() {
 }
 
 #[test]
-fn rest_patterns_remain_unsupported_and_nested_defaults_obey_depth_guards() {
+fn rest_patterns_parse_and_nested_defaults_obey_depth_guards() {
     for source in ["(...[a])=>a", "function f(...{a}){}", "({m(...[a]){}})"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
     let source = format!(
         "{}0{}",

@@ -1,11 +1,14 @@
-//! Arrow closures and function name inference.
+//! Arrow closures, shared formal binding initialization, and function name inference.
 
 use crate::{BindingState, CompletionKind, Error, Realm, Value, environment::EnvironmentHandle};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
     ArrowBody, Expr, ExprKind, FunctionBody, FunctionSource, Parameter, StatementKind,
 };
-use std::{collections::BTreeMap, rc::Rc};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    rc::Rc,
+};
 
 #[derive(Clone, Debug)]
 pub(crate) struct ScriptFunction {
@@ -43,7 +46,12 @@ impl Realm {
         self.define_builtin_property(
             &function,
             "length",
-            Value::Number(parameters.iter().take_while(|p| p.is_simple()).count() as f64),
+            Value::Number(
+                parameters
+                    .iter()
+                    .take_while(|p| p.counts_toward_length())
+                    .count() as f64,
+            ),
             false,
             span,
         )?;
@@ -63,22 +71,13 @@ impl Realm {
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        let mut bindings = BTreeMap::new();
-        for parameter in arrow.parameters.iter() {
-            let parameter = parameter.binding();
-            // All parameters begin uninitialized, including later defaults.
-            self.object_work(parameter.span, |_, budget| {
-                budget.charge(parameter.name.len() + 1)
-            })?;
-            bindings.insert(
-                parameter.name.clone(),
-                BindingState {
-                    value: None,
-                    mutable: true,
-                    strict: true,
-                },
-            );
-        }
+        let bindings = self.pattern_bindings(
+            arrow
+                .parameters
+                .iter()
+                .map(|parameter| &parameter.binding().pattern),
+            true,
+        )?;
         let environment = self.object_work(span, |objects, budget| {
             objects.create_environment(Some(arrow.environment), bindings, budget)
         })?;
@@ -105,30 +104,41 @@ impl Realm {
         arguments: &mut std::vec::IntoIter<Value>,
     ) -> Result<(), Error> {
         let environment = self.scopes.last().expect("parameter environment").clone();
+        let mut names = BTreeSet::new();
+        let mut duplicates = false;
+        for (name, _) in parameters
+            .iter()
+            .flat_map(|parameter| parameter.binding().pattern.bound_names())
+        {
+            duplicates |= !names.insert(name);
+        }
+        // 10.2.11: duplicate names only occur in simple, sloppy lists. Their
+        // bindings start at undefined and use assignment initialization.
+        if duplicates {
+            for name in names {
+                self.objects
+                    .environment_mut(&environment)
+                    .expect("parameter environment")
+                    .bindings
+                    .get_mut(name)
+                    .expect("parameter exists")
+                    .value = Some(Value::Undefined);
+            }
+        }
         for parameter in parameters {
             let binding = parameter.binding();
-            self.tick(binding.span)?;
+            self.tick(binding.pattern.span)?;
             let value = if matches!(parameter, Parameter::Rest(_)) {
-                self.create_array_from_list(arguments.by_ref(), binding.span)?
+                self.create_array_from_list(arguments.by_ref(), binding.pattern.span)?
             } else {
-                let mut value = arguments.next().unwrap_or(Value::Undefined);
-                if matches!(value, Value::Undefined) {
-                    if let Some(initializer) = &binding.initializer {
-                        // ECMA-262 8.6.3: defaults are evaluated left to right and name
-                        // anonymous functions only when the initializer is selected.
-                        value = self
-                            .named_expression(initializer, JsString::from(binding.name.as_str()))?;
-                    }
-                }
-                value
+                arguments.next().unwrap_or(Value::Undefined)
             };
-            self.objects
-                .environment_mut(&environment)
-                .expect("active environment")
-                .bindings
-                .get_mut(&binding.name)
-                .expect("parameter exists")
-                .value = Some(value);
+            if duplicates {
+                debug_assert!(parameter.is_simple());
+                self.assign_pattern(&binding.pattern, value)?;
+            } else {
+                self.initialize_binding_element(binding, value, &environment)?;
+            }
         }
         Ok(())
     }
@@ -140,11 +150,10 @@ impl Realm {
         span: Span,
     ) -> Result<(), Error> {
         let parameter_environment = self.scopes.last().expect("parameter environment").clone();
-        let separate = parameters
-            .iter()
-            .any(|parameter| parameter.binding().initializer.is_some());
+        let separate = parameters.iter().any(Parameter::contains_expression);
         if separate {
-            // ECMA-262 10.2.11: defaults cannot see body vars, even through closures.
+            // ECMA-262 10.2.11: pattern expressions cannot see body vars, even
+            // through closures created by defaults or computed property keys.
             self.push_scope(BTreeMap::new(), span)?;
         }
         let environment = self.scopes.last().expect("var environment").clone();

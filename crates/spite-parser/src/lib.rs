@@ -530,14 +530,14 @@ impl Parser {
             ExprKind::Function(function) => function
                 .parameters
                 .iter()
-                .filter_map(|p| p.binding().initializer.as_ref().map(|e| e.depth))
+                .map(Parameter::expression_depth)
                 .max()
                 .unwrap_or(0),
             ExprKind::Arrow {
                 parameters, body, ..
             } => parameters
                 .iter()
-                .filter_map(|p| p.binding().initializer.as_ref().map(|e| e.depth))
+                .map(Parameter::expression_depth)
                 .max()
                 .unwrap_or(0)
                 .max(match body {
@@ -1122,10 +1122,6 @@ fn validate_binding_names<'a>(
         binding::validate_pattern(&binding.pattern, strict)?;
     }
     Ok(())
-}
-
-fn validate_binding(binding: &Binding, strict: bool) -> Result<(), Diagnostic> {
-    validate_binding_name(&binding.name, binding.span, strict)
 }
 
 fn validate_binding_name(name: &str, span: Span, strict: bool) -> Result<(), Diagnostic> {

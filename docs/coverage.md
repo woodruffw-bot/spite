@@ -21,12 +21,12 @@ not an alternative language specification.
 | Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls, standard Function intrinsic graph/metadata/branding, strict/global/boxed receivers, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
-| Arrow functions | Expression/block bodies, identifier/default/rest parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
+| Arrow functions | Expression/block bodies, identifier/pattern/default/rest parameters, closures, local declarations, return completions, strict directives, name/length metadata, and source stringification |
 | Instance checks | instanceof for ordinary/bound functions with ordered prototype lookup; materialized Symbol.hasInstance and custom hooks tested through native symbol injection |
 | Construction | new with optional arguments and nested/member precedence, ordinary and bound constructors, prototype selection, object/primitive return rules, and ordered evaluation |
 | Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
 | Math | Fixed constants/tag, abs/sign, integral and binary32/binary16 rounding, extrema, clz32/imul, pow/sqrt/cbrt/hypot, logarithmic/exponential, trigonometric/hyperbolic methods, exact iterable sumPrecise, realm-specific random sequences, and complete own reflection |
-| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
+| Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/pattern/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
 | Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, non-strict with, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers and object/array binding patterns bind supported throws |
@@ -118,6 +118,17 @@ reviewed separately. Both stable and MSRV pass the 154 new variants, 308 lexical
 declaration variants, 162 catch variants, 238 loop variants, and 104 with/strict
 Function variants with the existing pin, helpers, and unlimited defaults. Var
 loop-pattern fixtures remain a separate review.
+
+Formal binding patterns now execute in ordinary functions, arrows, methods,
+setters, constructors, and dynamic Function compilation. Six parser regressions
+and two insta snapshots cover nested/rest grammar, all-name early errors,
+ContainsExpression versus top-level defaults, and native-depth diagnostics.
+Nine runtime regressions cover ordered binding/default evaluation, parameter
+TDZ, anonymous names, rest Arrays and observable iterator hooks, unmapped
+arguments and arguments-name suppression, length/source metadata, closures from
+computed keys and nested defaults, iterator close/error precedence, escaped
+partial initialization and collection, and a 12,000-name parameter pattern under
+ordinary unlimited defaults. The original parameter fixture review is separate.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -895,8 +906,8 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, derived construction, classes, destructuring in parameters and
-assignments, regular expressions, for-await-of, generators,
+Array.fromAsync, derived construction, classes, destructuring assignments,
+regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral

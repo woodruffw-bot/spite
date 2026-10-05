@@ -109,12 +109,7 @@ fn nested_patterns_use_the_existing_native_depth_guard() {
         parse_script(&source).unwrap_err().kind,
         DiagnosticKind::Limit
     );
-    for source in [
-        "function f([x]){}",
-        "([x]=source);",
-        "({x}=source);",
-        "for([x] of []) ;",
-    ] {
+    for source in ["([x]=source);", "({x}=source);", "for([x] of []) ;"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

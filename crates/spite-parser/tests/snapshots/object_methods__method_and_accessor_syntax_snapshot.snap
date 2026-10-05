@@ -27,11 +27,15 @@ Script {
                                                         name: None,
                                                         parameters: [
                                                             Ordinary(
-                                                                Binding {
-                                                                    name: "a",
-                                                                    span: Span {
-                                                                        start: 4,
-                                                                        end: 5,
+                                                                BindingElement {
+                                                                    pattern: BindingPattern {
+                                                                        kind: Identifier(
+                                                                            "a",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 4,
+                                                                            end: 5,
+                                                                        },
                                                                     },
                                                                     initializer: Some(
                                                                         Expr {
@@ -180,11 +184,15 @@ Script {
                                                         name: None,
                                                         parameters: [
                                                             Ordinary(
-                                                                Binding {
-                                                                    name: "v",
-                                                                    span: Span {
-                                                                        start: 56,
-                                                                        end: 57,
+                                                                BindingElement {
+                                                                    pattern: BindingPattern {
+                                                                        kind: Identifier(
+                                                                            "v",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 56,
+                                                                            end: 57,
+                                                                        },
                                                                     },
                                                                     initializer: None,
                                                                 },

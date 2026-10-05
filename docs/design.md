@@ -142,7 +142,7 @@ The complete String prototype property inventory uses ordinary ordered enumerati
 The Annex B initialized-var extension remains Unsupported in non-strict code and
 is a SyntaxError in strict code; it never changes the core binding algorithm.
 
-Arrow parsing supports non-async arrows with identifier parameters, optional
+Arrow parsing supports non-async arrows with binding parameters, optional
 defaults, and assignment-expression or block bodies (15.3). A bounded token lookahead refines the
 parenthesized parameter cover without changing ordinary parenthesized expressions.
 Parameters are unique in both modes, strict binding rules are inherited, and no
@@ -150,13 +150,13 @@ line terminator may precede the arrow. Expression bodies inherit the In grammar
 parameter; block bodies reset In and enable Return. Each function resets control
 targets and labels. Its directive prologue enables strict parameter/body checks,
 including legacy tokens before the directive and in nested functions. An own Use
-Strict Directive is forbidden with defaults, while inherited strictness is allowed.
+Strict Directive is forbidden with non-simple parameters, while inherited strictness is allowed.
 Defaults parse as AssignmentExpression with In enabled. Top-level
-lexical declarations cannot conflict with parameters (15.3.1). Pattern parameters
-and async arrows remain explicit gaps. Function source ranges share an owned source allocation and preserve exact
+lexical declarations cannot conflict with any parameter BoundName (15.3.1).
+Async arrows remain an explicit gap. Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
-Ordinary function expressions and declarations share the identifier parameter and
+Ordinary function expressions and declarations share the binding parameter and
 function-body parser with arrows (15.2). Names, parameters, bodies, and source text are retained.
 Only simple lists in non-strict ordinary functions permit duplicate parameters;
 strict or non-simple lists require unique names. A function's own strict directive
@@ -166,15 +166,17 @@ targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
 and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
-Generators, async functions, and patterns remain separate steps.
+Generators and async functions remain separate steps.
 
-Identifier rest parameters are final and have no initializer or trailing comma
-(15.2.3). They collect the remaining internal argument values into a fresh dense
+Rest parameters accept identifiers or nested patterns and are final, with no
+initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense
 intrinsic Array, without invoking JavaScript iterators, setters, species, or the
-global Array binding. Function length stops before the first default or rest
+global Array binding. A rest pattern then applies ordinary BindingInitialization
+to that Array, including observable iterator hooks for an array pattern.
+Function length counts whole patterns and stops before the first top-level default or rest
 parameter. Rest makes a parameter list non-simple, requiring unique names,
 rejecting an own Use Strict Directive, and selecting unmapped arguments. Parameter
-expressions separately determine whether body vars need their own environment
+expressions, including nested defaults and computed keys, separately determine whether body vars need their own environment
 and whether body declarations can suppress the arguments binding (10.2.11).
 All parameters, including rest, begin uninitialized; earlier defaults can capture
 rest but cannot read it before initialization. Rest arrays share object identities
@@ -321,7 +323,13 @@ Writes preserve strict errors, property setters, and mapped parameter aliases;
 abrupt binding writes close active iterators with incoming-throw precedence.
 Var loops retain one variable environment. Only identifier initialized for-in
 declarations are an optional Annex B form; initialized patterns are syntax errors.
-Patterns in parameters and assignment remain separate work.
+Formal parameters reuse these patterns with all names instantiated before any
+initialization. Duplicate names are permitted only in simple, sloppy ordinary
+lists; those bindings begin at undefined and use assignment initialization.
+Every pattern makes the list non-simple and selects unmapped arguments, even
+when it contains no expressions. ContainsExpression traverses nested defaults
+and computed keys independently of top-level HasInitializer and ExpectedArgumentCount
+(15.1). Assignment patterns remain separate work.
 
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.
@@ -1044,9 +1052,9 @@ FormalParameters text and line-feed-delimited FunctionBody as separate goals.
 Neither input can terminate a wrapper or complete an unterminated comment in the
 other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
-ranges and retained source belong to that combined allocation. Identifier/default/
+ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported binding patterns, classes, generator/async functions,
+function context. Unsupported classes, generator/async functions,
 and native-stack exhaustion remain separate diagnostic categories. This UTF-8
 parser entry point supplies ordinary runtime string compilation.
 
@@ -1693,9 +1701,10 @@ Finally may replace a language completion, but cannot intercept host failures.
 Parameters begin uninitialized and initialize left to right. A default runs only
 for an undefined argument, with anonymous function name inference (8.6.3).
 Parameter expressions cannot see body declarations, including through captured
-closures. When defaults are present, body vars get a separate environment and
+closures. When nested defaults, computed keys, or top-level defaults are present,
+body vars get a separate environment and
 same-named vars copy the initialized parameter value (10.2.11). Function length
-counts parameters before the first default (15.1.5). Partial initialization and
+counts parameters before the first top-level default or rest (15.1.5). Partial initialization and
 escaped default closures remain traced after an abrupt completion.
 
 Ordinary function objects share code/source and environment capture storage with

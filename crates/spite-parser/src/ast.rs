@@ -47,7 +47,7 @@ pub struct FunctionName {
 pub struct Function {
     /// Binding name, absent for anonymous expressions, methods, and accessors.
     pub name: Option<FunctionName>,
-    /// Identifier parameters, including defaults and an optional final rest parameter.
+    /// Binding parameters, including defaults and an optional final rest pattern.
     pub parameters: Rc<[Parameter]>,
     /// Shared function body syntax.
     pub body: FunctionBody,
@@ -351,6 +351,38 @@ impl BindingPattern {
         }
         names
     }
+
+    fn expression_depth(&self) -> usize {
+        let mut pending = vec![self];
+        let mut depth = 0;
+        while let Some(pattern) = pending.pop() {
+            match &pattern.kind {
+                BindingPatternKind::Identifier(_) => {}
+                BindingPatternKind::Object { properties, rest } => {
+                    for property in properties {
+                        if let PropertyName::Computed(expression) = &property.key {
+                            depth = depth.max(expression.depth);
+                        }
+                        if let Some(expression) = &property.element.initializer {
+                            depth = depth.max(expression.depth);
+                        }
+                        pending.push(&property.element.pattern);
+                    }
+                    pending.extend(rest.as_deref());
+                }
+                BindingPatternKind::Array { elements, rest } => {
+                    for element in elements.iter().flatten() {
+                        if let Some(expression) = &element.initializer {
+                            depth = depth.max(expression.depth);
+                        }
+                        pending.push(&element.pattern);
+                    }
+                    pending.extend(rest.as_deref());
+                }
+            }
+        }
+        depth
+    }
 }
 
 /// The syntax of a binding identifier or pattern.
@@ -444,17 +476,6 @@ pub struct Label {
     pub span: Span,
 }
 
-/// A binding identifier and optional initializer.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Binding {
-    /// Binding identifier.
-    pub name: String,
-    /// Identifier source range.
-    pub span: Span,
-    /// Initial value expression.
-    pub initializer: Option<Expr>,
-}
-
 /// One decoded name from a declaration's BoundNames, retaining its source range.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BoundName<'a> {
@@ -471,18 +492,18 @@ fn variable_names(bindings: &[BindingElement]) -> impl Iterator<Item = BoundName
         .map(|(name, span)| BoundName { name, span })
 }
 
-/// An identifier formal parameter (15.2.3).
+/// A formal parameter with an identifier or destructuring binding pattern (15.1).
 #[derive(Clone, Debug, PartialEq)]
 pub enum Parameter {
     /// A parameter with an optional default initializer.
-    Ordinary(Binding),
+    Ordinary(BindingElement),
     /// The final parameter, collecting remaining arguments without an initializer.
-    Rest(Binding),
+    Rest(BindingElement),
 }
 
 impl Parameter {
-    /// Returns the parameter's binding identifier and any default initializer.
-    pub fn binding(&self) -> &Binding {
+    /// Returns the parameter's binding target and any top-level initializer.
+    pub fn binding(&self) -> &BindingElement {
         match self {
             Self::Ordinary(binding) | Self::Rest(binding) => binding,
         }
@@ -490,7 +511,28 @@ impl Parameter {
 
     /// Whether this is an ordinary identifier without a default initializer.
     pub fn is_simple(&self) -> bool {
+        matches!(self, Self::Ordinary(binding) if binding.initializer.is_none()
+            && matches!(binding.pattern.kind, BindingPatternKind::Identifier(_)))
+    }
+
+    /// Whether this parameter has a default or computed key anywhere in its pattern.
+    pub fn contains_expression(&self) -> bool {
+        self.expression_depth() != 0
+    }
+
+    /// Whether this parameter contributes to length before the first default or rest.
+    pub fn counts_toward_length(&self) -> bool {
         matches!(self, Self::Ordinary(binding) if binding.initializer.is_none())
+    }
+
+    pub(crate) fn expression_depth(&self) -> usize {
+        let binding = self.binding();
+        binding.pattern.expression_depth().max(
+            binding
+                .initializer
+                .as_ref()
+                .map_or(0, |expression| expression.depth),
+        )
     }
 }
 
@@ -626,7 +668,7 @@ pub enum ExprKind {
     },
     /// An ordinary function expression with optional local name.
     Function(Rc<Function>),
-    /// A non-async arrow with identifier parameters and optional defaults.
+    /// A non-async arrow with binding parameters and optional defaults.
     Arrow {
         /// Parameters in source order, with optional default-value initializers.
         parameters: Rc<[Parameter]>,

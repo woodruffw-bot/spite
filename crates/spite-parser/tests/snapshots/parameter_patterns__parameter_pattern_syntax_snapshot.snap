@@ -1,0 +1,200 @@
+---
+source: crates/spite-parser/tests/parameter_patterns.rs
+expression: "parse_script(\"function f({[key]:[x=1],...rest}={},...[y]){return x+y;}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    name: Some(
+                        FunctionName {
+                            name: "f",
+                            span: Span {
+                                start: 9,
+                                end: 10,
+                            },
+                        },
+                    ),
+                    parameters: [
+                        Ordinary(
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Object {
+                                        properties: [
+                                            BindingProperty {
+                                                key: Computed(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "key",
+                                                        ),
+                                                        span: Span {
+                                                            start: 13,
+                                                            end: 16,
+                                                        },
+                                                    },
+                                                ),
+                                                element: BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Array {
+                                                            elements: [
+                                                                Some(
+                                                                    BindingElement {
+                                                                        pattern: BindingPattern {
+                                                                            kind: Identifier(
+                                                                                "x",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 19,
+                                                                                end: 20,
+                                                                            },
+                                                                        },
+                                                                        initializer: Some(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: Literal(
+                                                                                    Number(
+                                                                                        1.0,
+                                                                                    ),
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 21,
+                                                                                    end: 22,
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            rest: None,
+                                                        },
+                                                        span: Span {
+                                                            start: 18,
+                                                            end: 23,
+                                                        },
+                                                    },
+                                                    initializer: None,
+                                                },
+                                            },
+                                        ],
+                                        rest: Some(
+                                            BindingPattern {
+                                                kind: Identifier(
+                                                    "rest",
+                                                ),
+                                                span: Span {
+                                                    start: 27,
+                                                    end: 31,
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 11,
+                                        end: 32,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Object(
+                                            [],
+                                        ),
+                                        span: Span {
+                                            start: 33,
+                                            end: 35,
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                        Rest(
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Array {
+                                        elements: [
+                                            Some(
+                                                BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Identifier(
+                                                            "y",
+                                                        ),
+                                                        span: Span {
+                                                            start: 40,
+                                                            end: 41,
+                                                        },
+                                                    },
+                                                    initializer: None,
+                                                },
+                                            ),
+                                        ],
+                                        rest: None,
+                                    },
+                                    span: Span {
+                                        start: 39,
+                                        end: 42,
+                                    },
+                                },
+                                initializer: None,
+                            },
+                        ),
+                    ],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Binary(
+                                                Add,
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "x",
+                                                    ),
+                                                    span: Span {
+                                                        start: 51,
+                                                        end: 52,
+                                                    },
+                                                },
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "y",
+                                                    ),
+                                                    span: Span {
+                                                        start: 53,
+                                                        end: 54,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 51,
+                                                end: 54,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 44,
+                                    end: 55,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function f({[key]:[x=1],...rest}={},...[y]){return x+y;}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 56,
+            },
+        },
+    ],
+    strict: false,
+}
