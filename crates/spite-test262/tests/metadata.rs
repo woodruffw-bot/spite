@@ -221,6 +221,16 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
             assert!(!meta.has_flag("raw"));
             assert!(meta.negative.is_none());
         }
+        if fields[0] == "script-runtime-error" {
+            assert!(!meta.has_flag("raw"));
+            assert_eq!(
+                meta.negative,
+                Some(Negative {
+                    phase: Phase::Runtime,
+                    error_type: "SyntaxError".into()
+                })
+            );
+        }
         if fields[0] == "raw-syntax-error" {
             assert_eq!(
                 meta.negative,
@@ -232,6 +242,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 5260);
+    assert_eq!(count, 5317);
     assert_eq!(harness_count, 8);
 }

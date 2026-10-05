@@ -83,7 +83,9 @@ impl CorpusReport {
 /// Runs entries from `runner.tsv` using unchanged files beneath `upstream/`.
 ///
 /// Each row has path, reviewed start/end byte offsets, and exact diagnostic text.
-/// Positive rows use `-` for all three review fields. `REVISION` declares the pin;
+/// Executed rows, including runtime negatives, use `-` for all three review fields.
+/// Runtime negatives match their original metadata's exception type and phase.
+/// `REVISION` declares the pin;
 /// run `tools/check-test262.py` to verify fixture bytes against the digest manifest.
 /// Invalid manifests and I/O failures abort the corpus rather than skipping files.
 pub fn run_corpus(root: &Path) -> io::Result<CorpusReport> {
