@@ -2364,5 +2364,10 @@ non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
 methods return "Invalid Date". Finite local/legacy string operations, local zone
 resolution, numeric calendar construction and calendar setters remain explicit
-Unsupported. Pending numeric constructors still perform ordered argument
-conversions, including later abrupt completions after earlier NaN results.
+Unsupported. UTC hour/minute/second/millisecond setters capture the time value
+before ordered argument conversion and retain omitted fields from that captured
+instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
+For a captured NaN time, all present arguments still convert before returning
+NaN without writing the slot; conversion hooks may have installed a valid time.
+Pending numeric constructors still perform ordered argument conversions,
+including later abrupt completions after earlier NaN results.

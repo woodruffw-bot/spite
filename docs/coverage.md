@@ -534,6 +534,15 @@ The focused review read 177 whole programs: fourteen still require pending Date
 operations and one requires the unchanged helper's global own-key enumeration.
 Those files remain outside the corpus. The eight harness helpers and existing pin
 are unchanged; this is not a complete Date suite review.
+UTC time setters now cover hours, minutes, seconds and milliseconds with captured
+time-value semantics, once-only ordered conversions, omitted versus explicit
+undefined fields, negative/calendar-boundary rollover, TimeClip endpoints,
+floating-point cancellation and non-finite inputs. Regressions exercise hooks
+that mutate the Date, including invalid dates revived during conversion, later
+abrupt completions and ignored excess arguments; recursive conversion hooks
+remain subject to the existing native-stack guard.
+An independent reference check matched Node's UTC setter return values and final
+timestamps for 4,289 random, range-boundary, non-finite and cancellation cases.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

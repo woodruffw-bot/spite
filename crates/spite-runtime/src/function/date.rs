@@ -6,7 +6,10 @@ use crate::{
 };
 use spite_core::{
     JsString, Span, WellKnownSymbol,
-    date::{UtcDateTime, format_iso_date_time, parse_date_time_string, time_clip},
+    date::{
+        MS_PER_DAY, UtcDateTime, format_iso_date_time, make_date, make_time,
+        parse_date_time_string, time_clip,
+    },
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -435,6 +438,15 @@ impl Realm {
                 self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
                 Ok(Value::Number(value))
             }
+            Method::SetUtcHours
+            | Method::SetUtcMinutes
+            | Method::SetUtcSeconds
+            | Method::SetUtcMilliseconds => {
+                let Value::Object(object) = this else {
+                    unreachable!("Date brand");
+                };
+                self.date_set_utc_time(method, object, time, arguments, span)
+            }
             Method::ToIsoString => {
                 if time.is_nan() {
                     return Err(Self::exception(
@@ -495,6 +507,54 @@ impl Realm {
                 "Date calendar mutation and local/legacy string operations",
             )),
         }
+    }
+
+    // 21.4.4.29–30, 31 and 33: capture [[DateValue]] before any conversion.
+    // A previously invalid Date returns NaN after converting all present
+    // arguments and does not overwrite a value installed by a conversion hook.
+    #[inline(never)]
+    fn date_set_utc_time(
+        &mut self,
+        method: Method,
+        object: ObjectHandle,
+        time: f64,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let start = match method {
+            Method::SetUtcHours => 0,
+            Method::SetUtcMinutes => 1,
+            Method::SetUtcSeconds => 2,
+            Method::SetUtcMilliseconds => 3,
+            _ => unreachable!("UTC time setter"),
+        };
+        let mut converted = [None; 4];
+        converted[start] = Some(self.number(arguments.next().unwrap_or(Value::Undefined), span)?);
+        for (slot, argument) in converted[start + 1..].iter_mut().zip(arguments) {
+            *slot = Some(self.number(argument, span)?);
+        }
+        if time.is_nan() {
+            return Ok(Value::Number(f64::NAN));
+        }
+        let previous = UtcDateTime::from_time_value(time as i64).expect("clipped Date value");
+        let mut fields = [
+            f64::from(previous.hour),
+            f64::from(previous.minute),
+            f64::from(previous.second),
+            f64::from(previous.millisecond),
+        ];
+        for (field, converted) in fields.iter_mut().zip(converted) {
+            if let Some(value) = converted {
+                *field = value;
+            }
+        }
+        let day = (time as i64).div_euclid(MS_PER_DAY) as f64;
+        let value = time_clip(make_date(
+            day,
+            make_time(fields[0], fields[1], fields[2], fields[3]),
+        ));
+        self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
+        Ok(Value::Number(value))
     }
 
     fn date_string_work(&mut self, length: usize, span: Span) -> Result<(), Error> {
