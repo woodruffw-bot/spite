@@ -98,13 +98,9 @@ fn malformed_elements_and_nested_strict_violations_are_syntax_errors() {
 }
 
 #[test]
-fn spread_and_assignment_patterns_are_not_counted_as_syntax_errors() {
+fn spread_and_assignment_patterns_parse() {
     for source in ["[x]=a", "([]=a)"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
     insta::assert_debug_snapshot!(parse_script("[...x]").unwrap());
 }

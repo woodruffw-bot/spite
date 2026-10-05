@@ -424,6 +424,125 @@ pub struct BindingElement {
     pub initializer: Option<Expr>,
 }
 
+/// An object or array destructuring assignment pattern (13.15.5).
+#[derive(Clone, Debug, PartialEq)]
+pub struct AssignmentPattern {
+    /// Ordered assignment operations.
+    pub kind: AssignmentPatternKind,
+    /// Source range of the complete pattern.
+    pub span: Span,
+}
+
+/// Destructuring assignment operations, retaining elisions and final rest targets.
+#[derive(Clone, Debug, PartialEq)]
+pub enum AssignmentPatternKind {
+    /// Ordered property reads and an optional final rest reference.
+    Object {
+        /// Properties in source order.
+        properties: Vec<AssignmentProperty>,
+        /// Reference receiving a fresh ordinary object.
+        rest: Option<Box<Expr>>,
+    },
+    /// Ordered iterator elements and an optional final rest reference or pattern.
+    Array {
+        /// None consumes an iterator step without reading its value.
+        elements: Vec<Option<AssignmentElement>>,
+        /// Target receiving a fresh intrinsic Array.
+        rest: Option<AssignmentTarget>,
+    },
+}
+
+/// A reference or nested pattern receiving a destructured value.
+#[derive(Clone, Debug, PartialEq)]
+pub enum AssignmentTarget {
+    /// Identifier or property reference, with parentheses retained.
+    Reference(Box<Expr>),
+    /// A nested object or array assignment pattern.
+    Pattern(Box<AssignmentPattern>),
+}
+
+impl AssignmentTarget {
+    /// Source range of the reference or nested pattern.
+    pub fn span(&self) -> Span {
+        match self {
+            Self::Reference(expression) => expression.span,
+            Self::Pattern(pattern) => pattern.span,
+        }
+    }
+}
+
+/// One destructuring assignment target and its optional default expression.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AssignmentElement {
+    /// Target evaluated before reading the source value unless it is a pattern.
+    pub target: AssignmentTarget,
+    /// Evaluated only when the corresponding value is undefined.
+    pub initializer: Option<Expr>,
+}
+
+/// One property in an object assignment pattern.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AssignmentProperty {
+    /// Literal or computed property key.
+    pub key: PropertyName,
+    /// Target and optional default expression.
+    pub element: AssignmentElement,
+}
+
+impl AssignmentPattern {
+    pub(crate) fn expression_depth(&self) -> usize {
+        fn target_depth<'a>(
+            target: &'a AssignmentTarget,
+            offset: usize,
+            depth: &mut usize,
+            pending: &mut Vec<(&'a AssignmentPattern, usize)>,
+        ) {
+            match target {
+                AssignmentTarget::Reference(expression) => {
+                    *depth = (*depth).max(offset + expression.depth)
+                }
+                AssignmentTarget::Pattern(pattern) => pending.push((pattern.as_ref(), offset + 1)),
+            }
+        }
+        let mut pending = vec![(self, 0)];
+        let mut depth = 0;
+        while let Some((pattern, offset)) = pending.pop() {
+            match &pattern.kind {
+                AssignmentPatternKind::Object { properties, rest } => {
+                    for property in properties {
+                        target_depth(&property.element.target, offset, &mut depth, &mut pending);
+                    }
+                    if let Some(rest) = rest {
+                        depth = depth.max(offset + rest.depth);
+                    }
+                    for property in properties {
+                        if let PropertyName::Computed(key) = &property.key {
+                            depth = depth.max(offset + key.depth);
+                        }
+                        if let Some(initializer) = &property.element.initializer {
+                            depth = depth.max(offset + initializer.depth);
+                        }
+                    }
+                }
+                AssignmentPatternKind::Array { elements, rest } => {
+                    for element in elements.iter().flatten() {
+                        target_depth(&element.target, offset, &mut depth, &mut pending);
+                    }
+                    if let Some(rest) = rest {
+                        target_depth(rest, offset, &mut depth, &mut pending);
+                    }
+                    for element in elements.iter().flatten() {
+                        if let Some(initializer) = &element.initializer {
+                            depth = depth.max(offset + initializer.depth);
+                        }
+                    }
+                }
+            }
+        }
+        depth
+    }
+}
+
 /// A switch clause and its statement list.
 #[derive(Clone, Debug, PartialEq)]
 pub struct SwitchClause {
@@ -456,6 +575,8 @@ pub enum ForInitializer {
 pub enum ForBinding {
     /// A reference evaluated anew after each iterator value is read.
     Assignment(Expr),
+    /// A destructuring assignment evaluated anew for each iteration value.
+    Pattern(AssignmentPattern),
     /// A var binding in the surrounding variable environment, without initializer.
     Var(BindingElement),
     /// A fresh lexical binding for each iteration, without initializer.
@@ -668,6 +789,13 @@ pub enum ExprKind {
     },
     /// An ordinary function expression with optional local name.
     Function(Rc<Function>),
+    /// An assignment whose value is the original RHS after destructuring writes.
+    DestructuringAssign {
+        /// Object or array assignment pattern.
+        pattern: Box<AssignmentPattern>,
+        /// Evaluated before any target reference, key, or default.
+        value: Box<Expr>,
+    },
     /// A non-async arrow with binding parameters and optional defaults.
     Arrow {
         /// Parameters in source order, with optional default-value initializers.

@@ -89,6 +89,9 @@ impl Realm {
                 .reference(target)
                 .and_then(|reference| self.put(reference, value, target.span))
                 .and_then(|()| self.statement(body)),
+            ForBinding::Pattern(pattern) => self
+                .destructuring_assignment(pattern, value)
+                .and_then(|()| self.statement(body)),
         }
     }
 }

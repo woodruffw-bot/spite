@@ -57,6 +57,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.
+- [x] Parse/evaluate object and array destructuring assignments and synchronous for-in/of assignment heads, with nested/default/rest patterns, retained member references, ordered writes, and iterator closing.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
 - [x] Instantiate Script vars and execute variable statements and for headers.

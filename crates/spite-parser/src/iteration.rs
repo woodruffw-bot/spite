@@ -53,6 +53,31 @@ impl Parser {
             return Err(self.unsupported("for-await-of is not implemented"));
         }
         self.expect("(")?;
+        if let Some(end) = self.pattern_cover_end() {
+            if self.tokens.get(end + 1).is_some_and(|token| {
+                !token.escaped
+                    && matches!(&token.kind, Kind::Word(name) if name == "in" || name == "of")
+            }) {
+                let binding = ForBinding::Pattern(self.assignment_pattern()?);
+                let is_of = self.eat("of");
+                if !is_of {
+                    self.expect("in")?;
+                }
+                let expression = self.expression_with_in(if is_of { 2 } else { 1 }, true)?;
+                self.expect(")")?;
+                return Ok(Box::new(if is_of {
+                    ForHeader::Of {
+                        binding,
+                        iterable: expression,
+                    }
+                } else {
+                    ForHeader::In {
+                        binding,
+                        object: expression,
+                    }
+                }));
+            }
+        }
         let header_start = self.current().clone();
         let initializer = if self.at(";") {
             None
@@ -133,9 +158,6 @@ impl Parser {
         };
         match initializer.expect("in/of follows a parsed header") {
             ForInitializer::Expression(expression) => {
-                if matches!(expression.kind, ExprKind::Array(_) | ExprKind::Object(_)) {
-                    return Err(self.unsupported("assignment patterns are not implemented"));
-                }
                 // 14.7.5 grammar excludes leading let and the bare async-of form.
                 if (is_of
                     && !header_start.escaped

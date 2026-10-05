@@ -338,7 +338,32 @@ lists; those bindings begin at undefined and use assignment initialization.
 Every pattern makes the list non-simple and selects unmapped arguments, even
 when it contains no expressions. ContainsExpression traverses nested defaults
 and computed keys independently of top-level HasInitializer and ExpectedArgumentCount
-(15.1). Assignment patterns remain separate work.
+(15.1).
+
+AssignmentPattern has its own AST for identifier/member references and nested
+patterns (13.15.5). Refine an object/array cover only when the complete outer
+literal is followed by assignment or a for-in/of delimiter. Ordinary literals
+retain their own grammar. Rest must be final without a comma or initializer;
+array rest may target another pattern, while object rest requires a reference.
+Repeated names are allowed. Strict targets and computed/default expressions
+receive ordinary early-error validation. Assignment evaluates the RHS first and
+returns its original value. Synchronous loop assignment heads use the same walker.
+Keyed assignment converts the source key, evaluates a simple target reference,
+reads GetV, evaluates an undefined-only default, then writes PutValue. Nested
+patterns evaluate their targets after that source read. Array references evaluate
+before IteratorStepValue, including after exhaustion; elisions skip value reads.
+Rest references evaluate before copying or consuming the source. Edition-17
+EvaluatePropertyAccessWithExpressionKey retains a computed target's raw key;
+RequireObjectCoercible and ToPropertyKey occur at PutValue after source/default
+effects (13.3.3.1, 6.2.5.6). Retaining references preserves base-object and resolved
+environment identities across mutations. Anonymous defaults infer names only
+for IdentifierReference targets. Object rest uses ordered CopyDataProperties with
+exact String/Symbol exclusions and own data definitions; array rest builds a
+dense intrinsic Array before nested assignment. Partial writes survive later
+failures. Active iterators close on normal completion and language throws with
+incoming-throw precedence; failed steps mark completion and skip closing. Host
+aborts skip JavaScript cleanup. Nested patterns share the native-stack guard;
+flat patterns retain ordinary unlimited defaults.
 
 An engine owns realms, environments, execution contexts, and the object heap.
 Lexical bindings distinguish uninitialized from undefined and preserve mutability.
@@ -935,7 +960,7 @@ Elisions assign length at their position; the final initializer assigns length
 after all elements, even if spreading crosses the Array index boundary. Convert
 large element indices through Number before stringifying property names. Native
 index arithmetic remains checked, with no default work or output quota. Array
-assignment patterns remain Unsupported until their semantics exist.
+assignment uses the distinct AssignmentPattern semantics described above.
 
 The `Objects` heap context validates prototype handles and prevents ordinary
 prototype cycles. Get, HasProperty, Set, and SetPrototypeOf traverse iteratively

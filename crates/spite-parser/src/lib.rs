@@ -2,6 +2,7 @@
 
 mod array;
 mod arrow;
+mod assignment_pattern;
 pub mod ast;
 mod binding;
 mod construction;
@@ -548,6 +549,9 @@ impl Parser {
             ExprKind::Binary(_, a, b)
             | ExprKind::Assign(a, b)
             | ExprKind::CompoundAssign(_, a, b) => a.depth.max(b.depth),
+            ExprKind::DestructuringAssign { pattern, value } => {
+                pattern.expression_depth().max(value.depth)
+            }
             ExprKind::Member(base, name) => base.depth.max(match name {
                 PropertyName::Computed(key) => key.depth,
                 PropertyName::Literal(_) => 0,
@@ -639,9 +643,27 @@ impl Parser {
     }
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
         let mut left = if minimum <= 2 {
-            match self.arrow_expression()? {
-                Some(arrow) => arrow,
-                None => self.prefix()?,
+            if self.pattern_cover_end().is_some_and(|end| {
+                self.tokens
+                    .get(end + 1)
+                    .is_some_and(|token| token.kind == Kind::Punct("="))
+            }) {
+                let pattern = self.assignment_pattern()?;
+                self.expect("=")?;
+                let value = self.expression(2)?;
+                let span = Span::new(pattern.span.start, value.span.end);
+                self.make_expr(
+                    ExprKind::DestructuringAssign {
+                        pattern: Box::new(pattern),
+                        value: Box::new(value),
+                    },
+                    span,
+                )?
+            } else {
+                match self.arrow_expression()? {
+                    Some(arrow) => arrow,
+                    None => self.prefix()?,
+                }
             }
         } else {
             self.prefix()?
@@ -778,12 +800,6 @@ impl Parser {
             }
             let assignment_op = compound_assignment(&self.current().kind);
             if minimum <= 2 && (self.at("=") || assignment_op.is_some()) {
-                if assignment_op.is_none() && matches!(left.kind, ExprKind::Array(_)) {
-                    return Err(self.unsupported("array assignment patterns are not implemented"));
-                }
-                if assignment_op.is_none() && matches!(left.kind, ExprKind::Object(_)) {
-                    return Err(self.unsupported("object assignment patterns are not implemented"));
-                }
                 self.bump();
                 if !assignment_target(&left) {
                     return Err(early(left.span, "invalid assignment target"));
@@ -1373,6 +1389,9 @@ fn validate_statement<'a>(
                     }
                     validate_expr(target, strict)?;
                 }
+                ForBinding::Pattern(pattern) => {
+                    assignment_pattern::validate_pattern(pattern, strict)?
+                }
                 ForBinding::Var(binding) => {
                     binding::validate_pattern(&binding.pattern, strict)?;
                     if let Some(initializer) = &binding.initializer {
@@ -1609,6 +1628,10 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 return Err(early(expr.span, "invalid assignment in strict mode"));
             }
             validate_expr(target, strict)?;
+            validate_expr(value, strict)?;
+        }
+        ExprKind::DestructuringAssign { pattern, value } => {
+            assignment_pattern::validate_pattern(pattern, strict)?;
             validate_expr(value, strict)?;
         }
         ExprKind::Member(base, name) => {

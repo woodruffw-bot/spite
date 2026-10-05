@@ -4,6 +4,7 @@
 #[path = "../tests/common/mod.rs"]
 mod test_support;
 
+mod assignment_pattern;
 mod binding;
 mod environment;
 mod for_in;
@@ -1276,6 +1277,11 @@ impl Realm {
                 let reference = self.reference(target)?;
                 let value = self.assignment_expression(target, right)?;
                 self.put(reference, value.clone(), expr.span)?;
+                value
+            }
+            ExprKind::DestructuringAssign { pattern, value } => {
+                let value = self.expression(value)?;
+                self.destructuring_assignment(pattern, value.clone())?;
                 value
             }
             ExprKind::CompoundAssign(op, target, right) => {

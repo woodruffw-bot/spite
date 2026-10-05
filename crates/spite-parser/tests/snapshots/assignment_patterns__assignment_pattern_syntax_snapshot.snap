@@ -1,0 +1,258 @@
+---
+source: crates/spite-parser/tests/assignment_patterns.rs
+expression: "parse_script(\"({[key]:[obj.x=1,...xs],x=2,...obj.rest}=source);for([x] of rows) ;\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 5,
+                    kind: Parenthesized(
+                        Expr {
+                            depth: 4,
+                            kind: DestructuringAssign {
+                                pattern: AssignmentPattern {
+                                    kind: Object {
+                                        properties: [
+                                            AssignmentProperty {
+                                                key: Computed(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "key",
+                                                        ),
+                                                        span: Span {
+                                                            start: 3,
+                                                            end: 6,
+                                                        },
+                                                    },
+                                                ),
+                                                element: AssignmentElement {
+                                                    target: Pattern(
+                                                        AssignmentPattern {
+                                                            kind: Array {
+                                                                elements: [
+                                                                    Some(
+                                                                        AssignmentElement {
+                                                                            target: Reference(
+                                                                                Expr {
+                                                                                    depth: 2,
+                                                                                    kind: Member(
+                                                                                        Expr {
+                                                                                            depth: 1,
+                                                                                            kind: Identifier(
+                                                                                                "obj",
+                                                                                            ),
+                                                                                            span: Span {
+                                                                                                start: 9,
+                                                                                                end: 12,
+                                                                                            },
+                                                                                        },
+                                                                                        Literal(
+                                                                                            String(
+                                                                                                "x",
+                                                                                            ),
+                                                                                        ),
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 9,
+                                                                                        end: 14,
+                                                                                    },
+                                                                                },
+                                                                            ),
+                                                                            initializer: Some(
+                                                                                Expr {
+                                                                                    depth: 1,
+                                                                                    kind: Literal(
+                                                                                        Number(
+                                                                                            1.0,
+                                                                                        ),
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 15,
+                                                                                        end: 16,
+                                                                                    },
+                                                                                },
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                ],
+                                                                rest: Some(
+                                                                    Reference(
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Identifier(
+                                                                                "xs",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 20,
+                                                                                end: 22,
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            },
+                                                            span: Span {
+                                                                start: 8,
+                                                                end: 23,
+                                                            },
+                                                        },
+                                                    ),
+                                                    initializer: None,
+                                                },
+                                            },
+                                            AssignmentProperty {
+                                                key: Literal(
+                                                    String(
+                                                        "x",
+                                                    ),
+                                                ),
+                                                element: AssignmentElement {
+                                                    target: Reference(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Identifier(
+                                                                "x",
+                                                            ),
+                                                            span: Span {
+                                                                start: 24,
+                                                                end: 25,
+                                                            },
+                                                        },
+                                                    ),
+                                                    initializer: Some(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Literal(
+                                                                Number(
+                                                                    2.0,
+                                                                ),
+                                                            ),
+                                                            span: Span {
+                                                                start: 26,
+                                                                end: 27,
+                                                            },
+                                                        },
+                                                    ),
+                                                },
+                                            },
+                                        ],
+                                        rest: Some(
+                                            Expr {
+                                                depth: 2,
+                                                kind: Member(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Identifier(
+                                                            "obj",
+                                                        ),
+                                                        span: Span {
+                                                            start: 31,
+                                                            end: 34,
+                                                        },
+                                                    },
+                                                    Literal(
+                                                        String(
+                                                            "rest",
+                                                        ),
+                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 31,
+                                                    end: 39,
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 1,
+                                        end: 40,
+                                    },
+                                },
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "source",
+                                    ),
+                                    span: Span {
+                                        start: 41,
+                                        end: 47,
+                                    },
+                                },
+                            },
+                            span: Span {
+                                start: 1,
+                                end: 47,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 48,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 49,
+            },
+        },
+        Statement {
+            kind: ForOf {
+                binding: Pattern(
+                    AssignmentPattern {
+                        kind: Array {
+                            elements: [
+                                Some(
+                                    AssignmentElement {
+                                        target: Reference(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 54,
+                                                    end: 55,
+                                                },
+                                            },
+                                        ),
+                                        initializer: None,
+                                    },
+                                ),
+                            ],
+                            rest: None,
+                        },
+                        span: Span {
+                            start: 53,
+                            end: 56,
+                        },
+                    },
+                ),
+                iterable: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "rows",
+                    ),
+                    span: Span {
+                        start: 60,
+                        end: 64,
+                    },
+                },
+                body: Statement {
+                    kind: Empty,
+                    span: Span {
+                        start: 66,
+                        end: 67,
+                    },
+                },
+            },
+            span: Span {
+                start: 49,
+                end: 67,
+            },
+        },
+    ],
+    strict: false,
+}

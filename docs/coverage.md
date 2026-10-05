@@ -16,7 +16,7 @@ not an alternative language specification.
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
-| Expressions | Primitive, object, and array literals, untagged/tagged templates with substitutions, identifiers, this, parentheses, simple and compound assignment, prefix/postfix updates, conditional/comma expressions and optional property/call chains |
+| Expressions | Primitive, object, and array literals, untagged/tagged templates with substitutions, identifiers, this, parentheses, simple/compound and object/array destructuring assignment, prefix/postfix updates, conditional/comma expressions and optional property/call chains |
 | Arrays | Calls/new, of, from, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
@@ -72,7 +72,7 @@ function names, exact String/Symbol rest exclusions and live descriptors, primit
 and nullish sources, cached iterator methods, skipped elision value getters,
 normal/abrupt closing and nested throw precedence, captured scopes and collection,
 a 12,000-name pattern with ordinary unlimited defaults, and opted-in host aborts.
-Function-parameter and assignment patterns remain separate gaps.
+Formal and assignment patterns use the implementations described below.
 The unchanged pinned corpus adds 77 catch-destructuring sources and five reviewed
 catch-parameter early errors: 142 harness-positive and 20 parse-negative variants.
 All 93 destructuring originals were reviewed; fourteen require generators and
@@ -148,6 +148,20 @@ with the original eight onlyStrict flags preserved. Both stable and MSRV pass
 these variants plus 921 catch, declaration, and Function control variants under
 the existing pin, helpers, and unlimited defaults. Method/setter parameter and
 other formal rest fixtures remain separate reviews.
+
+Destructuring assignments now support object/array patterns, nested/default/rest
+targets, repeated names, member references, and synchronous for-in/of assignment
+heads. Six parser regressions and two inspected insta snapshots cover supplemental
+cover refinement, ordinary literal grammar, strict and invalid targets, rest
+restrictions, grammar parameters, unavailable syntax, and native depth. Nine
+runtime regressions cover RHS identity, ordered reference/GetV/step/default/write
+effects, edition-17 deferred target-key conversion, retained references across
+source mutation and with lookup, dense array rest, exact object rest exclusions
+and live descriptors, default function names, partial writes and strict errors,
+nested iterator closing and incoming-throw precedence, outer loop closing,
+collection, a 12,000-name pattern under ordinary unlimited defaults, and opted-in
+host aborts without JavaScript cleanup. Original assignment fixtures remain a
+separate review and commit.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -669,8 +683,7 @@ and checks both safe-integer and Array length bounds before copying. It reads
 retained elements in ascending order and supports full-width source indices
 when deletion shrinks the output to a valid Array length.
 ToReversed/with create intrinsic arrays with dense own elements, skip constructor
-lookup, and preserve ordered live reads. With never reads its replaced index. Array
-assignment patterns remain pending.
+lookup, and preserve ordered live reads. With never reads its replaced index.
 Map/filter validate callbacks before ArraySpeciesCreate, which consults constructor
 and Symbol.species only for genuine Arrays. Null/undefined species select an
 intrinsic Array; custom constructors receive one Number length (source length
@@ -925,7 +938,7 @@ exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
 Native String RegExp fallbacks,
-Array.fromAsync, derived construction, classes, destructuring assignments,
+Array.fromAsync, derived construction, classes,
 regular expressions, for-await-of, generators,
 async functions, promises, modules, standard library objects, String eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.

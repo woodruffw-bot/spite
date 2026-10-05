@@ -76,14 +76,12 @@ fn invalid_targets_declarations_and_lexical_conflicts_are_syntax_errors() {
 }
 
 #[test]
-fn binding_patterns_and_annex_b_initializers_remain_unsupported() {
-    for source in ["for({x} in {}) ;", "for(var x=1 in {}) ;"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
-    }
+fn patterns_parse_and_annex_b_initializers_remain_unsupported() {
+    assert!(parse_script("for({x} in {}) ;").is_ok());
+    assert_eq!(
+        parse_script("for(var x=1 in {}) ;").unwrap_err().kind,
+        DiagnosticKind::Unsupported
+    );
     let source = format!("{};", "for(let x in {}) ".repeat(MAX_DEPTH * 2));
     assert_eq!(
         parse_script(&source).unwrap_err().kind,
