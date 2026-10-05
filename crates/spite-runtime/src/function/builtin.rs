@@ -16,6 +16,16 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::Eval => {
+                // PerformEval (19.2.1.1) returns non-String input unchanged,
+                // before compilation or environment creation, for both forms.
+                let value = arguments.next().unwrap_or(Value::Undefined);
+                if matches!(value, Value::String(_)) {
+                    Err(Self::unsupported(span, "String eval is not implemented"))
+                } else {
+                    Ok(value)
+                }
+            }
             Builtin::Set => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

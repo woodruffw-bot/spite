@@ -69,6 +69,7 @@ impl Realm {
         self.define_builtin_property(&object, "Number", Value::Object(number), true, span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         let global_functions = [
+            ("eval", intrinsics.eval.clone()),
             ("parseFloat", intrinsics.number.parse_float.clone()),
             ("parseInt", intrinsics.number.parse_int.clone()),
             ("isFinite", intrinsics.is_finite.clone()),

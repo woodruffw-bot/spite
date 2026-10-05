@@ -40,6 +40,7 @@ pub(crate) use bound::BoundFunction;
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
     Function,
+    Eval,
     EncodeUri,
     EncodeUriComponent,
     DecodeUri,
@@ -568,6 +569,7 @@ impl Builtin {
             Self::EncodeUriComponent => "encodeURIComponent",
             Self::DecodeUri => "decodeURI",
             Self::DecodeUriComponent => "decodeURIComponent",
+            Self::Eval => "eval",
         }
     }
 
@@ -725,6 +727,7 @@ impl Builtin {
             | Self::NumberIsSafeInteger
             | Self::IsFinite
             | Self::IsNaN
+            | Self::Eval
             | Self::EncodeUri
             | Self::EncodeUriComponent
             | Self::DecodeUri
@@ -811,6 +814,7 @@ impl Callable {
 pub(super) struct Intrinsics {
     pub object: object::ObjectIntrinsics,
     pub errors: error::ErrorIntrinsics,
+    pub eval: ObjectHandle,
     pub is_finite: ObjectHandle,
     pub is_nan: ObjectHandle,
     pub encode_uri: ObjectHandle,
@@ -845,6 +849,7 @@ pub(super) struct Intrinsics {
 impl Intrinsics {
     pub fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
         [
+            &self.eval,
             &self.is_finite,
             &self.is_nan,
             &self.encode_uri,
@@ -1004,6 +1009,7 @@ impl Realm {
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
         let bigint = self.bigint_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
+        let eval = self.new_builtin(&function_prototype, Builtin::Eval, span)?;
         let is_finite = self.new_builtin(&function_prototype, Builtin::IsFinite, span)?;
         let is_nan = self.new_builtin(&function_prototype, Builtin::IsNaN, span)?;
         let encode_uri = self.new_builtin(&function_prototype, Builtin::EncodeUri, span)?;
@@ -1039,6 +1045,7 @@ impl Realm {
         self.intrinsics = Some(Intrinsics {
             object,
             errors,
+            eval,
             is_finite,
             is_nan,
             encode_uri,

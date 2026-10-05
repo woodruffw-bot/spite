@@ -1617,8 +1617,7 @@ fn reference_expression(expr: &Expr) -> bool {
 fn standard_global(name: &str) -> bool {
     matches!(
         name,
-        "eval"
-            | "Date"
+        "Date"
             | "RegExp"
             | "Int8Array"
             | "Uint8Array"

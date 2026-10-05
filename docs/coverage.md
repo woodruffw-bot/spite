@@ -34,6 +34,7 @@ not an alternative language specification.
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
 | Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
+| Eval | Standard intrinsic metadata and global binding, non-String identity return without coercion; String compilation/execution remains Unsupported |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
@@ -43,6 +44,12 @@ not an alternative language specification.
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
+
+Five eval regressions cover non-String primitives and object identity without
+conversion, direct/indirect and call/apply/bound calls, metadata/descriptors,
+construction rejection after argument effects, global preservation/replacement
+and deletion, shadowing, collection, and String Unsupported results that bypass
+JavaScript handlers. Eval-specific String environments remain open.
 
 With statements now use live Object Environment Records (14.11, 9.1.1.2).
 Four parser regressions and two inspected insta snapshots cover grammar, strict
@@ -920,7 +927,7 @@ tests distinguish heap owners and reused generations while deduplicating clones.
 Native String RegExp fallbacks,
 Array.fromAsync, derived construction, classes, destructuring assignments,
 regular expressions, for-await-of, generators,
-async functions, promises, modules, standard library objects, eval, agents, shared
+async functions, promises, modules, standard library objects, String eval, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral
 Numbers exactly, and accepts Boolean/BigInt/integer-string values through ToBigInt.
@@ -952,7 +959,7 @@ evaluation. Replacing/deleting globalThis does not change the realm's this ident
 The process-wide Symbol registry has no default identity or text quota and never
 evicts entries. Opted-in work/output quotas and platform capacity failures are
 host limits and preserve prior registrations.
-Realm initialization creates 308 retained entries outside per-Script work
+Realm initialization creates 309 retained entries outside per-Script work
 accounting; opted-in allocation/property quotas still apply.
 Built-in error categories are represented in Rust. Catch clauses without a parameter handle language throws and built-in
 exceptions. Catch binding identifiers now parse with scope and strict-mode early

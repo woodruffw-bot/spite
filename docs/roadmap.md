@@ -97,6 +97,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Implement object coercion hooks and primitive wrapper constructors/prototypes.
 - [x] Route coercion through realms and reject ordinary objects without callable conversion methods.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
+- [x] Expose the eval intrinsic with standard metadata, global binding behavior, and the non-String identity branch of PerformEval.
+- [ ] Implement String eval compilation, declaration instantiation, and direct/indirect execution environments.
 - [x] Store declarative environments in the traced heap with stable identity and outer links.
 - [x] Parse expression-bodied arrows with simple parameters, early errors, and exact source text.
 - [x] Execute arrow closures with shared bindings, names, metadata, and source stringification.

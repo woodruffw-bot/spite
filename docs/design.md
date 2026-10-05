@@ -83,7 +83,16 @@ and update targets, rejects ungrouped optional constructors and direct tagged
 chains even across line breaks, and leaves grouped calls/construction/tags legal.
 Flat steps do not consume recursive syntax depth; runtime traversal is iterative.
 Host quotas remain opt-in, with no default chain, work, or heap allowance.
-Private fields, super, async contexts, and eval await their own implementations.
+Private fields, super, async contexts, and String eval await their own implementations.
+
+The eval intrinsic is a non-constructible built-in function with standard name,
+length, prototype, and global property attributes (19.2.1). PerformEval returns
+non-String input unchanged before coercion, compilation, or scope creation
+(19.2.1.1). This applies to direct and indirect calls, including boxed Strings.
+String input reports Unsupported until compilation and eval-specific declaration
+and environment rules exist. Global declarations preserve the intrinsic value;
+ordinary assignment can replace it, and deletion follows configurable-property
+semantics. The retained intrinsic remains a collection root after replacement.
 
 Tagged templates parse as call/member expressions with unconverted substitution
 arguments (13.3.11). Validate each tag and substitution in its surrounding strict
