@@ -39,7 +39,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 7038 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 7346 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -87,6 +87,15 @@ ordered mixed declarations, named defaults, primitive receivers/rest, skipped
 elision getters and iterator closing, immutable names, arguments shadowing,
 per-iteration closures, partial initialization and captured TDZs across collection,
 global conflict checks, a 12,000-name default pattern, and opted-in host aborts.
+The unchanged pinned corpus adds 154 lexical declaration pattern sources: 284
+harness-positive and 24 reviewed parse-negative variants. All 186 let/const
+destructuring originals were reviewed; 28 require generators and four require
+classes and remain excluded as whole files without credit. Exact let/const pair
+comparison and upstream Git blob hashes verify the original bytes. Negative
+diagnostics identify forbidden rest initializers or following elements at their
+original tokens. Both stable and MSRV pass the new 308 variants and the existing
+162 catch and 238 loop variants with ordinary unlimited defaults. Lexical loop
+pattern fixtures remain a separate review.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -1050,8 +1059,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 7038 variants are four raw positives, 6805 positives using the upstream
-harness, and 229 reviewed parse negatives. Component fixtures and harness files do
+Rust. Its 7346 variants are four raw positives, 7089 positives using the upstream
+harness, and 253 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol
