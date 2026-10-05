@@ -89,6 +89,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add the handle heap, explicit roots, tracing, and collection.
 - [x] Add bounded generational storage with checked heap identity and slot reuse.
 - [x] Add iterative tracing with explicit roots and failure-before-sweep guarantees.
+- [x] Trace object-key ephemerons iteratively without retaining weak keys or unreachable conditional cycles.
 - [ ] Root interpreter temporaries, environments, intrinsics, and host-held object values.
 - [x] Add checked host-root tokens with clone/drop lifetimes and bounded registry reuse.
 - [x] Add object identity values and trace object-valued data properties, including cycles.

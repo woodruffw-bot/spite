@@ -5,6 +5,7 @@
 //! Allocation never performs implicit collection.
 
 use std::{
+    collections::HashMap,
     fmt,
     hash::{Hash, Hasher},
     rc::Rc,
@@ -84,6 +85,18 @@ impl std::error::Error for Error {}
 pub trait Trace {
     /// Returns each inspected field, without cloning handles or mutating the graph.
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>>;
+
+    /// Returns weak keys and their conditionally retained values.
+    ///
+    /// These entries do not retain their keys. A reachable container retains a
+    /// value only when its key is independently reachable; `None` denotes a
+    /// primitive value. Stale keys are ignored, while foreign keys and active
+    /// invalid value handles fail collection before sweeping. Each iterator
+    /// step must perform bounded work. Do not also yield these entries from
+    /// [`Self::trace`].
+    fn ephemerons(&self) -> impl Iterator<Item = (&Handle, Option<&Handle>)> {
+        std::iter::empty()
+    }
 }
 
 /// The result of a completed mark-and-sweep collection.
@@ -93,7 +106,7 @@ pub struct Collection {
     pub reclaimed: usize,
     /// Number of values remaining reachable from the supplied roots.
     pub live: usize,
-    /// Work units consumed by slot scans, roots, values, and traced fields.
+    /// Work used by slot scans, roots, values, fields, and activated ephemerons.
     pub work_used: usize,
 }
 
@@ -230,8 +243,9 @@ impl<T: Trace> Heap<T> {
     /// Collects values unreachable from the explicitly supplied roots.
     ///
     /// Traversal is iterative, so cycles and deep graphs do not use Rust recursion.
-    /// All roots and reached edges are validated before sweeping. A work-limit or
-    /// handle error leaves every value and generation unchanged. Handle variables
+    /// All roots, strong edges and active ephemeron values are validated before
+    /// sweeping; stale weak keys are ignored. A work-limit, capacity or handle
+    /// error leaves every value and generation unchanged. Handle variables
     /// outside this root list do not automatically keep their values alive.
     pub fn collect<'a>(
         &mut self,
@@ -245,14 +259,34 @@ impl<T: Trace> Heap<T> {
             &mut remaining,
             self.slots.len().checked_mul(2).ok_or(Error::Limit)?,
         )?;
-        let mut marked = vec![false; self.slots.len()];
+        // Every live slot could become free. Reserve that growth before any
+        // removal so the final sweep needs no allocator calls.
+        self.free
+            .try_reserve(self.live)
+            .map_err(|_| Error::Capacity)?;
+        let mut marked = Vec::new();
+        marked
+            .try_reserve_exact(self.slots.len())
+            .map_err(|_| Error::Capacity)?;
+        marked.resize(self.slots.len(), false);
         let mut pending = Vec::new();
+        // Index waiting values by key slot. Each ephemeron is inspected and
+        // activated at most once, including reverse-ordered chains. Neither a
+        // waiting edge nor its Handle identity token keeps the key alive.
+        // https://262.ecma-international.org/17.0/#sec-weakmap-objects
+        let mut waiting: HashMap<usize, Vec<&Handle>> = HashMap::new();
         for root in roots {
             charge(&mut remaining, 1)?;
             self.mark(root, &mut marked, &mut pending)?;
         }
         while let Some(index) = pending.pop() {
             charge(&mut remaining, 1)?;
+            if let Some(values) = waiting.remove(&index) {
+                for value in values {
+                    charge(&mut remaining, 1)?;
+                    self.mark(value, &mut marked, &mut pending)?;
+                }
+            }
             let value = self.slots[index]
                 .value
                 .as_ref()
@@ -263,7 +297,27 @@ impl<T: Trace> Heap<T> {
                     self.mark(edge, &mut marked, &mut pending)?;
                 }
             }
+            for (key, edge) in value.ephemerons() {
+                charge(&mut remaining, 1)?;
+                let key = match self.index(key) {
+                    Ok(index) => index,
+                    Err(Error::StaleHandle) => continue,
+                    Err(error) => return Err(error),
+                };
+                if let Some(edge) = edge {
+                    if marked[key] {
+                        charge(&mut remaining, 1)?;
+                        self.mark(edge, &mut marked, &mut pending)?;
+                    } else {
+                        waiting.try_reserve(1).map_err(|_| Error::Capacity)?;
+                        let values = waiting.entry(key).or_default();
+                        values.try_reserve(1).map_err(|_| Error::Capacity)?;
+                        values.push(edge);
+                    }
+                }
+            }
         }
+        drop(waiting);
         let before = self.live;
         for (index, reached) in marked.into_iter().enumerate() {
             if !reached && self.slots[index].value.is_some() {
@@ -285,6 +339,7 @@ impl<T: Trace> Heap<T> {
     ) -> Result<(), Error> {
         let index = self.index(handle)?;
         if !marked[index] {
+            pending.try_reserve(1).map_err(|_| Error::Capacity)?;
             marked[index] = true;
             pending.push(index);
         }

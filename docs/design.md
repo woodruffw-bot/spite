@@ -527,8 +527,9 @@ contains no object data or graph edges and does not make the object a GC root.
 This makes heaps single-threaded, permits moving a heap without invalidating its
 handles, and rejects cross-heap handles without a global identity counter.
 
-Slots have a fixed host-configured upper bound. Reuse increments the generation;
-a generation that cannot increment retires its slot permanently. Every access
+Slots have an optional host-configured upper bound. Reuse increments the
+generation; a generation that cannot increment retires its slot permanently.
+Every access
 checks heap identity, generation, and occupancy. Heap-owned values cannot be
 reached through stale handles, including after slot reuse.
 
@@ -538,6 +539,14 @@ tracing sees a foreign/stale handle or exceeds its budget, return without sweepi
 Trace iterators yield an optional handle for each inspected field, including
 primitive-valued fields, so a scan cannot evade its budget by filtering out all
 non-reference properties. Deep object graphs use an explicit work stack.
+Reachable containers can additionally enumerate weak-key ephemerons. Waiting
+values are indexed by validated key slots and activated once when those keys
+become reachable. Activated values can expose further keys and containers;
+unreachable conditional cycles do not root themselves. Stale weak keys are
+ignored across generation reuse. Foreign keys and invalid active values abort
+before sweeping. Ephemeron inspections and activations consume caller-selected
+collection work; scratch and sweep free-list allocations are checked before
+removal. WeakMap's JavaScript intrinsics and Symbol-key reachability remain pending.
 Allocation initially never invokes collection implicitly. Before integrating
 collection into evaluation, explicitly root environment bindings, intrinsics,
 pending completions, suspended frames, expression temporaries, and host-held

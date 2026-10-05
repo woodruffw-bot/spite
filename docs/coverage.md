@@ -461,9 +461,19 @@ global now exposes the retained intrinsic with standard attributes. Thirty-four
 reviewed Symbol files exercise construction, identity, boxing, registry access,
 descriptions, branded methods, and conversion hooks through the upstream harness.
 
-The `spite-heap` foundation provides capacity-bounded generational storage,
-checked cross-heap identity, stale-handle rejection, and bounded iterative
-collection from explicit roots. Handle or budget failures occur before sweeping.
+The `spite-heap` foundation provides generational storage with opt-in capacity
+limits, checked cross-heap identity, stale-handle rejection, and bounded iterative
+collection from explicit roots. Handle, work or allocation failures occur before
+sweeping. Ephemeron entries retain values only through reachable containers and
+keys; waiting values are indexed by validated key slots and activated once.
+Unreachable conditional cycles remain collectible, and stale weak keys cannot
+activate reused slots. Nine heap regressions cover all root combinations, value
+back-edges, reverse 20,000-key chains, newly activated containers/strong edges,
+primitive values, invalid handles, and every work failure during delayed
+activation. Scratch state and sweep free-list growth use checked reservations
+before removing any values. Runtime WeakMap intrinsics and Symbol-key reachability
+remain pending; corpus inventories, runtime defaults and native guards are
+unchanged.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
