@@ -786,6 +786,8 @@ pub enum ExprKind {
     Parenthesized(Box<Expr>),
     /// A dotted or computed property reference.
     Member(Box<Expr>, PropertyName),
+    /// A property reference through the enclosing method's home-object prototype.
+    SuperProperty(PropertyName),
     /// A call with an ordered list of ordinary and spread arguments.
     Call {
         /// Expression whose value is called; references retain their receiver.

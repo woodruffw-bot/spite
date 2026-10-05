@@ -104,12 +104,7 @@ fn function_source_includes_the_method_name_and_accessor_prefix() {
 
 #[test]
 fn unimplemented_method_dependencies_remain_explicit() {
-    for source in [
-        "({*m(){}})",
-        "({async m(){}})",
-        "({async *m(){}})",
-        "({m(){return super.x;}})",
-    ] {
+    for source in ["({*m(){}})", "({async m(){}})", "({async *m(){}})"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

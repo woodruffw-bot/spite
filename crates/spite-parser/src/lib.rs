@@ -610,6 +610,10 @@ impl Parser {
                 PropertyName::Computed(key) => key.depth,
                 PropertyName::Literal(_) => 0,
             }),
+            ExprKind::SuperProperty(name) => match name {
+                PropertyName::Computed(key) => key.depth,
+                PropertyName::Literal(_) => 0,
+            },
             ExprKind::Call { callee, arguments } => arguments
                 .iter()
                 .map(|argument| argument.expression().depth)
@@ -679,6 +683,28 @@ impl Parser {
             ));
         }
         Ok(Expr { kind, span, depth })
+    }
+
+    fn member_property_name(&mut self) -> Result<PropertyName, Diagnostic> {
+        Ok(if self.eat(".") {
+            let token = self.bump();
+            let name = match token.kind {
+                Kind::Word(name) => JsString::from(name.as_str()),
+                Kind::Literal(Literal::Null) => JsString::from("null"),
+                Kind::Literal(Literal::Boolean(value)) => {
+                    JsString::from(if value { "true" } else { "false" })
+                }
+                _ => {
+                    return Err(early(token.span, "expected an identifier name after dot"));
+                }
+            };
+            PropertyName::Literal(Literal::String(name))
+        } else {
+            self.expect("[")?;
+            let key = self.expression_with_in(1, true)?;
+            self.expect("]")?;
+            PropertyName::Computed(Box::new(key))
+        })
     }
 
     fn expression(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
@@ -761,25 +787,7 @@ impl Parser {
                     }
                     return Err(self.error("property access requires a left-hand-side expression"));
                 }
-                let property = if self.eat(".") {
-                    let token = self.bump();
-                    let name = match token.kind {
-                        Kind::Word(name) => JsString::from(name.as_str()),
-                        Kind::Literal(Literal::Null) => JsString::from("null"),
-                        Kind::Literal(Literal::Boolean(value)) => {
-                            JsString::from(if value { "true" } else { "false" })
-                        }
-                        _ => {
-                            return Err(early(token.span, "expected an identifier name after dot"));
-                        }
-                    };
-                    PropertyName::Literal(Literal::String(name))
-                } else {
-                    self.expect("[")?;
-                    let key = self.expression_with_in(1, true)?;
-                    self.expect("]")?;
-                    PropertyName::Computed(Box::new(key))
-                };
+                let property = self.member_property_name()?;
                 let span = Span::new(left.span.start, self.tokens[self.index - 1].span.end);
                 left = if matches!(left.kind, ExprKind::OptionalChain { .. }) {
                     self.append_chain_step(
@@ -1002,11 +1010,9 @@ impl Parser {
                 // context, but ordinary functions and indirect eval do not.
                 if self.at(".") || self.at("[") {
                     if self.allow_super_property {
-                        Err(Diagnostic::new(
-                            DiagnosticKind::Unsupported,
-                            span,
-                            "super property access is not implemented",
-                        ))
+                        let name = self.member_property_name()?;
+                        let span = Span::new(span.start, self.tokens[self.index - 1].span.end);
+                        self.make_expr(ExprKind::SuperProperty(name), span)
                     } else {
                         Err(early(span, "super property access outside a method"))
                     }
@@ -1038,7 +1044,7 @@ fn assignment_name(expr: &Expr) -> Option<&str> {
 
 fn assignment_target(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::Identifier(_) | ExprKind::Member(..) => true,
+        ExprKind::Identifier(_) | ExprKind::Member(..) | ExprKind::SuperProperty(_) => true,
         ExprKind::Parenthesized(inner) => assignment_target(inner),
         _ => false,
     }
@@ -1058,6 +1064,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::OptionalChain { .. }
             | ExprKind::Parenthesized(_)
             | ExprKind::Member(..)
+            | ExprKind::SuperProperty(_)
             | ExprKind::Call { .. }
             | ExprKind::New {
                 arguments: Some(_),
@@ -1711,6 +1718,7 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 validate_expr(key, strict)?;
             }
         }
+        ExprKind::SuperProperty(PropertyName::Computed(key)) => validate_expr(key, strict)?,
         ExprKind::Call { callee, arguments } => {
             validate_expr(callee, strict)?;
             for argument in arguments {

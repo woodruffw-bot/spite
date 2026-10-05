@@ -44,12 +44,7 @@ fn method_context_does_not_cross_ordinary_functions() {
         ..Default::default()
     };
     for source in ["super.x", "()=>super.x"] {
-        assert_eq!(
-            parse_eval_utf16(&JsString::from(source), context)
-                .unwrap_err()
-                .kind,
-            DiagnosticKind::Unsupported
-        );
+        assert!(parse_eval_utf16(&JsString::from(source), context).is_ok());
     }
     for source in [
         "function f(){super.x;}",

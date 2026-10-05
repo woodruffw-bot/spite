@@ -167,19 +167,13 @@ fn this_and_new_target_follow_the_nearest_non_arrow_function() {
 }
 
 #[test]
-fn method_super_context_is_inherited_only_through_arrows_and_remains_unsupported() {
+fn method_super_context_is_inherited_only_through_arrows() {
     for source in [
-        "({m(){eval('super.x');}}).m()",
-        "({m(){return (()=>eval('super.x'))();}}).m()",
-        "({get x(){eval('super.x');}}).x",
+        "({m(){return eval('super.x');}}).m()===undefined",
+        "({m(){return (()=>eval('super.x'))();}}).m()===undefined",
+        "({get x(){return eval('super.x');}}).x===undefined",
     ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
+        check(source);
     }
     for source in [
         "eval('super.x')",

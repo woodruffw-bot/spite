@@ -14,6 +14,7 @@ mod function;
 mod global;
 mod iterator_count;
 mod optional_chain;
+mod super_property;
 mod with;
 use environment::{BindingState, EnvironmentHandle};
 pub mod object;
@@ -158,6 +159,11 @@ enum Reference<'a> {
         // creating the reference. GetValue caches the converted property key.
         key: Value,
     },
+    SuperProperty {
+        base: Value,
+        key: Value,
+        this_value: Value,
+    },
 }
 
 impl Reference<'_> {
@@ -173,6 +179,7 @@ impl Reference<'_> {
     fn call_receiver(self) -> Value {
         match self {
             Self::Property { base, .. } => base,
+            Self::SuperProperty { this_value, .. } => this_value,
             Self::ObjectBinding { object, .. } => Value::Object(object),
             _ => Value::Undefined,
         }
@@ -1060,6 +1067,7 @@ impl Realm {
             ExprKind::Identifier(name) => self.resolve(name, target.span),
             ExprKind::OptionalChain { base, steps } => self.optional_chain_reference(base, steps),
             ExprKind::Parenthesized(inner) => self.reference(inner),
+            ExprKind::SuperProperty(name) => self.super_property_reference(name, target.span),
             ExprKind::Member(base, name) => {
                 let base = self.expression(base)?;
                 let key = match name {
@@ -1081,6 +1089,18 @@ impl Realm {
                 Self::require_object_coercible(base, span)?;
                 let key = self.reference_key(key, span)?;
                 self.get_property_value(base, &key, span)
+            }
+            Reference::SuperProperty {
+                base,
+                key,
+                this_value,
+            } => {
+                Self::require_object_coercible(base, span)?;
+                let key = self.reference_key(key, span)?;
+                let Value::Object(base) = base else {
+                    unreachable!("a non-null super base is an object")
+                };
+                self.get_property_with_receiver(base, &key, this_value.clone(), span)
             }
             Reference::ObjectBinding { object, name } => self.with_get_binding(object, name, span),
             Reference::Lexical(handle, name) => self
@@ -1126,6 +1146,26 @@ impl Realm {
             }
             Reference::ObjectBinding { object, name } => {
                 self.with_set_binding(&object, name, value, span)?
+            }
+            Reference::SuperProperty {
+                base,
+                mut key,
+                this_value,
+            } => {
+                Self::require_object_coercible(&base, span)?;
+                let key = self.reference_key(&mut key, span)?;
+                let Value::Object(base) = base else {
+                    unreachable!("a non-null super base is an object")
+                };
+                let written =
+                    self.set_property_with_receiver(&base, key, value, this_value, span)?;
+                if !written && self.strict {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "super property is not writable",
+                    ));
+                }
             }
             Reference::Lexical(handle, name) => {
                 let binding = self
@@ -1322,7 +1362,7 @@ impl Realm {
                 self.get(&mut reference, expr.span)?
             }
             ExprKind::Parenthesized(inner) => self.expression(inner)?,
-            ExprKind::Member(..) | ExprKind::OptionalChain { .. } => {
+            ExprKind::Member(..) | ExprKind::SuperProperty(_) | ExprKind::OptionalChain { .. } => {
                 let mut reference = self.reference(expr)?;
                 self.get(&mut reference, expr.span)?
             }
@@ -1396,6 +1436,14 @@ impl Realm {
                     let reference = self.reference(inner)?;
                     let deleted = match reference {
                         Reference::Value(_) => true,
+                        Reference::SuperProperty { .. } => {
+                            // 13.5.1.2: fail before ToObject or ToPropertyKey.
+                            return Err(Self::exception(
+                                ExceptionKind::ReferenceError,
+                                inner.span,
+                                "cannot delete a super property",
+                            ));
+                        }
                         Reference::Property { base, mut key } => {
                             Self::require_object_coercible(&base, inner.span)?;
                             let key = self.reference_key(&mut key, inner.span)?;
@@ -1680,7 +1728,10 @@ fn identifier(expr: &Expr) -> Option<&str> {
 
 fn reference_expression(expr: &Expr) -> bool {
     match &expr.kind {
-        ExprKind::Identifier(_) | ExprKind::Member(..) | ExprKind::OptionalChain { .. } => true,
+        ExprKind::Identifier(_)
+        | ExprKind::Member(..)
+        | ExprKind::SuperProperty(_)
+        | ExprKind::OptionalChain { .. } => true,
         ExprKind::Parenthesized(inner) => reference_expression(inner),
         _ => false,
     }

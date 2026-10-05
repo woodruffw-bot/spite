@@ -167,6 +167,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Complete required Object constructor properties and enable full own-key reflection/integrity operations.
 - [x] Parse ordinary object methods/getters/setters with scoped early errors.
 - [x] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
+- [x] Execute super property references in object methods, accessors, arrows, and direct eval with receiver preservation, ordered computed names, and strict write/delete errors.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.
 - [x] Implement ordinary dynamic Function calls/construction with ordered conversion, global scope, and well-formed UTF-16 source.

@@ -85,7 +85,7 @@ and update targets, rejects ungrouped optional constructors and direct tagged
 chains even across line breaks, and leaves grouped calls/construction/tags legal.
 Flat steps do not consume recursive syntax depth; runtime traversal is iterative.
 Host quotas remain opt-in, with no default chain, work, or heap allowance.
-Private fields, super execution, and async contexts await their
+Private fields, derived-constructor super calls, and async contexts await their
 own implementations.
 
 The eval intrinsic is a non-constructible built-in function with standard name,
@@ -131,8 +131,8 @@ declares vars outside parameter bindings. FunctionDeclarationInstantiation then
 creates a separate body variable environment (10.2.11). This applies to ordinary
 functions and arrows. Direct eval inherits this/new.target through the nearest
 non-arrow function and uses the method's retained home object for HasSuperBinding.
-Return remains invalid at eval's Script level. Valid super execution remains
-Unsupported; super outside methods and new.target outside functions are SyntaxError.
+Return remains invalid at eval's Script level. Super properties inherit the method
+home object; super outside methods and new.target outside functions are SyntaxError.
 
 Eval returns Script completion values, replacing empty results with undefined.
 The caller's scopes, variable environment, and strictness are restored on success,
@@ -1542,7 +1542,21 @@ definitions merge omitted getter/setter fields in source order; data/accessor
 transitions use ordinary descriptor rules and bypass inherited setters. Calls
 reuse ordinary this, arguments, parameter, strictness, and new.target semantics.
 Function.prototype.toString retains the complete method definition source.
-Async/generator methods, parameter patterns, and super remain separate gaps.
+Async/generator methods and derived-constructor super calls remain separate gaps.
+
+SuperProperty syntax retains a distinct reference node (13.3.7). GetThisBinding
+precedes computed-name evaluation; GetSuperBase reads the home object's current
+prototype after that expression, before property-key conversion. The reference
+retains this value separately from its base (6.2.5). GetValue and PutValue use the
+existing receiver-aware internal property operations, so inherited accessors and
+calls receive the actual method receiver, while data writes update that receiver.
+Simple assignment converts a computed name after its RHS; compound/update forms
+cache the key after GetValue. Prototype changes during conversion or the RHS do
+not replace the retained base. Null super bases throw TypeError before key
+conversion. Delete throws ReferenceError before base/key coercion (13.5.1.2),
+while still evaluating a computed-name expression. Arrows and direct eval inherit
+the nearest non-arrow function's home object; nested ordinary functions reset
+the context. Home-object environment edges are traced with captured closures.
 
 Function.prototype.call forwards thisArg unchanged and consumes the remaining
 arguments through iterative tail dispatch (20.2.3.3), avoiding Rust stack growth.

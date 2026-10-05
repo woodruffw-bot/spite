@@ -79,11 +79,8 @@ fn super_properties_follow_method_and_arrow_contexts_without_crossing_functions(
         "({get x(){return super.x;}})",
         "function f(){return {m(){return super.x;}};}",
     ] {
-        assert_eq!(
-            parse_script_utf16(&JsString::from(source))
-                .unwrap_err()
-                .kind,
-            DiagnosticKind::Unsupported,
+        assert!(
+            parse_script_utf16(&JsString::from(source)).is_ok(),
             "{source}"
         );
     }

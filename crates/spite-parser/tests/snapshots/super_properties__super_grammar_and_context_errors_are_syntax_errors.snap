@@ -1,0 +1,94 @@
+---
+source: crates/spite-parser/tests/super_properties.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "super property access outside a method",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 4,
+            end: 9,
+        },
+        message: "super property access outside a method",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 20,
+            end: 25,
+        },
+        message: "super property access outside a method",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 35,
+            end: 40,
+        },
+        message: "super property access outside a method",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 6,
+            end: 11,
+        },
+        message: "super call requires a derived constructor",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 6,
+            end: 11,
+        },
+        message: "super call requires a derived constructor",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 6,
+            end: 11,
+        },
+        message: "super call requires a derived constructor",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 12,
+            end: 15,
+        },
+        message: "expected an identifier name after dot",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 13,
+            end: 14,
+        },
+        message: "expected an expression",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 12,
+            end: 13,
+        },
+        message: "unexpected character",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 25,
+            end: 31,
+        },
+        message: "reserved identifier in strict mode",
+    },
+]

@@ -27,7 +27,7 @@ not an alternative language specification.
 | Reflect | All thirteen methods for exposed object kinds, exact call/write receivers, custom newTarget, boolean rejection, complete own reflection, and standard tag/attributes |
 | Math | Fixed constants/tag, abs/sign, integral and binary32/binary16 rounding, extrema, clz32/imul, pow/sqrt/cbrt/hypot, logarithmic/exponential, trigonometric/hyperbolic methods, exact iterable sumPrecise, realm-specific random sequences, and complete own reflection |
 | Function syntax | Ordinary named/anonymous function expressions and named declarations, identifier/pattern/default/rest parameters, body early errors, and variable versus block scope, declaration instantiation/hoisting, and standard prototype/name/length properties; Boolean, Number, String, Symbol, and BigInt receivers box |
-| Properties | Ordinary own/inherited data references, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
+| Properties | Ordinary own/inherited and super references, separate super receivers, ordered reads/writes/updates/deletion, primitive property operations, UTF-16 String indices and length, strict write/delete failures |
 | Operators | Arithmetic, exponentiation, bitwise, shifts, equality, primitive comparison, logical and nullish operators, typeof, void, delete, and in |
 | Statements | Empty and expression statements, let, const, and var, blocks, if/else, while, do-while, three-clause for, synchronous for-of, and for-in over complete prototype chains with assignment/var/lexical bindings, non-strict with, switch, labels, break/continue with optional targets, function-body return, throw, try with catch and/or finally; catch identifiers and object/array binding patterns bind supported throws |
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
@@ -70,8 +70,9 @@ variants. The direct selection reviews whole synchronous ordinary/arrow/method
 programs, including default-parameter arguments conflicts, lexical and variable
 scope, declaration preflight, deletable bindings, this/new.target, and early
 errors. Its 155 excluded whole files require async/generator execution (145),
-modules (two), classes (two), valid super property execution (one), or complete
-global reflection through the unchanged property helper (five). Thirteen other
+modules (two), classes (two), or complete global reflection through the unchanged
+property helper (five); one newly supported super-property original awaits
+separate vendoring. Thirteen other
 intrinsic/indirect candidates remain excluded without credit, including private
 identifiers and cross-realm execution. Historical descriptions and Annex-B labels
 are preserved; strict block/switch controls exercise core lexical function scope.
@@ -609,8 +610,19 @@ closures capture the current environment and trace their home objects; names,
 lengths, receiver binding, arguments, and exact source text follow ordinary method
 semantics. Accessor definitions merge pairs and replace data descriptors in source
 order. Twenty-three upstream files cover computed names, escaped/reserved method
-names, abrupt key evaluation, and setter scope. Async/generator methods, super,
-and parameter patterns remain unsupported.
+names, abrupt key evaluation, and setter scope. Parameter patterns and super
+property references now use the shared function and reference semantics.
+Three super parser regressions and two inspected insta snapshots cover names,
+assignment/update/destructuring/loop targets, method/arrow context boundaries,
+strict computed expressions, optional calls, tags, constructors, and depth guards.
+Twelve runtime regressions cover home-prototype lookup, receiver-preserving reads,
+writes/calls/accessors, detached/bound methods, strict primitive receivers,
+deferred computed-key conversion, base retention across mutation, null bases,
+deletion without coercion, logical/update/destructuring/loop assignments,
+arrow/default/eval inheritance, and collection of captured environments.
+Five additional recursive super call/get/set/key/eval controls run on a two-MiB
+native stack. Async/generator methods and derived-constructor super calls remain
+unsupported.
 Object.fromEntries creates fresh ordinary objects from iterables, requires object
 entries, reads 0 then 1 before key conversion, preserves Symbol keys, and defines
 own writable/enumerable/configurable data properties. Duplicate keys overwrite in
