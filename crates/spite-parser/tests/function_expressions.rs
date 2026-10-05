@@ -137,7 +137,7 @@ fn source_retention_and_var_collection_respect_function_boundaries() {
     };
     assert_eq!(function.name.as_ref().unwrap().name, "f");
     assert_eq!(
-        function.source.as_str(),
+        function.source.as_str().unwrap(),
         "function /*a*/ \\u0066(x /*b*/) { var inner; return x; }"
     );
     assert_eq!(

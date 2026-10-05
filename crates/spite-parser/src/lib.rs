@@ -13,9 +13,10 @@ pub mod json;
 mod lexer;
 mod object;
 mod optional_chain;
+mod source;
 mod template;
 
-pub use dynamic_function::parse_dynamic_function;
+pub use dynamic_function::{parse_dynamic_function, parse_dynamic_function_utf16};
 
 use ast::*;
 use lexer::{Kind, Lexer, Token};
@@ -100,7 +101,7 @@ fn reject_legacy_tokens(tokens: &[Token]) -> Result<(), Diagnostic> {
 }
 
 struct Parser {
-    source: std::rc::Rc<str>,
+    source: std::rc::Rc<source::SourceText>,
     tokens: Vec<Token>,
     index: usize,
     depth: usize,
@@ -111,7 +112,11 @@ struct Parser {
 
 impl Parser {
     fn new(source: &str) -> Result<Self, Diagnostic> {
-        let mut lexer = Lexer::new(source);
+        Self::from_source(std::rc::Rc::new(source::SourceText::from_str(source)))
+    }
+
+    fn from_source(source: std::rc::Rc<source::SourceText>) -> Result<Self, Diagnostic> {
+        let mut lexer = Lexer::new(&source);
         let mut tokens = Vec::new();
         loop {
             let token = lexer.next()?;
@@ -122,7 +127,7 @@ impl Parser {
             }
         }
         Ok(Self {
-            source: std::rc::Rc::from(source),
+            source,
             tokens,
             index: 0,
             depth: 0,

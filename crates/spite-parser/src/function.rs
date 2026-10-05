@@ -167,7 +167,7 @@ impl Parser {
                 }
                 statements.push(self.statement(true)?);
             }
-            let strict = has_use_strict(&statements, &self.source);
+            let strict = has_use_strict(&statements, self.source.lexical_text());
             if strict {
                 reject_legacy_tokens(&self.tokens[token_start..self.index])?;
             }

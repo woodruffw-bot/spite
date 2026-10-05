@@ -61,7 +61,7 @@ fn return_asi_and_body_in_parameter_are_independent_of_enclosing_expression() {
         body.statements()[1].kind,
         StatementKind::Expression(_)
     ));
-    assert_eq!(source.as_str(), "()=>{return\n1}");
+    assert_eq!(source.as_str().unwrap(), "()=>{return\n1}");
 }
 
 #[test]

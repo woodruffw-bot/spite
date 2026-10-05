@@ -1,0 +1,138 @@
+---
+source: crates/spite-parser/tests/dynamic_source_utf16.rs
+expression: function
+---
+Function {
+    name: Some(
+        FunctionName {
+            name: "anonymous",
+            span: Span {
+                start: 9,
+                end: 18,
+            },
+        },
+    ),
+    parameters: [
+        Ordinary(
+            BindingElement {
+                pattern: BindingPattern {
+                    kind: Identifier(
+                        "x",
+                    ),
+                    span: Span {
+                        start: 19,
+                        end: 20,
+                    },
+                },
+                initializer: Some(
+                    Expr {
+                        depth: 1,
+                        kind: Literal(
+                            String(
+                                "\udfff\ufffd",
+                            ),
+                        ),
+                        span: Span {
+                            start: 23,
+                            end: 31,
+                        },
+                    },
+                ),
+            },
+        ),
+    ],
+    body: FunctionBody {
+        statements: [
+            Statement {
+                kind: Return(
+                    Some(
+                        Expr {
+                            depth: 3,
+                            kind: Array(
+                                [
+                                    Expression(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "x",
+                                            ),
+                                            span: Span {
+                                                start: 50,
+                                                end: 51,
+                                            },
+                                        },
+                                    ),
+                                    Expression(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Template {
+                                                elements: [
+                                                    TemplateElement {
+                                                        cooked: Some(
+                                                            "\ud800\u000a\ufffd",
+                                                        ),
+                                                        raw: "\ud800\u000a\ufffd",
+                                                        span: Span {
+                                                            start: 54,
+                                                            end: 62,
+                                                        },
+                                                    },
+                                                ],
+                                                substitutions: [],
+                                            },
+                                            span: Span {
+                                                start: 53,
+                                                end: 63,
+                                            },
+                                        },
+                                    ),
+                                    Expression(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Arrow {
+                                                parameters: [],
+                                                body: Expression(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Literal(
+                                                            String(
+                                                                "\udc00",
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 71,
+                                                            end: 76,
+                                                        },
+                                                    },
+                                                ),
+                                                source: FunctionSource(
+                                                    "() => '\udc00'",
+                                                ),
+                                            },
+                                            span: Span {
+                                                start: 65,
+                                                end: 76,
+                                            },
+                                        },
+                                    ),
+                                ],
+                            ),
+                            span: Span {
+                                start: 49,
+                                end: 77,
+                            },
+                        },
+                    ),
+                ),
+                span: Span {
+                    start: 42,
+                    end: 78,
+                },
+            },
+        ],
+        strict: false,
+    },
+    source: FunctionSource(
+        "function anonymous(x = '\udfff\ufffd'\u000a) {\u000a//\ud800\u000areturn [x, `\ud800\u000d\u000a\ufffd`, () => '\udc00'];\u000a}",
+    ),
+}

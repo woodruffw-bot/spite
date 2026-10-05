@@ -8,7 +8,7 @@ not an alternative language specification.
 
 | Area | Implemented behavior |
 | --- | --- |
-| Source | UTF-8 input, byte spans, distinct syntax, unsupported, and limit diagnostics |
+| Source | UTF-8 Scripts and lossless UTF-16 dynamic Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
 | Lexical grammar | ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
@@ -298,7 +298,7 @@ The Function global exposes the standard intrinsic constructor/prototype graph,
 name/length/prototype descriptors, inherited branding, and complete own reflection.
 Tests cover prototype constructor links, restricted accessors, integrity operations,
 newTarget validation, and collection after public deletion. Calling or constructing
-Function compiles ordinary bodies from well-formed UTF-16 source with ordered input
+Function compiles ordinary bodies from arbitrary UTF-16 source with ordered input
 conversion, global-environment capture, body-derived strictness, and prototype
 selection after successful parsing. The parser independently validates parameter and
 body grammar goals, combine their early errors with body-derived strictness, and
@@ -307,8 +307,17 @@ and syntax injection diagnostics. Regressions cover calls/new/bound/Reflect,
 default/rest/duplicate parameters, arguments aliasing, caller scope isolation,
 conversion/error/prototype order, constructor behavior, exact source/metadata,
 collection and deleted intrinsic links, sources exceeding one MiB under defaults,
-and opt-in quotas. Unsupported compiled syntax and unpaired-surrogate source text
-remain host aborts; catch/finally cannot disguise those gaps as JavaScript exceptions.
+and opt-in quotas. Unsupported compiled syntax remains a host abort;
+catch/finally cannot disguise that gap as a JavaScript exception.
+Lossless source storage preserves lone surrogates in literals, comments, template
+raw/cooked values, and exact nested function source ranges. Four parser regressions,
+two inspected insta snapshots, and six runtime regressions cover all 2,048 lone
+surrogate code points, their invalid identifier diagnostics, valid pairs, real
+replacement characters, identity escapes, line-ending normalization, separate
+grammar goals, strict early errors, conversion/prototype order, collection, and
+exact opt-in encoded-byte boundaries. Scalar spans retain UTF-8 lengths; each lone
+surrogate occupies three encoded bytes. `FunctionSource::as_str` is fallible, while
+`to_js_string` returns every original UTF-16 unit. All host quotas remain opt-in.
 
 Arrows with identifier parameters and expression or block bodies execute with shared lexical captures,
 fresh mutable parameter bindings, missing/extra argument handling, inherited and

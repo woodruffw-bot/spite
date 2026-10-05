@@ -169,7 +169,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.
 - [x] Implement ordinary dynamic Function calls/construction with ordered conversion, global scope, and well-formed UTF-16 source.
-- [ ] Preserve unpaired surrogate code units in dynamically compiled source text.
+- [x] Preserve unpaired surrogate code units in dynamically compiled source text, literal/template values, and exact function stringification.
 - [x] Parse dynamic Function parameter/body grammar goals independently, then validate combined early errors and retain standard anonymous source text.
 - [x] Add Function.prototype call and native function source representation.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.

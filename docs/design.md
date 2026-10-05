@@ -56,9 +56,11 @@ expression implementation may later need its own crate and may use `regex`.
 ## Syntax
 
 Use a handwritten lexer and recursive descent parser with binding powers for
-expressions. Source positions are UTF-8 byte offsets into the supplied Rust source
-string. JavaScript strings are sequences of UTF-16 code units, including lone
-surrogates. Source adapters must document their decoding behavior.
+expressions. Script source positions are UTF-8 byte offsets into the supplied Rust
+source string. Dynamic Function inputs are UTF-16 code units: decode valid pairs
+to supplementary code points and preserve lone surrogates as source code points
+(11.1). Their spans retain UTF-8 lengths for scalars and use three bytes per lone
+surrogate. JavaScript strings retain every UTF-16 code unit.
 
 The parser controls lexical goals for division, regular expressions, and template
 tails. Preserve whether trivia contains a line terminator. Do not approximate ASI
@@ -1078,7 +1080,7 @@ and immutable prototype descriptors, inheriting the callable Function.prototype.
 The prototype's writable/configurable constructor link completes its own-key
 reflection and integrity operations (20.2.2.2, 20.2.3.1). The constructor has
 call/construct metadata for branding and newTarget validation. Ordinary dynamic
-calls and construction compile well-formed UTF-16 source in the realm's global
+calls and construction compile arbitrary UTF-16 source in the realm's global
 environment, with the body alone controlling strictness (20.2.1.1.1).
 
 The parser's dynamic Function entry point (20.2.1.1.1) first parses the joined
@@ -1089,8 +1091,19 @@ combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
 function context. Unsupported classes, generator/async functions,
-and native-stack exhaustion remain separate diagnostic categories. This UTF-8
-parser entry point supplies ordinary runtime string compilation.
+and native-stack exhaustion remain separate diagnostic categories. UTF-8 and
+lossless UTF-16 parser entry points share this grammar and validation.
+
+Source storage uses unchanged scalar UTF-8 text plus an ordered table of lone
+surrogate code points at their encoded byte positions. The scanner uses U+FFFD
+at these positions, which has the same lexical classification outside literals
+and comments, and restores the original code points for every literal value,
+template raw/cooked component, and retained source range. Real U+FFFD characters
+remain distinct. Template values normalize CR/CRLF while retained source preserves
+the original line endings. Functions share the source allocation; slicing a
+scalar-only nested function still permits borrowed UTF-8 even if surrounding
+source contains surrogates. `FunctionSource::as_str` returns `None` for a range
+with lone surrogates; `to_js_string` returns exact source code units (20.2.3.5).
 
 CreateDynamicFunction converts parameter arguments in order, then the body, before
 parsing or reading newTarget.prototype. Calling uses the retained intrinsic Function
@@ -1101,10 +1114,11 @@ with an explicit global environment and body strictness, so caller locals, stric
 and a named-expression self binding cannot leak into the result. Functions retain
 standard anonymous source text and ordinary constructor/prototype metadata. The
 default host permits string compilation; optional source/work/string/heap quotas
-remain host aborts. Source inputs containing unpaired surrogates report Unsupported
-after all conversions because the parser currently retains UTF-8 source text;
-escaped surrogate literals within well-formed source execute normally. The source
-representation gap is never replaced with lossy text or a JavaScript SyntaxError.
+remain host aborts. Lone surrogates are accepted in string/template contents and
+comments. Invalid identifier characters throw SyntaxError after all conversions
+and before prototype lookup. Encoded-byte accounting uses UTF-8 lengths for
+scalars and three bytes per lone surrogate, with checked capacities throughout
+dynamic source assembly. All host quotas remain opt-in.
 The constructor and prototype remain intrinsic roots after public deletion.
 
 Native Object.prototype.valueOf returns fresh Boolean/Number/String wrappers for their primitive

@@ -155,19 +155,10 @@ fn default_source_sizes_are_unlimited_and_compiled_code_survives_collection() {
 
 #[test]
 fn unsupported_source_is_a_host_abort_after_all_observable_conversions() {
-    for body in [
-        "class C{}",
-        "function* g(){}",
-        "async function f(){}",
-        "return '\\uD800';",
-    ] {
+    for body in ["class C{}", "function* g(){}", "async function f(){}"] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();
-        let body = if body.contains("\\uD800") {
-            "'return \\\"'+String.fromCharCode(0xD800)+'\\\";'".to_string()
-        } else {
-            format!("'{body}'")
-        };
+        let body = format!("'{body}'");
         assert!(matches!(realm.eval(&format!("try{{Function({{toString(){{flag=3;return 'a';}}}},{{toString(){{flag=4;return {body};}}}});}}catch{{flag=5;}}finally{{flag=6;}}")),Err(Error::Unsupported{..})));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(4.0)));
     }

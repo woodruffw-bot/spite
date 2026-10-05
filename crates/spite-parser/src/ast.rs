@@ -673,22 +673,35 @@ pub struct Expr {
 /// includes function parameters/body but excludes surrounding parentheses.
 #[derive(Clone, PartialEq)]
 pub struct FunctionSource {
-    pub(crate) text: Rc<str>,
+    pub(crate) text: Rc<crate::source::SourceText>,
     pub(crate) span: Span,
 }
 
 impl FunctionSource {
-    /// Returns the original UTF-8 source for this function.
-    pub fn as_str(&self) -> &str {
-        &self.text[self.span.start..self.span.end]
+    /// Returns original UTF-8 source, or `None` if it contains lone surrogates.
+    pub fn as_str(&self) -> Option<&str> {
+        self.text.as_utf8(self.span.start..self.span.end)
+    }
+
+    /// Returns the exact original UTF-16 source, including lone surrogates.
+    pub fn to_js_string(&self) -> JsString {
+        self.text.to_js_string(self.span.start..self.span.end)
+    }
+
+    /// Returns the encoded byte length; each lone surrogate occupies three bytes.
+    pub fn byte_len(&self) -> usize {
+        self.span.end - self.span.start
     }
 }
 
 impl fmt::Debug for FunctionSource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("FunctionSource")
-            .field(&self.as_str())
-            .finish()
+        let mut tuple = f.debug_tuple("FunctionSource");
+        match self.as_str() {
+            Some(source) => tuple.field(&source),
+            None => tuple.field(&self.to_js_string()),
+        };
+        tuple.finish()
     }
 }
 

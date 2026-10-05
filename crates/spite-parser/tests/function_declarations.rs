@@ -151,7 +151,7 @@ fn declaration_inventories_distinguish_functions_from_vars_and_nested_scopes() {
         ["g", "g"]
     );
     assert_eq!(
-        functions[0].source.as_str(),
+        functions[0].source.as_str().unwrap(),
         "function f(){var b;function g(){} {function h(){var hidden;}} function g(){}}"
     );
 }

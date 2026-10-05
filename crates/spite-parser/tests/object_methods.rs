@@ -97,7 +97,7 @@ fn function_source_includes_the_method_name_and_accessor_prefix() {
         let ExprKind::Function(function) = &property.value.kind else {
             panic!("method");
         };
-        assert_eq!(function.source.as_str(), expected);
+        assert_eq!(function.source.as_str().unwrap(), expected);
         assert!(function.name.is_none());
     }
 }

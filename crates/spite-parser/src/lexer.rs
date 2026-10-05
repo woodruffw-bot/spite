@@ -1,4 +1,5 @@
 use crate::ast::{Literal, TemplateElement};
+use crate::source::SourceText;
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -25,7 +26,7 @@ pub(crate) struct Token {
 }
 
 pub(crate) struct Lexer<'a> {
-    source: &'a str,
+    source: &'a SourceText,
     pos: usize,
     template_braces: Vec<usize>,
 }
@@ -36,7 +37,7 @@ use spite_core::{
 };
 
 impl<'a> Lexer<'a> {
-    pub fn new(source: &'a str) -> Self {
+    pub fn new(source: &'a SourceText) -> Self {
         Self {
             source,
             pos: 0,
@@ -44,7 +45,7 @@ impl<'a> Lexer<'a> {
         }
     }
     fn rest(&self) -> &'a str {
-        &self.source[self.pos..]
+        &self.source.lexical_text()[self.pos..]
     }
     fn peek(&self) -> Option<char> {
         self.rest().chars().next()
@@ -53,6 +54,14 @@ impl<'a> Lexer<'a> {
         let c = self.peek()?;
         self.pos += c.len_utf8();
         Some(c)
+    }
+    fn append_original(&self, offset: usize, scalar: char, units: &mut Vec<u16>) {
+        let point = self.source.original_code_point(offset, scalar);
+        if point <= 0xffff {
+            units.push(point as u16);
+        } else {
+            units.extend_from_slice(scalar.encode_utf16(&mut [0; 2]));
+        }
     }
     fn error(&self, start: usize, kind: DiagnosticKind, message: &str) -> Diagnostic {
         Diagnostic::new(kind, Span::new(start, self.pos), message)
@@ -198,18 +207,29 @@ impl<'a> Lexer<'a> {
                 let content_end = self.pos;
                 let tail = self.peek() == Some('`');
                 self.pos += if tail { 1 } else { 2 };
-                let raw = self.source[content_start..content_end]
-                    .replace("\r\n", "\n")
-                    .replace('\r', "\n");
+                let original = self.source.to_js_string(content_start..content_end);
+                let mut raw = Vec::new();
+                let mut units = original.code_units().iter().copied().peekable();
+                while let Some(unit) = units.next() {
+                    if unit == 13 {
+                        if units.peek() == Some(&10) {
+                            units.next();
+                        }
+                        raw.push(10);
+                    } else {
+                        raw.push(unit);
+                    }
+                }
                 return Ok((
                     TemplateElement {
                         cooked: valid.then(|| JsString::from_code_units(cooked)),
-                        raw: JsString::from(raw.as_str()),
+                        raw: JsString::from_code_units(raw),
                         span: Span::new(content_start, content_end),
                     },
                     tail,
                 ));
             }
+            let offset = self.pos;
             let Some(c) = self.bump() else {
                 return Err(self.syntax(start, "unterminated template"));
             };
@@ -221,9 +241,10 @@ impl<'a> Lexer<'a> {
                 continue;
             }
             if c != '\\' {
-                cooked.extend_from_slice(c.encode_utf16(&mut [0; 2]));
+                self.append_original(offset, c, &mut cooked);
                 continue;
             }
+            let escape_offset = self.pos;
             let Some(escape) = self.bump() else {
                 return Err(self.syntax(start, "unterminated template escape"));
             };
@@ -245,7 +266,7 @@ impl<'a> Lexer<'a> {
                 '0'..='9' => None,
                 'x' => self.template_hex(2),
                 'u' => self.template_unicode(),
-                c => Some(c as u32),
+                c => Some(self.source.original_code_point(escape_offset, c)),
             };
             if let Some(cp) = cp {
                 if cp <= 0xffff {
@@ -394,7 +415,10 @@ impl<'a> Lexer<'a> {
                 // Legacy octal is an integer-only production. Leading-zero
                 // sequences containing 8 or 9 are decimal and can have a fraction
                 // or exponent, but neither form allows separators in its integer part.
-                if self.source[start..self.pos].bytes().all(|b| b <= b'7') {
+                if self.source.lexical_text()[start..self.pos]
+                    .bytes()
+                    .all(|b| b <= b'7')
+                {
                     radix = 8;
                 }
             } else {
@@ -429,7 +453,7 @@ impl<'a> Lexer<'a> {
             self.bump();
             return Err(self.syntax(start, "invalid character after numeric literal"));
         }
-        let clean = self.source[digits_start..end].replace('_', "");
+        let clean = self.source.lexical_text()[digits_start..end].replace('_', "");
         if bigint {
             return Ok((
                 Literal::BigInt {
@@ -495,6 +519,7 @@ impl<'a> Lexer<'a> {
         let mut units = Vec::new();
         let mut legacy = false;
         loop {
+            let offset = self.pos;
             let Some(c) = self.bump() else {
                 return Err(self.syntax(start, "unterminated string"));
             };
@@ -505,9 +530,10 @@ impl<'a> Lexer<'a> {
                 return Err(self.syntax(start, "line terminator in string"));
             }
             if c != '\\' {
-                units.extend_from_slice(c.encode_utf16(&mut [0; 2]));
+                self.append_original(offset, c, &mut units);
                 continue;
             }
+            let escape_offset = self.pos;
             let Some(escape) = self.bump() else {
                 return Err(self.syntax(start, "unterminated escape"));
             };
@@ -555,7 +581,7 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 c => {
-                    units.extend_from_slice(c.encode_utf16(&mut [0; 2]));
+                    self.append_original(escape_offset, c, &mut units);
                     continue;
                 }
             };
@@ -597,7 +623,8 @@ mod tests {
     }
 
     fn tokens(source: &str) -> Result<Vec<Kind>, Diagnostic> {
-        let mut lexer = Lexer::new(source);
+        let source = SourceText::from_str(source);
+        let mut lexer = Lexer::new(&source);
         let mut tokens = Vec::new();
         loop {
             let token = lexer.next()?;

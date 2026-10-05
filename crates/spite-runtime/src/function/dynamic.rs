@@ -2,7 +2,7 @@
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, Span};
-use spite_parser::parse_dynamic_function;
+use spite_parser::parse_dynamic_function_utf16;
 
 impl Realm {
     pub(super) fn dynamic_function(
@@ -27,14 +27,20 @@ impl Realm {
             parameters.push(self.string(argument, span)?);
         }
         let body = self.string(body, span)?;
-        let units = parameters
+        let parameter_units = parameters
             .iter()
             .enumerate()
-            .try_fold(body.len(), |length, (index, parameter)| {
+            .try_fold(0usize, |length, (index, parameter)| {
                 length
                     .checked_add(parameter.len())?
                     .checked_add(usize::from(index != 0))
             })
+            .ok_or_else(|| Error::Limit {
+                span,
+                message: "dynamic source capacity exceeded".into(),
+            })?;
+        let units = parameter_units
+            .checked_add(body.len())
             .and_then(|n| n.checked_add(26))
             .ok_or_else(|| Error::Limit {
                 span,
@@ -51,41 +57,28 @@ impl Realm {
             });
         }
         // The default host permits string compilation (HostEnsureCanCompileStrings).
-        // The existing source representation cannot preserve unpaired surrogates.
-        // Reject that gap explicitly, after all observable conversions.
-        let body = body.to_utf8().map_err(|_| {
-            Self::unsupported(
-                span,
-                "dynamic source containing unpaired surrogates is not implemented",
-            )
-        })?;
-        let mut joined = String::new();
-        for (index, parameter) in parameters.iter().enumerate() {
-            let parameter = parameter.to_utf8().map_err(|_| {
-                Self::unsupported(
-                    span,
-                    "dynamic source containing unpaired surrogates is not implemented",
-                )
-            })?;
-            let extra = parameter
-                .len()
-                .checked_add(usize::from(index != 0))
-                .ok_or_else(|| Error::Limit {
-                    span,
-                    message: "dynamic source capacity exceeded".into(),
-                })?;
-            joined.try_reserve(extra).map_err(|_| Error::Limit {
+        // StringToCodePoints preserves unpaired surrogates (11.1, 20.2.1.1.1).
+        let mut joined = Vec::new();
+        joined
+            .try_reserve_exact(parameter_units)
+            .map_err(|_| Error::Limit {
                 span,
                 message: "dynamic source capacity exceeded".into(),
             })?;
+        for (index, parameter) in parameters.iter().enumerate() {
             if index != 0 {
-                joined.push(',');
+                joined.push(u16::from(b','));
             }
-            joined.push_str(&parameter);
+            joined.extend_from_slice(parameter.code_units());
         }
-        let bytes = joined
-            .len()
-            .checked_add(body.len())
+        let joined = JsString::from_code_units(joined);
+        let encoded_len = |source: &JsString| {
+            char::decode_utf16(source.code_units().iter().copied()).try_fold(0usize, |n, point| {
+                n.checked_add(point.map_or(3, char::len_utf8))
+            })
+        };
+        let bytes = encoded_len(&joined)
+            .and_then(|n| n.checked_add(encoded_len(&body)?))
             .and_then(|n| n.checked_add(26))
             .ok_or_else(|| Error::Limit {
                 span,
@@ -103,16 +96,18 @@ impl Realm {
         }
         self.object_work(span, |_, budget| budget.charge(bytes))?;
         let syntax =
-            parse_dynamic_function(&joined, &body).map_err(|diagnostic| match diagnostic.kind {
-                DiagnosticKind::Syntax => {
-                    Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
-                }
-                DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
-                DiagnosticKind::Limit => Error::Limit {
-                    span,
-                    message: diagnostic.message,
+            parse_dynamic_function_utf16(&joined, &body).map_err(
+                |diagnostic| match diagnostic.kind {
+                    DiagnosticKind::Syntax => {
+                        Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
+                    }
+                    DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
+                    DiagnosticKind::Limit => Error::Limit {
+                        span,
+                        message: diagnostic.message,
+                    },
                 },
-            })?;
+            )?;
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
         let new_target = new_target.unwrap_or_else(|| intrinsic.function_constructor.clone());
         let fallback = intrinsic.function_prototype.clone();

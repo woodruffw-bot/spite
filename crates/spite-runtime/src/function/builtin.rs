@@ -142,8 +142,8 @@ impl Realm {
                 };
                 match callable {
                     Some(FunctionText::Script(source)) => {
-                        self.object_work(span, |_, budget| budget.charge(source.as_str().len()))?;
-                        Ok(Value::String(JsString::from(source.as_str())))
+                        self.object_work(span, |_, budget| budget.charge(source.byte_len()))?;
+                        Ok(Value::String(source.to_js_string()))
                     }
                     Some(FunctionText::Native(name)) => Ok(Value::String(JsString::from(
                         format!("function {name}() {{ [native code] }}").as_str(),

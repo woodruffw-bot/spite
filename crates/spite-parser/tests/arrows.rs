@@ -76,7 +76,10 @@ fn bodies_bind_assignment_but_not_outer_comma_and_preserve_parameter_source() {
     let ExprKind::Arrow { source, .. } = &inner.kind else {
         panic!("arrow")
     };
-    assert_eq!(source.as_str(), "(x /* retained */ , y) => (x + y)");
+    assert_eq!(
+        source.as_str().unwrap(),
+        "(x /* retained */ , y) => (x + y)"
+    );
 }
 
 #[test]

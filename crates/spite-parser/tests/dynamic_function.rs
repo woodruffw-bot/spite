@@ -9,7 +9,7 @@ fn dynamic_function_retains_standard_source_and_combined_syntax() {
     let body = "return [x, rest, new.target];";
     let function = parse_dynamic_function(parameters, body).unwrap();
     assert_eq!(
-        function.source.as_str(),
+        function.source.as_str().unwrap(),
         "function anonymous(x = 1, ...rest\n) {\nreturn [x, rest, new.target];\n}"
     );
     assert_eq!(function.name.as_ref().unwrap().name, "anonymous");
