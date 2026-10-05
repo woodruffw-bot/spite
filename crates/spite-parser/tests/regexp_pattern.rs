@@ -175,7 +175,6 @@ fn malformed_core_patterns_have_shared_syntax_diagnostics() {
 #[test]
 fn unsupported_pattern_productions_do_not_receive_negative_credit() {
     for source in [
-        "/[z-a]/u",
         "/[a&&]/v",
         "/(?<a>a)(?<a>b)/u",
         r"/\k<missing>/",
@@ -273,4 +272,166 @@ fn scoped_modifier_lists_obey_their_complete_early_errors() {
             );
         }
     }
+}
+
+#[test]
+fn ordinary_classes_preserve_dash_backspace_and_set_escape_grammar() {
+    for flags in ["", "u", "dgimsy"] {
+        for pattern in [
+            "[]",
+            "[^]",
+            "[a-zA-Z0-9_]",
+            "[-a]",
+            "[a-]",
+            "[--a]",
+            "[---a]",
+            "[a-c-e]",
+            "[a-c--e]",
+            "[a-c--]",
+            "[^a-z]+?",
+            "[[]",
+            "[(){}|]",
+            r"[\b-\t]",
+            r"[\x00-\u007f]",
+            r"[\cA-\cZ]",
+            r"[\0-\x01]",
+            r"[\d\D\s\S\w\W]",
+            r"[-\d]",
+            r"[\d-]",
+            r"[\--a]",
+            r"[\^\$\\\.\*\+\?\(\)\[\]\{\}\|\/]",
+            r"[\uD800-\uDBFF]",
+            r"[\uDC00-\uDFFF]",
+        ] {
+            matching_gap(pattern, flags);
+        }
+    }
+    // Ordinary classes do not acquire the UnicodeSetsMode grammar.
+    for pattern in ["[a&&b]", "[!!]", "[{}]", "[|]"] {
+        matching_gap(pattern, "u");
+        assert_eq!(
+            parse_script(&format!("/{pattern}/v")).unwrap_err().kind,
+            DiagnosticKind::Unsupported
+        );
+    }
+    matching_gap(r"[\!\$]", "");
+    for pattern in [r"[\p{Invalid}]", r"[\P{Invalid}]"] {
+        assert_eq!(
+            parse_script(&format!("/{pattern}/u")).unwrap_err().kind,
+            DiagnosticKind::Unsupported
+        );
+    }
+}
+
+#[test]
+fn class_range_errors_share_exact_diagnostics_across_grammar_goals() {
+    for flags in ["", "u"] {
+        for pattern in [
+            "[z-a]",
+            "[a--b]",
+            r"[\d-a]",
+            r"[a-\D]",
+            r"[\s-\w]",
+            r"[\t-\b]",
+            r"[\cZ-\cA]",
+            r"[\x80-\u007f]",
+            r"[\B]",
+            r"[\1]",
+            r"[\k<a>]",
+            r"[\01]",
+            r"[\c0]",
+            r"[\x0]",
+            r"[\u000]",
+            r"[\a]",
+        ] {
+            let source = format!("/{pattern}/{flags}");
+            let expected = parse_script(&source).unwrap_err();
+            assert_eq!(expected.kind, DiagnosticKind::Syntax, "{source}");
+            assert_eq!(
+                parse_script_utf16(&JsString::from(source.as_str())).unwrap_err(),
+                expected
+            );
+            assert_eq!(
+                parse_eval_utf16(&JsString::from(source.as_str()), EvalContext::default())
+                    .unwrap_err(),
+                expected
+            );
+        }
+    }
+    for (parameters, body) in [(r"x = /[a-\d]/", "return x;"), ("x", "return /[z-a]/u;")] {
+        assert_eq!(
+            parse_dynamic_function(parameters, body).unwrap_err().kind,
+            DiagnosticKind::Syntax
+        );
+    }
+    let errors: Vec<_> = [
+        "/[z-a]/",
+        r"/[\d-a]/u",
+        r"/[a-\s]/",
+        r"/[\t-\b]/u",
+        r"/[\B]/u",
+        r"/[\1]/",
+        r"/[\!]/u",
+        "class C { get [/[z-a]/u]() {} }",
+    ]
+    .into_iter()
+    .map(|source| parse_script(source).unwrap_err())
+    .collect();
+    insta::assert_debug_snapshot!(errors);
+}
+
+#[test]
+fn range_values_pair_only_adjacent_hex_surrogate_escapes_in_unicode_mode() {
+    for (pattern, ordinary, unicode) in [
+        (r"[\uD800\uDC00-\uD800\uDC01]", false, true),
+        (r"[\uD800\uDC01-\uD800\uDC00]", false, false),
+        (r"[\uD800\uDC00-\uFFFF]", true, false),
+        (r"[\uFFFF-\uD800\uDC00]", false, true),
+        (r"[\uD800\uD800\uDC00-\u{10001}]", false, true),
+        (r"[\uD800\u{dc00}-\uDC01]", false, true),
+        ("[😀-😁]", false, true),
+    ] {
+        for (flags, valid) in [("", ordinary), ("u", unicode)] {
+            let error = parse_script(&format!("/{pattern}/{flags}")).unwrap_err();
+            assert_eq!(
+                error.kind,
+                if valid {
+                    DiagnosticKind::Unsupported
+                } else {
+                    DiagnosticKind::Syntax
+                },
+                "{pattern} {flags}"
+            );
+            if valid {
+                assert_eq!(
+                    error.message,
+                    "regular expression matching is not implemented"
+                );
+            }
+        }
+    }
+    matching_gap(r"[\u{10000}-\u{10ffff}]", "u");
+    for flags in ["", "u"] {
+        for (left, right, valid) in [
+            (0xd800, 0xdbff, true),
+            (0xdbff, 0xd800, false),
+            (0xdc00, 0xdfff, true),
+        ] {
+            let mut units: Vec<u16> = "/[".encode_utf16().collect();
+            units.extend([left, u16::from(b'-'), right]);
+            units.extend("]/".encode_utf16());
+            units.extend(flags.encode_utf16());
+            assert_eq!(
+                parse_script_utf16(&JsString::from_code_units(units))
+                    .unwrap_err()
+                    .kind,
+                if valid {
+                    DiagnosticKind::Unsupported
+                } else {
+                    DiagnosticKind::Syntax
+                }
+            );
+        }
+    }
+    matching_gap(&format!("[{}]", "a".repeat(100_000)), "u");
 }

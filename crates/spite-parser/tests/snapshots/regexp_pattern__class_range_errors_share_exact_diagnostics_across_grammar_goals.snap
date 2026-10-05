@@ -1,0 +1,70 @@
+---
+source: crates/spite-parser/tests/regexp_pattern.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "regular expression class range is reversed",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 9,
+        },
+        message: "regular expression class range requires character endpoints",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 8,
+        },
+        message: "regular expression class range requires character endpoints",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 10,
+        },
+        message: "regular expression class range is reversed",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "invalid regular expression identity escape",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "invalid regular expression identity escape",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "invalid regular expression identity escape",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 15,
+            end: 23,
+        },
+        message: "regular expression class range is reversed",
+    },
+]

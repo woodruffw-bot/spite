@@ -247,7 +247,7 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Character classes, named
+No RegExp literal AST or execution pass is exposed. UnicodeSetsMode classes, named
 captures/references, Unicode properties, matching, intrinsics, and grammar-driven
 reusable cover lookahead remain pending. Unimplemented Pattern productions still
 produce Unsupported and cannot receive parse-negative credit.
@@ -286,12 +286,27 @@ patterns as SyntaxError before effects; matching and unimplemented grammar gaps
 remain host Unsupported and bypass catch/finally. No default quota, native guard,
 fixture bytes, corpus count, intrinsic or dependency changes are introduced.
 
+Ordinary character classes now validate empty and inverted contents, literal and
+escaped dashes, backspace and character/class escapes, range endpoint kinds, and
+numeric ordering. Set-valued escapes cannot serve as range endpoints in either
+ordinary or Unicode mode; Annex B extensions remain disabled. Character values
+decode adjacent hexadecimal lead/trail surrogate escapes only in Unicode mode,
+including the nearest eligible pair. Brace escapes and raw units do not join
+hexadecimal escapes. Three parser regressions cover these distinctions, grammar
+entry points, raw unpaired UTF-16, and a 100,000-character class without a default
+quota. The new range diagnostic snapshot and updated lexical-goal snapshot were
+inspected. Eval rejects reversed and set-valued ranges as SyntaxError before
+effects; valid classes still reach host Unsupported for matching. UnicodeSetsMode
+classes and Unicode property escapes remain unsupported and receive no negative
+credit. Corpus inventories, runtime defaults, native guards and dependencies are
+unchanged.
+
 106 unchanged core Pattern originals add 212 reviewed parse-negative variants
 covering scoped modifiers, quantifier placement/bounds, assertion quantifiers,
 character/control/Unicode escapes, and out-of-bounds numbered references. All
 112 whole candidate programs and metadata were reviewed. Four class-range files
-remain unsupported; two escaped overlap files are excluded because their forbidden
-modifier escape masks the intended overlap error. Exact literal spans/messages
+were excluded from this core selection; two escaped overlap files are excluded
+because their forbidden modifier escape masks the intended overlap error. Exact literal spans/messages
 are required for every selected rejection on both toolchains. This adds no
 matching or RegExp object execution credit. Historical descriptions and modifier
 placeholder comments remain unchanged, along with source bytes, assertions,

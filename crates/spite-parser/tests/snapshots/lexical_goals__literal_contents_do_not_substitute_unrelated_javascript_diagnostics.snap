@@ -9,7 +9,7 @@ expression: errors
             start: 0,
             end: 7,
         },
-        message: "regular expression character class validation is not implemented",
+        message: "regular expression matching is not implemented",
     },
     Diagnostic {
         kind: Unsupported,
@@ -49,7 +49,7 @@ expression: errors
             start: 4,
             end: 11,
         },
-        message: "regular expression character class validation is not implemented",
+        message: "regular expression matching is not implemented",
     },
     Diagnostic {
         kind: Unsupported,

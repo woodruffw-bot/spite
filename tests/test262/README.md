@@ -70,8 +70,8 @@ byte span and the exact diagnostic. These are supported Pattern rejections, with
 no matching or RegExp object execution credit.
 
 All 112 candidate programs and metadata were reviewed. Four character-class range
-cases await class validation. Two escaped overlap cases are excluded because the
-forbidden modifier escape masks the intended enabled/disabled overlap; separate
+cases were excluded from this core selection. Two escaped overlap cases are
+excluded because the forbidden modifier escape masks the intended enabled/disabled overlap; separate
 originals directly test forbidden modifier escapes. Historic descriptions and
 unexpanded global-modifier placeholder comments retain their original bytes.
 Both toolchains pass the selected variants with no other outcome. The pin, all

@@ -84,8 +84,10 @@ scoped modifiers and character escapes, and resolves numbered forward references
 against the final capture count. Decimal bounds are compared exactly without a
 machine-integer size limit. Non-Unicode patterns use individual UTF-16 units;
 u/v patterns decode pairs and retain lone surrogates. Annex B grammar extensions
-are excluded. Classes, named captures/references and Unicode properties remain
-Unsupported, as does matching even after the supported grammar validates.
+are excluded. Ordinary character classes validate range endpoints and ordering;
+Unicode hex escapes pair adjacent lead/trail surrogates before determining range
+values. UnicodeSetsMode classes, named captures/references and Unicode properties
+remain Unsupported, as does matching after the supported grammar validates.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
 and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
 Computed class accessor lookahead parses its name with the expression grammar and

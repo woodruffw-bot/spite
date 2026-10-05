@@ -1,4 +1,4 @@
-//! Literal flags and the non-class, unnamed portion of the Pattern grammar.
+//! Literal flags and the unnamed Pattern grammar with ordinary class ranges.
 
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span, is_identifier_part};
 use std::{cmp::Ordering, ops::Range};
@@ -13,10 +13,16 @@ fn unsupported(message: &'static str) -> Failure {
     (DiagnosticKind::Unsupported, message)
 }
 
+#[derive(Clone, Copy)]
+struct Mode {
+    unicode: bool,
+    sets: bool,
+}
+
 pub(super) fn literal_diagnostic(body: &JsString, flags: &JsString, span: Span) -> Diagnostic {
-    let failure = match unicode_mode(flags) {
+    let failure = match pattern_mode(flags) {
         Err(failure) => failure,
-        Ok(unicode) => Pattern::new(body, unicode)
+        Ok(mode) => Pattern::new(body, mode)
             .validate()
             .err()
             .unwrap_or_else(|| unsupported("regular expression matching is not implemented")),
@@ -24,7 +30,7 @@ pub(super) fn literal_diagnostic(body: &JsString, flags: &JsString, span: Span) 
     Diagnostic::new(failure.0, span, failure.1)
 }
 
-fn unicode_mode(flags: &JsString) -> Result<bool, Failure> {
+fn pattern_mode(flags: &JsString) -> Result<Mode, Failure> {
     // https://262.ecma-international.org/17.0/#sec-isvalidregularexpressionliteral
     // checks flags and duplicates before #sec-parsepattern rejects simultaneous
     // Unicode modes.
@@ -46,22 +52,25 @@ fn unicode_mode(flags: &JsString) -> Result<bool, Failure> {
             "regular expression flags u and v are mutually exclusive",
         ));
     }
-    Ok(seen & UNICODE_MODES != 0)
+    Ok(Mode {
+        unicode: seen & UNICODE_MODES != 0,
+        sets: seen & (1 << 6) != 0,
+    })
 }
 
 struct Pattern {
     points: Vec<u32>,
     pos: usize,
-    unicode: bool,
+    mode: Mode,
     captures: u32,
     largest_reference: Option<Range<usize>>,
 }
 
 impl Pattern {
-    fn new(body: &JsString, unicode: bool) -> Self {
+    fn new(body: &JsString, mode: Mode) -> Self {
         // ParsePattern interprets UTF-16 units separately without u/v. In either
         // Unicode mode, decode pairs while retaining unpaired surrogates.
-        let points = if unicode {
+        let points = if mode.unicode {
             char::decode_utf16(body.code_units().iter().copied())
                 .map(|point| {
                     point
@@ -78,7 +87,7 @@ impl Pattern {
         Self {
             points,
             pos: 0,
-            unicode,
+            mode,
             captures: 0,
             largest_reference: None,
         }
@@ -132,9 +141,8 @@ impl Pattern {
                 }
                 0x5c => can_quantify = self.escape()?, // \
                 0x5b => {
-                    return Err(unsupported(
-                        "regular expression character class validation is not implemented",
-                    ));
+                    self.character_class()?;
+                    can_quantify = true;
                 }
                 0x5d | 0x7d => {
                     return Err(syntax("unexpected regular expression syntax character"));
@@ -253,47 +261,125 @@ impl Pattern {
                 self.pos -= 1;
                 let reference = self.digits()?;
                 if self.largest_reference.as_ref().is_none_or(|largest| {
-                    decimal_cmp(&self.points[reference.clone()], &self.points[largest.clone()]) == Ordering::Greater
+                    decimal_cmp(
+                        &self.points[reference.clone()],
+                        &self.points[largest.clone()],
+                    ) == Ordering::Greater
                 }) {
                     self.largest_reference = Some(reference);
                 }
             }
-            0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57 | // d D s S w W
-            0x66 | 0x6e | 0x72 | 0x74 | 0x76 => {} // f n r t v
-            0x63 => { // c AsciiLetter
-                if !self.peek().is_some_and(|point| matches!(point, 0x41..=0x5a | 0x61..=0x7a)) {
+            0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57 => {} // d D s S w W
+            0x70 | 0x50 if self.mode.unicode => {
+                return Err(unsupported(
+                    "regular expression Unicode property validation is not implemented",
+                ));
+            }
+            0x6b => {
+                return Err(unsupported(
+                    "regular expression named backreference validation is not implemented",
+                ));
+            }
+            _ => {
+                self.character_escape(point)?;
+            }
+        }
+        Ok(true)
+    }
+
+    fn character_escape(&mut self, point: u32) -> Result<u32, Failure> {
+        // CharacterValue is shared by ordinary atoms and class range endpoints.
+        // https://262.ecma-international.org/17.0/#sec-patterns-static-semantics-character-value
+        match point {
+            0x66 => Ok(12), // f
+            0x6e => Ok(10), // n
+            0x72 => Ok(13), // r
+            0x74 => Ok(9),  // t
+            0x76 => Ok(11), // v
+            0x63 => {
+                // c AsciiLetter
+                if !self
+                    .peek()
+                    .is_some_and(|point| matches!(point, 0x41..=0x5a | 0x61..=0x7a))
+                {
                     return Err(syntax("invalid regular expression control escape"));
                 }
+                let letter = self.points[self.pos];
                 self.pos += 1;
+                Ok(letter % 32)
             }
             0x30 => {
-                if self.peek().is_some_and(|point| (0x30..=0x39).contains(&point)) {
-                    return Err(syntax("legacy regular expression octal escapes are not in the core grammar"));
+                if self
+                    .peek()
+                    .is_some_and(|point| (0x30..=0x39).contains(&point))
+                {
+                    return Err(syntax(
+                        "legacy regular expression octal escapes are not in the core grammar",
+                    ));
                 }
+                Ok(0)
             }
-            0x78 => { self.hex_digits(2)?; } // x Hex2Digits
-            0x75 => { // u Hex4Digits, or u{CodePoint} in either Unicode mode
-                if self.unicode && self.eat(b'{') {
+            0x78 => self.hex_digits(2), // x Hex2Digits
+            0x75 => {
+                // u Hex4Digits, or u{CodePoint} in either Unicode mode
+                if self.mode.unicode && self.eat(b'{') {
                     let start = self.pos;
                     let mut value = 0u32;
                     while let Some(digit) = self.peek().and_then(hex_value) {
-                        value = value.checked_mul(16).and_then(|v| v.checked_add(digit))
+                        value = value
+                            .checked_mul(16)
+                            .and_then(|v| v.checked_add(digit))
                             .filter(|v| *v <= 0x10ffff)
-                            .ok_or_else(|| syntax("regular expression Unicode escape is out of range"))?;
+                            .ok_or_else(|| {
+                                syntax("regular expression Unicode escape is out of range")
+                            })?;
                         self.pos += 1;
                     }
                     if self.pos == start || !self.eat(b'}') {
                         return Err(syntax("invalid regular expression Unicode escape"));
                     }
+                    Ok(value)
                 } else {
-                    self.hex_digits(4)?;
+                    let lead = self.hex_digits(4)?;
+                    if self.mode.unicode && (0xd800..=0xdbff).contains(&lead) {
+                        // Pair only the nearest following \\u HexTrailSurrogate,
+                        // never a brace escape or a raw surrogate source unit.
+                        let trail = self.points[self.pos..]
+                            .strip_prefix(&[0x5c, 0x75])
+                            .and_then(|rest| rest.get(..4))
+                            .and_then(|hex| {
+                                hex.iter().try_fold(0u32, |value, point| {
+                                    Some(value * 16 + hex_value(*point)?)
+                                })
+                            })
+                            .filter(|value| (0xdc00..=0xdfff).contains(value));
+                        if let Some(trail) = trail {
+                            self.pos += 6;
+                            return Ok(0x10000 + (lead - 0xd800) * 0x400 + trail - 0xdc00);
+                        }
+                    }
+                    Ok(lead)
                 }
             }
-            0x70 | 0x50 if self.unicode => return Err(unsupported("regular expression Unicode property validation is not implemented")),
-            0x6b => return Err(unsupported("regular expression named backreference validation is not implemented")),
             _ => {
-                let valid = if self.unicode {
-                    matches!(point, 0x5e | 0x24 | 0x5c | 0x2e | 0x2a | 0x2b | 0x3f | 0x28 | 0x29 | 0x5b | 0x5d | 0x7b | 0x7d | 0x7c | 0x2f)
+                let valid = if self.mode.unicode {
+                    matches!(
+                        point,
+                        0x5e | 0x24
+                            | 0x5c
+                            | 0x2e
+                            | 0x2a
+                            | 0x2b
+                            | 0x3f
+                            | 0x28
+                            | 0x29
+                            | 0x5b
+                            | 0x5d
+                            | 0x7b
+                            | 0x7d
+                            | 0x7c
+                            | 0x2f
+                    )
                 } else {
                     // IdentityEscape excludes Unicode ID_Continue, which differs
                     // from IdentifierPartChar exactly by the added '$'.
@@ -302,19 +388,82 @@ impl Pattern {
                 if !valid {
                     return Err(syntax("invalid regular expression identity escape"));
                 }
+                Ok(point)
             }
         }
-        Ok(true)
     }
 
-    fn hex_digits(&mut self, count: usize) -> Result<(), Failure> {
+    fn hex_digits(&mut self, count: usize) -> Result<u32, Failure> {
+        let mut value = 0;
         for _ in 0..count {
-            if self.peek().and_then(hex_value).is_none() {
+            let Some(digit) = self.peek().and_then(hex_value) else {
                 return Err(syntax("invalid regular expression hexadecimal escape"));
-            }
+            };
+            // All callers request either two or four hexadecimal digits.
+            value = value * 16 + digit;
             self.pos += 1;
         }
+        Ok(value)
+    }
+
+    fn character_class(&mut self) -> Result<(), Failure> {
+        // NonemptyClassRanges and NonemptyClassRangesNoDash traverse ranges
+        // left to right. A trailing '-' is a ClassAtom, not a range separator.
+        // https://262.ecma-international.org/17.0/#sec-patterns
+        // https://262.ecma-international.org/17.0/#sec-patterns-static-semantics-early-errors
+        if self.mode.sets {
+            return Err(unsupported(
+                "regular expression Unicode class set validation is not implemented",
+            ));
+        }
+        self.eat(b'^');
+        while !self.eat(b']') {
+            let left = self.class_atom()?;
+            if self.peek() == Some(u32::from(b'-'))
+                && self.points.get(self.pos + 1) != Some(&u32::from(b']'))
+            {
+                self.pos += 1;
+                let right = self.class_atom()?;
+                // Class ranges cannot have CharacterClassEscape endpoints,
+                // including in non-Unicode mode without Annex B extensions.
+                let (Some(left), Some(right)) = (left, right) else {
+                    return Err(syntax(
+                        "regular expression class range requires character endpoints",
+                    ));
+                };
+                if left > right {
+                    return Err(syntax("regular expression class range is reversed"));
+                }
+            }
+        }
         Ok(())
+    }
+
+    // None denotes CharacterClassEscape, not an absent or empty ClassAtom.
+    fn class_atom(&mut self) -> Result<Option<u32>, Failure> {
+        let Some(point) = self.peek() else {
+            return Err(syntax("unterminated regular expression character class"));
+        };
+        if point == u32::from(b']') {
+            return Err(syntax("expected regular expression class atom"));
+        }
+        self.pos += 1;
+        if point != u32::from(b'\\') {
+            return Ok(Some(point));
+        }
+        let Some(point) = self.peek() else {
+            return Err(syntax("unterminated regular expression class escape"));
+        };
+        self.pos += 1;
+        match point {
+            0x62 => Ok(Some(8)),                         // b is backspace inside a class.
+            0x2d if self.mode.unicode => Ok(Some(0x2d)), // -
+            0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57 => Ok(None), // d D s S w W
+            0x70 | 0x50 if self.mode.unicode => Err(unsupported(
+                "regular expression Unicode property validation is not implemented",
+            )),
+            _ => self.character_escape(point).map(Some),
+        }
     }
 }
 
