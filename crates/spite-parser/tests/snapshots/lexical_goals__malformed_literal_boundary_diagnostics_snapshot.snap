@@ -1,0 +1,54 @@
+---
+source: crates/spite-parser/tests/lexical_goals.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 1,
+        },
+        message: "unterminated regular expression literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 3,
+        },
+        message: "unterminated regular expression escape",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 4,
+        },
+        message: "unterminated regular expression literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 3,
+        },
+        message: "line terminator in regular expression literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 0,
+            end: 6,
+        },
+        message: "line terminator in regular expression literal",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 8,
+            end: 11,
+        },
+        message: "line terminator in regular expression literal",
+    },
+]

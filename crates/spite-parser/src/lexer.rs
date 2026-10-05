@@ -2,6 +2,29 @@ use crate::ast::{Literal, TemplateElement};
 use crate::source::SourceText;
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 
+// ECMA-262 12: the caller, rather than the scanner, supplies the lexical goal.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Goal {
+    Div,
+    RegExp,
+    RegExpOrTemplateTail,
+    TemplateTail,
+    HashbangOrRegExp,
+}
+
+impl Goal {
+    fn regexp(self) -> bool {
+        matches!(
+            self,
+            Self::RegExp | Self::RegExpOrTemplateTail | Self::HashbangOrRegExp
+        )
+    }
+
+    fn template_tail(self) -> bool {
+        matches!(self, Self::TemplateTail | Self::RegExpOrTemplateTail)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Kind {
     Literal(Literal),
@@ -11,6 +34,10 @@ pub(crate) enum Kind {
         element: TemplateElement,
         tail: bool,
         continuation: bool,
+    },
+    RegExp {
+        body: JsString,
+        flags: JsString,
     },
     Eof,
 }
@@ -28,7 +55,6 @@ pub(crate) struct Token {
 pub(crate) struct Lexer {
     source: std::rc::Rc<SourceText>,
     pos: usize,
-    template_braces: Vec<usize>,
 }
 
 use spite_core::{
@@ -38,11 +64,12 @@ use spite_core::{
 
 impl Lexer {
     pub fn new(source: std::rc::Rc<SourceText>) -> Self {
-        Self {
-            source,
-            pos: 0,
-            template_braces: Vec::new(),
-        }
+        Self { source, pos: 0 }
+    }
+
+    pub fn at(source: std::rc::Rc<SourceText>, pos: usize) -> Self {
+        debug_assert!(source.lexical_text().is_char_boundary(pos));
+        Self { source, pos }
     }
     fn rest(&self) -> &str {
         &self.source.lexical_text()[self.pos..]
@@ -70,7 +97,7 @@ impl Lexer {
         self.error(start, DiagnosticKind::Syntax, message)
     }
 
-    pub fn next(&mut self) -> Result<Token, Diagnostic> {
+    pub fn next(&mut self, goal: Goal) -> Result<Token, Diagnostic> {
         let mut newline = false;
         loop {
             while let Some(c) = self.peek() {
@@ -80,7 +107,11 @@ impl Lexer {
                 newline |= is_line(c);
                 self.bump();
             }
-            if self.rest().starts_with("//") || (self.pos == 0 && self.rest().starts_with("#!")) {
+            if self.rest().starts_with("//")
+                || (goal == Goal::HashbangOrRegExp
+                    && self.pos == 0
+                    && self.rest().starts_with("#!"))
+            {
                 while self.peek().is_some_and(|c| !is_line(c)) {
                     self.bump();
                 }
@@ -134,23 +165,12 @@ impl Lexer {
             let (string, is_legacy) = self.string()?;
             legacy = is_legacy;
             Kind::Literal(Literal::String(string))
-        } else if c == '`' || (c == '}' && self.template_braces.last() == Some(&0)) {
+        } else if c == '/' && goal.regexp() {
+            self.regexp(start)?
+        } else if c == '`' || (c == '}' && goal.template_tail()) {
             let continuation = c == '}';
             self.bump();
-            if continuation {
-                self.template_braces.pop();
-            }
             let (element, tail) = self.template_component(start)?;
-            if !tail {
-                if self.template_braces.len() >= crate::MAX_DEPTH {
-                    return Err(self.error(
-                        start,
-                        DiagnosticKind::Limit,
-                        "template nesting limit exceeded",
-                    ));
-                }
-                self.template_braces.push(0);
-            }
             Kind::Template {
                 element,
                 tail,
@@ -186,13 +206,6 @@ impl Lexer {
                 return Err(self.syntax(start, "unexpected character"));
             };
             self.pos += punct.len();
-            if let Some(depth) = self.template_braces.last_mut() {
-                if *punct == "{" {
-                    *depth += 1;
-                } else if *punct == "}" {
-                    *depth -= 1;
-                }
-            }
             Kind::Punct(punct)
         };
         Ok(Token {
@@ -201,6 +214,48 @@ impl Lexer {
             newline,
             escaped,
             legacy,
+        })
+    }
+
+    // ECMA-262 12.9.5: this grammar finds token boundaries only. ParsePattern
+    // and IsValidRegularExpressionLiteral are separate, more stringent steps.
+    fn regexp(&mut self, start: usize) -> Result<Kind, Diagnostic> {
+        self.bump();
+        let body_start = self.pos;
+        let mut in_class = false;
+        loop {
+            let Some(c) = self.bump() else {
+                return Err(self.syntax(start, "unterminated regular expression literal"));
+            };
+            if is_line(c) {
+                return Err(self.syntax(start, "line terminator in regular expression literal"));
+            }
+            match c {
+                '\\' => {
+                    let Some(escaped) = self.bump() else {
+                        return Err(self.syntax(start, "unterminated regular expression escape"));
+                    };
+                    if is_line(escaped) {
+                        return Err(
+                            self.syntax(start, "line terminator in regular expression literal")
+                        );
+                    }
+                }
+                '[' if !in_class => in_class = true,
+                ']' if in_class => in_class = false,
+                '/' if !in_class => break,
+                _ => {}
+            }
+        }
+        let body_end = self.pos - 1;
+        let flags_start = self.pos;
+        // Flags use IdentifierPartChar, so Unicode escapes are not consumed.
+        while self.peek().is_some_and(id_continue) {
+            self.bump();
+        }
+        Ok(Kind::RegExp {
+            body: self.source.to_js_string(body_start..body_end),
+            flags: self.source.to_js_string(flags_start..self.pos),
         })
     }
 
@@ -604,6 +659,130 @@ mod tests {
     use super::*;
     use std::{collections::BTreeSet, fs, path::PathBuf};
 
+    fn scan(source: &str, goal: Goal) -> Result<Token, Diagnostic> {
+        Lexer::new(std::rc::Rc::new(SourceText::from_str(source))).next(goal)
+    }
+
+    #[test]
+    fn lexical_goal_controls_solidus_and_right_brace() {
+        for goal in [
+            Goal::RegExp,
+            Goal::RegExpOrTemplateTail,
+            Goal::HashbangOrRegExp,
+        ] {
+            assert_eq!(
+                scan("/[/]/g", goal).unwrap().kind,
+                Kind::RegExp {
+                    body: JsString::from("[/]"),
+                    flags: JsString::from("g")
+                }
+            );
+        }
+        for goal in [Goal::Div, Goal::TemplateTail] {
+            assert_eq!(scan("/=", goal).unwrap().kind, Kind::Punct("/="));
+        }
+        for goal in [Goal::TemplateTail, Goal::RegExpOrTemplateTail] {
+            let token = scan("/*\n}*/ }raw${", goal).unwrap();
+            assert!(token.newline);
+            let Kind::Template {
+                element,
+                continuation: true,
+                tail: false,
+            } = token.kind
+            else {
+                panic!("expected a template middle");
+            };
+            assert_eq!(element.raw, JsString::from("raw"));
+            assert_eq!(element.cooked, Some(JsString::from("raw")));
+        }
+        for goal in [Goal::Div, Goal::RegExp, Goal::HashbangOrRegExp] {
+            assert_eq!(scan("}raw${", goal).unwrap().kind, Kind::Punct("}"));
+        }
+        let token = scan("#! comment\n/x/", Goal::HashbangOrRegExp).unwrap();
+        assert!(token.newline);
+        assert!(matches!(token.kind, Kind::RegExp { .. }));
+        assert!(scan("#! comment\n/x/", Goal::Div).is_err());
+        assert!(scan(" #! comment", Goal::HashbangOrRegExp).is_err());
+    }
+
+    #[test]
+    fn regexp_boundary_grammar_preserves_body_and_flag_text() {
+        for (source, body, flags) in [
+            (r"/\//", r"\/", ""),
+            (r"/[\]/]/", r"[\]/]", ""),
+            (r"/[[a][b]]/v", "[[a][b]]", "v"),
+            ("/`{}${}/mi", "`{}${}", "mi"),
+            ("/=}/g", "=}", "g"),
+            ("/😀/g$_0é\u{200c}\u{200d}", "😀", "g$_0é\u{200c}\u{200d}"),
+            (r"/\u{not-a-pattern}/qq", r"\u{not-a-pattern}", "qq"),
+        ] {
+            let token = scan(source, Goal::RegExp).unwrap();
+            assert_eq!(token.span, Span::new(0, source.len()), "{source}");
+            assert_eq!(
+                token.kind,
+                Kind::RegExp {
+                    body: JsString::from(body),
+                    flags: JsString::from(flags)
+                },
+                "{source}"
+            );
+        }
+        let mut lexer = Lexer::new(std::rc::Rc::new(SourceText::from_str(r"/x/g\u0069")));
+        let token = lexer.next(Goal::RegExp).unwrap();
+        assert_eq!(token.span, Span::new(0, 4));
+        assert_eq!(
+            token.kind,
+            Kind::RegExp {
+                body: JsString::from("x"),
+                flags: JsString::from("g")
+            }
+        );
+        let token = lexer.next(Goal::Div).unwrap();
+        assert_eq!(token.kind, Kind::Word("i".into()));
+        assert!(token.escaped);
+        for source in ["// not an empty literal", "/**/"] {
+            assert_eq!(scan(source, Goal::RegExp).unwrap().kind, Kind::Eof);
+        }
+    }
+
+    #[test]
+    fn regexp_code_points_preserve_unpaired_utf16_surrogates() {
+        let source =
+            JsString::from_code_units(vec![47, 0xd800, 92, 0xdc00, 91, 47, 0xdfff, 93, 47, 103]);
+        let source = std::rc::Rc::new(SourceText::from_utf16(&source).unwrap());
+        let length = source.lexical_text().len();
+        let token = Lexer::new(source).next(Goal::RegExp).unwrap();
+        assert_eq!(token.span, Span::new(0, length));
+        assert_eq!(
+            token.kind,
+            Kind::RegExp {
+                body: JsString::from_code_units(vec![0xd800, 92, 0xdc00, 91, 47, 0xdfff, 93]),
+                flags: JsString::from("g"),
+            }
+        );
+    }
+
+    #[test]
+    fn regexp_boundary_grammar_rejects_line_terminators_and_unfinished_tokens() {
+        for ending in ["\n", "\r", "\u{2028}", "\u{2029}"] {
+            for prefix in ["/a", "/a\\", "/[a", "/[a\\"] {
+                let error = scan(&format!("{prefix}{ending}/"), Goal::RegExp).unwrap_err();
+                assert_eq!(error.kind, DiagnosticKind::Syntax);
+                assert_eq!(
+                    error.message,
+                    "line terminator in regular expression literal"
+                );
+            }
+        }
+        for source in ["/", "/a", "/[a", "/[a/", "/a\\", "/[a\\"] {
+            assert_eq!(
+                scan(source, Goal::RegExp).unwrap_err().kind,
+                DiagnosticKind::Syntax,
+                "{source}"
+            );
+        }
+    }
+
     fn fixture_root() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262")
     }
@@ -636,7 +815,7 @@ mod tests {
         let mut lexer = Lexer::new(source);
         let mut tokens = Vec::new();
         loop {
-            let token = lexer.next()?;
+            let token = lexer.next(Goal::Div)?;
             let done = token.kind == Kind::Eof;
             tokens.push(token.kind);
             if done {

@@ -69,12 +69,21 @@ and context-sensitive syntax. Keep parentheses where early errors depend on them
 
 The parser owns its source scanner and caches tokens as syntactic lookahead
 demands them. Consumed tokens retain spans and strict legacy-token evidence.
-Scanner failures terminate lookahead and are reported at every public parsing
+Scanner and computed-name lookahead failures are reported at every public parsing
 boundary; a synthetic EOF cannot make a lexical failure successful. Ordinary
 cursor operations remain infallible to keep recursive grammar frames small.
-The scanner still tracks braces in template substitutions. Before adding RegExp
-literals, move lexical-goal selection into the parser so braces and backticks
-inside a RegExp body cannot affect template scanning.
+The scanner accepts each of the five lexical goals explicitly and has no template
+brace state. Parser-owned substitution context selects Div/TemplateTail while
+caching lookahead. Initial input uses HashbangOrRegExp. A primary-expression
+solidus is scanned with a RegExp goal; braces, backticks, and quotes inside its
+body cannot replace the literal's diagnostic with an unrelated JavaScript error.
+This scanner implements token boundaries only. RegExp literals still produce
+Unsupported until the separate Pattern grammar and matching semantics exist.
+Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
+and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
+Computed class accessor lookahead parses its name with the expression grammar and
+retains that AST and its private-name uses for the ensuing accessor or ASI field.
+Nested computed names are parsed once.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

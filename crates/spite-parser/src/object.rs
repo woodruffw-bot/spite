@@ -105,6 +105,19 @@ impl Parser {
         &mut self,
         token: Token,
     ) -> Result<PropertyName, Diagnostic> {
+        if token.kind == Kind::Punct("[")
+            && self
+                .computed_class_name
+                .as_ref()
+                .is_some_and(|(start, _, _)| *start + 1 == self.index)
+        {
+            let (_, end, name) = self
+                .computed_class_name
+                .take()
+                .expect("cached computed class name");
+            self.index = end;
+            return Ok(name);
+        }
         Ok(match token.kind {
             Kind::Word(name) => {
                 PropertyName::Literal(Literal::String(JsString::from(name.as_str())))

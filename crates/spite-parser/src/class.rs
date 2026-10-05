@@ -291,36 +291,35 @@ impl Parser {
     }
 
     fn class_method_name_ahead(&mut self) -> bool {
+        if self.at("[") {
+            return self.computed_class_method_name_ahead();
+        }
         let start = self.index;
         let end = match &self.current().kind {
             Kind::Word(_) | Kind::Literal(_) => start + 1,
             Kind::Punct("#") => start + 2,
-            Kind::Punct("[") => {
-                let mut depth = 0usize;
-                let mut end = None;
-                let mut index = start;
-                while let Some(token) = self.token_at(index) {
-                    match token.kind {
-                        Kind::Punct("[") => depth += 1,
-                        Kind::Punct("]") => {
-                            depth -= 1;
-                            if depth == 0 {
-                                end = Some(index + 1);
-                                break;
-                            }
-                        }
-                        Kind::Eof => break,
-                        _ => {}
-                    }
-                    index += 1;
-                }
-                let Some(end) = end else { return false };
-                end
-            }
             _ => return false,
         };
         self.token_at(end)
             .is_some_and(|token| token.kind == Kind::Punct("("))
+    }
+
+    fn computed_class_method_name_ahead(&mut self) -> bool {
+        let start = self.index;
+        let token = self.bump();
+        let name = self.object_property_name(token);
+        let end = self.index;
+        let is_method = name.is_ok() && self.at("(");
+        self.index = start;
+        match name {
+            // The class grammar consumes this same name next, either for the
+            // accessor or the following field after ASI. Retain its AST and
+            // private-name uses so nested computed keys are parsed only once.
+            Ok(name) => self.computed_class_name = Some((start, end, name)),
+            Err(error) if self.lookahead_error.is_none() => self.lookahead_error = Some(error),
+            Err(_) => {}
+        }
+        is_method
     }
 }
 

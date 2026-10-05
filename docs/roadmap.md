@@ -28,6 +28,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 - [ ] Complete lexical goals, templates, RegExp literals, and numeric literals.
 - [x] Scan syntactic lookahead on demand and preserve lexical failures across Script, eval, and dynamic Function grammar goals.
+- [x] Add explicit scanner lexical goals and lossless RegExp body/flag boundary scanning, with distinct unsupported Pattern diagnostics.
 - [x] Parse untagged template literals with cooked/raw text and nested substitutions.
 - [x] Evaluate untagged template substitutions and string conversion.
 - [x] Add tagged templates with call/member precedence, raw/cooked components, frozen per-realm template objects, and parse-site identity.

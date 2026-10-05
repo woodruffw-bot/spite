@@ -36,6 +36,19 @@ fn computed_names_and_methods_finish_before_static_initializers() {
 }
 
 #[test]
+fn computed_accessor_names_and_asi_fields_keep_single_ordered_evaluation() {
+    check(
+        "let log='';class C{get[(log+='A','x')](){return this.v;}set[(log+='B','x')](v){this.v=v;}get\n[(log+='C','field')]=7;static[(log+='S','ready')]=true;}let c=new C;c.x=8;log==='ABCS' && c.x===8 && c.field===7 && Object.hasOwn(c,'get') && c.get===undefined && C.ready",
+    );
+    check(
+        "class Outer{#v=7;make(){return class{get[((()=>this.#v)())](){return 8;}};}}let o=new Outer,C=o.make();new C()[7]===8",
+    );
+    check(
+        "function f(k){return class{get[arguments[0]](){return 7;}set[arguments[0]](v){this.v=v;}};}let C=f('x'),c=new C;c.x=8;c.x===7 && c.v===8 && Object.getOwnPropertyDescriptor(C.prototype,'x').get.name==='get x'",
+    );
+}
+
+#[test]
 fn base_fields_precede_parameter_defaults_and_capture_definition_scope() {
     check(
         "let log='',x=7;class C{v=(log+='F',x);constructor(x=(log+='P',this.v)){log+='B';this.param=x;}}let c=new C;log==='FPB' && c.v===7 && c.param===7",

@@ -10,7 +10,7 @@ not an alternative language specification.
 | --- | --- |
 | Source | UTF-8 Scripts and lossless UTF-16 eval/Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
-| Lexical grammar | On-demand parser lookahead, ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
+| Lexical grammar | On-demand parser lookahead, explicit scanner goals and RegExp token boundaries, ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
 | Legacy literals | Leading-zero octal and decimal numbers, octal/decimal string escapes in non-strict code, and strict early errors including escapes before a use-strict directive |
 | BigInt | Exact literals in all four radices, signed arithmetic, truncating division and remainder, exponentiation, arithmetic shifts, infinite sign-extension bitwise operations, updates and compound assignment |
@@ -230,9 +230,27 @@ terminate input or occur during cover/computed-name lookahead. Three regressions
 and an inspected diagnostic snapshot exercise these boundaries and preserve
 Unsupported for recognized unavailable syntax before unrequested invalid input.
 Consumed tokens retain strict legacy checks, exact source spans, escapes, and
-line-terminator trivia. The existing native-depth guard is unchanged. Template
-brace tracking still belongs to the scanner; grammar-driven lexical goals and
-RegExp literals remain separate work.
+line-terminator trivia. The existing native-depth guard is unchanged.
+
+The scanner now accepts all five ECMA-262 lexical goals explicitly. Parser-owned
+substitution context selects division/template-tail goals for buffered lookahead;
+initial input uses HashbangOrRegExp. Primary-expression solidus tokens rescan with
+a RegExp goal, discarding diagnostics from Div-goal scans of literal contents.
+Boundary scanning follows 12.9.5 for escaped characters, classes, solidus,
+non-terminator body characters, and IdentifierPartChar flags. Raw bodies and flags
+preserve supplementary and unpaired UTF-16 source code points; escaped flags are
+not consumed as IdentifierPartChar. Comments, hashbang placement, trivia, division
+and division-assignment retain their own grammar. Four scanner regressions and
+five parser regressions cover goal selection, exact text, every line terminator,
+unfinished tokens, templates, cover/computed-key contexts, and distinct diagnostics.
+Two diagnostic snapshots were inspected. Computed class accessor lookahead retains
+its parsed key and private-name uses for the accessor or following ASI field;
+nested names are parsed once. A runtime regression verifies ordered single key
+evaluation, getters/setters, ASI fields, outer arguments, and private captures.
+No RegExp literal AST or execution pass is exposed: Pattern grammar, flag validity,
+Pattern early errors, matching, intrinsics, and grammar-driven reusable cover
+lookahead remain pending. Lexically complete invalid patterns/flags still produce
+Unsupported and cannot receive parse-negative credit.
 
 Each production crate currently depends only on std and workspace crates. The
 design permits regex and jiff when needed. Neither has been added. insta remains

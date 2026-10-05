@@ -1,0 +1,78 @@
+---
+source: crates/spite-parser/tests/lexical_goals.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 0,
+            end: 7,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 8,
+            end: 12,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 5,
+            end: 8,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 5,
+            end: 9,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 15,
+            end: 19,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 4,
+            end: 11,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 0,
+            end: 3,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+    Diagnostic {
+        kind: Unsupported,
+        span: Span {
+            start: 0,
+            end: 5,
+        },
+        message: "regular expression pattern validation and matching are not implemented",
+    },
+]

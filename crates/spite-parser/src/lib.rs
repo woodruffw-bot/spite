@@ -21,7 +21,7 @@ mod template;
 pub use dynamic_function::{parse_dynamic_function, parse_dynamic_function_utf16};
 
 use ast::*;
-use lexer::{Kind, Lexer, Token};
+use lexer::{Goal, Kind, Lexer, Token};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use std::collections::BTreeSet;
 
@@ -177,7 +177,9 @@ fn reject_legacy_tokens(tokens: &[Token]) -> Result<(), Diagnostic> {
 struct Parser {
     source: std::rc::Rc<source::SourceText>,
     lexer: Lexer,
-    lexical_error: Option<Diagnostic>,
+    template_braces: Vec<usize>,
+    computed_class_name: Option<(usize, usize, PropertyName)>,
+    lookahead_error: Option<Diagnostic>,
     tokens: Vec<Token>,
     index: usize,
     depth: usize,
@@ -198,11 +200,19 @@ impl Parser {
 
     fn from_source(source: std::rc::Rc<source::SourceText>) -> Result<Self, Diagnostic> {
         let mut lexer = Lexer::new(source.clone());
-        let tokens = vec![lexer.next()?];
+        let token = lexer.next(Goal::HashbangOrRegExp)?;
+        let template_braces = if matches!(token.kind, Kind::Template { tail: false, .. }) {
+            vec![0]
+        } else {
+            Vec::new()
+        };
+        let tokens = vec![token];
         Ok(Self {
             source,
             lexer,
-            lexical_error: None,
+            template_braces,
+            computed_class_name: None,
+            lookahead_error: None,
             tokens,
             index: 0,
             depth: 0,
@@ -221,12 +231,12 @@ impl Parser {
         &self.tokens[self.index]
     }
 
-    // A scanner failure terminates lookahead and is reported at each public
+    // Scanner and computed-name lookahead failures are reported at each public
     // parsing boundary, even if the syntactic parser accepts the EOF sentinel
     // or produces a secondary diagnostic. Keeping ordinary cursor operations
     // infallible avoids growing every recursive grammar frame with error paths.
     fn finish<T>(&self, result: Result<T, Diagnostic>) -> Result<T, Diagnostic> {
-        match &self.lexical_error {
+        match &self.lookahead_error {
             Some(error) => Err(error.clone()),
             None => result,
         }
@@ -243,11 +253,11 @@ impl Parser {
             {
                 return None;
             }
-            let token = match self.lexer.next() {
+            let token = match self.scan_token() {
                 Ok(token) => token,
                 Err(error) => {
                     let span = error.span;
-                    self.lexical_error = Some(error);
+                    self.lookahead_error = Some(error);
                     Token {
                         kind: Kind::Eof,
                         span,
@@ -260,6 +270,47 @@ impl Parser {
             self.tokens.push(token);
         }
         self.tokens.get(index)
+    }
+
+    // Cached cover lookahead still balances substitutions. The lexer has no
+    // brace state: the parser selects the supported Div/TemplateTail goal.
+    fn scan_token(&mut self) -> Result<Token, Diagnostic> {
+        let goal = if self.template_braces.last() == Some(&0) {
+            Goal::TemplateTail
+        } else {
+            Goal::Div
+        };
+        let token = self.lexer.next(goal)?;
+        match &token.kind {
+            Kind::Template {
+                tail, continuation, ..
+            } => {
+                if *continuation {
+                    self.template_braces.pop();
+                }
+                if !tail {
+                    if self.template_braces.len() >= MAX_DEPTH {
+                        return Err(Diagnostic::new(
+                            DiagnosticKind::Limit,
+                            token.span,
+                            "template nesting limit exceeded",
+                        ));
+                    }
+                    self.template_braces.push(0);
+                }
+            }
+            Kind::Punct(punct) => {
+                if let Some(depth) = self.template_braces.last_mut() {
+                    if *punct == "{" {
+                        *depth += 1;
+                    } else if *punct == "}" {
+                        *depth -= 1;
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(token)
     }
     // Grammar terminals cannot contain Unicode escapes (ECMA-262 5.1.5.1).
     fn at(&self, text: &str) -> bool {
@@ -1069,6 +1120,12 @@ impl Parser {
     }
 
     fn prefix(&mut self) -> Result<Expr, Diagnostic> {
+        if matches!(
+            self.current().kind,
+            Kind::RegExp { .. } | Kind::Punct("/" | "/=")
+        ) {
+            return Err(self.regexp_diagnostic());
+        }
         if self.at("class") {
             let class = self.class_definition(false)?;
             let span = class.source.span;
@@ -1181,7 +1238,7 @@ impl Parser {
                     Err(early(span, "super call requires a derived constructor"))
                 }
             }
-            Kind::Word(_) | Kind::Punct("/") => Err(Diagnostic::new(
+            Kind::Word(_) => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
                 "expression form is not implemented",
@@ -1192,6 +1249,39 @@ impl Parser {
                 "expected an expression",
             )),
         }
+    }
+
+    // Only boundary scanning exists so far. Never expose a literal AST or
+    // credit Pattern early errors before the ECMAScript Pattern parser exists.
+    fn regexp_diagnostic(&mut self) -> Diagnostic {
+        let span = self.current().span;
+        if self
+            .lookahead_error
+            .as_ref()
+            .is_some_and(|error| error.span.start >= span.start)
+        {
+            // Div-goal cover lookahead may have scanned literal contents as
+            // JavaScript. That diagnostic belongs to the wrong lexical goal.
+            self.lookahead_error = None;
+        }
+        let span = if matches!(self.current().kind, Kind::RegExp { .. }) {
+            span
+        } else {
+            let goal = if self.template_braces.is_empty() {
+                Goal::RegExp
+            } else {
+                Goal::RegExpOrTemplateTail
+            };
+            match Lexer::at(self.source.clone(), span.start).next(goal) {
+                Ok(token) => token.span,
+                Err(error) => return error,
+            }
+        };
+        Diagnostic::new(
+            DiagnosticKind::Unsupported,
+            span,
+            "regular expression pattern validation and matching are not implemented",
+        )
     }
 }
 
