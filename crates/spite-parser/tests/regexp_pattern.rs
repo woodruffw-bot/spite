@@ -173,15 +173,15 @@ fn malformed_core_patterns_have_shared_syntax_diagnostics() {
 }
 
 #[test]
-fn unsupported_pattern_productions_do_not_receive_negative_credit() {
-    for source in [r"/\p{Invalid}/u", r"/\P{Invalid}/v"] {
+fn valid_properties_reach_matching_and_flags_are_checked_first() {
+    for source in [r"/\p{Letter}/u", r"/\P{Letter}/v"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,
             "{source}"
         );
     }
-    // Flags are validated before every unsupported Pattern production.
+    // Flags are validated before the Pattern grammar.
     for pattern in ["[z-a]", "(?<a>a)", r"\p{Invalid}"] {
         assert_eq!(
             parse_script(&format!("/{pattern}/uv")).unwrap_err().kind,
@@ -314,7 +314,7 @@ fn ordinary_classes_preserve_dash_backspace_and_set_escape_grammar() {
         );
     }
     matching_gap(r"[\!\$]", "");
-    for pattern in [r"[\p{Invalid}]", r"[\P{Invalid}]"] {
+    for pattern in [r"[\p{Letter}]", r"[\P{Letter}]"] {
         assert_eq!(
             parse_script(&format!("/{pattern}/u")).unwrap_err().kind,
             DiagnosticKind::Unsupported

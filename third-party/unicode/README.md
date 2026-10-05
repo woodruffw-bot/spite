@@ -1,4 +1,4 @@
-# Unicode identifier, case, and normalization data
+# Unicode identifier, case, normalization, and RegExp property data
 
 `crates/spite-core/src/unicode_data.rs` contains ID_Start and ID_Continue ranges
 from Unicode 18.0.0. The source URL and SHA-256 are recorded in that file and in
@@ -34,6 +34,15 @@ The generator merges adjacent ranges without changing membership. It verifies th
 source digest before reading properties. Regeneration requires Python's standard
 library and is not part of a Rust build.
 
+`crates/spite-parser/src/regexp/property_data.rs` contains exact Unicode 18
+general-category and script value aliases for RegExp property early errors.
+`tools/generate-regexp-properties.py` pins PropertyAliases.txt and
+PropertyValueAliases.txt by SHA-256 and verifies the edition-17 binary property
+whitelist against them. Script_Extensions shares Script's value aliases. The
+whitelist excludes other UCD properties and aliases, including WSpace. Seven
+edition-17 string properties are allowed only in UnicodeSetsMode. These tables
+validate syntax; character membership and matching remain unimplemented.
+
 ```sh
 python3 tools/generate-unicode.py --check
 python3 tools/generate-unicode.py /path/to/DerivedCoreProperties.txt --check
@@ -41,6 +50,8 @@ python3 tools/generate-case-mappings.py --check
 python3 tools/generate-case-mappings.py /path/to/ucd-directory --check
 python3 tools/generate-normalization.py --check
 python3 tools/generate-normalization.py /path/to/ucd-directory --check
+python3 tools/generate-regexp-properties.py --check
+python3 tools/generate-regexp-properties.py /path/to/ucd-directory --check
 ```
 
 Omit `--check` to regenerate. The first form downloads the pinned source. The

@@ -93,8 +93,11 @@ UnicodeSetsMode unions validate scalar ranges, reserved punctuation and string
 disjunctions, rejecting inversion when MayContainStrings is true. Nested classes
 use iterative frames; intersections combine string containment with AND, while
 subtraction retains the left operand's result. Operator expressions exclude
-implicit unions and ranges. Unicode property validation and matching remain
-Unsupported after the supported grammar validates.
+implicit unions and ranges. Unicode property expressions accept only exact,
+case-sensitive edition-17 property aliases and pinned Unicode 18 general-category
+and script values. String properties require v mode, cannot use P escapes, and
+participate in class MayContainStrings analysis. Matching remains Unsupported
+after the supported grammar validates.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead
 and reusable lexical-goal checkpoints rather than retaining Div-goal token scans.
 Computed class accessor lookahead parses its name with the expression grammar and

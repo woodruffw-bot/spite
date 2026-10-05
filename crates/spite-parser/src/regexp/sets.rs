@@ -1,6 +1,6 @@
 //! UnicodeSetsMode class grammar with iterative nesting and string containment.
 
-use super::{Failure, Pattern, syntax, unsupported};
+use super::{Failure, Pattern, syntax};
 
 enum Operand {
     Character(u32),
@@ -181,9 +181,13 @@ impl Pattern {
                     });
                 }
                 Some(0x70 | 0x50) => {
-                    return Err(unsupported(
-                        "regular expression Unicode property validation is not implemented",
-                    ));
+                    let negated = self.points[self.pos + 1] == 0x50;
+                    self.pos += 2;
+                    return self
+                        .property_escape(negated)
+                        .map(|may_contain_strings| Operand::Set {
+                            may_contain_strings,
+                        });
                 }
                 Some(0x71) => {
                     self.pos += 2;

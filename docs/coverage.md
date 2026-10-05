@@ -247,10 +247,9 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Unicode properties, matching,
-intrinsics and grammar-driven
-reusable cover lookahead remain pending. Unimplemented Pattern productions still
-produce Unsupported and cannot receive parse-negative credit.
+No RegExp literal AST or execution pass is exposed. Matching, intrinsics and
+grammar-driven reusable cover lookahead remain pending. Matching still produces
+Unsupported and cannot receive positive execution credit.
 
 Literal flag validation implements IsValidRegularExpressionLiteral's allowed
 `d g i m s u v y` code points and duplicate rejection, followed by ParsePattern's
@@ -297,7 +296,7 @@ entry points, raw unpaired UTF-16, and a 100,000-character class without a defau
 quota. The new range diagnostic snapshot and updated lexical-goal snapshot were
 inspected. Eval rejects reversed and set-valued ranges as SyntaxError before
 effects; valid classes still reach host Unsupported for matching. Unicode property
-escapes remain unsupported and receive no negative credit. Corpus inventories,
+escapes were excluded from this initial step. Corpus inventories,
 runtime defaults, native guards and dependencies are unchanged.
 
 Named captures validate IdentifierStartChar/IdentifierPartChar with Unicode
@@ -313,9 +312,9 @@ these rules, malformed names, raw lone surrogates, all grammar entry points,
 20,000 nested named captures and 20,000 alternatives without default quotas. The
 new diagnostic snapshot was inspected. Eval rejects invalid and duplicate names
 before source effects; valid alternative-separated names still produce host
-Unsupported for matching. Unicode property gaps cannot
-receive negative credit. Corpus inventories, defaults, native guards and
-dependencies are unchanged.
+Unsupported for matching. Unicode property validation was excluded from this
+initial step. Corpus inventories, defaults, native guards and dependencies are
+unchanged.
 
 Flat UnicodeSetsMode classes now validate ClassUnion operands and scalar ranges,
 ClassSetCharacter's syntax and reserved double punctuation, the additional
@@ -327,10 +326,9 @@ from a literal subsequent caret. Four parser regressions cover these rules,
 ordinary/u/v distinctions, exact diagnostics across grammar entry points, and
 100,000-character class strings. The new diagnostic snapshot was inspected.
 Eval rejects supported v-class errors before effects, while valid unions retain
-host Unsupported for matching. Nested classes and set operators were excluded
-from this initial step. Unicode property escapes produce Unsupported and cannot
-receive negative credit. Corpus inventories, runtime defaults, native guards and
-dependencies are unchanged.
+host Unsupported for matching. Nested classes, set operators and Unicode property
+escapes were excluded from this initial step. Corpus inventories, runtime defaults,
+native guards and dependencies are unchanged.
 
 UnicodeSetsMode nested classes, intersections and subtraction now use an iterative
 class frame stack. Operator expressions require operands, excluding ranges and
@@ -344,8 +342,22 @@ containment matrix, exact diagnostic entry points, 20,000 nested classes and
 20,000 intersection operands without a default quota. The new diagnostic snapshot
 was inspected. Eval rejects missing operands and mixed operators before effects;
 valid nesting and operators retain host Unsupported for matching. Unicode
-properties still receive no negative credit. Corpus inventories, runtime defaults,
-native guards and dependencies are unchanged.
+property validation was excluded from this initial step. Corpus inventories,
+runtime defaults, native guards and dependencies are unchanged.
+
+Unicode property expressions now validate ASCII-only name/value grammar and
+exact, case-sensitive edition-17 aliases. General_Category and Script values come
+from digest-pinned Unicode 18 alias data; Script_Extensions shares Script values.
+Binary properties use the specification's explicit whitelist, rejecting additional
+UCD properties, loose matching, Is-prefixes and WSpace. Seven string properties
+require v mode, reject P negation, and propagate MayContainStrings through nested
+classes and operators. Five parser regressions cover all six nonbinary property
+aliases, extra UCD value aliases, Unicode 18 scripts, binary alias boundaries, all
+seven string properties, source grammar entry points and 20,000 property atoms
+without a default quota. The new diagnostic snapshot was inspected. Eval rejects
+property errors as SyntaxError before effects; valid properties retain host
+Unsupported for matching. CI checks the new generator against its pinned sources.
+Corpus inventories, runtime defaults, native guards and dependencies are unchanged.
 
 106 unchanged core Pattern originals add 212 reviewed parse-negative variants
 covering scoped modifiers, quantifier placement/bounds, assertion quantifiers,

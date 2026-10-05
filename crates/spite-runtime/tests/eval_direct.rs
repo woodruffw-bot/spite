@@ -100,6 +100,41 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
 }
 
 #[test]
+fn unicode_property_errors_precede_eval_effects_and_matching_remains_a_host_gap() {
+    for (pattern, flags) in [
+        (r"\p{Invalid}", "u"),
+        (r"\p{WSpace}", "v"),
+        (r"\p{Alphabetic=Yes}", "u"),
+        (r"\p{sc=Letter}", "v"),
+        (r"\P{RGI_Emoji}", "v"),
+        (r"[^\p{Basic_Emoji}]", "v"),
+        (r"[a-\p{Letter}]", "u"),
+    ] {
+        let code = format!("effects=1; /{pattern}/{flags};");
+        check(&format!(
+            "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+        ));
+    }
+    for (pattern, flags) in [
+        (r"\p{General_Category=Letter}", "u"),
+        (r"[\P{scx=Latin}]", "u"),
+        (r"\p{RGI_Emoji}", "v"),
+        (r"[^\p{Basic_Emoji}&&\p{Letter}]", "v"),
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("var marker=0;").unwrap();
+        let code = format!("marker=1; /{pattern}/{flags};");
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{eval({code:?});}}catch{{marker=2;}}finally{{marker=3;}}"
+            )),
+            Err(Error::Unsupported { .. })
+        ));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+    }
+}
+
+#[test]
 fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable() {
     check(
         "function f(){eval('var x=7;function g(){return x;}function g(){return x+1;}');return x===7 && g()===8 && delete x && delete g && typeof x==='undefined' && typeof g==='undefined';}f() && typeof x==='undefined' && typeof g==='undefined'",

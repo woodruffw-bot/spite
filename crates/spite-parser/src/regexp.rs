@@ -5,6 +5,8 @@ use spite_core::{
 };
 use std::{cmp::Ordering, collections::HashSet, mem, ops::Range};
 
+mod properties;
+mod property_data;
 mod sets;
 
 type Failure = (DiagnosticKind, &'static str);
@@ -414,9 +416,7 @@ impl Pattern {
             }
             0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57 => {} // d D s S w W
             0x70 | 0x50 if self.mode.unicode => {
-                return Err(unsupported(
-                    "regular expression Unicode property validation is not implemented",
-                ));
+                self.property_escape(point == 0x50)?;
             }
             0x6b => {
                 if !self.eat(b'<') {
@@ -602,9 +602,10 @@ impl Pattern {
             0x62 => Ok(Some(8)),                         // b is backspace inside a class.
             0x2d if self.mode.unicode => Ok(Some(0x2d)), // -
             0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57 => Ok(None), // d D s S w W
-            0x70 | 0x50 if self.mode.unicode => Err(unsupported(
-                "regular expression Unicode property validation is not implemented",
-            )),
+            0x70 | 0x50 if self.mode.unicode => {
+                self.property_escape(point == 0x50)?;
+                Ok(None)
+            }
             _ => self.character_escape(point).map(Some),
         }
     }

@@ -136,7 +136,7 @@ fn malformed_names_and_missing_references_share_grammar_entry_diagnostics() {
 }
 
 #[test]
-fn raw_lone_surrogate_names_and_unsupported_productions_keep_distinct_outcomes() {
+fn raw_lone_surrogate_names_and_valid_properties_keep_distinct_outcomes() {
     for flags in ["", "u", "v"] {
         for unit in [0xd800, 0xdc00] {
             let mut source: Vec<_> = "/(?<a".encode_utf16().collect();
@@ -151,7 +151,7 @@ fn raw_lone_surrogate_names_and_unsupported_productions_keep_distinct_outcomes()
             );
         }
     }
-    for source in [r"/(?<a>\p{Invalid})/u", r"/(?<a>[\p{Invalid}])/v"] {
+    for source in [r"/(?<a>\p{Letter})/u", r"/(?<a>[\p{Letter}])/v"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported

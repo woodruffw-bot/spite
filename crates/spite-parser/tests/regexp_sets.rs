@@ -146,8 +146,8 @@ fn flat_class_grammar_errors_share_exact_diagnostics() {
 }
 
 #[test]
-fn property_gaps_cannot_receive_negative_credit() {
-    for pattern in [r"[\p{Invalid}]", r"[\P{Invalid}]"] {
+fn valid_properties_reach_matching_and_unicode_modes_remain_exclusive() {
+    for pattern in [r"[\p{Letter}]", r"[\P{Letter}]"] {
         assert_eq!(
             parse_script(&format!("/{pattern}/v")).unwrap_err().kind,
             DiagnosticKind::Unsupported,
