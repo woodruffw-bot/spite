@@ -3571,3 +3571,85 @@ test/language/statements/with/strict-fn-decl.js	377	388	with statements are not 
 test/language/statements/with/strict-fn-expr.js	380	391	with statements are not allowed in strict mode
 test/language/statements/with/strict-fn-method.js	388	397	with statements are not allowed in strict mode
 test/language/statements/with/strict-script.js	353	365	with statements are not allowed in strict mode
+test/language/statements/try/dstr/ary-init-iter-close.js	-	-	-
+test/language/statements/try/dstr/ary-init-iter-get-err-array-prototype.js	-	-	-
+test/language/statements/try/dstr/ary-init-iter-get-err.js	-	-	-
+test/language/statements/try/dstr/ary-init-iter-no-close.js	-	-	-
+test/language/statements/try/dstr/ary-name-iter-val.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-elem-init.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-elem-iter.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-empty-iter.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-rest-init.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-rest-iter.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-val-null.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-exhausted.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-cover.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-fn.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-hole.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-skipped.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-throws.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-undef.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-unresolvable.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-iter-complete.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-iter-done.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-iter-step-err.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-iter-val-err.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-iter-val.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-obj-id-init.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-obj-id.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-obj-prop-id-init.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-obj-prop-id.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-obj-val-null.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-obj-val-undef.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-ary-elem.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-ary-rest.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id-direct.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id-elision.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id-exhausted.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id-iter-val-err.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-obj-id.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-obj-prop-id.js	-	-	-
+test/language/statements/try/dstr/obj-init-null.js	-	-	-
+test/language/statements/try/dstr/obj-init-undefined.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-empty.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-get-value-err.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-cover.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-fn.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-skipped.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-throws.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-unresolvable.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-trailing-comma.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-list-err.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-ary-init.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-ary-trailing-comma.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-ary-value-null.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-ary.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-eval-err.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id-get-value-err.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id-init-skipped.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id-init-throws.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id-init-unresolvable.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id-init.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id-trailing-comma.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-id.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-obj-init.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-obj-value-null.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-obj-value-undef.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-prop-obj.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-rest-getter.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-rest-skip-non-enumerable.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-rest-val-obj.js	-	-	-
+test/language/statements/try/catch-parameter-boundnames-restriction-arguments-negative-early.js	455	464	invalid binding in strict mode
+test/language/statements/try/catch-parameter-boundnames-restriction-eval-negative-early.js	455	459	invalid binding in strict mode
+test/language/statements/try/early-catch-duplicates.js	412	413	duplicate catch binding
+test/language/statements/try/early-catch-function.js	611	612	catch parameter conflicts with lexical declaration
+test/language/statements/try/early-catch-lex.js	471	472	catch parameter conflicts with lexical declaration
+test/language/statements/try/dstr/ary-ptrn-rest-init-ary.js	957	958	expected ]
+test/language/statements/try/dstr/ary-ptrn-rest-init-id.js	942	943	expected ]
+test/language/statements/try/dstr/ary-ptrn-rest-init-obj.js	958	959	expected ]
+test/language/statements/try/dstr/ary-ptrn-rest-not-final-ary.js	973	974	expected ]
+test/language/statements/try/dstr/ary-ptrn-rest-not-final-id.js	959	960	expected ]
+test/language/statements/try/dstr/ary-ptrn-rest-not-final-obj.js	976	977	expected ]
