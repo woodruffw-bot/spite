@@ -171,7 +171,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse/evaluate base class declarations and expressions with strict constructors/methods, instance/static accessors, class-name TDZs, immutable internal names, and standard construction/metadata/source semantics.
 - [x] Add class heritage and derived constructors with ordered superclass evaluation, super calls, and uninitialized this bindings.
 - [x] Add public instance/static fields with ordered computed names, initializer environments, data-property creation, and base/derived construction timing.
-- [ ] Add private fields, methods/accessors, and private-name environments and brand checks.
+- [x] Parse private fields/methods/accessors, private references and brand checks, with lexical class scope and early errors.
+- [ ] Execute private elements with private-name environments, brand checks, ordered initialization, and tracing.
 - [x] Add static initialization blocks with their scope, early errors, and ordered class evaluation.
 - [x] Add mandatory Function.prototype restricted accessors and %ThrowTypeError%.
 - [x] Expose the Function constructor/prototype intrinsic graph, metadata, branding, and complete own reflection.

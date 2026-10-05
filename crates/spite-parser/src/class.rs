@@ -6,7 +6,17 @@ use std::rc::Rc;
 impl Parser {
     pub(super) fn class_definition(&mut self, require_name: bool) -> Result<Rc<Class>, Diagnostic> {
         self.enter()?;
+        let private_depth = self.private_scopes.len();
         let result = self.class_definition_inner(require_name);
+        let result = if self.private_scopes.len() > private_depth {
+            let scope = self.private_scopes.pop().expect("class private scope");
+            match result {
+                Ok(class) => self.finish_private_scope(scope).map(|()| class),
+                Err(error) => Err(error),
+            }
+        } else {
+            result
+        };
         self.depth -= 1;
         result
     }
@@ -50,6 +60,9 @@ impl Parser {
             None
         };
         self.expect("{")?;
+        // ClassHeritage uses the enclosing private scope; only ClassBody adds
+        // the class's names (AllPrivateIdentifiersValid, 16.1.1).
+        self.private_scopes.push(Default::default());
         let mut constructor = None;
         let mut elements = Vec::new();
         while !self.at("}") {
@@ -78,12 +91,6 @@ impl Parser {
                 }
                 token = self.bump();
             }
-            if token.kind == Kind::Punct("#") {
-                return Err(early_unsupported(
-                    token.span,
-                    "private class elements are not implemented",
-                ));
-            }
             if token.kind == Kind::Punct("*") {
                 return Err(early_unsupported(
                     token.span,
@@ -101,12 +108,6 @@ impl Parser {
                             PropertyKind::Setter
                         };
                         token = self.bump();
-                        if token.kind == Kind::Punct("#") {
-                            return Err(early_unsupported(
-                                token.span,
-                                "private class elements are not implemented",
-                            ));
-                        }
                     } else if prefix == "async"
                         && !self.current().newline
                         && (self.at("*") || self.class_method_name_ahead())
@@ -118,11 +119,20 @@ impl Parser {
                     }
                 }
             }
-            let name_span = token.span;
-            let property_name = self.object_property_name(token)?;
+            let mut name_span = token.span;
+            let property_name = if token.kind == Kind::Punct("#") {
+                let name = self.private_identifier_after_hash(token)?;
+                name_span = name.span;
+                PropertyName::Private(name)
+            } else {
+                self.object_property_name(token)?
+            };
             if !self.at("(") {
                 if kind != PropertyKind::Method {
                     return Err(self.error("class accessor requires parameters"));
+                }
+                if let PropertyName::Private(name) = &property_name {
+                    self.declare_private_identifier(name, is_static, PropertyKind::Data)?;
                 }
                 if matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor") || (is_static && name == &JsString::from("prototype")))
                 {
@@ -143,6 +153,9 @@ impl Parser {
                     span: Span::new(element_start, self.tokens[self.index - 1].span.end),
                 });
                 continue;
+            }
+            if let PropertyName::Private(name) = &property_name {
+                self.declare_private_identifier(name, is_static, kind)?;
             }
             let is_constructor = !is_static
                 && matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor"));
@@ -281,7 +294,7 @@ impl Parser {
         let start = self.index;
         let end = match &self.current().kind {
             Kind::Word(_) | Kind::Literal(_) => start + 1,
-            Kind::Punct("#") => return true,
+            Kind::Punct("#") => start + 2,
             Kind::Punct("[") => {
                 let mut depth = 0usize;
                 let mut end = None;

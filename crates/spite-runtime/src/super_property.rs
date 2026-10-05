@@ -82,6 +82,12 @@ impl Realm {
         // it, so the key expression can replace the home object's prototype.
         let this_value = self.this_value(span)?;
         let key = match name {
+            PropertyName::Private(_) => {
+                return Err(Self::unsupported(
+                    span,
+                    "private elements are not implemented",
+                ));
+            }
             PropertyName::Literal(literal) => self.literal_value(literal, span)?,
             PropertyName::Computed(expression) => self.expression(expression)?,
         };

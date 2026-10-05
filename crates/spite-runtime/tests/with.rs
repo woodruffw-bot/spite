@@ -161,7 +161,7 @@ fn captured_binding_objects_are_traced_and_host_aborts_restore_scopes() {
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("f()"), Ok(Value::Number(7.0)));
     assert!(matches!(
-        realm.eval("with({x:2})Function('class C{#field;}');"),
+        realm.eval("with({x:2})Function('function* gap(){}');"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(

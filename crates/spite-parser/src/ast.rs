@@ -42,7 +42,7 @@ pub struct FunctionName {
     pub span: Span,
 }
 
-/// A class without private elements.
+/// A class definition with its ordered elements.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Class {
     /// Internal class binding, also the declaration binding when present.
@@ -53,7 +53,7 @@ pub struct Class {
     pub default_constructor: bool,
     /// Explicit constructor, or an empty default constructor body.
     pub constructor: Rc<Function>,
-    /// Non-constructor methods, accessors, public fields, and static blocks in source order.
+    /// Non-constructor methods, accessors, fields, and static blocks in source order.
     pub elements: Vec<ClassElement>,
     /// Complete class definition source text.
     pub source: FunctionSource,
@@ -98,7 +98,7 @@ impl ClassElement {
         }
     }
 
-    /// Literal or computed element name.
+    /// Element name, or `None` for a static initialization block.
     pub fn name(&self) -> Option<&PropertyName> {
         match self {
             Self::Method { property, .. } => Some(&property.name),
@@ -865,9 +865,16 @@ pub enum ExprKind {
     NewTarget,
     /// An identifier reference.
     Identifier(String),
+    /// A private brand check, whose right operand is a ShiftExpression (13.10).
+    PrivateIn {
+        /// Private identifier resolved in the enclosing class scope.
+        name: PrivateIdentifier,
+        /// Value checked for the private element.
+        value: Box<Expr>,
+    },
     /// A parenthesized expression. Retained for grammar restrictions.
     Parenthesized(Box<Expr>),
-    /// A dotted or computed property reference.
+    /// A dotted, computed, or private property reference.
     Member(Box<Expr>, PropertyName),
     /// A property reference through the enclosing method's home-object prototype.
     SuperProperty(PropertyName),
@@ -974,6 +981,17 @@ pub enum PropertyName {
     Literal(Literal),
     /// A bracketed assignment expression.
     Computed(Box<Expr>),
+    /// A private class element or property reference, never an ordinary key.
+    Private(PrivateIdentifier),
+}
+
+/// A decoded PrivateIdentifier, retaining the complete original token range.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PrivateIdentifier {
+    /// StringValue including the initial hash, independent of source escapes.
+    pub name: String,
+    /// Hash and IdentifierName source range.
+    pub span: Span,
 }
 
 /// One property access or call within an optional chain (13.3.10).

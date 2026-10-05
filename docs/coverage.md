@@ -1307,7 +1307,8 @@ AST/diagnostic snapshots check inherited constructor context, method/function
 boundaries, heritage precedence, and forbidden new/assignment/optional super calls.
 Four additional recursive derived construction/default/eval cases exercise the
 existing native-stack guards on two-mebibyte threads with normal debug profiles.
-Existing host-abort controls use unimplemented private elements as their source gap.
+Host-abort controls use unimplemented generators or private element execution as
+their source gap.
 
 Sixteen unchanged class heritage/derived originals add 32 variants: 30 harness
 positives and two reviewed strict-mode parse negatives. They cover constructor and
@@ -1370,3 +1371,14 @@ initialization, isolated scopes, class-name capture, this, new.target, super, an
 await grammar boundaries. Every negative checks its intended original token and
 message in both Script modes. Both toolchains pass all added variants with ordinary
 defaults; source bytes, Git blobs, assertions, metadata, helpers, and pin are unchanged.
+
+Private-element parser AST/diagnostic snapshots cover decoded names, private
+fields/methods/accessors, optional access and brand-check precedence, forward
+references through functions and nested classes, heritage scope, getter/setter
+pairs, escaped duplicates, private constructor names, deletion, and super access.
+Assignment, update, destructuring, loop, call, construction, and tagged-template
+targets retain private references. Private storage, execution, and eval context
+remain Unsupported and receive no positive execution credit.
+Nested private class scopes exercise the unchanged parser guard on two-mebibyte
+threads. Dynamic Function and UTF-16 Script goals accept the same private grammar;
+host-abort controls retain unimplemented generator sources after this parser step.

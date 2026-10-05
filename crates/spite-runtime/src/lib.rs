@@ -1084,6 +1084,12 @@ impl Realm {
             ExprKind::Member(base, name) => {
                 let base = self.expression(base)?;
                 let key = match name {
+                    PropertyName::Private(_) => {
+                        return Err(Self::unsupported(
+                            target.span,
+                            "private elements are not implemented",
+                        ));
+                    }
                     PropertyName::Literal(literal) => self.literal_value(literal, target.span)?,
                     PropertyName::Computed(expression) => self.expression(expression)?,
                 };
@@ -1375,6 +1381,12 @@ impl Realm {
                 Value::String(JsString::from_code_units(units))
             }
             ExprKind::Literal(literal) => self.literal_value(literal, expr.span)?,
+            ExprKind::PrivateIn { .. } => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "private brand checks are not implemented",
+                ));
+            }
             ExprKind::Identifier(name) => {
                 let mut reference = self.resolve(name, expr.span)?;
                 self.get(&mut reference, expr.span)?

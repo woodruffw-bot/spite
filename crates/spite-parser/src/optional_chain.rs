@@ -11,6 +11,10 @@ impl Parser {
             let expression = self.expression_with_in(1, true)?;
             self.expect("]")?;
             ChainStepKind::Property(PropertyName::Computed(Box::new(expression)))
+        } else if self.at("#") {
+            let name = self.private_identifier()?;
+            self.use_private_identifier(&name)?;
+            ChainStepKind::Property(PropertyName::Private(name))
         } else {
             if matches!(self.current().kind, Kind::Template { .. }) {
                 return Err(self.error("optional chains cannot be tagged templates"));

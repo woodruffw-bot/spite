@@ -62,8 +62,9 @@ fn top_level_eval_goals_keep_control_and_constructor_early_errors() {
         })
         .collect();
     insta::assert_debug_snapshot!(diagnostics);
+    assert!(parse_script_utf16(&JsString::from("class C{#field;}")).is_ok());
     assert_eq!(
-        parse_script_utf16(&JsString::from("class C{#field;}"))
+        parse_script_utf16(&JsString::from("function* gap(){}"))
             .unwrap_err()
             .kind,
         DiagnosticKind::Unsupported

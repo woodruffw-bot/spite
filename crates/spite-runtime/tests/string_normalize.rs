@@ -201,7 +201,7 @@ fn long_default_inputs_work_and_opted_in_failures_bypass_cleanup() {
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{'x'.normalize({toString(){Function('class C{#field;}');}});}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{'x'.normalize({toString(){Function('function* gap(){}');}});}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

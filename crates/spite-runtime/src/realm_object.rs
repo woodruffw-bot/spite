@@ -546,6 +546,12 @@ impl Realm {
             };
             self.tick(property.span)?;
             let key = match &property.name {
+                PropertyName::Private(_) => {
+                    return Err(Self::unsupported(
+                        property.span,
+                        "private elements are not implemented",
+                    ));
+                }
                 PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,
                 PropertyName::Computed(expression) => self.expression(expression)?,
             };

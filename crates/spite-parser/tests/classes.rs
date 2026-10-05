@@ -56,14 +56,7 @@ fn class_early_errors_snapshot() {
 
 #[test]
 fn incomplete_class_features_never_receive_negative_test_credit() {
-    for source in [
-        "class C{#x;}",
-        "class C{m(){return this.#x;} #x;}",
-        "class C{get #x(){}}",
-        "class C{m(){return #x in this;} #x;}",
-        "class C{*g(){}}",
-        "class C{async m(){}}",
-    ] {
+    for source in ["class C{*g(){}}", "class C{async m(){}}"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

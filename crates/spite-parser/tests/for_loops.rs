@@ -79,8 +79,8 @@ fn header_validation_and_label_contexts_are_preserved() {
 #[test]
 fn unsupported_header_forms_are_not_syntax_error_passes() {
     for source in [
-        "for (var [x] = class {#field;};;) ;",
-        "for (var {x} = class {#field;};;) ;",
+        "for (var [x] = function* gap(){};;) ;",
+        "for (var {x} = function* gap(){};;) ;",
         "for await (x of y) ;",
     ] {
         assert_eq!(

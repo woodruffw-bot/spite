@@ -1,0 +1,303 @@
+---
+source: crates/spite-parser/tests/private_elements.rs
+expression: errors
+---
+[
+    (
+        "o.#x",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 2,
+                end: 4,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "#x in o",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 0,
+                end: 2,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "class C{m(o){return o.#x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 22,
+                end: 24,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "class C{m(o){return o?.#x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 23,
+                end: 25,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "class C{m(o){return #x in o;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 20,
+                end: 22,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "class C{m(){return class{m(o){return o.#x;}};}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 39,
+                end: 41,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "class C extends (o.#x){#x;}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 19,
+                end: 21,
+            },
+            message: "private identifier is not declared in an enclosing class",
+        },
+    ),
+    (
+        "class C{#x;#x;}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 11,
+                end: 13,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{#x;static #x;}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 18,
+                end: 20,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{#x;#\\u0078;}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 11,
+                end: 18,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{get #x(){}get #x(){}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 22,
+                end: 24,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{get #x(){}static set #x(v){}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 29,
+                end: 31,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{get #x(){}set #x(v){}get #x(){}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 33,
+                end: 35,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{#x;get #x(){}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 17,
+            },
+            message: "duplicate private class element",
+        },
+    ),
+    (
+        "class C{#constructor;}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 8,
+                end: 20,
+            },
+            message: "invalid private class element name",
+        },
+    ),
+    (
+        "class C{static #constructor(){}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 15,
+                end: 27,
+            },
+            message: "invalid private class element name",
+        },
+    ),
+    (
+        "class C{get #\\u0063onstructor(){}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 12,
+                end: 29,
+            },
+            message: "invalid private class element name",
+        },
+    ),
+    (
+        "class C{#x;m(o){delete o.#x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 23,
+                end: 27,
+            },
+            message: "cannot delete a private element",
+        },
+    ),
+    (
+        "class C{#x;m(o){delete ((o.#x));}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 23,
+                end: 31,
+            },
+            message: "cannot delete a private element",
+        },
+    ),
+    (
+        "class C{#x;m(o){delete o?.#x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 23,
+                end: 28,
+            },
+            message: "cannot delete a private element",
+        },
+    ),
+    (
+        "class C{#x;m(o){return super.#x;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 29,
+                end: 30,
+            },
+            message: "super cannot access private properties",
+        },
+    ),
+    (
+        "class C{#x;m(o){return !#x in o;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 24,
+                end: 25,
+            },
+            message: "expected an expression",
+        },
+    ),
+    (
+        "class C{#x;m(o){return 1 < #x in o;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 27,
+                end: 28,
+            },
+            message: "expected an expression",
+        },
+    ),
+    (
+        "class C{#x;m(o){return #x + 1;}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 26,
+                end: 27,
+            },
+            message: "expected in",
+        },
+    ),
+    (
+        "class C{#x;m(o){for(let x=#x in o;;){}}}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 26,
+                end: 27,
+            },
+            message: "expected an expression",
+        },
+    ),
+    (
+        "class C{# x;}",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 8,
+                end: 9,
+            },
+            message: "unexpected character",
+        },
+    ),
+    (
+        "({#x:1})",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 2,
+                end: 3,
+            },
+            message: "expected an object property name",
+        },
+    ),
+]

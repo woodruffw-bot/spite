@@ -155,6 +155,12 @@ impl Realm {
                     continue;
                 }
                 let key = match element.name().expect("field or method key") {
+                    PropertyName::Private(_) => {
+                        return Err(Self::unsupported(
+                            span,
+                            "private elements are not implemented",
+                        ));
+                    }
                     PropertyName::Literal(literal) => self.literal_value(literal, span)?,
                     PropertyName::Computed(expression) => self.expression(expression)?,
                 };

@@ -167,8 +167,8 @@ impl<'a> Lexer<'a> {
             ];
             let Some(punct) = PUNCT.iter().find(|p| {
                 self.rest().starts_with(**p)
-                    // Leave private names for an Unsupported parser diagnostic;
-                    // non-initial hashbangs and malformed bare # stay Syntax.
+                    // PrivateIdentifier's hash must immediately precede an
+                    // IdentifierName; malformed hashes stay lexical errors.
                     && !(**p == "#"
                         && !self
                             .rest()

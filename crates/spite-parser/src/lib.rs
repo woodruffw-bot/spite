@@ -14,6 +14,7 @@ pub mod json;
 mod lexer;
 mod object;
 mod optional_chain;
+mod private;
 mod source;
 mod template;
 
@@ -166,6 +167,7 @@ struct Parser {
     allow_super_call: bool,
     allow_arguments: bool,
     allow_await_identifier: bool,
+    private_scopes: Vec<private::PrivateScope>,
 }
 
 impl Parser {
@@ -196,6 +198,7 @@ impl Parser {
             allow_super_call: false,
             allow_arguments: true,
             allow_await_identifier: true,
+            private_scopes: Vec::new(),
         })
     }
 
@@ -615,6 +618,7 @@ impl Parser {
         }
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
+            ExprKind::PrivateIn { value, .. } => value.depth,
             ExprKind::Update { argument, .. } => argument.depth,
             ExprKind::Function(function) => function
                 .parameters
@@ -628,7 +632,7 @@ impl Parser {
                 .map(|element| {
                     let key = match element.name() {
                         Some(PropertyName::Computed(key)) => key.depth,
-                        Some(PropertyName::Literal(_)) | None => 0,
+                        Some(PropertyName::Literal(_) | PropertyName::Private(_)) | None => 0,
                     };
                     key.max(match element {
                         ClassElement::Method { property, .. } => property.value.depth,
@@ -668,11 +672,11 @@ impl Parser {
             }
             ExprKind::Member(base, name) => base.depth.max(match name {
                 PropertyName::Computed(key) => key.depth,
-                PropertyName::Literal(_) => 0,
+                PropertyName::Literal(_) | PropertyName::Private(_) => 0,
             }),
             ExprKind::SuperProperty(name) => match name {
                 PropertyName::Computed(key) => key.depth,
-                PropertyName::Literal(_) => 0,
+                PropertyName::Literal(_) | PropertyName::Private(_) => 0,
             },
             ExprKind::SuperCall(arguments) => arguments
                 .iter()
@@ -697,7 +701,9 @@ impl Parser {
                 .iter()
                 .map(|step| match &step.kind {
                     ChainStepKind::Property(PropertyName::Computed(expression)) => expression.depth,
-                    ChainStepKind::Property(PropertyName::Literal(_)) => 0,
+                    ChainStepKind::Property(
+                        PropertyName::Literal(_) | PropertyName::Private(_),
+                    ) => 0,
                     ChainStepKind::Call(arguments) => arguments
                         .iter()
                         .map(|argument| argument.expression().depth)
@@ -731,7 +737,7 @@ impl Parser {
                     ObjectElement::Property(property) => {
                         let key_depth = match &property.name {
                             PropertyName::Computed(key) => key.depth,
-                            PropertyName::Literal(_) => 0,
+                            PropertyName::Literal(_) | PropertyName::Private(_) => 0,
                         };
                         key_depth.max(property.value.depth)
                     }
@@ -753,7 +759,9 @@ impl Parser {
     fn member_property_name(&mut self) -> Result<PropertyName, Diagnostic> {
         Ok(if self.eat(".") {
             if self.at("#") {
-                return Err(self.unsupported("private property access is not implemented"));
+                let name = self.private_identifier()?;
+                self.use_private_identifier(&name)?;
+                return Ok(PropertyName::Private(name));
             }
             let token = self.bump();
             let name = match token.kind {
@@ -790,7 +798,20 @@ impl Parser {
         result
     }
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
-        let mut left = if minimum <= 2 {
+        let mut left = if minimum <= 10 && self.allow_in && self.at("#") {
+            let name = self.private_identifier()?;
+            self.use_private_identifier(&name)?;
+            self.expect("in")?;
+            let value = self.expression(11)?;
+            let span = Span::new(name.span.start, value.span.end);
+            self.make_expr(
+                ExprKind::PrivateIn {
+                    name,
+                    value: Box::new(value),
+                },
+                span,
+            )?
+        } else if minimum <= 2 {
             if self.pattern_cover_end().is_some_and(|end| {
                 self.tokens
                     .get(end + 1)
@@ -1108,7 +1129,7 @@ impl Parser {
                     Err(early(span, "super call requires a derived constructor"))
                 }
             }
-            Kind::Word(_) | Kind::Punct("/" | "#") => Err(Diagnostic::new(
+            Kind::Word(_) | Kind::Punct("/") => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
                 "expression form is not implemented",
@@ -1765,7 +1786,9 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                     ChainStepKind::Property(PropertyName::Computed(expression)) => {
                         validate_expr(expression, strict)?
                     }
-                    ChainStepKind::Property(PropertyName::Literal(_)) => {}
+                    ChainStepKind::Property(
+                        PropertyName::Literal(_) | PropertyName::Private(_),
+                    ) => {}
                     ChainStepKind::Call(arguments) => {
                         for argument in arguments {
                             validate_expr(argument.expression(), strict)?;
@@ -1811,6 +1834,7 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
                 validate_expr(key, strict)?;
             }
         }
+        ExprKind::PrivateIn { value, .. } => validate_expr(value, strict)?,
         ExprKind::SuperProperty(PropertyName::Computed(key)) => validate_expr(key, strict)?,
         ExprKind::SuperCall(arguments) => {
             for argument in arguments {
@@ -1842,6 +1866,9 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Unary(UnaryOp::Delete, e) if strict && assignment_name(e).is_some() => {
             // ECMA-262 13.5.1.1 also rejects parenthesized identifier references.
             return Err(early(e.span, "cannot delete an identifier in strict mode"));
+        }
+        ExprKind::Unary(UnaryOp::Delete, e) if private::is_private_reference(e) => {
+            return Err(early(e.span, "cannot delete a private element"));
         }
         ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => validate_expr(e, strict)?,
         ExprKind::Binary(_, a, b) => {

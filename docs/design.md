@@ -2146,3 +2146,21 @@ the block's Await restriction while their concise bodies reset it. Literal
 arguments references are forbidden, including through arrows. Direct eval instead
 uses its own grammar context and can observe the block's zero-length unmapped
 arguments object, as required by ordinary declaration instantiation.
+
+## Private element grammar
+
+PrivateIdentifier syntax retains its decoded StringValue, including the initial
+hash, and its full source range. Class fields/methods/accessors, member references,
+optional chains, and private-in expressions use that syntax. Private-in consumes a
+ShiftExpression on the right and participates in relational precedence; bare
+private identifiers are not ordinary expressions or property names (13.10).
+
+Each class body collects private declarations and references independently of
+ordinary bindings. On leaving a body, declarations resolve its references and
+unresolved names pass to the containing class. This implements forward references
+through functions and nested classes without making a class's names visible in
+its own heritage (AllPrivateIdentifiersValid, 16.1.1). Duplicate names fail except
+for one getter/setter pair with matching staticness. Escapes normalize before
+comparison; private constructor names, deletion, and super access are early errors.
+Execution and direct eval's private environment remain Unsupported until private
+storage and runtime name resolution are implemented.

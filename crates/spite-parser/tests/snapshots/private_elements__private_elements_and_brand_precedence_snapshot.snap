@@ -1,0 +1,508 @@
+---
+source: crates/spite-parser/tests/private_elements.rs
+expression: "parse_script(\"class C{#x=1;static #y;get #z(){return this.#x;}set #z(v){this.#x=v;}m(o){return #x in o << 1 === true;}n(o){return o?.#x;}}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Class(
+                Class {
+                    name: Some(
+                        FunctionName {
+                            name: "C",
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                    ),
+                    heritage: None,
+                    default_constructor: true,
+                    constructor: Function {
+                        name: None,
+                        parameters: [],
+                        body: FunctionBody {
+                            statements: [],
+                            strict: false,
+                        },
+                        source: FunctionSource(
+                            "class C{#x=1;static #y;get #z(){return this.#x;}set #z(v){this.#x=v;}m(o){return #x in o << 1 === true;}n(o){return o?.#x;}}",
+                        ),
+                    },
+                    elements: [
+                        Field {
+                            is_static: false,
+                            name: Private(
+                                PrivateIdentifier {
+                                    name: "#x",
+                                    span: Span {
+                                        start: 8,
+                                        end: 10,
+                                    },
+                                },
+                            ),
+                            initializer: Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            1.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 11,
+                                        end: 12,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 8,
+                                end: 13,
+                            },
+                        },
+                        Field {
+                            is_static: true,
+                            name: Private(
+                                PrivateIdentifier {
+                                    name: "#y",
+                                    span: Span {
+                                        start: 20,
+                                        end: 22,
+                                    },
+                                },
+                            ),
+                            initializer: None,
+                            span: Span {
+                                start: 13,
+                                end: 23,
+                            },
+                        },
+                        Method {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Private(
+                                    PrivateIdentifier {
+                                        name: "#z",
+                                        span: Span {
+                                            start: 27,
+                                            end: 29,
+                                        },
+                                    },
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 2,
+                                                                    kind: Member(
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: This,
+                                                                            span: Span {
+                                                                                start: 39,
+                                                                                end: 43,
+                                                                            },
+                                                                        },
+                                                                        Private(
+                                                                            PrivateIdentifier {
+                                                                                name: "#x",
+                                                                                span: Span {
+                                                                                    start: 44,
+                                                                                    end: 46,
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 39,
+                                                                        end: 46,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 32,
+                                                            end: 47,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "get #z(){return this.#x;}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 23,
+                                        end: 48,
+                                    },
+                                },
+                                kind: Getter,
+                                span: Span {
+                                    start: 23,
+                                    end: 48,
+                                },
+                            },
+                        },
+                        Method {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Private(
+                                    PrivateIdentifier {
+                                        name: "#z",
+                                        span: Span {
+                                            start: 52,
+                                            end: 54,
+                                        },
+                                    },
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [
+                                                Ordinary(
+                                                    BindingElement {
+                                                        pattern: BindingPattern {
+                                                            kind: Identifier(
+                                                                "v",
+                                                            ),
+                                                            span: Span {
+                                                                start: 55,
+                                                                end: 56,
+                                                            },
+                                                        },
+                                                        initializer: None,
+                                                    },
+                                                ),
+                                            ],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Expression(
+                                                            Expr {
+                                                                depth: 3,
+                                                                kind: Assign(
+                                                                    Expr {
+                                                                        depth: 2,
+                                                                        kind: Member(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: This,
+                                                                                span: Span {
+                                                                                    start: 58,
+                                                                                    end: 62,
+                                                                                },
+                                                                            },
+                                                                            Private(
+                                                                                PrivateIdentifier {
+                                                                                    name: "#x",
+                                                                                    span: Span {
+                                                                                        start: 63,
+                                                                                        end: 65,
+                                                                                    },
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 58,
+                                                                            end: 65,
+                                                                        },
+                                                                    },
+                                                                    Expr {
+                                                                        depth: 1,
+                                                                        kind: Identifier(
+                                                                            "v",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 66,
+                                                                            end: 67,
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                span: Span {
+                                                                    start: 58,
+                                                                    end: 67,
+                                                                },
+                                                            },
+                                                        ),
+                                                        span: Span {
+                                                            start: 58,
+                                                            end: 68,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "set #z(v){this.#x=v;}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 48,
+                                        end: 69,
+                                    },
+                                },
+                                kind: Setter,
+                                span: Span {
+                                    start: 48,
+                                    end: 69,
+                                },
+                            },
+                        },
+                        Method {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Literal(
+                                    String(
+                                        "m",
+                                    ),
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [
+                                                Ordinary(
+                                                    BindingElement {
+                                                        pattern: BindingPattern {
+                                                            kind: Identifier(
+                                                                "o",
+                                                            ),
+                                                            span: Span {
+                                                                start: 71,
+                                                                end: 72,
+                                                            },
+                                                        },
+                                                        initializer: None,
+                                                    },
+                                                ),
+                                            ],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 4,
+                                                                    kind: Binary(
+                                                                        StrictEqual,
+                                                                        Expr {
+                                                                            depth: 3,
+                                                                            kind: PrivateIn {
+                                                                                name: PrivateIdentifier {
+                                                                                    name: "#x",
+                                                                                    span: Span {
+                                                                                        start: 81,
+                                                                                        end: 83,
+                                                                                    },
+                                                                                },
+                                                                                value: Expr {
+                                                                                    depth: 2,
+                                                                                    kind: Binary(
+                                                                                        LeftShift,
+                                                                                        Expr {
+                                                                                            depth: 1,
+                                                                                            kind: Identifier(
+                                                                                                "o",
+                                                                                            ),
+                                                                                            span: Span {
+                                                                                                start: 87,
+                                                                                                end: 88,
+                                                                                            },
+                                                                                        },
+                                                                                        Expr {
+                                                                                            depth: 1,
+                                                                                            kind: Literal(
+                                                                                                Number(
+                                                                                                    1.0,
+                                                                                                ),
+                                                                                            ),
+                                                                                            span: Span {
+                                                                                                start: 92,
+                                                                                                end: 93,
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 87,
+                                                                                        end: 93,
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                            span: Span {
+                                                                                start: 81,
+                                                                                end: 93,
+                                                                            },
+                                                                        },
+                                                                        Expr {
+                                                                            depth: 1,
+                                                                            kind: Literal(
+                                                                                Boolean(
+                                                                                    true,
+                                                                                ),
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 98,
+                                                                                end: 102,
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 81,
+                                                                        end: 102,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 74,
+                                                            end: 103,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "m(o){return #x in o << 1 === true;}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 69,
+                                        end: 104,
+                                    },
+                                },
+                                kind: Method,
+                                span: Span {
+                                    start: 69,
+                                    end: 104,
+                                },
+                            },
+                        },
+                        Method {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Literal(
+                                    String(
+                                        "n",
+                                    ),
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            name: None,
+                                            parameters: [
+                                                Ordinary(
+                                                    BindingElement {
+                                                        pattern: BindingPattern {
+                                                            kind: Identifier(
+                                                                "o",
+                                                            ),
+                                                            span: Span {
+                                                                start: 106,
+                                                                end: 107,
+                                                            },
+                                                        },
+                                                        initializer: None,
+                                                    },
+                                                ),
+                                            ],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 2,
+                                                                    kind: OptionalChain {
+                                                                        base: Expr {
+                                                                            depth: 1,
+                                                                            kind: Identifier(
+                                                                                "o",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 116,
+                                                                                end: 117,
+                                                                            },
+                                                                        },
+                                                                        steps: [
+                                                                            ChainStep {
+                                                                                optional: true,
+                                                                                kind: Property(
+                                                                                    Private(
+                                                                                        PrivateIdentifier {
+                                                                                            name: "#x",
+                                                                                            span: Span {
+                                                                                                start: 119,
+                                                                                                end: 121,
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 117,
+                                                                                    end: 121,
+                                                                                },
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                    span: Span {
+                                                                        start: 116,
+                                                                        end: 121,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 109,
+                                                            end: 122,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "n(o){return o?.#x;}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 104,
+                                        end: 123,
+                                    },
+                                },
+                                kind: Method,
+                                span: Span {
+                                    start: 104,
+                                    end: 123,
+                                },
+                            },
+                        },
+                    ],
+                    source: FunctionSource(
+                        "class C{#x=1;static #y;get #z(){return this.#x;}set #z(v){this.#x=v;}m(o){return #x in o << 1 === true;}n(o){return o?.#x;}}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 124,
+            },
+        },
+    ],
+    strict: false,
+}
