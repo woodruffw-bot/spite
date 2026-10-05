@@ -40,7 +40,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 9081 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 10051 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -102,7 +102,7 @@ comparison and upstream Git blob hashes verify the original bytes. Negative
 diagnostics identify forbidden rest initializers or following elements at their
 original tokens. Both stable and MSRV pass the new 308 variants and the existing
 162 catch and 238 loop variants with ordinary unlimited defaults. Lexical loop
-pattern fixtures remain a separate review.
+pattern fixtures are recorded in the synchronous loop inventory below.
 
 Var declaration patterns now share the pattern engine while using ordered
 ResolveBinding/PutValue. Script/function hoisting collects every nested bound
@@ -124,7 +124,7 @@ blob hashes verify the source inventory; var's assignment-mode initialization is
 reviewed separately. Both stable and MSRV pass the 154 new variants, 308 lexical
 declaration variants, 162 catch variants, 238 loop variants, and 104 with/strict
 Function variants with the existing pin, helpers, and unlimited defaults. Var
-loop-pattern fixtures remain a separate review.
+loop-pattern fixtures are recorded in the synchronous loop inventory below.
 
 Formal binding patterns now execute in ordinary functions, arrows, methods,
 setters, constructors, and dynamic Function compilation. Six parser regressions
@@ -171,8 +171,20 @@ hashes verify every selected file. Negative spans identify invalid nested/member
 targets, optional chains, rest separators/initializers, strict names, and escaped
 reserved shorthand references. Both stable and MSRV pass all 575 new variants and
 2,269 binding, iteration, with, and Function control variants under the existing
-pin, eight unchanged helpers, and ordinary unlimited defaults. Loop-pattern
-originals remain a separate review.
+pin, eight unchanged helpers, and ordinary unlimited defaults.
+
+The synchronous loop pattern inventory adds 32 for-in parse-negative sources and
+482 for-of sources, producing 970 variants: 826 harness positives and 144 reviewed
+parse negatives. The for-of inventory includes 245 assignment sources and 79 each
+of var, let, and const binding sources. Complete programs, context algorithms,
+metadata, and exact negative diagnostics were reviewed; template comparisons and
+Git blob hashes verify the unchanged originals. All 602 candidates were reviewed.
+Seventy-nine generator-dependent and nine class-dependent whole files remain
+excluded without credit. Six excluded class programs lack the class feature tag;
+one retained ordinary function-name original has that tag but no class syntax.
+Both stable and MSRV pass all 970 selected variants with the existing pin, eight
+helpers, and ordinary unlimited defaults. Unsupported syntax cannot satisfy a
+negative.
 
 Identifier names retain their exact decoded code point sequence. Canonically
 equivalent spellings are distinct bindings. Escapes cannot turn reserved words
@@ -1135,8 +1147,8 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 9081 variants are four raw positives, 8528 positives using the upstream
-harness, and 549 reviewed parse negatives. Component fixtures and harness files do
+Rust. Its 10051 variants are four raw positives, 9354 positives using the upstream
+harness, and 693 reviewed parse negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
 length descriptors in 148 variants. Local controls also cover accessors, Symbol

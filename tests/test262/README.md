@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 4746 unmodified test fixtures and eight harness files come from
+These 5260 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -971,8 +971,8 @@ generators and four require classes; those whole files remain excluded without
 credit. Exact comparison confirms each let/const pair differs only in its
 template comment, description, and declaration keyword. Both originals are
 vendored unchanged and run in both Script modes. The existing pin, eight helpers,
-and ordinary unlimited defaults are retained. Lexical loop-pattern directories
-remain a separate upstream fixture review.
+and ordinary unlimited defaults are retained. Lexical loop-pattern originals are
+recorded in the synchronous loop review below.
 
 ## Var declaration pattern review
 
@@ -990,7 +990,7 @@ let sources verifies the shared executable bodies and metadata, with var's
 different BindingInitialization environment reviewed against the specification.
 Git blob identities and SHA-256 digests verify every vendored original. The pin,
 eight helpers, and ordinary unlimited defaults are retained. Var loop-pattern
-fixtures remain a separate upstream review.
+originals are recorded in the synchronous loop review below.
 
 ## Formal binding pattern review
 
@@ -1034,8 +1034,29 @@ syntax; its bytes and metadata remain unchanged. Exact Git blob hashes verify
 the original sources. Negative diagnostics identify the intended assignment
 target, forbidden rest equals/comma, strict reference, or reserved shorthand.
 Unsupported syntax cannot satisfy a negative. Both stable and MSRV pass all 575
-variants with ordinary unlimited defaults. The pin and eight helpers are unchanged;
-loop-pattern fixtures remain a separate review.
+variants with ordinary unlimited defaults. The pin and eight helpers are unchanged.
+
+## Synchronous loop pattern fixtures
+
+The selection adds 32 unchanged for-in parse-negative sources and 482 unchanged
+for-of sources. Their 970 variants comprise 826 harness positives and 144 reviewed
+parse negatives. The for-of sources include 245 assignment patterns and 79 each
+of var, let, and const binding patterns. They cover ordered reference resolution,
+defaults, nested/rest patterns, iterator acquisition and closing, primitive
+sources, property access, anonymous names, and abrupt completion before the loop
+body runs. The negatives reject invalid targets, strict references, reserved
+identifiers, forbidden rest equals/comma, and loop binding initializers at their
+intended tokens.
+
+All 602 originals were reviewed. Seventy-nine require generators and nine require
+classes; they remain excluded as whole files without credit. Six class-dependent
+binding originals omit the class feature tag, while one ordinary function-name
+original has a historical class tag without class syntax. Selection follows the
+complete original programs, and their metadata remains unchanged. Exact template
+comparisons account for assignment versus binding contexts and var/let/const
+headers; original Git blob hashes verify every source. Both stable and MSRV pass
+all 970 variants with ordinary unlimited defaults. The pin and eight helpers are
+unchanged. Unsupported syntax cannot satisfy a negative.
 
 ## Scope and maintenance
 
@@ -1058,7 +1079,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 9081 variants from 4727 reviewed sources: the eleven
+The `spite-test262` command runs 10051 variants from 5241 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1076,12 +1097,13 @@ files (71 positive and 11 parse-negative), and 154 lexical declaration pattern
 files (142 positive and 12 parse-negative), and 77 var declaration pattern
 files (71 positive and six parse-negative), and 507 formal binding pattern
 files (426 positive and 81 parse-negative), and 335 destructuring assignment
-files (258 positive and 77 parse-negative). The method/accessor files
+files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
+files (426 positive and 88 parse-negative). The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-8528 positives using the upstream harness, and 549 reviewed parse-negative variants.
+9354 positives using the upstream harness, and 693 reviewed parse-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
