@@ -25,4 +25,18 @@ impl Trace for Entry {
             .flat_map(Trace::trace)
             .chain(environment.into_iter().flat_map(Trace::trace))
     }
+
+    fn ephemerons(&self) -> impl Iterator<Item = (&Handle, Option<&Handle>)> {
+        let object = match self {
+            Self::Object(object) => Some(object),
+            Self::Environment(_) => None,
+        };
+        object.into_iter().flat_map(Trace::ephemerons)
+    }
+
+    fn retain_ephemerons(&mut self, retain: impl Fn(&Handle) -> bool) {
+        if let Self::Object(object) = self {
+            object.retain_ephemerons(retain);
+        }
+    }
 }

@@ -91,6 +91,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add iterative tracing with explicit roots and failure-before-sweep guarantees.
 - [x] Trace object-key ephemerons iteratively without retaining weak keys or unreachable conditional cycles.
 - [x] Release inactive ephemeron entries and their primitive values after successful marking.
+- [x] Add checked object-key WeakMap storage with conditional value tracing and dense inactive-entry removal.
 - [ ] Root interpreter temporaries, environments, intrinsics, and host-held object values.
 - [x] Add checked host-root tokens with clone/drop lifetimes and bounded registry reuse.
 - [x] Add object identity values and trace object-valued data properties, including cycles.

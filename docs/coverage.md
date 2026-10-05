@@ -480,6 +480,13 @@ ownership, stale generations alongside live replacements, late key activation,
 all insufficient work budgets, invalid handles, and unreachable containers.
 Cleanup runs after the complete reachability fixpoint and all fallible checks;
 failed collection preserves entries as well as heap values and generations.
+Runtime object records now include private object-key WeakMap storage, with a
+dense entry vector and identity hash index. Nine regressions cover replacement,
+deletion and moved indices, both container/key root requirements, conditional
+cycles and back-edges, newly activated maps, host roots, Symbol value release,
+generation reuse, invalid handles/brands, and opt-in failures before mutation.
+The object and heap-entry trace adapters forward conditional edges and cleanup;
+JavaScript WeakMap exposure and Symbol keys remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

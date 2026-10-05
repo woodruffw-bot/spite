@@ -2291,3 +2291,14 @@ keys. Presenting a live key preserves identity through cleanup; no enumeration o
 liveness observation is exposed. Constructor acquisition and iterator closing
 follow the ordinary Set sequence, including host-abort propagation and default
 derived forwarding. WeakMap's ephemerons and WeakRef/finalization remain separate.
+
+Object-key WeakMapData uses a dense vector of key/value entries and a hash index
+(24.3). Heap handles preserve key identity without rooting their objects. The
+ordinary object and heap entry records forward these entries as ephemerons;
+values are not enumerated as strong edges. Successful collection removes dead
+entries with swap removal and updates moved indices without allocating. Primitive
+values, including Symbols, are dropped with inactive entries. Checked storage
+validates object keys and values, brands, work and reservations before mutation.
+JavaScript WeakMap intrinsics remain pending until Symbol-key reachability is
+implemented; the internal object-key APIs are private and temporarily allow dead
+code for that staged integration.
