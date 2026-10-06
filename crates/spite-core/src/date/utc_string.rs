@@ -4,8 +4,8 @@ use super::{DateTimeString, DateTimeZone, UtcDateTime};
 use crate::JsString;
 use std::fmt::Write;
 
-const WEEKDAYS: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS: [&str; 12] = [
+pub(super) const WEEKDAYS: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+pub(super) const MONTHS: [&str; 12] = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
@@ -102,7 +102,7 @@ pub fn parse_utc_date_string(source: &JsString) -> Option<i64> {
     (UtcDateTime::from_time_value(time)? == expected).then_some(time)
 }
 
-fn ascii(units: &[u16], expected: &str) -> bool {
+pub(super) fn ascii(units: &[u16], expected: &str) -> bool {
     units.len() == expected.len()
         && units
             .iter()
@@ -110,7 +110,7 @@ fn ascii(units: &[u16], expected: &str) -> bool {
             .all(|(&unit, byte)| unit == u16::from(byte))
 }
 
-fn name(units: &[u16], names: &[&str]) -> Option<u8> {
+pub(super) fn name(units: &[u16], names: &[&str]) -> Option<u8> {
     names
         .iter()
         .position(|name| ascii(units, name))

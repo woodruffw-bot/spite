@@ -778,6 +778,22 @@ receiver branding and metadata. The new cohort passes on both compilers under
 UTC, New York, Lord Howe and Paris. The ten harness helpers, original source bytes
 and unlimited runtime defaults are unchanged.
 
+The shared Date core now formats DateString, TimeString, TimeZoneString and finite
+ToDateString output with unclipped local fields and minimum-width literal years.
+The normative GMT hours/minutes wrap at 24 hours and omit seconds; historical
+seconds and offsets of a day or more are retained in the permitted optional
+timezone name `(UTC+HH:MM:SS)` or its negative form. Other offsets use an empty
+name. The borrowed UTF-16 parser validates the actual calendar/weekday and both
+offset representations, subtracts the exact offset, then checks only the final
+UTC range. This preserves own whole-second round trips independently of host
+configuration, including both Date boundaries and every native offset.
+Four core regressions cover all short years, 4,096 dispersed timestamp/offset
+pairs, boundary seconds, malformed calendars/suffixes and non-ASCII code units
+at every output position. The full insta snapshot was inspected; an independent
+Gregorian calculation confirms 28 offset/calendar strings and both native i64
+endpoints. Runtime string methods and Date() still await wiring in the next step;
+the pin, fixture inventory and unlimited defaults are unchanged.
+
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
