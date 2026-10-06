@@ -69,7 +69,7 @@ impl Realm {
 
     // RegExpCreate (22.2.3.1) bypasses IsRegExp, call identity and original-slot
     // copying. Its Pattern argument is always passed directly to ToString.
-    pub(in crate::function) fn regexp_create(
+    pub(crate) fn regexp_create(
         &mut self,
         pattern: Value,
         flags: Value,

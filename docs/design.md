@@ -114,14 +114,19 @@ subtraction retains the left operand's result. Operator expressions exclude
 implicit unions and ranges. Unicode property expressions accept only exact,
 case-sensitive edition-17 property aliases and pinned Unicode 18 general-category
 and script values. String properties require v mode, cannot use P escapes, and
-participate in class MayContainStrings analysis. Matching remains Unsupported
-after the supported grammar validates.
+participate in class MayContainStrings analysis. Pattern validation is separate
+from the native matching operations described below.
 The public validate_regexp_pattern entry point shares this validator with
 constructor input. It accepts the original UTF-16 body without literal delimiters,
 including raw line terminators and lone surrogates, and returns the exact capture
 count. Flag errors precede Pattern errors. Diagnostics retain the caller's source
-span rather than treating UTF-16 offsets as source byte positions. Literal
-validation keeps its existing Unsupported matching boundary.
+span rather than treating UTF-16 offsets as source byte positions.
+Validated literals produce AST values retaining the original body and flag Strings
+and the complete token byte span. Each evaluation calls intrinsic RegExpCreate
+(13.2.7), creating a fresh branded object with +0 lastIndex. Public RegExp bindings
+and Symbol.match hooks cannot intercept creation. Constructor and literal input
+share validation and native storage; unimplemented matching remains a runtime
+Unsupported boundary after any preceding effects.
 Arrow-head lookahead now probes the formal-parameter and expression grammars
 rather than balancing division tokens. Successful heads retain their parameter
 ASTs; rejected heads retain contextual recognition results. Memo keys include
@@ -131,7 +136,7 @@ selected heads replay their own uses exactly once. Scanner failures remain
 authoritative, and RegExp rescans invalidate cached heads. Probes retain forbidden binding names and rest initializer/list continuations
 with a deferred diagnostic while consuming the expression/list grammar. The
 first deferred error keeps its exact rejection point; a lexically complete RegExp
-literal contributes its boundary and its Pattern/flag or Unsupported diagnostic. Temporary
+literal contributes its AST or its Pattern/flag diagnostic. Temporary
 probe values cannot enter a public AST: selecting the head reports the deferred
 error first, while ordinary expressions parse normally.
 Destructuring assignment, nested-target and for-in/of covers similarly probe the
@@ -142,7 +147,7 @@ references. Rest continuations and forbidden methods/accessors are consumed only
 inside probes, with a deferred error that prevents returning their temporary
 pattern ASTs. Ordinary object/array literals retain their own prototype-setter,
 initialized-shorthand and spread rules. RegExp rescans invalidate both cover memo
-tables. Before returning executable RegExp literal ASTs, implement native matching.
+tables. Valid RegExp literal ASTs survive the same cover grammar as other expressions.
 Computed class accessor lookahead parses its name with the expression grammar and
 retains that AST and its private-name uses for the ensuing accessor or ASI field.
 Nested computed names are parsed once.

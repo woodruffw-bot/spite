@@ -12,7 +12,7 @@ area. Eighteen newly vendored originals add 36 normal/strict positives for nativ
 literal search results and Array stringification, exec name/length/descriptors,
 construction rejection and own-brand checks across object, function, primitive,
 wrapper and undefined receivers. The prior not-a-constructor program is unchanged.
-One whole program still needs RegExp literal execution and broader matching and
+One whole program still needs broader matching and
 remains outside the corpus. This is a focused review, not a complete directory
 review. Both compiler versions pass every selected program with ordinary unlimited
 defaults. The existing pin and ten harness helpers are unchanged.

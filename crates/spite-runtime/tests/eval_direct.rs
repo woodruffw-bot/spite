@@ -36,10 +36,10 @@ fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_ho
     let mut realm = Realm::default();
     realm.eval("var marker=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{eval('marker=1; /./g;');}catch{marker=2;}finally{marker=3;}"),
+        realm.eval("try{eval('marker=1; /./g.test(0);');}catch{marker=2;}finally{marker=3;}"),
         Err(Error::Unsupported { .. })
     ));
-    assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+    assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
 }
 
 #[test]
@@ -63,11 +63,11 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
         realm.eval("var marker=0;").unwrap();
         assert!(matches!(
             realm.eval(&format!(
-                "try{{eval('marker=1; /{pattern}/;');}}catch{{marker=2;}}finally{{marker=3;}}"
+                "try{{eval('marker=1; /{pattern}/.test(0);');}}catch{{marker=2;}}finally{{marker=3;}}"
             )),
             Err(Error::Unsupported { .. })
         ));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
     }
 }
 
@@ -89,14 +89,14 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
-        let code = format!("marker=1; /{pattern}/v;");
+        let code = format!("marker=1; /{pattern}/v.test('a');");
         assert!(matches!(
             realm.eval(&format!(
                 "try{{eval({code:?});}}catch{{marker=2;}}finally{{marker=3;}}"
             )),
             Err(Error::Unsupported { .. })
         ));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
     }
 }
 
@@ -124,14 +124,14 @@ fn unicode_property_errors_precede_eval_effects_and_matching_remains_a_host_gap(
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
-        let code = format!("marker=1; /{pattern}/{flags};");
+        let code = format!("marker=1; /{pattern}/{flags}.test('a');");
         assert!(matches!(
             realm.eval(&format!(
                 "try{{eval({code:?});}}catch{{marker=2;}}finally{{marker=3;}}"
             )),
             Err(Error::Unsupported { .. })
         ));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
     }
 }
 

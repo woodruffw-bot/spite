@@ -1025,7 +1025,7 @@ pub struct TemplateElement {
     pub span: Span,
 }
 
-/// Primitive literal values.
+/// Literal syntax values.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Literal {
     /// The null value.
@@ -1043,6 +1043,13 @@ pub enum Literal {
     },
     /// UTF-16 code units, including lone surrogates.
     String(JsString),
+    /// A validated RegExp Pattern and its original flag characters.
+    RegExp {
+        /// Pattern text without literal delimiters.
+        body: JsString,
+        /// Validated original flags, preserving their source order.
+        flags: JsString,
+    },
 }
 
 /// Increment and decrement operators.

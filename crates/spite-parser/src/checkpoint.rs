@@ -77,7 +77,7 @@ mod tests {
         }
         assert_eq!(parser.current().kind, Kind::Punct("/"));
         let diagnostic = parser.regexp_diagnostic();
-        assert_eq!(diagnostic.kind, DiagnosticKind::Unsupported);
+        assert_eq!(diagnostic, None);
         assert!(parser.current().newline);
         assert!(matches!(parser.current().kind, Kind::RegExp { .. }));
         assert!(parser.lookahead_error.is_none());
@@ -106,7 +106,7 @@ mod tests {
         let index = parser.index;
         let _ = parser.token_at(index + 100);
         let diagnostic = parser.regexp_diagnostic();
-        assert_eq!(diagnostic.kind, DiagnosticKind::Unsupported);
+        assert_eq!(diagnostic, None);
         assert_eq!(parser.template_braces, [1]);
         parser.bump();
         assert!(parser.at("}"));
@@ -135,7 +135,7 @@ mod tests {
         for _ in 0..3 {
             parser.bump();
         }
-        let error = parser.regexp_diagnostic();
+        let error = parser.regexp_diagnostic().unwrap();
         assert_eq!(error.kind, DiagnosticKind::Syntax);
         assert_eq!(parser.current().kind, Kind::Eof);
         assert_eq!(parser.finish(Ok(())).unwrap_err(), error);

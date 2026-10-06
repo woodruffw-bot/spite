@@ -51,16 +51,7 @@ fn serialized_constructor_patterns_validate_with_the_same_capture_count_as_liter
                     .concat(&source)
                     .concat(&JsString::from("/"))
                     .concat(&flags);
-                let error = parse_script_utf16(&literal).unwrap_err();
-                assert_eq!(
-                    error.kind,
-                    DiagnosticKind::Unsupported,
-                    "{literal:?}: {error:?}"
-                );
-                assert_eq!(
-                    error.message,
-                    "regular expression matching is not implemented"
-                );
+                assert!(parse_script_utf16(&literal).is_ok(), "{literal:?}");
             }
         }
     }
@@ -76,11 +67,7 @@ fn serialized_constructor_patterns_validate_with_the_same_capture_count_as_liter
             let literal = JsString::from("/")
                 .concat(&source)
                 .concat(&JsString::from("/"));
-            assert_eq!(
-                parse_script_utf16(&literal).unwrap_err().kind,
-                DiagnosticKind::Unsupported,
-                "{literal:?}"
-            );
+            assert!(parse_script_utf16(&literal).is_ok(), "{literal:?}");
         }
     }
 }

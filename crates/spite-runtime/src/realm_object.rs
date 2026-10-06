@@ -471,6 +471,13 @@ impl Realm {
             Literal::Boolean(value) => Value::Boolean(*value),
             Literal::Number(value) => Value::Number(*value),
             Literal::String(value) => Value::String(value.clone()),
+            // 13.2.7: each evaluation calls intrinsic RegExpCreate with the
+            // literal's Strings, independent of public RegExp bindings/hooks.
+            Literal::RegExp { body, flags } => self.regexp_create(
+                Value::String(body.clone()),
+                Value::String(flags.clone()),
+                span,
+            )?,
             Literal::BigInt { digits, radix } => Value::BigInt(
                 self.integer_work(span, |budget| BigInt::parse_digits(digits, *radix, budget))?,
             ),

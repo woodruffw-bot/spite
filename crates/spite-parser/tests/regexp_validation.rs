@@ -92,12 +92,7 @@ fn constructor_patterns_skip_literal_token_boundaries_and_report_exact_capture_c
         ),
         Ok(3)
     );
-    let error = parse_script_utf16(&JsString::from("/(a)(b)/u")).unwrap_err();
-    assert_eq!(error.kind, DiagnosticKind::Unsupported);
-    assert_eq!(
-        error.message,
-        "regular expression matching is not implemented"
-    );
+    assert!(parse_script_utf16(&JsString::from("/(a)(b)/u")).is_ok());
 }
 
 #[test]

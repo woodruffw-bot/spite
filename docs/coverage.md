@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction, original slots, getters and branding; ordinary-mode literal compilation/matching, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching and literal execution remain pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal compilation/matching, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13426 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -248,22 +248,22 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Native matching remains
-pending, produces Unsupported and cannot receive positive execution credit.
+Valid RegExp literals now produce AST values; broader native matching remains
+Unsupported at runtime and receives no execution credit.
 
 Arrow heads now use the parameter and expression grammars for lookahead.
 Four public regressions and three parser-internal regressions cover nested
 literal boundaries, division, templates, computed class names, Script/UTF-16/eval
 and dynamic Function goals, invalid flags/Patterns, line terminators, private
 scope rollback and exact replay, contextual memo reuse, scanner errors, and
-existing native depth guards on a two-mebibyte stack. Two new diagnostic insta
-snapshots were inspected. Existing snapshots and pinned rejection expectations
-retain their exact parameter diagnostics, including forbidden rest initializers,
+existing native depth guards on a two-mebibyte stack. The inspected, retained
+19-record syntax snapshot and pinned rejection expectations keep their exact
+parameter diagnostics, including forbidden rest initializers,
 rest continuations and escaped reserved shorthand names. Reserved statement
-keywords cannot begin expressions; dynamic import retains its Unsupported boundary. A valid RegExp literal seen
-while recognizing a head still produces Unsupported before exposing any public
-AST. Both compiler versions run the complete corpus with unchanged variants and
-ordinary unlimited defaults; no new quota or execution credit is introduced.
+keywords cannot begin expressions; dynamic import retains its Unsupported boundary.
+Valid RegExp literals retain their AST through head recognition. The obsolete
+Unsupported-only snapshot is retired. Both compiler versions run the complete
+corpus with unchanged variants and ordinary unlimited defaults.
 
 Destructuring assignment and for-in/of covers now probe the supplemental grammar
 instead of balancing division-goal punctuation. Four public regressions and three
@@ -271,12 +271,13 @@ parser-internal regressions cover computed/default/nested keys, literal bodies
 containing closers and template delimiters, division, member/rest references,
 methods/accessors, preserved prototype/shorthand/spread rules, Script/UTF-16/eval
 and dynamic Function goals, private-use rollback/replay, both memo-table
-invalidations, and existing guards on a two-mebibyte stack. Two new diagnostic
-insta snapshots were inspected. Lexically complete invalid Patterns/flags retain
-their RegExp rejection point through both arrow and destructuring probes. Every
-existing snapshot and all 1469 reviewed parse-negative variants retain their
+invalidations, and existing guards on a two-mebibyte stack. The inspected, retained
+16-record syntax snapshot preserves every rejection. Lexically complete invalid
+Patterns/flags retain their RegExp rejection point through both arrow and
+destructuring probes. All retained snapshots and 1469 reviewed parse-negative variants keep their
 exact expectations. Both compiler versions pass the complete unchanged corpus
-with ordinary unlimited defaults; no literal execution credit or quota is added.
+with ordinary unlimited defaults. The obsolete Unsupported-only snapshot is
+retired; the retained syntax snapshot keeps all sixteen exact rejection records.
 
 Core RegExp Canonicalize shares the pinned Unicode 18 default uppercase data and
 adds all 1533 simple/common case-folding mappings from the digest-verified official
@@ -326,12 +327,28 @@ pin. Eighteen newly vendored originals add 36 normal/strict positives: native
 literal search and result Array stringification, exec metadata/descriptors,
 non-construction and brand rejection across ordinary objects, functions,
 wrappers, primitives and undefined. The prior not-a-constructor fixture is
-unchanged; one program requiring literal execution and broader matching remains
+unchanged; one program requiring broader matching remains
 outside the corpus. This is not a complete directory review. Original bytes,
 assertions and metadata are unchanged, and both compiler versions pass every
 selected variant with ordinary unlimited defaults. The pin, ten helpers and all
 prior exact negative expectations are unchanged. Corpus totals are 6993 fixtures,
 6974 reviewed Script sources and 13426 variants, including 11949 harness positives.
+
+RegExp literals now produce validated AST values and call intrinsic RegExpCreate
+on each evaluation. Three parser regressions and an inspected 15-record insta
+snapshot preserve Pattern/flag text, original flag order, escaped solidus,
+classes, names, u/v productions, paired/lone/reversed surrogates and encoded byte
+spans. An independent engine verifies every record and span. Eight runtime
+regressions cover fresh instances and +0 lastIndex, literal metadata, shadowed or
+deleted RegExp bindings, Symbol.match poisoning, source spelling, UTF-16 matching,
+generic consumers, arrow/destructuring/template contexts, collection and existing
+native stack guards. Shared grammar-goal and Pattern tests now require valid ASTs;
+all retained syntax snapshots keep their exact contents. Three obsolete
+Unsupported-only snapshots are retired, and the flag-error snapshot is renamed
+without changing its bytes. Eval regressions keep invalid literals before effects;
+valid unsupported matching aborts after preceding effects and skips handlers and
+finalizers. Both compilers pass the unchanged complete corpus with unlimited
+defaults. No fixture, expected negative diagnostic, dependency or quota is added.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
@@ -361,7 +378,7 @@ collection. A 120,000-unit source exercises unlimited defaults; optional output
 quotas still abort outside language handlers. Generic splitting with a zero limit
 and lazy matchAll now proceed after default intrinsic construction. Exec validates
 the native brand before input conversion; unbranded receivers throw TypeError.
-Broader Pattern matching and literal execution remain pending. The
+Broader Pattern matching remains pending. The
 full unchanged corpus is checked on both compilers; fixture counts and the pin
 are unchanged by this implementation step.
 

@@ -95,18 +95,6 @@ pub fn validate_regexp_pattern(
     Ok(pattern.captures)
 }
 
-pub(super) fn literal_diagnostic(body: &JsString, flags: &JsString, span: Span) -> Diagnostic {
-    validate_regexp_pattern(body, flags, span)
-        .err()
-        .unwrap_or_else(|| {
-            Diagnostic::new(
-                DiagnosticKind::Unsupported,
-                span,
-                "regular expression matching is not implemented",
-            )
-        })
-}
-
 fn pattern_mode(flags: &JsString) -> Result<Mode, Failure> {
     // https://262.ecma-international.org/17.0/#sec-isvalidregularexpressionliteral
     // checks flags and duplicates before #sec-parsepattern rejects simultaneous

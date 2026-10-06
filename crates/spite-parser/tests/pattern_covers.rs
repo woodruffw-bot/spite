@@ -24,30 +24,19 @@ fn regexp_contents_cannot_close_destructuring_assignment_or_iteration_covers() {
         "({get x() { return /[}]/; }})",
         "([{get x() { return /[}]/; }}.p] = source)",
     ];
-    let diagnostics: Vec<_> = sources
-        .into_iter()
-        .map(|source| {
-            let error = parse_script(source).unwrap_err();
-            assert_eq!(error.kind, DiagnosticKind::Unsupported, "{source}");
-            assert_eq!(
-                parse_script_utf16(&JsString::from(source)).unwrap_err(),
-                error
-            );
-            assert_eq!(
-                parse_eval_utf16(&JsString::from(source), EvalContext::default()).unwrap_err(),
-                error
-            );
-            (source, error)
-        })
-        .collect();
-    insta::assert_debug_snapshot!(diagnostics);
-    for body in ["({x = /[}]/} = source);", "for ([x = /[\\]]/] of rows) ;"] {
+    for source in sources {
+        let expected = parse_script(source).unwrap_or_else(|error| panic!("{source}: {error}"));
         assert_eq!(
-            parse_dynamic_function("source, rows", body)
-                .unwrap_err()
-                .kind,
-            DiagnosticKind::Unsupported
+            parse_script_utf16(&JsString::from(source)).unwrap(),
+            expected
         );
+        assert_eq!(
+            parse_eval_utf16(&JsString::from(source), EvalContext::default()).unwrap(),
+            expected
+        );
+    }
+    for body in ["({x = /[}]/} = source);", "for ([x = /[\\]]/] of rows) ;"] {
+        parse_dynamic_function("source, rows", body).unwrap();
     }
 }
 

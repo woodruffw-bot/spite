@@ -6,13 +6,21 @@ use spite_parser::{
 };
 
 fn validates(pattern: &str, flags: &str) {
+    use spite_parser::ast::{ExprKind, Literal, StatementKind};
     let source = format!("/{pattern}/{flags}");
-    let error = parse_script(&source).unwrap_err();
-    assert_eq!(error.kind, DiagnosticKind::Unsupported, "{source}");
-    assert_eq!(
-        error.message, "regular expression matching is not implemented",
-        "{source}"
-    );
+    let script = parse_script(&source).unwrap_or_else(|error| panic!("{source}: {error}"));
+    let StatementKind::Expression(expr) = &script.statements()[0].kind else {
+        panic!("expected an expression")
+    };
+    let ExprKind::Literal(Literal::RegExp {
+        body,
+        flags: actual_flags,
+    }) = &expr.kind
+    else {
+        panic!("expected RegExp literal")
+    };
+    assert_eq!(body, &JsString::from(pattern));
+    assert_eq!(actual_flags, &JsString::from(flags));
 }
 
 #[test]

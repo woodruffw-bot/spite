@@ -1,4 +1,4 @@
-//! Explicit RegExp boundaries must not acquire Pattern or execution credit.
+//! Explicit RegExp goals preserve literal ASTs and precise early errors.
 
 use spite_core::{DiagnosticKind, JsString};
 use spite_parser::{
@@ -16,36 +16,25 @@ fn literal_contents_do_not_substitute_unrelated_javascript_diagnostics() {
         "`a${/[}`]/g}b`",
         "/(?:)/",
     ];
-    let errors: Vec<_> = sources
-        .into_iter()
-        .map(|source| parse_script(source).unwrap_err())
-        .collect();
-    assert!(
-        errors
-            .iter()
-            .all(|error| error.kind == DiagnosticKind::Unsupported)
-    );
-    insta::assert_debug_snapshot!(errors);
+    for source in sources {
+        parse_script(source).unwrap_or_else(|error| panic!("{source}: {error}"));
+    }
 }
 
 #[test]
 fn literal_boundaries_are_shared_by_script_eval_and_function_goals() {
     let source = "let x = /[}`]/g;";
-    let expected = parse_script(source).unwrap_err();
-    assert_eq!(expected.kind, DiagnosticKind::Unsupported);
+    let expected = parse_script(source).unwrap();
     assert_eq!(
-        parse_script_utf16(&JsString::from(source)).unwrap_err(),
+        parse_script_utf16(&JsString::from(source)).unwrap(),
         expected
     );
     assert_eq!(
-        parse_eval_utf16(&JsString::from(source), EvalContext::default()).unwrap_err(),
+        parse_eval_utf16(&JsString::from(source), EvalContext::default()).unwrap(),
         expected
     );
     for (parameters, body) in [("x = /[}`]/g", "return x;"), ("x", "return /[}`]/g;")] {
-        assert_eq!(
-            parse_dynamic_function(parameters, body).unwrap_err().kind,
-            DiagnosticKind::Unsupported
-        );
+        parse_dynamic_function(parameters, body).unwrap();
     }
 }
 
@@ -59,27 +48,20 @@ fn every_flag_subset_uses_exactly_one_unicode_mode() {
             .filter_map(|(index, flag)| (subset & (1 << index) != 0).then_some(char::from(*flag)))
             .collect();
         let source = format!("/a/{flags}");
-        let error = parse_script(&source).unwrap_err();
-        assert_eq!(
-            error.kind,
-            if flags.contains('u') && flags.contains('v') {
-                DiagnosticKind::Syntax
-            } else {
-                DiagnosticKind::Unsupported
-            },
-            "{source}"
-        );
+        let result = parse_script(&source);
+        if flags.contains('u') && flags.contains('v') {
+            assert_eq!(result.unwrap_err().kind, DiagnosticKind::Syntax, "{source}");
+        } else {
+            result.unwrap_or_else(|error| panic!("{source}: {error}"));
+        }
     }
     for flags in ["yvsmigd", "yusmigd"] {
-        assert_eq!(
-            parse_script(&format!("/a/{flags}")).unwrap_err().kind,
-            DiagnosticKind::Unsupported
-        );
+        parse_script(&format!("/a/{flags}")).unwrap();
     }
 }
 
 #[test]
-fn flag_early_errors_precede_unimplemented_pattern_validation() {
+fn flag_early_errors_precede_pattern_validation() {
     let sources = [
         "/./G",
         "/./gig",

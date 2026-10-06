@@ -302,6 +302,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement RegExp character Canonicalize with pinned simple Unicode folding, single-unit uppercase conversion and the ordinary-mode ASCII boundary.
 - [x] Compile and search ordinary-mode literal-only Patterns with empty matches, character escapes, pinned ignore-case rules, UTF-16 ranges and sticky matching.
 - [x] Execute ordinary-mode literal native RegExps with ordered lastIndex conversion, strict writes, intrinsic result/indices Arrays and the shared generic consumers.
+- [x] Preserve validated RegExp literals in ASTs and evaluate them through intrinsic RegExpCreate with fresh objects and original UTF-16 Pattern/flag text.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

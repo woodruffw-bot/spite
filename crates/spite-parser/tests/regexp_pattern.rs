@@ -5,14 +5,22 @@ use spite_parser::{
     EvalContext, parse_dynamic_function, parse_eval_utf16, parse_script, parse_script_utf16,
 };
 
-fn matching_gap(pattern: &str, flags: &str) {
+fn validates(pattern: &str, flags: &str) {
+    use spite_parser::ast::{ExprKind, Literal, StatementKind};
     let source = format!("/{pattern}/{flags}");
-    let error = parse_script(&source).unwrap_err();
-    assert_eq!(error.kind, DiagnosticKind::Unsupported, "{source}");
-    assert_eq!(
-        error.message, "regular expression matching is not implemented",
-        "{source}"
-    );
+    let script = parse_script(&source).unwrap_or_else(|error| panic!("{source}: {error}"));
+    let StatementKind::Expression(expr) = &script.statements()[0].kind else {
+        panic!("expected an expression")
+    };
+    let ExprKind::Literal(Literal::RegExp {
+        body,
+        flags: actual_flags,
+    }) = &expr.kind
+    else {
+        panic!("expected RegExp literal")
+    };
+    assert_eq!(body, &JsString::from(pattern));
+    assert_eq!(actual_flags, &JsString::from(flags));
 }
 
 #[test]
@@ -51,7 +59,7 @@ fn core_groups_assertions_quantifiers_and_escapes_validate_without_matching() {
             "😀*",
             "💩|é",
         ] {
-            matching_gap(pattern, flags);
+            validates(pattern, flags);
         }
     }
     for pattern in [
@@ -60,11 +68,11 @@ fn core_groups_assertions_quantifiers_and_escapes_validate_without_matching() {
         r"\u{d800}",
         r"\u{00000000000000000000000041}",
     ] {
-        matching_gap(pattern, "u");
-        matching_gap(pattern, "v");
+        validates(pattern, "u");
+        validates(pattern, "v");
     }
     for pattern in [r"\-\!\$", "\\😀", "\\𐐀", "\\\u{2000}"] {
-        matching_gap(pattern, "");
+        validates(pattern, "");
     }
 }
 
@@ -175,11 +183,7 @@ fn malformed_core_patterns_have_shared_syntax_diagnostics() {
 #[test]
 fn valid_properties_reach_matching_and_flags_are_checked_first() {
     for source in [r"/\p{Letter}/u", r"/\P{Letter}/v"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        parse_script(source).unwrap();
     }
     // Flags are validated before the Pattern grammar.
     for pattern in ["[z-a]", "(?<a>a)", r"\p{Invalid}"] {
@@ -193,8 +197,8 @@ fn valid_properties_reach_matching_and_flags_are_checked_first() {
 #[test]
 fn arbitrary_decimal_bounds_and_forward_references_are_compared_exactly() {
     let huge = "9".repeat(20_000);
-    matching_gap(&format!("a{{{huge},{huge}}}"), "u");
-    matching_gap(&format!("a{{000{huge},1{huge}}}"), "");
+    validates(&format!("a{{{huge},{huge}}}"), "u");
+    validates(&format!("a{{000{huge},1{huge}}}"), "");
     assert_eq!(
         parse_script(&format!("/a{{1{huge},{huge}}}/"))
             .unwrap_err()
@@ -205,7 +209,7 @@ fn arbitrary_decimal_bounds_and_forward_references_are_compared_exactly() {
         parse_script(&format!("/\\{huge}(a)/")).unwrap_err().kind,
         DiagnosticKind::Syntax
     );
-    matching_gap(r"\12()()()()()()()()()()()()", "u");
+    validates(r"\12()()()()()()()()()()()()", "u");
     assert_eq!(
         parse_script(r"/\13()()()()()()()()()()()()/")
             .unwrap_err()
@@ -217,20 +221,15 @@ fn arbitrary_decimal_bounds_and_forward_references_are_compared_exactly() {
 #[test]
 fn nested_groups_and_raw_surrogates_do_not_require_a_default_depth_quota() {
     let pattern = format!("{}a{}", "(".repeat(20_000), ")".repeat(20_000));
-    matching_gap(&pattern, "");
-    matching_gap(&pattern, "v");
+    validates(&pattern, "");
+    validates(&pattern, "v");
     for flags in ["", "u", "v"] {
         for units in [[0xd800, 0xdc00], [0xd800, 0xd800], [0xdc00, 0xdc00]] {
             let mut source = vec![u16::from(b'/')];
             source.extend(units);
             source.push(u16::from(b'/'));
             source.extend(flags.encode_utf16());
-            let error = parse_script_utf16(&JsString::from_code_units(source)).unwrap_err();
-            assert_eq!(error.kind, DiagnosticKind::Unsupported);
-            assert_eq!(
-                error.message,
-                "regular expression matching is not implemented"
-            );
+            parse_script_utf16(&JsString::from_code_units(source)).unwrap();
         }
     }
 }
@@ -254,16 +253,12 @@ fn scoped_modifier_lists_obey_their_complete_early_errors() {
                     .collect::<String>()
             };
             let source = format!("/(?{}-{}:a)/", list(enabled), list(disabled));
-            let error = parse_script(&source).unwrap_err();
-            assert_eq!(
-                error.kind,
-                if enabled | disabled == 0 || enabled & disabled != 0 {
-                    DiagnosticKind::Syntax
-                } else {
-                    DiagnosticKind::Unsupported
-                },
-                "{source}"
-            );
+            let result = parse_script(&source);
+            if enabled | disabled == 0 || enabled & disabled != 0 {
+                assert_eq!(result.unwrap_err().kind, DiagnosticKind::Syntax, "{source}");
+            } else {
+                result.unwrap_or_else(|error| panic!("{source}: {error}"));
+            }
         }
     }
 }
@@ -297,28 +292,27 @@ fn ordinary_classes_preserve_dash_backspace_and_set_escape_grammar() {
             r"[\uD800-\uDBFF]",
             r"[\uDC00-\uDFFF]",
         ] {
-            matching_gap(pattern, flags);
+            validates(pattern, flags);
         }
     }
     // Ordinary classes do not acquire the UnicodeSetsMode grammar.
     for (pattern, expected) in [
-        ("[a&&b]", DiagnosticKind::Unsupported),
-        ("[!!]", DiagnosticKind::Syntax),
-        ("[{}]", DiagnosticKind::Syntax),
-        ("[|]", DiagnosticKind::Syntax),
+        ("[a&&b]", None),
+        ("[!!]", Some(DiagnosticKind::Syntax)),
+        ("[{}]", Some(DiagnosticKind::Syntax)),
+        ("[|]", Some(DiagnosticKind::Syntax)),
     ] {
-        matching_gap(pattern, "u");
+        validates(pattern, "u");
         assert_eq!(
-            parse_script(&format!("/{pattern}/v")).unwrap_err().kind,
+            parse_script(&format!("/{pattern}/v"))
+                .err()
+                .map(|error| error.kind),
             expected
         );
     }
-    matching_gap(r"[\!\$]", "");
+    validates(r"[\!\$]", "");
     for pattern in [r"[\p{Letter}]", r"[\P{Letter}]"] {
-        assert_eq!(
-            parse_script(&format!("/{pattern}/u")).unwrap_err().kind,
-            DiagnosticKind::Unsupported
-        );
+        parse_script(&format!("/{pattern}/u")).unwrap();
     }
 }
 
@@ -391,25 +385,19 @@ fn range_values_pair_only_adjacent_hex_surrogate_escapes_in_unicode_mode() {
         ("[😀-😁]", false, true),
     ] {
         for (flags, valid) in [("", ordinary), ("u", unicode)] {
-            let error = parse_script(&format!("/{pattern}/{flags}")).unwrap_err();
-            assert_eq!(
-                error.kind,
-                if valid {
-                    DiagnosticKind::Unsupported
-                } else {
-                    DiagnosticKind::Syntax
-                },
-                "{pattern} {flags}"
-            );
+            let result = parse_script(&format!("/{pattern}/{flags}"));
             if valid {
+                result.unwrap();
+            } else {
                 assert_eq!(
-                    error.message,
-                    "regular expression matching is not implemented"
+                    result.unwrap_err().kind,
+                    DiagnosticKind::Syntax,
+                    "{pattern} {flags}"
                 );
             }
         }
     }
-    matching_gap(r"[\u{10000}-\u{10ffff}]", "u");
+    validates(r"[\u{10000}-\u{10ffff}]", "u");
     for flags in ["", "u"] {
         for (left, right, valid) in [
             (0xd800, 0xdbff, true),
@@ -420,17 +408,13 @@ fn range_values_pair_only_adjacent_hex_surrogate_escapes_in_unicode_mode() {
             units.extend([left, u16::from(b'-'), right]);
             units.extend("]/".encode_utf16());
             units.extend(flags.encode_utf16());
-            assert_eq!(
-                parse_script_utf16(&JsString::from_code_units(units))
-                    .unwrap_err()
-                    .kind,
-                if valid {
-                    DiagnosticKind::Unsupported
-                } else {
-                    DiagnosticKind::Syntax
-                }
-            );
+            let result = parse_script_utf16(&JsString::from_code_units(units));
+            if valid {
+                result.unwrap();
+            } else {
+                assert_eq!(result.unwrap_err().kind, DiagnosticKind::Syntax);
+            }
         }
     }
-    matching_gap(&format!("[{}]", "a".repeat(100_000)), "u");
+    validates(&format!("[{}]", "a".repeat(100_000)), "u");
 }

@@ -6,13 +6,22 @@ use spite_parser::{
 };
 
 fn validates(pattern: &str) {
-    let source = format!("/{pattern}/v");
-    let error = parse_script(&source).unwrap_err();
-    assert_eq!(error.kind, DiagnosticKind::Unsupported, "{source}");
-    assert_eq!(
-        error.message, "regular expression matching is not implemented",
-        "{source}"
-    );
+    use spite_parser::ast::{ExprKind, Literal, StatementKind};
+    let flags = "v";
+    let source = format!("/{pattern}/{flags}");
+    let script = parse_script(&source).unwrap_or_else(|error| panic!("{source}: {error}"));
+    let StatementKind::Expression(expr) = &script.statements()[0].kind else {
+        panic!("expected an expression")
+    };
+    let ExprKind::Literal(Literal::RegExp {
+        body,
+        flags: actual_flags,
+    }) = &expr.kind
+    else {
+        panic!("expected RegExp literal")
+    };
+    assert_eq!(body, &JsString::from(pattern));
+    assert_eq!(actual_flags, &JsString::from(flags));
 }
 
 #[test]
@@ -148,11 +157,7 @@ fn flat_class_grammar_errors_share_exact_diagnostics() {
 #[test]
 fn valid_properties_reach_matching_and_unicode_modes_remain_exclusive() {
     for pattern in [r"[\p{Letter}]", r"[\P{Letter}]"] {
-        assert_eq!(
-            parse_script(&format!("/{pattern}/v")).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{pattern}"
-        );
+        parse_script(&format!("/{pattern}/v")).unwrap();
     }
     assert_eq!(
         parse_script("/[a-z]/uv").unwrap_err().message,
@@ -240,24 +245,17 @@ fn string_containment_follows_union_intersection_and_subtraction_static_rules() 
                 let union = format!(r"[\q{{{left}}}{operator}\q{{{right}}}]");
                 validates(&union);
                 let inverted = format!(r"/[^\q{{{left}}}{operator}\q{{{right}}}]/v");
-                let error = parse_script(&inverted).unwrap_err();
-                assert_eq!(
-                    error.kind,
-                    if strings {
-                        DiagnosticKind::Syntax
-                    } else {
-                        DiagnosticKind::Unsupported
-                    },
-                    "{inverted}"
-                );
-                assert_eq!(
-                    error.message,
-                    if strings {
+                let result = parse_script(&inverted);
+                if strings {
+                    let error = result.unwrap_err();
+                    assert_eq!(error.kind, DiagnosticKind::Syntax, "{inverted}");
+                    assert_eq!(
+                        error.message,
                         "negated regular expression class may contain strings"
-                    } else {
-                        "regular expression matching is not implemented"
-                    }
-                );
+                    );
+                } else {
+                    result.unwrap_or_else(|error| panic!("{inverted}: {error}"));
+                }
             }
         }
     }

@@ -1128,7 +1128,17 @@ impl Parser {
             self.current().kind,
             Kind::RegExp { .. } | Kind::Punct("/" | "/=")
         ) {
-            let diagnostic = self.regexp_diagnostic();
+            let Some(diagnostic) = self.regexp_diagnostic() else {
+                let Token {
+                    kind: Kind::RegExp { body, flags },
+                    span,
+                    ..
+                } = self.bump()
+                else {
+                    unreachable!("validated RegExp token");
+                };
+                return self.make_expr(ExprKind::Literal(Literal::RegExp { body, flags }), span);
+            };
             if !self.probing_cover
                 || !matches!(self.current().kind, Kind::RegExp { .. })
                 || !matches!(
@@ -1279,9 +1289,10 @@ impl Parser {
         }
     }
 
-    // Validate only implemented Pattern productions. No literal AST is exposed
-    // until matching and grammar-driven cover lookahead exist.
-    fn regexp_diagnostic(&mut self) -> Diagnostic {
+    // Literal early errors use the same Pattern grammar as construction. Native
+    // evaluation instantiates the RegExp; unsupported matching remains a runtime
+    // boundary, just as it is for an equivalent constructor-created instance.
+    fn regexp_diagnostic(&mut self) -> Option<Diagnostic> {
         let span = self.current().span;
         if self
             .lookahead_error
@@ -1295,7 +1306,7 @@ impl Parser {
         }
         if !matches!(self.current().kind, Kind::RegExp { .. }) {
             if let Err(error) = self.rescan_regexp() {
-                return error;
+                return Some(error);
             }
         }
         let Token {
@@ -1306,7 +1317,7 @@ impl Parser {
         else {
             unreachable!("RegExp goal at a primary-expression solidus");
         };
-        regexp::literal_diagnostic(body, flags, *span)
+        regexp::validate_regexp_pattern(body, flags, *span).err()
     }
 }
 

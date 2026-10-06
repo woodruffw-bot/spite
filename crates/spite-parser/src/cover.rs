@@ -200,10 +200,8 @@ mod tests {
         let cover = parser.pattern_cover().unwrap().unwrap();
         assert!(parser.arrow_heads.is_empty());
         assert_eq!(parser.pattern_covers.len(), 1);
-        assert_eq!(
-            parser.consume_pattern_cover(&cover).unwrap_err().kind,
-            DiagnosticKind::Unsupported
-        );
+        parser.consume_pattern_cover(&cover).unwrap();
+        assert!(parser.at("="));
         assert!(parser.scan_error.is_none());
     }
 

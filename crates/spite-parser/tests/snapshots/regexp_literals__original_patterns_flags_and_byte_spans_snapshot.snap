@@ -1,0 +1,19 @@
+---
+source: crates/spite-parser/tests/regexp_literals.rs
+expression: rows
+---
+"/abc/ig" -> body="abc" flags="ig" bytes=0..7
+"/a\u005c/b/g" -> body="a\u005c/b" flags="g" bytes=0..7
+"/=\u005c}/" -> body="=\u005c}" flags="" bytes=0..5
+"/[}/]/" -> body="[}/]" flags="" bytes=0..6
+"/(?:)/" -> body="(?:)" flags="" bytes=0..6
+"/(?<x>a)|(?<x>b)/du" -> body="(?<x>a)|(?<x>b)" flags="du" bytes=0..19
+"/\u005cp{ASCII}/u" -> body="\u005cp{ASCII}" flags="u" bytes=0..12
+"/[\u005cq{ab|c}]/v" -> body="[\u005cq{ab|c}]" flags="v" bytes=0..13
+"/\u005cuD800/d" -> body="\u005cuD800" flags="d" bytes=0..9
+"/\ud83d\udca9/" -> body="\ud83d\udca9" flags="" bytes=0..6
+"\u0009 /abc/y" -> body="abc" flags="y" bytes=2..8
+"/\ud800/d" -> body="\ud800" flags="d" bytes=0..6
+"/\udc00/d" -> body="\udc00" flags="d" bytes=0..6
+"/\ud800\udc00/d" -> body="\ud800\udc00" flags="d" bytes=0..7
+"/\udc00\ud800/d" -> body="\udc00\ud800" flags="d" bytes=0..9
