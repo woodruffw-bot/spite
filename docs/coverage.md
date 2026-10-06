@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding and constructor/prototype metadata; construction, matching and other prototype bodies remain Unsupported |
+| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test delegation; native instances, construction, matching and symbol methods remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13178 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -282,6 +282,20 @@ arguments and intrinsic metadata. The cross-realm program needs the pending
 createRealm hook and remains excluded with no pass credit. The ten harness
 helpers and unlimited defaults are unchanged; construction and matching receive
 no coverage credit from this cohort.
+
+Generic RegExp flags and toString now preserve the specified property/coercion
+order. Flags applies ToBoolean without invoking conversion hooks and can return
+both u and v for an ordinary object. toString rejects primitives before lookup,
+uses String hints, preserves borrowed source units, and checks its exact combined
+output only after both conversions. Flag/source getters recognize the intrinsic
+ordinary prototype by identity and reject other unbranded objects without reading
+public lookalike properties. Generic test converts its input before exec lookup,
+preserves receiver and argument count, and validates the Object/null result.
+Four regressions cover these paths, abrupt getters/conversions, live mutation,
+prototype exceptions, quotas and recursive getters/exec callbacks on the native
+stack guards. Native instances, constructors, matching, symbols and the string
+iterator remain pending; the inventory, dependency set and unlimited defaults
+are unchanged.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those

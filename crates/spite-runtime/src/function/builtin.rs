@@ -33,7 +33,12 @@ impl Realm {
                 self.regexp_escape(arguments.next().unwrap_or(Value::Undefined), span)
             }
             Builtin::RegExpSpecies => Ok(this),
-            Builtin::RegExpMember(_) => Err(Self::unsupported(span, "RegExp prototype operations")),
+            Builtin::RegExpMember(member) => self.regexp_member(
+                member,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::DateMethod(method) => self.date_method(method, this, arguments, span),
             Builtin::Set => Err(Self::exception(
                 ExceptionKind::TypeError,

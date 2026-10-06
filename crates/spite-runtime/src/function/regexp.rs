@@ -1,4 +1,4 @@
-//! RegExp intrinsic metadata and String escape encoding (22.2.5–6).
+//! RegExp metadata, String escape encoding and generic operations (22.2.5–6).
 
 use super::Builtin;
 use crate::{
@@ -242,5 +242,153 @@ fn regexp_output_limit(span: Span) -> Error {
     Error::Limit {
         span,
         message: "RegExp output exceeds string limit or platform capacity".into(),
+    }
+}
+
+impl Realm {
+    #[inline(never)]
+    pub(super) fn regexp_member(
+        &mut self,
+        member: Member,
+        receiver: Value,
+        argument: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        match member {
+            Member::Flags => self.regexp_flags(receiver, span),
+            Member::ToString => self.regexp_to_string(receiver, span),
+            Member::Test => self.regexp_test(receiver, argument, span),
+            Member::DotAll
+            | Member::Global
+            | Member::HasIndices
+            | Member::IgnoreCase
+            | Member::Multiline
+            | Member::Source
+            | Member::Sticky
+            | Member::Unicode
+            | Member::UnicodeSets => {
+                let object = Self::regexp_object_receiver(receiver, span)?;
+                if object
+                    == self
+                        .intrinsics
+                        .as_ref()
+                        .expect("initialized")
+                        .regexp
+                        .prototype
+                {
+                    if matches!(member, Member::Source) {
+                        let mut units = self.regexp_string_buffer(4, span)?;
+                        units.extend("(?:)".encode_utf16());
+                        Ok(Value::String(JsString::from_code_units(units)))
+                    } else {
+                        Ok(Value::Undefined)
+                    }
+                } else {
+                    // RegExp instances and their OriginalSource/Flags slots are
+                    // still pending. Ordinary objects must never acquire them
+                    // from their prototype or public source/flags properties.
+                    Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "receiver has no RegExp internal slots",
+                    ))
+                }
+            }
+            _ => Err(Self::unsupported(
+                span,
+                "native RegExp matching and symbol operations",
+            )),
+        }
+    }
+    fn regexp_object_receiver(value: Value, span: Span) -> Result<ObjectHandle, Error> {
+        if let Value::Object(object) = value {
+            Ok(object)
+        } else {
+            Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "RegExp operation requires an Object receiver",
+            ))
+        }
+    }
+    fn regexp_flags(&mut self, receiver: Value, span: Span) -> Result<Value, Error> {
+        let object = Self::regexp_object_receiver(receiver, span)?;
+        let mut units = [0u16; 8];
+        let mut length = 0;
+        // 22.2.6.4 specifies this observable Get/ToBoolean order. Both Unicode
+        // flags can appear here because this getter is generic, not a parser.
+        for (name, flag) in [
+            ("hasIndices", b'd'),
+            ("global", b'g'),
+            ("ignoreCase", b'i'),
+            ("multiline", b'm'),
+            ("dotAll", b's'),
+            ("unicode", b'u'),
+            ("unicodeSets", b'v'),
+            ("sticky", b'y'),
+        ] {
+            if self
+                .get_property(&object, &JsString::from(name), span)?
+                .to_boolean()
+            {
+                units[length] = u16::from(flag);
+                length += 1;
+            }
+        }
+        let mut output = self.regexp_string_buffer(length, span)?;
+        output.extend_from_slice(&units[..length]);
+        Ok(Value::String(JsString::from_code_units(output)))
+    }
+    fn regexp_to_string(&mut self, receiver: Value, span: Span) -> Result<Value, Error> {
+        let object = Self::regexp_object_receiver(receiver, span)?;
+        let source = self.get_property(&object, &JsString::from("source"), span)?;
+        let source = self.string(source, span)?;
+        let flags = self.get_property(&object, &JsString::from("flags"), span)?;
+        let flags = self.string(flags, span)?;
+        let length = source
+            .len()
+            .checked_add(flags.len())
+            .and_then(|n| n.checked_add(2))
+            .ok_or_else(|| regexp_output_limit(span))?;
+        let mut units = self.regexp_string_buffer(length, span)?;
+        units.push(u16::from(b'/'));
+        units.extend_from_slice(source.code_units());
+        units.push(u16::from(b'/'));
+        units.extend_from_slice(flags.code_units());
+        Ok(Value::String(JsString::from_code_units(units)))
+    }
+    fn regexp_test(
+        &mut self,
+        receiver: Value,
+        argument: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let object = Self::regexp_object_receiver(receiver, span)?;
+        let string = self.string(argument, span)?;
+        let exec = self.get_property(&object, &JsString::from("exec"), span)?;
+        if !self.is_callable(&exec, span)? {
+            // RequireInternalSlot in RegExpExec precedes its native fallback.
+            // No native RegExpMatcher objects are exposed yet.
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "receiver has no RegExpMatcher internal slot",
+            ));
+        }
+        let result = self.call(
+            exec,
+            Value::Object(object),
+            vec![Value::String(string)],
+            span,
+        )?;
+        match result {
+            Value::Null => Ok(Value::Boolean(false)),
+            Value::Object(_) => Ok(Value::Boolean(true)),
+            _ => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "RegExp exec must return an Object or null",
+            )),
+        }
     }
 }

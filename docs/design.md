@@ -126,8 +126,15 @@ Runtime RegExp.escape rejects every non-String, including wrappers, without
 coercion, ignores this and extra argument values, and charges its two linear
 passes before checked allocation. The rooted RegExp constructor/prototype graph
 exposes edition-17 data/accessor metadata and the generic species getter. The
-prototype is ordinary and owns no RegExp slots. Construction, matching and other
-prototype bodies remain explicit Unsupported; no matcher dependency is active.
+prototype is ordinary and owns no RegExp slots. Generic flags reads the eight
+properties in dgimsuvy order using ToBoolean. Generic toString gets/converts source
+before flags and concatenates their exact UTF-16 values; opted-in output quotas
+apply after both conversions. Flag getters return undefined on the intrinsic
+prototype, whose source is "(?:)"; other unbranded receivers throw TypeError.
+Generic test converts its argument before exec lookup, delegates a single String
+argument to a callable exec, and accepts only an Object or null result. Native
+RegExp instances, construction, matching and symbol methods remain pending;
+unavailable bodies report Unsupported and no matcher dependency is active.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
