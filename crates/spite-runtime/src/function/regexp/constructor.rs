@@ -133,18 +133,19 @@ impl Realm {
             budget.charge(source.len())?;
             budget.charge(flags.len())
         })?;
-        validate_regexp_pattern(&source, &flags, span).map_err(|diagnostic| {
-            match diagnostic.kind {
-                DiagnosticKind::Syntax => {
-                    Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
-                }
-                DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
-                DiagnosticKind::Limit => Error::Limit {
-                    span,
-                    message: diagnostic.message,
+        let captures =
+            validate_regexp_pattern(&source, &flags, span).map_err(
+                |diagnostic| match diagnostic.kind {
+                    DiagnosticKind::Syntax => {
+                        Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
+                    }
+                    DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
+                    DiagnosticKind::Limit => Error::Limit {
+                        span,
+                        message: diagnostic.message,
+                    },
                 },
-            }
-        })?;
+            )?;
         let matcher = if flags
             .code_units()
             .iter()
@@ -158,6 +159,11 @@ impl Realm {
             })?;
             RegExpLiteralMatcher::compile(&source, flags.code_units().contains(&u16::from(b'i')))
         };
+        if let Some(matcher) = &matcher {
+            // RegExpBuiltinExec requires the plan's captures to agree with the
+            // RegExp Record's validated CapturingGroupsCount (22.2.7.2).
+            debug_assert_eq!(matcher.capture_ranges().len(), captures as usize);
+        }
         self.object_work(span, |objects, _| {
             objects.initialize_regexp(
                 &object,

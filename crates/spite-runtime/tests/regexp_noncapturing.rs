@@ -51,7 +51,7 @@ fn other_group_productions_and_quantified_groups_remain_unsupported() {
         "/(?:a){1}/.test('a')",
         "/(?i:a)/.test('a')",
         "/(?=a)/.test('a')",
-        "/(a)/.test('a')",
+        "/(?<x>a)/.test('a')",
         "/(?:a)/u.test('a')",
         "/(?:a)/v.test('a')",
     ] {

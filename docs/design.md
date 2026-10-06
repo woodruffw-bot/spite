@@ -166,15 +166,19 @@ CaseFolding.txt input; Rust's Unicode version cannot change this behavior.
 
 Core literal-only Pattern compilation (22.2.2) accepts the ordinary UTF-16 mode,
 concatenated literal characters, control escapes, fixed hex/Unicode escapes,
-escaped syntax characters and unquantified noncapturing groups of that subset.
+escaped syntax characters and ordinary unquantified capturing/noncapturing groups
+of that subset.
 Ordinary IdentityEscape accepts source characters outside pinned Unicode
 ID_Continue, with '$' allowed separately from IdentifierPartChar. Whitespace,
 constructor line terminators and lone surrogates retain their original code units.
 Identifier continuations, class escapes and assertions cannot become substitute
 literal matches; Unicode-mode identity escapes keep their stricter grammar.
-Compilation flattens nested groups iteratively; each contributes the body's
-matcher, including an empty match, without capture slots. Grouped alternatives,
-quantifiers, assertions, capturing groups and scoped modifiers remain unsupported.
+Compilation flattens nested groups iteratively. Noncapturing groups contribute
+the body's matcher without capture slots. Ordinary capturing groups additionally
+retain relative UTF-16 ranges in opening-parenthesis order, including empty
+ranges. Every group in this fixed sequence participates. Validation and compiler
+capture counts must agree. Named groups, alternatives, quantifiers, assertions
+and scoped modifiers remain unsupported.
 Other productions return an explicit unsupported
 compilation result; that result is distinct from a failed search. Keep Pattern
 validation separate and require it before compilation. Fold each compiled unit
@@ -280,9 +284,10 @@ are absent. Original flags choose search/sticky behavior, strict lastIndex write
 and d indices; public flag/source overrides cannot change execution. Non-global,
 non-sticky matching starts at zero without writing lastIndex. A failed g/y search
 resets +0; success writes its end before result construction. A past-end offset
-fails without invoking the matcher. Fresh intrinsic Arrays own the match text,
-index, input and undefined groups. With d, indices owns an intrinsic start/end
-pair and undefined groups (22.2.7.8). All offsets count UTF-16 units. Array and
+fails without invoking the matcher. Fresh intrinsic Arrays own the whole match
+and ordered capture strings, index, input and undefined groups. With d, indices
+owns an intrinsic start/end pair for the whole match and each capture, plus
+undefined groups (22.2.7.8). All offsets count UTF-16 units. Array and
 prototype overrides cannot intercept these data properties. RegExpExec's
 non-callable-exec fallback uses the same native operation; custom exec and all
 generic consumers retain live lookup. Opted-in work accounting charges the

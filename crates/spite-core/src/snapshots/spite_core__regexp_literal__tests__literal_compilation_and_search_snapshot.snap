@@ -46,8 +46,8 @@ expression: rows
 "\u00df" i=true input="\u1e9e" 0:None/None 1:None/None 1:None/None 2:None/None
 "\u0390" i=false input="\u0399\u0308\u0301" 0:None/None 1:None/None 3:None/None 4:None/None
 "\u0390" i=true input="\u0399\u0308\u0301" 0:None/None 1:None/None 3:None/None 4:None/None
-"(a)" i=false input="a" unsupported
-"(a)" i=true input="a" unsupported
+"(a)" i=false input="a" 0:Some(0..1)/Some(0..1) 1:None/None 1:None/None 2:None/None
+"(a)" i=true input="a" 0:Some(0..1)/Some(0..1) 1:None/None 1:None/None 2:None/None
 "(?:)" i=false input="" 0:Some(0..0)/Some(0..0) 1:None/None 0:Some(0..0)/Some(0..0) 1:None/None
 "(?:)" i=true input="" 0:Some(0..0)/Some(0..0) 1:None/None 0:Some(0..0)/Some(0..0) 1:None/None
 "a|b" i=false input="a" unsupported

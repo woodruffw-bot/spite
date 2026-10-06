@@ -44,8 +44,8 @@ expression: rows
 "(?<!a)" i=true unsupported
 "(?<x>a)" i=false unsupported
 "(?<x>a)" i=true unsupported
-"(a)" i=false unsupported
-"(a)" i=true unsupported
+"(a)" i=false "":None/None "xabcy":Some(1..2)/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(a)" i=true "":None/None "xabcy":Some(1..2)/None "AB":Some(0..1)/Some(0..1) "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
 "(?:a" i=false unsupported
 "(?:a" i=true unsupported
 ")" i=false unsupported

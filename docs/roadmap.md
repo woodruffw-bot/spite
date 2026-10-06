@@ -305,6 +305,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve validated RegExp literals in ASTs and evaluate them through intrinsic RegExpCreate with fresh objects and original UTF-16 Pattern/flag text.
 - [x] Compile unquantified noncapturing groups of ordinary literal characters, including empty and nested groups, without native recursion or capture slots.
 - [x] Compile ordinary IdentityEscape punctuation, whitespace and surrogate code units with the pinned Unicode ID_Continue exclusion.
+- [x] Compile and execute ordinary unquantified capturing groups with nested/empty ranges, ordered capture strings and MatchIndices Arrays.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

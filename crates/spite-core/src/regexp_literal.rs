@@ -5,10 +5,9 @@ use std::{ops::Range, sync::Arc};
 
 /// An immutable literal-only matcher for a validated non-Unicode Pattern.
 ///
-/// Compilation accepts concatenated literal characters, their character escapes,
-/// and noncapturing groups containing the same subset. Other productions return
-/// `None`; callers must keep that distinct
-/// from a failed match. The input must already have passed Pattern validation
+/// Compilation accepts literal characters and their escapes, with ordinary
+/// capturing and noncapturing groups containing the same subset. Other syntax
+/// returns `None`, distinct from a failed match. The input must already have passed Pattern validation
 /// without `u` or `v`. Match ranges use UTF-16 code-unit offsets, not byte spans.
 /// Compilation and search are linear in Pattern and input length respectively.
 #[derive(Clone, Debug)]
@@ -19,6 +18,7 @@ struct Program {
     units: Vec<u16>,
     failure: Vec<usize>,
     ignore_case: bool,
+    captures: Vec<Range<usize>>,
 }
 
 impl RegExpLiteralMatcher {
@@ -26,25 +26,36 @@ impl RegExpLiteralMatcher {
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
         let source = source.code_units();
         let mut index = 0;
-        let mut groups = 0usize;
+        let mut groups = Vec::new();
+        let mut captures = Vec::new();
         let mut units = Vec::new();
         while let Some(&unit) = source.get(index) {
             index += 1;
-            // Atom :: (?: Disjunction ) (22.2.2). An unquantified group whose
+            // CompileAtom group productions (22.2.2.7). An unquantified group whose
             // body is a literal concatenation has exactly that body's matcher,
-            // including the empty body, and contributes no capture. Flatten
+            // including the empty body. Captures retain their relative UTF-16
+            // endpoints in opening-parenthesis order. Flatten
             // nested groups iteratively so compilation and storage never add
-            // native recursion. Every other group production remains unsupported.
+            // native recursion. Named/assertion/modifier groups remain unsupported.
             if unit == u16::from(b'(') {
-                if source.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
-                    return None;
-                }
-                index += 2;
-                groups = groups.checked_add(1)?;
+                let capture = if source.get(index) == Some(&u16::from(b'?')) {
+                    if source.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
+                        return None;
+                    }
+                    index += 2;
+                    None
+                } else {
+                    let capture = captures.len();
+                    captures.push(units.len()..units.len());
+                    Some(capture)
+                };
+                groups.push(capture);
                 continue;
             }
             if unit == u16::from(b')') {
-                groups = groups.checked_sub(1)?;
+                if let Some(capture) = groups.pop()? {
+                    captures[capture].end = units.len();
+                }
                 continue;
             }
             let unit = if unit == u16::from(b'\\') {
@@ -85,7 +96,7 @@ impl RegExpLiteralMatcher {
             };
             units.push(canonicalize(unit, ignore_case));
         }
-        if groups != 0 {
+        if !groups.is_empty() {
             return None;
         }
         let mut failure = vec![0; units.len()];
@@ -103,7 +114,18 @@ impl RegExpLiteralMatcher {
             units,
             failure,
             ignore_case,
+            captures,
         })))
+    }
+
+    /// Capture ranges relative to a successful match's UTF-16 start offset.
+    ///
+    /// The whole match is excluded. Opening-parenthesis order determines the
+    /// capture order; all groups participate because this subset has neither
+    /// alternatives nor quantifiers. Empty groups retain empty ranges. Every
+    /// endpoint is within the matched literal sequence.
+    pub fn capture_ranges(&self) -> &[Range<usize>] {
+        &self.0.captures
     }
 
     /// Finds the first match at or after `start`, or exactly there when sticky.
@@ -510,5 +532,89 @@ mod tests {
                 assert_eq!(matcher.find(&input, 1, true), Some(1..2));
             }
         }
+    }
+
+    #[test]
+    fn ordinary_capture_compilation_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(a)",
+            "((a)b)",
+            "(a)(b)",
+            "a(b(c))d",
+            "()",
+            "(())",
+            "(?:a)(b)(?:c)",
+            "(a(?:b)c)",
+            "(?:())()",
+            r"(\(x\))",
+            r"(\uD83D)(\uDCA9)",
+            "(a|b)",
+            "(a)*",
+            "(?<x>a)",
+            "(?i:a)",
+            "(?=a)",
+            "((a)",
+            ")",
+        ] {
+            for ignore_case in [false, true] {
+                let source = JsString::from(source);
+                write!(rows, "{source:?} i={ignore_case}").unwrap();
+                if let Some(matcher) = RegExpLiteralMatcher::compile(&source, ignore_case) {
+                    write!(
+                        rows,
+                        " units={:?} captures={:?}",
+                        JsString::from_code_units(matcher.0.units.clone()),
+                        matcher.capture_ranges()
+                    )
+                    .unwrap();
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn captures_follow_opening_order_and_decoded_character_offsets() {
+        for (source, expected) in [
+            ("((a)b)", vec![0..2, 0..1]),
+            ("a(b(c))d", vec![1..3, 2..3]),
+            ("()a(())", vec![0..0, 1..1, 1..1]),
+            ("(?:a)(b)(?:c)", std::iter::once(1..2).collect()),
+            (r"(\x61)(\u0062)", vec![0..1, 1..2]),
+            (r"(\uD83D)(\uDCA9)", vec![0..1, 1..2]),
+        ] {
+            let matcher = RegExpLiteralMatcher::compile(&JsString::from(source), false).unwrap();
+            assert_eq!(matcher.capture_ranges(), expected);
+        }
+        let source = "(abc)".repeat(1000);
+        let matcher =
+            RegExpLiteralMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        assert_eq!(matcher.capture_ranges().len(), 1000);
+        for (index, range) in matcher.capture_ranges().iter().enumerate() {
+            assert_eq!(range, &(index * 3..index * 3 + 3));
+        }
+    }
+
+    #[test]
+    fn deeply_nested_captures_compile_clone_and_drop_without_recursion() {
+        let source = format!("{}a{}", "(".repeat(100_000), ")".repeat(100_000));
+        let matcher =
+            RegExpLiteralMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        assert_eq!(matcher.capture_ranges().len(), 100_000);
+        assert!(
+            matcher
+                .capture_ranges()
+                .iter()
+                .all(|range| range == &(0..1))
+        );
+        let clone = matcher.clone();
+        assert!(Arc::ptr_eq(&matcher.0, &clone.0));
+        drop(matcher);
+        assert_eq!(clone.find(&JsString::from("ba"), 0, false), Some(1..2));
+        drop(clone);
     }
 }
