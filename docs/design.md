@@ -2467,7 +2467,8 @@ requires zero minutes, seconds and milliseconds. Parsed fields retain defaults
 and the UTC/local distinction: absent zones mean UTC for date-only forms and
 unresolved local time for date-time forms. Expanded years can exceed TimeClip's
 domain at this syntax stage; calendar/zone conversion and time-value clipping
-remain separate. No implementation-specific fallback formats are added.
+remain separate. Only standard interchange and this implementation's required
+own-output formats are recognized; no heuristic legacy parser is added.
 
 UTC and explicit-offset interchange fields convert with exact widened integer
 arithmetic through calendar rollover and zone adjustment. Only then enforce
@@ -2483,7 +2484,7 @@ calendar fields before interpreting the zone. It returns exact i128 milliseconds
 for every native i32 year and valid day/time record, with day and end-of-day
 rollover and no TimeClip or floating rounding. UTC/offset conversion uses that
 same result, then applies the offset and range check. Local parsing can therefore
-share the identical calendar normalization when host zone resolution is added.
+share the identical calendar normalization before host zone resolution.
 Invalid zone offsets remain separate from calendar validation.
 
 Canonical ISO formatting decomposes a clipped integral time value and emits the
@@ -2500,15 +2501,27 @@ Years 0–99 remain literal, and negative instants round-trip to the containing
 second using floor division. This satisfies the standard UTC-output invariant
 in 21.4.3.2; other legacy formats remain outside the parser.
 
+Local strings use DateString, TimeString and TimeZoneString (21.4.4.41), with
+unclipped calendar fields, English weekday/month names and minimum four-digit
+literal years. The GMT hours/minutes follow the required 24-hour wrap and omit
+offset seconds. Historical seconds and offsets of a day or more are preserved
+in the permitted optional timezone name `(UTC+HH:MM:SS)` or its negative form;
+other offsets use an empty name. The canonical parser borrows UTF-16, validates
+calendar/weekday and consistent offset fields, subtracts the exact full offset
+and checks the final UTC range. Its own whole-second output round-trips even if
+the realm's zone changes or host loading fails. Date() formats the current time
+without coercing supplied values; argument expressions still evaluate normally.
+
 The runtime materializes the complete edition-17 Date constructor/prototype
 property graph. Instances have a distinct [[DateValue]] slot containing a clipped
 Number or NaN; Date.prototype has no slot. Timestamp/copy/calendar construction, Date.now, Date.UTC,
-UTC/offset/local Date.parse, UTC/local getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
+UTC/offset/local Date.parse, UTC/local getters and setters, getTime/valueOf, setTime,
+toISOString, local strings, toUTCString, toJSON and Date() output
 and @@toPrimitive are implemented. Constructor input conversion precedes
 new-target prototype lookup; copying another Date bypasses its conversion hooks.
 setTime checks the receiver before converting input and stores only after that
 conversion succeeds. UTC getters and ISO formatting use the shared exact helpers.
-ISO and standard UTC output check optional string/work quotas before allocation;
+ISO, local and standard UTC output check exact optional string/work quotas before allocation;
 an invalid Date throws RangeError for ISO and yields "Invalid Date" for UTC.
 Object.prototype.toString recognizes the slot independently
 of prototype identity and still observes @@toStringTag.
@@ -2518,8 +2531,7 @@ OrdinaryToPrimitive directly, avoiding redispatch through its own hook. Generic
 toJSON boxes its receiver, requests a numeric primitive and returns null for
 non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
-methods return "Invalid Date". Finite local/legacy string operations and finite
-local calendar setters remain explicit
+methods return "Invalid Date". The three locale string methods remain explicit
 Unsupported. UTC hour/minute/second/millisecond setters capture the time value
 before ordered argument conversion and retain omitted fields from that captured
 instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
@@ -2533,8 +2545,13 @@ Finite local intermediates resolve before TimeClip because an offset can bring a
 boundary instant back into range. Nine local getters return NaN for an invalid time.
 setDate, setMonth, setHours, setMinutes, setSeconds and setMilliseconds convert
 all present arguments before returning NaN for a captured invalid time without
-writing the slot. Hooks can revive that Date. Local setFullYear remains pending
-because its invalid-time fallback can produce a finite time requiring a zone.
+writing the slot. Hooks can revive that Date. All finite local setters derive
+omitted fields from the captured local calendar and resolve folds/gaps before
+final clipping. Local setFullYear converts the year, uses +0 as the local calendar
+for a captured invalid time or obtains LocalTime for a valid time, then converts
+optional month/date fields. Its invalid fallback revives from January 1 at local
+midnight, preserving literal short years. Slots are written only after successful
+conversion, calendar arithmetic and zone resolution.
 
 setUTCDate (21.4.4.27) likewise captures the original timestamp before ToNumber
 and returns NaN without writing when that captured value was invalid. Its year
@@ -2560,7 +2577,7 @@ setUTCMonth and setUTCFullYear (21.4.4.32 and 28) capture the stored time before
 ordered numeric conversion and retain its omitted calendar fields and time of
 day. setUTCMonth converts all present fields before returning NaN for a captured
 invalid time, preserving any value installed by a conversion hook. setUTCFullYear
-instead substitutes the epoch for a captured invalid time before conversion,
+instead substitutes the epoch for a captured invalid time,
 so successful conversion revives the object using January 1 and midnight as
 defaults. Year setters preserve literal years 0–99 without MakeFullYear adjustment.
 Both use shared MakeDay/MakeDate and clip only the final timestamp. The stored

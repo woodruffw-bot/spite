@@ -290,8 +290,12 @@ fn primitive_conversion_is_generic_validates_hint_without_coercion_and_orders_me
 }
 
 #[test]
-fn unsupported_local_strings_remain_host_failures_and_calendar_coercion_keeps_order() {
-    for source in ["Date()", "new Date(0).toString()", "new Date(0)+1"] {
+fn unsupported_locale_operations_remain_host_failures_and_calendar_coercion_keeps_order() {
+    for source in [
+        "new Date(0).toLocaleString()",
+        "new Date(0).toLocaleDateString()",
+        "new Date(0).toLocaleTimeString()",
+    ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(

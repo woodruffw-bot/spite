@@ -319,3 +319,56 @@ fn local_setter_conversions_and_host_lookup_follow_their_specified_order() {
         );
     }
 }
+
+#[test]
+fn local_strings_load_host_data_but_invalid_and_saved_offset_strings_remain_independent() {
+    let path = std::env::temp_dir().join(format!(
+        "spite-invalid-string-zone-{}-{}.tzif",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    {
+        let mut file = std::fs::File::create_new(&path).unwrap();
+        file.write_all(b"invalid zone data").unwrap();
+    }
+    let run = |source: &str| {
+        Command::new(env!("CARGO_BIN_EXE_spite"))
+            .env("TZ", &path)
+            .args(["--eval", source])
+            .output()
+            .unwrap()
+    };
+    let independent = run(
+        "let d=new Date(NaN);d.toString()==='Invalid Date' && d.toDateString()==='Invalid Date' && d.toTimeString()==='Invalid Date' && Date.parse('Thu Jan 01 1970 00:00:00 GMT+0000')===0 && Date.parse('Thu Jan 01 1970 00:00:00 GMT+0000 (UTC+00:00:01)')===-1000 && new Date('Fri Dec 31 -0001 19:03:58 GMT-0456 (UTC-04:56:02)').getTime()===Date.parse('0000-01-01')",
+    );
+    let failures = [
+        "new Date(0).toString()",
+        "new Date(0).toDateString()",
+        "new Date(0).toTimeString()",
+        "Date({[Symbol.toPrimitive](){throw 7;}})",
+    ]
+    .map(|source| {
+        run(&format!(
+            "try{{{source};}}catch{{true;}}finally{{throw 8;}}"
+        ))
+    });
+    std::fs::remove_file(path).unwrap();
+    assert!(independent.status.success());
+    assert_eq!(
+        String::from_utf8(independent.stdout).unwrap().trim(),
+        "true"
+    );
+    assert!(independent.stderr.is_empty());
+    for output in failures {
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with("Host")
+        );
+    }
+}

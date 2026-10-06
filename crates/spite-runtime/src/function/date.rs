@@ -9,8 +9,10 @@ use spite_core::{
     JsString, Span, WellKnownSymbol,
     date::{
         MAX_TIME_VALUE, MS_PER_DAY, RecurringTimeZoneError, TzifTimeZoneError, UtcDateTime,
-        format_iso_date_time, format_utc_date_string, make_date, make_day, make_full_year,
-        make_time, parse_date_time_string, parse_utc_date_string, time_clip,
+        format_date_string, format_iso_date_time, format_local_date_string,
+        format_local_time_string, format_utc_date_string, make_date, make_day, make_full_year,
+        make_time, parse_date_time_string, parse_local_date_string, parse_utc_date_string,
+        time_clip,
     },
 };
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -307,9 +309,12 @@ impl Realm {
                 ),
             };
         }
-        // 21.4.3.2 also requires parsing our own toUTCString output for Dates
-        // with zero milliseconds. No implementation-specific fallback is used.
-        Ok(parse_utc_date_string(text).map_or(f64::NAN, |time| time as f64))
+        // 21.4.3.2 also requires parsing our own toUTCString/toString output
+        // for Dates with zero milliseconds. Both formats encode their exact
+        // offset, so these paths do not load the current realm's host zone.
+        Ok(parse_utc_date_string(text)
+            .or_else(|| parse_local_date_string(text))
+            .map_or(f64::NAN, |time| time as f64))
     }
 
     #[inline(never)]
@@ -548,12 +553,10 @@ impl Realm {
                     format_iso_date_time(time as i64).expect("clipped Date value"),
                 ))
             }
-            Method::ToString
-            | Method::ToDateString
-            | Method::ToTimeString
-            | Method::ToUtcString
-                if time.is_nan() =>
-            {
+            Method::ToString | Method::ToDateString | Method::ToTimeString => {
+                self.date_format_local(method, time, span)
+            }
+            Method::ToUtcString if time.is_nan() => {
                 self.date_string_work(12, span)?;
                 Ok(Value::String(JsString::from("Invalid Date")))
             }
@@ -597,10 +600,7 @@ impl Realm {
                 };
                 Ok(Value::Number(value))
             }
-            _ => Err(Self::unsupported(
-                span,
-                "Date local/legacy string operations",
-            )),
+            _ => Err(Self::unsupported(span, "Date locale string formatting")),
         }
     }
 
@@ -653,6 +653,54 @@ impl Realm {
             ) => Error::Unsupported { span, message },
             _ => Error::Host { span, message },
         }
+    }
+
+    // 21.4.2.1 and 21.4.4.35/41/42: Date() ignores supplied values; the
+    // branded methods capture their own time before arriving here. Formatting
+    // never invokes observable methods on the receiver or the arguments.
+    #[inline(never)]
+    pub(super) fn date_format_local(
+        &mut self,
+        method: Method,
+        time: f64,
+        span: Span,
+    ) -> Result<Value, Error> {
+        if time.is_nan() {
+            self.date_string_work(12, span)?;
+            return Ok(Value::String(JsString::from("Invalid Date")));
+        }
+        let offset = self
+            .time_zone()
+            .map_err(|error| Self::date_time_zone_error(error, span))?
+            .offset_at(i128::from(time as i64));
+        let local = time as i64 + i64::from(offset) * 1000;
+        let fields = UtcDateTime::from_epoch_milliseconds(local);
+        let year_digits = (fields.year.unsigned_abs().max(1).ilog10() as usize + 1).max(4);
+        let date_length = 11 + year_digits + usize::from(fields.year < 0);
+        let exact_name_length = if offset % 60 != 0 || offset.unsigned_abs() >= 86_400 {
+            13 + ((offset.unsigned_abs() / 3600).max(1).ilog10() as usize + 1).max(2)
+        } else {
+            0
+        };
+        let time_length = 17 + exact_name_length;
+        let length = match method {
+            Method::ToDateString => date_length,
+            Method::ToTimeString => time_length,
+            Method::ToString => date_length + 1 + time_length,
+            _ => unreachable!("local Date string method"),
+        };
+        // Check opted-in quotas against the actual output before allocating.
+        self.date_string_work(length, span)?;
+        let text = match method {
+            Method::ToDateString => format_local_date_string(local),
+            Method::ToTimeString => format_local_time_string(local, offset),
+            Method::ToString => {
+                format_date_string(time as i64, offset).expect("clipped Date value")
+            }
+            _ => unreachable!("local Date string method"),
+        };
+        debug_assert_eq!(text.len(), length);
+        Ok(Value::String(text))
     }
 
     // 21.4.1.26/30: this helper implements the composition TimeClip(UTC(t)).

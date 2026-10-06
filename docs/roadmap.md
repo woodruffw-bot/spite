@@ -306,7 +306,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement finite Date numeric calendar construction and local interchange parsing with ordered conversions, short-year rules, gap/fold disambiguation and clipping after zone conversion.
 - [x] Implement Date local calendar/time setters with captured values, ordered coercion, invalid-date revival, literal years and gap/fold resolution before clipping.
 - [x] Format local Date calendar/time strings with exact offset names where needed and parse their canonical whole-second output independently of host data.
-- [ ] Add Date local/legacy string operations and Date function-call output.
+- [x] Implement Date toString/toDateString/toTimeString and Date function-call output with required own-string parse round trips and exact optional output quotas.
+- [ ] Implement Date locale string methods under the edition-17 non-Intl fallback.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.

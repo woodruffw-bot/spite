@@ -794,6 +794,19 @@ Gregorian calculation confirms 28 offset/calendar strings and both native i64
 endpoints. Runtime string methods and Date() still await wiring in the next step;
 the pin, fixture inventory and unlimited defaults are unchanged.
 
+Date(), toString, toDateString and toTimeString now use the shared local string
+helpers. Finite output uses the realm's exact offset and unclipped local calendar;
+invalid values return before host loading. Date() ignores supplied values while
+the caller still evaluates argument expressions. Branded methods ignore receiver
+conversion properties and arguments. Date.parse and one-argument construction
+accept required own-output strings without loading the current zone. Six native
+regressions cover both sides of folds, historical seconds, negative years, all
+twenty independent offset/boundary records, zone changes after saving output,
+ignored hooks, branding, frozen instances, exact opt-in output limits and recovery
+after recursive primitive conversion. A CLI control verifies malformed-host
+failures and independent invalid/saved-string branches. The three locale methods
+remain Unsupported; the fixture inventory is unchanged in this implementation step.
+
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
