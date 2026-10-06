@@ -70,6 +70,12 @@ source string. Dynamic Function inputs are UTF-16 code units: decode valid pairs
 to supplementary code points and preserve lone surrogates as source code points
 (11.1). Their spans retain UTF-8 lengths for scalars and use three bytes per lone
 surrogate. JavaScript strings retain every UTF-16 code unit.
+JsString uses shared immutable Arc slice storage. Cloning a String value does
+not copy its code units, so repeated custom exec calls and iterator snapshots do
+not duplicate the complete input. Concatenation and substrings build independent
+storage; equality, hashing and ordering compare UTF-16 contents, and the public
+type remains Send/Sync. Existing optional work charges stay conservative and
+unchanged; actual scans and output allocations retain their checks.
 
 The parser controls lexical goals for division, regular expressions, and template
 tails. Preserve whether trivia contains a line terminator. Do not approximate ASI

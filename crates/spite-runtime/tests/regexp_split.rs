@@ -329,3 +329,13 @@ fn recursive_species_exec_and_capture_getters_use_native_stack_guards() {
         assert_eq!(realm.eval("7"), Ok(Value::Number(7.0)));
     }
 }
+
+#[test]
+fn large_inputs_survive_repeated_custom_exec_calls_with_unlimited_defaults() {
+    check(
+        r"
+        let n=0,s='x'.repeat(120000),r={flags:'',constructor:{[Symbol.species]:function(){return {exec(input){if(input!==s)throw 7;n++;return null;}};}}};
+        let a=RegExp.prototype[Symbol.split].call(r,s);a.length===1&&a[0]===s&&n===120000
+    ",
+    );
+}

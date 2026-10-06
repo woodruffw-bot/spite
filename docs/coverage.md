@@ -384,6 +384,13 @@ not-a-constructor.js's RegExp creation; one also needs cross-realm support. They
 remain excluded without rewriting or pass credit. Original bytes, the pin, ten
 helpers and unlimited defaults are unchanged; no native matching is claimed.
 
+Shared immutable String storage avoids copying complete inputs for every
+custom exec call. A native split regression processes 120,000 unsuccessful exec
+calls and preserves its complete input with unlimited defaults. Core checks
+verify content-based hashing and UTF-16 ordering across separate allocations,
+unpaired-surrogate concatenation and ownership across threads. Existing snapshots,
+fixture inventories, optional work accounting and default quotas are unchanged.
+
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
 checkpoints, truncate the division suffix, and cache the replacement token so

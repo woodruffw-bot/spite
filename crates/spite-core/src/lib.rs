@@ -23,7 +23,7 @@ pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;
 pub use well_known::WellKnownSymbol;
 
-use std::fmt;
+use std::{fmt, sync::Arc};
 
 /// A half-open range of encoded byte offsets in source text.
 ///
@@ -92,13 +92,14 @@ impl std::error::Error for Diagnostic {}
 /// An ECMAScript string: a sequence of UTF-16 code units.
 ///
 /// Lone surrogates are preserved. Conversion to a Rust string is fallible.
+/// Immutable storage is shared across clones without copying code units.
 #[derive(Clone, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct JsString(Vec<u16>);
+pub struct JsString(Arc<[u16]>);
 
 impl JsString {
     /// Creates a string without validating surrogate pairing.
     pub fn from_code_units(units: Vec<u16>) -> Self {
-        Self(units)
+        Self(units.into())
     }
 
     /// Returns the underlying UTF-16 code units.
@@ -123,9 +124,9 @@ impl JsString {
 
     /// Concatenates two strings without interpreting surrogate pairs.
     pub fn concat(&self, other: &Self) -> Self {
-        let mut units = self.0.clone();
+        let mut units = self.code_units().to_vec();
         units.extend_from_slice(&other.0);
-        Self(units)
+        Self(units.into())
     }
 }
 
@@ -138,7 +139,7 @@ impl From<&str> for JsString {
 impl fmt::Debug for JsString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("\"")?;
-        for unit in &self.0 {
+        for unit in self.code_units() {
             match *unit {
                 0x20..=0x7e if *unit != 0x22 && *unit != 0x5c => {
                     write!(
@@ -221,6 +222,27 @@ pub fn parse_radix_integer(digits: &str, radix: u32) -> Option<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn string_values_keep_content_hashing_order_and_thread_safe_ownership() {
+        use std::collections::{BTreeSet, HashSet};
+        let original = JsString::from_code_units(vec![0xd800, 0, 0xdc00]);
+        let independent = JsString::from_code_units(vec![0xd800, 0, 0xdc00]);
+        let values = HashSet::from([original.clone(), independent]);
+        assert_eq!(values.len(), 1);
+        let copy = original.clone();
+        let extended =
+            std::thread::spawn(move || copy.concat(&JsString::from_code_units(vec![0xd800])))
+                .join()
+                .unwrap();
+        assert_eq!(original.code_units(), &[0xd800, 0, 0xdc00]);
+        assert_eq!(extended.code_units(), &[0xd800, 0, 0xdc00, 0xd800]);
+        let ordered = BTreeSet::from([extended.clone(), original.clone()]);
+        assert_eq!(
+            ordered.into_iter().collect::<Vec<_>>(),
+            [original, extended]
+        );
+    }
 
     #[test]
     fn utf16_preserves_surrogates_and_counts_code_units() {
