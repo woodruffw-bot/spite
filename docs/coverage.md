@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction, original source/flag slots and getters, lastIndex metadata and branding; generic test/match/search/replace/split/matchAll with custom exec and a branded iterator; native Pattern compilation and matching remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13326 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13382 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -284,6 +284,17 @@ the native brand before input conversion; unbranded receivers throw TypeError.
 Pattern compilation, native matching and literal execution remain pending. The
 full unchanged corpus is checked on both compilers; fixture counts and the pin
 are unchanged by this implementation step.
+
+A separate scoped review reads 19 constructor programs, all 12 source getter
+programs and seven prototype not-a-constructor programs. Twenty-eight unchanged
+originals add 56 passing normal/strict variants on both compilers for constructor
+identity/copying, ordered regexp-like properties, errors, flag validation,
+lastIndex, source metadata/brands and prototype non-construction. Ten whole files
+remain excluded for literal execution, native matching, cross-realm support or
+global own-key reflection. The root RegExp directory is not claimed as completely
+reviewed. Older historical descriptions retain edition-17-compatible assertions.
+The pin, ten helpers, original bytes and unlimited defaults are unchanged; no
+native matching coverage is claimed.
 
 Core now streams RegExp.escape's edition-17 encoding without allocating. Two
 inspected snapshots cover every ASCII code point in leading and later positions,
@@ -1996,7 +2007,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13326 variants are four raw positives, 11849 positives using the upstream
+Rust. Its 13382 variants are four raw positives, 11905 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and

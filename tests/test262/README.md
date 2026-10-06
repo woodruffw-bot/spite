@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6943 unmodified test fixtures and ten harness files come from
+These 6971 unmodified test fixtures and ten harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -149,9 +149,9 @@ same pin. Twenty-two unchanged originals add 44 normal/strict positives: fourtee
 flags files verify ordered gets, truthiness, abrupt completions, receiver checks,
 the ordinary prototype and metadata; eight toString files verify intrinsic
 metadata and strict receiver semantics. Both compilers pass every selected
-variant. flags/return-order.js, flags/this-val-regexp.js and
-toString/not-a-constructor.js need native RegExp instances and remain excluded
-without pass credit. The pin, ten helpers, original bytes and unlimited defaults
+variant. flags/return-order.js and flags/this-val-regexp.js still need RegExp
+literal execution. The construction review below adds toString/not-a-constructor.js
+unchanged. The pin, ten helpers, original bytes and unlimited defaults
 are unchanged; these programs claim no native matching coverage.
 
 ## RegExp match/search review
@@ -162,9 +162,9 @@ Symbol.search programs at the existing pin. Twenty-one unchanged originals add
 receiver checks, flags/exec getters and missing matcher slots; fourteen search
 programs cover custom-exec result validation, uncoerced indices, exact lastIndex
 reads/writes, restoration, abrupt completions and metadata. Both compilers pass
-all selected variants. The other fifty-five whole programs require native RegExp
-instances or matching, including both not-a-constructor programs that construct
-a RegExp before checking the method. They remain excluded without rewriting or
+all selected variants. The construction review below adds both not-a-constructor
+programs unchanged. The other fifty-three whole programs require RegExp literal
+execution or native matching and remain excluded without rewriting or
 pass credit. The pin, ten helpers and unlimited defaults are unchanged; this
 cohort claims no native matcher coverage.
 
@@ -173,9 +173,9 @@ cohort claims no native matcher coverage.
 The review read all seventy whole Symbol.replace programs at the existing pin.
 Six unchanged originals add twelve normal/strict positives for receiver checks,
 flags/exec getter failures, global lastIndex initialization and intrinsic metadata.
-Both compilers pass every selected variant. The other sixty-four programs require
-native RegExp instances or matching, including not-a-constructor.js, which first
-constructs a RegExp. They remain excluded without source rewriting or pass credit.
+Both compilers pass every selected variant. The construction review below adds
+not-a-constructor.js unchanged. The other sixty-three programs require RegExp
+literal execution or native matching and remain excluded without source rewriting or pass credit.
 The pin, ten helpers, original bytes and unlimited defaults are unchanged; this
 cohort claims no native matcher coverage.
 
@@ -185,11 +185,12 @@ The review read all forty-four whole Symbol.split programs at the existing pin.
 Twenty-one unchanged originals add 42 normal/strict positives for custom species
 construction, flags conversion, zero limits, empty input, lastIndex reads/writes,
 length coercion, abrupt capture access, receiver checks and intrinsic metadata.
-Both compilers pass every selected variant. The other twenty-three programs need
-native RegExp instances or matching; splitter-proto-from-ctor-realm.js also needs
+Both compilers pass every selected variant. The construction review below adds
+not-a-constructor.js unchanged. The other twenty-two programs need RegExp literal
+execution or native matching; splitter-proto-from-ctor-realm.js also needs
 cross-realm support. They remain excluded as whole files without source rewriting
-or pass credit, including the baseline construction in species-ctor-ctor-non-obj.js
-and the RegExp creation in not-a-constructor.js. The pin, ten helpers, original
+or pass credit, including the native exec used by species-ctor-ctor-non-obj.js's
+initial baseline call. The pin, ten helpers, original
 bytes and unlimited defaults are unchanged; no native matcher coverage is claimed.
 
 ## RegExp matchAll and string iterator review
@@ -198,12 +199,27 @@ The review read all twenty-six whole Symbol.matchAll programs and all seventeen
 RegExpStringIteratorPrototype programs at the existing pin. Four unchanged
 matchAll originals add eight normal/strict positives for name/length/property
 metadata and primitive receivers. Both compilers pass every selected variant.
-The other thirty-nine programs require native RegExp construction, instances or
-matching, including every iterator original and not-a-constructor.js's initial
-RegExp creation. They remain excluded as whole files without source rewriting or
+The construction review below adds not-a-constructor.js unchanged. The other
+thirty-eight programs require RegExp literal execution or native matching,
+including every iterator original. They remain excluded as whole files without source rewriting or
 pass credit. Historical descriptions sometimes refer to earlier draft algorithms;
 selected assertions match edition 17. The pin, ten helpers, original bytes and
 unlimited defaults are unchanged; no native construction or matching is claimed.
+
+## RegExp construction and source review
+
+The focused review reads nineteen constructor programs, all twelve source getter
+programs, and seven prototype not-a-constructor programs at the existing pin.
+Twenty-eight unchanged originals add 56 normal/strict positives for construction,
+copying, regexp-like identity and getter errors, flags, lastIndex, source metadata
+and receiver brands, and prototype non-construction. Both compilers pass every
+selected variant. The ten excluded whole files need literal execution, native
+matching, cross-realm support, or global own-key reflection. No source fragments
+are rewritten. This is a scoped constructor review, not a complete review of the
+RegExp root directory. Historical descriptions refer to older algorithms or flag
+sets; selected assertions remain valid for edition 17. The pin, ten helpers,
+original bytes and unlimited defaults are unchanged; no native matching coverage
+is claimed.
 
 ## RegExp lexical boundary review
 
@@ -1622,7 +1638,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13326 variants from 6924 reviewed sources: the eleven
+The `spite-test262` command runs 13382 variants from 6952 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1656,7 +1672,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11849 positives using the upstream harness, 1469 reviewed parse-negative variants,
+11905 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
