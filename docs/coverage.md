@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal compilation/matching and top-level literal alternatives with outer anchors, single class/escape/dot atoms, ordered literal captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13466 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13472 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -331,8 +331,8 @@ unchanged; one program requiring broader matching remains
 outside the corpus. This is not a complete directory review. Original bytes,
 assertions and metadata are unchanged, and both compiler versions pass every
 selected variant with ordinary unlimited defaults. The pin, ten helpers and all
-prior exact negative expectations are unchanged. Corpus totals are 7013 fixtures,
-6994 reviewed Script sources and 13466 variants, including 11989 harness positives.
+prior exact negative expectations are unchanged. Corpus totals are 7016 fixtures,
+6997 reviewed Script sources and 13472 variants, including 11995 harness positives.
 
 A subsequent focused exec review reads 25 further whole programs at the same pin.
 Twelve unchanged originals add 24 normal/strict positives for abrupt input
@@ -343,19 +343,30 @@ At that stage, thirteen reviewed originals required alternatives, classes,
 quantifiers or wildcard matching and remained excluded; the directory-wide
 inventory below records the current selection. Both compilers pass the full selected
 cohort and complete corpus with unchanged helpers and unlimited defaults. Totals
-are 7013 fixtures, 6994 Script sources and 13466 variants, including 11989 harness
+are 7016 fixtures, 6997 Script sources and 13472 variants, including 11995 harness
 positives. All prior negative expectations and upstream bytes remain unchanged.
 
 The exec-directory review covers all 79 whole programs at the same pin. After
 ordinary top-level literal alternatives became available, seven further unchanged
 originals add fourteen normal/strict positives for source-order ties,
-earliest-position selection, original match Arrays and input coercion. Thirty-nine
+earliest-position selection, original match Arrays and input coercion. Forty-two
 directory programs are now vendored, including the prior non-construction
-original; forty still reach broader matching and remain excluded. Both compilers
+original; 37 still need broader execution and remain excluded. Both compilers
 pass every added variant with unlimited defaults and the ten original helpers.
 Assertions, metadata, upstream bytes, the pin and every prior negative expectation
-remain unchanged. Totals are 7013 fixtures, 6994 reviewed Script sources and 13466
-variants, including 11989 harness positives.
+remain unchanged. Totals are 7016 fixtures, 6997 reviewed Script sources and 13472
+variants, including 11995 harness positives.
+
+The ordinary dot matcher enables three further unchanged exec originals and
+six normal/strict positives for lastIndex conversion, global writes, nonglobal
+reads without writes and sticky starting positions. Both compilers pass all six
+added variants with unchanged assertions, metadata, the ten helpers and unlimited
+defaults. The directory inventory remains 79 reviewed programs, with 42 vendored
+and 37 excluded; three of the latter reach the existing expression-depth safety
+guard before broader Pattern execution. No excluded program earns passing credit.
+Corpus totals are 7016 fixtures, 6997 reviewed Script sources and 13472 variants,
+including 11995 harness positives; the pin and every negative expectation remain
+unchanged.
 
 RegExp literals now produce validated AST values and call intrinsic RegExpCreate
 on each evaluation. Three parser regressions and an inspected 15-record insta
@@ -2255,7 +2266,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13466 variants are four raw positives, 11989 positives using the upstream
+Rust. Its 13472 variants are four raw positives, 11995 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and

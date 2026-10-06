@@ -7022,3 +7022,6 @@ script-pass	86a7b60fb16713252f2b61bef8620ea568b115b93bde69826e58fafcf56f82ae	tes
 script-pass	68312ff1ce3240989e905fffcd1c38d93ddd07af89e5b318eef9ad6489194cdf	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T17.js
 script-pass	45689624fb58eb6d617497311d3e4ed9d29536749aab77d03434af64145127df	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T18.js
 script-pass	0c541f341dd6afdc749f2a8db7a7638dc81a37afe708a263d0839d7db8647114	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T9.js
+script-pass	84beae2910e343f2b1808321da8eb3b40ac8ce790c02ea5d00c0be63d9f5c441	test/built-ins/RegExp/prototype/exec/success-g-lastindex-no-access.js
+script-pass	7ddd6c9d3d49939a60149769745ada98d48277d3b04192239194c0553e8ab5a7	test/built-ins/RegExp/prototype/exec/success-lastindex-access.js
+script-pass	8a950cfdf814e32c5f347179ac25e5f1ec91b6a9fe85fada76fc75ab3ec96e4d	test/built-ins/RegExp/prototype/exec/y-init-lastindex.js
