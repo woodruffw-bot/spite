@@ -300,6 +300,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse TZif recurring political time-zone rules with borrowed designations, normalized UTC offsets, daylight defaults and explicit extended transition calendars.
 - [x] Resolve recurring political time-zone offsets over an exact Gregorian cycle, including southern seasons, negative daylight adjustments and year-round daylight time.
 - [x] Load checked TZif historical UTC offsets with exact 64-bit transitions, recurring footer consistency and separate malformed/unsupported/allocation errors.
+- [x] Resolve local time-zone folds to the earliest epoch and gaps using the latest epoch at the last valid preceding local time, before final Date clipping.
 - [ ] Add Date numeric calendar construction, local calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.

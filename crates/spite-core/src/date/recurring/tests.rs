@@ -176,3 +176,108 @@ fn invalid_native_records_and_conflicting_cycles_are_distinct_errors() {
         Err(RecurringTimeZoneError::ConflictingTransitions)
     );
 }
+
+#[test]
+fn local_folds_choose_earliest_epochs_and_gaps_use_the_previous_offset() {
+    let zone = zone("EST5EDT,M3.2.0,M11.1.0");
+    for (local, expected) in [
+        (nominal(2024, 3, 10, 1, 59), nominal(2024, 3, 10, 6, 59)),
+        (nominal(2024, 3, 10, 2, 0), nominal(2024, 3, 10, 7, 0)),
+        (nominal(2024, 3, 10, 2, 30), nominal(2024, 3, 10, 7, 30)),
+        (nominal(2024, 3, 10, 3, 0), nominal(2024, 3, 10, 7, 0)),
+        (nominal(2024, 11, 3, 1, 0), nominal(2024, 11, 3, 5, 0)),
+        (nominal(2024, 11, 3, 1, 30), nominal(2024, 11, 3, 5, 30)),
+        (nominal(2024, 11, 3, 2, 0), nominal(2024, 11, 3, 7, 0)),
+    ] {
+        assert_eq!(zone.resolve_local(local), Ok(expected));
+    }
+    let gap_start = nominal(2024, 3, 10, 2, 0);
+    let fold_start = nominal(2024, 11, 3, 1, 0);
+    for delta in [-1, 0, 1, 3_599_999, 3_600_000] {
+        assert_eq!(
+            zone.resolve_local(gap_start + delta),
+            Ok(gap_start
+                + delta
+                + if delta < 3_600_000 {
+                    18_000_000
+                } else {
+                    14_400_000
+                })
+        );
+        assert_eq!(
+            zone.resolve_local(fold_start + delta),
+            Ok(fold_start
+                + delta
+                + if delta < 3_600_000 {
+                    14_400_000
+                } else {
+                    18_000_000
+                })
+        );
+    }
+}
+
+#[test]
+fn local_resolution_handles_half_hour_and_negative_daylight_transitions() {
+    let southern = zone("<+1030>-10:30<+11>-11,M10.1.0,M4.1.0");
+    assert_eq!(
+        southern.resolve_local(nominal(2024, 10, 6, 2, 15)),
+        Ok(nominal(2024, 10, 5, 15, 45))
+    );
+    assert_eq!(
+        southern.resolve_local(nominal(2024, 4, 7, 1, 45)),
+        Ok(nominal(2024, 4, 6, 14, 45))
+    );
+    let negative = zone("IST-1GMT0,M10.5.0,M3.5.0/1");
+    assert_eq!(
+        negative.resolve_local(nominal(2024, 3, 31, 1, 30)),
+        Ok(nominal(2024, 3, 31, 1, 30))
+    );
+    assert_eq!(
+        negative.resolve_local(nominal(2024, 10, 27, 1, 30)),
+        Ok(nominal(2024, 10, 27, 0, 30))
+    );
+}
+
+#[test]
+fn local_resolution_preserves_full_date_boundaries_and_extreme_native_years() {
+    let zone = zone("EST5EDT,M3.2.0,M11.1.0");
+    for year in [i32::MIN, -271821, -400, -1, 0, 1900, 2000, 275760, i32::MAX] {
+        assert_eq!(
+            zone.resolve_local(nominal(year, 1, 1, 0, 0)),
+            Ok(nominal(year, 1, 1, 5, 0))
+        );
+        assert_eq!(
+            zone.resolve_local(nominal(year, 7, 1, 0, 0)),
+            Ok(nominal(year, 7, 1, 4, 0))
+        );
+    }
+    assert_eq!(
+        zone.resolve_local(-i128::from(MAX_TIME_VALUE)),
+        Ok(-i128::from(MAX_TIME_VALUE) + 14_400_000)
+    );
+    assert_eq!(
+        zone.resolve_local(i128::from(MAX_TIME_VALUE)),
+        Ok(i128::from(MAX_TIME_VALUE) + 14_400_000)
+    );
+    let fixed = self::zone("AAA-5");
+    assert_eq!(
+        fixed.resolve_local(i128::from(MAX_TIME_VALUE) + 18_000_000),
+        Ok(i128::from(MAX_TIME_VALUE))
+    );
+}
+
+#[test]
+fn local_native_arithmetic_boundaries_are_separate_from_timeclip() {
+    let utc = zone("UTC0");
+    assert_eq!(utc.resolve_local(i128::MIN), Ok(i128::MIN));
+    assert_eq!(utc.resolve_local(i128::MAX), Ok(i128::MAX));
+    assert_eq!(
+        zone("AAA-0:00:01").resolve_local(i128::MIN),
+        Err(LocalTimeZoneError::OutOfRange)
+    );
+    assert_eq!(
+        zone("AAA0:00:01").resolve_local(i128::MAX),
+        Err(LocalTimeZoneError::OutOfRange)
+    );
+}

@@ -2381,6 +2381,19 @@ versions, leap-second time scales, malformed data, contradictory recurring rules
 and native allocation failures remain distinct. Display names and local gap/fold
 resolution are separate implementation steps.
 
+Recurring and TZif histories now resolve nominal local milliseconds with UTC's
+gap/fold policy (21.4.1.26). Each candidate subtracts a possible offset and is
+checked against the actual UTC offset at that epoch. Repeated times choose the
+earliest valid epoch. For a skipped time, the resolver finds the greatest valid
+local millisecond before the requested value, selects that local value's latest
+possible epoch and uses its offset. This remains correct when closely spaced
+changes produce overlapping local images; choosing the nearest UTC transition
+alone would lose the required preceding local value. TZif loading indexes sorted
+local interval ends once, while recurring endpoints use exact calendar-cycle
+arithmetic and respect the historical cutoff. Queries allocate nothing. Native
+i128 overflow and inconsistent data remain separate errors, and TimeClip stays
+with the Date caller. Display names and system-zone loading remain pending.
+
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
 arithmetic, and retains the exact Euclidean month remainder. Native integers

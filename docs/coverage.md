@@ -685,6 +685,16 @@ integral second to avoid its negative-subsecond TZif truncation; raw records and
 Python zoneinfo independently confirm the Abidjan millisecond regression.
 System zone loading, display names, local gap/fold resolution and finite local
 Date operations remain pending.
+Local offset resolution now applies UTC's earliest-fold and preceding-gap
+policies to both recurring and historical histories without final clipping.
+Seven regressions cover exact gap/fold milliseconds, half-hour and negative
+daylight adjustments, Date and native year boundaries, native arithmetic
+overflow, historical second precision, overlapping local images, the latest
+epoch at a shared local endpoint and recurring/historical cutoff separation.
+An independent Python zoneinfo comparison matched 773,138 local resolutions
+over 1,034 bundled/system TZif files, including historical gap/fold boundaries.
+Public JavaScript finite local Date operations, system-zone loading and display
+names remain pending; default quotas and native-stack guards are unchanged.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

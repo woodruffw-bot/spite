@@ -1,6 +1,9 @@
 //! Checked TZif offset histories, preserving explicit and recurring transitions.
 
-use super::{RecurringTimeZone, RecurringTimeZoneError, posix::parse_with_syntax};
+use super::{
+    LocalTimeZoneError, RecurringTimeZone, RecurringTimeZoneError, local::resolve_local,
+    posix::parse_with_syntax,
+};
 
 /// An owned UTC offset history loaded from TZif bytes.
 ///
@@ -13,6 +16,7 @@ use super::{RecurringTimeZone, RecurringTimeZoneError, posix::parse_with_syntax}
 pub struct TzifTimeZone {
     offsets: Vec<i32>,
     transitions: Vec<Transition>,
+    local_ends: Vec<i128>,
     recurring: Option<RecurringTimeZone>,
 }
 
@@ -165,9 +169,22 @@ impl TzifTimeZone {
                 Some(recurring)
             }
         };
+        let mut local_ends = Vec::new();
+        local_ends
+            .try_reserve_exact(transitions.len())
+            .map_err(|_| TzifTimeZoneError::Allocation)?;
+        let mut previous = offsets[0];
+        for transition in &transitions {
+            local_ends
+                .push(i128::from(transition.seconds) * 1000 + i128::from(previous) * 1000 - 1);
+            previous = offsets[usize::from(transition.type_index)];
+        }
+        local_ends.sort_unstable();
+        local_ends.dedup();
         Ok(Self {
             offsets,
             transitions,
+            local_ends,
             recurring,
         })
     }
@@ -176,7 +193,7 @@ impl TzifTimeZone {
     ///
     /// Offsets are seconds east of UTC. Candidates for local-time resolution
     /// must be checked against `offset_at`; past types need not occur again.
-    pub fn possible_offsets(&self) -> impl Iterator<Item = i32> + '_ {
+    pub fn possible_offsets(&self) -> impl Iterator<Item = i32> + Clone + '_ {
         self.offsets.iter().copied().chain(
             self.recurring
                 .iter()
@@ -207,6 +224,34 @@ impl TzifTimeZone {
             usize::from(self.transitions[position - 1].type_index)
         };
         self.offsets[index]
+    }
+
+    /// Resolves exact nominal local milliseconds using UTC's gap/fold rules.
+    ///
+    /// Repeated times choose the earliest epoch. Skipped times use the offset
+    /// at the latest epoch of the last valid local time before the gap, including
+    /// overlapping local intervals from closely spaced historical transitions.
+    /// Lookup allocates nothing; final TimeClip remains the caller's operation.
+    pub fn resolve_local(&self, local: i128) -> Result<i128, LocalTimeZoneError> {
+        resolve_local(
+            local,
+            self.possible_offsets(),
+            |utc| self.offset_at(utc),
+            |local| {
+                let position = self.local_ends.partition_point(|&end| end < local);
+                let historical = position.checked_sub(1).map(|index| self.local_ends[index]);
+                let recurring = match &self.recurring {
+                    None => None,
+                    Some(recurring) => recurring.local_before(
+                        local,
+                        self.transitions
+                            .last()
+                            .map(|transition| i128::from(transition.seconds) * 1000),
+                    )?,
+                };
+                Ok(historical.into_iter().chain(recurring).max())
+            },
+        )
     }
 }
 

@@ -7,6 +7,8 @@
 
 mod make_day;
 pub use make_day::make_day;
+mod local;
+pub use local::LocalTimeZoneError;
 mod parse;
 pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
 mod posix;

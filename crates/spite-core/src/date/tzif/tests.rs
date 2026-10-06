@@ -397,3 +397,78 @@ fn truncated_and_adversarial_counts_are_rejected_before_allocation_or_indexing()
         }
     }
 }
+
+#[test]
+fn historical_gaps_folds_and_subsecond_boundaries_resolve_before_clipping() {
+    let data = Data {
+        times: vec![(0, 1), (3600, 0)],
+        types: vec![(0, 0, 0), (1800, 1, 0)],
+        ..Data::default()
+    };
+    let zone = TzifTimeZone::parse(&file(b'3', &data, "")).unwrap();
+    for (local, utc) in [
+        (-1, -1),
+        (0, 0),
+        (1, 1),
+        (1_799_999, 1_799_999),
+        (1_800_000, 0),
+        (3_600_000, 1_800_000),
+        (5_399_999, 3_599_999),
+        (5_400_000, 5_400_000),
+    ] {
+        assert_eq!(zone.resolve_local(local), Ok(utc));
+    }
+    let data = Data {
+        times: vec![(-1_830_383_032, 1)],
+        types: vec![(-968, 0, 0), (0, 0, 0)],
+        ..Data::default()
+    };
+    let zone = TzifTimeZone::parse(&file(b'3', &data, "GMT0")).unwrap();
+    let start = -1_830_383_032_000_i128 - 968_000;
+    assert_eq!(zone.resolve_local(start - 1), Ok(start + 968_000 - 1));
+    assert_eq!(zone.resolve_local(start), Ok(start + 968_000));
+    assert_eq!(zone.resolve_local(start + 500_000), Ok(start + 1_468_000));
+    assert_eq!(zone.resolve_local(start + 968_000), Ok(start + 968_000));
+}
+
+#[test]
+fn overlapping_local_images_choose_the_latest_epoch_at_the_last_valid_local_time() {
+    // A fold just before the gap leaves a later valid local endpoint than the
+    // UTC transition that starts the gap. UTC must use that endpoint's offset.
+    let data = Data {
+        times: vec![(-1, 1), (50, 0)],
+        types: vec![(100, 0, 0), (0, 0, 0)],
+        ..Data::default()
+    };
+    let zone = TzifTimeZone::parse(&file(b'3', &data, "")).unwrap();
+    assert_eq!(zone.resolve_local(100_000), Ok(0));
+    assert_eq!(zone.resolve_local(98_999), Ok(-1001));
+    assert_eq!(zone.resolve_local(99_000), Ok(-1000));
+    // Two segments end at the same local millisecond. Gap disambiguation uses
+    // the latest possible epoch of that endpoint, instead of the fold's first.
+    let data = Data {
+        times: vec![(0, 1), (10, 2)],
+        types: vec![(0, 0, 0), (-10, 0, 0), (100, 0, 0)],
+        ..Data::default()
+    };
+    let zone = TzifTimeZone::parse(&file(b'3', &data, "")).unwrap();
+    assert_eq!(zone.resolve_local(-1), Ok(-1));
+    assert_eq!(zone.resolve_local(0), Ok(10_000));
+    assert_eq!(zone.resolve_local(50_000), Ok(60_000));
+}
+
+#[test]
+fn recurring_local_endpoints_are_used_only_after_the_historical_cutoff() {
+    let data = Data {
+        times: vec![(0, 1)],
+        types: vec![(-17762, 0, 0), (-18000, 0, 0)],
+        ..Data::default()
+    };
+    let zone = TzifTimeZone::parse(&file(b'3', &data, "EST5EDT,M3.2.0,M11.1.0")).unwrap();
+    let local = nominal(1800, 7, 1);
+    assert_eq!(zone.resolve_local(local), Ok(local + 17_762_000));
+    let local = nominal(2024, 3, 10) + 9_000_000;
+    assert_eq!(zone.resolve_local(local), Ok(local + 18_000_000));
+    let local = nominal(2024, 11, 3) + 5_400_000;
+    assert_eq!(zone.resolve_local(local), Ok(local + 14_400_000));
+}

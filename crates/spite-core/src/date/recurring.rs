@@ -1,6 +1,6 @@
 //! Gregorian offset cycles for recurring TZif political time-zone rules.
 
-use super::{MS_PER_DAY, PosixTimeZone, day_from_year};
+use super::{LocalTimeZoneError, MS_PER_DAY, PosixTimeZone, day_from_year, local::resolve_local};
 
 // Gregorian dates and weekdays repeat exactly after 400 years (146097 days).
 const CYCLE_MILLISECONDS: i64 = 146_097 * MS_PER_DAY;
@@ -136,6 +136,53 @@ impl RecurringTimeZone {
             position - 1
         };
         self.transitions[index].offset
+    }
+
+    /// Resolves exact nominal local milliseconds using UTC's gap/fold rules.
+    ///
+    /// Repeated times choose the earliest epoch. Skipped times use the offset
+    /// at the latest epoch of the last valid local time before the gap. Native
+    /// arithmetic remains exact and allocation-free; TimeClip is separate.
+    pub fn resolve_local(&self, local: i128) -> Result<i128, LocalTimeZoneError> {
+        resolve_local(
+            local,
+            self.offsets.into_iter(),
+            |utc| self.offset_at(utc),
+            |local| self.local_before(local, None),
+        )
+    }
+
+    pub(super) fn local_before(
+        &self,
+        local: i128,
+        after: Option<i128>,
+    ) -> Result<Option<i128>, LocalTimeZoneError> {
+        let cycle = i128::from(CYCLE_MILLISECONDS);
+        let within_cycle = local.rem_euclid(cycle);
+        let mut selected: Option<i128> = None;
+        for (index, transition) in self.transitions.iter().enumerate() {
+            let previous = if index == 0 {
+                self.transitions.len() - 1
+            } else {
+                index - 1
+            };
+            let offset = i128::from(self.transitions[previous].offset) * 1000;
+            let end = i128::from(transition.time) + offset - 1;
+            let distance = (within_cycle - end.rem_euclid(cycle)).rem_euclid(cycle);
+            let distance = if distance == 0 { cycle } else { distance };
+            let end = local
+                .checked_sub(distance)
+                .ok_or(LocalTimeZoneError::OutOfRange)?;
+            let utc_transition = end
+                .checked_add(1)
+                .and_then(|time| time.checked_sub(offset))
+                .ok_or(LocalTimeZoneError::OutOfRange)?;
+            if after.is_some_and(|cutoff| utc_transition <= cutoff) {
+                continue;
+            }
+            selected = Some(selected.map_or(end, |previous| previous.max(end)));
+        }
+        Ok(selected)
     }
 }
 
