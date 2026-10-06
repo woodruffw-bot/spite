@@ -2348,8 +2348,21 @@ standard time. Daylight transition dates must be explicit and omitted transition
 times default to wall 02:00. Extended signed times span −167:59:59 through
 +167:59:59. Field widths/ranges, punctuation and complete consumption are checked
 without allocating names or applying a name-length quota. Missing rules never
-acquire platform defaults. Loading TZif histories and interpreting the recurring
-offsets remain pending.
+acquire platform defaults. Loading TZif histories remains pending.
+
+RecurringTimeZone compiles recurring offsets into the exact 400-year Gregorian
+cycle of 146,097 days. Two annual rules contribute at most 800 transitions;
+this is a consequence of the calendar, not a resource quota. Ordered daylight
+intervals spanning a whole year omit standard-time transitions, implementing
+TZif's year-round daylight extension. Years with no transitions preserve the
+offset from neighboring years; southern seasons and negative daylight offsets
+retain their ordered UTC changes. Transition times normalize into the cycle,
+sort by exact epoch milliseconds, and reject contradictory simultaneous changes.
+Lookup uses integer Euclidean remainder and binary search without allocating or
+clipping, including every native i128 time. Invalid native records, conflicting
+rules and failed native allocation have distinct errors. This calendar
+periodicity applies only to recurring rules; explicit historical TZif changes
+must still be preserved, rather than mapped into another year.
 
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number

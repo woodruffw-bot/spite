@@ -662,6 +662,16 @@ truncated input, non-ASCII mutations and long borrowed names. Jiff agrees on
 acceptance and normalized offsets/rules for 3,759 strings, including all 93
 distinct nonempty rule footers in the installed IANA 2026b data. Complete
 zone histories and finite local Date operations remain pending.
+Compiled recurring offsets now use the exact Gregorian cycle for integer
+lookups without allocations or a backend year cap. Seven regressions cover exact
+millisecond changes, southern half-hour seasons, negative daylight adjustments,
+fixed/perpetual daylight zones, leap conventions, cross-year times, skipped
+transition years, Date/native integer endpoints, malformed records and
+contradictory simultaneous changes. An independent equivalent-calendar mapping
+matched Jiff offsets for 94,581 queries over all 93 installed IANA rule footers,
+including native i128 endpoints. The mapping is specific to recurring Gregorian
+rules; complete historical zone data and finite local Date operations remain
+pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

@@ -11,6 +11,8 @@ mod parse;
 pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
 mod posix;
 pub use posix::{PosixDaylightTime, PosixTimeZone, parse_posix_time_zone};
+mod recurring;
+pub use recurring::{RecurringTimeZone, RecurringTimeZoneError};
 mod transition;
 pub use transition::{TransitionClock, TransitionDay, TransitionRule};
 mod utc_string;
