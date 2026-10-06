@@ -154,3 +154,44 @@ fn utc_number_calendar_work_ignores_bigint_value_quotas_and_preserves_opt_in_wor
         Ok(Value::Number(-62146137600000.0))
     );
 }
+
+#[test]
+fn utc_calendar_setter_work_failure_does_not_write_the_date_slot() {
+    for method in [Method::SetUtcMonth, Method::SetUtcFullYear] {
+        let mut realm = Realm::default();
+        let Value::Object(object) = realm.eval("var d=new Date(7);d").unwrap() else {
+            panic!("Date object");
+        };
+        let arguments = if matches!(method, Method::SetUtcMonth) {
+            vec![Value::Number(f64::MAX), Value::Number(1.0)]
+        } else {
+            vec![
+                Value::Number(-f64::MAX / 12.0),
+                Value::Number(f64::MAX),
+                Value::Number(1.0),
+            ]
+        };
+        realm.remaining_steps = Some(1000);
+        assert!(matches!(
+            realm.date_set_utc_calendar(
+                method,
+                object.clone(),
+                7.0,
+                arguments.into_iter(),
+                Span { start: 0, end: 0 },
+            ),
+            Err(Error::Limit { .. })
+        ));
+        realm.remaining_steps = None;
+        assert_eq!(
+            realm.inspect_object(&object).unwrap().date_value(),
+            Some(7.0)
+        );
+        assert_eq!(realm.eval("d.getTime()"), Ok(Value::Number(7.0)));
+        realm.limits.max_bigint_bits = Some(0);
+        assert_eq!(
+            realm.eval("d.setUTCFullYear(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)"),
+            Ok(Value::Number(-62146137599993.0))
+        );
+    }
+}

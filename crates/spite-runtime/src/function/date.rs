@@ -370,16 +370,28 @@ impl Realm {
         for (field, argument) in fields[1..].iter_mut().zip(arguments) {
             *field = self.number(argument, span)?;
         }
-        // Date Number arithmetic may use wide native integers internally;
-        // a JavaScript BigInt value quota does not apply to those intermediates.
-        let mut budget = spite_bigint::Budget::with_limits(None, self.remaining_steps);
-        let day = make_day(make_full_year(fields[0]), fields[1], fields[2], &mut budget);
-        self.remaining_steps = budget.remaining_work();
-        let day = day.map_err(|error| Self::integer_error(error, span))?;
+        let day =
+            self.date_make_day_value(make_full_year(fields[0]), fields[1], fields[2], span)?;
         Ok(Value::Number(time_clip(make_date(
             day,
             make_time(fields[3], fields[4], fields[5], fields[6]),
         ))))
+    }
+
+    #[inline(never)]
+    fn date_make_day_value(
+        &mut self,
+        year: f64,
+        month: f64,
+        date: f64,
+        span: Span,
+    ) -> Result<f64, Error> {
+        // Date Number arithmetic may use wide native integers internally;
+        // a JavaScript BigInt value quota does not apply to those intermediates.
+        let mut budget = spite_bigint::Budget::with_limits(None, self.remaining_steps);
+        let day = make_day(year, month, date, &mut budget);
+        self.remaining_steps = budget.remaining_work();
+        day.map_err(|error| Self::integer_error(error, span))
     }
 
     fn this_date_value(&mut self, value: &Value, span: Span) -> Result<f64, Error> {
@@ -463,6 +475,12 @@ impl Realm {
                     arguments.next().unwrap_or(Value::Undefined),
                     span,
                 )
+            }
+            Method::SetUtcMonth | Method::SetUtcFullYear => {
+                let Value::Object(object) = this else {
+                    unreachable!("Date brand");
+                };
+                self.date_set_utc_calendar(method, object, time, arguments, span)
             }
             Method::SetUtcHours
             | Method::SetUtcMinutes
@@ -548,6 +566,51 @@ impl Realm {
                 "Date calendar mutation and local/legacy string operations",
             )),
         }
+    }
+
+    // 21.4.4.28 and 32: retain the captured calendar and time of day through
+    // coercion. Only setUTCFullYear replaces a captured NaN with the epoch.
+    #[inline(never)]
+    fn date_set_utc_calendar(
+        &mut self,
+        method: Method,
+        object: ObjectHandle,
+        time: f64,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let (start, time) = match method {
+            Method::SetUtcFullYear => (0, if time.is_nan() { 0.0 } else { time }),
+            Method::SetUtcMonth => (1, time),
+            _ => unreachable!("UTC calendar setter"),
+        };
+        let mut converted = [None; 3];
+        converted[start] = Some(self.number(arguments.next().unwrap_or(Value::Undefined), span)?);
+        for (slot, argument) in converted[start + 1..].iter_mut().zip(arguments) {
+            *slot = Some(self.number(argument, span)?);
+        }
+        if time.is_nan() {
+            // Conversion may have revived the object. setUTCMonth must return
+            // NaN without overwriting the time installed by that hook.
+            return Ok(Value::Number(f64::NAN));
+        }
+        let time = time as i64;
+        let previous = UtcDateTime::from_time_value(time).expect("clipped Date value");
+        let mut fields = [
+            f64::from(previous.year),
+            f64::from(previous.month),
+            f64::from(previous.day),
+        ];
+        for (field, converted) in fields.iter_mut().zip(converted) {
+            if let Some(value) = converted {
+                *field = value;
+            }
+        }
+        // Unlike Date.UTC, year setters preserve literal years 0 through 99.
+        let day = self.date_make_day_value(fields[0], fields[1], fields[2], span)?;
+        let value = time_clip(make_date(day, time.rem_euclid(MS_PER_DAY) as f64));
+        self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
+        Ok(Value::Number(value))
     }
 
     // 21.4.4.27: the captured year/month are already normalized, so their

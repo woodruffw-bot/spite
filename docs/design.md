@@ -2391,7 +2391,7 @@ toJSON boxes its receiver, requests a numeric primitive and returns null for
 non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
 methods return "Invalid Date". Finite local/legacy string operations, local zone
-resolution, numeric Date construction and remaining calendar setters remain explicit
+resolution, numeric Date construction and local calendar setters remain explicit
 Unsupported. UTC hour/minute/second/millisecond setters capture the time value
 before ordered argument conversion and retain omitted fields from that captured
 instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
@@ -2419,3 +2419,14 @@ and TimeClip applies only to the final combined timestamp. Excess arguments
 are evaluated by the caller and ignored by the intrinsic. Native calendar
 integer work shares the optional evaluation budget, with no BigInt magnitude
 quota on Number intermediates and no default resource quotas.
+
+setUTCMonth and setUTCFullYear (21.4.4.32 and 28) capture the stored time before
+ordered numeric conversion and retain its omitted calendar fields and time of
+day. setUTCMonth converts all present fields before returning NaN for a captured
+invalid time, preserving any value installed by a conversion hook. setUTCFullYear
+instead substitutes the epoch for a captured invalid time before conversion,
+so successful conversion revives the object using January 1 and midnight as
+defaults. Year setters preserve literal years 0–99 without MakeFullYear adjustment.
+Both use shared MakeDay/MakeDate and clip only the final timestamp. The stored
+slot changes only after all conversions and optional native integer work succeed;
+an abrupt conversion or work failure preserves mutations made by hooks.

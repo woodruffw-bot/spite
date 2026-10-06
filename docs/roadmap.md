@@ -292,7 +292,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement Date setUTCDate with captured year/month/time, day rollover, ordered coercion and final time clipping.
 - [x] Implement shared Date MakeDay with exact month/year normalization, finite calendar witnesses and ordered day addition for all numeric inputs.
 - [x] Implement Date.UTC with ordered numeric coercion, optional-field defaults, input short-year adjustment and final clipping after calendar/time arithmetic.
-- [ ] Add Date numeric calendar construction, calendar setters, local time zones and local/legacy string operations.
+- [x] Implement Date setUTCMonth/setUTCFullYear with captured fields, literal short years, invalid-date revival rules and final clipping.
+- [ ] Add Date numeric calendar construction, local calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.

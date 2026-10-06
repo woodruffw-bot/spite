@@ -601,6 +601,16 @@ The review covers ordered coercion/errors, absent defaults, short years,
 non-finite/fractional fields, clipped boundaries, floating arithmetic, metadata
 and rollover. All 36 programs in the four UTC time setter directories are now
 included. The pin and eight harness files are unchanged.
+setUTCMonth and setUTCFullYear now preserve captured calendar fields and time
+through ordered conversion, retain literal short years and normalize rollover
+with final clipping. Eight runtime regressions cover omitted/undefined fields,
+leap centuries and year zero, signed/fractional months, invalid-date revival,
+mutating/throwing hooks, coercion order, branding, frozen slots, ignored arguments,
+range endpoints, huge valid cancellations and normal-stack recovery. A private
+regression verifies transactional opt-in work failure and independence from
+JavaScript BigInt magnitude quotas. An independent check matched 4,336 Node
+return values and final stored timestamps. Local calendar setters and numeric
+local construction remain pending; default quotas and native-stack guards are unchanged.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
