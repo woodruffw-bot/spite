@@ -2320,6 +2320,15 @@ fields follow the proleptic Gregorian calendar with 86,400 seconds per day and
 no leap-second instants. The shared helper accepts clipped integral milliseconds;
 Numeric MakeDay normalization is shared; local zones remain a separate step.
 
+The separate from_epoch_milliseconds helper decomposes every native i64
+millisecond value without TimeClip, including local calendar intermediates just
+outside Date's range. It uses the usual narrow year bracket for clipped inputs
+and a wider bracket containing both native integer endpoints otherwise. All
+Gregorian day arithmetic remains exact in i64 and all resulting years fit i32.
+This integer helper does not substitute for Number division or rounding in wide
+MakeDay witness checks. Public Date formatters and from_time_value still enforce
+the clipped domain; zone conversion must precede final clipping.
+
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
 arithmetic, and retains the exact Euclidean month remainder. Native integers

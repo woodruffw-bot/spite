@@ -109,7 +109,7 @@ pub fn format_iso_date_time(time: i64) -> Option<JsString> {
     Some(JsString::from(text.as_str()))
 }
 
-/// UTC calendar fields for one finite, integral, clipped time value.
+/// Exact UTC Gregorian fields for an integral epoch-millisecond value.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct UtcDateTime {
     /// Proleptic Gregorian year, including zero and negative years.
@@ -141,11 +141,26 @@ impl UtcDateTime {
         if !(-MAX_TIME_VALUE..=MAX_TIME_VALUE).contains(&time) {
             return None;
         }
+        Some(Self::from_epoch_milliseconds(time))
+    }
+
+    /// Decomposes native integral epoch milliseconds without applying TimeClip.
+    ///
+    /// This exact integer operation supports calendar intermediates outside
+    /// the Date range, as required before local time-zone conversion. Every
+    /// `i64` input has a Gregorian year representable by `i32`. Inputs outside
+    /// the clipped Number domain use mathematical integer day division; this
+    /// does not replace wide Number arithmetic in MakeDay's witness checks.
+    pub fn from_epoch_milliseconds(time: i64) -> Self {
         let day = time.div_euclid(MS_PER_DAY);
-        // The clipped endpoints are -271821-04-20 and +275760-09-13.
-        // Bracket their years by adjacent January boundaries.
-        let mut lower = -271_822;
-        let mut upper = 275_761;
+        let (mut lower, mut upper) = if (-MAX_TIME_VALUE..=MAX_TIME_VALUE).contains(&time) {
+            // The clipped endpoints are -271821-04-20 and +275760-09-13.
+            (-271_822, 275_761)
+        } else {
+            // i64 millisecond endpoints fall in years -292275055 and
+            // +292278994. These January boundaries bracket every input.
+            (-300_000_000, 300_000_000)
+        };
         while lower + 1 < upper {
             let middle = lower + (upper - lower) / 2;
             if day_from_year(middle) <= day {
@@ -164,7 +179,7 @@ impl UtcDateTime {
             month += 1;
         }
         let within_day = time.rem_euclid(MS_PER_DAY);
-        Some(Self {
+        Self {
             year: lower,
             month,
             day: (within_year + 1) as u8,
@@ -173,7 +188,7 @@ impl UtcDateTime {
             minute: (within_day / 60_000 % 60) as u8,
             second: (within_day / 1_000 % 60) as u8,
             millisecond: (within_day % 1_000) as u16,
-        })
+        }
     }
 }
 

@@ -271,6 +271,70 @@ fn utc_decomposition_checks_the_domain_without_overflowing_extreme_integers() {
 }
 
 #[test]
+fn unclipped_native_calendar_fields_cover_range_neighbors_and_integer_endpoints() {
+    // Independently derived with civil-from-days Gregorian era decomposition.
+    for (time, expected) in [
+        (i64::MIN, [-292275055, 4, 16, 0, 16, 47, 4, 192]),
+        (i64::MIN + 1, [-292275055, 4, 16, 0, 16, 47, 4, 193]),
+        (i64::MAX - 1, [292278994, 7, 17, 0, 7, 12, 55, 806]),
+        (i64::MAX, [292278994, 7, 17, 0, 7, 12, 55, 807]),
+        (-MAX_TIME_VALUE - 1, [-271821, 3, 19, 1, 23, 59, 59, 999]),
+        (
+            -MAX_TIME_VALUE - MS_PER_DAY,
+            [-271821, 3, 19, 1, 0, 0, 0, 0],
+        ),
+        (MAX_TIME_VALUE + 1, [275760, 8, 13, 6, 0, 0, 0, 1]),
+        (MAX_TIME_VALUE + MS_PER_DAY, [275760, 8, 14, 0, 0, 0, 0, 0]),
+    ] {
+        let date = UtcDateTime::from_epoch_milliseconds(time);
+        assert_eq!(
+            [
+                i64::from(date.year),
+                i64::from(date.month),
+                i64::from(date.day),
+                i64::from(date.weekday),
+                i64::from(date.hour),
+                i64::from(date.minute),
+                i64::from(date.second),
+                i64::from(date.millisecond),
+            ],
+            expected,
+            "{time}"
+        );
+        assert_eq!(UtcDateTime::from_time_value(time), None);
+        assert_eq!(format_iso_date_time(time), None);
+    }
+}
+
+#[test]
+fn unclipped_native_calendar_decomposition_round_trips_across_integer_milliseconds() {
+    let mut state = 2026_u64;
+    for _ in 0..8192 {
+        state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let time = state as i64;
+        let date = UtcDateTime::from_epoch_milliseconds(time);
+        let lengths = month_lengths(date.year);
+        assert!(date.month < 12);
+        assert!((1..=lengths[usize::from(date.month)]).contains(&date.day));
+        assert!(date.hour < 24 && date.minute < 60 && date.second < 60 && date.millisecond < 1000);
+        let day = day_from_year(date.year)
+            + lengths[..usize::from(date.month)]
+                .iter()
+                .map(|length| i64::from(*length))
+                .sum::<i64>()
+            + i64::from(date.day)
+            - 1;
+        let reconstructed = i128::from(day) * i128::from(MS_PER_DAY)
+            + i128::from(date.hour) * 3_600_000
+            + i128::from(date.minute) * 60_000
+            + i128::from(date.second) * 1_000
+            + i128::from(date.millisecond);
+        assert_eq!(reconstructed, i128::from(time), "{time}");
+        assert_eq!(i64::from(date.weekday), (day + 4).rem_euclid(7));
+    }
+}
+
+#[test]
 fn every_day_in_positive_and_negative_four_hundred_year_cycles_rolls_over_correctly() {
     for (start_year, start_time) in [(-400, -74_790_000_000_000), (2000, 946_684_800_000)] {
         let mut time = start_time;

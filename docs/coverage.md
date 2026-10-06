@@ -631,6 +631,13 @@ constructor-infinity ISO RangeErrors previously held out, nine invalid local
 getters, and eighteen local setter programs covering invalid results, ordered
 coercion and captured-time mutation. This focused review uses the existing pin
 and eight harness files without claiming finite local-time support.
+Unclipped native calendar decomposition now accepts every i64 epoch millisecond
+without TimeClip while preserving the existing clipped Date entry points.
+Two regressions cover both integer endpoints, neighboring milliseconds, Date
+range neighbors and 8,192 integer round trips. An independent civil-from-days
+reference matched all eight fields for 8,203 native integer times. Existing UTC
+formatting snapshots and clipped-domain tests retain their original expectations. This prepares
+calendar fields for local zone arithmetic; finite local operations remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
