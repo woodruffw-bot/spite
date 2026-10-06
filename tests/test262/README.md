@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6939 unmodified test fixtures and ten harness files come from
+These 6943 unmodified test fixtures and ten harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -191,6 +191,19 @@ cross-realm support. They remain excluded as whole files without source rewritin
 or pass credit, including the baseline construction in species-ctor-ctor-non-obj.js
 and the RegExp creation in not-a-constructor.js. The pin, ten helpers, original
 bytes and unlimited defaults are unchanged; no native matcher coverage is claimed.
+
+## RegExp matchAll and string iterator review
+
+The review read all twenty-six whole Symbol.matchAll programs and all seventeen
+RegExpStringIteratorPrototype programs at the existing pin. Four unchanged
+matchAll originals add eight normal/strict positives for name/length/property
+metadata and primitive receivers. Both compilers pass every selected variant.
+The other thirty-nine programs require native RegExp construction, instances or
+matching, including every iterator original and not-a-constructor.js's initial
+RegExp creation. They remain excluded as whole files without source rewriting or
+pass credit. Historical descriptions sometimes refer to earlier draft algorithms;
+selected assertions match edition 17. The pin, ten helpers, original bytes and
+unlimited defaults are unchanged; no native construction or matching is claimed.
 
 ## RegExp lexical boundary review
 
@@ -1609,7 +1622,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13318 variants from 6920 reviewed sources: the eleven
+The `spite-test262` command runs 13326 variants from 6924 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1643,7 +1656,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11841 positives using the upstream harness, 1469 reviewed parse-negative variants,
+11849 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

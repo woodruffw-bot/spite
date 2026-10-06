@@ -6919,3 +6919,7 @@ test/built-ins/RegExp/prototype/Symbol.split/str-set-lastindex-err.js	-	-	-
 test/built-ins/RegExp/prototype/Symbol.split/str-set-lastindex-match.js	-	-	-
 test/built-ins/RegExp/prototype/Symbol.split/str-set-lastindex-no-match.js	-	-	-
 test/built-ins/RegExp/prototype/Symbol.split/this-val-non-obj.js	-	-	-
+test/built-ins/RegExp/prototype/Symbol.matchAll/length.js	-	-	-
+test/built-ins/RegExp/prototype/Symbol.matchAll/name.js	-	-	-
+test/built-ins/RegExp/prototype/Symbol.matchAll/prop-desc.js	-	-	-
+test/built-ins/RegExp/prototype/Symbol.matchAll/this-not-object-throws.js	-	-	-

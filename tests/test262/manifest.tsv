@@ -6948,3 +6948,7 @@ script-pass	7947e6395ff840482ec71390d819b081a7efdd806fc17a3ed7608517bae88067	tes
 script-pass	50ff91f71fc3ceee320e276f2aa12ac524c9eac0ab5acc7ff29c900547739bda	test/built-ins/RegExp/prototype/Symbol.split/str-set-lastindex-match.js
 script-pass	aff86a6525457a3662b4632277dcecf60ea1a2b1fb48b7aeea11d875aa4edb32	test/built-ins/RegExp/prototype/Symbol.split/str-set-lastindex-no-match.js
 script-pass	d5453accca944b19405631f5d6c39c8ae55fc45cece5326f9786081978c580ca	test/built-ins/RegExp/prototype/Symbol.split/this-val-non-obj.js
+script-pass	a4ac6215c4dab4dc6d217cb58e8c37f263837e5495c44753157f6d2ab315173a	test/built-ins/RegExp/prototype/Symbol.matchAll/length.js
+script-pass	c5d29b507f959d4355c2af80c3c1c0d2c8acebbc3914b10fe02da989c59dd535	test/built-ins/RegExp/prototype/Symbol.matchAll/name.js
+script-pass	7ea9579be49b635d2e5e31bde3747110d1385ace6e94ea6e4c18b33a59c9b93a	test/built-ins/RegExp/prototype/Symbol.matchAll/prop-desc.js
+script-pass	264f73f8dc671d9e16116ef942606676bbd7fb2ece491aee02c5fab6f4c97e97	test/built-ins/RegExp/prototype/Symbol.matchAll/this-not-object-throws.js
