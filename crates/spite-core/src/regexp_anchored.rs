@@ -1,14 +1,18 @@
-//! Ordinary fixed sequences with outer input/line anchors (22.2.2.4).
+//! Ordinary consuming sequences with outer input/line anchors (22.2.2.4).
 
-use crate::{JsString, RegExpLiteralMatcher, RegExpSequenceMatcher};
+use crate::{
+    JsString, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
+    RegExpSequenceMatcher,
+};
 use std::ops::Range;
 
-/// A fixed ordinary sequence with leading `^`, trailing `$`, or both.
+/// A supported ordinary sequence with leading `^`, trailing `$`, or both.
 ///
 /// Patterns must already be validated without `u` or `v`. Assertions inside
 /// groups or alternatives remain unsupported. Capture ranges retain the body's
-/// relative UTF-16 offsets. Compilation is iterative. Literal search remains
-/// linear; class bodies retain the fixed-sequence candidate search bound.
+/// relative UTF-16 offsets. Quantified bodies have no captures. Compilation is
+/// iterative; literal and quantified search remain linear. Fixed class bodies
+/// retain the sequence candidate search bound.
 #[derive(Clone, Debug)]
 pub struct RegExpAnchoredMatcher {
     body: Body,
@@ -21,10 +25,11 @@ pub struct RegExpAnchoredMatcher {
 enum Body {
     Literal(RegExpLiteralMatcher),
     Sequence(RegExpSequenceMatcher),
+    Quantified(RegExpQuantifiedContinuationMatcher),
 }
 
 impl RegExpAnchoredMatcher {
-    /// Compiles an anchored fixed sequence with DotAll disabled, preserving escapes.
+    /// Compiles an anchored sequence with DotAll disabled, preserving escapes.
     pub fn compile(source: &JsString, ignore_case: bool, multiline: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, multiline, false, |_| {
             Ok::<(), std::convert::Infallible>(())
@@ -32,17 +37,17 @@ impl RegExpAnchoredMatcher {
         .unwrap_or_else(|never| match never {})
     }
 
-    /// Compiles with explicit DotAll and optional fixed-set construction accounting.
+    /// Compiles with explicit DotAll and optional set construction accounting.
     ///
-    /// Literal bodies retain their existing compilation path. Class bodies reuse
-    /// fixed-sequence construction; unsupported syntax and host charge failures
-    /// remain distinct. Callers account for the outer source scan/copy separately.
+    /// Bodies reuse their complete existing consuming plans. Unsupported syntax
+    /// and host charge failures remain distinct. Callers account for the outer
+    /// source scan/copy separately.
     pub fn compile_with_work<E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
         dot_all: bool,
-        charge: impl FnMut(usize) -> Result<(), E>,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
         let at_start = units.first() == Some(&u16::from(b'^'));
@@ -70,9 +75,22 @@ impl RegExpAnchoredMatcher {
         let body = if let Some(literal) = RegExpLiteralMatcher::compile(&body, ignore_case) {
             Body::Literal(literal)
         } else if let Some(sequence) =
-            RegExpSequenceMatcher::compile_with_work(&body, ignore_case, dot_all, charge)?
+            RegExpSequenceMatcher::compile_with_work(&body, ignore_case, dot_all, &mut charge)?
         {
             Body::Sequence(sequence)
+        } else if let Some(quantified) =
+            RegExpQuantifiedMatcher::compile_with_work(&body, ignore_case, dot_all, &mut charge)?
+        {
+            Body::Quantified(RegExpQuantifiedContinuationMatcher::from_quantified(
+                quantified,
+            ))
+        } else if let Some(quantified) = RegExpQuantifiedContinuationMatcher::compile_with_work(
+            &body,
+            ignore_case,
+            dot_all,
+            &mut charge,
+        )? {
+            Body::Quantified(quantified)
         } else {
             return Ok(None);
         };
@@ -84,11 +102,12 @@ impl RegExpAnchoredMatcher {
         }))
     }
 
-    /// Relative ranges of the fixed body's ordered captures.
+    /// Relative ranges of the body's ordered captures.
     pub fn capture_ranges(&self) -> &[Range<usize>] {
         match &self.body {
             Body::Literal(matcher) => matcher.capture_ranges(),
             Body::Sequence(matcher) => matcher.capture_ranges(),
+            Body::Quantified(_) => &[],
         }
     }
 
@@ -96,6 +115,7 @@ impl RegExpAnchoredMatcher {
     pub fn search_passes(&self, sticky: bool) -> usize {
         match &self.body {
             Body::Literal(_) => 2,
+            Body::Quantified(_) => 3,
             Body::Sequence(matcher) => {
                 if sticky {
                     2
@@ -106,7 +126,12 @@ impl RegExpAnchoredMatcher {
         }
     }
 
-    /// Finds the earliest fixed match whose anchors both succeed.
+    /// Repetition may inspect the entire remaining input even at one sticky start.
+    pub fn requires_full_suffix(&self) -> bool {
+        matches!(self.body, Body::Quantified(_))
+    }
+
+    /// Finds the earliest match whose anchors both succeed.
     ///
     /// Sticky matching never reinterprets `^` as the requested start. Only the
     /// complete input's beginning, or a preceding LineTerminator in multiline
@@ -125,6 +150,14 @@ impl RegExpAnchoredMatcher {
         match &self.body {
             Body::Literal(matcher) => matcher.find_if(input, start, sticky, accept),
             Body::Sequence(matcher) => matcher.find_if(input, start, sticky, accept),
+            Body::Quantified(matcher) => matcher.find_anchored(
+                input,
+                start,
+                sticky,
+                self.at_start,
+                self.at_end,
+                self.multiline,
+            ),
         }
     }
 }
@@ -137,6 +170,254 @@ fn is_line_terminator(unit: u16) -> bool {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn quantified_anchor_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "^a*$",
+            "^a*?$",
+            "a+$",
+            "a+?$",
+            "^a+",
+            "^a+?",
+            "^a{1,3}$",
+            "a{1,3}$",
+            "a{1,3}?$",
+            "^a{0}$",
+            "^[ab]*$",
+            "^[ab]*?$",
+            "^[^]*$",
+            "^[^]*?$",
+            "^.*$",
+            "^.*?$",
+            "^.+$",
+            "^[ab]*ab$",
+            "^[ab]*?ab$",
+            "[ab]*ab$",
+            "[ab]*?ab$",
+            "^[Nn]?evermore$",
+            "^(?:a)+$",
+            "^(?:a+)$",
+            "^[]*$",
+            "^[]+$",
+            r"^\d+x$",
+            r"^a*\$$",
+            r"^a*\\$",
+            "^a{999999999999999999999999999}$",
+            "^a+[b]$",
+            "^(a)+$",
+            "^(a+)$",
+            "^a+b+$",
+            "^(?:a+b)$",
+            "^^a*$",
+            "a*^",
+            "^a*|b$",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+            ] {
+                let matcher = RegExpAnchoredMatcher::compile_with_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " captures={:?} full_suffix={} passes={}/{}",
+                        matcher.capture_ranges(),
+                        matcher.requires_full_suffix(),
+                        matcher.search_passes(false),
+                        matcher.search_passes(true)
+                    )
+                    .unwrap();
+                    for input in [
+                        "",
+                        "a",
+                        "A",
+                        "aaaa",
+                        "baaa",
+                        "abab",
+                        "a\nb",
+                        "a\r\nb",
+                        "\r\n",
+                        "x\naaa\ry",
+                        "aa\u{2028}a",
+                        "\u{2029}",
+                        "aax",
+                        "12x",
+                        "Nevermore",
+                        "evermore",
+                        "aaa$",
+                        "aaa\\",
+                    ] {
+                        let input = JsString::from(input);
+                        write!(
+                            rows,
+                            " {input:?}:{:?}/{:?}",
+                            matcher.find(&input, 0, false),
+                            matcher.find(&input, 1, true)
+                        )
+                        .unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn quantified_boundaries_agree_with_independent_candidate_repetition_order() {
+        let alphabet = [97, 98, 10, 13, 0xd800];
+        for (quantifier, min, max) in [
+            ("*", 0, None),
+            ("+", 1, None),
+            ("{0,2}", 0, Some(2)),
+            ("{2,3}", 2, Some(3)),
+            ("{0}", 0, Some(0)),
+        ] {
+            for suffix in ["", "a", "ab"] {
+                for (begin, end) in [(true, false), (false, true), (true, true)] {
+                    for greedy in [false, true] {
+                        let source = format!(
+                            "{}[ab]{quantifier}{}{suffix}{}",
+                            if begin { "^" } else { "" },
+                            if greedy { "" } else { "?" },
+                            if end { "$" } else { "" }
+                        );
+                        for multiline in [false, true] {
+                            let matcher = RegExpAnchoredMatcher::compile(
+                                &JsString::from(source.as_str()),
+                                false,
+                                multiline,
+                            )
+                            .unwrap();
+                            for length in 0..=4u32 {
+                                for mut encoded in 0..alphabet.len().pow(length) {
+                                    let mut units = Vec::new();
+                                    for _ in 0..length {
+                                        units.push(alphabet[encoded % alphabet.len()]);
+                                        encoded /= alphabet.len();
+                                    }
+                                    let input = JsString::from_code_units(units.clone());
+                                    for start in 0..=units.len() + 1 {
+                                        for sticky in [false, true] {
+                                            let expected =
+                                                (start..=units.len()).find_map(|candidate| {
+                                                    if sticky && candidate != start
+                                                        || begin
+                                                            && candidate != 0
+                                                            && !(multiline
+                                                                && [10, 13].contains(
+                                                                    &units[candidate - 1],
+                                                                ))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    let limit = max
+                                                        .unwrap_or(units.len() - candidate)
+                                                        .min(units.len() - candidate);
+                                                    let counts: Vec<_> = if greedy {
+                                                        (min..=limit).rev().collect()
+                                                    } else {
+                                                        (min..=limit).collect()
+                                                    };
+                                                    counts.into_iter().find_map(|count| {
+                                                        let tail = candidate + count;
+                                                        let finish =
+                                                            tail.checked_add(suffix.len())?;
+                                                        let segment = units.get(tail..finish)?;
+                                                        if !units[candidate..tail]
+                                                            .iter()
+                                                            .all(|u| [97, 98].contains(u))
+                                                            || !segment
+                                                                .iter()
+                                                                .copied()
+                                                                .eq(suffix.bytes().map(u16::from))
+                                                        {
+                                                            return None;
+                                                        }
+                                                        if end
+                                                            && finish != units.len()
+                                                            && !(multiline
+                                                                && [10, 13]
+                                                                    .contains(&units[finish]))
+                                                        {
+                                                            return None;
+                                                        }
+                                                        Some(candidate..finish)
+                                                    })
+                                                });
+                                            assert_eq!(
+                                                matcher.find(&input, start, sticky),
+                                                expected,
+                                                "{source} {units:?} start={start} sticky={sticky} m={multiline}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn quantified_anchor_runs_are_linear_compact_and_charged_before_execution() {
+        let units = JsString::from("a".repeat(300000).as_str());
+        for source in ["^[^]*$", "^[^]*?$"] {
+            let matcher =
+                RegExpAnchoredMatcher::compile(&JsString::from(source), false, false).unwrap();
+            assert_eq!(matcher.find(&units, 0, false), Some(0..units.len()));
+            assert_eq!(matcher.clone().find(&units, 1, true), None);
+            assert_eq!(matcher.search_passes(true), 3);
+            assert!(matcher.requires_full_suffix());
+        }
+        let failed =
+            RegExpAnchoredMatcher::compile(&JsString::from("^[a]*aaaaab$"), false, false).unwrap();
+        assert_eq!(failed.find(&units, 0, false), None);
+        let long = JsString::from(format!("{}b", "a\n".repeat(150000)).as_str());
+        assert_eq!(failed.find(&long, 0, false), None);
+        let overflow = RegExpAnchoredMatcher::compile(
+            &JsString::from("^a{999999999999999999999999999}$"),
+            false,
+            false,
+        )
+        .unwrap();
+        assert_eq!(overflow.find(&units, 0, false), None);
+        let fixed = RegExpAnchoredMatcher::compile(&JsString::from("^[a]$"), false, false).unwrap();
+        assert!(!fixed.requires_full_suffix());
+        let result = RegExpAnchoredMatcher::compile_with_work(
+            &JsString::from(r"^\d+$"),
+            false,
+            false,
+            false,
+            |work| {
+                if work == 65536 {
+                    Err("host abort")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert_eq!(result.unwrap_err(), "host abort");
+        let branches =
+            crate::RegExpDisjunctionMatcher::compile(&JsString::from("^a*$|([x])"), false).unwrap();
+        assert!(branches.requires_full_suffix());
+        assert_eq!(branches.search_passes(true), 4);
+    }
 
     #[test]
     fn fixed_class_sequence_anchor_snapshot() {
@@ -282,7 +563,7 @@ mod tests {
         assert!(matches!(result, Err("host abort")));
         assert!(
             RegExpAnchoredMatcher::compile_with_work(
-                &JsString::from("^[a]+$"),
+                &JsString::from("^[a]+[b]$"),
                 false,
                 false,
                 false,

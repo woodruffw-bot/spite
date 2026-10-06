@@ -19,6 +19,13 @@ struct Program {
 }
 
 impl RegExpQuantifiedContinuationMatcher {
+    /// An empty continuation exposes all repetition endpoints to outer anchors.
+    pub(crate) fn from_quantified(prefix: RegExpQuantifiedMatcher) -> Self {
+        let suffix = RegExpLiteralMatcher::compile(&JsString::from(""), false)
+            .expect("empty literal continuation");
+        Self(Arc::new(Program { prefix, suffix }))
+    }
+
     /// Compiles the complete repeated-prefix/fixed-continuation subset.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, dot_all, |_| {
@@ -70,6 +77,58 @@ impl RegExpQuantifiedContinuationMatcher {
     /// retains the last position with the same earliest start. Prefix membership
     /// and the literal prefix-failure scan each visit the input only linearly.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        self.find_with(input, start, sticky, Some, |_| true)
+    }
+
+    /// Outer assertions constrain starts and endpoints before choosing repetition
+    /// order (22.2.2.3.1, 22.2.2.4). The next permitted start is monotone, so its
+    /// boundary cursor also visits the input only linearly.
+    pub(crate) fn find_anchored(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        at_start: bool,
+        at_end: bool,
+        multiline: bool,
+    ) -> Option<Range<usize>> {
+        let units = input.code_units();
+        let mut boundary = start;
+        self.find_with(
+            input,
+            start,
+            sticky,
+            |candidate| {
+                if !at_start {
+                    return Some(candidate);
+                }
+                if !multiline {
+                    return (candidate == 0).then_some(0);
+                }
+                boundary = boundary.max(candidate);
+                while boundary <= units.len() {
+                    if boundary == 0 || is_line_terminator(units[boundary - 1]) {
+                        return Some(boundary);
+                    }
+                    if boundary == units.len() {
+                        break;
+                    }
+                    boundary += 1;
+                }
+                None
+            },
+            |end| !at_end || end == units.len() || (multiline && is_line_terminator(units[end])),
+        )
+    }
+
+    fn find_with(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut next_start: impl FnMut(usize) -> Option<usize>,
+        mut accept_end: impl FnMut(usize) -> bool,
+    ) -> Option<Range<usize>> {
         let units = input.code_units();
         units.get(start..)?;
         let (min, max, greedy) = self.0.prefix.bounds();
@@ -87,15 +146,21 @@ impl RegExpQuantifiedContinuationMatcher {
                 }
             }
             scanned = suffix.start;
-            let candidate = start
+            let lower = start
                 .max(run_start)
                 .max(max.map_or(start, |max| suffix.start.saturating_sub(max)));
+            let Some(candidate) = next_start(lower) else {
+                return true;
+            };
             if sticky && candidate > start
                 || best.as_ref().is_some_and(|best| candidate > best.start)
             {
                 return true;
             }
-            if suffix.start - candidate >= min {
+            if candidate <= suffix.start
+                && suffix.start - candidate >= min
+                && accept_end(suffix.end)
+            {
                 best = Some(candidate..suffix.end);
                 return !greedy;
             }
@@ -103,6 +168,10 @@ impl RegExpQuantifiedContinuationMatcher {
         });
         best
     }
+}
+
+fn is_line_terminator(unit: u16) -> bool {
+    matches!(unit, 0x0a | 0x0d | 0x2028 | 0x2029)
 }
 
 #[cfg(test)]

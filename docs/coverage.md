@@ -696,6 +696,28 @@ Stable and MSRV pass the complete 13488-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Outer input/multiline anchors now surround quantified atoms and quantified
+prefixes with capture-free literal continuations. Three core regressions cover
+an inspected 114-record insta snapshot, exhaustive independent candidate and
+repetition ordering, compact oversized bounds and 300,000-unit success/failure
+cases. Five newly supported rows change in two earlier anchor snapshots; every
+other snapshot is unchanged. Node agrees on all 30,240 range comparisons and
+eighteen runtime programs. Nine runtime regressions cover assertion-constrained
+greedy/lazy lengths, exact ends and multiline/CRLF boundaries, sticky/global
+state, literal continuations and escape parity, pinned case/DotAll and surrogate
+units, transparent groups, capture slots in mixed alternatives, intrinsic Arrays
+and strict writes, generic consumers and empty advancement, long copies after
+collection, optional constructor/sticky-search aborts and ordered unsupported
+host effects. Prior gap regressions now retain character-set continuations. The
+three monotone scans remain linear without allocation, expanded counts or native
+recursion. Optional sticky work covers the entire remaining input, including
+anchored branches in choices; defaults remain unlimited. Captured quantified
+groups, nested choices, internal assertions, multiple quantifiers and Unicode
+modes remain pending. The corpus and pin are unchanged.
+Stable and MSRV pass the complete 13488-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

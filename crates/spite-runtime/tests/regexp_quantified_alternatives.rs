@@ -110,7 +110,7 @@ fn nested_choices_quantified_captures_and_unsupported_branches_reject_the_whole_
         "/a+[b]|a/.test('a')",
         "/(a)+|b/.test('b')",
         "/(a+|b)/.test('a')",
-        "/a|^b+/.test('a')",
+        "/a|^b+[a]/.test('a')",
         "/a+|b/u.test('a')",
         r"/(a)\1|b+/.test('b')",
     ] {

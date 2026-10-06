@@ -240,6 +240,18 @@ and relative captures. DotAll, ignore-case and multiline settings remain
 independent. Optional construction work reaches the class compiler, and optional
 search passes cover consuming terms plus boundaries while sticky mode checks
 one candidate.
+Quantified atoms and quantified prefixes with a capture-free literal continuation
+also accept these outer anchors. Standalone repeated atoms reuse the continuation
+scan with an empty literal, exposing every admissible repetition endpoint. The
+scan advances an additional monotone cursor to the next permitted input/line
+start and filters literal endpoints by the end assertion before selecting the
+shortest lazy or longest greedy repetition at the earliest start. It never
+commits an unconstrained match and then rejects its final length. Membership,
+literal search and boundary advancement each visit input linearly, without
+allocation, expanded counts or native recursion. Optional search accounting
+covers all three scans even at a single sticky start, including when the anchored
+plan appears inside top-level alternatives. Quantified bodies have no capture
+slots; fixed captured branches retain their existing global layout.
 Compilation respects trailing escape parity; internal assertions and
 Unicode-mode matching remain pending. Optional accounting
 covers the literal scan and boundary checks without changing unlimited defaults.

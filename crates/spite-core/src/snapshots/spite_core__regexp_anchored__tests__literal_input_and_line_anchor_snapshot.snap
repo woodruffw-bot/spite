@@ -32,7 +32,7 @@ expression: rows
 "(^a)" m=true unsupported
 "a$b" m=false unsupported
 "a$b" m=true unsupported
-"^a*" m=false unsupported
-"^a*" m=true unsupported
+"^a*" m=false captures=[] "":Some(0..0)/None "a":Some(0..1)/None "ba":Some(0..0)/None "a\u000a":Some(0..1)/None "x\u000aa\u000dy":Some(0..0)/None "\u000d\u000a":Some(0..0)/None "x\u2028a\u2029y":Some(0..0)/None "a$":Some(0..1)/None "a\u005c":Some(0..1)/None "^a":Some(0..0)/None
+"^a*" m=true captures=[] "":Some(0..0)/None "a":Some(0..1)/None "ba":Some(0..0)/None "a\u000a":Some(0..1)/None "x\u000aa\u000dy":Some(0..0)/None "\u000d\u000a":Some(0..0)/Some(1..1) "x\u2028a\u2029y":Some(0..0)/None "a$":Some(0..1)/None "a\u005c":Some(0..1)/None "^a":Some(0..0)/None
 "^^a" m=false unsupported
 "^^a" m=true unsupported

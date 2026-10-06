@@ -94,6 +94,7 @@ impl RegExpMatcher {
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
         let full_suffix = match self {
             Self::Quantified(_) | Self::QuantifiedContinuation(_) => true,
+            Self::Anchored(matcher) => matcher.requires_full_suffix(),
             Self::Disjunction(matcher) => matcher.requires_full_suffix(),
             _ => false,
         };

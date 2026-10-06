@@ -141,11 +141,10 @@ impl RegExpDisjunctionMatcher {
             alternatives.push(matcher);
         }
         charge(alternatives.len())?;
-        let full_suffix = alternatives.iter().any(|branch| {
-            matches!(
-                branch,
-                Alternative::Quantified(_) | Alternative::QuantifiedContinuation(_)
-            )
+        let full_suffix = alternatives.iter().any(|branch| match branch {
+            Alternative::Quantified(_) | Alternative::QuantifiedContinuation(_) => true,
+            Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
+            _ => false,
         });
         Ok(Some(Self(Arc::new(Program {
             alternatives,
