@@ -2,9 +2,9 @@
 
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, RegExpData},
+    object::{DataDescriptor, RegExpData, RegExpMatcher},
 };
-use spite_core::{DiagnosticKind, JsString, RegExpLiteralMatcher, Span};
+use spite_core::{DiagnosticKind, JsString, RegExpDisjunctionMatcher, RegExpLiteralMatcher, Span};
 use spite_parser::validate_regexp_pattern;
 
 impl Realm {
@@ -157,7 +157,19 @@ impl Realm {
                 budget.charge(source.len())?;
                 budget.charge(source.len())
             })?;
-            RegExpLiteralMatcher::compile(&source, flags.code_units().contains(&u16::from(b'i')))
+            let ignore_case = flags.code_units().contains(&u16::from(b'i'));
+            if let Some(matcher) = RegExpLiteralMatcher::compile(&source, ignore_case) {
+                Some(RegExpMatcher::Literal(matcher))
+            } else {
+                // Cover the top-level scan and remaining per-branch compilation
+                // passes. Accounting remains optional, as for literal plans.
+                self.object_work(span, |_, budget| {
+                    budget.charge(source.len())?;
+                    budget.charge(source.len())
+                })?;
+                RegExpDisjunctionMatcher::compile(&source, ignore_case)
+                    .map(RegExpMatcher::Disjunction)
+            }
         };
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the

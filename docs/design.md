@@ -177,8 +177,8 @@ Compilation flattens nested groups iteratively. Noncapturing groups contribute
 the body's matcher without capture slots. Ordinary capturing groups additionally
 retain relative UTF-16 ranges in opening-parenthesis order, including empty
 ranges. Every group in this fixed sequence participates. Validation and compiler
-capture counts must agree. Named groups, alternatives, quantifiers, assertions
-and scoped modifiers remain unsupported.
+capture counts must agree. Named groups, quantifiers, assertions and scoped
+modifiers remain unsupported.
 Other productions return an explicit unsupported
 compilation result; that result is distinct from a failed search. Keep Pattern
 validation separate and require it before compilation. Fold each compiled unit
@@ -188,6 +188,17 @@ suffix. Empty Patterns match through the input's end inclusively. Ranges use
 UTF-16 offsets and preserve both halves of surrogate pairs independently.
 Programs share immutable storage across clones, and search allocates nothing.
 Unicode-mode matching remains pending.
+
+Top-level ordinary literal Disjunction compilation (22.2.2.3) accepts only
+alternatives that each compile completely as a noncapturing literal sequence.
+The iterative delimiter scan respects escapes and nested noncapturing groups;
+nested choices, capturing branches and unsupported productions reject the whole
+plan. Each branch uses the existing linear search. The earliest start wins,
+with source order breaking ties, including empty alternatives. Compilation never
+expands combinations; plans share immutable storage and matching allocates
+nothing. Worst-case search work is proportional to alternative count times input
+suffix length; opted-in accounting charges every possible branch search before
+execution. Ordinary unlimited defaults impose no branch or work cap.
 
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped

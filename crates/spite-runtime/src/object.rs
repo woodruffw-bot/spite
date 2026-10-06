@@ -31,7 +31,7 @@ pub(crate) use iterator::{
 pub(crate) use map::CollectionKey;
 mod private;
 mod regexp;
-pub(crate) use regexp::RegExpData;
+pub(crate) use regexp::{RegExpData, RegExpMatcher};
 mod set;
 pub(crate) use set::SetData;
 mod entry;

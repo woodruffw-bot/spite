@@ -128,8 +128,15 @@ impl Realm {
                 string.len() - index
             };
             self.object_work(span, |_, budget| {
-                budget.charge(work)?;
-                budget.charge(work)
+                if budget.remaining_work().is_some() {
+                    // Branch dispatch still consumes work for an empty suffix.
+                    budget.charge(matcher.search_passes())?;
+                    for _ in 0..matcher.search_passes() {
+                        budget.charge(work)?;
+                        budget.charge(work)?;
+                    }
+                }
+                Ok(())
             })?;
             matcher.find(string, index, sticky)
         };

@@ -1,14 +1,42 @@
 //! Native RegExp original Pattern and flag slots (22.2).
 
 use super::{Error, Objects};
-use spite_core::{JsString, RegExpLiteralMatcher};
+use spite_core::{JsString, RegExpDisjunctionMatcher, RegExpLiteralMatcher};
 use spite_heap::Handle;
+use std::ops::Range;
+
+#[derive(Clone, Debug)]
+pub(crate) enum RegExpMatcher {
+    Literal(RegExpLiteralMatcher),
+    Disjunction(RegExpDisjunctionMatcher),
+}
+
+impl RegExpMatcher {
+    pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        match self {
+            Self::Literal(matcher) => matcher.find(input, start, sticky),
+            Self::Disjunction(matcher) => matcher.find(input, start, sticky),
+        }
+    }
+    pub fn capture_ranges(&self) -> &[Range<usize>] {
+        match self {
+            Self::Literal(matcher) => matcher.capture_ranges(),
+            Self::Disjunction(_) => &[],
+        }
+    }
+    pub fn search_passes(&self) -> usize {
+        match self {
+            Self::Literal(_) => 1,
+            Self::Disjunction(matcher) => matcher.alternative_count(),
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct RegExpData {
     pub source: JsString,
     pub flags: JsString,
-    pub matcher: Option<RegExpLiteralMatcher>,
+    pub matcher: Option<RegExpMatcher>,
 }
 
 impl Objects {
@@ -61,7 +89,8 @@ mod tests {
                 RegExpData {
                     source: source.clone(),
                     flags: JsString::from("yg"),
-                    matcher: RegExpLiteralMatcher::compile(&source, false),
+                    matcher: RegExpLiteralMatcher::compile(&source, false)
+                        .map(RegExpMatcher::Literal),
                 },
             )
             .unwrap();
