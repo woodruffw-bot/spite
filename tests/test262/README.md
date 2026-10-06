@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6566 unmodified test fixtures and eight harness files come from
+These 6595 unmodified test fixtures and eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -39,11 +39,12 @@ setTime mutation and conversion errors, ISO metadata/branding/RangeErrors, gener
 JSON conversion and callback context, primitive hint ordering, and invalid-date
 strings. Original sources, assertions and metadata are unchanged.
 
-The focused review read 177 complete programs. Fourteen require pending numeric
+The focused review read 177 complete programs. At that step, fourteen required pending numeric
 calendar construction, local time zones or finite local/legacy strings; one uses
 the unchanged property helper to enumerate the incomplete global object. Those
-whole programs remain outside the corpus. This is not a complete Date directory
-review. The existing pin, eight harness helpers and unlimited runtime defaults
+whole programs were held out at that step; subsequent Date reviews below expand
+the corpus. This is not a complete Date directory review. The existing pin,
+eight harness helpers and unlimited runtime defaults
 are unchanged; pending Date bodies remain explicit Unsupported failures.
 
 A follow-up review read all 36 whole files in the UTC hour/minute/second/
@@ -78,6 +79,13 @@ six setUTCFullYear programs. All 15 unchanged originals add 30 normal/strict
 positives for ordered coercion, captured valid/invalid time values, literal short
 years, month/day rollover and intrinsic metadata. The pin and eight harness
 files are unchanged.
+
+An invalid-Date review adds 29 unchanged whole programs and 58 normal/strict
+positives: two constructor-infinity ISO RangeError programs from the earlier
+held-out group, nine invalid-time local getter programs, and eighteen local
+setter programs for invalid return values, conversion order and captured-time
+mutation. Finite local operations and local setFullYear remain pending. This is
+a focused invalid-branch review; the pin and eight harness files are unchanged.
 
 ## RegExp lexical boundary review
 
@@ -1496,7 +1504,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 12572 variants from 6547 reviewed sources: the eleven
+The `spite-test262` command runs 12630 variants from 6576 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1517,7 +1525,7 @@ files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
 files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
 files (187 positive and three runtime-negative), and 22 super-expression positives,
-and 244 Date timestamp/UTC/metadata files, and 39 class
+and 273 Date timestamp/UTC/invalid-local/metadata files, and 39 class
 definition/name-binding/strict-mode files (37 positive and two
 parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
@@ -1530,7 +1538,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11095 positives using the upstream harness, 1469 reviewed parse-negative variants,
+11153 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
