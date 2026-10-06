@@ -10,6 +10,29 @@ pub(super) struct PrivateScope {
 }
 
 impl Parser {
+    pub(super) fn checkpoint_private_uses(&self) -> Vec<usize> {
+        self.private_scopes
+            .iter()
+            .map(|scope| scope.uses.len())
+            .collect()
+    }
+
+    pub(super) fn restore_private_uses(&mut self, counts: &[usize]) -> Vec<Vec<PrivateIdentifier>> {
+        assert_eq!(self.private_scopes.len(), counts.len());
+        self.private_scopes
+            .iter_mut()
+            .zip(counts)
+            .map(|(scope, &count)| scope.uses.split_off(count))
+            .collect()
+    }
+
+    pub(super) fn replay_private_uses(&mut self, uses: &[Vec<PrivateIdentifier>]) {
+        assert_eq!(self.private_scopes.len(), uses.len());
+        for (scope, uses) in self.private_scopes.iter_mut().zip(uses) {
+            scope.uses.extend_from_slice(uses);
+        }
+    }
+
     pub(super) fn inherit_private_names(&mut self, names: &std::collections::BTreeSet<String>) {
         self.private_scopes.push(PrivateScope {
             declarations: names

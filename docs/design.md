@@ -122,8 +122,21 @@ including raw line terminators and lone surrogates, and returns the exact captur
 count. Flag errors precede Pattern errors. Diagnostics retain the caller's source
 span rather than treating UTF-16 offsets as source byte positions. Literal
 validation keeps its existing Unsupported matching boundary.
-Before returning executable RegExp ASTs, complete grammar-driven cover lookahead.
-Arrow and destructuring covers still balance raw Div-goal tokens.
+Arrow-head lookahead now probes the formal-parameter and expression grammars
+rather than balancing division tokens. Successful heads retain their parameter
+ASTs; rejected heads retain contextual recognition results. Memo keys include
+native grammar depth, grammar flags and private scope depth. Probes retain
+scanner tokens but restore private-name uses and computed-name diagnostics;
+selected heads replay their own uses exactly once. Scanner failures remain
+authoritative, and RegExp rescans invalidate cached heads. Probes retain forbidden binding names and rest initializer/list continuations
+with a deferred diagnostic while consuming the expression/list grammar. The
+first deferred error keeps its exact rejection point; a validated RegExp literal
+similarly contributes only its boundary and an Unsupported diagnostic. Temporary
+probe values cannot enter a public AST: selecting the head reports the deferred
+error first, while ordinary expressions parse normally.
+Before returning executable RegExp ASTs, finish grammar-driven destructuring
+cover lookahead and native matching. Destructuring covers still balance raw
+Div-goal tokens.
 Computed class accessor lookahead parses its name with the expression grammar and
 retains that AST and its private-name uses for the ensuing accessor or ASI field.
 Nested computed names are parsed once.

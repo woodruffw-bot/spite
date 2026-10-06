@@ -8,6 +8,7 @@ mod binding;
 mod checkpoint;
 mod class;
 mod construction;
+mod cover;
 mod dynamic_function;
 mod function;
 mod iteration;
@@ -182,6 +183,10 @@ struct Parser {
     lexer: Lexer,
     template_braces: Vec<usize>,
     computed_class_name: Option<(usize, usize, PropertyName)>,
+    arrow_heads: std::collections::BTreeMap<cover::Key, Option<arrow::Head>>,
+    probing_cover: bool,
+    probe_error: Option<Diagnostic>,
+    scan_error: Option<Diagnostic>,
     lookahead_error: Option<Diagnostic>,
     tokens: Vec<Token>,
     scan_checkpoints: Vec<checkpoint::ScanCheckpoint>,
@@ -217,6 +222,10 @@ impl Parser {
             lexer,
             template_braces,
             computed_class_name: None,
+            arrow_heads: Default::default(),
+            probing_cover: false,
+            probe_error: None,
+            scan_error: None,
             lookahead_error: None,
             tokens,
             scan_checkpoints: vec![checkpoint],
@@ -1117,7 +1126,18 @@ impl Parser {
             self.current().kind,
             Kind::RegExp { .. } | Kind::Punct("/" | "/=")
         ) {
-            return Err(self.regexp_diagnostic());
+            let diagnostic = self.regexp_diagnostic();
+            if !self.probing_cover || diagnostic.kind != DiagnosticKind::Unsupported {
+                return Err(diagnostic);
+            }
+            // A cover probe only needs the validated literal boundary. This
+            // temporary value cannot escape: selecting the head reports the
+            // deferred diagnostic before exposing its AST.
+            if self.probe_error.is_none() {
+                self.probe_error = Some(diagnostic);
+            }
+            let token = self.bump();
+            return self.make_expr(ExprKind::Literal(Literal::Null), token.span);
         }
         if self.at("class") {
             let class = self.class_definition(false)?;
@@ -1231,6 +1251,13 @@ impl Parser {
                     Err(early(span, "super call requires a derived constructor"))
                 }
             }
+            Kind::Word(name) if name != "import" || (!self.at("(") && !self.at(".")) => {
+                Err(Diagnostic::new(
+                    DiagnosticKind::Syntax,
+                    span,
+                    "reserved word cannot begin an expression",
+                ))
+            }
             Kind::Word(_) => Err(Diagnostic::new(
                 DiagnosticKind::Unsupported,
                 span,
@@ -1256,6 +1283,7 @@ impl Parser {
             // Div-goal cover lookahead may have scanned literal contents as
             // JavaScript. That diagnostic belongs to the wrong lexical goal.
             self.lookahead_error = None;
+            self.scan_error = None;
         }
         if !matches!(self.current().kind, Kind::RegExp { .. }) {
             if let Err(error) = self.rescan_regexp() {

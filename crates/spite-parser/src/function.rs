@@ -109,6 +109,18 @@ impl Parser {
             if self.eat("...") {
                 let binding = self.formal_parameter(invalid_name, false)?;
                 parameters.push(Parameter::Rest(binding));
+                // A probe consumes forbidden rest continuations with the same
+                // expression/list grammar, retaining the original error. Its
+                // temporary parameter AST cannot be selected without reporting it.
+                if parenthesized && self.probing_cover && !self.at(")") {
+                    self.defer_cover_error(self.error("expected )"))?;
+                    if self.eat("=") {
+                        self.expression_with_in(2, true)?;
+                    }
+                    if self.eat(",") {
+                        continue;
+                    }
+                }
                 // BindingRestElement has no initializer and no trailing comma.
                 break;
             }
@@ -135,7 +147,7 @@ impl Parser {
                 return Err(early(token.span, "invalid function parameter"));
             };
             if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
-                return Err(early(token.span, invalid_name));
+                self.defer_cover_error(early(token.span, invalid_name))?;
             }
             BindingPattern {
                 kind: BindingPatternKind::Identifier(name),

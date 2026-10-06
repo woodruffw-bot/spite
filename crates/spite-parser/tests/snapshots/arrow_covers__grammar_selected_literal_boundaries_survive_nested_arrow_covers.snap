@@ -1,0 +1,149 @@
+---
+source: crates/spite-parser/tests/arrow_covers.rs
+expression: diagnostics
+---
+[
+    (
+        "(x = /[)]/) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 10,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = /[(]/) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 10,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = /[}\\]`]/) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 13,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = /\\)/g) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 10,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = /[)]/ / 2) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 10,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "({x = /[)]/} = {}) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "([x = /[)]/] = []) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = (y = /[)]/) => y) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 10,
+                end: 15,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = `${/[}`]/}tail`) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 8,
+                end: 14,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = class { get [/[(]/]() {} }) => x",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 18,
+                end: 23,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = /[(]/) + 1",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 10,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "([x = /a/])",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 6,
+                end: 9,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "(x = (y = /[)]/) => y) + 1",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 10,
+                end: 15,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+]

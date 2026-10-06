@@ -2,37 +2,51 @@
 
 use super::*;
 
+pub(super) type Head = std::rc::Rc<cover::Probe<std::rc::Rc<[Parameter]>>>;
+
 impl Parser {
-    // Recognize a complete parameter cover before consuming it. Parenthesis
-    // scans demand tokens only through the closing parenthesis and arrow.
-    fn arrow_head_end(&mut self, start: usize) -> Option<usize> {
-        let token = self.token_at(start)?;
-        let end = match &token.kind {
-            Kind::Word(_) => start,
-            Kind::Punct("(") => {
-                let mut depth = 0usize;
-                let mut end = None;
-                let mut index = start;
-                while let Some(token) = self.token_at(index) {
-                    match token.kind {
-                        Kind::Punct("(") => depth += 1,
-                        Kind::Punct(")") => {
-                            depth -= 1;
-                            if depth == 0 {
-                                end = Some(index);
-                                break;
-                            }
-                        }
-                        Kind::Eof => break,
-                        _ => {}
-                    }
-                    index += 1;
+    // Refine the parameter grammar before deciding whether this is an arrow.
+    // Defaults use the ordinary expression grammar and select their own goals.
+    fn arrow_head(&mut self, start: usize) -> Result<Option<Head>, Diagnostic> {
+        match self.token_at(start).map(|token| &token.kind) {
+            Some(Kind::Word(_)) => {
+                if !self
+                    .token_at(start + 1)
+                    .is_some_and(|token| token.kind == Kind::Punct("=>"))
+                {
+                    return Ok(None);
                 }
-                end?
             }
-            _ => return None,
+            Some(Kind::Punct("(")) => {}
+            _ => return Ok(None),
+        }
+        let key = self.cover_key(start);
+        if let Some(head) = self.arrow_heads.get(&key) {
+            return Ok(head.clone());
+        }
+        let probe = self.probe_cover(|parser| {
+            parser.index = start;
+            let parameters = if parser.at("(") {
+                parser.formal_parameters("invalid arrow binding identifier")?
+            } else {
+                vec![Parameter::Ordinary(parser.formal_parameter(
+                    "invalid arrow binding identifier",
+                    false,
+                )?)]
+                .into()
+            };
+            if !parser.at("=>") {
+                return Err(parser.error("not an arrow head"));
+            }
+            Ok(parameters)
+        });
+        let head = match probe {
+            Ok(head) => Some(head),
+            Err(error) if error.kind == DiagnosticKind::Syntax => None,
+            Err(error) => return Err(error),
         };
-        (self.token_at(end + 1)?.kind == Kind::Punct("=>")).then_some(end)
+        self.arrow_heads.insert(key, head.clone());
+        Ok(head)
     }
 
     pub(super) fn arrow_expression(&mut self) -> Result<Option<Expr>, Diagnostic> {
@@ -40,29 +54,22 @@ impl Parser {
             && self
                 .token_at(self.index + 1)
                 .is_some_and(|token| !token.newline)
-            && self.arrow_head_end(self.index + 1).is_some()
+            && self.arrow_head(self.index + 1)?.is_some()
         {
             return Err(self.unsupported("async arrow functions are not implemented"));
         }
-        let Some(end) = self.arrow_head_end(self.index) else {
+        let Some(head) = self.arrow_head(self.index)? else {
             return Ok(None);
         };
-        if self.tokens[end + 1].newline {
+        let start = self.current().span.start;
+        if self.tokens[head.end].newline {
             return Err(early(
-                self.tokens[end + 1].span,
+                self.tokens[head.end].span,
                 "line terminator before arrow",
             ));
         }
-        let start = self.current().span.start;
-        let parameters = if self.at("(") {
-            self.formal_parameters("invalid arrow binding identifier")?
-        } else {
-            vec![Parameter::Ordinary(self.formal_parameter(
-                "invalid arrow binding identifier",
-                false,
-            )?)]
-            .into()
-        };
+        self.consume_cover(&head)?;
+        let parameters = head.value.clone();
         self.expect("=>")?;
         // Arrow parameters inherit Await, but concise/block bodies use ~Await
         // even within static initialization (15.3 grammar).

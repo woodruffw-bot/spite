@@ -248,9 +248,23 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Matching and
-grammar-driven cover lookahead remain pending. Matching still produces
-Unsupported and cannot receive positive execution credit.
+No RegExp literal AST or execution pass is exposed. Native matching and
+grammar-driven destructuring cover lookahead remain pending. Matching still
+produces Unsupported and cannot receive positive execution credit.
+
+Arrow heads now use the parameter and expression grammars for lookahead.
+Four public regressions and three parser-internal regressions cover nested
+literal boundaries, division, templates, computed class names, Script/UTF-16/eval
+and dynamic Function goals, invalid flags/Patterns, line terminators, private
+scope rollback and exact replay, contextual memo reuse, scanner errors, and
+existing native depth guards on a two-mebibyte stack. Two new diagnostic insta
+snapshots were inspected. Existing snapshots and pinned rejection expectations
+retain their exact parameter diagnostics, including forbidden rest initializers,
+rest continuations and escaped reserved shorthand names. Reserved statement
+keywords cannot begin expressions; dynamic import retains its Unsupported boundary. A valid RegExp literal seen
+while recognizing a head still produces Unsupported before exposing any public
+AST. Both compiler versions run the complete corpus with unchanged variants and
+ordinary unlimited defaults; no new quota or execution credit is introduced.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three

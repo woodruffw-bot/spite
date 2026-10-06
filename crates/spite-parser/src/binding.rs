@@ -49,6 +49,15 @@ impl Parser {
                 }
                 if self.eat("...") {
                     rest = Some(Box::new(self.binding_pattern()?));
+                    if self.probing_cover && !self.at("]") {
+                        self.defer_cover_error(self.error("expected ]"))?;
+                        if self.eat("=") {
+                            self.expression_with_in(2, true)?;
+                        }
+                        if self.eat(",") {
+                            continue;
+                        }
+                    }
                     break;
                 }
                 elements.push(Some(self.binding_element()?));
@@ -72,12 +81,12 @@ impl Parser {
         self.binding_identifier_token(token)
     }
 
-    fn binding_identifier_token(&self, token: Token) -> Result<BindingPattern, Diagnostic> {
+    fn binding_identifier_token(&mut self, token: Token) -> Result<BindingPattern, Diagnostic> {
         let Kind::Word(name) = token.kind else {
             return Err(early(token.span, "expected binding identifier"));
         };
         if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
-            return Err(early(token.span, "invalid binding identifier"));
+            self.defer_cover_error(early(token.span, "invalid binding identifier"))?;
         }
         Ok(BindingPattern {
             kind: BindingPatternKind::Identifier(name),

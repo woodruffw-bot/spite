@@ -35,6 +35,7 @@ impl Parser {
                     legacy: false,
                 });
                 self.lookahead_error = Some(error.clone());
+                self.scan_error = Some(error.clone());
                 Err(error)
             }
         }
@@ -56,6 +57,7 @@ impl Parser {
         {
             self.computed_class_name = None;
         }
+        self.arrow_heads.clear();
         self.cache_next_token(true)
     }
 }
@@ -67,7 +69,7 @@ mod tests {
     #[test]
     fn regexp_rescan_replaces_a_failed_div_suffix_and_preserves_trivia() {
         let mut parser = Parser::new("(x =\n /\\)/g)\n+ 1").unwrap();
-        assert!(parser.arrow_expression().unwrap().is_none());
+        let _ = parser.token_at(100);
         assert!(parser.lookahead_error.is_some());
         for _ in 0..3 {
             parser.bump();
@@ -128,7 +130,7 @@ mod tests {
     #[test]
     fn failed_regexp_rescans_keep_an_authoritative_error_and_eof_sentinel() {
         let mut parser = Parser::new("(x = /a\n/)").unwrap();
-        assert!(parser.arrow_expression().unwrap().is_none());
+        let _ = parser.token_at(100);
         for _ in 0..3 {
             parser.bump();
         }
