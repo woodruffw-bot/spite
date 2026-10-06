@@ -779,6 +779,9 @@ impl Parser {
             ExprKind::DestructuringAssign { pattern, value } => {
                 pattern.expression_depth().max(value.depth)
             }
+            ExprKind::BinaryChain { head, steps } => head
+                .depth
+                .max(steps.iter().map(|step| step.right.depth).max().unwrap_or(0)),
             ExprKind::Member(base, name) => base.depth.max(match name {
                 PropertyName::Computed(key) => key.depth,
                 PropertyName::Literal(_) | PropertyName::Private(_) => 0,
@@ -1110,9 +1113,65 @@ impl Parser {
                 return Err(self.error("parentheses required when mixing ?? with && or ||"));
             }
             let span = Span::new(left.span.start, right.span.end);
-            left = self.make_expr(ExprKind::Binary(op, Box::new(left), Box::new(right)), span)?;
+            left = self.make_binary_expr(op, left, right, span)?;
         }
         Ok(left)
+    }
+
+    fn make_binary_expr(
+        &self,
+        op: BinaryOp,
+        left: Expr,
+        right: Expr,
+        span: Span,
+    ) -> Result<Expr, Diagnostic> {
+        let Expr {
+            kind,
+            span: left_span,
+            depth,
+        } = left;
+        let step = BinaryStep { op, right, span };
+        let kind = match kind {
+            ExprKind::Binary(previous, head, right) => ExprKind::BinaryChain {
+                head,
+                steps: vec![
+                    BinaryStep {
+                        op: previous,
+                        right: *right,
+                        span: left_span,
+                    },
+                    step,
+                ],
+            },
+            ExprKind::BinaryChain { head, mut steps } => {
+                // Existing chain depth is already cached. Extending a flat chain
+                // must not rescan all earlier operands and become quadratic.
+                let depth = depth.max(1 + step.right.depth);
+                if depth > MAX_DEPTH {
+                    return Err(Diagnostic::new(
+                        DiagnosticKind::Limit,
+                        span,
+                        "expression depth limit exceeded",
+                    ));
+                }
+                steps.push(step);
+                return Ok(Expr {
+                    kind: ExprKind::BinaryChain { head, steps },
+                    span,
+                    depth,
+                });
+            }
+            kind => ExprKind::Binary(
+                op,
+                Box::new(Expr {
+                    kind,
+                    span: left_span,
+                    depth,
+                }),
+                Box::new(step.right),
+            ),
+        };
+        self.make_expr(kind, span)
     }
     fn at_async_function(&mut self) -> bool {
         self.at("async")
@@ -1423,8 +1482,13 @@ fn compound_assignment(kind: &Kind) -> Option<BinaryOp> {
 }
 
 fn forbidden_nullish_mix(op: BinaryOp, expr: &Expr) -> bool {
-    let ExprKind::Binary(other, ..) = expr.kind else {
-        return false;
+    let other = match &expr.kind {
+        ExprKind::Binary(other, ..) => *other,
+        ExprKind::BinaryChain { steps, .. } => match steps.last() {
+            Some(step) => step.op,
+            None => return false,
+        },
+        _ => return false,
     };
     (op == BinaryOp::Nullish && matches!(other, BinaryOp::And | BinaryOp::Or))
         || (other == BinaryOp::Nullish && matches!(op, BinaryOp::And | BinaryOp::Or))
@@ -2052,6 +2116,12 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Binary(_, a, b) => {
             validate_expr(a, strict)?;
             validate_expr(b, strict)?;
+        }
+        ExprKind::BinaryChain { head, steps } => {
+            validate_expr(head, strict)?;
+            for step in steps {
+                validate_expr(&step.right, strict)?;
+            }
         }
         ExprKind::Conditional(a, b, c) => {
             validate_expr(a, strict)?;

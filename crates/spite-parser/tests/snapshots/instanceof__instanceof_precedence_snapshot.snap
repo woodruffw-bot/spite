@@ -7,24 +7,22 @@ Script {
         Statement {
             kind: Expression(
                 Expr {
-                    depth: 3,
-                    kind: Binary(
-                        StrictEqual,
-                        Expr {
-                            depth: 2,
-                            kind: Binary(
-                                Instanceof,
-                                Expr {
-                                    depth: 1,
-                                    kind: Identifier(
-                                        "a",
-                                    ),
-                                    span: Span {
-                                        start: 0,
-                                        end: 1,
-                                    },
-                                },
-                                Expr {
+                    depth: 2,
+                    kind: BinaryChain {
+                        head: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "a",
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 1,
+                            },
+                        },
+                        steps: [
+                            BinaryStep {
+                                op: Instanceof,
+                                right: Expr {
                                     depth: 1,
                                     kind: Identifier(
                                         "F",
@@ -34,25 +32,32 @@ Script {
                                         end: 14,
                                     },
                                 },
-                            ),
-                            span: Span {
-                                start: 0,
-                                end: 14,
+                                span: Span {
+                                    start: 0,
+                                    end: 14,
+                                },
                             },
-                        },
-                        Expr {
-                            depth: 1,
-                            kind: Literal(
-                                Boolean(
-                                    true,
-                                ),
-                            ),
-                            span: Span {
-                                start: 19,
-                                end: 23,
+                            BinaryStep {
+                                op: StrictEqual,
+                                right: Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Boolean(
+                                            true,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 19,
+                                        end: 23,
+                                    },
+                                },
+                                span: Span {
+                                    start: 0,
+                                    end: 23,
+                                },
                             },
-                        },
-                    ),
+                        ],
+                    },
                     span: Span {
                         start: 0,
                         end: 23,
@@ -67,24 +72,22 @@ Script {
         Statement {
             kind: Expression(
                 Expr {
-                    depth: 3,
-                    kind: Binary(
-                        Instanceof,
-                        Expr {
-                            depth: 2,
-                            kind: Binary(
-                                Instanceof,
-                                Expr {
-                                    depth: 1,
-                                    kind: Identifier(
-                                        "a",
-                                    ),
-                                    span: Span {
-                                        start: 25,
-                                        end: 26,
-                                    },
-                                },
-                                Expr {
+                    depth: 2,
+                    kind: BinaryChain {
+                        head: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "a",
+                            ),
+                            span: Span {
+                                start: 25,
+                                end: 26,
+                            },
+                        },
+                        steps: [
+                            BinaryStep {
+                                op: Instanceof,
+                                right: Expr {
                                     depth: 1,
                                     kind: Identifier(
                                         "F",
@@ -94,23 +97,30 @@ Script {
                                         end: 39,
                                     },
                                 },
-                            ),
-                            span: Span {
-                                start: 25,
-                                end: 39,
+                                span: Span {
+                                    start: 25,
+                                    end: 39,
+                                },
                             },
-                        },
-                        Expr {
-                            depth: 1,
-                            kind: Identifier(
-                                "G",
-                            ),
-                            span: Span {
-                                start: 51,
-                                end: 52,
+                            BinaryStep {
+                                op: Instanceof,
+                                right: Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "G",
+                                    ),
+                                    span: Span {
+                                        start: 51,
+                                        end: 52,
+                                    },
+                                },
+                                span: Span {
+                                    start: 25,
+                                    end: 52,
+                                },
                             },
-                        },
-                    ),
+                        ],
+                    },
                     span: Span {
                         start: 25,
                         end: 52,

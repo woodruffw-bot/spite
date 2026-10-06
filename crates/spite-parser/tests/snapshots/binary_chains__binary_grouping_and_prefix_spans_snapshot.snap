@@ -1,0 +1,800 @@
+---
+source: crates/spite-parser/tests/binary_chains.rs
+expression: rows
+---
+1+2+3
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 2,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Number(
+                            1.0,
+                        ),
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    2.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 2,
+                                end: 3,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 3,
+                        },
+                    },
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    3.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 5,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 5,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 5,
+    },
+}
+1+2*3+4
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 3,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Number(
+                            1.0,
+                        ),
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 2,
+                            kind: Binary(
+                                Multiply,
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            2.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 2,
+                                        end: 3,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            3.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 4,
+                                        end: 5,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 2,
+                                end: 5,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 5,
+                        },
+                    },
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    4.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 7,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 7,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 7,
+    },
+}
+2**3**2+4
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 3,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Number(
+                            2.0,
+                        ),
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Exponentiate,
+                        right: Expr {
+                            depth: 2,
+                            kind: Binary(
+                                Exponentiate,
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            3.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 3,
+                                        end: 4,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        Number(
+                                            2.0,
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 6,
+                                        end: 7,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 3,
+                                end: 7,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 7,
+                        },
+                    },
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    4.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 8,
+                                end: 9,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 9,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 9,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 9,
+    },
+}
+1+2-3<<4
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 2,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Number(
+                            1.0,
+                        ),
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    2.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 2,
+                                end: 3,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 3,
+                        },
+                    },
+                    BinaryStep {
+                        op: Subtract,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    3.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 5,
+                        },
+                    },
+                    BinaryStep {
+                        op: LeftShift,
+                        right: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Number(
+                                    4.0,
+                                ),
+                            ),
+                            span: Span {
+                                start: 7,
+                                end: 8,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 8,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 8,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 8,
+    },
+}
+false&&a&&b||c
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 2,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Boolean(
+                            false,
+                        ),
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 5,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: And,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "a",
+                            ),
+                            span: Span {
+                                start: 7,
+                                end: 8,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 8,
+                        },
+                    },
+                    BinaryStep {
+                        op: And,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "b",
+                            ),
+                            span: Span {
+                                start: 10,
+                                end: 11,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 11,
+                        },
+                    },
+                    BinaryStep {
+                        op: Or,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "c",
+                            ),
+                            span: Span {
+                                start: 13,
+                                end: 14,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 14,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 14,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 14,
+    },
+}
+null??a??b
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 2,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Literal(
+                        Null,
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 4,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Nullish,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "a",
+                            ),
+                            span: Span {
+                                start: 6,
+                                end: 7,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 7,
+                        },
+                    },
+                    BinaryStep {
+                        op: Nullish,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "b",
+                            ),
+                            span: Span {
+                                start: 9,
+                                end: 10,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 10,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 10,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 10,
+    },
+}
+(a+b)+c
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 4,
+            kind: Binary(
+                Add,
+                Expr {
+                    depth: 3,
+                    kind: Parenthesized(
+                        Expr {
+                            depth: 2,
+                            kind: Binary(
+                                Add,
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "a",
+                                    ),
+                                    span: Span {
+                                        start: 1,
+                                        end: 2,
+                                    },
+                                },
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "b",
+                                    ),
+                                    span: Span {
+                                        start: 3,
+                                        end: 4,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 1,
+                                end: 4,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 5,
+                    },
+                },
+                Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "c",
+                    ),
+                    span: Span {
+                        start: 6,
+                        end: 7,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 7,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 7,
+    },
+}
+a+(b+c)+d
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 4,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "a",
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 3,
+                            kind: Parenthesized(
+                                Expr {
+                                    depth: 2,
+                                    kind: Binary(
+                                        Add,
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "b",
+                                            ),
+                                            span: Span {
+                                                start: 3,
+                                                end: 4,
+                                            },
+                                        },
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "c",
+                                            ),
+                                            span: Span {
+                                                start: 5,
+                                                end: 6,
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 3,
+                                        end: 6,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 2,
+                                end: 7,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 7,
+                        },
+                    },
+                    BinaryStep {
+                        op: Add,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "d",
+                            ),
+                            span: Span {
+                                start: 8,
+                                end: 9,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 9,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 9,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 9,
+    },
+}
+a,b,c
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 2,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "a",
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: Comma,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "b",
+                            ),
+                            span: Span {
+                                start: 2,
+                                end: 3,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 3,
+                        },
+                    },
+                    BinaryStep {
+                        op: Comma,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "c",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 5,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 5,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 5,
+    },
+}
+a in b in c === d
+Statement {
+    kind: Expression(
+        Expr {
+            depth: 2,
+            kind: BinaryChain {
+                head: Expr {
+                    depth: 1,
+                    kind: Identifier(
+                        "a",
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 1,
+                    },
+                },
+                steps: [
+                    BinaryStep {
+                        op: In,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "b",
+                            ),
+                            span: Span {
+                                start: 5,
+                                end: 6,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 6,
+                        },
+                    },
+                    BinaryStep {
+                        op: In,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "c",
+                            ),
+                            span: Span {
+                                start: 10,
+                                end: 11,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 11,
+                        },
+                    },
+                    BinaryStep {
+                        op: StrictEqual,
+                        right: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "d",
+                            ),
+                            span: Span {
+                                start: 16,
+                                end: 17,
+                            },
+                        },
+                        span: Span {
+                            start: 0,
+                            end: 17,
+                        },
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 17,
+            },
+        },
+    ),
+    span: Span {
+        start: 0,
+        end: 17,
+    },
+}

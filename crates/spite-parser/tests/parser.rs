@@ -193,13 +193,13 @@ fn unsupported_features_remain_distinct() {
 }
 
 #[test]
-fn limits_cover_nested_and_flat_expression_trees() {
+fn limits_cover_recursively_represented_expression_trees() {
     let nested = format!(
         "{}0{}",
         "(".repeat(MAX_DEPTH * 4),
         ")".repeat(MAX_DEPTH * 4)
     );
-    let chain = "1+".repeat(MAX_DEPTH * 4) + "1";
+    let chain = "1**".repeat(MAX_DEPTH * 4) + "1";
     for source in [nested, chain] {
         assert_eq!(
             parse_script(&source).unwrap_err().kind,

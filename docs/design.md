@@ -82,6 +82,18 @@ tails. Preserve whether trivia contains a line terminator. Do not approximate AS
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,
 and context-sensitive syntax. Keep parentheses where early errors depend on them.
 
+Left-associated binary expression spines (13.6–13.13, 13.16) use an initial
+operand and an ordered vector of operator/right-operand steps. Each step retains
+its original complete prefix span; right subtrees and parentheses retain their
+grouping. Appending a step updates cached structural depth without rescanning
+earlier operands. Parsing, early-error validation, cloning, comparison, dropping
+and evaluation therefore avoid native recursion along a flat binary chain.
+Evaluation preserves each right operand's evaluation before primitive conversion,
+per-step short circuit decisions, intermediate string checks and existing optional
+work charges. Comma results still have unbound call receivers and indirect eval.
+Right-associated exponentiation and genuinely nested syntax remain subject to
+the existing native-stack safety guards; host resource quotas remain opt-in.
+
 The parser owns its source scanner and caches tokens as syntactic lookahead
 demands them. Consumed tokens retain spans and strict legacy-token evidence.
 Scanner and computed-name lookahead failures are reported at every public parsing

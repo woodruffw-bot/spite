@@ -12,13 +12,16 @@ fn in_is_left_associative_at_relational_precedence() {
     let StatementKind::Expression(expression) = &script.statements()[0].kind else {
         panic!("expression")
     };
-    let ExprKind::Binary(BinaryOp::StrictEqual, left, _) = &expression.kind else {
-        panic!("equality")
+    let ExprKind::BinaryChain { head, steps } = &expression.kind else {
+        panic!("left-associated binary chain")
     };
-    let ExprKind::Binary(BinaryOp::In, left, _) = &left.kind else {
-        panic!("in")
-    };
-    assert!(matches!(left.kind, ExprKind::Binary(BinaryOp::In, ..)));
+    assert!(matches!(head.kind, ExprKind::Literal(_)));
+    assert_eq!(
+        steps.iter().map(|step| step.op).collect::<Vec<_>>(),
+        vec![BinaryOp::In, BinaryOp::In, BinaryOp::StrictEqual]
+    );
+    assert!(matches!(&steps[0].right.kind, ExprKind::Identifier(name) if name == "a"));
+    assert!(matches!(&steps[1].right.kind, ExprKind::Identifier(name) if name == "b"));
     insta::assert_debug_snapshot!(script);
 }
 

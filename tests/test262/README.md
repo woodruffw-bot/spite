@@ -23,8 +23,9 @@ y-init-lastindex.js. Their six normal/strict positives verify ordered lastIndex
 conversion, global writes, nonglobal reads without writes and sticky start
 positions. Both compilers pass all six variants with original assertions,
 metadata, helpers, pin and unlimited defaults. The remaining directory selection
-receives no passing credit; three programs currently stop at the expression-depth
-safety guard before broader Pattern execution.
+receives no passing credit. Iterative binary-chain parsing lets the three
+previously depth-limited concatenation programs reach their remaining unsupported
+Pattern execution without changing their source or adding host quotas.
 
 A further focused review reads 25 whole exec programs after literal evaluation
 became available. Twelve unchanged originals add 24 normal/strict positives for

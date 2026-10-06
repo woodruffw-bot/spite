@@ -927,12 +927,30 @@ pub enum ExprKind {
     },
     /// A binary expression, including short-circuit operators.
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
+    /// Two or more left-associated operations evaluated without native recursion.
+    BinaryChain {
+        /// Value evaluated before the first operation.
+        head: Box<Expr>,
+        /// Operations and right operands in their original evaluation order.
+        steps: Vec<BinaryStep>,
+    },
     /// A simple assignment to a validated reference expression.
     Assign(Box<Expr>, Box<Expr>),
     /// A compound assignment to a validated reference, including logical assignment.
     CompoundAssign(BinaryOp, Box<Expr>, Box<Expr>),
     /// A conditional expression.
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+}
+
+/// One operation in an ordered left-associated binary expression chain.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BinaryStep {
+    /// Operator applied to the previous accumulated value and this operand.
+    pub op: BinaryOp,
+    /// Operand whose grouping and precedence are retained independently.
+    pub right: Expr,
+    /// Complete original binary-expression prefix range.
+    pub span: Span,
 }
 
 /// An object initializer element (13.2.5), evaluated in source order.

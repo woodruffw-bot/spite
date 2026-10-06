@@ -1591,9 +1591,43 @@ impl Realm {
                     }
                 }
             }
+            ExprKind::BinaryChain { head, steps } => self.binary_chain(head, steps)?,
         };
         self.check_string(&result, expr.span)?;
         Ok(result)
+    }
+
+    // Preserve the left spine's source order and per-operation coercions (13.6–13.13, 13.16).
+    // Right operands retain their original precedence and parenthesized syntax.
+    #[inline(never)]
+    fn binary_chain(
+        &mut self,
+        head: &Expr,
+        steps: &[spite_parser::ast::BinaryStep],
+    ) -> Result<Value, Error> {
+        // The outer expression has already consumed one tick. A recursive left
+        // spine would enter its remaining binary nodes before evaluating `head`.
+        for step in steps.iter().rev().skip(1) {
+            self.tick(step.span)?;
+        }
+        let mut value = self.expression(head)?;
+        for (index, step) in steps.iter().enumerate() {
+            let skip = match step.op {
+                BinaryOp::And => !value.to_boolean(),
+                BinaryOp::Or => value.to_boolean(),
+                BinaryOp::Nullish => !matches!(value, Value::Null | Value::Undefined),
+                _ => false,
+            };
+            if !skip {
+                let right = self.expression(&step.right)?;
+                value = self.binary(step.op, value, right, step.span)?;
+            }
+            if index + 1 < steps.len() {
+                self.check_string(&value, step.span)?;
+            }
+        }
+        // expression_inner checks the complete final result at the outer span.
+        Ok(value)
     }
 
     fn binary(

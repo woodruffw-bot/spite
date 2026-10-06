@@ -84,6 +84,21 @@ preserves each runtime phase, and the runner requires the original expected
 constructor name. Both stable and MSRV pass all 294 eval variants under
 ordinary unlimited defaults; the pin and eight helpers are unchanged.
 
+Left-associated binary expression chains now parse and evaluate without native
+recursion along their left spine (13.6–13.13, 13.16). Three parser regressions
+include an inspected ten-record insta snapshot for grouping and prefix spans,
+strict/nullish early errors, and parsing, cloning, comparison and dropping of
+100,000 operations. Two existing precedence snapshots were inspected after the
+AST representation changed. Seven runtime regressions cover precedence,
+right-associated exponentiation, evaluation/coercion order, short circuiting,
+comma call receivers and indirect eval, String/BigInt results, 100,000 arithmetic
+operations, 1,000 string concatenations, and opted-in host aborts. Ten independent
+Node programs confirm the semantic expectations. Genuine recursive syntax retains
+the existing stack guards; no default quota or test-only allowance is added.
+Stable and MSRV pass the complete 13472-variant corpus, workspace and documentation
+tests, and the debug-symbol stack checks. Formatting, Clippy, dependency policy,
+fixture inventory and the pinned Unicode/numeric generator checks also pass.
+
 With statements now use live Object Environment Records (14.11, 9.1.1.2).
 Four parser regressions and two inspected insta snapshots cover grammar, strict
 early errors, nested declaration conflicts, and control targets. Nine runtime
@@ -362,8 +377,9 @@ six normal/strict positives for lastIndex conversion, global writes, nonglobal
 reads without writes and sticky starting positions. Both compilers pass all six
 added variants with unchanged assertions, metadata, the ten helpers and unlimited
 defaults. The directory inventory remains 79 reviewed programs, with 42 vendored
-and 37 excluded; three of the latter reach the existing expression-depth safety
-guard before broader Pattern execution. No excluded program earns passing credit.
+and 37 excluded. After iterative binary-chain parsing, the three previously
+depth-limited concatenation programs reach their remaining unsupported Pattern
+execution. No excluded program earns passing credit.
 Corpus totals are 7016 fixtures, 6997 reviewed Script sources and 13472 variants,
 including 11995 harness positives; the pin and every negative expectation remain
 unchanged.
