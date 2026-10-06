@@ -298,6 +298,27 @@ The compiler still contributes no captures. Capturing or multi-atom groups,
 multiple quantifiers, concatenated continuations, assertions, choices,
 backreferences and Unicode modes remain outside its subset.
 
+A quantified consuming atom can additionally precede a complete capture-free
+literal continuation (CompileSubpattern, 22.2.2.3). Prefix atom membership and
+bounds reuse the single-quantifier plan, while the continuation retains its
+prefix-failure matcher, including overlapping occurrences and empty noncapturing
+groups. Compilation requires the complete supported continuation before building
+the prefix set. It never partially accepts an unsupported suffix or expands
+repetitions; plans share immutable storage across clones.
+Continuation occurrences arrive in increasing UTF-16 position order. Their
+earliest admissible prefix start is the maximum of the requested start, the
+preceding atom-run start and the maximum-repetition boundary. These quantities
+are monotone, so the first eligible occurrence establishes the earliest whole
+match. Lazy matching returns that occurrence; greedy matching keeps the last
+occurrence with that same earliest start. Each prefix input unit is checked at
+most once, and the literal prefix-failure scan remains linear. Search allocates
+nothing and uses no recursion or backtracking stack. Sticky matching fixes the
+whole start while still inspecting continuation occurrences within the suffix.
+Optional accounting covers both complete-input passes, including sticky runs.
+Captures, character-set continuations, multiple quantifiers, enclosing groups
+around the complete concatenation, assertions, choices and Unicode modes remain
+outside this compiler.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

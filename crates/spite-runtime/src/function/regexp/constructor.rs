@@ -6,8 +6,8 @@ use crate::{
 };
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
-    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher,
-    Span,
+    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -218,13 +218,25 @@ impl Realm {
                                 if let Some(matcher) = sequence {
                                     Ok(Some(RegExpMatcher::Sequence(matcher)))
                                 } else {
-                                    RegExpQuantifiedMatcher::compile_with_work(
+                                    let quantified = RegExpQuantifiedMatcher::compile_with_work(
                                         &source,
                                         ignore_case,
                                         dot_all,
                                         |work| budget.charge(work),
-                                    )
-                                    .map(|matcher| matcher.map(RegExpMatcher::Quantified))
+                                    )?;
+                                    if let Some(matcher) = quantified {
+                                        Ok(Some(RegExpMatcher::Quantified(matcher)))
+                                    } else {
+                                        RegExpQuantifiedContinuationMatcher::compile_with_work(
+                                            &source,
+                                            ignore_case,
+                                            dot_all,
+                                            |work| budget.charge(work),
+                                        )
+                                        .map(|matcher| {
+                                            matcher.map(RegExpMatcher::QuantifiedContinuation)
+                                        })
+                                    }
                                 }
                             }
                         })?

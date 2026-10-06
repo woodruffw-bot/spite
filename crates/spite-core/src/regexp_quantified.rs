@@ -57,9 +57,12 @@ impl RegExpQuantifiedMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
-        let Some((prepared, (min, max, greedy))) = prepare(units, dot_all) else {
+        let Some((prepared, (min, max, greedy), end)) = prepare_prefix(units, dot_all) else {
             return Ok(None);
         };
+        if end != units.len() {
+            return Ok(None);
+        }
         charge(units.len())?;
         let atom = match prepared {
             PreparedAtom::Character(unit) => Atom::Character {
@@ -111,6 +114,18 @@ impl RegExpQuantifiedMatcher {
             candidate += count + 1;
         }
     }
+
+    pub(crate) fn prefix_end(source: &JsString, dot_all: bool) -> Option<usize> {
+        prepare_prefix(source.code_units(), dot_all).map(|(_, _, end)| end)
+    }
+
+    pub(crate) fn bounds(&self) -> Bounds {
+        (self.0.min, self.0.max, self.0.greedy)
+    }
+
+    pub(crate) fn matches(&self, unit: u16) -> bool {
+        self.0.atom.matches(unit)
+    }
 }
 
 impl Atom {
@@ -144,7 +159,7 @@ fn prepare_atom(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, usize)> {
 
 type Bounds = (Option<usize>, Option<usize>, bool);
 
-fn prepare(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, Bounds)> {
+fn prepare_prefix(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, Bounds, usize)> {
     let mut index = 0;
     let mut groups = 0usize;
     while units.get(index..index + 3) == Some(&[0x28, 0x3f, 0x3a]) {
@@ -167,7 +182,7 @@ fn prepare(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, Bounds)> {
             groups -= 1;
             index += 1;
         } else {
-            return (index == units.len() && groups == 0).then_some((atom, bounds?));
+            return (groups == 0).then_some((atom, bounds?, index));
         }
     }
 }

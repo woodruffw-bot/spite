@@ -3,7 +3,8 @@
 use super::{Error, Objects};
 use spite_core::{
     JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher, RegExpDisjunctionMatcher,
-    RegExpLiteralMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher,
+    RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
+    RegExpSequenceMatcher,
 };
 use spite_heap::Handle;
 use std::ops::Range;
@@ -16,6 +17,7 @@ pub(crate) enum RegExpMatcher {
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
     Quantified(RegExpQuantifiedMatcher),
+    QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
 }
 
 impl RegExpMatcher {
@@ -38,6 +40,9 @@ impl RegExpMatcher {
             ),
             Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
             Self::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
+            Self::QuantifiedContinuation(matcher) => {
+                (matcher.find(input, start, sticky)?, 0, &[][..])
+            }
             Self::Sequence(matcher) => (
                 matcher.find(input, start, sticky)?,
                 0,
@@ -62,6 +67,7 @@ impl RegExpMatcher {
             Self::Anchored(matcher) => matcher.capture_ranges().len(),
             Self::Character(_) => 0,
             Self::Quantified(_) => 0,
+            Self::QuantifiedContinuation(_) => 0,
             Self::Sequence(matcher) => matcher.capture_ranges().len(),
             Self::Disjunction(matcher) => matcher.capture_count(),
         }
@@ -72,6 +78,7 @@ impl RegExpMatcher {
             Self::Anchored(matcher) => matcher.search_passes(sticky),
             Self::Character(_) => 1,
             Self::Quantified(_) => 1,
+            Self::QuantifiedContinuation(_) => 2,
             Self::Sequence(matcher) => {
                 if sticky {
                     1
@@ -85,7 +92,7 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
-        if sticky && !matches!(self, Self::Quantified(_)) {
+        if sticky && !matches!(self, Self::Quantified(_) | Self::QuantifiedContinuation(_)) {
             source_len.min(remaining)
         } else {
             remaining

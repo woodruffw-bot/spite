@@ -1,0 +1,91 @@
+---
+source: crates/spite-core/src/regexp_quantified_continuation.rs
+expression: rows
+---
+"a*a" i=false s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a*a" i=true s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":Some(0..1)/None "ABab":Some(0..1)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a*a" i=false s=true "":None/None "a":Some(0..1)/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a*?a" i=false s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..1)/Some(1..2) "baaab":Some(1..2)/Some(1..2) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a*?a" i=true s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..1)/Some(1..2) "baaab":Some(1..2)/Some(1..2) "abab":Some(0..1)/None "ABab":Some(0..1)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a*?a" i=false s=true "":None/None "a":Some(0..1)/None "aaaa":Some(0..1)/Some(1..2) "baaab":Some(1..2)/Some(1..2) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a+aa" i=false s=false "":None/None "a":None/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+aa" i=true s=false "":None/None "a":None/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+aa" i=false s=true "":None/None "a":None/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+?aa" i=false s=false "":None/None "a":None/None "aaaa":Some(0..3)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+?aa" i=true s=false "":None/None "a":None/None "aaaa":Some(0..3)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+?aa" i=false s=true "":None/None "a":None/None "aaaa":Some(0..3)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a{0}a" i=false s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..1)/Some(1..2) "baaab":Some(1..2)/Some(1..2) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a{0}a" i=true s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..1)/Some(1..2) "baaab":Some(1..2)/Some(1..2) "abab":Some(0..1)/None "ABab":Some(0..1)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a{0}a" i=false s=true "":None/None "a":Some(0..1)/None "aaaa":Some(0..1)/Some(1..2) "baaab":Some(1..2)/Some(1..2) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a{1,3}a" i=false s=false "":None/None "a":None/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a{1,3}a" i=true s=false "":None/None "a":None/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a{1,3}a" i=false s=true "":None/None "a":None/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a{1,3}?a" i=false s=false "":None/None "a":None/None "aaaa":Some(0..2)/Some(1..3) "baaab":Some(1..3)/Some(1..3) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a{1,3}?a" i=true s=false "":None/None "a":None/None "aaaa":Some(0..2)/Some(1..3) "baaab":Some(1..3)/Some(1..3) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a{1,3}?a" i=false s=true "":None/None "a":None/None "aaaa":Some(0..2)/Some(1..3) "baaab":Some(1..3)/Some(1..3) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]*ab" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(0..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]*ab" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(0..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":Some(0..4)/Some(1..4) "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]*ab" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":Some(0..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]*?ab" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(0..5)/Some(1..5) "abab":Some(0..2)/Some(1..4) "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]*?ab" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(0..5)/Some(1..5) "abab":Some(0..2)/Some(1..4) "ABab":Some(0..2)/Some(1..4) "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]*?ab" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":Some(0..5)/Some(1..5) "abab":Some(0..2)/Some(1..4) "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]{2,3}b" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]{2,3}b" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":Some(0..4)/Some(1..4) "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]{2,3}b" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]{2,3}?b" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]{2,3}?b" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":Some(0..4)/Some(1..4) "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[ab]{2,3}?b" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..4)/Some(1..4) "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[Nn]?evermore" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":Some(0..8)/None "Nevermore":Some(0..9)/Some(1..9) "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[Nn]?evermore" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":Some(0..8)/None "Nevermore":Some(0..9)/Some(1..9) "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[Nn]?evermore" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":Some(0..8)/None "Nevermore":Some(0..9)/Some(1..9) "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[]*x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/None "12x":Some(2..3)/None "a\u000ax":Some(2..3)/None
+"[]*x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/None "12x":Some(2..3)/None "a\u000ax":Some(2..3)/None
+"[]*x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/None "12x":Some(2..3)/None "a\u000ax":Some(2..3)/None
+"[]+x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[]+x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[]+x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"[^]*x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..6)/Some(1..6) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+"[^]*x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..6)/Some(1..6) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+"[^]*x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..6)/Some(1..6) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+"[^]*?x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/Some(1..3) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+"[^]*?x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/Some(1..3) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+"[^]*?x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/Some(1..3) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+".*x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..6)/Some(1..6) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(2..3)/None
+".*x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..6)/Some(1..6) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(2..3)/None
+".*x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..6)/Some(1..6) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+".*?x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/Some(1..3) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(2..3)/None
+".*?x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/Some(1..3) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(2..3)/None
+".*?x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(0..1)/Some(1..3) "12x":Some(0..3)/Some(1..3) "a\u000ax":Some(0..3)/Some(1..3)
+"\\d+x" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":Some(0..3)/Some(1..3) "a\u000ax":None/None
+"\\d+x" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":Some(0..3)/Some(1..3) "a\u000ax":None/None
+"\\d+x" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":None/None "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":Some(0..3)/Some(1..3) "a\u000ax":None/None
+"(?:a)+?(?:aa)" i=false s=false "":None/None "a":None/None "aaaa":Some(0..3)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"(?:a)+?(?:aa)" i=true s=false "":None/None "a":None/None "aaaa":Some(0..3)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"(?:a)+?(?:aa)" i=false s=true "":None/None "a":None/None "aaaa":Some(0..3)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":None/None "ABab":None/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"(?:a+)b" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..2)/None "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"(?:a+)b" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..2)/None "ABab":Some(0..2)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"(?:a+)b" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..2)/None "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+(?:)" i=false s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a+(?:)" i=true s=false "":None/None "a":Some(0..1)/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":Some(0..1)/None "ABab":Some(0..1)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a+(?:)" i=false s=true "":None/None "a":Some(0..1)/None "aaaa":Some(0..4)/Some(1..4) "baaab":Some(1..4)/Some(1..4) "abab":Some(0..1)/None "ABab":Some(2..3)/None "evermore":None/None "Nevermore":None/None "xaxbxx":Some(1..2)/Some(1..2) "12x":None/None "a\u000ax":Some(0..1)/None
+"a+" i=false s=false unsupported
+"a+" i=true s=false unsupported
+"a+" i=false s=true unsupported
+"a+b+" i=false s=false unsupported
+"a+b+" i=true s=false unsupported
+"a+b+" i=false s=true unsupported
+"a+(b)" i=false s=false unsupported
+"a+(b)" i=true s=false unsupported
+"a+(b)" i=false s=true unsupported
+"(?:a+b)" i=false s=false unsupported
+"(?:a+b)" i=true s=false unsupported
+"(?:a+b)" i=false s=true unsupported
+"a+|b" i=false s=false unsupported
+"a+|b" i=true s=false unsupported
+"a+|b" i=false s=true unsupported
+"^a+b$" i=false s=false unsupported
+"^a+b$" i=true s=false unsupported
+"^a+b$" i=false s=true unsupported
+"a+[b]" i=false s=false unsupported
+"a+[b]" i=true s=false unsupported
+"a+[b]" i=false s=true unsupported

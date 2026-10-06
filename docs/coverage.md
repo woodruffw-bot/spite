@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors, single-atom greedy/lazy quantifiers, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors, single-atom greedy/lazy quantifiers with fixed literal continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13486 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -639,6 +639,27 @@ unlimited defaults. Three older gap regressions retain unsupported multi-atom
 groups, including direct eval's ordered host-abort effects. Capturing/multi-atom
 groups, multiple quantifiers, continuations, assertions, choices and Unicode
 modes remain pending. The corpus and pin are unchanged.
+Stable and MSRV pass the complete 13486-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
+all pinned generator checks also pass.
+
+Quantified consuming prefixes now execute with complete capture-free literal
+continuations, including overlapping suffixes and empty noncapturing groups.
+Three core regressions cover an inspected 87-record insta snapshot, an independent
+exhaustive candidate/repetition-order oracle, compact oversized bounds and
+300,000-unit repeated-prefix success/failure cases. Node agrees on all 21,120
+range comparisons and fifteen runtime programs. Nine runtime regressions cover
+earliest-before-length and greedy/lazy ordering, bounded/empty sets and failed
+prefixes, global/sticky/strict lastIndex, pinned case rules and DotAll, escapes and
+surrogates, own whole-match indices, generic consumers and callbacks, long copies
+after collection, optional constructor/sticky-search host aborts and complete
+unsupported continuations. Four older gap regressions now use character-set
+continuations. The two forward scans preserve linear search without allocation,
+expanded repetitions or a recursive/backtracking stack. Captures, set
+continuations, multiple quantifiers, enclosing concatenation groups, assertions,
+choices and Unicode modes remain pending. Existing snapshots, the corpus and pin
+are unchanged. One further reviewed whole exec poem program is eligible for a
+separate unchanged-fixture commit.
 Stable and MSRV pass the complete 13486-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
