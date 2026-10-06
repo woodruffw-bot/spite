@@ -289,6 +289,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement RegExp.test's ordered custom-exec delegation and Object/null result validation.
 - [x] Implement generic RegExp Symbol.match with live exec lookup, intrinsic result arrays and empty-match Unicode advancement.
 - [x] Implement generic RegExp Symbol.search with exact lastIndex restoration and uncoerced result indices.
+- [x] Implement generic RegExp Symbol.replace with collected exec results, ordered capture conversion, callbacks and captured/named substitution.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.

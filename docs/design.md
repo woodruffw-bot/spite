@@ -141,7 +141,18 @@ BigInt-value magnitude quota. Generic
 Symbol.search (22.2.6.12) preserves SameValue lastIndex identity, including signed
 zero, and restores it after normal exec completion before reading the result's
 index without coercion. Abrupt exec completion does not restore lastIndex.
-Native RegExp instances, construction, matching, matchAll/replace/split and the
+Generic Symbol.replace (22.2.6.11) converts its input and non-callable replacement
+before flags, and collects live exec result objects before capture reads or
+replacement callbacks. Global empty matches share ToLength and UTF-16 Unicode
+advancement. Result processing reads length, match, index, captures and groups in
+order, with clamped integer positions and undefined captures kept distinct.
+Callbacks receive undefined this, the matched String, converted captures,
+position, input and an optional uncoerced groups value. Text replacements box
+groups even when no named reference appears, then resolve template references in
+order without rescanning expansions. Overlapping/backward matches still perform
+all reads, calls and conversions before their output is ignored. Checked storage
+and output follow the existing optional quotas and native-stack guards.
+Native RegExp instances, construction, matching, matchAll/split and the
 string iterator remain pending; unavailable bodies report Unsupported and no
 matcher dependency is active.
 
@@ -1335,7 +1346,8 @@ String; convert their return value to literal replacement text. Non-functional
 replacements use GetSubstitution with no captures (22.1.3.19.1): expand $$, $&,
 prefix, and suffix tokens once; numeric/named-capture tokens remain literal.
 Checked output reservation and copied/scanned units charge opted-in work. Input
-Strings remain fixed through callbacks. RegExp captures remain a separate step.
+Strings remain fixed through callbacks. Generic RegExp replacement shares the
+same scanner with capture resolution.
 
 GetSubstitution template scanning (22.1.3.19.1) is a cloneable, allocation-free
 UTF-16 iterator in core. It returns borrowed literal units or match/context,
@@ -1346,8 +1358,10 @@ than unit and preserve arbitrary UTF-16. Without a named captures Object, the
 dollar/less-than pair stays literal and later references are scanned normally.
 Caching the next delimiter, including its absence, keeps unterminated templates
 linear. Consumers resolve references in order without rescanning expansion text.
-String replace/replaceAll use this scanner with no captures; RegExp capture
-resolution and generic Symbol.replace remain pending.
+String replace/replaceAll use this scanner with no captures. Generic RegExp
+replacement supplies already-converted numbered captures and performs each named
+property read/conversion when its reference is consumed. Custom matches extending
+past the input yield an empty suffix without indexing past its UTF-16 units.
 
 String.replaceAll (22.1.3.20) checks object searches through IsRegExp, then reads
 and converts flags for a true result and requires a lowercase g before looking up
@@ -1359,7 +1373,8 @@ Each callback receives match/position/full String with undefined this and yields
 literal text; String replacements reuse uncaptured GetSubstitution against the
 original input for every match. Position storage and output reservation check
 platform capacity, and searches, callback copies, and substitutions charge opted-in
-work. RegExp objects and their replacement hooks remain pending.
+work. Generic RegExp replacement hooks are implemented; native RegExp objects
+and matching remain pending.
 
 String.raw uses ToObject for its template and raw value, reads length once through
 LengthOfArrayLike, and interleaves each indexed literal conversion with the

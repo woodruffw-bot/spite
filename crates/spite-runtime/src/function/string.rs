@@ -2,6 +2,7 @@
 
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+pub(crate) use replace::Substitution;
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod case;

@@ -1,5 +1,7 @@
 //! RegExp metadata, String escape encoding and generic operations (22.2.5–6).
 
+mod replace;
+
 use super::Builtin;
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
@@ -253,6 +255,7 @@ impl Realm {
         member: Member,
         receiver: Value,
         argument: Value,
+        second_argument: Value,
         span: Span,
     ) -> Result<Value, Error> {
         match member {
@@ -261,6 +264,7 @@ impl Realm {
             Member::Test => self.regexp_test(receiver, argument, span),
             Member::Match => self.regexp_match(receiver, argument, span),
             Member::Search => self.regexp_search(receiver, argument, span),
+            Member::Replace => self.regexp_replace(receiver, argument, second_argument, span),
             Member::DotAll
             | Member::Global
             | Member::HasIndices

@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search delegation; native instances, construction, matching, matchAll/replace/split and the string iterator remain pending |
+| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search/replace delegation with captured substitution; native instances, construction, matching, matchAll/split and the string iterator remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13264 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -335,8 +335,22 @@ snapshots cover 70 numeric and named-reference records, including zero/out-of-ra
 indices, literal dollars, nested marker text, empty/missing delimiters, astral
 keys and unpaired surrogates; an independent reference calculation verifies every
 record. A third regression covers cloned iterators and 120,000 unterminated
-markers with unlimited defaults. Capture-value resolution, generic RegExp
-replacement and native matching remain pending; inventories are unchanged.
+markers with unlimited defaults. Capture-value resolution now feeds the shared
+scanner through generic RegExp replacement; native matching remains pending and
+inventories are unchanged.
+
+Generic RegExp Symbol.replace collects live custom-exec result objects before
+replacement callbacks, then follows ordered length/match/index/capture/groups
+reads and conversions. It clamps positions, preserves undefined captures, passes
+uncoerced groups to callbacks, boxes groups for text templates and resolves named
+references in order without rescanning their expansion text. Backward/overlapping
+results still perform every read, callback and conversion before their output is
+ignored. Ten native regressions cover these paths, exact callback arguments and
+receivers, empty results, oversized custom matches, Unicode empty advancement,
+poisoned public libraries, String hooks, 120,000-unit unlimited output, opted-in
+output/argument/work aborts and recursive exec/capture/named/replacer callbacks.
+Native instances, construction, matching, matchAll/split and the string iterator
+remain pending; the 385 intrinsic entries and corpus counts are unchanged.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those

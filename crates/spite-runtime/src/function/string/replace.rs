@@ -1,11 +1,20 @@
 //! String replace/replaceAll (22.1.3.19–20) and uncaptured GetSubstitution.
 
-use crate::{Error, ExceptionKind, Realm, Value};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, ReplacementPart, Span, WellKnownSymbol, replacement_parts};
 
 enum Replacement {
     Function(Value),
     Text(JsString),
+}
+
+pub(crate) struct Substitution<'a> {
+    pub string: &'a JsString,
+    pub matched: &'a JsString,
+    pub position: usize,
+    // Elements are already converted Strings or undefined.
+    pub captures: &'a [Value],
+    pub named: Option<&'a ObjectHandle>,
 }
 
 impl Realm {
@@ -193,26 +202,87 @@ impl Realm {
         replacement: &JsString,
         span: Span,
     ) -> Result<(), Error> {
+        self.append_substitution(
+            result,
+            Substitution {
+                string,
+                matched,
+                position,
+                captures: &[],
+                named: None,
+            },
+            replacement,
+            span,
+        )
+    }
+
+    // GetSubstitution, 22.1.3.19.1. Named reads and String conversions happen
+    // as each reference is consumed; expansion text is never scanned again.
+    pub(crate) fn append_substitution(
+        &mut self,
+        result: &mut Vec<u16>,
+        context: Substitution<'_>,
+        replacement: &JsString,
+        span: Span,
+    ) -> Result<(), Error> {
         let units = replacement.code_units();
-        // Every code unit participates in at most one scan. Copy charges below
-        // separately cover expanded prefixes/suffixes and literal output.
-        self.object_work(span, |_, budget| budget.charge(units.len()))?;
-        for part in replacement_parts(replacement, 0, false) {
-            let part = match part {
-                ReplacementPart::Literal(units) => units,
-                ReplacementPart::Matched => matched.code_units(),
-                ReplacementPart::Prefix => &string.code_units()[..position],
-                ReplacementPart::Suffix => &string.code_units()[position + matched.len()..],
-                ReplacementPart::Capture(_) | ReplacementPart::NamedCapture(_) => {
-                    unreachable!("String replacement has no captures")
+        self.object_work(span, |_, budget| {
+            budget.charge(units.len())?;
+            if context.named.is_some() {
+                budget.charge(units.len())?;
+            }
+            Ok(())
+        })?;
+        for part in replacement_parts(replacement, context.captures.len(), context.named.is_some())
+        {
+            match part {
+                ReplacementPart::Literal(units) => {
+                    self.append_replacement_units(result, units, span)?
                 }
-            };
-            self.append_replacement_units(result, part, span)?;
+                ReplacementPart::Matched => {
+                    self.append_replacement_units(result, context.matched.code_units(), span)?
+                }
+                ReplacementPart::Prefix => self.append_replacement_units(
+                    result,
+                    &context.string.code_units()[..context.position],
+                    span,
+                )?,
+                ReplacementPart::Suffix => {
+                    // Custom exec can supply a match extending past the input.
+                    let tail = context
+                        .position
+                        .saturating_add(context.matched.len())
+                        .min(context.string.len());
+                    self.append_replacement_units(
+                        result,
+                        &context.string.code_units()[tail..],
+                        span,
+                    )?;
+                }
+                ReplacementPart::Capture(index) => match &context.captures[index] {
+                    Value::String(string) => {
+                        self.append_replacement_units(result, string.code_units(), span)?
+                    }
+                    Value::Undefined => {}
+                    _ => unreachable!("captures were converted before substitution"),
+                },
+                ReplacementPart::NamedCapture(units) => {
+                    let Value::String(key) = self.copy_string_units(units, span)? else {
+                        unreachable!("String copy");
+                    };
+                    let capture =
+                        self.get_property(context.named.expect("named reference"), &key, span)?;
+                    if !matches!(capture, Value::Undefined) {
+                        let capture = self.string(capture, span)?;
+                        self.append_replacement_units(result, capture.code_units(), span)?;
+                    }
+                }
+            }
         }
         Ok(())
     }
 
-    fn append_replacement_units(
+    pub(crate) fn append_replacement_units(
         &mut self,
         result: &mut Vec<u16>,
         part: &[u16],

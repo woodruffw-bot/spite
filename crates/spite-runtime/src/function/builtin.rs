@@ -37,6 +37,7 @@ impl Realm {
                 member,
                 this,
                 arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
                 span,
             ),
             Builtin::DateMethod(method) => self.date_method(method, this, arguments, span),
