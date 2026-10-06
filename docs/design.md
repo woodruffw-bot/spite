@@ -2391,14 +2391,23 @@ toJSON boxes its receiver, requests a numeric primitive and returns null for
 non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
 methods return "Invalid Date". Finite local/legacy string operations, local zone
-resolution, numeric Date construction and local calendar setters remain explicit
+resolution, finite numeric Date construction and finite local calendar setters remain explicit
 Unsupported. UTC hour/minute/second/millisecond setters capture the time value
 before ordered argument conversion and retain omitted fields from that captured
 instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
 For a captured NaN time, all present arguments still convert before returning
 NaN without writing the slot; conversion hooks may have installed a valid time.
-Pending numeric constructors still perform ordered argument conversions,
-including later abrupt completions after earlier NaN results.
+Numeric constructors share Date.UTC's ordered conversion and calendar/time
+arithmetic, including later abrupt completions after earlier NaN results. UTC
+returns NaN for a non-finite intermediate before querying a time zone, so these
+inputs create a branded invalid Date with ordinary new-target prototype lookup.
+Finite local intermediates remain unresolved, including out-of-range values;
+TimeClip must follow zone conversion because an offset can bring a boundary
+instant back into range. Nine local getters return NaN for an invalid time.
+setDate, setMonth, setHours, setMinutes, setSeconds and setMilliseconds convert
+all present arguments before returning NaN for a captured invalid time without
+writing the slot. Hooks can revive that Date. Local setFullYear remains pending
+because its invalid-time fallback can produce a finite time requiring a zone.
 
 setUTCDate (21.4.4.27) likewise captures the original timestamp before ToNumber
 and returns NaN without writing when that captured value was invalid. Its year

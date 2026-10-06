@@ -330,15 +330,14 @@ impl Realm {
                 }
             }
             _ => {
-                // All seven conversions precede calendar arithmetic, including
-                // later abrupt completions when an earlier result is NaN.
-                for argument in arguments.into_iter().take(7) {
-                    self.number(argument, span)?;
+                let local = self.date_numeric_calendar(arguments.into_iter(), span)?;
+                // 21.4.1.26: UTC returns NaN for a non-finite input before
+                // consulting the host time zone. Finite values must remain
+                // unclipped until zone conversion, including range endpoints.
+                if local.is_finite() {
+                    return Err(Self::unsupported(span, "local Date time zone resolution"));
                 }
-                return Err(Self::unsupported(
-                    span,
-                    "numeric Date calendar construction and local time zones",
-                ));
+                f64::NAN
             }
         };
         // 21.4.2.1: input conversion precedes GetPrototypeFromConstructor.
@@ -360,11 +359,22 @@ impl Realm {
     #[inline(never)]
     pub(super) fn date_utc(
         &mut self,
-        mut arguments: std::vec::IntoIter<Value>,
+        arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        // 21.4.3.4: every present component converts in order, even after an
-        // earlier NaN. Absent optional elements retain their numeric defaults.
+        Ok(Value::Number(time_clip(
+            self.date_numeric_calendar(arguments, span)?,
+        )))
+    }
+
+    #[inline(never)]
+    fn date_numeric_calendar(
+        &mut self,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<f64, Error> {
+        // 21.4.2.1 and 21.4.3.4: every present component converts in order,
+        // even after an earlier NaN. Absent fields retain numeric defaults.
         let mut fields = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0];
         fields[0] = self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
         for (field, argument) in fields[1..].iter_mut().zip(arguments) {
@@ -372,10 +382,10 @@ impl Realm {
         }
         let day =
             self.date_make_day_value(make_full_year(fields[0]), fields[1], fields[2], span)?;
-        Ok(Value::Number(time_clip(make_date(
+        Ok(make_date(
             day,
             make_time(fields[3], fields[4], fields[5], fields[6]),
-        ))))
+        ))
     }
 
     #[inline(never)]
@@ -456,6 +466,30 @@ impl Realm {
         let time = self.this_date_value(&this, span)?;
         match method {
             Method::GetTime | Method::ValueOf => Ok(Value::Number(time)),
+            Method::GetDate
+            | Method::GetDay
+            | Method::GetFullYear
+            | Method::GetHours
+            | Method::GetMilliseconds
+            | Method::GetMinutes
+            | Method::GetMonth
+            | Method::GetSeconds
+            | Method::GetTimezoneOffset
+                if time.is_nan() =>
+            {
+                // Local getters return before LocalTime for an invalid Date.
+                Ok(Value::Number(f64::NAN))
+            }
+            Method::SetDate
+            | Method::SetMonth
+            | Method::SetHours
+            | Method::SetMinutes
+            | Method::SetSeconds
+            | Method::SetMilliseconds
+                if time.is_nan() =>
+            {
+                self.date_set_invalid_local(method, arguments, span)
+            }
             Method::SetTime => {
                 let value =
                     time_clip(self.number(arguments.next().unwrap_or(Value::Undefined), span)?);
@@ -566,6 +600,23 @@ impl Realm {
                 "Date calendar mutation and local/legacy string operations",
             )),
         }
+    }
+
+    #[inline(never)]
+    fn date_set_invalid_local(
+        &mut self,
+        method: Method,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 21.4.4.20, 22–26: all present arguments convert before testing the
+        // captured NaN, and returning NaN does not write the slot. A conversion
+        // hook may have revived the object. setFullYear has different rules.
+        self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
+        for argument in arguments.take(method.length() as usize - 1) {
+            self.number(argument, span)?;
+        }
+        Ok(Value::Number(f64::NAN))
     }
 
     // 21.4.4.28 and 32: retain the captured calendar and time of day through

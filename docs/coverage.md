@@ -615,6 +615,17 @@ All nine whole upstream setUTCMonth programs and six setUTCFullYear programs wer
 reviewed and vendored unchanged, adding 30 normal/strict positives for ordered
 coercion, captured-time mutation, literal short years, rollover and metadata.
 The pin and eight harness files are unchanged.
+Numeric Date construction now shares Date.UTC's ordered component conversion
+and calendar/time arithmetic. Non-finite intermediates create invalid Dates
+before zone resolution; finite intermediates remain unresolved and unclipped.
+Nine local getters and six local setters implement their captured-invalid-time
+branches. Setter coercion still runs in order and preserves hook revival or
+abrupt completion without writing the slot. Seven runtime regressions cover all
+component positions, arithmetic overflow/impossible calendar witnesses, ignored
+arguments, new-target prototypes and subclass slots, coercion/error ordering,
+branding and frozen Dates, finite boundary values, and normal-stack recovery.
+Finite local operations and local setFullYear remain pending. The property graph,
+default quotas and native-stack guards are unchanged.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
