@@ -6921,3 +6921,9 @@ script-pass	a5412b92f6eebf73838b23c11e56c41cca2d507ce308c3988de6c6a5d87fc05a	tes
 script-pass	362c196a8853849d45d0bde8f088256dec21d4db04a1a0c687dc8eef33285c40	test/built-ins/RegExp/prototype/Symbol.search/set-lastindex-restore.js
 script-pass	c5d7ebe78a88c953eaded9f33f4544f11f4714682f5bbf17047b007a9e0cdfba	test/built-ins/RegExp/prototype/Symbol.search/success-get-index-err.js
 script-pass	e08de1adb59c4162e852b7ed2f5f3f179bc37ca05ee59781ac6060d98eae1be0	test/built-ins/RegExp/prototype/Symbol.search/this-val-non-obj.js
+script-pass	d1ca5ae652d40f347c84b3145893c7d4cdbddc5e3aecc86b10c612b10bcd1c37	test/built-ins/RegExp/prototype/Symbol.replace/get-exec-err.js
+script-pass	882dd94306cc0aba4f98d86fe33af0da77471832e3f87f422587dc6cd56e313f	test/built-ins/RegExp/prototype/Symbol.replace/get-flags-err.js
+script-pass	e15aab9e847eda08004311cc6d96809231ece5e831e67559c41acef4a037405b	test/built-ins/RegExp/prototype/Symbol.replace/length.js
+script-pass	aa72415b176e77a208be5c037ab1194494014af73753fd24b084d190e7a0454b	test/built-ins/RegExp/prototype/Symbol.replace/name.js
+script-pass	0a193da4da6e375bffb2b9f0038403ebc17d32cbd3cec72e86990c8f7a3e4aaf	test/built-ins/RegExp/prototype/Symbol.replace/prop-desc.js
+script-pass	5f7cdcb72d9f2890113418d5128f4dbecdf978a241ea0c8547889664ebd86ab7	test/built-ins/RegExp/prototype/Symbol.replace/this-val-non-obj.js
