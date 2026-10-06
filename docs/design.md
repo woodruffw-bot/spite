@@ -170,8 +170,21 @@ Capture values remain uncoerced; result[0], index and groups are never read.
 Limits stop before later length/capture reads, and backward custom results follow
 the specified positions without a default work cap. Copies use checked storage
 and optional output quotas.
-Native RegExp instances, construction, matching, matchAll and the
-string iterator remain pending; unavailable bodies report Unsupported and no
+Generic Symbol.matchAll (22.2.6.9) converts its input, obtains the species
+constructor and exact flags, constructs the matcher, then copies the original
+lastIndex through ToLength and a strict Set. It performs no exec lookup until
+iteration. Global/Unicode flags come from that captured flags String, not public
+matcher properties. The branded RegExp String Iterator (22.2.9) inherits the
+shared Iterator prototype and owns only internal slots; its prototype has next
+and the standard RegExp String Iterator tag. Each next snapshots matcher/input
+and flags, performs live RegExpExec and returns fresh IteratorResults containing
+the exact exec object. Non-global success and null mark Done; global empty
+matches read/coerce/advance/set lastIndex. Abrupt exec/result/index operations
+leave Done unchanged, and reentrant calls cannot reset nested completion.
+Matcher slots remain traced, including after Done, until the iterator is
+collected. Shared String snapshots do not copy the input. Two additional rooted
+intrinsic records bring the initialized-realm count to 387.
+Native RegExp instances, construction and matching remain pending; unavailable bodies report Unsupported and no
 matcher dependency is active.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base

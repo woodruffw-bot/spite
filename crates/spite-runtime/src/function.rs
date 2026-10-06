@@ -156,6 +156,7 @@ pub(crate) enum Builtin {
     RegExpEscape,
     RegExpSpecies,
     RegExpMember(regexp::Member),
+    RegExpStringIteratorNext,
     BigInt,
     BigIntToString,
     BigIntToLocaleString,
@@ -433,6 +434,7 @@ impl Builtin {
             Self::ArrayEntries => "entries",
             Self::ArrayIteratorNext
             | Self::StringIteratorNext
+            | Self::RegExpStringIteratorNext
             | Self::IteratorWrapperNext
             | Self::IteratorHelperNext => "next",
             Self::IteratorWrapperReturn | Self::IteratorHelperReturn => "return",

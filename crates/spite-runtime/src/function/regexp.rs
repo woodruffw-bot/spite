@@ -1,5 +1,6 @@
 //! RegExp metadata, String escape encoding and generic operations (22.2.5–6).
 
+mod match_all;
 mod replace;
 mod split;
 
@@ -264,6 +265,7 @@ impl Realm {
             Member::ToString => self.regexp_to_string(receiver, span),
             Member::Test => self.regexp_test(receiver, argument, span),
             Member::Match => self.regexp_match(receiver, argument, span),
+            Member::MatchAll => self.regexp_match_all(receiver, argument, span),
             Member::Search => self.regexp_search(receiver, argument, span),
             Member::Replace => self.regexp_replace(receiver, argument, second_argument, span),
             Member::Split => self.regexp_split(receiver, argument, second_argument, span),

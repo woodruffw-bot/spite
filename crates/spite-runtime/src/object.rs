@@ -26,7 +26,7 @@ use iterator::MapIterator;
 use iterator::SetIterator;
 pub(crate) use iterator::{
     ArrayIterationKind, ArrayIterator, CallbackIterator, CallbackKind, ConcatIterable,
-    HelperStatus, IteratorHelper, IteratorWrapper, LimitKind, StringIterator,
+    HelperStatus, IteratorHelper, IteratorWrapper, LimitKind, RegExpStringIterator, StringIterator,
 };
 pub(crate) use map::CollectionKey;
 mod private;
@@ -188,6 +188,13 @@ impl OrdinaryObject {
     pub(crate) fn string_iterator(&self) -> Option<&StringIterator> {
         match &self.iterator {
             Some(IteratorState::String(state)) => Some(state),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn regexp_string_iterator(&self) -> Option<&RegExpStringIterator> {
+        match &self.iterator {
+            Some(IteratorState::RegExp(state)) => Some(state),
             _ => None,
         }
     }

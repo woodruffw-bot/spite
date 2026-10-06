@@ -5,9 +5,11 @@ use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 
 mod helper;
+mod regexp;
 pub(crate) use helper::{
     CallbackIterator, CallbackKind, ConcatIterable, HelperStatus, IteratorHelper, LimitKind,
 };
+pub(crate) use regexp::RegExpStringIterator;
 
 #[derive(Debug)]
 pub(super) enum IteratorState {
@@ -15,6 +17,7 @@ pub(super) enum IteratorState {
     Map(MapIterator),
     Set(SetIterator),
     String(StringIterator),
+    RegExp(RegExpStringIterator),
     Wrapper(Box<IteratorWrapper>),
     Helper(Box<IteratorHelper>),
 }
@@ -25,6 +28,7 @@ impl IteratorState {
             Self::Array(state) => (state.array.as_ref(), None),
             Self::Map(state) => (state.map.as_ref(), None),
             Self::Set(state) => (state.set.as_ref(), None),
+            Self::RegExp(state) => (Some(&state.matcher), None),
             Self::String(_) | Self::Helper(_) => (None, None),
             Self::Wrapper(state) => (
                 Some(&state.iterator),

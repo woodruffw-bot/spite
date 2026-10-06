@@ -41,6 +41,8 @@ pub(crate) struct IteratorIntrinsics {
     drop: ObjectHandle,
     pub array_prototype: ObjectHandle,
     pub string_prototype: ObjectHandle,
+    pub regexp_prototype: ObjectHandle,
+    regexp_next: ObjectHandle,
     identity: ObjectHandle,
     constructor_get: ObjectHandle,
     constructor_set: ObjectHandle,
@@ -76,6 +78,8 @@ impl IteratorIntrinsics {
             &self.drop,
             &self.array_prototype,
             &self.string_prototype,
+            &self.regexp_prototype,
+            &self.regexp_next,
             &self.identity,
             &self.constructor_get,
             &self.constructor_set,
@@ -143,6 +147,29 @@ impl Realm {
             self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let string_prototype =
             self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let regexp_prototype =
+            self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let regexp_next =
+            self.new_builtin(function_prototype, Builtin::RegExpStringIteratorNext, span)?;
+        self.define_builtin_property(
+            &regexp_prototype,
+            "next",
+            Value::Object(regexp_next.clone()),
+            true,
+            span,
+        )?;
+        self.define_property_or_throw(
+            &regexp_prototype,
+            WellKnownSymbol::ToStringTag.symbol(),
+            DataDescriptor {
+                value: Some(Value::String(JsString::from("RegExp String Iterator"))),
+                writable: Some(false),
+                enumerable: Some(false),
+                configurable: Some(true),
+            }
+            .into(),
+            span,
+        )?;
         let identity = self.new_builtin(function_prototype, Builtin::IteratorIdentity, span)?;
         let constructor_get =
             self.new_builtin(function_prototype, Builtin::IteratorConstructorGet, span)?;
@@ -303,6 +330,8 @@ impl Realm {
             drop,
             array_prototype,
             string_prototype,
+            regexp_prototype,
+            regexp_next,
             identity,
             constructor_get,
             constructor_set,

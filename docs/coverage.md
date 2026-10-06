@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search/replace delegation with captured substitution and species-based splitting; native instances, construction, matching, matchAll and the string iterator remain pending |
+| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search/replace delegation with captured substitution and species-based splitting; native instances, construction and matching remain pending; generic matchAll and its branded iterator are implemented |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13318 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -390,6 +390,22 @@ calls and preserves its complete input with unlimited defaults. Core checks
 verify content-based hashing and UTF-16 ordering across separate allocations,
 unpaired-surrogate concatenation and ownership across threads. Existing snapshots,
 fixture inventories, optional work accounting and default quotas are unchanged.
+
+Generic RegExp Symbol.matchAll now performs ordered species/flags construction,
+ToLength lastIndex copying and strict matcher initialization before creating a
+lazy branded iterator. The RegExp String Iterator retains traced matcher/input
+slots, inherits the shared Iterator prototype and returns exact custom exec
+results in fresh IteratorResults. Non-global success or null permanently completes;
+global empty matches advance by UTF-16 unit/code point for u/v. Abrupt operations
+leave completion unchanged, and reentrant next calls preserve nested completion.
+Twelve native integration tests cover these paths, exact metadata/own-slot brands,
+constructor defaults, conversion ordering, live mutation, strict write errors,
+String hooks and iterator helpers with poisoned public libraries, 120,000-unit
+input, opted-in aborts and recursive creation/next hooks. Two storage
+regressions verify tracing through completion, collection, foreign/stale handles
+and non-inherited slots. The two new rooted intrinsic records bring the initialized
+realm to 387 entries. Native instances, construction and matching remain pending;
+corpus inventories and dependencies are unchanged.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
