@@ -638,6 +638,14 @@ range neighbors and 8,192 integer round trips. An independent civil-from-days
 reference matched all eight fields for 8,203 native integer times. Existing UTC
 formatting snapshots and clipped-domain tests retain their original expectations. This prepares
 calendar fields for local zone arithmetic; finite local operations remain pending.
+Date string records now expose exact nominal calendar milliseconds before zone
+conversion. UTC/offset conversion shares that widened helper, preserving final
+range checks after offset adjustment. Two regressions cover local/UTC/offset
+equivalence, literal year zero, day/hour rollover, both clipped boundaries,
+native i32 year endpoints, invalid day/time records and separate zone validation.
+An independent Gregorian reference matched 4,102 native field records, including
+both i32 year endpoints. Existing parse and formatting snapshots are unchanged;
+local zone resolution remains pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

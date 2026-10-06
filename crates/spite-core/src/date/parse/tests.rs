@@ -162,6 +162,97 @@ fn parsed(source: &str) -> DateTimeString {
 }
 
 #[test]
+fn nominal_calendar_milliseconds_normalize_before_zone_conversion_and_clipping() {
+    for (source, expected) in [
+        ("1970-01-01T00:00", 0),
+        ("1970-01-01T00:00Z", 0),
+        ("1970-01-01T00:00+05:30", 0),
+        ("1970-01-01T00:00-05:30", 0),
+        ("0000-02-29T00:00:00.001", -62_162_121_599_999),
+        ("2000-02-31T24:00", 952_041_600_000),
+        ("-271821-04-19T23:00-01:00", -8_640_000_003_600_000),
+        ("+275760-09-13T01:00+01:00", 8_640_000_003_600_000),
+    ] {
+        assert_eq!(
+            parsed(source).nominal_epoch_milliseconds(),
+            Some(expected),
+            "{source}"
+        );
+    }
+    assert_eq!(parsed("1970-01-01T00:00").utc_time_value(), None);
+    assert_eq!(
+        parsed("-271821-04-19T23:00-01:00").utc_time_value(),
+        Some(-8_640_000_000_000_000.0)
+    );
+    assert_eq!(
+        parsed("+275760-09-13T01:00+01:00").utc_time_value(),
+        Some(8_640_000_000_000_000.0)
+    );
+    let minimum = DateTimeString {
+        year: i32::MIN,
+        ..parsed("1970")
+    };
+    let maximum = DateTimeString {
+        year: i32::MAX,
+        month: 11,
+        day: 31,
+        hour: 24,
+        ..parsed("1970")
+    };
+    assert_eq!(
+        minimum.nominal_epoch_milliseconds(),
+        Some(-67_768_100_567_971_200_000)
+    );
+    assert_eq!(
+        maximum.nominal_epoch_milliseconds(),
+        Some(67_767_976_233_532_800_000)
+    );
+    assert!(minimum.utc_time_value().unwrap().is_nan());
+    assert!(maximum.utc_time_value().unwrap().is_nan());
+}
+
+#[test]
+fn nominal_calendar_validation_keeps_invalid_fields_distinct_from_zone_selection() {
+    let base = parsed("1970-01-01T00:00");
+    for invalid in [
+        DateTimeString { month: 12, ..base },
+        DateTimeString { day: 0, ..base },
+        DateTimeString { day: 32, ..base },
+        DateTimeString { hour: 25, ..base },
+        DateTimeString { minute: 60, ..base },
+        DateTimeString { second: 60, ..base },
+        DateTimeString {
+            millisecond: 1000,
+            ..base
+        },
+        DateTimeString {
+            hour: 24,
+            minute: 1,
+            ..base
+        },
+        DateTimeString {
+            hour: 24,
+            second: 1,
+            ..base
+        },
+        DateTimeString {
+            hour: 24,
+            millisecond: 1,
+            ..base
+        },
+    ] {
+        assert_eq!(invalid.nominal_epoch_milliseconds(), None);
+        assert!(invalid.utc_time_value().unwrap().is_nan());
+    }
+    let invalid_zone = DateTimeString {
+        zone: DateTimeZone::OffsetMinutes(i16::MAX),
+        ..base
+    };
+    assert_eq!(invalid_zone.nominal_epoch_milliseconds(), Some(0));
+    assert!(invalid_zone.utc_time_value().unwrap().is_nan());
+}
+
+#[test]
 fn utc_forms_convert_defaults_extended_years_and_offsets_without_short_year_adjustment() {
     for (source, expected) in [
         ("1970", 0.0),

@@ -48,6 +48,34 @@ impl DateTimeString {
     /// stays exact until the final conversion of an in-range time value.
     /// See [Date.parse](https://262.ecma-international.org/17.0/#sec-date.parse).
     pub fn utc_time_value(&self) -> Option<f64> {
+        let Some(nominal) = self.nominal_epoch_milliseconds() else {
+            return Some(f64::NAN);
+        };
+        let offset = match self.zone {
+            DateTimeZone::Utc => 0,
+            DateTimeZone::OffsetMinutes(offset) if (-1439..=1439).contains(&offset) => offset,
+            DateTimeZone::OffsetMinutes(_) => return Some(f64::NAN),
+            DateTimeZone::Local => return None,
+        };
+        // Offset adjustment must precede clipping; a nominal local value just
+        // outside the domain can still represent an in-range UTC instant.
+        let time = nominal - i128::from(offset) * 60_000;
+        let maximum = i128::from(super::MAX_TIME_VALUE);
+        Some(if (-maximum..=maximum).contains(&time) {
+            // Every accepted integral millisecond is exactly representable.
+            time as f64
+        } else {
+            f64::NAN
+        })
+    }
+
+    /// Normalizes calendar fields to exact epoch milliseconds before zone conversion.
+    ///
+    /// The zone field is not interpreted and TimeClip is not applied. Day 29–31
+    /// and hour 24 roll over through the Gregorian calendar. Returns `None` for
+    /// invalid calendar/time field records; every native `i32` year fits the widened
+    /// result, including values outside the interchange format's year syntax.
+    pub fn nominal_epoch_milliseconds(&self) -> Option<i128> {
         if self.month > 11
             || !(1..=31).contains(&self.day)
             || self.hour > 24
@@ -56,14 +84,8 @@ impl DateTimeString {
             || self.millisecond > 999
             || (self.hour == 24 && (self.minute != 0 || self.second != 0 || self.millisecond != 0))
         {
-            return Some(f64::NAN);
+            return None;
         }
-        let offset = match self.zone {
-            DateTimeZone::Utc => 0,
-            DateTimeZone::OffsetMinutes(offset) if (-1439..=1439).contains(&offset) => offset,
-            DateTimeZone::OffsetMinutes(_) => return Some(f64::NAN),
-            DateTimeZone::Local => return None,
-        };
         let day = super::day_from_year(self.year)
             + super::month_lengths(self.year)
                 .into_iter()
@@ -72,22 +94,13 @@ impl DateTimeString {
                 .sum::<i64>()
             + i64::from(self.day)
             - 1;
-        // Even an externally constructed i32 year fits this widened arithmetic.
-        // Offset adjustment must precede clipping; a nominal local value just
-        // outside the domain can still represent an in-range UTC instant.
-        let time = i128::from(day) * i128::from(super::MS_PER_DAY)
-            + i128::from(self.hour) * 3_600_000
-            + i128::from(self.minute) * 60_000
-            + i128::from(self.second) * 1_000
-            + i128::from(self.millisecond)
-            - i128::from(offset) * 60_000;
-        let maximum = i128::from(super::MAX_TIME_VALUE);
-        Some(if (-maximum..=maximum).contains(&time) {
-            // Every accepted integral millisecond is exactly representable.
-            time as f64
-        } else {
-            f64::NAN
-        })
+        Some(
+            i128::from(day) * i128::from(super::MS_PER_DAY)
+                + i128::from(self.hour) * 3_600_000
+                + i128::from(self.minute) * 60_000
+                + i128::from(self.second) * 1_000
+                + i128::from(self.millisecond),
+        )
     }
 }
 

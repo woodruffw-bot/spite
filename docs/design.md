@@ -2367,6 +2367,14 @@ while valid local forms report that zone resolution is required. MakeFullYear
 separately truncates numeric input and maps years 0–99 to 1900–1999; interchange
 years preserve their literal year, including zero and 1–99.
 
+DateTimeString exposes nominal_epoch_milliseconds to validate and normalize its
+calendar fields before interpreting the zone. It returns exact i128 milliseconds
+for every native i32 year and valid day/time record, with day and end-of-day
+rollover and no TimeClip or floating rounding. UTC/offset conversion uses that
+same result, then applies the offset and range check. Local parsing can therefore
+share the identical calendar normalization when host zone resolution is added.
+Invalid zone offsets remain separate from calendar validation.
+
 Canonical ISO formatting decomposes a clipped integral time value and emits the
 finite toISOString form (21.4.4.36): four year digits for 0–9999, otherwise a sign
 and six digits, followed by full UTC date/time fields, three millisecond digits,
