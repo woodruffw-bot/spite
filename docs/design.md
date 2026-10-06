@@ -255,6 +255,15 @@ candidate. Optional search accounting follows those bounds with separate charges
 instead of overflowing a product. Assertions, choices, quantifiers, named/scoped
 groups, backreferences and Unicode modes remain outside this sequence compiler.
 
+Within one sequence compilation, identical atom source shares one immutable
+character-set plan. A temporary cache borrows UTF-16 source slices, using the
+compilation's fixed ignore-case/DotAll settings. It is discarded before the plan
+returns; no source borrow or global cache escapes. Captures remain independent
+per-occurrence endpoints. Reserving cache capacity up front avoids rehashing
+previously charged keys. Optional work covers cache setup/lookups and each
+distinct bitmap's first construction, preserving host aborts separately from
+unsupported syntax and match failure.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

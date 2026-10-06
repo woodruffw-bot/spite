@@ -2,7 +2,7 @@
 
 use crate::regexp_character::PreparedCharacter;
 use crate::{JsString, RegExpCharacterMatcher, regexp_canonicalize_character};
-use std::{ops::Range, sync::Arc};
+use std::{collections::HashMap, ops::Range, sync::Arc};
 
 /// Immutable fixed-width sequence of ordinary characters and character-set atoms.
 ///
@@ -29,7 +29,10 @@ enum Term {
 
 enum PreparedTerm {
     Character(u16),
-    Set(PreparedCharacter),
+    Set {
+        plan: PreparedCharacter,
+        source: Range<usize>,
+    },
 }
 
 impl RegExpSequenceMatcher {
@@ -44,8 +47,9 @@ impl RegExpSequenceMatcher {
     /// Parses the complete Pattern before constructing sets or charging their work.
     ///
     /// Unsupported syntax returns Ok(None). Construction charge failures remain
-    /// independent host errors. Each set retains the single-atom compiler's exact
-    /// preparation bounds; literal terms need one canonicalization each.
+    /// independent host errors. Identical atom source within this compilation
+    /// shares its immutable set plan. Cache setup/lookups and first construction
+    /// retain their work charges; literal terms need one canonicalization each.
     pub fn compile_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -57,12 +61,36 @@ impl RegExpSequenceMatcher {
         };
         charge(source.len())?;
         charge(prepared.len())?;
+        // Reserving for all set terms prevents rehashing already charged keys.
+        // Cache keys borrow this compilation's immutable source, never the plan.
+        let set_count = prepared
+            .iter()
+            .filter(|term| matches!(term, PreparedTerm::Set { .. }))
+            .count();
+        charge(prepared.len())?;
+        charge(set_count)?;
+        charge(set_count)?;
+        let mut sets: HashMap<&[u16], RegExpCharacterMatcher> = HashMap::with_capacity(set_count);
         let mut terms = Vec::with_capacity(prepared.len());
         for term in prepared {
             terms.push(match term {
                 PreparedTerm::Character(unit) => Term::Character(canonicalize(unit, ignore_case)),
-                PreparedTerm::Set(set) => {
-                    Term::Set(set.compile_with_work(ignore_case, &mut charge)?)
+                PreparedTerm::Set {
+                    plan,
+                    source: range,
+                } => {
+                    let key = &source.code_units()[range];
+                    charge(key.len())?;
+                    charge(key.len())?;
+                    let set = if let Some(set) = sets.get(key) {
+                        set.clone()
+                    } else {
+                        charge(key.len())?;
+                        let set = plan.compile_with_work(ignore_case, &mut charge)?;
+                        sets.insert(key, set.clone());
+                        set
+                    };
+                    Term::Set(set)
                 }
             });
         }
@@ -144,7 +172,10 @@ fn prepare(source: &[u16], dot_all: bool) -> Option<(Vec<PreparedTerm>, Vec<Rang
         } else if let Some((prepared, consumed)) =
             PreparedCharacter::parse(&source[index..], dot_all)
         {
-            terms.push(PreparedTerm::Set(prepared));
+            terms.push(PreparedTerm::Set {
+                plan: prepared,
+                source: index..index + consumed,
+            });
             index += consumed;
         } else {
             index += 1;
@@ -328,7 +359,10 @@ mod tests {
         )
         .unwrap()
         .unwrap();
-        assert_eq!(charges, [6, 3, 3, 1024, 1, 2, 1024, 65_536]);
+        assert_eq!(
+            charges,
+            [6, 3, 3, 2, 2, 3, 3, 3, 3, 1024, 1, 2, 2, 2, 2, 1024, 65_536]
+        );
         assert_eq!(matcher.atom_count(), 3);
         let result = RegExpSequenceMatcher::compile_with_work(
             &JsString::from("[a]b\\d"),
@@ -355,5 +389,62 @@ mod tests {
             .unwrap()
             .is_none()
         );
+    }
+
+    #[test]
+    fn repeated_sets_fit_opted_in_work_and_keep_independent_capture_positions() {
+        let source = JsString::from("[a]".repeat(1000).as_str());
+        let mut remaining = 20_000usize;
+        let matcher = RegExpSequenceMatcher::compile_with_work(&source, false, false, |work| {
+            remaining = remaining.checked_sub(work).ok_or("host abort")?;
+            Ok::<(), &str>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            matcher.find(&JsString::from("a".repeat(1000).as_str()), 0, true),
+            Some(0..1000)
+        );
+        let mut remaining = 70_000usize;
+        let matcher = RegExpSequenceMatcher::compile_with_work(
+            &JsString::from(r"(\d)(\d)"),
+            false,
+            false,
+            |work| {
+                remaining = remaining.checked_sub(work).ok_or("host abort")?;
+                Ok::<(), &str>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(matcher.capture_ranges(), [0..1, 1..2]);
+        assert_eq!(matcher.find(&JsString::from("12"), 0, true), Some(0..2));
+        let mut remaining = 70_000usize;
+        assert!(matches!(
+            RegExpSequenceMatcher::compile_with_work(
+                &JsString::from(r"\d\w"),
+                false,
+                false,
+                |work| {
+                    remaining = remaining.checked_sub(work).ok_or("host abort")?;
+                    Ok::<(), &str>(())
+                }
+            ),
+            Err("host abort")
+        ));
+        let matcher =
+            RegExpSequenceMatcher::compile(&JsString::from("([a])([^a])([a])"), true, false)
+                .unwrap();
+        assert_eq!(matcher.capture_ranges(), [0..1, 1..2, 2..3]);
+        assert_eq!(matcher.find(&JsString::from("AbA"), 0, true), Some(0..3));
+    }
+
+    #[test]
+    fn large_repeated_set_sequences_compile_clone_and_match_with_unlimited_defaults() {
+        let source = JsString::from("[a]".repeat(100_000).as_str());
+        let matcher = RegExpSequenceMatcher::compile(&source, false, false).unwrap();
+        let input = JsString::from("a".repeat(100_000).as_str());
+        assert_eq!(matcher.clone().find(&input, 0, true), Some(0..100_000));
+        assert_eq!(matcher.atom_count(), 100_000);
     }
 }

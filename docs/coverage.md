@@ -539,6 +539,19 @@ Both compilers pass the complete 13480-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 the pinned Unicode/numeric generator checks pass. Existing snapshots are unchanged.
 
+Fixed-sequence compilation now shares identical character-set plans within the
+Pattern. Two further core regressions cover repeated sets under opted-in work,
+distinct sets exhausting that allowance, independent capture positions/inversion,
+and compiling, cloning and matching 100,000 repeated atoms with unlimited defaults.
+A runtime regression executes 1,002 repeated atoms with capture indices after
+collection under an opted-in allowance. All 4,818 independent Node range/capture
+comparisons remain identical. In one local unoptimized 20,000-identical-atom probe,
+peak process memory fell from 163880 KiB to 8448 KiB; both versions matched the
+same input. Existing snapshots and the corpus are unchanged.
+Stable and MSRV pass the complete 13480-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
+all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
