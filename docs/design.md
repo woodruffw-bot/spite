@@ -198,8 +198,25 @@ leave Done unchanged, and reentrant calls cannot reset nested completion.
 Matcher slots remain traced, including after Done, until the iterator is
 collected. Shared String snapshots do not copy the input. Two additional rooted
 intrinsic records bring the initialized-realm count to 387.
-Native RegExp instances, construction and matching remain pending; unavailable bodies report Unsupported and no
-matcher dependency is active.
+Native RegExp construction (22.2.4.1) performs IsRegExp before identity checks.
+Only calls with undefined flags and the active intrinsic constructor can return
+the input object. Otherwise, native input copies its original private source and
+flags even after a false Symbol.match override; regexp-like objects read public
+source and flags before allocation and either String conversion. RegExpAlloc
+reads newTarget.prototype and creates the own non-configurable, writable
+lastIndex before RegExpInitialize converts and validates source/flags. Successful
+initialization stores immutable UTF-16 original values and sets lastIndex to +0.
+Subclass prototypes and bound construction use the existing construction path.
+Original-slot storage is boxed to keep recursive native frames small; shared
+Strings remain owned through collection and do not introduce heap edges.
+Source uses EscapeRegExpPattern; flag getters read validated original flags.
+Brands are own slots, never inherited or inferred from public properties. The
+ordinary intrinsic prototype retains its special source/flag getter results.
+IsRegExp's undefined-marker fallback and Object.prototype.toString inspect the
+native brand. Exec requires that brand before converting its argument. Pattern
+compilation and native matching remain Unsupported, including RegExpExec's
+non-callable-exec fallback on native instances; custom exec still uses all generic
+algorithms. No matcher dependency or default quota is activated.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
@@ -1369,8 +1386,8 @@ map NaN to zero. IsRegExp reads Symbol.match on objects after receiver conversio
 and before search-string or position conversion (7.2.6). A defined marker uses
 ToBoolean without calling or converting it; truthy markers cause TypeError even
 for empty searches. Primitive searches never perform this lookup. Inherited
-getters retain the search object as receiver. The RegExpMatcher brand fallback
-remains false until RegExp objects exist; string-keyed lookalikes are not hooks.
+getters retain the search object as receiver. An undefined marker falls back to
+the object's own native RegExp brand; string-keyed lookalikes are not hooks.
 String.split (22.1.3.23) checks receiver coercibility, then delegates Symbol.split
 only for object separators as required by edition 17. Pass original this/limit
 values and return the hook's result without conversion. Fallback converts this

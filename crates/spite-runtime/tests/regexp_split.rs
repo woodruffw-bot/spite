@@ -73,13 +73,11 @@ fn species_checks_precede_flags_and_defaults_use_the_intrinsic_constructor() {
     ] {
         let mut realm = Realm::default();
         realm.eval("let f=RegExp.prototype[Symbol.split],called=false;RegExp=function(){called=true;throw 7;};").unwrap();
-        assert!(
-            matches!(
-                realm.eval(&format!(
-                    "f.call({{constructor:{constructor},flags:''}},'',0)"
-                )),
-                Err(Error::Unsupported { .. })
-            ),
+        assert_eq!(
+            realm.eval(&format!(
+                "f.call({{constructor:{constructor},flags:''}},'',0).length===0"
+            )),
+            Ok(Value::Boolean(true)),
             "{constructor}"
         );
         assert_eq!(realm.eval("called"), Ok(Value::Boolean(false)));

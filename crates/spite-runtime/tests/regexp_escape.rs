@@ -86,11 +86,7 @@ fn constructor_and_prototype_metadata_are_reflectable_and_intrinsic_functions_st
             ..
         })
     ));
-    for source in [
-        "RegExp('a')",
-        "new RegExp('a')",
-        "RegExp.prototype.exec.call({})",
-    ] {
+    for source in ["RegExp('a').exec('a')", "new RegExp('a').test('a')"] {
         assert!(
             matches!(realm.eval(source), Err(Error::Unsupported { .. })),
             "{source}"

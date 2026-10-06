@@ -90,9 +90,9 @@ impl Realm {
         if !matches!(matcher, Value::Undefined) {
             return Ok(matcher.to_boolean());
         }
-        // None of the implemented object kinds has [[RegExpMatcher]]. Its brand
-        // check belongs here when RegExp objects are implemented, after Get.
-        Ok(false)
+        self.object_work(span, |objects, _| {
+            Ok(objects.inspect(object)?.regexp_data().is_some())
+        })
     }
 
     pub(super) fn find_string(

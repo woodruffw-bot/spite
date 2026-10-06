@@ -1,7 +1,9 @@
 //! RegExp metadata, String escape encoding and generic operations (22.2.5–6).
 
+mod constructor;
 mod match_all;
 mod replace;
+mod slots;
 mod split;
 
 use super::Builtin;
@@ -263,6 +265,7 @@ impl Realm {
         match member {
             Member::Flags => self.regexp_flags(receiver, span),
             Member::ToString => self.regexp_to_string(receiver, span),
+            Member::Exec => self.regexp_native_exec(receiver, argument, span),
             Member::Test => self.regexp_test(receiver, argument, span),
             Member::Match => self.regexp_match(receiver, argument, span),
             Member::MatchAll => self.regexp_match_all(receiver, argument, span),
@@ -277,38 +280,7 @@ impl Realm {
             | Member::Source
             | Member::Sticky
             | Member::Unicode
-            | Member::UnicodeSets => {
-                let object = Self::regexp_object_receiver(receiver, span)?;
-                if object
-                    == self
-                        .intrinsics
-                        .as_ref()
-                        .expect("initialized")
-                        .regexp
-                        .prototype
-                {
-                    if matches!(member, Member::Source) {
-                        let mut units = self.regexp_string_buffer(4, span)?;
-                        units.extend("(?:)".encode_utf16());
-                        Ok(Value::String(JsString::from_code_units(units)))
-                    } else {
-                        Ok(Value::Undefined)
-                    }
-                } else {
-                    // RegExp instances and their OriginalSource/Flags slots are
-                    // still pending. Ordinary objects must never acquire them
-                    // from their prototype or public source/flags properties.
-                    Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        "receiver has no RegExp internal slots",
-                    ))
-                }
-            }
-            _ => Err(Self::unsupported(
-                span,
-                "native RegExp matching and symbol operations",
-            )),
+            | Member::UnicodeSets => self.regexp_slot_getter(member, receiver, span),
         }
     }
     fn regexp_object_receiver(value: Value, span: Span) -> Result<ObjectHandle, Error> {
@@ -383,7 +355,7 @@ impl Realm {
     }
 
     // RegExpExec, 22.2.7.1. All generic consumers share result validation and
-    // live exec lookup; the native internal-slot fallback remains pending.
+    // live exec lookup; native fallback retains an explicit matching boundary.
     fn regexp_exec(
         &mut self,
         object: &ObjectHandle,
@@ -392,13 +364,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let exec = self.get_property(object, &JsString::from("exec"), span)?;
         if !self.is_callable(&exec, span)? {
-            // RequireInternalSlot in RegExpExec precedes its native fallback.
-            // No native RegExpMatcher objects are exposed yet.
-            return Err(Self::exception(
-                ExceptionKind::TypeError,
-                span,
-                "receiver has no RegExpMatcher internal slot",
-            ));
+            return self.regexp_builtin_exec(Value::Object(object.clone()), span);
         }
         let result = self.call(
             exec,

@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search/replace delegation with captured substitution and species-based splitting; native instances, construction and matching remain pending; generic matchAll and its branded iterator are implemented |
+| RegExp | String-only escape encoding; native construction, original source/flag slots and getters, lastIndex metadata and branding; generic test/match/search/replace/split/matchAll with custom exec and a branded iterator; native Pattern compilation and matching remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13326 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -268,6 +268,22 @@ syntax, UnicodeSets strings and lone/paired surrogates. A parser regression
 revalidates constructor inputs and their serialized forms, checks capture counts
 and confirms the output passes literal boundary scanning. Native source getter
 exposure and matching remain pending; no fixture or matching credit is added.
+
+Native RegExp construction now validates constructor Patterns, preserves original
+source/flags, sets the specified lastIndex descriptor and supports subclasses.
+Thirteen focused runtime regressions cover call identity, regexp-like getter order,
+String hints, newTarget prototype lookup, private-slot copying after public
+overrides, syntax errors, source serialization, own brands, custom exec and the
+explicit native-matching boundary, argument evaluation and native stack guards.
+Two storage regressions verify foreign/stale handle rejection and slot values.
+Slot storage is not inherited and survives
+collection. A 120,000-unit source exercises unlimited defaults; optional output
+quotas still abort outside language handlers. Generic splitting with a zero limit
+and lazy matchAll now proceed after default intrinsic construction. Exec validates
+the native brand before input conversion; unbranded receivers throw TypeError.
+Pattern compilation, native matching and literal execution remain pending. The
+full unchanged corpus is checked on both compilers; fixture counts and the pin
+are unchanged by this implementation step.
 
 Core now streams RegExp.escape's edition-17 encoding without allocating. Two
 inspected snapshots cover every ASCII code point in leading and later positions,
@@ -1435,7 +1451,7 @@ bounded search; startsWith/endsWith compare the selected code-unit range once.
 These predicates perform IsRegExp's Symbol.match lookup between receiver and
 search conversion, rejecting truthy markers without invoking them. Native-injected
 symbols test lookup order, abrupt completion, and bounded recursion. The actual
-RegExpMatcher brand fallback awaits RegExp objects. String.raw processes
+RegExpMatcher brand fallback checks each object's own native slots. String.raw processes
 ordinary array-like templates with ordered raw/length/index reads and interleaved
 substitution conversion. All baseline String constructor static properties are
 installed, and its own-key enumeration is supported. The baseline String prototype
@@ -1466,7 +1482,7 @@ perform IsRegExp and the required global-flag checks before Symbol.replace looku
 primitive hooks are ignored. Regressions cover flags and hook ordering, fixed
 converted inputs, callback result conversion and failure, literal dollar patterns,
 metadata, collection, large default outputs, and opt-in host failures. Actual
-RegExp objects and captures remain pending.
+Native matching and capture production remain pending.
 
 Sparse Array storage now enforces indexed length growth, read-only length, and
 descending partial truncation behind the low-level Objects API. Numeric length

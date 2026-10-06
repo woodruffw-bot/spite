@@ -64,13 +64,11 @@ fn species_defaults_and_invalid_constructors_preserve_the_early_checks() {
     ] {
         let mut realm = Realm::default();
         realm.eval("let f=RegExp.prototype[Symbol.matchAll],called=false;RegExp=function(){called=true;throw 7;};").unwrap();
-        assert!(
-            matches!(
-                realm.eval(&format!(
-                    "f.call({{constructor:{constructor},flags:'',get lastIndex(){{throw 8;}}}},'')"
-                )),
-                Err(Error::Unsupported { .. })
-            ),
+        assert_eq!(
+            realm.eval(&format!(
+                "let caught=false;try{{f.call({{constructor:{constructor},flags:'',get lastIndex(){{throw 8;}}}},'');}}catch(e){{caught=e===8;}}caught"
+            )),
+            Ok(Value::Boolean(true)),
             "{constructor}"
         );
         assert_eq!(realm.eval("called"), Ok(Value::Boolean(false)));

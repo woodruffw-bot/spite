@@ -249,7 +249,13 @@ impl Realm {
                         .map(Value::Object);
                 }
                 Callable::Builtin(Builtin::RegExp) => {
-                    return Err(Self::unsupported(span, "RegExp construction and matching"));
+                    let mut arguments = arguments.into_iter();
+                    return self.regexp_constructor(
+                        Some(new_target),
+                        arguments.next().unwrap_or(Value::Undefined),
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
                 }
                 Callable::Builtin(Builtin::Date) => {
                     return self.date_constructor(new_target, arguments, span);

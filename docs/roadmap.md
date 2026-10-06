@@ -141,7 +141,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add bounded UTF-16 String indexOf/lastIndexOf searches.
 - [x] Add String includes/startsWith/endsWith for currently exposed values.
 - [x] Connect String search predicates to IsRegExp's Symbol.match hook.
-- [ ] Add IsRegExp's internal-brand fallback when RegExp objects are implemented.
+- [x] Add IsRegExp's own internal-brand fallback after the observable Symbol.match override.
 - [x] Add ordinary-call String.raw and complete String constructor static own properties.
 - [x] Add String split with UTF-16 boundaries, ToUint32 limits, and object Symbol.split delegation.
 - [x] Add String replace with first-match searches, callbacks, object Symbol.replace hooks, and uncaptured substitution.
@@ -294,6 +294,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement generic RegExp Symbol.matchAll and the branded RegExp String Iterator with live exec, Unicode advancement, exact results and completion state.
 - [x] Share ParsePattern validation for arbitrary UTF-16 constructor Strings, with exact capture counts and ordered flag early errors.
 - [x] Implement EscapeRegExpPattern source serialization with empty-pattern substitution, preserved escapes and UTF-16 units, and delimiter/line-terminator encoding.
+- [x] Add native RegExp construction and original source/flag slots with ordered coercion, identity/copy behavior, lastIndex descriptors and subclass prototypes.
+- [x] Expose native RegExp source and flag getters, Object.prototype.toString branding and exec brand/coercion checks.
+- [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.

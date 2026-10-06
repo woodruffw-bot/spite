@@ -28,7 +28,12 @@ impl Realm {
                 self.parse_date_value(&text, span).map(Value::Number)
             }
             Builtin::DateUtc => self.date_utc(arguments, span),
-            Builtin::RegExp => Err(Self::unsupported(span, "RegExp construction and matching")),
+            Builtin::RegExp => self.regexp_constructor(
+                None,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::RegExpEscape => {
                 self.regexp_escape(arguments.next().unwrap_or(Value::Undefined), span)
             }
