@@ -123,11 +123,7 @@ impl Realm {
                 Self::unsupported(span, "native regular expression matching for this Pattern")
             })?;
             let index = index as usize;
-            let work = if sticky {
-                data.source.len().min(string.len() - index)
-            } else {
-                string.len() - index
-            };
+            let work = matcher.search_work(sticky, data.source.len(), string.len() - index);
             self.object_work(span, |_, budget| {
                 if budget.remaining_work().is_some() {
                     // Matcher dispatch still consumes work for an empty suffix.

@@ -3,7 +3,7 @@
 use super::{Error, Objects};
 use spite_core::{
     JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher, RegExpDisjunctionMatcher,
-    RegExpLiteralMatcher, RegExpSequenceMatcher,
+    RegExpLiteralMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher,
 };
 use spite_heap::Handle;
 use std::ops::Range;
@@ -15,6 +15,7 @@ pub(crate) enum RegExpMatcher {
     Character(RegExpCharacterMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
+    Quantified(RegExpQuantifiedMatcher),
 }
 
 impl RegExpMatcher {
@@ -36,6 +37,7 @@ impl RegExpMatcher {
                 matcher.capture_ranges(),
             ),
             Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
+            Self::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
             Self::Sequence(matcher) => (
                 matcher.find(input, start, sticky)?,
                 0,
@@ -59,6 +61,7 @@ impl RegExpMatcher {
             Self::Literal(matcher) => matcher.capture_ranges().len(),
             Self::Anchored(matcher) => matcher.capture_ranges().len(),
             Self::Character(_) => 0,
+            Self::Quantified(_) => 0,
             Self::Sequence(matcher) => matcher.capture_ranges().len(),
             Self::Disjunction(matcher) => matcher.capture_count(),
         }
@@ -68,6 +71,7 @@ impl RegExpMatcher {
             Self::Literal(_) => 1,
             Self::Anchored(matcher) => matcher.search_passes(sticky),
             Self::Character(_) => 1,
+            Self::Quantified(_) => 1,
             Self::Sequence(matcher) => {
                 if sticky {
                     1
@@ -76,6 +80,15 @@ impl RegExpMatcher {
                 }
             }
             Self::Disjunction(matcher) => matcher.search_passes(sticky),
+        }
+    }
+
+    /// Sticky repeated atoms can consume more input than their source length.
+    pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        if sticky && !matches!(self, Self::Quantified(_)) {
+            source_len.min(remaining)
+        } else {
+            remaining
         }
     }
 }

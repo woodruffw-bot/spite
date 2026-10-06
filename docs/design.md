@@ -276,6 +276,23 @@ previously charged keys. Optional work covers cache setup/lookups and each
 distinct bitmap's first construction, preserving host aborts separately from
 unsupported syntax and match failure.
 
+Single ordinary consuming atoms additionally compile with greedy/lazy *, +, ?,
+exact, lower-bounded and bounded-range quantifiers (CompileQuantifier, 22.2.2.5–6;
+RepeatMatcher, 22.2.2.3.1). Literal characters reuse CharacterEscape and pinned
+Canonicalize; sets reuse their existing preparation and membership rules. Bounds
+remain compact mathematical counts, without expansion or floating-point
+conversion. A minimum beyond representable input lengths can never match; an
+oversized maximum cannot constrain a representable input. The complete supported
+Pattern is accepted before optional set-construction charges and allocation.
+Search visits candidate starts in order and selects the longest greedy or
+shortest lazy run. A failed short run is skipped together because later starts
+inside it also fail the minimum. Every repetition consumes one UTF-16 unit, so
+search is linear without allocation, recursive calls or a backtracking stack.
+Sticky matching still checks one start but may scan its complete input suffix;
+optional search work covers that suffix rather than the shorter Pattern text.
+This compiler contributes no captures. Groups, concatenated continuations,
+assertions, choices, backreferences and Unicode modes remain outside its subset.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

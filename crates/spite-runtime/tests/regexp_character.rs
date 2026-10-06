@@ -102,7 +102,7 @@ fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps()
     for source in [
         "/a[a]+/.test('aa')",
         "/([a])*/.test('a')",
-        "/[a]*/.test('a')",
+        "/[a]*b/.test('a')",
         "/[a]+|b/.test('a')",
         "/[a]/u.test('a')",
         "/./v.test('a')",
