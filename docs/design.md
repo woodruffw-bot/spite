@@ -152,7 +152,19 @@ groups even when no named reference appears, then resolve template references in
 order without rescanning expansions. Overlapping/backward matches still perform
 all reads, calls and conversions before their output is ignored. Checked storage
 and output follow the existing optional quotas and native-stack guards.
-Native RegExp instances, construction, matching, matchAll/split and the
+Generic Symbol.split (22.2.6.14) performs SpeciesConstructor before flags and
+Construct before ToUint32(limit). Missing/null species select the intrinsic
+RegExp constructor; primitive constructors and non-constructible species throw
+before flags lookup. Custom constructors receive the original object and exact
+flags with y appended only when absent. The intrinsic result Array uses own data
+elements, with empty input executing once without lastIndex writes. Nonempty
+input strictly sets the splitter's lastIndex, uses live RegExpExec, clamps its
+ToLength end position and advances failed/empty matches by code point for u/v.
+Capture values remain uncoerced; result[0], index and groups are never read.
+Limits stop before later length/capture reads, and backward custom results follow
+the specified positions without a default work cap. Copies use checked storage
+and optional output quotas.
+Native RegExp instances, construction, matching, matchAll and the
 string iterator remain pending; unavailable bodies report Unsupported and no
 matcher dependency is active.
 
@@ -1335,7 +1347,8 @@ String; empty separators split individual UTF-16 units with no extra empty parts
 Nonempty separators use non-overlapping searches, retaining leading/trailing
 empty substrings and stopping at the limit. Checked copies and each search
 comparison charge opted-in work. Fresh intrinsic Arrays bypass constructors,
-species, and inherited setters. RegExp-specific splitting awaits RegExp objects.
+species, and inherited setters. Generic RegExp splitting accepts custom species
+constructors and exec methods; native RegExp creation and matching remain pending.
 
 String.replace (22.1.3.19) delegates Symbol.replace only on object searches,
 preserving original this/replacement values and returning the hook's result.

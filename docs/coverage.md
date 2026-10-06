@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search/replace delegation with captured substitution; native instances, construction, matching, matchAll/split and the string iterator remain pending |
+| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search/replace delegation with captured substitution and species-based splitting; native instances, construction, matching, matchAll and the string iterator remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13276 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -360,6 +360,19 @@ or matching, including not-a-constructor.js, which constructs a RegExp first;
 they remain excluded without rewriting or pass credit. Original bytes, the pin,
 ten helpers and unlimited defaults are unchanged; no native matching coverage is
 claimed.
+
+Generic RegExp Symbol.split follows ordered species/flags construction and
+ToUint32 limits, creates intrinsic Arrays with own data elements and copies
+capture values unchanged. Empty input executes once without lastIndex writes;
+nonempty input uses strict lastIndex updates, live exec lookup, clamped ToLength
+ends and u/v code-point advancement. Eleven native regressions cover conversion
+and constructor ordering, intrinsic default selection, exact sticky flags,
+primitive receiver/species errors, early limit returns, capture identity and live
+mutation, empty/failing/backward custom matches, poisoned public libraries,
+String delegation, 120,001-unit unlimited flag output, opted-in output/work aborts
+and recursive species/flags/exec/index/length/capture hooks on native stack guards.
+Native constructors, matching, matchAll and the string iterator remain pending;
+the 385 intrinsic entries, dependencies and corpus counts are unchanged.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
@@ -1375,7 +1388,8 @@ hook result unchanged. Fallback conversion reads the receiver, limit, and separa
 in that order; separator conversion still runs for zero limits. Results are dense
 intrinsic Arrays with own data elements. Tests cover surrogate halves, generic
 receivers, conversion failures, uint32 wrapping, metadata, collection, and opt-in
-host failures. RegExp's split hook remains pending with RegExp objects.
+host failures. Generic RegExp splitting supports custom species and exec; native RegExp matching
+remains pending.
 String.replace delegates object Symbol.replace hooks before conversion and skips
 primitive prototype hooks. Ordinary searches convert receiver/search/replacement
 in order, replace the first UTF-16 match, and preserve unchanged Strings on misses.
