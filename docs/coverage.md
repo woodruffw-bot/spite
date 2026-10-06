@@ -383,6 +383,19 @@ unsupported. Both compilers pass the complete unchanged corpus and the native
 stack checks with ordinary unlimited defaults. No fixture, dependency, default
 quota or parse-negative expectation changes.
 
+Ordinary IdentityEscape compilation now covers punctuation and whitespace using
+the pinned Unicode ID_Continue exclusion, including '$', constructor line
+terminators and lone surrogate units. Two core regressions inspect a 34-record
+insta snapshot and check matching across every supported code unit in the full
+UTF-16 domain. An independent engine agrees on all twenty compiled snapshot
+matches and seven runtime programs in the shared grammar; it is not used as an
+oracle for Annex B identity-escape extensions. Four runtime regressions cover
+punctuation and whitespace literals, arbitrary constructor units, surrogate
+halves, generic consumers and the preserved identifier/Unicode/class/assertion/
+backreference boundaries. Both compilers pass the complete unchanged corpus and
+native stack checks with ordinary unlimited defaults. No fixture, dependency,
+quota or expected parse diagnostic changes.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

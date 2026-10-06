@@ -164,6 +164,11 @@ CaseFolding.txt input; Rust's Unicode version cannot change this behavior.
 Core literal-only Pattern compilation (22.2.2) accepts the ordinary UTF-16 mode,
 concatenated literal characters, control escapes, fixed hex/Unicode escapes,
 escaped syntax characters and unquantified noncapturing groups of that subset.
+Ordinary IdentityEscape accepts source characters outside pinned Unicode
+ID_Continue, with '$' allowed separately from IdentifierPartChar. Whitespace,
+constructor line terminators and lone surrogates retain their original code units.
+Identifier continuations, class escapes and assertions cannot become substitute
+literal matches; Unicode-mode identity escapes keep their stricter grammar.
 Compilation flattens nested groups iteratively; each contributes the body's
 matcher, including an empty match, without capture slots. Grouped alternatives,
 quantifiers, assertions, capturing groups and scoped modifiers remain unsupported.

@@ -1,6 +1,6 @@
 //! Literal-only ordinary-mode Pattern compilation and UTF-16 matching (22.2.2).
 
-use crate::{JsString, regexp_canonicalize_character};
+use crate::{JsString, is_identifier_part, regexp_canonicalize_character};
 use std::{ops::Range, sync::Arc};
 
 /// An immutable literal-only matcher for a validated non-Unicode Pattern.
@@ -67,7 +67,15 @@ impl RegExpLiteralMatcher {
                     }
                     0x78 => hex_escape(source, &mut index, 2)?,
                     0x75 => hex_escape(source, &mut index, 4)?,
-                    _ if is_syntax(escaped) || matches!(escaped, 0x2d | 0x2f | 0x5c) => escaped,
+                    // Ordinary IdentityEscape excludes Unicode ID_Continue.
+                    // IdentifierPartChar adds '$' to that pinned property, so
+                    // allow it explicitly; lone surrogate units also remain
+                    // characters rather than being replaced or rejected.
+                    _ if escaped == 0x24
+                        || !char::from_u32(u32::from(escaped)).is_some_and(is_identifier_part) =>
+                    {
+                        escaped
+                    }
                     _ => return None,
                 }
             } else if is_syntax(unit) {
@@ -433,5 +441,74 @@ mod tests {
         assert_eq!(matcher.find(&JsString::from("ba"), 0, false), Some(1..2));
         assert_eq!(matcher.find(&JsString::from("ba"), 0, true), None);
         drop(matcher);
+    }
+
+    #[test]
+    fn ordinary_identity_escape_compilation_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"\!\#\%\&\,\:\;\<\=\>\@\`\~",
+            "\\ ",
+            "\\\t",
+            "\\\n",
+            "\\\u{a0}",
+            "\\\u{2028}",
+            "\\\u{2603}",
+            r"\$\-\/\\",
+            r"(?:\!)(?:\ )",
+            r"\a",
+            r"\_",
+            "\\\u{200c}",
+            "\\\u{200d}",
+            "\\\u{3b1}",
+            "\\\u{301}",
+            "\\\u{660}",
+        ] {
+            for ignore_case in [false, true] {
+                let source = JsString::from(source);
+                write!(rows, "{source:?} i={ignore_case}").unwrap();
+                if let Some(matcher) = RegExpLiteralMatcher::compile(&source, ignore_case) {
+                    write!(
+                        rows,
+                        " units={:?}",
+                        JsString::from_code_units(matcher.0.units.clone())
+                    )
+                    .unwrap();
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        for unit in [0xd800, 0xdc00] {
+            let source = JsString::from_code_units(vec![u16::from(b'\\'), unit]);
+            let matcher = RegExpLiteralMatcher::compile(&source, false).unwrap();
+            writeln!(
+                rows,
+                "{source:?} units={:?}",
+                JsString::from_code_units(matcher.0.units.clone())
+            )
+            .unwrap();
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn identity_escape_matching_preserves_every_supported_code_unit() {
+        for unit in 0..=u16::MAX {
+            // These productions are ControlEscape or the zero CharacterEscape,
+            // whose semantics are covered separately, not IdentityEscape.
+            if matches!(unit, 0x30 | 0x66 | 0x6e | 0x72 | 0x74 | 0x76) {
+                continue;
+            }
+            let source = JsString::from_code_units(vec![u16::from(b'\\'), unit]);
+            if let Some(matcher) = RegExpLiteralMatcher::compile(&source, false) {
+                assert_eq!(matcher.0.units, [unit]);
+                let input = JsString::from_code_units(vec![0x61, unit, 0x62]);
+                assert_eq!(matcher.find(&input, 0, false), Some(1..2));
+                assert_eq!(matcher.find(&input, 0, true), None);
+                assert_eq!(matcher.find(&input, 1, true), Some(1..2));
+            }
+        }
     }
 }

@@ -1,0 +1,38 @@
+---
+source: crates/spite-core/src/regexp_literal.rs
+expression: rows
+---
+"\u005c!\u005c#\u005c%\u005c&\u005c,\u005c:\u005c;\u005c<\u005c=\u005c>\u005c@\u005c`\u005c~" i=false units="!#%&,:;<=>@`~"
+"\u005c!\u005c#\u005c%\u005c&\u005c,\u005c:\u005c;\u005c<\u005c=\u005c>\u005c@\u005c`\u005c~" i=true units="!#%&,:;<=>@`~"
+"\u005c " i=false units=" "
+"\u005c " i=true units=" "
+"\u005c\u0009" i=false units="\u0009"
+"\u005c\u0009" i=true units="\u0009"
+"\u005c\u000a" i=false units="\u000a"
+"\u005c\u000a" i=true units="\u000a"
+"\u005c\u00a0" i=false units="\u00a0"
+"\u005c\u00a0" i=true units="\u00a0"
+"\u005c\u2028" i=false units="\u2028"
+"\u005c\u2028" i=true units="\u2028"
+"\u005c\u2603" i=false units="\u2603"
+"\u005c\u2603" i=true units="\u2603"
+"\u005c$\u005c-\u005c/\u005c\u005c" i=false units="$-/\u005c"
+"\u005c$\u005c-\u005c/\u005c\u005c" i=true units="$-/\u005c"
+"(?:\u005c!)(?:\u005c )" i=false units="! "
+"(?:\u005c!)(?:\u005c )" i=true units="! "
+"\u005ca" i=false unsupported
+"\u005ca" i=true unsupported
+"\u005c_" i=false unsupported
+"\u005c_" i=true unsupported
+"\u005c\u200c" i=false unsupported
+"\u005c\u200c" i=true unsupported
+"\u005c\u200d" i=false unsupported
+"\u005c\u200d" i=true unsupported
+"\u005c\u03b1" i=false unsupported
+"\u005c\u03b1" i=true unsupported
+"\u005c\u0301" i=false unsupported
+"\u005c\u0301" i=true unsupported
+"\u005c\u0660" i=false unsupported
+"\u005c\u0660" i=true unsupported
+"\u005c\ud800" units="\ud800"
+"\u005c\udc00" units="\udc00"
