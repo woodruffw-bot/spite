@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction, original source/flag slots and getters, lastIndex metadata and branding; generic test/match/search/replace/split/matchAll with custom exec and a branded iterator; native Pattern compilation and matching remain pending |
+| RegExp | String-only escape encoding; native construction, original slots, getters and branding; ordinary-mode literal compilation/matching, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching and literal execution remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13390 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -289,7 +289,8 @@ Independent parsing of the raw UCD files verifies every snapshot value and confi
 that all four existing casing/property tables are byte-for-byte unchanged. The
 existing generator check covers the additional input locally and in CI. Both
 compiler versions pass the full unchanged corpus with ordinary
-unlimited defaults; native matching remains pending and receives no new pass credit.
+unlimited defaults; broader native matching remains pending and this core step
+adds no new fixture credit.
 
 Core ordinary-mode literal Pattern compilation and matching have four regressions.
 An inspected 92-record insta snapshot covers empty and overlapping matches,
@@ -301,7 +302,24 @@ inputs and Patterns agree with a separate sliding-window oracle in both case
 modes. A 60,001-unit Pattern against 120,001-unit repeated-prefix inputs exercises
 successful and failed linear searches, sticky failure and shared program lifetime
 with ordinary unlimited defaults. Both compiler versions pass the complete
-unchanged corpus; native matching remains pending and adds no conformance credit.
+unchanged corpus; this core step adds no new fixture credit.
+
+Native ordinary-mode literal RegExpBuiltinExec has ten runtime regressions and an
+inspected 32-record result snapshot independently verified against a separate
+JavaScript engine. Coverage includes ordered input/lastIndex coercions, ToLength
+without g/y, strict success/failure/past-end writes, read-only lastIndex and
+reentrant conversions. Results and d indices have fresh intrinsic Array
+prototypes, exact own data descriptors, undefined groups and UTF-16 ranges,
+including individual surrogate halves. Poisoned prototypes, replaced Array and
+public source/flag forgeries cannot change native execution. Non-callable exec
+uses the native fallback; custom exec retains live lookup. Native test, match,
+search, replace, split and matchAll share the matcher, including empty matches and
+lazy iteration. A 120,001-unit search, copied matcher and collection regression
+exercise unlimited defaults; an explicitly opted-in work abort skips JavaScript
+cleanup. The existing slot-lifetime regression also retains a compiled matcher
+through collection. Broader Patterns and u/v still report Unsupported after the
+specified coercions. Both compilers pass the complete unchanged corpus; literals,
+new upstream fixtures and broader matching receive no additional pass credit.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
@@ -309,8 +327,7 @@ regressions cover constructor/literal boundary differences, ordered flag errors,
 100,000 nested capturing groups and 100,000 alternatives without default quotas.
 An inspected 89-record diagnostic snapshot covers all three Pattern modes, raw
 line terminators, surrogate units, capture counts and syntax failures. This shares
-the existing grammar implementation; native matching remains pending, and the
-corpus inventory is unchanged.
+the existing grammar implementation; the corpus inventory is unchanged.
 
 Core EscapeRegExpPattern source serialization handles empty Patterns, solidus,
 all four raw line terminators and existing escape parity without allocating.
@@ -332,7 +349,7 @@ collection. A 120,000-unit source exercises unlimited defaults; optional output
 quotas still abort outside language handlers. Generic splitting with a zero limit
 and lazy matchAll now proceed after default intrinsic construction. Exec validates
 the native brand before input conversion; unbranded receivers throw TypeError.
-Pattern compilation, native matching and literal execution remain pending. The
+Broader Pattern matching and literal execution remain pending. The
 full unchanged corpus is checked on both compilers; fixture counts and the pin
 are unchanged by this implementation step.
 
@@ -1518,7 +1535,7 @@ ordinary array-like templates with ordered raw/length/index reads and interleave
 substitution conversion. All baseline String constructor static properties are
 installed, and its own-key enumeration is supported. The baseline String prototype
 property inventory is complete; ordered reflection and integrity operations are
-supported. Native RegExp matching remains open.
+supported. Full native RegExp matching remains open.
 String.split uses non-overlapping UTF-16 separator matches, preserves empty parts,
 and splits code units for an empty separator. Edition 17 looks up Symbol.split
 only for object separators, passing the original receiver/limit and returning the

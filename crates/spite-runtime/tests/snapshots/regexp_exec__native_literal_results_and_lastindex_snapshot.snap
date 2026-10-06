@@ -1,0 +1,36 @@
+---
+source: crates/spite-runtime/tests/regexp_exec.rs
+expression: rows
+---
+"" flags="" input="abc" lastIndex=0 -> {"match":{"text":"","length":1,"index":0,"input":"abc","groups":true,"hasGroups":true,"indices":null},"lastIndex":0,"negativeZero":false}
+"" flags="g" input="abc" lastIndex=2 -> {"match":{"text":"","length":1,"index":2,"input":"abc","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"" flags="dy" input="abc" lastIndex=3 -> {"match":{"text":"","length":1,"index":3,"input":"abc","groups":true,"hasGroups":true,"indices":{"pair":[3,3],"groups":true}},"lastIndex":3,"negativeZero":false}
+"" flags="g" input="abc" lastIndex=4 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"a" flags="" input="baa" lastIndex=2 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"a" flags="g" input="baa" lastIndex=2 -> {"match":{"text":"a","length":1,"index":2,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":3,"negativeZero":false}
+"a" flags="y" input="baa" lastIndex=0 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"a" flags="y" input="baa" lastIndex=1 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"a" flags="gy" input="baa" lastIndex=2 -> {"match":{"text":"a","length":1,"index":2,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":3,"negativeZero":false}
+"a" flags="dg" input="baa" lastIndex=0 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":{"pair":[1,2],"groups":true}},"lastIndex":2,"negativeZero":false}
+"a" flags="" input="bbb" lastIndex=7 -> {"match":null,"lastIndex":7,"negativeZero":false}
+"a" flags="g" input="bbb" lastIndex=2 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"a" flags="" input="baa" lastIndex=-0 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":0,"negativeZero":true}
+"a" flags="g" input="baa" lastIndex=-0 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"a" flags="g" input="baa" lastIndex=-3 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"a" flags="g" input="baa" lastIndex=1.9 -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"a" flags="g" input="baa" lastIndex='2.9' -> {"match":{"text":"a","length":1,"index":2,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":3,"negativeZero":false}
+"a" flags="g" input="baa" lastIndex=NaN -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":2,"negativeZero":false}
+"a" flags="g" input="baa" lastIndex=Infinity -> {"match":null,"lastIndex":0,"negativeZero":false}
+"a" flags="" input="baa" lastIndex=Infinity -> {"match":{"text":"a","length":1,"index":1,"input":"baa","groups":true,"hasGroups":true,"indices":null},"lastIndex":null,"negativeZero":false}
+"aba" flags="dg" input="aababa" lastIndex=0 -> {"match":{"text":"aba","length":1,"index":1,"input":"aababa","groups":true,"hasGroups":true,"indices":{"pair":[1,4],"groups":true}},"lastIndex":4,"negativeZero":false}
+"abc" flags="dims" input="xABC" lastIndex=0 -> {"match":{"text":"ABC","length":1,"index":1,"input":"xABC","groups":true,"hasGroups":true,"indices":{"pair":[1,4],"groups":true}},"lastIndex":0,"negativeZero":false}
+"\u005cx61\u005cu0062\u005c0" flags="d" input="xab\u0000" lastIndex=0 -> {"match":{"text":"ab\u0000","length":1,"index":1,"input":"xab\u0000","groups":true,"hasGroups":true,"indices":{"pair":[1,4],"groups":true}},"lastIndex":0,"negativeZero":false}
+"\u005cf\u005cn\u005cr\u005ct\u005cv" flags="d" input="\u000c\u000a\u000d\u0009\u000b" lastIndex=0 -> {"match":{"text":"\f\n\r\t\u000b","length":1,"index":0,"input":"\f\n\r\t\u000b","groups":true,"hasGroups":true,"indices":{"pair":[0,5],"groups":true}},"lastIndex":0,"negativeZero":false}
+"\u005cuD83D\u005cuDCA9" flags="dg" input="x\ud83d\udca9y" lastIndex=0 -> {"match":{"text":"💩","length":1,"index":1,"input":"x💩y","groups":true,"hasGroups":true,"indices":{"pair":[1,3],"groups":true}},"lastIndex":3,"negativeZero":false}
+"\u005cuDC00" flags="dy" input="" lastIndex=0 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"\u00b5" flags="i" input="x\u039c" lastIndex=0 -> {"match":{"text":"Μ","length":1,"index":1,"input":"xΜ","groups":true,"hasGroups":true,"indices":null},"lastIndex":0,"negativeZero":false}
+"\u03c3" flags="i" input="x\u03c2" lastIndex=0 -> {"match":{"text":"ς","length":1,"index":1,"input":"xς","groups":true,"hasGroups":true,"indices":null},"lastIndex":0,"negativeZero":false}
+"s" flags="i" input="x\u017f" lastIndex=0 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"k" flags="i" input="x\u212a" lastIndex=0 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"\u00df" flags="i" input="SS" lastIndex=0 -> {"match":null,"lastIndex":0,"negativeZero":false}
+"\u00df" flags="i" input="\u1e9e" lastIndex=0 -> {"match":null,"lastIndex":0,"negativeZero":false}

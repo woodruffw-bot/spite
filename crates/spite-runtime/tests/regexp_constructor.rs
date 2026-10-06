@@ -1,4 +1,4 @@
-//! Native RegExp construction and original-slot access without native matching.
+//! Native RegExp construction, original slots and matching boundaries.
 
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
@@ -162,8 +162,8 @@ fn native_exec_validates_brand_and_coerces_input_before_the_matching_boundary() 
     );
     let mut realm = Realm::default();
     for source in [
-        "new RegExp('a').exec('a')",
-        "let r=new RegExp('a');r.exec=undefined;RegExp.prototype.test.call(r,'a')",
+        "new RegExp('(a)').exec('a')",
+        "let r=new RegExp('(a)');r.exec=undefined;RegExp.prototype.test.call(r,'a')",
     ] {
         assert!(
             matches!(realm.eval(source), Err(Error::Unsupported { .. })),

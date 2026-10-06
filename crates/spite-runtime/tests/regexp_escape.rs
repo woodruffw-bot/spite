@@ -86,11 +86,11 @@ fn constructor_and_prototype_metadata_are_reflectable_and_intrinsic_functions_st
             ..
         })
     ));
-    for source in ["RegExp('a').exec('a')", "new RegExp('a').test('a')"] {
-        assert!(
-            matches!(realm.eval(source), Err(Error::Unsupported { .. })),
-            "{source}"
-        );
+    for source in [
+        "RegExp('a').exec('a')[0]==='a'",
+        "new RegExp('a').test('a')",
+    ] {
+        assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
     }
     let Value::Object(escape) = realm.eval("RegExp.escape").unwrap() else {
         panic!("function")

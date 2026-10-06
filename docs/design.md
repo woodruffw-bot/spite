@@ -166,7 +166,7 @@ supports linear first-match search; sticky matching compares only the requested
 suffix. Empty Patterns match through the input's end inclusively. Ranges use
 UTF-16 offsets and preserve both halves of surrogate pairs independently.
 Programs share immutable storage across clones, and search allocates nothing.
-Native RegExpBuiltinExec integration and Unicode-mode matching remain pending.
+Unicode-mode matching remains pending.
 
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
@@ -253,10 +253,23 @@ Source uses EscapeRegExpPattern; flag getters read validated original flags.
 Brands are own slots, never inherited or inferred from public properties. The
 ordinary intrinsic prototype retains its special source/flag getter results.
 IsRegExp's undefined-marker fallback and Object.prototype.toString inspect the
-native brand. Exec requires that brand before converting its argument. Pattern
-compilation and native matching remain Unsupported, including RegExpExec's
-non-callable-exec fallback on native instances; custom exec still uses all generic
-algorithms. No matcher dependency or default quota is activated.
+native brand. Exec requires that brand before converting its argument.
+Validated ordinary-mode literal Patterns compile to an immutable shared matcher;
+all other valid Patterns retain an explicit Unsupported execution result.
+No matcher dependency or default quota is activated.
+
+RegExpBuiltinExec (22.2.7.2) converts lastIndex after the input, including when g/y
+are absent. Original flags choose search/sticky behavior, strict lastIndex writes
+and d indices; public flag/source overrides cannot change execution. Non-global,
+non-sticky matching starts at zero without writing lastIndex. A failed g/y search
+resets +0; success writes its end before result construction. A past-end offset
+fails without invoking the matcher. Fresh intrinsic Arrays own the match text,
+index, input and undefined groups. With d, indices owns an intrinsic start/end
+pair and undefined groups (22.2.7.8). All offsets count UTF-16 units. Array and
+prototype overrides cannot intercept these data properties. RegExpExec's
+non-callable-exec fallback uses the same native operation; custom exec and all
+generic consumers retain live lookup. Opted-in work accounting charges the
+compiler and linear search; host aborts remain outside JavaScript handlers.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
@@ -1438,7 +1451,7 @@ Nonempty separators use non-overlapping searches, retaining leading/trailing
 empty substrings and stopping at the limit. Checked copies and each search
 comparison charge opted-in work. Fresh intrinsic Arrays bypass constructors,
 species, and inherited setters. Generic RegExp splitting accepts custom species
-constructors and exec methods; native RegExp creation and matching remain pending.
+constructors and exec methods and shares native literal matching with RegExpExec.
 
 String.replace (22.1.3.19) delegates Symbol.replace only on object searches,
 preserving original this/replacement values and returning the hook's result.
@@ -1603,11 +1616,11 @@ patterns become empty; matchAll supplies g while match/search supply undefined
 flags. Invoke reads the new object's live Symbol method and calls it with that
 object as receiver and the converted String as its sole argument. Missing or
 non-callable methods throw TypeError. Default matchAll creates its lazy native
-iterator; native matching remains Unsupported when execution reaches the matcher.
-Do not approximate regular expressions
-with literal substring matching. These native methods complete the baseline String
+iterator; execution uses the native matcher for supported ordinary literal
+Patterns and reports Unsupported for the remaining productions. These native
+methods complete the baseline String
 property inventory, enabling ordered reflection, enumeration, copying, and integrity
-operations independently of the missing native matcher.
+operations independently of the broader native matching gaps.
 
 String toLowerCase/toUpperCase use the full Unicode 18 default case mappings
 (22.1.3.29–31, 35). Generate reproducible, digest-pinned tables from UnicodeData,

@@ -1,13 +1,14 @@
 //! Native RegExp original Pattern and flag slots (22.2).
 
 use super::{Error, Objects};
-use spite_core::JsString;
+use spite_core::{JsString, RegExpLiteralMatcher};
 use spite_heap::Handle;
 
 #[derive(Clone, Debug)]
 pub(crate) struct RegExpData {
     pub source: JsString,
     pub flags: JsString,
+    pub matcher: Option<RegExpLiteralMatcher>,
 }
 
 impl Objects {
@@ -42,7 +43,7 @@ mod tests {
             (&stale, spite_heap::Error::StaleHandle),
         ] {
             assert!(
-                matches!(objects.initialize_regexp(object, RegExpData { source: JsString::from("a"), flags: JsString::from("g") }), Err(Error::Heap(error)) if error == expected)
+                matches!(objects.initialize_regexp(object, RegExpData { source: JsString::from("a"), flags: JsString::from("g"),matcher:None }), Err(Error::Heap(error)) if error == expected)
             );
         }
         assert!(objects.inspect(&live).unwrap().regexp_data().is_none());
@@ -60,6 +61,7 @@ mod tests {
                 RegExpData {
                     source: source.clone(),
                     flags: JsString::from("yg"),
+                    matcher: RegExpLiteralMatcher::compile(&source, false),
                 },
             )
             .unwrap();
@@ -69,12 +71,17 @@ mod tests {
         let data = objects.inspect(&object).unwrap().regexp_data().unwrap();
         assert_eq!(data.source, source);
         assert_eq!(data.flags, JsString::from("yg"));
+        assert_eq!(
+            data.matcher.as_ref().unwrap().find(&source, 0, true),
+            Some(0..source.len())
+        );
         assert!(matches!(
             objects.initialize_regexp(
                 &object,
                 RegExpData {
                     source: JsString::default(),
-                    flags: JsString::default()
+                    flags: JsString::default(),
+                    matcher: None
                 }
             ),
             Err(Error::WrongKind)

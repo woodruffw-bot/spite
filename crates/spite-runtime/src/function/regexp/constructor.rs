@@ -4,7 +4,7 @@ use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{DataDescriptor, RegExpData},
 };
-use spite_core::{DiagnosticKind, JsString, Span};
+use spite_core::{DiagnosticKind, JsString, RegExpLiteralMatcher, Span};
 use spite_parser::validate_regexp_pattern;
 
 impl Realm {
@@ -145,8 +145,28 @@ impl Realm {
                 },
             }
         })?;
+        let matcher = if flags
+            .code_units()
+            .iter()
+            .any(|&unit| matches!(unit, 0x75 | 0x76))
+        {
+            None
+        } else {
+            self.object_work(span, |_, budget| {
+                budget.charge(source.len())?;
+                budget.charge(source.len())
+            })?;
+            RegExpLiteralMatcher::compile(&source, flags.code_units().contains(&u16::from(b'i')))
+        };
         self.object_work(span, |objects, _| {
-            objects.initialize_regexp(&object, RegExpData { source, flags })
+            objects.initialize_regexp(
+                &object,
+                RegExpData {
+                    source,
+                    flags,
+                    matcher,
+                },
+            )
         })?;
         self.set_property_or_throw(
             &object,

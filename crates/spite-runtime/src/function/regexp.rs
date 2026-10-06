@@ -364,7 +364,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let exec = self.get_property(object, &JsString::from("exec"), span)?;
         if !self.is_callable(&exec, span)? {
-            return self.regexp_builtin_exec(Value::Object(object.clone()), span);
+            return self.regexp_builtin_exec(Value::Object(object.clone()), string, span);
         }
         let result = self.call(
             exec,

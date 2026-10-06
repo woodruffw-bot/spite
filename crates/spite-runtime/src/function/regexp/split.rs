@@ -158,7 +158,7 @@ impl Realm {
         Ok(Value::Object(array))
     }
 
-    fn regexp_substring(&mut self, units: &[u16], span: Span) -> Result<Value, Error> {
+    pub(super) fn regexp_substring(&mut self, units: &[u16], span: Span) -> Result<Value, Error> {
         let mut output = self.regexp_string_buffer(units.len(), span)?;
         output.extend_from_slice(units);
         Ok(Value::String(JsString::from_code_units(output)))

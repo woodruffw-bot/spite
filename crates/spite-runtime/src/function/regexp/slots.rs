@@ -1,4 +1,4 @@
-//! Native original-slot getters and the explicit matching boundary (22.2.6).
+//! Native original-slot getters and RegExpBuiltinExec (22.2.6–7).
 
 use super::Member;
 use crate::{Error, ExceptionKind, Realm, Value, object::RegExpData};
@@ -86,25 +86,98 @@ impl Realm {
         argument: Value,
         span: Span,
     ) -> Result<Value, Error> {
-        self.regexp_require_data(receiver, span)?;
-        self.string(argument, span)?;
-        Err(Self::unsupported(
-            span,
-            "native regular expression matching",
-        ))
+        self.regexp_require_data(receiver.clone(), span)?;
+        let string = self.string(argument, span)?;
+        self.regexp_builtin_exec(receiver, &string, span)
     }
 
+    // RegExpBuiltinExec, 22.2.7.2. This step executes the literal-only ordinary
+    // matcher; other valid Patterns retain the explicit Unsupported boundary.
+    #[inline(never)]
     pub(super) fn regexp_builtin_exec(
         &mut self,
         receiver: Value,
+        string: &JsString,
         span: Span,
     ) -> Result<Value, Error> {
-        // RegExpExec already converted its String and checked the live exec
-        // property. Its non-callable fallback still requires the native brand.
-        self.regexp_require_data(receiver, span)?;
-        Err(Self::unsupported(
+        let data = self.regexp_require_data(receiver.clone(), span)?;
+        let Value::Object(object) = receiver else {
+            unreachable!("RegExp brand requires an Object");
+        };
+        let last_index = JsString::from("lastIndex");
+        let index = self.get_property(&object, &last_index, span)?;
+        let mut index = self.length_from_value(index, span)?;
+        let flags = data.flags.code_units();
+        let global = flags.contains(&u16::from(b'g'));
+        let sticky = flags.contains(&u16::from(b'y'));
+        let has_indices = flags.contains(&u16::from(b'd'));
+        let update_index = global || sticky;
+        if !update_index {
+            index = 0;
+        }
+        let found = if index > string.len() as u64 {
+            None
+        } else {
+            let matcher = data.matcher.ok_or_else(|| {
+                Self::unsupported(span, "native regular expression matching for this Pattern")
+            })?;
+            let index = index as usize;
+            let work = if sticky {
+                data.source.len().min(string.len() - index)
+            } else {
+                string.len() - index
+            };
+            self.object_work(span, |_, budget| {
+                budget.charge(work)?;
+                budget.charge(work)
+            })?;
+            matcher.find(string, index, sticky)
+        };
+        let Some(found) = found else {
+            if update_index {
+                self.set_property_or_throw(&object, last_index, Value::Number(0.0), span)?;
+            }
+            return Ok(Value::Null);
+        };
+        if update_index {
+            self.set_property_or_throw(&object, last_index, Value::Number(found.end as f64), span)?;
+        }
+        let array = self.create_intrinsic_array(1, span)?;
+        self.regexp_match_property(&array, "index", Value::Number(found.start as f64), span)?;
+        self.regexp_match_property(&array, "input", Value::String(string.clone()), span)?;
+        let matched = self.regexp_substring(&string.code_units()[found.clone()], span)?;
+        self.create_array_element(&array, 0, matched, span)?;
+        self.regexp_match_property(&array, "groups", Value::Undefined, span)?;
+        if has_indices {
+            let indices = self.create_intrinsic_array(1, span)?;
+            self.regexp_match_property(&indices, "groups", Value::Undefined, span)?;
+            let pair = self.create_intrinsic_array(2, span)?;
+            self.create_array_element(&pair, 0, Value::Number(found.start as f64), span)?;
+            self.create_array_element(&pair, 1, Value::Number(found.end as f64), span)?;
+            self.create_array_element(&indices, 0, Value::Object(pair), span)?;
+            self.regexp_match_property(&array, "indices", Value::Object(indices), span)?;
+        }
+        Ok(Value::Object(array))
+    }
+
+    fn regexp_match_property(
+        &mut self,
+        object: &crate::ObjectHandle,
+        key: &str,
+        value: Value,
+        span: Span,
+    ) -> Result<(), Error> {
+        self.define_property_or_throw(
+            object,
+            JsString::from(key),
+            crate::object::DataDescriptor {
+                value: Some(value),
+                writable: Some(true),
+                enumerable: Some(true),
+                configurable: Some(true),
+            }
+            .into(),
             span,
-            "native regular expression matching",
-        ))
+        )
     }
 }
