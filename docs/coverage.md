@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, top-level literal alternatives, outer literal anchors and fixed class/escape/dot sequences with ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13472 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13480 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -95,7 +95,7 @@ comma call receivers and indirect eval, String/BigInt results, 100,000 arithmeti
 operations, 1,000 string concatenations, and opted-in host aborts. Ten independent
 Node programs confirm the semantic expectations. Genuine recursive syntax retains
 the existing stack guards; no default quota or test-only allowance is added.
-Stable and MSRV pass the complete 13472-variant corpus, workspace and documentation
+Stable and MSRV pass the complete 13480-variant corpus, workspace and documentation
 tests, and the debug-symbol stack checks. Formatting, Clippy, dependency policy,
 fixture inventory and the pinned Unicode/numeric generator checks also pass.
 
@@ -346,8 +346,8 @@ unchanged; one program requiring broader matching remains
 outside the corpus. This is not a complete directory review. Original bytes,
 assertions and metadata are unchanged, and both compiler versions pass every
 selected variant with ordinary unlimited defaults. The pin, ten helpers and all
-prior exact negative expectations are unchanged. Corpus totals are 7016 fixtures,
-6997 reviewed Script sources and 13472 variants, including 11995 harness positives.
+prior exact negative expectations are unchanged. Corpus totals are 7020 fixtures,
+7001 reviewed Script sources and 13480 variants, including 12003 harness positives.
 
 A subsequent focused exec review reads 25 further whole programs at the same pin.
 Twelve unchanged originals add 24 normal/strict positives for abrupt input
@@ -358,32 +358,43 @@ At that stage, thirteen reviewed originals required alternatives, classes,
 quantifiers or wildcard matching and remained excluded; the directory-wide
 inventory below records the current selection. Both compilers pass the full selected
 cohort and complete corpus with unchanged helpers and unlimited defaults. Totals
-are 7016 fixtures, 6997 Script sources and 13472 variants, including 11995 harness
+are 7020 fixtures, 7001 Script sources and 13480 variants, including 12003 harness
 positives. All prior negative expectations and upstream bytes remain unchanged.
 
 The exec-directory review covers all 79 whole programs at the same pin. After
 ordinary top-level literal alternatives became available, seven further unchanged
 originals add fourteen normal/strict positives for source-order ties,
-earliest-position selection, original match Arrays and input coercion. Forty-two
+earliest-position selection, original match Arrays and input coercion. Forty-six
 directory programs are now vendored, including the prior non-construction
-original; 37 still need broader execution and remain excluded. Both compilers
+original; 33 still need broader execution and remain excluded. Both compilers
 pass every added variant with unlimited defaults and the ten original helpers.
 Assertions, metadata, upstream bytes, the pin and every prior negative expectation
-remain unchanged. Totals are 7016 fixtures, 6997 reviewed Script sources and 13472
-variants, including 11995 harness positives.
+remain unchanged. Totals are 7020 fixtures, 7001 reviewed Script sources and 13480
+variants, including 12003 harness positives.
 
 The ordinary dot matcher enables three further unchanged exec originals and
 six normal/strict positives for lastIndex conversion, global writes, nonglobal
 reads without writes and sticky starting positions. Both compilers pass all six
 added variants with unchanged assertions, metadata, the ten helpers and unlimited
-defaults. The directory inventory remains 79 reviewed programs, with 42 vendored
-and 37 excluded. Iterative binary-chain parsing lets all three previously
+defaults. The directory inventory remains 79 reviewed programs, with 46 vendored
+and 33 excluded. Iterative binary-chain parsing lets all three previously
 depth-limited concatenation programs parse normally. Fixed sequences enable
 S15.10.6.2_A3_T2; the other two still require quantifiers and, for T4, nested
-choices. They remain outside this vendored selection without passing credit.
-Corpus totals are 7016 fixtures, 6997 reviewed Script sources and 13472 variants,
-including 11995 harness positives; the pin and every negative expectation remain
+choices and remain excluded without passing credit.
+Corpus totals are 7020 fixtures, 7001 reviewed Script sources and 13480 variants,
+including 12003 harness positives; the pin and every negative expectation remain
 unchanged.
+
+Fixed ordinary sequences add four unchanged whole exec programs and eight
+normal/strict positives: S15.10.6.2_A1_T13, T20, T21 and A3_T2. They verify
+Boolean/undefined input conversion, class ranges, original match Array contents,
+index/input properties and eleven successive global matches through the complete
+original poem. Both compilers pass all eight selected variants with the ten
+unchanged helpers, original assertions/metadata and unlimited defaults. The exec
+inventory is 46 of 79 whole programs vendored, with 33 exclusions receiving no
+passing credit. Totals are 7020 fixtures, 7001 reviewed Script sources, 13480
+variants and 12003 harness positives. The pin and every prior negative expectation
+remain unchanged.
 
 RegExp literals now produce validated AST values and call intrinsic RegExpCreate
 on each evaluation. Three parser regressions and an inspected 15-record insta
@@ -524,7 +535,7 @@ Older gap regressions now use unsupported quantifiers and retain their host-erro
 expectations; identity-escape regressions also check successful fixed sequences.
 The corpus and pin are unchanged. Choices, assertions, quantifiers, backreferences,
 named/scoped groups and Unicode-mode sequences remain pending.
-Both compilers pass the complete 13472-variant corpus, workspace/documentation
+Both compilers pass the complete 13480-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 the pinned Unicode/numeric generator checks pass. Existing snapshots are unchanged.
 
@@ -2301,7 +2312,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13472 variants are four raw positives, 11995 positives using the upstream
+Rust. Its 13480 variants are four raw positives, 12003 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and

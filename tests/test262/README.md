@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7016 unmodified test fixtures and ten harness files come from
+These 7020 unmodified test fixtures and ten harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -11,8 +11,8 @@ The directory review covers all 79 whole programs at the existing pin. With
 native top-level literal alternatives, seven further unchanged originals add
 fourteen normal/strict positives: S15.10.6.2_A1_T1, T9, T10, T11, T14, T17 and T18.
 They verify source-order ties, earliest-position selection, match Array contents,
-and function/Number/Boolean/null/undefined input conversion. Forty-two directory
-programs are now vendored, including the prior not-a-constructor original; 37
+and function/Number/Boolean/null/undefined input conversion. Forty-six directory
+programs are now vendored, including the prior not-a-constructor original; 33
 still need broader execution and remain excluded. Both compilers pass all added
 variants with the ten original helpers and unlimited defaults. No source,
 assertion, helper, metadata or pin is changed to earn credit.
@@ -26,7 +26,15 @@ metadata, helpers, pin and unlimited defaults. The remaining directory selection
 receives no passing credit. Iterative binary-chain parsing lets all three
 previously depth-limited concatenation programs parse normally. Fixed sequences
 enable S15.10.6.2_A3_T2; T3 still needs quantifiers and T4 also needs nested choices.
-These programs remain outside this vendored selection pending whole-file review.
+The latter two remain excluded without passing credit.
+
+Fixed ordinary sequences add four unchanged whole programs and eight normal/strict
+positives: S15.10.6.2_A1_T13, T20, T21 and A3_T2. They check Boolean/undefined
+input conversion, intrinsic match Array contents/index/input, class ranges and
+eleven successive global matches through the complete original poem. All source
+bytes, assertions, metadata, ten helpers and the pin are unchanged. Both compilers
+pass all eight variants with unlimited defaults. The reviewed exec directory now
+has 46 vendored programs and 33 excluded programs, with no credit for exclusions.
 
 A further focused review reads 25 whole exec programs after literal evaluation
 became available. Twelve unchanged originals add 24 normal/strict positives for
@@ -1696,7 +1704,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13472 variants from 6997 reviewed sources: the eleven
+The `spite-test262` command runs 13480 variants from 7001 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1725,14 +1733,14 @@ parse-negative), and 48 private element parse-negative files, and 56 private-fie
 execution files, and 128 private method/accessor execution files, and 83 WeakSet
 files, and 337 RegExp literal boundary, flag, core Pattern, class-range, named
 capture, and Unicode property files (nineteen positives and 318 parse negatives),
-plus 162 RegExp builtin positives for escape, construction, slots, native exec and
+plus 166 RegExp builtin positives for escape, construction, slots, native exec and
 generic matching operations.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11995 positives using the upstream harness, 1469 reviewed parse-negative variants,
+12003 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
