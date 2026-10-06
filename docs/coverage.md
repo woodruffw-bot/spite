@@ -42,7 +42,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 12630 reviewed Test262 variants, eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 12868 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -742,6 +742,18 @@ host configuration, while finite local construction reports a host failure.
 The fused TimeClip(UTC(t)) helper rejects only finite values whose final result
 cannot fit Date's domain for any supported native offset; it does not impose an
 input year, work or heap allowance. Local setters and string output remain pending.
+
+The following local calendar corpus review adds 119 unchanged originals and 238
+normal/strict positives at the existing pin. They cover constructor conversion
+and calendar normalization, prototype selection, date-only UTC versus local
+date-time parsing, and all nine complete local getter directories. All 238
+variants pass under UTC, New York, Lord Howe and Paris. The two original upstream
+assertRelativeDateMs.js and dateConstants.js helpers bring the current inventory
+to ten harness files. Of 127 candidate whole programs, three cross-realm files,
+three Date() files, one own-local-string parsing file and one global property
+helper file remain excluded for their pending capabilities. Original assertions
+and bytes, the pin, unlimited defaults and native-stack guards are unchanged.
+
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
@@ -1702,7 +1714,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 12630 variants are four raw positives, 11153 positives using the upstream
+Rust. Its 12868 variants are four raw positives, 11391 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and

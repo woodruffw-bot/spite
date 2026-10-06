@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6595 unmodified test fixtures and eight harness files come from
+These 6714 unmodified test fixtures and ten harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -86,6 +86,21 @@ held-out group, nine invalid-time local getter programs, and eighteen local
 setter programs for invalid return values, conversion order and captured-time
 mutation. Finite local operations and local setFullYear remain pending. This is
 a focused invalid-branch review; the pin and eight harness files are unchanged.
+
+A local calendar review read 127 previously unvendored whole programs at the same
+pin. 119 unchanged originals add 238 normal/strict positives for numeric calendar
+construction, coercion order and errors, short-year adjustment, month/day rollover,
+subclass prototypes, date-only UTC versus local date-time parsing, and all nine
+local getters. Each getter directory is now included in full. The cohort passes
+under UTC, America/New_York, Australia/Lord_Howe and Europe/Paris without source
+rewrites or test-only quotas. The unchanged upstream assertRelativeDateMs.js and
+dateConstants.js helpers bring the harness inventory to ten.
+
+Eight whole programs remain outside this selection: three constructor tests need
+cross-realm host hooks; S15.9.2.1_A1.js, S15.9.2.1_A2.js and
+value-to-primitive-get-meth-err.js call Date as a function; parse/zero.js needs own
+local string output and parsing; and prop-desc.js asks the property helper to
+enumerate the incomplete global object. These exclusions receive no pass credit.
 
 ## RegExp lexical boundary review
 
@@ -1504,7 +1519,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 12630 variants from 6576 reviewed sources: the eleven
+The `spite-test262` command runs 12868 variants from 6695 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1525,7 +1540,7 @@ files (426 positive and 81 parse-negative), and 335 destructuring assignment
 files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
 files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
 files (187 positive and three runtime-negative), and 22 super-expression positives,
-and 273 Date timestamp/UTC/invalid-local/metadata files, and 39 class
+and 392 Date timestamp/UTC/local-calendar/metadata files, and 39 class
 definition/name-binding/strict-mode files (37 positive and two
 parse-negative), and 66 public-field execution/ASI files (58 positive and eight
 parse-negative), and 24 static initialization block files (14 positive and ten
@@ -1538,7 +1553,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11153 positives using the upstream harness, 1469 reviewed parse-negative variants,
+11391 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
