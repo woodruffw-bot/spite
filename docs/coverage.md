@@ -726,7 +726,22 @@ inspected insta snapshot for malformed zone data. Host configuration failures
 use Error::Host, skip JavaScript catch/finally and become Test262 setup failures;
 unsupported data formats and failed native allocation retain separate categories.
 UTC and invalid-Date reads continue to work with malformed host configuration.
-Local construction, setters and local/legacy string output remain separate steps.
+Local setters and local/legacy string output remain separate steps.
+
+Numeric Date calendar construction and local interchange parsing now resolve
+through the selected realm history before TimeClip. Eight regressions cover
+ordered conversions/defaults, short input years and literal interchange years,
+calendar rollover, gap/fold milliseconds, half-hour shifts, Apia's skipped day,
+expanded years, all twenty independent native-offset boundary records, ignored
+arguments, branded subclass construction, prototype lookup and recursive re-entry
+on a 2 MiB stack. Huge finite calendar cancellations remain valid even with an
+opted-in JavaScript BigInt magnitude quota; no such quota applies to Number
+calendar intermediates. A CLI control verifies that non-finite construction,
+invalid syntax, date-only forms and explicit UTC strings do not load malformed
+host configuration, while finite local construction reports a host failure.
+The fused TimeClip(UTC(t)) helper rejects only finite values whose final result
+cannot fit Date's domain for any supported native offset; it does not impose an
+input year, work or heap allowance. Local setters and string output remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

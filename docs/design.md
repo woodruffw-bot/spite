@@ -2427,6 +2427,19 @@ finally. Unsupported TZif time scales/versions and allocation failures remain
 Unsupported and Limit respectively. The conformance runner classifies host
 configuration failure as setup failure, never a successful negative test.
 
+Finite numeric Date construction and local interchange parsing share a fused
+TimeClip(UTC(t)) helper (21.4.1.26/30). Non-finite Number inputs return NaN before
+loading host configuration. Finite values retain their original nominal local
+milliseconds until gap/fold resolution, including values outside Date's domain.
+Every supported native offset fits i32 whole seconds, so an input outside
+MAX_TIME_VALUE + 2^31 * 1000 cannot produce an in-range final epoch for any zone.
+That is an output-range proof, not an input quota. Remaining integral inputs and
+resolved epochs stay below 2^53, preserving exact Number milliseconds. Historical
+and recurring resolution precede final clipping. Interchange strings retain
+literal years and their UTC/date-only/local distinction; numeric construction
+retains MakeFullYear before month normalization. All seven present numeric
+components convert before zone resolution and new-target prototype lookup.
+
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
 arithmetic, and retains the exact Euclidean month remainder. Native integers
@@ -2489,8 +2502,8 @@ in 21.4.3.2; other legacy formats remain outside the parser.
 
 The runtime materializes the complete edition-17 Date constructor/prototype
 property graph. Instances have a distinct [[DateValue]] slot containing a clipped
-Number or NaN; Date.prototype has no slot. Timestamp/copy construction, Date.now, Date.UTC,
-UTC/offset Date.parse, UTC/local getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
+Number or NaN; Date.prototype has no slot. Timestamp/copy/calendar construction, Date.now, Date.UTC,
+UTC/offset/local Date.parse, UTC/local getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
 and @@toPrimitive are implemented. Constructor input conversion precedes
 new-target prototype lookup; copying another Date bypasses its conversion hooks.
 setTime checks the receiver before converting input and stores only after that
@@ -2505,8 +2518,8 @@ OrdinaryToPrimitive directly, avoiding redispatch through its own hook. Generic
 toJSON boxes its receiver, requests a numeric primitive and returns null for
 non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
-methods return "Invalid Date". Finite local/legacy string operations, local zone
-resolution, finite numeric Date construction and finite local calendar setters remain explicit
+methods return "Invalid Date". Finite local/legacy string operations and finite
+local calendar setters remain explicit
 Unsupported. UTC hour/minute/second/millisecond setters capture the time value
 before ordered argument conversion and retain omitted fields from that captured
 instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
@@ -2516,9 +2529,8 @@ Numeric constructors share Date.UTC's ordered conversion and calendar/time
 arithmetic, including later abrupt completions after earlier NaN results. UTC
 returns NaN for a non-finite intermediate before querying a time zone, so these
 inputs create a branded invalid Date with ordinary new-target prototype lookup.
-Finite local intermediates remain unresolved, including out-of-range values;
-TimeClip must follow zone conversion because an offset can bring a boundary
-instant back into range. Nine local getters return NaN for an invalid time.
+Finite local intermediates resolve before TimeClip because an offset can bring a
+boundary instant back into range. Nine local getters return NaN for an invalid time.
 setDate, setMonth, setHours, setMinutes, setSeconds and setMilliseconds convert
 all present arguments before returning NaN for a captured invalid time without
 writing the slot. Hooks can revive that Date. Local setFullYear remains pending

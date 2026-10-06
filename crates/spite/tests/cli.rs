@@ -217,3 +217,33 @@ fn local_getters_honor_explicit_posix_and_empty_utc_host_settings() {
         assert!(output.stderr.is_empty());
     }
 }
+
+#[test]
+fn calendar_inputs_preserve_nonfinite_utc_and_date_only_branches_before_zone_loading() {
+    let path = std::env::temp_dir().join(format!(
+        "spite-invalid-input-zone-{}-{}.tzif",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    {
+        let mut file = std::fs::File::create_new(&path).unwrap();
+        file.write_all(b"invalid zone data").unwrap();
+    }
+    let output=Command::new(env!("CARGO_BIN_EXE_spite")).env("TZ",&path)
+        .args(["--eval","Number.isNaN(new Date(NaN,0).getTime()) && Number.isNaN(new Date(1970,Infinity).getTime()) && Number.isNaN(Date.parse('invalid')) && Date.parse('1970-01-01')===0 && new Date('1970-01-01T00:00Z').getTime()===0"]).output().unwrap();
+    let finite = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .env("TZ", &path)
+        .args(["--eval", "new Date(1970,0)"])
+        .output()
+        .unwrap();
+    std::fs::remove_file(path).unwrap();
+    assert!(output.status.success());
+    assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "true");
+    assert!(output.stderr.is_empty());
+    assert_eq!(finite.status.code(), Some(1));
+    assert!(finite.stdout.is_empty());
+    assert!(String::from_utf8(finite.stderr).unwrap().contains("Host"));
+}

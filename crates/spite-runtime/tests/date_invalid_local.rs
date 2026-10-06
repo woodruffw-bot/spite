@@ -121,16 +121,8 @@ fn later_abrupt_conversions_still_throw_after_an_earlier_nonfinite_field() {
 }
 
 #[test]
-fn finite_local_times_remain_unresolved_and_are_not_prematurely_clipped() {
-    for source in [
-        "new Date(1970,0)",
-        "new Date(275760,8,13,1)",
-        "new Date(-271821,3,19,23)",
-        "new Date(1970,0,1,0,0,0,Number.MAX_VALUE)",
-        "new Date(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)",
-        "new Date(0).setMonth(0)",
-        "new Date(NaN).setFullYear(2000)",
-    ] {
+fn finite_local_setters_remain_unresolved() {
+    for source in ["new Date(0).setMonth(0)", "new Date(NaN).setFullYear(2000)"] {
         let mut realm = Realm::default();
         assert!(
             matches!(realm.eval(source), Err(Error::Unsupported { .. })),

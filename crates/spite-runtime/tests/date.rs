@@ -293,9 +293,6 @@ fn primitive_conversion_is_generic_validates_hint_without_coercion_and_orders_me
 fn unsupported_calendar_and_local_operations_remain_host_failures_and_keep_coercion_order() {
     for source in [
         "Date()",
-        "new Date(2026,0)",
-        "Date.parse('1970-01-01T00:00')",
-        "new Date('1970-01-01T00:00')",
         "new Date(0).toString()",
         "new Date(0)+1",
         "new Date(0).setMonth(2)",

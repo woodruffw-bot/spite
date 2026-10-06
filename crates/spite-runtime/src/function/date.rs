@@ -8,9 +8,9 @@ use crate::{
 use spite_core::{
     JsString, Span, WellKnownSymbol,
     date::{
-        MS_PER_DAY, RecurringTimeZoneError, TzifTimeZoneError, UtcDateTime, format_iso_date_time,
-        format_utc_date_string, make_date, make_day, make_full_year, make_time,
-        parse_date_time_string, parse_utc_date_string, time_clip,
+        MAX_TIME_VALUE, MS_PER_DAY, RecurringTimeZoneError, TzifTimeZoneError, UtcDateTime,
+        format_iso_date_time, format_utc_date_string, make_date, make_day, make_full_year,
+        make_time, parse_date_time_string, parse_utc_date_string, time_clip,
     },
 };
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -297,9 +297,15 @@ impl Realm {
     pub(super) fn parse_date_value(&mut self, text: &JsString, span: Span) -> Result<f64, Error> {
         self.object_work(span, |_, budget| budget.charge(text.len()))?;
         if let Some(parsed) = parse_date_time_string(text) {
-            return parsed
-                .utc_time_value()
-                .ok_or_else(|| Self::unsupported(span, "local Date time zone resolution"));
+            return match parsed.utc_time_value() {
+                Some(value) => Ok(value),
+                None => self.date_clip_local_value(
+                    parsed
+                        .nominal_epoch_milliseconds()
+                        .expect("valid interchange fields") as f64,
+                    span,
+                ),
+            };
         }
         // 21.4.3.2 also requires parsing our own toUTCString output for Dates
         // with zero milliseconds. No implementation-specific fallback is used.
@@ -333,13 +339,7 @@ impl Realm {
             }
             _ => {
                 let local = self.date_numeric_calendar(arguments.into_iter(), span)?;
-                // 21.4.1.26: UTC returns NaN for a non-finite input before
-                // consulting the host time zone. Finite values must remain
-                // unclipped until zone conversion, including range endpoints.
-                if local.is_finite() {
-                    return Err(Self::unsupported(span, "local Date time zone resolution"));
-                }
-                f64::NAN
+                self.date_clip_local_value(local, span)?
             }
         };
         // 21.4.2.1: input conversion precedes GetPrototypeFromConstructor.
@@ -643,6 +643,34 @@ impl Realm {
             ) => Error::Unsupported { span, message },
             _ => Error::Host { span, message },
         }
+    }
+
+    // 21.4.1.26/30: this helper implements the composition TimeClip(UTC(t)).
+    // Non-finite inputs return before system-zone loading. A finite input is
+    // never clipped before offset resolution; the bound below is a proof that
+    // no native i32 offset could bring the final instant into Date's domain.
+    #[inline(never)]
+    fn date_clip_local_value(&mut self, local: f64, span: Span) -> Result<f64, Error> {
+        if !local.is_finite() {
+            return Ok(f64::NAN);
+        }
+        let zone = self
+            .time_zone()
+            .map_err(|error| Self::date_time_zone_error(error, span))?;
+        let maximum_offset = i128::from(i32::MIN).abs() * 1000;
+        if local.abs() > (i128::from(MAX_TIME_VALUE) + maximum_offset) as f64 {
+            return Ok(f64::NAN);
+        }
+        // Calendar inputs within the proof's bound are exact integral Numbers
+        // below 2^53. The resolved epoch also stays below 2^53 before TimeClip.
+        debug_assert_eq!(local.fract(), 0.0);
+        let utc = zone
+            .resolve_local(local as i128)
+            .map_err(|error| Error::Host {
+                span,
+                message: error.to_string(),
+            })?;
+        Ok(time_clip(utc as f64))
     }
 
     #[inline(never)]
