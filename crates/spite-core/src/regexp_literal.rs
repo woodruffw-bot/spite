@@ -133,11 +133,29 @@ impl RegExpLiteralMatcher {
     /// Empty Patterns match at `start` through the input's end, inclusively.
     /// An offset past the end produces no match. Search does not allocate.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        self.find_if(input, start, sticky, |_| true)
+    }
+
+    /// Continues the same linear scan after a boundary assertion rejects a match.
+    pub(crate) fn find_if(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut accept: impl FnMut(&Range<usize>) -> bool,
+    ) -> Option<Range<usize>> {
         let input = input.code_units();
         let suffix = input.get(start..)?;
         let program = &self.0;
         if program.units.is_empty() {
-            return Some(start..start);
+            if sticky {
+                let range = start..start;
+                return accept(&range).then_some(range);
+            }
+            return (start..=input.len()).find_map(|offset| {
+                let range = offset..offset;
+                accept(&range).then_some(range)
+            });
         }
         if sticky {
             let candidate = suffix.get(..program.units.len())?;
@@ -145,7 +163,8 @@ impl RegExpLiteralMatcher {
                 .iter()
                 .zip(&program.units)
                 .all(|(&unit, &expected)| canonicalize(unit, program.ignore_case) == expected)
-                .then_some(start..start + program.units.len());
+                .then_some(start..start + program.units.len())
+                .filter(&mut accept);
         }
         let mut matched = 0;
         for (index, &unit) in suffix.iter().enumerate() {
@@ -158,7 +177,11 @@ impl RegExpLiteralMatcher {
             }
             if matched == program.units.len() {
                 let end = start + index + 1;
-                return Some(end - matched..end);
+                let range = end - matched..end;
+                if accept(&range) {
+                    return Some(range);
+                }
+                matched = program.failure[matched - 1];
             }
         }
         None

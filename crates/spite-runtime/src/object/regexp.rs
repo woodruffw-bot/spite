@@ -1,13 +1,14 @@
 //! Native RegExp original Pattern and flag slots (22.2).
 
 use super::{Error, Objects};
-use spite_core::{JsString, RegExpDisjunctionMatcher, RegExpLiteralMatcher};
+use spite_core::{JsString, RegExpAnchoredMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher};
 use spite_heap::Handle;
 use std::ops::Range;
 
 #[derive(Clone, Debug)]
 pub(crate) enum RegExpMatcher {
     Literal(RegExpLiteralMatcher),
+    Anchored(RegExpAnchoredMatcher),
     Disjunction(RegExpDisjunctionMatcher),
 }
 
@@ -20,6 +21,11 @@ impl RegExpMatcher {
     ) -> Option<RegExpMatch<'a>> {
         let (range, capture_offset, captures) = match self {
             Self::Literal(matcher) => (
+                matcher.find(input, start, sticky)?,
+                0,
+                matcher.capture_ranges(),
+            ),
+            Self::Anchored(matcher) => (
                 matcher.find(input, start, sticky)?,
                 0,
                 matcher.capture_ranges(),
@@ -40,12 +46,14 @@ impl RegExpMatcher {
     pub fn capture_count(&self) -> usize {
         match self {
             Self::Literal(matcher) => matcher.capture_ranges().len(),
+            Self::Anchored(matcher) => matcher.capture_ranges().len(),
             Self::Disjunction(matcher) => matcher.capture_count(),
         }
     }
     pub fn search_passes(&self) -> usize {
         match self {
             Self::Literal(_) => 1,
+            Self::Anchored(_) => 2,
             Self::Disjunction(matcher) => matcher.alternative_count(),
         }
     }

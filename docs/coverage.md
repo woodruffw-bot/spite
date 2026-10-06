@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal compilation/matching and top-level literal alternatives, ordered literal captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal compilation/matching and top-level literal alternatives with outer anchors, ordered literal captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13466 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -449,6 +449,20 @@ UTF-16 and input case, global/sticky state and strict writes, intrinsic own
 undefined descriptors, substitution/callback/split/matchAll behavior, copies and
 collection. Both compilers pass the complete unchanged corpus and native stack
 checks. Broader choices and other Pattern productions remain pending; no fixture,
+dependency, quota or negative expectation changes.
+
+Leading ^ and trailing $ now execute around ordinary literal sequences and
+unquantified groups. Three core regressions inspect a 34-record insta snapshot,
+compare every start/sticky choice against an independent position/boundary oracle,
+and retain overlapping candidates and linear search across long repeated
+prefixes. An independent engine agrees on all 440 supported anchor ranges and
+twelve runtime programs. Eight runtime regressions cover exact non-multiline
+boundaries, all LineTerminators and CRLF positions, sticky state, empty global
+advancement, original case/surrogates and capture indices, escaped punctuation,
+shared generic consumers, strict lastIndex writes, long copies and collection,
+and explicit unsupported boundaries. Existing snapshots remain unchanged. Both
+compilers pass the complete unchanged corpus and native stack checks. Internal
+assertions, anchored choices and Unicode-mode matching remain pending; no fixture,
 dependency, quota or negative expectation changes.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor

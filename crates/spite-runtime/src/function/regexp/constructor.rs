@@ -4,7 +4,10 @@ use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{DataDescriptor, RegExpData, RegExpMatcher},
 };
-use spite_core::{DiagnosticKind, JsString, RegExpDisjunctionMatcher, RegExpLiteralMatcher, Span};
+use spite_core::{
+    DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpDisjunctionMatcher,
+    RegExpLiteralMatcher, Span,
+};
 use spite_parser::validate_regexp_pattern;
 
 impl Realm {
@@ -167,8 +170,20 @@ impl Realm {
                     budget.charge(source.len())?;
                     budget.charge(source.len())
                 })?;
-                RegExpDisjunctionMatcher::compile(&source, ignore_case)
-                    .map(RegExpMatcher::Disjunction)
+                if let Some(matcher) = RegExpDisjunctionMatcher::compile(&source, ignore_case) {
+                    Some(RegExpMatcher::Disjunction(matcher))
+                } else {
+                    self.object_work(span, |_, budget| {
+                        budget.charge(source.len())?;
+                        budget.charge(source.len())
+                    })?;
+                    RegExpAnchoredMatcher::compile(
+                        &source,
+                        ignore_case,
+                        flags.code_units().contains(&u16::from(b'm')),
+                    )
+                    .map(RegExpMatcher::Anchored)
+                }
             }
         };
         if let Some(matcher) = &matcher {

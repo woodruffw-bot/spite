@@ -91,8 +91,8 @@ impl Realm {
         self.regexp_builtin_exec(receiver, &string, span)
     }
 
-    // RegExpBuiltinExec, 22.2.7.2. This step executes the literal-only ordinary
-    // matcher; other valid Patterns retain the explicit Unsupported boundary.
+    // RegExpBuiltinExec, 22.2.7.2. This step executes the supported ordinary
+    // matcher subset; other valid Patterns retain the explicit Unsupported boundary.
     #[inline(never)]
     pub(super) fn regexp_builtin_exec(
         &mut self,

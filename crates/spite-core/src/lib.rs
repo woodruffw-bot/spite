@@ -5,6 +5,7 @@ mod case_data;
 pub mod date;
 mod normalization;
 mod normalization_data;
+mod regexp_anchored;
 mod regexp_canonicalize;
 mod regexp_disjunction;
 mod regexp_escape;
@@ -20,6 +21,7 @@ pub use case::{is_unicode_case_ignorable, is_unicode_cased, unicode_case_mapping
 pub use normalization::{
     canonical_combining_class, canonical_composition, hangul_decomposition, unicode_decomposition,
 };
+pub use regexp_anchored::RegExpAnchoredMatcher;
 pub use regexp_canonicalize::regexp_canonicalize_character;
 pub use regexp_disjunction::RegExpDisjunctionMatcher;
 pub use regexp_escape::regexp_escape_units;
