@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding and constructor/prototype metadata; construction, matching and other prototype bodies remain Unsupported |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13140 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13178 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -273,6 +273,15 @@ the fixed prototype property and intrinsic rooting after global deletion. These
 22 intrinsic records bring the initialized-realm entry count to 385. Construction,
 matching, other prototype bodies and the string iterator remain pending and
 receive no pass credit; no regex dependency or default quota is activated.
+
+A separate escape review reads all twenty unchanged whole programs at the same
+Test262 pin. Nineteen originals add 38 passing normal/strict variants on both
+compilers for leading letters/digits, syntax and other punctuators, controls,
+white space/line terminators, surrogates, Unicode preservation, String-only
+arguments and intrinsic metadata. The cross-realm program needs the pending
+createRealm hook and remains excluded with no pass credit. The ten harness
+helpers and unlimited defaults are unchanged; construction and matching receive
+no coverage credit from this cohort.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
@@ -1819,7 +1828,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13140 variants are four raw positives, 11663 positives using the upstream
+Rust. Its 13178 variants are four raw positives, 11701 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
