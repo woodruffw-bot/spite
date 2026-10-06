@@ -326,6 +326,18 @@ not-a-constructor programs that first construct a RegExp; they remain excluded
 with no source rewriting or pass credit. The pin, ten helpers and unlimited
 defaults are unchanged; this cohort claims no native matcher coverage.
 
+Core GetSubstitution template scanning now preserves borrowed UTF-16 units and
+recognizes literal dollar text, match/prefix/suffix references, exact one/two-digit
+capture fallback and named-capture keys. A cached closing delimiter prevents
+quadratic scans of unterminated names. String replace/replaceAll share this
+scanner without changing their no-capture semantics. Two inspected insta
+snapshots cover 70 numeric and named-reference records, including zero/out-of-range
+indices, literal dollars, nested marker text, empty/missing delimiters, astral
+keys and unpaired surrogates; an independent reference calculation verifies every
+record. A third regression covers cloned iterators and 120,000 unterminated
+markers with unlimited defaults. Capture-value resolution, generic RegExp
+replacement and native matching remain pending; inventories are unchanged.
+
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
 checkpoints, truncate the division suffix, and cache the replacement token so

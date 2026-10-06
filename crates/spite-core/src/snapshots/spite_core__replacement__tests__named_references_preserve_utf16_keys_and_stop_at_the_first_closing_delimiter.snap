@@ -1,0 +1,26 @@
+---
+source: crates/spite-core/src/replacement.rs
+expression: snapshot
+---
+named=false template="$<foo>" => text("$<") | text("foo>")
+named=false template="$<>" => text("$<") | text(">")
+named=false template="$<foo" => text("$<") | text("foo")
+named=false template="$<a$&>" => text("$<") | text("a") | match | text(">")
+named=false template="$<$<x>>" => text("$<") | text("$<") | text("x>>")
+named=false template="$$<foo>$&" => text("$") | text("<foo>") | match
+named=false template="$<foo>$<foo>" => text("$<") | text("foo>") | text("$<") | text("foo>")
+named=false template="$<bad$<bad" => text("$<") | text("bad") | text("$<") | text("bad")
+named=false template="$<$1>" => text("$<") | capture[1] | text(">")
+named=false template="$<\ud801\udc00>" => text("$<") | text("\ud801\udc00>")
+named=false template="\ud800$<\udc00>" => text("\ud800") | text("$<") | text("\udc00>")
+named=true template="$<foo>" => named("foo")
+named=true template="$<>" => named("")
+named=true template="$<foo" => text("$<") | text("foo")
+named=true template="$<a$&>" => named("a$&")
+named=true template="$<$<x>>" => named("$<x") | text(">")
+named=true template="$$<foo>$&" => text("$") | text("<foo>") | match
+named=true template="$<foo>$<foo>" => named("foo") | named("foo")
+named=true template="$<bad$<bad" => text("$<") | text("bad") | text("$<") | text("bad")
+named=true template="$<$1>" => named("$1")
+named=true template="$<\ud801\udc00>" => named("\ud801\udc00")
+named=true template="\ud800$<\udc00>" => text("\ud800") | named("\udc00")

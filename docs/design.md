@@ -1337,6 +1337,18 @@ prefix, and suffix tokens once; numeric/named-capture tokens remain literal.
 Checked output reservation and copied/scanned units charge opted-in work. Input
 Strings remain fixed through callbacks. RegExp captures remain a separate step.
 
+GetSubstitution template scanning (22.1.3.19.1) is a cloneable, allocation-free
+UTF-16 iterator in core. It returns borrowed literal units or match/context,
+numbered-capture and named-capture references. Decimal references consume at most
+two digits and fall back to one digit when the two-digit index exceeds the
+capture count; zero references stay literal. Named keys end at the first greater
+than unit and preserve arbitrary UTF-16. Without a named captures Object, the
+dollar/less-than pair stays literal and later references are scanned normally.
+Caching the next delimiter, including its absence, keeps unterminated templates
+linear. Consumers resolve references in order without rescanning expansion text.
+String replace/replaceAll use this scanner with no captures; RegExp capture
+resolution and generic Symbol.replace remain pending.
+
 String.replaceAll (22.1.3.20) checks object searches through IsRegExp, then reads
 and converts flags for a true result and requires a lowercase g before looking up
 Symbol.replace. Primitive searches ignore prototype hooks. Ordinary fallback

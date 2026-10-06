@@ -1,7 +1,7 @@
 //! String replace/replaceAll (22.1.3.19–20) and uncaptured GetSubstitution.
 
 use crate::{Error, ExceptionKind, Realm, Value};
-use spite_core::{JsString, Span, WellKnownSymbol};
+use spite_core::{JsString, ReplacementPart, Span, WellKnownSymbol, replacement_parts};
 
 enum Replacement {
     Function(Value),
@@ -197,31 +197,17 @@ impl Realm {
         // Every code unit participates in at most one scan. Copy charges below
         // separately cover expanded prefixes/suffixes and literal output.
         self.object_work(span, |_, budget| budget.charge(units.len()))?;
-        let mut cursor = 0;
-        while cursor < units.len() {
-            let Some(offset) = units[cursor..].iter().position(|&u| u == u16::from(b'$')) else {
-                return self.append_replacement_units(result, &units[cursor..], span);
-            };
-            let dollar = cursor + offset;
-            self.append_replacement_units(result, &units[cursor..dollar], span)?;
-            let part = match units.get(dollar + 1).copied() {
-                Some(u) if u == u16::from(b'$') => Some(&units[dollar..dollar + 1]),
-                Some(u) if u == u16::from(b'&') => Some(matched.code_units()),
-                Some(u) if u == u16::from(b'`') => Some(&string.code_units()[..position]),
-                Some(u) if u == u16::from(b'\'') => {
-                    Some(&string.code_units()[position + matched.len()..])
+        for part in replacement_parts(replacement, 0, false) {
+            let part = match part {
+                ReplacementPart::Literal(units) => units,
+                ReplacementPart::Matched => matched.code_units(),
+                ReplacementPart::Prefix => &string.code_units()[..position],
+                ReplacementPart::Suffix => &string.code_units()[position + matched.len()..],
+                ReplacementPart::Capture(_) | ReplacementPart::NamedCapture(_) => {
+                    unreachable!("String replacement has no captures")
                 }
-                _ => None,
             };
-            if let Some(part) = part {
-                self.append_replacement_units(result, part, span)?;
-                cursor = dollar + 2;
-            } else {
-                // With no captures or named captures, $n/$nn/$<name> and all
-                // unrecognized dollar sequences remain literal text.
-                self.append_replacement_units(result, &units[dollar..dollar + 1], span)?;
-                cursor = dollar + 1;
-            }
+            self.append_replacement_units(result, part, span)?;
         }
         Ok(())
     }
