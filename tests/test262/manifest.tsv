@@ -7015,3 +7015,10 @@ script-pass	f5fa7818b76a7c619e9d6c93af636f27e59cb42cba90bab6f7f24a741378b074	tes
 script-pass	6e48c3c2f38da46f7b5785a7b6184512517f2a15a94076c02ccf39b95fe43dc1	test/built-ins/RegExp/prototype/exec/y-fail-return.js
 script-pass	81f9b051ead5435f0b6969bedf4073b38dc68f69e97645b8e3c474f74acb3406	test/built-ins/RegExp/prototype/exec/y-set-lastindex.js
 script-pass	0436ea07e1c20d7c106c7b2b12409c1517d208b417734f3bcaeb720abd3773cc	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T2.js
+script-pass	1f2c024a37e7277c8280e78feb8b3eb56ef3e1328a5b9d43c75969a8efe3f104	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T1.js
+script-pass	43a9718e8abc8e8896ce96cd5899de85a09fc4d7637227b9a62e68f099222691	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T10.js
+script-pass	c77e566e2977df71945e2fe8e39dca085adca888b26106db1a1629fe3d97237f	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T11.js
+script-pass	86a7b60fb16713252f2b61bef8620ea568b115b93bde69826e58fafcf56f82ae	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T14.js
+script-pass	68312ff1ce3240989e905fffcd1c38d93ddd07af89e5b318eef9ad6489194cdf	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T17.js
+script-pass	45689624fb58eb6d617497311d3e4ed9d29536749aab77d03434af64145127df	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T18.js
+script-pass	0c541f341dd6afdc749f2a8db7a7638dc81a37afe708a263d0839d7db8647114	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T9.js

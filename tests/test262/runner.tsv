@@ -6986,3 +6986,10 @@ test/built-ins/RegExp/prototype/exec/y-fail-lastindex.js	-	-	-
 test/built-ins/RegExp/prototype/exec/y-fail-return.js	-	-	-
 test/built-ins/RegExp/prototype/exec/y-set-lastindex.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T2.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T1.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T10.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T11.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T14.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T17.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T18.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T9.js	-	-	-
