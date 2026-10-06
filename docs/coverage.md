@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test delegation; native instances, construction, matching and symbol methods remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13178 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13222 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -296,6 +296,14 @@ prototype exceptions, quotas and recursive getters/exec callbacks on the native
 stack guards. Native instances, constructors, matching, symbols and the string
 iterator remain pending; the inventory, dependency set and unlimited defaults
 are unchanged.
+
+A separate generic-operation review reads all sixteen flags programs and all
+nine toString programs. Twenty-two unchanged originals add 44 passing
+normal/strict variants on both compilers for ordered reads, truthiness, abrupt
+completions, primitive receivers, the ordinary prototype and intrinsic metadata.
+Two flags programs and one toString program require native RegExp instances and
+remain excluded with no pass credit. The existing pin, ten helpers and unlimited
+defaults are unchanged; no native matching coverage is claimed.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
@@ -1842,7 +1850,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13178 variants are four raw positives, 11701 positives using the upstream
+Rust. Its 13222 variants are four raw positives, 11745 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
