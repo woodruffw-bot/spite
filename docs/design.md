@@ -128,6 +128,14 @@ Computed class accessor lookahead parses its name with the expression grammar an
 retains that AST and its private-name uses for the ensuing accessor or ASI field.
 Nested computed names are parsed once.
 
+EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
+Pattern for literal source representation. Empty input becomes (?:). Unescaped
+solidus and raw line terminators gain escapes; existing reverse solidus parity
+is preserved, including non-Unicode identity escapes of raw line terminators.
+All other UTF-16 units retain their exact values. Its cloneable iterator allows
+the runtime to check output size before allocation without rewriting Pattern
+syntax as RegExp.escape would.
+
 RegExp.escape's String encoding (22.2.5.1) is a cloneable, allocation-free UTF-16
 iterator in core. It hex-escapes a leading ASCII letter/digit, distinguishes
 syntax characters from other punctuators, uses ControlEscape values, and escapes

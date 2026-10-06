@@ -1,0 +1,15 @@
+---
+source: crates/spite-core/src/regexp_pattern_source.rs
+expression: table
+---
+"" -> "(?:)"
+"(?:)" -> "(?:)"
+"^a(b|c)+[d-f]$" -> "^a(b|c)+[d-f]$"
+"(\u005cd)\u005cw\u005cs\u005cu{1f4a9}\u005c1" -> "(\u005cd)\u005cw\u005cs\u005cu{1f4a9}\u005c1"
+"[/]" -> "[\u005c/]"
+"[\u005cq{a\u005c/b}]" -> "[\u005cq{a\u005c/b}]"
+"\u0000\u0009\u000b\u000c\u0085\u00a0\u180e\u200b\ufeff" -> "\u0000\u0009\u000b\u000c\u0085\u00a0\u180e\u200b\ufeff"
+"\ud800" -> "\ud800"
+"\udc00" -> "\udc00"
+"\ud800\udc00" -> "\ud800\udc00"
+"\udc00\ud800A\ud800\udc00\udfff" -> "\udc00\ud800A\ud800\udc00\udfff"

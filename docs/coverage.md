@@ -261,6 +261,14 @@ line terminators, surrogate units, capture counts and syntax failures. This shar
 the existing grammar implementation; native construction and matching remain
 pending, and the corpus inventory is unchanged.
 
+Core EscapeRegExpPattern source serialization handles empty Patterns, solidus,
+all four raw line terminators and existing escape parity without allocating.
+Two inspected snapshots cover 46 UTF-16 records, including ordinary Pattern
+syntax, UnicodeSets strings and lone/paired surrogates. A parser regression
+revalidates constructor inputs and their serialized forms, checks capture counts
+and confirms the output passes literal boundary scanning. Native source getter
+exposure and matching remain pending; no fixture or matching credit is added.
+
 Core now streams RegExp.escape's edition-17 encoding without allocating. Two
 inspected snapshots cover every ASCII code point in leading and later positions,
 all non-ASCII ECMAScript WhiteSpace/LineTerminator values, ordinary Unicode,
