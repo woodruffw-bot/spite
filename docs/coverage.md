@@ -672,6 +672,19 @@ matched Jiff offsets for 94,581 queries over all 93 installed IANA rule footers,
 including native i128 endpoints. The mapping is specific to recurring Gregorian
 rules; complete historical zone data and finite local Date operations remain
 pending.
+TZif offset loading now preserves explicit historical transitions and recurring
+footers without a native calendar cap. Nine regressions cover versions 1–4,
+exact signed 32/64-bit transition boundaries, negative subsecond history, Date
+boundaries, fixed/recurring/no-footer behavior, legacy-body skipping, footer
+version syntax and consistency, the full 256-type format, invalid ordering and
+flags, malformed/truncated data and adversarial counts. Unknown versions and
+leap-second time scales remain explicit unsupported results. An independent
+comparison matched 349,734 historical/recurring queries over 598 bundled IANA
+2026c zones and 436 installed IANA 2026b files. It queries Jiff at the containing
+integral second to avoid its negative-subsecond TZif truncation; raw records and
+Python zoneinfo independently confirm the Abidjan millisecond regression.
+System zone loading, display names, local gap/fold resolution and finite local
+Date operations remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

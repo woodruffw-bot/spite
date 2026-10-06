@@ -37,7 +37,15 @@ pub struct PosixDaylightTime<'a> {
 /// `None`. Names are borrowed without allocation or an arbitrary length limit.
 /// Parsing does not load a zone or resolve an offset at an instant.
 pub fn parse_posix_time_zone(text: &str) -> Option<PosixTimeZone<'_>> {
-    let mut parser = Parser { text, position: 0 };
+    parse_with_syntax(text, true)
+}
+
+pub(super) fn parse_with_syntax(text: &str, extended: bool) -> Option<PosixTimeZone<'_>> {
+    let mut parser = Parser {
+        text,
+        position: 0,
+        extended,
+    };
     let standard_name = parser.name()?;
     let standard_offset = -parser.time(24, 2)?;
     let daylight = if parser.position == text.len() {
@@ -73,6 +81,7 @@ pub fn parse_posix_time_zone(text: &str) -> Option<PosixTimeZone<'_>> {
 struct Parser<'a> {
     text: &'a str,
     position: usize,
+    extended: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -172,7 +181,13 @@ impl<'a> Parser<'a> {
             TransitionDay::JulianWithLeap(self.number(3, 365, false)?)
         };
         let seconds = if self.consume(b'/') {
-            self.time(167, 3)?
+            if !self.extended && matches!(self.peek(), Some(b'+' | b'-')) {
+                return None;
+            }
+            self.time(
+                if self.extended { 167 } else { 24 },
+                if self.extended { 3 } else { 2 },
+            )?
         } else {
             7200
         };

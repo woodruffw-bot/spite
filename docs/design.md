@@ -2364,6 +2364,23 @@ rules and failed native allocation have distinct errors. This calendar
 periodicity applies only to recurring rules; explicit historical TZif changes
 must still be preserved, rather than mapped into another year.
 
+TzifTimeZone loads UTC offset histories from TZif versions 1–4. Header counts,
+checked block lengths, type indices, strict transition ordering, designation
+termination and Boolean indicators are validated before storing a history.
+Modern files skip the legacy 32-bit body and use the authoritative 64-bit block.
+Offsets and transition seconds remain exact native integers; queries use
+Euclidean millisecond-to-second division, including negative subsecond times.
+Type zero applies before the first transition, and without recurring rules the
+last historical offset persists. A footer applies after the last transition or
+to all times in a history without transitions; its offset must agree with the
+final historical type. Version 2 transition syntax excludes signed/extended
+times. Trailing extension data is ignored. Candidate offsets include historical
+and recurring types without assuming every type occurs at the query time.
+Lookup makes no allocations and applies no Date/backend calendar bound. Unknown
+versions, leap-second time scales, malformed data, contradictory recurring rules
+and native allocation failures remain distinct. Display names and local gap/fold
+resolution are separate implementation steps.
+
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
 arithmetic, and retains the exact Euclidean month remainder. Native integers

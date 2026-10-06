@@ -299,6 +299,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compute recurring time-zone transition calendars with leap-day conventions, last-weekday rules, signed transition times and wall/standard/UTC offsets across native Gregorian years.
 - [x] Parse TZif recurring political time-zone rules with borrowed designations, normalized UTC offsets, daylight defaults and explicit extended transition calendars.
 - [x] Resolve recurring political time-zone offsets over an exact Gregorian cycle, including southern seasons, negative daylight adjustments and year-round daylight time.
+- [x] Load checked TZif historical UTC offsets with exact 64-bit transitions, recurring footer consistency and separate malformed/unsupported/allocation errors.
 - [ ] Add Date numeric calendar construction, local calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.

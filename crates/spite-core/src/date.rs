@@ -15,6 +15,8 @@ mod recurring;
 pub use recurring::{RecurringTimeZone, RecurringTimeZoneError};
 mod transition;
 pub use transition::{TransitionClock, TransitionDay, TransitionRule};
+mod tzif;
+pub use tzif::{TzifTimeZone, TzifTimeZoneError};
 mod utc_string;
 pub use utc_string::{format_utc_date_string, parse_utc_date_string};
 
