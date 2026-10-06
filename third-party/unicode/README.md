@@ -10,12 +10,20 @@ The version is explicit so Rust toolchain updates cannot change identifier synta
 or String transforms.
 
 `crates/spite-core/src/case_data.rs` contains full lower/uppercase mappings and
-Cased/Case_Ignorable ranges used for contextual final sigma. Its generator,
-`tools/generate-case-mappings.py`, pins UnicodeData.txt, SpecialCasing.txt, and
-DerivedCoreProperties.txt by SHA-256. It incorporates all unconditional special
-mappings and verifies that Final_Sigma is the only language-insensitive condition.
+Cased/Case_Ignorable ranges used for contextual final sigma, plus simple/common
+case folding for RegExp. Its generator,
+`tools/generate-case-mappings.py`, pins UnicodeData.txt, SpecialCasing.txt,
+DerivedCoreProperties.txt and CaseFolding.txt by SHA-256. It incorporates all
+unconditional special mappings and verifies that Final_Sigma is the only
+language-insensitive condition.
 Language-specific tailoring is excluded from default conversion. The locale
 methods use this host's fixed locale-neutral fallback.
+RegExp Canonicalize uses C/S records from CaseFolding.txt with u/v ignore-case.
+Its full and Turkic records are excluded. Ordinary ignore-case instead uses the
+existing full uppercase mappings with single-unit and ASCII-boundary checks.
+The CaseFolding.txt source is https://www.unicode.org/Public/18.0.0/ucd/CaseFolding.txt
+and its SHA-256 is
+`a004797658a457bec4dc11683e39f69249ea3b595b752dbea6721c4c9f587b0d`.
 
 `crates/spite-core/src/normalization_data.rs` contains decomposition mappings,
 combining classes, and canonical compositions after full composition exclusions.

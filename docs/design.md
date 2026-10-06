@@ -147,6 +147,15 @@ Computed class accessor lookahead parses its name with the expression grammar an
 retains that AST and its private-name uses for the ensuing accessor or ASI field.
 Nested computed names are parsed once.
 
+RegExp Canonicalize (22.2.2.7.3) is an allocation-free core character operation.
+Without IgnoreCase, it preserves the input. With either Unicode flag, it uses only
+the pinned Unicode 18 simple/common case-folding records; full expansions and
+Turkic mappings do not participate. Ordinary ignore-case applies the existing
+Unicode default uppercase conversion, retains mappings whose UTF-16 length is
+one, and preserves a non-ASCII character that would map to ASCII. Both modes
+preserve surrogate values. The existing case-table generator checks the pinned
+CaseFolding.txt input; Rust's Unicode version cannot change this behavior.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

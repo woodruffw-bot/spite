@@ -299,6 +299,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement EscapeRegExpPattern source serialization with empty-pattern substitution, preserved escapes and UTF-16 units, and delimiter/line-terminator encoding.
 - [x] Add native RegExp construction and original source/flag slots with ordered coercion, identity/copy behavior, lastIndex descriptors and subclass prototypes.
 - [x] Expose native RegExp source and flag getters, Object.prototype.toString branding and exec brand/coercion checks.
+- [x] Implement RegExp character Canonicalize with pinned simple Unicode folding, single-unit uppercase conversion and the ordinary-mode ASCII boundary.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

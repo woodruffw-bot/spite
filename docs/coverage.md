@@ -278,14 +278,27 @@ existing snapshot and all 1469 reviewed parse-negative variants retain their
 exact expectations. Both compiler versions pass the complete unchanged corpus
 with ordinary unlimited defaults; no literal execution credit or quota is added.
 
+Core RegExp Canonicalize shares the pinned Unicode 18 default uppercase data and
+adds all 1533 simple/common case-folding mappings from the digest-verified official
+CaseFolding.txt. Three regressions cover every UTF-16 code unit's ordinary-mode
+range, ASCII barrier and idempotence, every folding entry, exact-case preservation,
+full/Turkic exclusions, supplementary points and surrogate identity. An inspected
+39-record insta snapshot covers the mode differences, including long s, Kelvin,
+ohms, sigma, sharp s, Cherokee, Georgian, Cyrillic Tje, Deseret and Garay.
+Independent parsing of the raw UCD files verifies every snapshot value and confirms
+that all four existing casing/property tables are byte-for-byte unchanged. The
+existing generator check covers the additional input locally and in CI. Both
+compiler versions pass the full unchanged corpus with ordinary
+unlimited defaults; native matching remains pending and receives no new pass credit.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
 100,000 nested capturing groups and 100,000 alternatives without default quotas.
 An inspected 89-record diagnostic snapshot covers all three Pattern modes, raw
 line terminators, surrogate units, capture counts and syntax failures. This shares
-the existing grammar implementation; native construction and matching remain
-pending, and the corpus inventory is unchanged.
+the existing grammar implementation; native matching remains pending, and the
+corpus inventory is unchanged.
 
 Core EscapeRegExpPattern source serialization handles empty Patterns, solidus,
 all four raw line terminators and existing escape parity without allocating.

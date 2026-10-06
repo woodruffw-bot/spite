@@ -1,0 +1,43 @@
+---
+source: crates/spite-core/src/regexp_canonicalize.rs
+expression: "rows.join(\"\\n\")"
+---
+000000  exact=000000  i=000000  iu/iv=000000
+000041  exact=000041  i=000041  iu/iv=000061
+000061  exact=000061  i=000041  iu/iv=000061
+00007A  exact=00007A  i=00005A  iu/iv=00007A
+00007F  exact=00007F  i=00007F  iu/iv=00007F
+000080  exact=000080  i=000080  iu/iv=000080
+0000B5  exact=0000B5  i=00039C  iu/iv=0003BC
+0000DF  exact=0000DF  i=0000DF  iu/iv=0000DF
+0000FF  exact=0000FF  i=000178  iu/iv=0000FF
+000130  exact=000130  i=000130  iu/iv=000130
+000131  exact=000131  i=000131  iu/iv=000131
+00017F  exact=00017F  i=00017F  iu/iv=000073
+00039C  exact=00039C  i=00039C  iu/iv=0003BC
+0003BC  exact=0003BC  i=00039C  iu/iv=0003BC
+0003A3  exact=0003A3  i=0003A3  iu/iv=0003C3
+0003C2  exact=0003C2  i=0003A3  iu/iv=0003C3
+0003C3  exact=0003C3  i=0003A3  iu/iv=0003C3
+0003A9  exact=0003A9  i=0003A9  iu/iv=0003C9
+0003C9  exact=0003C9  i=0003A9  iu/iv=0003C9
+0010D0  exact=0010D0  i=001C90  iu/iv=0010D0
+0013A0  exact=0013A0  i=0013A0  iu/iv=0013A0
+001C89  exact=001C89  i=001C89  iu/iv=001C8A
+001C8A  exact=001C8A  i=001C89  iu/iv=001C8A
+001C90  exact=001C90  i=001C90  iu/iv=0010D0
+001E96  exact=001E96  i=001E96  iu/iv=001E96
+001E9E  exact=001E9E  i=001E9E  iu/iv=0000DF
+002126  exact=002126  i=002126  iu/iv=0003C9
+00212A  exact=00212A  i=00212A  iu/iv=00006B
+00AB70  exact=00AB70  i=0013A0  iu/iv=0013A0
+00D800  exact=00D800  i=00D800  iu/iv=00D800
+00DC00  exact=00DC00  i=00DC00  iu/iv=00DC00
+00FB00  exact=00FB00  i=00FB00  iu/iv=00FB00
+00FB03  exact=00FB03  i=00FB03  iu/iv=00FB03
+00FFFF  exact=00FFFF  i=00FFFF  iu/iv=00FFFF
+010400  exact=010400  i=------  iu/iv=010428
+010428  exact=010428  i=------  iu/iv=010428
+010D50  exact=010D50  i=------  iu/iv=010D70
+010D70  exact=010D70  i=------  iu/iv=010D70
+10FFFF  exact=10FFFF  i=------  iu/iv=10FFFF

@@ -5,6 +5,7 @@ mod case_data;
 pub mod date;
 mod normalization;
 mod normalization_data;
+mod regexp_canonicalize;
 mod regexp_escape;
 mod regexp_pattern_source;
 mod replacement;
@@ -17,6 +18,7 @@ pub use case::{is_unicode_case_ignorable, is_unicode_cased, unicode_case_mapping
 pub use normalization::{
     canonical_combining_class, canonical_composition, hangul_decomposition, unicode_decomposition,
 };
+pub use regexp_canonicalize::regexp_canonicalize_character;
 pub use regexp_escape::regexp_escape_units;
 pub use regexp_pattern_source::regexp_pattern_source_units;
 pub use replacement::{ReplacementPart, replacement_parts};
