@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal compilation/matching and top-level literal alternatives with outer anchors, single class/escape/dot atoms, ordered literal captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, top-level literal alternatives, outer literal anchors and fixed class/escape/dot sequences with ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13472 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -377,9 +377,10 @@ six normal/strict positives for lastIndex conversion, global writes, nonglobal
 reads without writes and sticky starting positions. Both compilers pass all six
 added variants with unchanged assertions, metadata, the ten helpers and unlimited
 defaults. The directory inventory remains 79 reviewed programs, with 42 vendored
-and 37 excluded. After iterative binary-chain parsing, the three previously
-depth-limited concatenation programs reach their remaining unsupported Pattern
-execution. No excluded program earns passing credit.
+and 37 excluded. Iterative binary-chain parsing lets all three previously
+depth-limited concatenation programs parse normally. Fixed sequences enable
+S15.10.6.2_A3_T2; the other two still require quantifiers and, for T4, nested
+choices. They remain outside this vendored selection without passing credit.
 Corpus totals are 7016 fixtures, 6997 reviewed Script sources and 13472 variants,
 including 11995 harness positives; the pin and every negative expectation remain
 unchanged.
@@ -503,11 +504,29 @@ runtime programs. Nine runtime regressions cover pinned ordinary case rules and
 inversion, whitespace/word/digit sets, line terminators and surrogate halves,
 global/sticky/strict lastIndex and intrinsic results, every shared generic
 consumer, large copies and collection, opted-in construction/search aborts and
-explicit unsupported boundaries. Former literal and direct-eval single-atom host-gap tests now use
-unsupported concatenations; direct eval also checks successful native matching. Existing snapshots remain unchanged. Both compilers
-pass the complete unchanged corpus and native stack checks. Groups, sequences,
-quantifiers and Unicode-mode sets remain pending; no fixture, dependency, default
+explicit unsupported boundaries. At that stage, former literal and direct-eval
+single-atom host-gap tests used unsupported concatenations; direct eval also
+checks successful native matching. Existing snapshots remain unchanged. Both
+compilers pass the complete unchanged corpus and native stack checks. Quantifiers
+and Unicode-mode sets remain pending; no fixture, dependency, default
 quota or negative expectation changes.
+
+Fixed ordinary sequences now combine literal characters, bracket classes, class
+escapes and dot atoms with iterative capturing/noncapturing groups. Four core
+regressions cover an inspected 52-record insta snapshot, an independent exhaustive
+candidate/sticky oracle, 10,000 nested groups and 100,000 literal terms, and distinct
+construction work failures. Node agrees on 4,818 range/capture comparisons and
+thirteen runtime programs. Ten runtime regressions cover earliest/global/sticky
+execution, nested and empty captures/indices, per-atom case and DotAll rules,
+surrogate units, generic String consumers, original-plan copies and collection,
+opted-in construction/search aborts and linear single-candidate sticky accounting.
+Older gap regressions now use unsupported quantifiers and retain their host-error
+expectations; identity-escape regressions also check successful fixed sequences.
+The corpus and pin are unchanged. Choices, assertions, quantifiers, backreferences,
+named/scoped groups and Unicode-mode sequences remain pending.
+Both compilers pass the complete 13472-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
+the pinned Unicode/numeric generator checks pass. Existing snapshots are unchanged.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three

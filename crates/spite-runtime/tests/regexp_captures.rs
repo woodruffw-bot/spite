@@ -80,12 +80,12 @@ fn many_flat_captures_and_plans_survive_collection_without_default_count_quota()
 }
 
 #[test]
-fn named_quantified_class_and_backreference_patterns_remain_unsupported() {
+fn named_quantified_and_backreference_patterns_remain_unsupported() {
     for source in [
         "/(?<x>a)/.test('a')",
         "/(a)*/.test('a')",
         "/(a|b)/.test('a')",
-        "/([a])/.test('a')",
+        "/([a])*/.test('a')",
         r"/(a)\1/.test('aa')",
         "/(a)/u.test('a')",
     ] {

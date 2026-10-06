@@ -1,0 +1,56 @@
+---
+source: crates/spite-core/src/regexp_sequence.rs
+expression: rows
+---
+"[Nn]evermore" i=false: captures=Some([]) matches=Some([Some(0..9), None, None, None, None, None])
+"[Nn]evermore" i=true: captures=Some([]) matches=Some([Some(0..9), None, None, None, None, None])
+"a[ab]b" i=false: captures=Some([]) matches=Some([None, Some(1..4), None, None, None, None])
+"a[ab]b" i=true: captures=Some([]) matches=Some([None, Some(0..3), None, None, None, None])
+"[ab][^b]" i=false: captures=Some([]) matches=Some([None, None, Some(1..3), Some(0..2), None, None])
+"[ab][^b]" i=true: captures=Some([]) matches=Some([None, Some(0..2), Some(1..3), Some(0..2), None, None])
+"\\d\\w\\s" i=false: captures=Some([]) matches=Some([None, None, Some(0..3), None, None, None])
+"\\d\\w\\s" i=true: captures=Some([]) matches=Some([None, None, Some(0..3), None, None, None])
+"a.b" i=false: captures=Some([]) matches=Some([None, Some(1..4), None, None, None, None])
+"a.b" i=true: captures=Some([]) matches=Some([None, Some(0..3), None, None, None, None])
+"([a])" i=false: captures=Some([0..1]) matches=Some([None, Some(1..2), Some(1..2), Some(0..1), Some(0..1), Some(3..4)])
+"([a])" i=true: captures=Some([0..1]) matches=Some([None, Some(0..1), Some(1..2), Some(0..1), Some(0..1), Some(3..4)])
+"([a](b))()" i=false: captures=Some([0..2, 1..2, 2..2]) matches=Some([None, Some(1..3), None, None, Some(0..2), None])
+"([a](b))()" i=true: captures=Some([0..2, 1..2, 2..2]) matches=Some([None, Some(1..3), None, None, Some(0..2), None])
+"(?:[a])([b])" i=false: captures=Some([1..2]) matches=Some([None, Some(1..3), None, None, Some(0..2), None])
+"(?:[a])([b])" i=true: captures=Some([1..2]) matches=Some([None, Some(1..3), None, None, Some(0..2), None])
+"([a])([b])" i=false: captures=Some([0..1, 1..2]) matches=Some([None, Some(1..3), None, None, Some(0..2), None])
+"([a])([b])" i=true: captures=Some([0..1, 1..2]) matches=Some([None, Some(1..3), None, None, Some(0..2), None])
+"[]a" i=false: captures=Some([]) matches=Some([None, None, None, None, None, None])
+"[]a" i=true: captures=Some([]) matches=Some([None, None, None, None, None, None])
+"[^]a" i=false: captures=Some([]) matches=Some([None, Some(0..2), Some(0..2), None, None, Some(2..4)])
+"[^]a" i=true: captures=Some([]) matches=Some([None, Some(0..2), Some(0..2), None, None, Some(2..4)])
+"[\\b\\-\\]]a" i=false: captures=Some([]) matches=Some([None, None, None, None, None, Some(2..4)])
+"[\\b\\-\\]]a" i=true: captures=Some([]) matches=Some([None, None, None, None, None, Some(2..4)])
+"\\uD800.\\uDC00" i=false: captures=Some([]) matches=Some([None, None, None, None, None, None])
+"\\uD800.\\uDC00" i=true: captures=Some([]) matches=Some([None, None, None, None, None, None])
+"" i=false: captures=Some([]) matches=Some([Some(0..0), Some(0..0), Some(0..0), Some(0..0), Some(0..0), Some(0..0)])
+"" i=true: captures=Some([]) matches=Some([Some(0..0), Some(0..0), Some(0..0), Some(0..0), Some(0..0), Some(0..0)])
+"[a]*b" i=false: captures=None matches=None
+"[a]*b" i=true: captures=None matches=None
+"[a]+" i=false: captures=None matches=None
+"[a]+" i=true: captures=None matches=None
+"[a]{1}" i=false: captures=None matches=None
+"[a]{1}" i=true: captures=None matches=None
+"[a]|b" i=false: captures=None matches=None
+"[a]|b" i=true: captures=None matches=None
+"([a]|b)" i=false: captures=None matches=None
+"([a]|b)" i=true: captures=None matches=None
+"^[a]" i=false: captures=None matches=None
+"^[a]" i=true: captures=None matches=None
+"[a]$" i=false: captures=None matches=None
+"[a]$" i=true: captures=None matches=None
+"([a])\\1" i=false: captures=None matches=None
+"([a])\\1" i=true: captures=None matches=None
+"(?<x>[a])" i=false: captures=None matches=None
+"(?<x>[a])" i=true: captures=None matches=None
+"(?i:[a])" i=false: captures=None matches=None
+"(?i:[a])" i=true: captures=None matches=None
+"[a" i=false: captures=None matches=None
+"[a" i=true: captures=None matches=None
+"([a]" i=false: captures=None matches=None
+"([a]" i=true: captures=None matches=None

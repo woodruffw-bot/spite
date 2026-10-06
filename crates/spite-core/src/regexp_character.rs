@@ -26,6 +26,13 @@ enum Atom {
     Dot(bool),
 }
 
+/// Parsed atom retained until the complete containing Pattern is accepted.
+pub(crate) struct PreparedCharacter {
+    atoms: Vec<Atom>,
+    inverted: bool,
+    source_len: usize,
+}
+
 impl RegExpCharacterMatcher {
     /// Compiles exactly one character-set atom, without expanding Pattern size.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
@@ -45,30 +52,15 @@ impl RegExpCharacterMatcher {
         source: &JsString,
         ignore_case: bool,
         dot_all: bool,
-        mut charge: impl FnMut(usize) -> Result<(), E>,
+        charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let Some((atoms, inverted)) = prepare(source.code_units(), dot_all) else {
+        let Some((prepared, end)) = PreparedCharacter::parse(source.code_units(), dot_all) else {
             return Ok(None);
         };
-        charge(source.len())?;
-        charge(1024)?; // Initialize the fixed UTF-16 membership bitmap.
-        for atom in &atoms {
-            let work = match *atom {
-                Atom::Character(_) => 1,
-                Atom::Range(start, end) => usize::from(end) - usize::from(start) + 1,
-                Atom::Set(_) | Atom::Dot(_) => 65_536,
-            };
-            charge(work)?;
+        if end != source.len() {
+            return Ok(None);
         }
-        let mut program = Program {
-            bits: Box::new([0; 1024]),
-            inverted,
-            ignore_case,
-        };
-        for atom in atoms {
-            program.add(atom);
-        }
-        Ok(Some(Self(Arc::new(program))))
+        prepared.compile_with_work(ignore_case, charge).map(Some)
     }
 
     /// Finds the first matching UTF-16 unit, or only the requested sticky unit.
@@ -83,10 +75,54 @@ impl RegExpCharacterMatcher {
             .take(if sticky { 1 } else { suffix.len() })
             .enumerate()
             .find_map(|(offset, &unit)| {
-                let unit = canonicalize(unit, self.0.ignore_case);
-                let contains = self.0.bits[usize::from(unit) / 64] & (1u64 << (unit % 64)) != 0;
-                (contains != self.0.inverted).then_some(start + offset..start + offset + 1)
+                self.matches(unit)
+                    .then_some(start + offset..start + offset + 1)
             })
+    }
+
+    pub(crate) fn matches(&self, unit: u16) -> bool {
+        let unit = canonicalize(unit, self.0.ignore_case);
+        let contains = self.0.bits[usize::from(unit) / 64] & (1u64 << (unit % 64)) != 0;
+        contains != self.0.inverted
+    }
+}
+
+impl PreparedCharacter {
+    pub(crate) fn parse(units: &[u16], dot_all: bool) -> Option<(Self, usize)> {
+        let (atoms, inverted, source_len) = prepare(units, dot_all)?;
+        Some((
+            Self {
+                atoms,
+                inverted,
+                source_len,
+            },
+            source_len,
+        ))
+    }
+
+    pub(crate) fn compile_with_work<E>(
+        self,
+        ignore_case: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<RegExpCharacterMatcher, E> {
+        charge(self.source_len)?;
+        charge(1024)?;
+        for atom in &self.atoms {
+            charge(match *atom {
+                Atom::Character(_) => 1,
+                Atom::Range(start, end) => usize::from(end) - usize::from(start) + 1,
+                Atom::Set(_) | Atom::Dot(_) => 65_536,
+            })?;
+        }
+        let mut program = Program {
+            bits: Box::new([0; 1024]),
+            inverted: self.inverted,
+            ignore_case,
+        };
+        for atom in self.atoms {
+            program.add(atom);
+        }
+        Ok(RegExpCharacterMatcher(Arc::new(program)))
     }
 }
 
@@ -131,12 +167,12 @@ impl Program {
     }
 }
 
-fn prepare(units: &[u16], dot_all: bool) -> Option<(Vec<Atom>, bool)> {
-    if units == [u16::from(b'.')] {
-        return Some((vec![Atom::Dot(dot_all)], false));
+fn prepare(units: &[u16], dot_all: bool) -> Option<(Vec<Atom>, bool, usize)> {
+    if units.first() == Some(&u16::from(b'.')) {
+        return Some((vec![Atom::Dot(dot_all)], false, 1));
     }
-    if units.len() == 2 && units[0] == u16::from(b'\\') && is_class_escape(units[1]) {
-        return Some((vec![Atom::Set(units[1])], false));
+    if units.len() >= 2 && units[0] == u16::from(b'\\') && is_class_escape(units[1]) {
+        return Some((vec![Atom::Set(units[1])], false, 2));
     }
     if units.first() != Some(&u16::from(b'[')) {
         return None;
@@ -165,7 +201,7 @@ fn prepare(units: &[u16], dot_all: bool) -> Option<(Vec<Atom>, bool)> {
             atoms.push(atom);
         }
     }
-    (index + 1 == units.len()).then_some((atoms, inverted))
+    Some((atoms, inverted, index + 1))
 }
 
 fn canonicalize(unit: u16, ignore_case: bool) -> u16 {

@@ -241,7 +241,19 @@ Compilation charges opted-in parse, bitmap initialization and each construction
 loop before filling storage; separate charges avoid work-total overflow and
 retain host failures separately from unsupported syntax. Search is linear,
 sticky matching examines one unit, and immutable plans share storage across
-copies. Concatenations, groups, quantifiers and Unicode-mode sets remain pending.
+copies. Quantifiers and Unicode-mode sets remain pending.
+
+Fixed ordinary sequences compile literal characters and character-set atoms with
+unquantified capturing/noncapturing groups (22.2.2.3, 22.2.2.7). An iterative
+group stack records fixed relative capture endpoints, including empty groups.
+The complete Pattern is accepted before immutable bitmaps are constructed; the
+single-atom preparation and membership rules are shared. Plans use storage
+linear in Pattern size and share it across copies. Search checks candidate starts
+in order without allocation or native recursion, with a conservative worst-case
+bound of input length times consuming atom count. Sticky matching checks one
+candidate. Optional search accounting follows those bounds with separate charges
+instead of overflowing a product. Assertions, choices, quantifiers, named/scoped
+groups, backreferences and Unicode modes remain outside this sequence compiler.
 
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped

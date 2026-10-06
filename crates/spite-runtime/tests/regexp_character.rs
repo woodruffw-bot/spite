@@ -98,10 +98,10 @@ fn opted_in_construction_and_search_work_abort_outside_javascript() {
 }
 
 #[test]
-fn class_sequences_groups_quantifiers_and_unicode_modes_remain_explicit_gaps() {
+fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps() {
     for source in [
-        "/a[a]/.test('aa')",
-        "/([a])/.test('a')",
+        "/a[a]+/.test('aa')",
+        "/([a])*/.test('a')",
         "/[a]*/.test('a')",
         "/[a]|b/.test('a')",
         "/[a]/u.test('a')",

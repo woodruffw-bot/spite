@@ -6,7 +6,7 @@ use crate::{
 };
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
-    RegExpDisjunctionMatcher, RegExpLiteralMatcher, Span,
+    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpSequenceMatcher, Span,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -185,13 +185,23 @@ impl Realm {
                         Some(RegExpMatcher::Anchored(matcher))
                     } else {
                         self.object_work(span, |_, budget| {
-                            RegExpCharacterMatcher::compile_with_work(
+                            let dot_all = flags.code_units().contains(&u16::from(b's'));
+                            if let Some(matcher) = RegExpCharacterMatcher::compile_with_work(
                                 &source,
                                 ignore_case,
-                                flags.code_units().contains(&u16::from(b's')),
+                                dot_all,
                                 |work| budget.charge(work),
-                            )
-                            .map(|matcher| matcher.map(RegExpMatcher::Character))
+                            )? {
+                                Ok(Some(RegExpMatcher::Character(matcher)))
+                            } else {
+                                RegExpSequenceMatcher::compile_with_work(
+                                    &source,
+                                    ignore_case,
+                                    dot_all,
+                                    |work| budget.charge(work),
+                                )
+                                .map(|matcher| matcher.map(RegExpMatcher::Sequence))
+                            }
                         })?
                     }
                 }

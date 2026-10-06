@@ -177,8 +177,8 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
     for (source, flags) in [
         ("(a|b)", ""),
         ("a|[b]", ""),
-        (".a", ""),
-        ("[a]a", ""),
+        (".a*", ""),
+        ("[a]a+", ""),
         ("a+", ""),
         ("a", "u"),
         ("a", "v"),

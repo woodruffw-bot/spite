@@ -203,7 +203,7 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn is_syntax(unit: u16) -> bool {
+pub(crate) fn is_syntax(unit: u16) -> bool {
     matches!(unit, 0x24 | 0x28..=0x2b | 0x2e | 0x3f | 0x5b | 0x5d | 0x5e | 0x7b..=0x7d)
 }
 

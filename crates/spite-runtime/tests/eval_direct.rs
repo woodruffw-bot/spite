@@ -37,7 +37,7 @@ fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_ho
     let mut realm = Realm::default();
     realm.eval("var marker=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{eval('marker=1; /.a/g.test(0);');}catch{marker=2;}finally{marker=3;}"),
+        realm.eval("try{eval('marker=1; /.a*/g.test(0);');}catch{marker=2;}finally{marker=3;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
@@ -62,7 +62,7 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
             "let effects=0,caught=false;try{{eval('effects=1; /{pattern}/;');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
         ));
     }
-    for pattern in ["(?:a)*", "[a-z]a", "(?<a>a)|(?<a>b)"] {
+    for pattern in ["(?:a)*", "[a-z]a+", "(?<a>a)|(?<a>b)"] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         assert!(matches!(

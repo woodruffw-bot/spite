@@ -3,7 +3,7 @@
 use super::{Error, Objects};
 use spite_core::{
     JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher, RegExpDisjunctionMatcher,
-    RegExpLiteralMatcher,
+    RegExpLiteralMatcher, RegExpSequenceMatcher,
 };
 use spite_heap::Handle;
 use std::ops::Range;
@@ -13,6 +13,7 @@ pub(crate) enum RegExpMatcher {
     Literal(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
     Character(RegExpCharacterMatcher),
+    Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
 }
 
@@ -35,6 +36,11 @@ impl RegExpMatcher {
                 matcher.capture_ranges(),
             ),
             Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
+            Self::Sequence(matcher) => (
+                matcher.find(input, start, sticky)?,
+                0,
+                matcher.capture_ranges(),
+            ),
             Self::Disjunction(matcher) => {
                 let (branch, range) = matcher.find_branch(input, start, sticky)?;
                 let (offset, captures) = matcher.branch_captures(branch).expect("matched branch");
@@ -53,14 +59,22 @@ impl RegExpMatcher {
             Self::Literal(matcher) => matcher.capture_ranges().len(),
             Self::Anchored(matcher) => matcher.capture_ranges().len(),
             Self::Character(_) => 0,
+            Self::Sequence(matcher) => matcher.capture_ranges().len(),
             Self::Disjunction(matcher) => matcher.capture_count(),
         }
     }
-    pub fn search_passes(&self) -> usize {
+    pub fn search_passes(&self, sticky: bool) -> usize {
         match self {
             Self::Literal(_) => 1,
             Self::Anchored(_) => 2,
             Self::Character(_) => 1,
+            Self::Sequence(matcher) => {
+                if sticky {
+                    1
+                } else {
+                    matcher.atom_count().max(1)
+                }
+            }
             Self::Disjunction(matcher) => matcher.alternative_count(),
         }
     }
