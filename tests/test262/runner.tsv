@@ -7003,3 +7003,4 @@ test/built-ins/RegExp/prototype/exec/S15.10.6.2_A3_T2.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T19.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A3_T5.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A3_T7.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A3_T3.js	-	-	-
