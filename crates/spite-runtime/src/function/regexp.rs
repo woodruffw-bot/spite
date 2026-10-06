@@ -3,6 +3,7 @@
 use super::Builtin;
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
+    iterator_count::Counter,
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
 use spite_core::{JsString, Span, WellKnownSymbol, regexp_escape_units};
@@ -258,6 +259,8 @@ impl Realm {
             Member::Flags => self.regexp_flags(receiver, span),
             Member::ToString => self.regexp_to_string(receiver, span),
             Member::Test => self.regexp_test(receiver, argument, span),
+            Member::Match => self.regexp_match(receiver, argument, span),
+            Member::Search => self.regexp_search(receiver, argument, span),
             Member::DotAll
             | Member::Global
             | Member::HasIndices
@@ -365,7 +368,21 @@ impl Realm {
     ) -> Result<Value, Error> {
         let object = Self::regexp_object_receiver(receiver, span)?;
         let string = self.string(argument, span)?;
-        let exec = self.get_property(&object, &JsString::from("exec"), span)?;
+        Ok(Value::Boolean(!matches!(
+            self.regexp_exec(&object, &string, span)?,
+            Value::Null
+        )))
+    }
+
+    // RegExpExec, 22.2.7.1. All generic consumers share result validation and
+    // live exec lookup; the native internal-slot fallback remains pending.
+    fn regexp_exec(
+        &mut self,
+        object: &ObjectHandle,
+        string: &JsString,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let exec = self.get_property(object, &JsString::from("exec"), span)?;
         if !self.is_callable(&exec, span)? {
             // RequireInternalSlot in RegExpExec precedes its native fallback.
             // No native RegExpMatcher objects are exposed yet.
@@ -377,13 +394,12 @@ impl Realm {
         }
         let result = self.call(
             exec,
-            Value::Object(object),
-            vec![Value::String(string)],
+            Value::Object(object.clone()),
+            vec![Value::String(string.clone())],
             span,
         )?;
         match result {
-            Value::Null => Ok(Value::Boolean(false)),
-            Value::Object(_) => Ok(Value::Boolean(true)),
+            Value::Null | Value::Object(_) => Ok(result),
             _ => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
@@ -391,4 +407,126 @@ impl Realm {
             )),
         }
     }
+
+    // 22.2.6.8: global matching uses intrinsic own data elements and advances
+    // empty matches by code point only when flags contains u or v.
+    fn regexp_match(
+        &mut self,
+        receiver: Value,
+        argument: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let object = Self::regexp_object_receiver(receiver, span)?;
+        let string = self.string(argument, span)?;
+        let flags = self.get_property(&object, &JsString::from("flags"), span)?;
+        let flags = self.string(flags, span)?;
+        self.object_work(span, |_, budget| budget.charge(flags.len()))?;
+        let mut global = false;
+        let mut full_unicode = false;
+        for &unit in flags.code_units() {
+            global |= unit == u16::from(b'g');
+            full_unicode |= unit == u16::from(b'u') || unit == u16::from(b'v');
+        }
+        if !global {
+            return self.regexp_exec(&object, &string, span);
+        }
+        let last_index = JsString::from("lastIndex");
+        self.set_property_or_throw(&object, last_index.clone(), Value::Number(0.0), span)?;
+        let array = self.create_intrinsic_array(0, span)?;
+        let mut count = Counter::Small(0);
+        loop {
+            self.tick(span)?;
+            let result = self.regexp_exec(&object, &string, span)?;
+            let Value::Object(result) = result else {
+                return Ok(if count.is_zero() {
+                    Value::Null
+                } else {
+                    Value::Object(array)
+                });
+            };
+            let value = self.get_property(&result, &JsString::from("0"), span)?;
+            let matched = self.string(value, span)?;
+            let empty = matched.is_empty();
+            match &count {
+                Counter::Small(index) => {
+                    self.create_array_element(&array, *index, Value::String(matched), span)?;
+                }
+                Counter::Large(_) => {
+                    let index = self.iterator_counter_work(span, |budget| count.number(budget))?;
+                    let key = self.string(Value::Number(index), span)?;
+                    self.define_property_or_throw(
+                        &array,
+                        key,
+                        DataDescriptor {
+                            value: Some(Value::String(matched)),
+                            writable: Some(true),
+                            enumerable: Some(true),
+                            configurable: Some(true),
+                        }
+                        .into(),
+                        span,
+                    )?;
+                }
+            }
+            if empty {
+                let value = self.get_property(&object, &last_index, span)?;
+                let index = self.length_from_value(value, span)?;
+                let next = advance_string_index(&string, index, full_unicode);
+                self.set_property_or_throw(
+                    &object,
+                    last_index.clone(),
+                    Value::Number(next as f64),
+                    span,
+                )?;
+            }
+            self.iterator_counter_work(span, |budget| count.advance(budget))?;
+        }
+    }
+
+    // 22.2.6.12: restore lastIndex after a normal exec result, before reading
+    // its index. Abrupt exec completions propagate without restoration.
+    fn regexp_search(
+        &mut self,
+        receiver: Value,
+        argument: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let object = Self::regexp_object_receiver(receiver, span)?;
+        let string = self.string(argument, span)?;
+        let last_index = JsString::from("lastIndex");
+        let previous = self.get_property(&object, &last_index, span)?;
+        if !previous.same_value(&Value::Number(0.0)) {
+            self.set_property_or_throw(&object, last_index.clone(), Value::Number(0.0), span)?;
+        }
+        let result = self.regexp_exec(&object, &string, span)?;
+        let current = self.get_property(&object, &last_index, span)?;
+        self.comparison_work(&current, &previous, span)?;
+        if !current.same_value(&previous) {
+            self.set_property_or_throw(&object, last_index, previous, span)?;
+        }
+        if let Value::Object(result) = result {
+            self.get_property(&result, &JsString::from("index"), span)
+        } else {
+            Ok(Value::Number(-1.0))
+        }
+    }
+}
+
+// AdvanceStringIndex, 22.2.7.3. ToLength bounds index at 2^53-1, so even its
+// terminal +1 fits u64 and is exactly representable as a Number.
+fn advance_string_index(string: &JsString, index: u64, unicode: bool) -> u64 {
+    if unicode {
+        if let Ok(index_usize) = usize::try_from(index) {
+            let units = string.code_units();
+            if let Some((&first, &second)) = units
+                .get(index_usize)
+                .zip(index_usize.checked_add(1).and_then(|i| units.get(i)))
+            {
+                if (0xd800..=0xdbff).contains(&first) && (0xdc00..=0xdfff).contains(&second) {
+                    return index + 2;
+                }
+            }
+        }
+    }
+    index + 1
 }

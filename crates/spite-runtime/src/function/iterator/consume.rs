@@ -206,12 +206,12 @@ impl Realm {
         Ok(accumulator)
     }
 
-    pub(super) fn iterator_counter_work<T>(
+    pub(crate) fn iterator_counter_work<T>(
         &mut self,
         span: Span,
         work: impl FnOnce(&mut Budget) -> Result<T, IntegerError>,
     ) -> Result<T, Error> {
-        // An internal mathematical counter produces Numbers, not BigInt values;
+        // Iterator and RegExp mathematical counters produce Numbers, not BigInt values;
         // the host BigInt-value magnitude quota does not apply to this storage.
         let mut budget = Budget::with_limits(None, self.remaining_steps);
         let result = work(&mut budget);

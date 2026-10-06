@@ -286,6 +286,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add RegExp constructor/prototype property metadata and the generic Symbol.species getter.
 - [x] Implement generic RegExp flags/toString operations and prototype exceptions for flag/source brand checks.
 - [x] Implement RegExp.test's ordered custom-exec delegation and Object/null result validation.
+- [x] Implement generic RegExp Symbol.match with live exec lookup, intrinsic result arrays and empty-match Unicode advancement.
+- [x] Implement generic RegExp Symbol.search with exact lastIndex restoration and uncoerced result indices.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.

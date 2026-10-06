@@ -659,7 +659,11 @@ impl Realm {
         // LengthOfArrayLike/ToLength, 7.3.18/7.1.20. Read length once and use
         // u64 to represent every valid index independently of host usize.
         let length = self.get_property(object, &JsString::from("length"), span)?;
-        let number = self.number(length, span)?;
+        self.length_from_value(length, span)
+    }
+
+    pub(crate) fn length_from_value(&mut self, value: Value, span: Span) -> Result<u64, Error> {
+        let number = self.number(value, span)?;
         Ok(if number.is_nan() || number <= 0.0 {
             0
         } else {

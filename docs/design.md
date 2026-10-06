@@ -132,9 +132,18 @@ before flags and concatenates their exact UTF-16 values; opted-in output quotas
 apply after both conversions. Flag getters return undefined on the intrinsic
 prototype, whose source is "(?:)"; other unbranded receivers throw TypeError.
 Generic test converts its argument before exec lookup, delegates a single String
-argument to a callable exec, and accepts only an Object or null result. Native
-RegExp instances, construction, matching and symbol methods remain pending;
-unavailable bodies report Unsupported and no matcher dependency is active.
+argument to a callable exec, and accepts only an Object or null result. Shared
+RegExpExec performs a fresh lookup for each invocation. Generic Symbol.match
+(22.2.6.8) converts flags after the input and uses intrinsic own data elements for
+global results. Empty matches apply ToLength and advance by UTF-16 code unit or,
+with u/v flags, code point. Its exact counter has no default count cap or
+BigInt-value magnitude quota. Generic
+Symbol.search (22.2.6.12) preserves SameValue lastIndex identity, including signed
+zero, and restores it after normal exec completion before reading the result's
+index without coercion. Abrupt exec completion does not restore lastIndex.
+Native RegExp instances, construction, matching, matchAll/replace/split and the
+string iterator remain pending; unavailable bodies report Unsupported and no
+matcher dependency is active.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

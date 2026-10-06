@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test delegation; native instances, construction, matching and symbol methods remain pending |
+| RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search delegation; native instances, construction, matching, matchAll/replace/split and the string iterator remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13222 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -293,7 +293,7 @@ public lookalike properties. Generic test converts its input before exec lookup,
 preserves receiver and argument count, and validates the Object/null result.
 Four regressions cover these paths, abrupt getters/conversions, live mutation,
 prototype exceptions, quotas and recursive getters/exec callbacks on the native
-stack guards. Native instances, constructors, matching, symbols and the string
+stack guards. Native instances, constructors, matching, remaining symbols and the string
 iterator remain pending; the inventory, dependency set and unlimited defaults
 are unchanged.
 
@@ -304,6 +304,18 @@ completions, primitive receivers, the ordinary prototype and intrinsic metadata.
 Two flags programs and one toString program require native RegExp instances and
 remain excluded with no pass credit. The existing pin, ten helpers and unlimited
 defaults are unchanged; no native matching coverage is claimed.
+
+Generic RegExp Symbol.match and Symbol.search now share the validated custom-exec
+operation with test. Non-global match returns the exact exec result; global match
+uses live exec lookup, intrinsic arrays and own data elements, with exact result
+counts and ToLength-based empty-match advancement for both u and v. Search
+preserves signed zeros, NaNs, symbols and object identity in lastIndex, restores
+only after normal exec completion and returns result.index without coercion.
+Seven native regressions cover ordered coercion, live exec mutation, poisoned
+inherited setters, surrogate pairs/unpaired units, end and safe-integer index
+boundaries, strict write failures, abrupt completion effects, String hook
+delegation, opted-in work aborts and recursive callbacks on the native stack
+guards. No native matcher, fixture count, dependency or default quota is added.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
