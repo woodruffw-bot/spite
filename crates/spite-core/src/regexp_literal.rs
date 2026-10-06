@@ -59,36 +59,7 @@ impl RegExpLiteralMatcher {
                 continue;
             }
             let unit = if unit == u16::from(b'\\') {
-                let escaped = *source.get(index)?;
-                index += 1;
-                match escaped {
-                    0x66 => 0x0c,
-                    0x6e => 0x0a,
-                    0x72 => 0x0d,
-                    0x74 => 0x09,
-                    0x76 => 0x0b,
-                    0x30 if !source.get(index).is_some_and(|u| (0x30..=0x39).contains(u)) => 0,
-                    0x63 => {
-                        let letter = *source.get(index)?;
-                        if !(0x41..=0x5a).contains(&letter) && !(0x61..=0x7a).contains(&letter) {
-                            return None;
-                        }
-                        index += 1;
-                        letter % 32
-                    }
-                    0x78 => hex_escape(source, &mut index, 2)?,
-                    0x75 => hex_escape(source, &mut index, 4)?,
-                    // Ordinary IdentityEscape excludes Unicode ID_Continue.
-                    // IdentifierPartChar adds '$' to that pinned property, so
-                    // allow it explicitly; lone surrogate units also remain
-                    // characters rather than being replaced or rejected.
-                    _ if escaped == 0x24
-                        || !char::from_u32(u32::from(escaped)).is_some_and(is_identifier_part) =>
-                    {
-                        escaped
-                    }
-                    _ => return None,
-                }
+                character_escape(source, &mut index)?
             } else if is_syntax(unit) {
                 return None;
             } else {
@@ -186,6 +157,46 @@ impl RegExpLiteralMatcher {
         }
         None
     }
+}
+
+/// CharacterEscape decoding shared by ordinary atoms and class characters.
+pub(crate) fn character_escape(source: &[u16], index: &mut usize) -> Option<u16> {
+    let escaped = *source.get(*index)?;
+    *index += 1;
+    let unit = match escaped {
+        0x66 => 0x0c,
+        0x6e => 0x0a,
+        0x72 => 0x0d,
+        0x74 => 0x09,
+        0x76 => 0x0b,
+        0x30 if !source
+            .get(*index)
+            .is_some_and(|u| (0x30..=0x39).contains(u)) =>
+        {
+            0
+        }
+        0x63 => {
+            let letter = *source.get(*index)?;
+            if !(0x41..=0x5a).contains(&letter) && !(0x61..=0x7a).contains(&letter) {
+                return None;
+            }
+            *index += 1;
+            letter % 32
+        }
+        0x78 => hex_escape(source, index, 2)?,
+        0x75 => hex_escape(source, index, 4)?,
+        // Ordinary IdentityEscape excludes Unicode ID_Continue.
+        // IdentifierPartChar adds '$' to that pinned property, so
+        // allow it explicitly; lone surrogate units also remain
+        // characters rather than being replaced or rejected.
+        _ if escaped == 0x24
+            || !char::from_u32(u32::from(escaped)).is_some_and(is_identifier_part) =>
+        {
+            escaped
+        }
+        _ => return None,
+    };
+    Some(unit)
 }
 
 fn canonicalize(unit: u16, ignore_case: bool) -> u16 {

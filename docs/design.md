@@ -217,6 +217,20 @@ Compilation respects trailing escape parity; internal assertions, anchored
 alternatives and Unicode-mode matching remain pending. Optional accounting
 covers the literal scan and boundary checks without changing unlimited defaults.
 
+Ordinary single character-set atoms compile separately (CharacterSetMatcher,
+22.2.2.7.1). One bracket class supports raw/escaped characters, ordered ranges,
+outer inversion, empty sets and all six class escapes; one class escape or dot
+also forms a complete Pattern. Class backspace differs from the outside word
+assertion. Shared CharacterEscape decoding preserves literal/group behavior.
+A fixed UTF-16 bitmap holds the positive set after pinned ordinary Canonicalize;
+matching canonicalizes the candidate before applying outer inversion. DotAll
+controls the four LineTerminators, and ordinary mode preserves surrogate halves.
+Compilation charges opted-in parse, bitmap initialization and each construction
+loop before filling storage; separate charges avoid work-total overflow and
+retain host failures separately from unsupported syntax. Search is linear,
+sticky matching examines one unit, and immutable plans share storage across
+copies. Concatenations, groups, quantifiers and Unicode-mode sets remain pending.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

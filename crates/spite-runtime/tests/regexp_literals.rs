@@ -70,7 +70,7 @@ fn all_generic_consumers_share_literal_matching_and_lastindex_state() {
 fn valid_unimplemented_matchers_fail_only_when_execution_reaches_matching() {
     for source in [
         "/(a|b)/.exec('a')",
-        "/./.test('a')",
+        "/.a/.test('a')",
         "/a/u.exec('a')",
         "/a/v.exec('a')",
     ] {

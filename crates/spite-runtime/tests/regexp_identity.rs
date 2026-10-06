@@ -43,11 +43,14 @@ fn identifier_continue_and_unicode_identity_rules_still_reject_invalid_patterns(
 }
 
 #[test]
-fn character_classes_assertions_and_backreferences_remain_distinct_from_identity_escapes() {
+fn class_sequences_assertions_and_backreferences_remain_distinct_from_identity_escapes() {
+    check(
+        r"/\d/.test('1') && /\d/.exec('d')===null && /\w/.test('a') && /\w/.exec('-')===null && /\s/.test(' ') && /\s/.exec('s')===null",
+    );
     for source in [
-        r"/\d/.test('1')",
-        r"/\w/.test('a')",
-        r"/\s/.test(' ')",
+        r"/\d\d/.test('1')",
+        r"/\w\w/.test('a')",
+        r"/\s\s/.test(' ')",
         r"/\b/.test('a')",
         r"/\B/.test('a')",
         r"/(a)\1/.test('aa')",

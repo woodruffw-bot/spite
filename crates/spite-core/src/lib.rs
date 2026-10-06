@@ -7,6 +7,7 @@ mod normalization;
 mod normalization_data;
 mod regexp_anchored;
 mod regexp_canonicalize;
+mod regexp_character;
 mod regexp_disjunction;
 mod regexp_escape;
 mod regexp_literal;
@@ -23,6 +24,7 @@ pub use normalization::{
 };
 pub use regexp_anchored::RegExpAnchoredMatcher;
 pub use regexp_canonicalize::regexp_canonicalize_character;
+pub use regexp_character::RegExpCharacterMatcher;
 pub use regexp_disjunction::RegExpDisjunctionMatcher;
 pub use regexp_escape::regexp_escape_units;
 pub use regexp_literal::RegExpLiteralMatcher;

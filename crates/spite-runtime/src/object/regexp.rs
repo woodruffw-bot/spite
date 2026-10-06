@@ -1,7 +1,10 @@
 //! Native RegExp original Pattern and flag slots (22.2).
 
 use super::{Error, Objects};
-use spite_core::{JsString, RegExpAnchoredMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher};
+use spite_core::{
+    JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher, RegExpDisjunctionMatcher,
+    RegExpLiteralMatcher,
+};
 use spite_heap::Handle;
 use std::ops::Range;
 
@@ -9,6 +12,7 @@ use std::ops::Range;
 pub(crate) enum RegExpMatcher {
     Literal(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
+    Character(RegExpCharacterMatcher),
     Disjunction(RegExpDisjunctionMatcher),
 }
 
@@ -30,6 +34,7 @@ impl RegExpMatcher {
                 0,
                 matcher.capture_ranges(),
             ),
+            Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
             Self::Disjunction(matcher) => {
                 let (branch, range) = matcher.find_branch(input, start, sticky)?;
                 let (offset, captures) = matcher.branch_captures(branch).expect("matched branch");
@@ -47,6 +52,7 @@ impl RegExpMatcher {
         match self {
             Self::Literal(matcher) => matcher.capture_ranges().len(),
             Self::Anchored(matcher) => matcher.capture_ranges().len(),
+            Self::Character(_) => 0,
             Self::Disjunction(matcher) => matcher.capture_count(),
         }
     }
@@ -54,6 +60,7 @@ impl RegExpMatcher {
         match self {
             Self::Literal(_) => 1,
             Self::Anchored(_) => 2,
+            Self::Character(_) => 1,
             Self::Disjunction(matcher) => matcher.alternative_count(),
         }
     }
