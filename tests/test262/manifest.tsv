@@ -7002,3 +7002,15 @@ script-pass	87f3a84a961dcdf41268bb8c9ca3803d10cbd02b98b4684851e7d4757e9bda95	tes
 script-pass	3c3295e4f0c6443b3e3251131e59277bac3035d922c647a9c3c1d44125009d62	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A8.js
 script-pass	ca88071524a8b096792e7454ffd9433a91cfa56eadf6570144fb00674e817379	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A9.js
 script-pass	4227f8f7ec01f8a83cc97cff8606e4714d10f1df2e1631ed0b5b838e5d59fd46	test/built-ins/RegExp/prototype/exec/name.js
+script-pass	9351bff221735f37b8c7f003d0f380638fa0d37dd40008a0c55b9a0f1d9f7e01	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T12.js
+script-pass	4f681676223487334ae66c22a58fd0aec02d6854dd8f8af00fe1ecf3a18276c7	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T15.js
+script-pass	2a98c5967812f15f631c3bf7e7541d14721352367cc0d19b5d7528462b17241b	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T16.js
+script-pass	8076f4e14d1a56d6402bf3af1f29e6537719b135e537b64ed652dc411b68e54c	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T7.js
+script-pass	9b2e98ebddeb26e64ffc682995642a0f1e801bb57918ebb5c27acd632cc8d563	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T8.js
+script-pass	8c31ffc0b171f8dac6c5e7f6705bc42e8696daf5a367424aaef105d97527ee94	test/built-ins/RegExp/prototype/exec/failure-g-lastindex-reset.js
+script-pass	96bf3bdd4728d81791cb6c633092320f685570deb1f4df6b2deb1aa9910ca9d9	test/built-ins/RegExp/prototype/exec/failure-lastindex-access.js
+script-pass	97a6fda8f1ee8576b97e1ce9cdd6e07fca84bc545c4eaff0f65d3954aa627ff0	test/built-ins/RegExp/prototype/exec/failure-lastindex-set.js
+script-pass	0473b3ba25b1404a9754fb405eeeb146d71c06eb4482791f76c68227db8c7f3a	test/built-ins/RegExp/prototype/exec/y-fail-lastindex-no-write.js
+script-pass	f5fa7818b76a7c619e9d6c93af636f27e59cb42cba90bab6f7f24a741378b074	test/built-ins/RegExp/prototype/exec/y-fail-lastindex.js
+script-pass	6e48c3c2f38da46f7b5785a7b6184512517f2a15a94076c02ccf39b95fe43dc1	test/built-ins/RegExp/prototype/exec/y-fail-return.js
+script-pass	81f9b051ead5435f0b6969bedf4073b38dc68f69e97645b8e3c474f74acb3406	test/built-ins/RegExp/prototype/exec/y-set-lastindex.js
