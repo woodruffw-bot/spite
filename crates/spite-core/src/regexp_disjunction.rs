@@ -3,14 +3,21 @@
 use crate::{JsString, RegExpLiteralMatcher};
 use std::{ops::Range, sync::Arc};
 
-/// Immutable top-level alternatives of noncapturing ordinary literal sequences.
+/// Immutable top-level alternatives of ordinary literal sequences.
 ///
 /// The Pattern must already be validated without `u` or `v`. Every alternative
-/// must compile as a literal sequence without captures. Unsupported alternatives
-/// reject the entire plan. Nested alternatives and quantified groups remain
+/// must compile as a literal sequence. Unsupported alternatives reject the
+/// entire plan. Nested alternatives and quantified groups remain
 /// unsupported; compilation never expands combinations or uses native recursion.
 #[derive(Clone, Debug)]
-pub struct RegExpDisjunctionMatcher(Arc<[RegExpLiteralMatcher]>);
+pub struct RegExpDisjunctionMatcher(Arc<Program>);
+
+#[derive(Debug)]
+struct Program {
+    alternatives: Vec<RegExpLiteralMatcher>,
+    capture_offsets: Vec<usize>,
+    capture_count: usize,
+}
 
 impl RegExpDisjunctionMatcher {
     /// Compiles two or more top-level alternatives, including empty alternatives.
@@ -28,10 +35,12 @@ impl RegExpDisjunctionMatcher {
                     index += 1;
                 }
                 0x28 => {
-                    if units.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
-                        return None;
+                    if units.get(index) == Some(&u16::from(b'?')) {
+                        if units.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
+                            return None;
+                        }
+                        index += 2;
                     }
-                    index += 2;
                     depth = depth.checked_add(1)?;
                 }
                 0x29 => depth = depth.checked_sub(1)?,
@@ -51,20 +60,41 @@ impl RegExpDisjunctionMatcher {
         }
         ranges.push(start..units.len());
         let mut alternatives = Vec::with_capacity(ranges.len());
+        let mut capture_offsets = Vec::with_capacity(ranges.len());
+        let mut capture_count = 0usize;
         for range in ranges {
             let source = JsString::from_code_units(units[range].to_vec());
             let matcher = RegExpLiteralMatcher::compile(&source, ignore_case)?;
-            if !matcher.capture_ranges().is_empty() {
-                return None;
-            }
+            capture_offsets.push(capture_count);
+            capture_count = capture_count.checked_add(matcher.capture_ranges().len())?;
             alternatives.push(matcher);
         }
-        Some(Self(alternatives.into()))
+        Some(Self(Arc::new(Program {
+            alternatives,
+            capture_offsets,
+            capture_count,
+        })))
     }
 
     /// Number of alternatives, for optional worst-case work accounting.
     pub fn alternative_count(&self) -> usize {
-        self.0.len()
+        self.0.alternatives.len()
+    }
+
+    /// Total capturing groups in source order, including unselected branches.
+    pub fn capture_count(&self) -> usize {
+        self.0.capture_count
+    }
+
+    /// First capture slot and relative ranges for a selected branch.
+    ///
+    /// Returns `None` for an invalid branch index. Groups in other branches do
+    /// not participate; consumers must represent those slots as undefined.
+    pub fn branch_captures(&self, branch: usize) -> Option<(usize, &[Range<usize>])> {
+        Some((
+            *self.0.capture_offsets.get(branch)?,
+            self.0.alternatives.get(branch)?.capture_ranges(),
+        ))
     }
 
     /// Finds the earliest match, choosing source order for equal start offsets.
@@ -73,14 +103,28 @@ impl RegExpDisjunctionMatcher {
     /// search; worst-case work is proportional to the number of alternatives
     /// times the input suffix length. Search allocates nothing.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
-        let mut best: Option<Range<usize>> = None;
-        for alternative in self.0.iter() {
+        self.find_branch(input, start, sticky)
+            .map(|(_, range)| range)
+    }
+
+    /// Finds a match and its source-order branch index without allocating.
+    pub fn find_branch(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+    ) -> Option<(usize, Range<usize>)> {
+        let mut best: Option<(usize, Range<usize>)> = None;
+        for (branch, alternative) in self.0.alternatives.iter().enumerate() {
             if let Some(found) = alternative.find(input, start, sticky) {
                 if found.start == start {
-                    return Some(found);
+                    return Some((branch, found));
                 }
-                if best.as_ref().is_none_or(|best| found.start < best.start) {
-                    best = Some(found);
+                if best
+                    .as_ref()
+                    .is_none_or(|(_, best)| found.start < best.start)
+                {
+                    best = Some((branch, found));
                 }
             }
         }
@@ -144,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn alternatives_agree_with_independent_position_then_source_order_oracle() {
+    fn branch_choices_agree_with_independent_position_then_source_order_oracle() {
         let alphabet = [u16::from(b'a'), u16::from(b'A'), u16::from(b'b')];
         let mut inputs = vec![Vec::new()];
         let mut previous = vec![Vec::new()];
@@ -169,7 +213,7 @@ mod tests {
         };
         for left in ["", "a", "A", "ab", "ba", "aa", "aba"] {
             for right in ["", "a", "A", "ab", "ba", "aa", "aba"] {
-                let source = JsString::from(format!("{left}|{right}").as_str());
+                let source = JsString::from(format!("({left})|({right})").as_str());
                 for ignore_case in [false, true] {
                     let matcher = RegExpDisjunctionMatcher::compile(&source, ignore_case).unwrap();
                     for units in &inputs {
@@ -180,21 +224,23 @@ mod tests {
                                     if sticky && offset != start {
                                         return None;
                                     }
-                                    [left, right].into_iter().find_map(|word| {
-                                        let end = offset.checked_add(word.len())?;
-                                        units
-                                            .get(offset..end)?
-                                            .iter()
-                                            .copied()
-                                            .zip(word.bytes().map(u16::from))
-                                            .all(|(a, b)| {
-                                                fold(a, ignore_case) == fold(b, ignore_case)
-                                            })
-                                            .then_some(offset..end)
-                                    })
+                                    [left, right].into_iter().enumerate().find_map(
+                                        |(branch, word)| {
+                                            let end = offset.checked_add(word.len())?;
+                                            units
+                                                .get(offset..end)?
+                                                .iter()
+                                                .copied()
+                                                .zip(word.bytes().map(u16::from))
+                                                .all(|(a, b)| {
+                                                    fold(a, ignore_case) == fold(b, ignore_case)
+                                                })
+                                                .then_some((branch, offset..end))
+                                        },
+                                    )
                                 });
                                 assert_eq!(
-                                    matcher.find(&input, start, sticky),
+                                    matcher.find_branch(&input, start, sticky),
                                     expected,
                                     "{source:?} {input:?} start={start} i={ignore_case} y={sticky}"
                                 );
@@ -223,5 +269,83 @@ mod tests {
         drop(matcher);
         assert_eq!(clone.find(&JsString::from("ab"), 0, false), Some(0..1));
         drop(clone);
+    }
+
+    #[test]
+    fn alternative_capture_participation_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(a)|b",
+            "a|(b)",
+            "(a)|(ab)",
+            "(ab)|(a)",
+            "()|()",
+            "((a)())|c(d)",
+            r"(\uD800)|c(\uDC00)",
+            "µ|(σ)",
+        ] {
+            for ignore_case in [false, true] {
+                let matcher =
+                    RegExpDisjunctionMatcher::compile(&JsString::from(source), ignore_case)
+                        .unwrap();
+                for input in ["", "a", "ab", "xcd", "xς", "x𐀀"] {
+                    let input = JsString::from(input);
+                    write!(
+                        rows,
+                        "{source:?} i={ignore_case} input={input:?} count={}",
+                        matcher.capture_count()
+                    )
+                    .unwrap();
+                    if let Some((branch, range)) = matcher.find_branch(&input, 0, false) {
+                        let (offset, captures) = matcher.branch_captures(branch).unwrap();
+                        let slots: Vec<_> = (0..matcher.capture_count())
+                            .map(|index| {
+                                let capture = captures.get(index.checked_sub(offset)?)?;
+                                Some(range.start + capture.start..range.start + capture.end)
+                            })
+                            .collect();
+                        write!(rows, " branch={branch} match={range:?} captures={slots:?}")
+                            .unwrap();
+                    } else {
+                        rows.push_str(" no-match");
+                    }
+                    rows.push('\n');
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn selected_branch_capture_offsets_are_linear_storage_and_iterative() {
+        let source = format!("{}(b)", "(a)|".repeat(100_000));
+        let matcher =
+            RegExpDisjunctionMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        assert_eq!(matcher.capture_count(), 100_001);
+        assert_eq!(
+            matcher.find_branch(&JsString::from("b"), 0, false),
+            Some((100_000, 0..1))
+        );
+        assert_eq!(
+            matcher.branch_captures(100_000),
+            Some((100_000, std::slice::from_ref(&(0..1))))
+        );
+        assert_eq!(matcher.branch_captures(100_001), None);
+        let clone = matcher.clone();
+        assert!(Arc::ptr_eq(&matcher.0, &clone.0));
+        drop(matcher);
+        drop(clone);
+        let source = format!("{}a{}|(b)", "(".repeat(100_000), ")".repeat(100_000));
+        let matcher =
+            RegExpDisjunctionMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        assert_eq!(matcher.capture_count(), 100_001);
+        assert_eq!(
+            matcher.branch_captures(1),
+            Some((100_000, std::slice::from_ref(&(0..1))))
+        );
+        assert_eq!(
+            matcher.find_branch(&JsString::from("b"), 0, false),
+            Some((1, 0..1))
+        );
     }
 }

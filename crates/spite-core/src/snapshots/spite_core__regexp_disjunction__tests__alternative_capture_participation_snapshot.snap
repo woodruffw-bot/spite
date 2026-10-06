@@ -1,0 +1,100 @@
+---
+source: crates/spite-core/src/regexp_disjunction.rs
+expression: rows
+---
+"(a)|b" i=false input="" count=1 no-match
+"(a)|b" i=false input="a" count=1 branch=0 match=0..1 captures=[Some(0..1)]
+"(a)|b" i=false input="ab" count=1 branch=0 match=0..1 captures=[Some(0..1)]
+"(a)|b" i=false input="xcd" count=1 no-match
+"(a)|b" i=false input="x\u03c2" count=1 no-match
+"(a)|b" i=false input="x\ud800\udc00" count=1 no-match
+"(a)|b" i=true input="" count=1 no-match
+"(a)|b" i=true input="a" count=1 branch=0 match=0..1 captures=[Some(0..1)]
+"(a)|b" i=true input="ab" count=1 branch=0 match=0..1 captures=[Some(0..1)]
+"(a)|b" i=true input="xcd" count=1 no-match
+"(a)|b" i=true input="x\u03c2" count=1 no-match
+"(a)|b" i=true input="x\ud800\udc00" count=1 no-match
+"a|(b)" i=false input="" count=1 no-match
+"a|(b)" i=false input="a" count=1 branch=0 match=0..1 captures=[None]
+"a|(b)" i=false input="ab" count=1 branch=0 match=0..1 captures=[None]
+"a|(b)" i=false input="xcd" count=1 no-match
+"a|(b)" i=false input="x\u03c2" count=1 no-match
+"a|(b)" i=false input="x\ud800\udc00" count=1 no-match
+"a|(b)" i=true input="" count=1 no-match
+"a|(b)" i=true input="a" count=1 branch=0 match=0..1 captures=[None]
+"a|(b)" i=true input="ab" count=1 branch=0 match=0..1 captures=[None]
+"a|(b)" i=true input="xcd" count=1 no-match
+"a|(b)" i=true input="x\u03c2" count=1 no-match
+"a|(b)" i=true input="x\ud800\udc00" count=1 no-match
+"(a)|(ab)" i=false input="" count=2 no-match
+"(a)|(ab)" i=false input="a" count=2 branch=0 match=0..1 captures=[Some(0..1), None]
+"(a)|(ab)" i=false input="ab" count=2 branch=0 match=0..1 captures=[Some(0..1), None]
+"(a)|(ab)" i=false input="xcd" count=2 no-match
+"(a)|(ab)" i=false input="x\u03c2" count=2 no-match
+"(a)|(ab)" i=false input="x\ud800\udc00" count=2 no-match
+"(a)|(ab)" i=true input="" count=2 no-match
+"(a)|(ab)" i=true input="a" count=2 branch=0 match=0..1 captures=[Some(0..1), None]
+"(a)|(ab)" i=true input="ab" count=2 branch=0 match=0..1 captures=[Some(0..1), None]
+"(a)|(ab)" i=true input="xcd" count=2 no-match
+"(a)|(ab)" i=true input="x\u03c2" count=2 no-match
+"(a)|(ab)" i=true input="x\ud800\udc00" count=2 no-match
+"(ab)|(a)" i=false input="" count=2 no-match
+"(ab)|(a)" i=false input="a" count=2 branch=1 match=0..1 captures=[None, Some(0..1)]
+"(ab)|(a)" i=false input="ab" count=2 branch=0 match=0..2 captures=[Some(0..2), None]
+"(ab)|(a)" i=false input="xcd" count=2 no-match
+"(ab)|(a)" i=false input="x\u03c2" count=2 no-match
+"(ab)|(a)" i=false input="x\ud800\udc00" count=2 no-match
+"(ab)|(a)" i=true input="" count=2 no-match
+"(ab)|(a)" i=true input="a" count=2 branch=1 match=0..1 captures=[None, Some(0..1)]
+"(ab)|(a)" i=true input="ab" count=2 branch=0 match=0..2 captures=[Some(0..2), None]
+"(ab)|(a)" i=true input="xcd" count=2 no-match
+"(ab)|(a)" i=true input="x\u03c2" count=2 no-match
+"(ab)|(a)" i=true input="x\ud800\udc00" count=2 no-match
+"()|()" i=false input="" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=false input="a" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=false input="ab" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=false input="xcd" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=false input="x\u03c2" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=false input="x\ud800\udc00" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=true input="" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=true input="a" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=true input="ab" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=true input="xcd" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=true input="x\u03c2" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"()|()" i=true input="x\ud800\udc00" count=2 branch=0 match=0..0 captures=[Some(0..0), None]
+"((a)())|c(d)" i=false input="" count=4 no-match
+"((a)())|c(d)" i=false input="a" count=4 branch=0 match=0..1 captures=[Some(0..1), Some(0..1), Some(1..1), None]
+"((a)())|c(d)" i=false input="ab" count=4 branch=0 match=0..1 captures=[Some(0..1), Some(0..1), Some(1..1), None]
+"((a)())|c(d)" i=false input="xcd" count=4 branch=1 match=1..3 captures=[None, None, None, Some(2..3)]
+"((a)())|c(d)" i=false input="x\u03c2" count=4 no-match
+"((a)())|c(d)" i=false input="x\ud800\udc00" count=4 no-match
+"((a)())|c(d)" i=true input="" count=4 no-match
+"((a)())|c(d)" i=true input="a" count=4 branch=0 match=0..1 captures=[Some(0..1), Some(0..1), Some(1..1), None]
+"((a)())|c(d)" i=true input="ab" count=4 branch=0 match=0..1 captures=[Some(0..1), Some(0..1), Some(1..1), None]
+"((a)())|c(d)" i=true input="xcd" count=4 branch=1 match=1..3 captures=[None, None, None, Some(2..3)]
+"((a)())|c(d)" i=true input="x\u03c2" count=4 no-match
+"((a)())|c(d)" i=true input="x\ud800\udc00" count=4 no-match
+"(\\uD800)|c(\\uDC00)" i=false input="" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=false input="a" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=false input="ab" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=false input="xcd" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=false input="x\u03c2" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=false input="x\ud800\udc00" count=2 branch=0 match=1..2 captures=[Some(1..2), None]
+"(\\uD800)|c(\\uDC00)" i=true input="" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=true input="a" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=true input="ab" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=true input="xcd" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=true input="x\u03c2" count=2 no-match
+"(\\uD800)|c(\\uDC00)" i=true input="x\ud800\udc00" count=2 branch=0 match=1..2 captures=[Some(1..2), None]
+"µ|(σ)" i=false input="" count=1 no-match
+"µ|(σ)" i=false input="a" count=1 no-match
+"µ|(σ)" i=false input="ab" count=1 no-match
+"µ|(σ)" i=false input="xcd" count=1 no-match
+"µ|(σ)" i=false input="x\u03c2" count=1 no-match
+"µ|(σ)" i=false input="x\ud800\udc00" count=1 no-match
+"µ|(σ)" i=true input="" count=1 no-match
+"µ|(σ)" i=true input="a" count=1 no-match
+"µ|(σ)" i=true input="ab" count=1 no-match
+"µ|(σ)" i=true input="xcd" count=1 no-match
+"µ|(σ)" i=true input="x\u03c2" count=1 branch=1 match=1..2 captures=[Some(1..2)]
+"µ|(σ)" i=true input="x\ud800\udc00" count=1 no-match

@@ -30,8 +30,8 @@ expression: rows
 "\u00b5|s" i=true alternatives=2 "":None/None "ab":None/None "xaba":None/None "1.012":None/None "a|b":None/None "\u03c2":None/None "\u017f":None/None "x\ud800\udc00y":None/None
 "\u03c3|k" i=false alternatives=2 "":None/None "ab":None/None "xaba":None/None "1.012":None/None "a|b":None/None "\u03c2":None/None "\u017f":None/None "x\ud800\udc00y":None/None
 "\u03c3|k" i=true alternatives=2 "":None/None "ab":None/None "xaba":None/None "1.012":None/None "a|b":None/None "\u03c2":Some(0..1)/Some(0..1) "\u017f":None/None "x\ud800\udc00y":None/None
-"(a)|b" i=false unsupported
-"(a)|b" i=true unsupported
+"(a)|b" i=false alternatives=2 "":None/None "ab":Some(0..1)/Some(0..1) "xaba":Some(1..2)/None "1.012":None/None "a|b":Some(0..1)/Some(0..1) "\u03c2":None/None "\u017f":None/None "x\ud800\udc00y":None/None
+"(a)|b" i=true alternatives=2 "":None/None "ab":Some(0..1)/Some(0..1) "xaba":Some(1..2)/None "1.012":None/None "a|b":Some(0..1)/Some(0..1) "\u03c2":None/None "\u017f":None/None "x\ud800\udc00y":None/None
 "(?:a|b)|c" i=false unsupported
 "(?:a|b)|c" i=true unsupported
 "a|[b]" i=false unsupported

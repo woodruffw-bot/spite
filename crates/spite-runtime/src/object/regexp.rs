@@ -12,16 +12,35 @@ pub(crate) enum RegExpMatcher {
 }
 
 impl RegExpMatcher {
-    pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
-        match self {
-            Self::Literal(matcher) => matcher.find(input, start, sticky),
-            Self::Disjunction(matcher) => matcher.find(input, start, sticky),
-        }
+    pub fn find<'a>(
+        &'a self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+    ) -> Option<RegExpMatch<'a>> {
+        let (range, capture_offset, captures) = match self {
+            Self::Literal(matcher) => (
+                matcher.find(input, start, sticky)?,
+                0,
+                matcher.capture_ranges(),
+            ),
+            Self::Disjunction(matcher) => {
+                let (branch, range) = matcher.find_branch(input, start, sticky)?;
+                let (offset, captures) = matcher.branch_captures(branch).expect("matched branch");
+                (range, offset, captures)
+            }
+        };
+        Some(RegExpMatch {
+            range,
+            capture_offset,
+            captures,
+            capture_count: self.capture_count(),
+        })
     }
-    pub fn capture_ranges(&self) -> &[Range<usize>] {
+    pub fn capture_count(&self) -> usize {
         match self {
-            Self::Literal(matcher) => matcher.capture_ranges(),
-            Self::Disjunction(_) => &[],
+            Self::Literal(matcher) => matcher.capture_ranges().len(),
+            Self::Disjunction(matcher) => matcher.capture_count(),
         }
     }
     pub fn search_passes(&self) -> usize {
@@ -29,6 +48,24 @@ impl RegExpMatcher {
             Self::Literal(_) => 1,
             Self::Disjunction(matcher) => matcher.alternative_count(),
         }
+    }
+}
+
+/// A successful match borrows only immutable compiler storage, not the heap.
+#[derive(Debug)]
+pub(crate) struct RegExpMatch<'a> {
+    pub range: Range<usize>,
+    capture_offset: usize,
+    captures: &'a [Range<usize>],
+    pub capture_count: usize,
+}
+
+impl RegExpMatch<'_> {
+    /// Absolute UTF-16 range, or None for a group in an unselected branch.
+    pub fn capture(&self, index: usize) -> Option<Range<usize>> {
+        let index = index.checked_sub(self.capture_offset)?;
+        let capture = self.captures.get(index)?;
+        Some(self.range.start + capture.start..self.range.start + capture.end)
     }
 }
 
@@ -101,7 +138,11 @@ mod tests {
         assert_eq!(data.source, source);
         assert_eq!(data.flags, JsString::from("yg"));
         assert_eq!(
-            data.matcher.as_ref().unwrap().find(&source, 0, true),
+            data.matcher
+                .as_ref()
+                .unwrap()
+                .find(&source, 0, true)
+                .map(|found| found.range),
             Some(0..source.len())
         );
         assert!(matches!(

@@ -307,6 +307,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile ordinary IdentityEscape punctuation, whitespace and surrogate code units with the pinned Unicode ID_Continue exclusion.
 - [x] Compile and execute ordinary unquantified capturing groups with nested/empty ranges, ordered capture strings and MatchIndices Arrays.
 - [x] Compile and execute top-level alternatives of ordinary noncapturing literal sequences with earliest-position, source-order and empty-choice semantics.
+- [x] Compile and execute ordinary literal capturing alternatives with global source-order slots and own undefined match/indices elements for unselected groups.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -174,7 +174,7 @@ impl Realm {
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the
             // RegExp Record's validated CapturingGroupsCount (22.2.7.2).
-            debug_assert_eq!(matcher.capture_ranges().len(), captures as usize);
+            debug_assert_eq!(matcher.capture_count(), captures as usize);
         }
         self.object_work(span, |objects, _| {
             objects.initialize_regexp(

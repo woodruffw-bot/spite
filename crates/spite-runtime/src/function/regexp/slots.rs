@@ -115,10 +115,11 @@ impl Realm {
         if !update_index {
             index = 0;
         }
+        let matcher = data.matcher.as_ref();
         let found = if index > string.len() as u64 {
             None
         } else {
-            let matcher = data.matcher.as_ref().ok_or_else(|| {
+            let matcher = matcher.ok_or_else(|| {
                 Self::unsupported(span, "native regular expression matching for this Pattern")
             })?;
             let index = index as usize;
@@ -147,42 +148,51 @@ impl Realm {
             return Ok(Value::Null);
         };
         if update_index {
-            self.set_property_or_throw(&object, last_index, Value::Number(found.end as f64), span)?;
+            self.set_property_or_throw(
+                &object,
+                last_index,
+                Value::Number(found.range.end as f64),
+                span,
+            )?;
         }
-        let captures = data
-            .matcher
-            .as_ref()
-            .expect("successful native matching")
-            .capture_ranges();
-        self.object_work(span, |_, budget| budget.charge(captures.len()))?;
-        let length = captures.len() as u64 + 1;
+        self.object_work(span, |_, budget| budget.charge(found.capture_count))?;
+        let length = found.capture_count as u64 + 1;
         let array = self.create_intrinsic_array(length, span)?;
-        self.regexp_match_property(&array, "index", Value::Number(found.start as f64), span)?;
+        self.regexp_match_property(
+            &array,
+            "index",
+            Value::Number(found.range.start as f64),
+            span,
+        )?;
         self.regexp_match_property(&array, "input", Value::String(string.clone()), span)?;
-        let matched = self.regexp_substring(&string.code_units()[found.clone()], span)?;
+        let matched = self.regexp_substring(&string.code_units()[found.range.clone()], span)?;
         self.create_array_element(&array, 0, matched, span)?;
         self.regexp_match_property(&array, "groups", Value::Undefined, span)?;
-        // This unquantified literal subset has no unmatched captures. Capture
-        // endpoints are relative to the matched sequence, not Pattern text;
-        // the immutable compiler plan guarantees they lie inside `found`.
-        for (index, capture) in captures.iter().enumerate() {
-            let capture = found.start + capture.start..found.start + capture.end;
-            let value = self.regexp_substring(&string.code_units()[capture], span)?;
+        // Every source-order group has an own element. A group in an unselected
+        // alternative is undefined, distinct from a participating empty capture.
+        for index in 0..found.capture_count {
+            let value = if let Some(capture) = found.capture(index) {
+                self.regexp_substring(&string.code_units()[capture], span)?
+            } else {
+                Value::Undefined
+            };
             self.create_array_element(&array, index as u64 + 1, value, span)?;
         }
         if has_indices {
             let indices = self.create_intrinsic_array(length, span)?;
             self.regexp_match_property(&indices, "groups", Value::Undefined, span)?;
-            let ranges = std::iter::once(found.clone()).chain(
-                captures
-                    .iter()
-                    .map(|capture| found.start + capture.start..found.start + capture.end),
-            );
+            let ranges = std::iter::once(Some(found.range.clone()))
+                .chain((0..found.capture_count).map(|index| found.capture(index)));
             for (index, range) in ranges.enumerate() {
-                let pair = self.create_intrinsic_array(2, span)?;
-                self.create_array_element(&pair, 0, Value::Number(range.start as f64), span)?;
-                self.create_array_element(&pair, 1, Value::Number(range.end as f64), span)?;
-                self.create_array_element(&indices, index as u64, Value::Object(pair), span)?;
+                let value = if let Some(range) = range {
+                    let pair = self.create_intrinsic_array(2, span)?;
+                    self.create_array_element(&pair, 0, Value::Number(range.start as f64), span)?;
+                    self.create_array_element(&pair, 1, Value::Number(range.end as f64), span)?;
+                    Value::Object(pair)
+                } else {
+                    Value::Undefined
+                };
+                self.create_array_element(&indices, index as u64, value, span)?;
             }
             self.regexp_match_property(&array, "indices", Value::Object(indices), span)?;
         }

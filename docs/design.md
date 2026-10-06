@@ -190,15 +190,20 @@ Programs share immutable storage across clones, and search allocates nothing.
 Unicode-mode matching remains pending.
 
 Top-level ordinary literal Disjunction compilation (22.2.2.3) accepts only
-alternatives that each compile completely as a noncapturing literal sequence.
-The iterative delimiter scan respects escapes and nested noncapturing groups;
-nested choices, capturing branches and unsupported productions reject the whole
-plan. Each branch uses the existing linear search. The earliest start wins,
+alternatives that each compile completely as an unquantified literal sequence.
+The iterative delimiter scan respects escapes and nested capturing/noncapturing
+groups; nested choices and unsupported productions reject the whole plan. Each branch uses the existing linear search. The earliest start wins,
 with source order breaking ties, including empty alternatives. Compilation never
 expands combinations; plans share immutable storage and matching allocates
 nothing. Worst-case search work is proportional to alternative count times input
 suffix length; opted-in accounting charges every possible branch search before
 execution. Ordinary unlimited defaults impose no branch or work cap.
+The plan stores each branch's first source-order capture slot and its own
+relative ranges. Storage is linear in branches and captures, without a matrix of
+all groups for every branch. A successful match borrows its selected branch's
+immutable ranges; result construction visits the complete global capture count
+and creates own undefined String/indices elements for unselected groups. Empty
+participating groups retain empty Strings and zero-length indices pairs.
 
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
