@@ -1,0 +1,5 @@
+---
+source: crates/spite/tests/cli.rs
+expression: "String::from_utf8(failed.stderr).unwrap()"
+---
+Host at 6..28: invalid TZif offset data

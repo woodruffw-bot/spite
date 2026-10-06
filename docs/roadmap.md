@@ -302,6 +302,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Load checked TZif historical UTC offsets with exact 64-bit transitions, recurring footer consistency and separate malformed/unsupported/allocation errors.
 - [x] Resolve local time-zone folds to the earliest epoch and gaps using the latest epoch at the last valid preceding local time, before final Date clipping.
 - [x] Load full-range immutable host time zones with pinned portable IANA fallback, explicit POSIX/fixed/TZif inputs and independent per-realm overrides.
+- [x] Implement Date local calendar getters and timezone offsets with exact historical seconds, unclipped local fields and independent host failure reporting.
 - [ ] Add Date numeric calendar construction, local calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.

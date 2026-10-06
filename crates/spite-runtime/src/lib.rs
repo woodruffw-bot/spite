@@ -78,6 +78,13 @@ pub enum Error {
         /// Explanation.
         message: String,
     },
+    /// A host service or configuration failed independently of JavaScript.
+    Host {
+        /// Associated source range.
+        span: Span,
+        /// Explanation.
+        message: String,
+    },
     /// Evaluation exceeded a host resource limit.
     Limit {
         /// Associated source range.
@@ -94,6 +101,7 @@ impl Error {
             Self::InvalidObject(_)
             | Self::Parse(_)
             | Self::Unsupported { .. }
+            | Self::Host { .. }
             | Self::Limit { .. } => false,
         }
     }
@@ -112,6 +120,9 @@ impl fmt::Display for Error {
             Self::Thrown(value) => write!(f, "uncaught {value}"),
             Self::Unsupported { span, message } => {
                 write!(f, "Unsupported at {}..{}: {message}", span.start, span.end)
+            }
+            Self::Host { span, message } => {
+                write!(f, "Host at {}..{}: {message}", span.start, span.end)
             }
             Self::Limit { span, message } => {
                 write!(f, "Limit at {}..{}: {message}", span.start, span.end)

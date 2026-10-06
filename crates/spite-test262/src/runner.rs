@@ -298,7 +298,9 @@ fn match_exception(negative: Option<&Negative>, phase: Phase, error_type: &str) 
 
 fn host_failure(error: &Error, stage: Stage) -> Option<Outcome> {
     match error {
-        Error::InvalidObject(_) => Some(Outcome::SetupFailure(error.to_string())),
+        Error::InvalidObject(_) | Error::Host { .. } => {
+            Some(Outcome::SetupFailure(error.to_string()))
+        }
         Error::Unsupported { .. } => Some(unsupported(stage, error.to_string())),
         Error::Limit { .. } => Some(Outcome::Limit {
             stage,

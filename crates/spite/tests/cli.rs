@@ -155,3 +155,65 @@ fn bigint_invalid_integer_string_diagnostic() {
     assert!(output.stdout.is_empty());
     insta::assert_snapshot!(String::from_utf8(output.stderr).unwrap());
 }
+
+#[test]
+fn malformed_host_zone_is_uncatchable_and_utc_invalid_branches_do_not_load_it() {
+    let path = std::env::temp_dir().join(format!(
+        "spite-invalid-zone-{}-{}.tzif",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    {
+        let mut file = std::fs::File::create_new(&path).unwrap();
+        file.write_all(b"invalid zone data").unwrap();
+    }
+    let failed = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .env("TZ", &path)
+        .args([
+            "--eval",
+            "try { new Date(0).getHours(); } catch { 41; } finally { throw 42; }",
+        ])
+        .output()
+        .unwrap();
+    let independent = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .env("TZ", &path)
+        .args([
+            "--eval",
+            "Number.isNaN(new Date(NaN).getHours()) && new Date(0).getUTCHours()===0",
+        ])
+        .output()
+        .unwrap();
+    std::fs::remove_file(path).unwrap();
+    assert_eq!(failed.status.code(), Some(1));
+    assert!(failed.stdout.is_empty());
+    insta::assert_snapshot!(String::from_utf8(failed.stderr).unwrap());
+    assert!(independent.status.success());
+    assert_eq!(
+        String::from_utf8(independent.stdout).unwrap().trim(),
+        "true"
+    );
+    assert!(independent.stderr.is_empty());
+}
+
+#[test]
+fn local_getters_honor_explicit_posix_and_empty_utc_host_settings() {
+    for (tz, source) in [
+        (
+            "ABC-2:30",
+            "let d=new Date(0);d.getHours()===2 && d.getMinutes()===30 && d.getTimezoneOffset()===-150",
+        ),
+        ("", "1/new Date(0).getTimezoneOffset()===Infinity"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .env("TZ", tz)
+            .args(["--eval", source])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "true");
+        assert!(output.stderr.is_empty());
+    }
+}

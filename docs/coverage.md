@@ -694,7 +694,7 @@ overflow, historical second precision, overlapping local images, the latest
 epoch at a shared local endpoint and recurring/historical cutoff separation.
 An independent Python zoneinfo comparison matched 773,138 local resolutions
 over 1,034 bundled/system TZif files, including historical gap/fold boundaries.
-Public JavaScript finite local Date operations and display names remain pending;
+Finite local Date construction/mutation and display names remain pending;
 default quotas and native-stack guards are unchanged.
 
 The public immutable TimeZone loader now preserves host TZif data and falls back
@@ -712,6 +712,21 @@ wide recurring years, native overflow, ordered file precedence, malformed and
 unreadable files, path traversal, aliases and independent realms. UTC/invalid
 Date branches still leave system-zone discovery untouched. No fixture inventory,
 pin, default quota or native-stack guard changes in this step.
+
+All nine local Date getters now use the realm's checked history and exact native
+calendar decomposition after applying its whole-second offset. Local fields
+remain unclipped at both Date endpoints, and timezone offsets preserve historical
+seconds and positive zero in UTC. Invalid time values still return NaN before
+host discovery. Six native regressions cover spring/autumn and half-hour changes,
+historical offsets, aliases, branded receivers, ignored arguments, independent
+realm changes and recursive reads on a 2 MiB stack. Twenty independently computed
+Gregorian reference records verify 180 fields at Date boundaries and full native
+offset extremes. Two CLI regressions cover explicit POSIX/empty settings and an
+inspected insta snapshot for malformed zone data. Host configuration failures
+use Error::Host, skip JavaScript catch/finally and become Test262 setup failures;
+unsupported data formats and failed native allocation retain separate categories.
+UTC and invalid-Date reads continue to work with malformed host configuration.
+Local construction, setters and local/legacy string output remain separate steps.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

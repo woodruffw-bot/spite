@@ -2413,8 +2413,19 @@ System loading honors empty, named, POSIX and file TZ settings. Unix localtime
 files retain exact raw histories even without a name; Jiff performs platform
 discovery elsewhere. A realm loads its system zone lazily on first request and
 keeps that immutable history until the host selects an override or resets it.
-Queries allocate nothing and impose no year, work or heap quota. Finite
-JavaScript Date operations will use these histories in the following steps.
+Queries allocate nothing and impose no year, work or heap quota. Local Date
+getters use these histories; construction and mutation follow in separate steps.
+
+Local calendar getters (21.4.4.2–11) check the Date slot and return NaN before
+loading a zone for an invalid time. Finite reads add the exact whole-second
+offset to the clipped millisecond value, then decompose that unclipped local
+intermediate. Every native i32 offset preserves i64 capacity and exact Number
+integers below 2^53 throughout Date's domain. getTimezoneOffset retains the
+specified subtraction/division, so a zero offset produces positive zero. Host
+configuration/data failures become Error::Host and bypass JavaScript catch and
+finally. Unsupported TZif time scales/versions and allocation failures remain
+Unsupported and Limit respectively. The conformance runner classifies host
+configuration failure as setup failure, never a successful negative test.
 
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
@@ -2479,7 +2490,7 @@ in 21.4.3.2; other legacy formats remain outside the parser.
 The runtime materializes the complete edition-17 Date constructor/prototype
 property graph. Instances have a distinct [[DateValue]] slot containing a clipped
 Number or NaN; Date.prototype has no slot. Timestamp/copy construction, Date.now, Date.UTC,
-UTC/offset Date.parse, UTC getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
+UTC/offset Date.parse, UTC/local getters, getTime/valueOf, setTime, toISOString, toUTCString, toJSON
 and @@toPrimitive are implemented. Constructor input conversion precedes
 new-target prototype lookup; copying another Date bypasses its conversion hooks.
 setTime checks the receiver before converting input and stores only after that

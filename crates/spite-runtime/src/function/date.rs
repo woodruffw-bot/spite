@@ -2,13 +2,15 @@
 
 use super::Builtin;
 use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor, realm_object::Hint,
+    Error, ExceptionKind, ObjectHandle, Realm, TimeZoneError, Value, object::DataDescriptor,
+    realm_object::Hint,
 };
 use spite_core::{
     JsString, Span, WellKnownSymbol,
     date::{
-        MS_PER_DAY, UtcDateTime, format_iso_date_time, format_utc_date_string, make_date, make_day,
-        make_full_year, make_time, parse_date_time_string, parse_utc_date_string, time_clip,
+        MS_PER_DAY, RecurringTimeZoneError, TzifTimeZoneError, UtcDateTime, format_iso_date_time,
+        format_utc_date_string, make_date, make_day, make_full_year, make_time,
+        parse_date_time_string, parse_utc_date_string, time_clip,
     },
 };
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -474,12 +476,7 @@ impl Realm {
             | Method::GetMinutes
             | Method::GetMonth
             | Method::GetSeconds
-            | Method::GetTimezoneOffset
-                if time.is_nan() =>
-            {
-                // Local getters return before LocalTime for an invalid Date.
-                Ok(Value::Number(f64::NAN))
-            }
+            | Method::GetTimezoneOffset => self.date_get_local(method, time, span),
             Method::SetDate
             | Method::SetMonth
             | Method::SetHours
@@ -599,6 +596,52 @@ impl Realm {
                 span,
                 "Date calendar mutation and local/legacy string operations",
             )),
+        }
+    }
+
+    // 21.4.1.25 and 21.4.4.2–11: all stored time values are clipped integers.
+    // Adding even a full native i32 offset remains within i64 and below 2^53;
+    // the local calendar intermediate must not itself be TimeClipped.
+    #[inline(never)]
+    fn date_get_local(&mut self, method: Method, time: f64, span: Span) -> Result<Value, Error> {
+        if time.is_nan() {
+            return Ok(Value::Number(f64::NAN));
+        }
+        let offset = self
+            .time_zone()
+            .map_err(|error| Self::date_time_zone_error(error, span))?
+            .offset_at(i128::from(time as i64));
+        let local = time as i64 + i64::from(offset) * 1000;
+        if matches!(method, Method::GetTimezoneOffset) {
+            // Preserve the specified subtraction/division, including +0 in UTC.
+            return Ok(Value::Number((time - local as f64) / 60_000.0));
+        }
+        let fields = UtcDateTime::from_epoch_milliseconds(local);
+        let value = match method {
+            Method::GetDate => f64::from(fields.day),
+            Method::GetDay => f64::from(fields.weekday),
+            Method::GetFullYear => f64::from(fields.year),
+            Method::GetHours => f64::from(fields.hour),
+            Method::GetMilliseconds => f64::from(fields.millisecond),
+            Method::GetMinutes => f64::from(fields.minute),
+            Method::GetMonth => f64::from(fields.month),
+            Method::GetSeconds => f64::from(fields.second),
+            _ => unreachable!("local getter"),
+        };
+        Ok(Value::Number(value))
+    }
+
+    fn date_time_zone_error(error: TimeZoneError, span: Span) -> Error {
+        let message = error.to_string();
+        match error {
+            TimeZoneError::Tzif(TzifTimeZoneError::Allocation)
+            | TimeZoneError::Recurring(RecurringTimeZoneError::Allocation) => {
+                Error::Limit { span, message }
+            }
+            TimeZoneError::Tzif(
+                TzifTimeZoneError::UnsupportedVersion | TzifTimeZoneError::UnsupportedLeapSeconds,
+            ) => Error::Unsupported { span, message },
+            _ => Error::Host { span, message },
         }
     }
 

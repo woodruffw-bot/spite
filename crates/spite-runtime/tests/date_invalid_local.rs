@@ -128,7 +128,6 @@ fn finite_local_times_remain_unresolved_and_are_not_prematurely_clipped() {
         "new Date(-271821,3,19,23)",
         "new Date(1970,0,1,0,0,0,Number.MAX_VALUE)",
         "new Date(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)",
-        "new Date(0).getTimezoneOffset()",
         "new Date(0).setMonth(0)",
         "new Date(NaN).setFullYear(2000)",
     ] {
