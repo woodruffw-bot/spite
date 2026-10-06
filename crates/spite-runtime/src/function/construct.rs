@@ -248,6 +248,9 @@ impl Realm {
                         .object_work(span, |objects, _| objects.create_boolean(&prototype, value))
                         .map(Value::Object);
                 }
+                Callable::Builtin(Builtin::RegExp) => {
+                    return Err(Self::unsupported(span, "RegExp construction and matching"));
+                }
                 Callable::Builtin(Builtin::Date) => {
                     return self.date_constructor(new_target, arguments, span);
                 }

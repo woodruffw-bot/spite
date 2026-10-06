@@ -40,6 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
+| RegExp | String-only escape encoding and constructor/prototype metadata; construction, matching and other prototype bodies remain Unsupported |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13140 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -247,7 +248,7 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Matching, intrinsics and
+No RegExp literal AST or execution pass is exposed. Matching and
 grammar-driven cover lookahead remain pending. Matching still produces
 Unsupported and cannot receive positive execution credit.
 
@@ -258,6 +259,20 @@ surrogate endpoints, paired and unpaired adjacency, and the empty string. An
 independent implementation of the published algorithm verifies all 271 snapshot
 records. Runtime exposure, RegExp objects and matching remain pending; this
 component addition changes no Test262 inventory or execution count.
+
+Runtime now exposes RegExp.escape with a String-only input check, ignored this
+and extra values, the shared encoding and exact opt-in output/work quotas. Three
+regressions cover poisoned conversion hooks, wrappers and primitive types,
+surrogate adjacency, evaluated extra arguments, empty and large default output,
+exact quota boundaries and host aborts that bypass catch/finally. The RegExp
+constructor and ordinary, unbranded prototype have the complete edition-17
+constructor/prototype property metadata, including all ten getters and five
+symbol methods. The generic species getter returns its receiver. Reflection and
+collection checks cover names, lengths, descriptors, non-constructible methods,
+the fixed prototype property and intrinsic rooting after global deletion. These
+22 intrinsic records bring the initialized-realm entry count to 385. Construction,
+matching, other prototype bodies and the string iterator remain pending and
+receive no pass credit; no regex dependency or default quota is activated.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those

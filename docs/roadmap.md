@@ -282,7 +282,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement Set construction, canonical value identity, live iteration, ordered combination methods, and set-like predicates.
 - [ ] Implement the ECMAScript RegExp grammar and matching semantics.
 - [x] Implement RegExp.escape code-point encoding with leading ASCII protection, punctuator/control escapes and lossless surrogate handling.
-- [ ] Expose RegExp.escape with String-only arguments, intrinsic metadata and exact optional output quotas.
+- [x] Expose RegExp.escape with String-only arguments, intrinsic metadata and exact optional output quotas.
+- [x] Add RegExp constructor/prototype property metadata and the generic Symbol.species getter.
+- [ ] Implement generic RegExp flags/toString operations and branded flag/source getters.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.

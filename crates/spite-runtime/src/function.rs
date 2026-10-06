@@ -34,6 +34,7 @@ mod number;
 mod object;
 mod ordinary;
 mod reflect;
+mod regexp;
 mod set;
 mod spread;
 mod string;
@@ -151,6 +152,10 @@ pub(crate) enum Builtin {
     DateParse,
     DateUtc,
     DateMethod(date::Method),
+    RegExp,
+    RegExpEscape,
+    RegExpSpecies,
+    RegExpMember(regexp::Member),
     BigInt,
     BigIntToString,
     BigIntToLocaleString,
@@ -411,6 +416,10 @@ impl Builtin {
             Self::DateParse => "parse",
             Self::DateUtc => "UTC",
             Self::DateMethod(method) => method.name(),
+            Self::RegExp => "RegExp",
+            Self::RegExpEscape => "escape",
+            Self::RegExpSpecies => "get [Symbol.species]",
+            Self::RegExpMember(member) => member.name(),
             Self::BigInt => "BigInt",
             Self::BigIntAsIntN => "asIntN",
             Self::BigIntAsUintN => "asUintN",
@@ -605,6 +614,9 @@ impl Builtin {
             Self::DateNow => 0.0,
             Self::DateParse => 1.0,
             Self::DateMethod(method) => method.length(),
+            Self::RegExp => 2.0,
+            Self::RegExpEscape => 1.0,
+            Self::RegExpMember(member) => member.length(),
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
             Self::SetAdd
             | Self::WeakSetAdd
@@ -869,6 +881,7 @@ pub(super) struct Intrinsics {
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
     pub date: date::DateIntrinsics,
+    pub regexp: regexp::RegExpIntrinsics,
     pub bigint: bigint::BigIntIntrinsics,
     pub number: number::NumberIntrinsics,
     pub string: string::StringIntrinsics,
@@ -908,6 +921,7 @@ impl Intrinsics {
         .into_iter()
         .chain(self.boolean.roots())
         .chain(self.date.roots())
+        .chain(self.regexp.roots())
         .chain(self.bigint.roots())
         .chain(self.number.roots())
         .chain(self.errors.roots())
@@ -1047,6 +1061,7 @@ impl Realm {
         })?;
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
         let date = self.date_intrinsics(&object_prototype, &function_prototype, span)?;
+        let regexp = self.regexp_intrinsics(&object_prototype, &function_prototype, span)?;
         let bigint = self.bigint_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
         let eval = self.new_builtin(&function_prototype, Builtin::Eval, span)?;
@@ -1106,6 +1121,7 @@ impl Realm {
             function_to_string,
             boolean,
             date,
+            regexp,
             bigint,
             number,
             string,

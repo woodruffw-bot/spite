@@ -120,8 +120,14 @@ RegExp.escape's String encoding (22.2.5.1) is a cloneable, allocation-free UTF-1
 iterator in core. It hex-escapes a leading ASCII letter/digit, distinguishes
 syntax characters from other punctuators, uses ControlEscape values, and escapes
 WhiteSpace, LineTerminator and unpaired surrogates without changing paired
-surrogates. Runtime integration remains pending. The iterator permits checking
+surrogates. The iterator permits checking
 the exact output size before allocating or enforcing an opted-in output quota.
+Runtime RegExp.escape rejects every non-String, including wrappers, without
+coercion, ignores this and extra argument values, and charges its two linear
+passes before checked allocation. The rooted RegExp constructor/prototype graph
+exposes edition-17 data/accessor metadata and the generic species getter. The
+prototype is ordinary and owns no RegExp slots. Construction, matching and other
+prototype bodies remain explicit Unsupported; no matcher dependency is active.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

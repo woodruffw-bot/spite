@@ -249,6 +249,7 @@ impl Objects {
                 | Builtin::Map
                 | Builtin::Boolean
                 | Builtin::Date
+                | Builtin::RegExp
                 | Builtin::Function
                 | Builtin::Iterator
                 | Builtin::Number

@@ -59,6 +59,14 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Date", Value::Object(date), true, span)?;
+        let regexp = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .regexp
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "RegExp", Value::Object(regexp), true, span)?;
         let bigint = self
             .intrinsics
             .as_ref()
