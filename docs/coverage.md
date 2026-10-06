@@ -654,6 +654,14 @@ daylight adjustments, cross-year times, Date boundaries, native integer year and
 offset endpoints, and malformed rules. Complete zone histories and finite local
 Date operations remain pending. An independent Gregorian reference matched
 8,624 native transition records, including all native year and offset endpoints.
+The TZif POSIX rule parser borrows names and normalizes written offsets and
+daylight defaults without loading a zone. Five regressions and an inspected
+insta snapshot cover standard/daylight designations, Julian and weekday rules,
+extended transition times, offset sign/default boundaries, malformed and
+truncated input, non-ASCII mutations and long borrowed names. Jiff agrees on
+acceptance and normalized offsets/rules for 3,759 strings, including all 93
+distinct nonempty rule footers in the installed IANA 2026b data. Complete
+zone histories and finite local Date operations remain pending.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

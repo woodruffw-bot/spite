@@ -1,0 +1,236 @@
+---
+source: crates/spite-core/src/date/posix/tests.rs
+expression: report
+---
+UTC0
+PosixTimeZone {
+    standard_name: "UTC",
+    standard_offset: 0,
+    daylight: None,
+}
+GMT+0
+PosixTimeZone {
+    standard_name: "GMT",
+    standard_offset: 0,
+    daylight: None,
+}
+EST5EDT,M3.2.0,M11.1.0
+PosixTimeZone {
+    standard_name: "EST",
+    standard_offset: -18000,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "EDT",
+            offset: -14400,
+            start: TransitionRule {
+                day: MonthWeekday {
+                    month: 3,
+                    week: 2,
+                    weekday: 0,
+                },
+                seconds: 7200,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: MonthWeekday {
+                    month: 11,
+                    week: 1,
+                    weekday: 0,
+                },
+                seconds: 7200,
+                clock: Wall,
+            },
+        },
+    ),
+}
+CET-1CEST,M3.5.0,M10.5.0/3
+PosixTimeZone {
+    standard_name: "CET",
+    standard_offset: 3600,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "CEST",
+            offset: 7200,
+            start: TransitionRule {
+                day: MonthWeekday {
+                    month: 3,
+                    week: 5,
+                    weekday: 0,
+                },
+                seconds: 7200,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: MonthWeekday {
+                    month: 10,
+                    week: 5,
+                    weekday: 0,
+                },
+                seconds: 10800,
+                clock: Wall,
+            },
+        },
+    ),
+}
+<+1030>-10:30<+11>-11,M10.1.0,M4.1.0
+PosixTimeZone {
+    standard_name: "+1030",
+    standard_offset: 37800,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "+11",
+            offset: 39600,
+            start: TransitionRule {
+                day: MonthWeekday {
+                    month: 10,
+                    week: 1,
+                    weekday: 0,
+                },
+                seconds: 7200,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: MonthWeekday {
+                    month: 4,
+                    week: 1,
+                    weekday: 0,
+                },
+                seconds: 7200,
+                clock: Wall,
+            },
+        },
+    ),
+}
+IST-1GMT0,M10.5.0,M3.5.0/1
+PosixTimeZone {
+    standard_name: "IST",
+    standard_offset: 3600,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "GMT",
+            offset: 0,
+            start: TransitionRule {
+                day: MonthWeekday {
+                    month: 10,
+                    week: 5,
+                    weekday: 0,
+                },
+                seconds: 7200,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: MonthWeekday {
+                    month: 3,
+                    week: 5,
+                    weekday: 0,
+                },
+                seconds: 3600,
+                clock: Wall,
+            },
+        },
+    ),
+}
+XXX3EDT4,0/0,J365/23
+PosixTimeZone {
+    standard_name: "XXX",
+    standard_offset: -10800,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "EDT",
+            offset: -14400,
+            start: TransitionRule {
+                day: JulianWithLeap(
+                    0,
+                ),
+                seconds: 0,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: JulianWithoutLeap(
+                    365,
+                ),
+                seconds: 82800,
+                clock: Wall,
+            },
+        },
+    ),
+}
+AAA-24:59:59BBB,J60/-167:59:59,365/+167:59:59
+PosixTimeZone {
+    standard_name: "AAA",
+    standard_offset: 89999,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "BBB",
+            offset: 93599,
+            start: TransitionRule {
+                day: JulianWithoutLeap(
+                    60,
+                ),
+                seconds: -604799,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: JulianWithLeap(
+                    365,
+                ),
+                seconds: 604799,
+                clock: Wall,
+            },
+        },
+    ),
+}
+AAA24:59:59BBB-24:59:59,J1/24:00:01,J365/0
+PosixTimeZone {
+    standard_name: "AAA",
+    standard_offset: -89999,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "BBB",
+            offset: 89999,
+            start: TransitionRule {
+                day: JulianWithoutLeap(
+                    1,
+                ),
+                seconds: 86401,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: JulianWithoutLeap(
+                    365,
+                ),
+                seconds: 0,
+                clock: Wall,
+            },
+        },
+    ),
+}
+AAA-00:00:01BBB+00:00:01,M01.1.0/000,M12.5.6/001
+PosixTimeZone {
+    standard_name: "AAA",
+    standard_offset: 1,
+    daylight: Some(
+        PosixDaylightTime {
+            name: "BBB",
+            offset: -1,
+            start: TransitionRule {
+                day: MonthWeekday {
+                    month: 1,
+                    week: 1,
+                    weekday: 0,
+                },
+                seconds: 0,
+                clock: Wall,
+            },
+            end: TransitionRule {
+                day: MonthWeekday {
+                    month: 12,
+                    week: 5,
+                    weekday: 6,
+                },
+                seconds: 3600,
+                clock: Wall,
+            },
+        },
+    ),
+}

@@ -2340,6 +2340,17 @@ TimeClip or a narrower backend calendar range. Malformed date/time rule fields
 are rejected before indexing. Loading zone data and resolving complete offset
 histories remain separate implementation steps.
 
+The borrowing POSIX time-zone parser accepts complete TZif version 3/4 rule
+strings with ASCII designations, quoted numeric/sign designations, explicit
+standard offsets and optional daylight offsets. Written POSIX offsets have the
+opposite sign from seconds east of UTC; absent daylight offsets add one hour to
+standard time. Daylight transition dates must be explicit and omitted transition
+times default to wall 02:00. Extended signed times span −167:59:59 through
++167:59:59. Field widths/ranges, punctuation and complete consumption are checked
+without allocating names or applying a name-length quota. Missing rules never
+acquire platform defaults. Loading TZif histories and interpreting the recurring
+offsets remain pending.
+
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
 arithmetic, and retains the exact Euclidean month remainder. Native integers
