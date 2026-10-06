@@ -296,6 +296,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement non-finite numeric Date construction and invalid-Date local getters/setters that return before time-zone conversion.
 - [x] Add exact unclipped native calendar decomposition for local time-zone arithmetic.
 - [x] Expose exact nominal Date string calendar milliseconds before local/explicit-offset zone conversion.
+- [x] Compute recurring time-zone transition calendars with leap-day conventions, last-weekday rules, signed transition times and wall/standard/UTC offsets across native Gregorian years.
 - [ ] Add Date numeric calendar construction, local calendar setters, local time zones and local/legacy string operations.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.

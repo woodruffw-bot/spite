@@ -9,6 +9,8 @@ mod make_day;
 pub use make_day::make_day;
 mod parse;
 pub use parse::{DateTimeString, DateTimeZone, parse_date_time_string};
+mod transition;
+pub use transition::{TransitionClock, TransitionDay, TransitionRule};
 mod utc_string;
 pub use utc_string::{format_utc_date_string, parse_utc_date_string};
 

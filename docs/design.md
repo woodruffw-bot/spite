@@ -2329,6 +2329,17 @@ This integer helper does not substitute for Number division or rounding in wide
 MakeDay witness checks. Public Date formatters and from_time_value still enforce
 the clipped domain; zone conversion must precede final clipping.
 
+Shared TransitionRule arithmetic computes exact epoch milliseconds for recurring
+political time-zone transition dates. TZif's POSIX date forms distinguish Julian
+days with or without February 29 and numbered weekdays within a month; the fifth
+week means the last occurrence. Signed transition seconds can carry into another
+day or year. Wall clocks subtract the offset before the transition, standard
+clocks subtract the standard offset, and UTC clocks need no adjustment. Native
+i32 years and offsets fit the i128 result without floating-point rounding,
+TimeClip or a narrower backend calendar range. Malformed date/time rule fields
+are rejected before indexing. Loading zone data and resolving complete offset
+histories remain separate implementation steps.
+
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
 arithmetic, and retains the exact Euclidean month remainder. Native integers

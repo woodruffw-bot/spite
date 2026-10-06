@@ -646,6 +646,14 @@ native i32 year endpoints, invalid day/time records and separate zone validation
 An independent Gregorian reference matched 4,102 native field records, including
 both i32 year endpoints. Existing parse and formatting snapshots are unchanged;
 local zone resolution remains pending.
+Recurring transition calendar arithmetic now covers TZif's Julian and
+month/week/weekday forms and signed transition times using wall, standard or UTC
+clocks. Five regressions cover leap-year conventions, fourth/fifth weekday
+occurrences, New York and southern-hemisphere half-hour transitions, negative
+daylight adjustments, cross-year times, Date boundaries, native integer year and
+offset endpoints, and malformed rules. Complete zone histories and finite local
+Date operations remain pending. An independent Gregorian reference matched
+8,624 native transition records, including all native year and offset endpoints.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors
