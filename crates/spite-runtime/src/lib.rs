@@ -16,8 +16,10 @@ mod iterator_count;
 mod optional_chain;
 mod private;
 mod super_property;
+mod time_zone;
 mod with;
 use environment::{BindingState, EnvironmentHandle};
+pub use time_zone::{TimeZone, TimeZoneError};
 pub mod object;
 mod realm_object;
 mod value;
@@ -264,6 +266,7 @@ pub struct Realm {
     objects: object::Objects,
     intrinsics: Option<function::Intrinsics>,
     template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
+    time_zone: Option<TimeZone>,
 }
 
 impl Default for Realm {
@@ -288,6 +291,7 @@ impl Realm {
             objects: object::Objects::with_limits(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
             template_map: Vec::new(),
+            time_zone: None,
         }
     }
 

@@ -6,9 +6,9 @@ spite targets [ECMAScript 2026](https://262.ecma-international.org/17.0/).
 It implements an initial subset and is **not a conforming engine yet**.
 Node.js compatibility, browser APIs, and syntax extensions are outside its scope.
 
-Production crates currently use only std and workspace crates. The design permits
-regex and jiff when needed. Workspace lints forbid unsafe
-code. insta is used only for tests.
+Production crates use std and workspace crates, plus jiff/jiff-tzdb for time zones.
+The design also permits regex or regress for matching when needed. Workspace lints
+forbid unsafe code. insta is used only for tests.
 
 ## Run
 

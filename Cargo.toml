@@ -10,6 +10,8 @@ repository = "https://github.com/woodruffw-bot/spite"
 publish = false
 
 [workspace.dependencies]
+jiff = { version = "0.2.37", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-concatenated", "tzdb-bundle-always"] }
+jiff-tzdb = "=0.1.8"
 spite-bigint = { path = "crates/spite-bigint" }
 spite-core = { path = "crates/spite-core" }
 spite-heap = { path = "crates/spite-heap" }

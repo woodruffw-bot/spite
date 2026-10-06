@@ -429,9 +429,11 @@ matching, or RegExp object execution. Both toolchains pass every selected varian
 the source bytes, assertions, metadata, pin, eight helpers, and unlimited defaults
 remain unchanged.
 
-Each production crate currently depends only on std and workspace crates. The
-design permits regex and jiff when needed. Neither has been added. insta remains
-a test-only dependency. Rust unsafe code is forbidden through inherited workspace lints.
+Production crates use std and workspace crates, with jiff for host time-zone
+discovery and pinned jiff-tzdb for portable raw IANA data in spite-runtime.
+The design also permits regex or regress for matching; neither is added yet.
+insta remains a test-only dependency. Rust unsafe code is forbidden through
+inherited workspace lints.
 
 ## Not implemented
 
@@ -683,8 +685,7 @@ comparison matched 349,734 historical/recurring queries over 598 bundled IANA
 2026c zones and 436 installed IANA 2026b files. It queries Jiff at the containing
 integral second to avoid its negative-subsecond TZif truncation; raw records and
 Python zoneinfo independently confirm the Abidjan millisecond regression.
-System zone loading, display names, local gap/fold resolution and finite local
-Date operations remain pending.
+Display names and finite local Date operations remain pending.
 Local offset resolution now applies UTC's earliest-fold and preceding-gap
 policies to both recurring and historical histories without final clipping.
 Seven regressions cover exact gap/fold milliseconds, half-hour and negative
@@ -693,8 +694,24 @@ overflow, historical second precision, overlapping local images, the latest
 epoch at a shared local endpoint and recurring/historical cutoff separation.
 An independent Python zoneinfo comparison matched 773,138 local resolutions
 over 1,034 bundled/system TZif files, including historical gap/fold boundaries.
-Public JavaScript finite local Date operations, system-zone loading and display
-names remain pending; default quotas and native-stack guards are unchanged.
+Public JavaScript finite local Date operations and display names remain pending;
+default quotas and native-stack guards are unchanged.
+
+The public immutable TimeZone loader now preserves host TZif data and falls back
+to the explicitly pinned IANA 2026c jiff-tzdb 0.1.8 bundle only for missing named
+files. Jiff 0.2.37 provides platform discovery, with only std, system discovery,
+host databases and the shared bundle features enabled. No Jiff calendar queries
+replace the checked full-range arithmetic. Explicit inputs support fixed native
+offsets, complete POSIX rules and unnamed TZif bytes. System loading honors TZ
+and reads unnamed Unix localtime histories directly. Failed host reads or data
+validation never silently substitute UTC or another database version.
+Realm loading is lazy and a native host can install or reset an independent
+override; immutable histories can be shared. Eight regressions cover all 598
+bundled zones at both Date endpoints, historical second precision, gaps/folds,
+wide recurring years, native overflow, ordered file precedence, malformed and
+unreadable files, path traversal, aliases and independent realms. UTC/invalid
+Date branches still leave system-zone discovery untouched. No fixture inventory,
+pin, default quota or native-stack guard changes in this step.
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

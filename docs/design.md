@@ -2401,7 +2401,20 @@ alone would lose the required preceding local value. TZif loading indexes sorted
 local interval ends once, while recurring endpoints use exact calendar-cycle
 arithmetic and respect the historical cutoff. Queries allocate nothing. Native
 i128 overflow and inconsistent data remain separate errors, and TimeClip stays
-with the Date caller. Display names and system-zone loading remain pending.
+with the Date caller. Display names remain a separate step.
+
+The immutable public TimeZone host object owns fixed, recurring or checked TZif
+histories behind a shared Arc. Named loading canonicalizes database spelling,
+searches TZDIR and conventional Unix roots in order, and uses the explicitly
+pinned IANA bundle only when files are absent. Existing malformed or unreadable
+files return typed native failures. Named identifiers exclude traversal and
+absolute paths; explicit host TZ settings may separately select a TZif file.
+System loading honors empty, named, POSIX and file TZ settings. Unix localtime
+files retain exact raw histories even without a name; Jiff performs platform
+discovery elsewhere. A realm loads its system zone lazily on first request and
+keeps that immutable history until the host selects an override or resets it.
+Queries allocate nothing and impose no year, work or heap quota. Finite
+JavaScript Date operations will use these histories in the following steps.
 
 MakeDay (21.4.1.28) truncates components, divides the mathematical integer month
 by 12 with floor, converts that quotient to Number, adds the year using Number
