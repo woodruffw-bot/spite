@@ -6985,3 +6985,4 @@ test/built-ins/RegExp/prototype/exec/y-fail-lastindex-no-write.js	-	-	-
 test/built-ins/RegExp/prototype/exec/y-fail-lastindex.js	-	-	-
 test/built-ins/RegExp/prototype/exec/y-fail-return.js	-	-	-
 test/built-ins/RegExp/prototype/exec/y-set-lastindex.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T2.js	-	-	-
