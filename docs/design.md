@@ -156,6 +156,18 @@ one, and preserves a non-ASCII character that would map to ASCII. Both modes
 preserve surrogate values. The existing case-table generator checks the pinned
 CaseFolding.txt input; Rust's Unicode version cannot change this behavior.
 
+Core literal-only Pattern compilation (22.2.2) accepts the ordinary UTF-16 mode,
+concatenated literal characters, control escapes, fixed hex/Unicode escapes and
+escaped syntax characters. Other productions return an explicit unsupported
+compilation result; that result is distinct from a failed search. Keep Pattern
+validation separate and require it before compilation. Fold each compiled unit
+with the pinned ordinary Canonicalize operation. A flat prefix-failure table
+supports linear first-match search; sticky matching compares only the requested
+suffix. Empty Patterns match through the input's end inclusively. Ranges use
+UTF-16 offsets and preserve both halves of surrogate pairs independently.
+Programs share immutable storage across clones, and search allocates nothing.
+Native RegExpBuiltinExec integration and Unicode-mode matching remain pending.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

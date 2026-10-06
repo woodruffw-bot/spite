@@ -1,0 +1,96 @@
+---
+source: crates/spite-core/src/regexp_literal.rs
+expression: rows
+---
+"" i=false input="abc" 0:Some(0..0)/Some(0..0) 1:Some(1..1)/Some(1..1) 3:Some(3..3)/Some(3..3) 4:None/None
+"" i=true input="abc" 0:Some(0..0)/Some(0..0) 1:Some(1..1)/Some(1..1) 3:Some(3..3)/Some(3..3) 4:None/None
+"a" i=false input="baab" 0:Some(1..2)/None 1:Some(1..2)/Some(1..2) 4:None/None 5:None/None
+"a" i=true input="baab" 0:Some(1..2)/None 1:Some(1..2)/Some(1..2) 4:None/None 5:None/None
+"aba" i=false input="aababa" 0:Some(1..4)/None 1:Some(1..4)/Some(1..4) 6:None/None 7:None/None
+"aba" i=true input="aababa" 0:Some(1..4)/None 1:Some(1..4)/Some(1..4) 6:None/None 7:None/None
+"ababc" i=false input="ababababc" 0:Some(4..9)/None 1:Some(4..9)/None 9:None/None 10:None/None
+"ababc" i=true input="ababababc" 0:Some(4..9)/None 1:Some(4..9)/None 9:None/None 10:None/None
+"aaab" i=false input="aaaaaaaa" 0:None/None 1:None/None 8:None/None 9:None/None
+"aaab" i=true input="aaaaaaaa" 0:None/None 1:None/None 8:None/None 9:None/None
+"a/b-c" i=false input="xa/b-c" 0:Some(1..6)/None 1:Some(1..6)/Some(1..6) 6:None/None 7:None/None
+"a/b-c" i=true input="xa/b-c" 0:Some(1..6)/None 1:Some(1..6)/Some(1..6) 6:None/None 7:None/None
+"\u005c$\u005c(\u005c)\u005c*\u005c+\u005c.\u005c?\u005c[\u005c]\u005c^\u005c{\u005c|\u005c}\u005c\u005c\u005c/\u005c-" i=false input="$()*+.?[]^{|}\u005c/-" 0:Some(0..16)/Some(0..16) 1:None/None 16:None/None 17:None/None
+"\u005c$\u005c(\u005c)\u005c*\u005c+\u005c.\u005c?\u005c[\u005c]\u005c^\u005c{\u005c|\u005c}\u005c\u005c\u005c/\u005c-" i=true input="$()*+.?[]^{|}\u005c/-" 0:Some(0..16)/Some(0..16) 1:None/None 16:None/None 17:None/None
+"\u005cf\u005cn\u005cr\u005ct\u005cv" i=false input="\u000c\u000a\u000d\u0009\u000b" 0:Some(0..5)/Some(0..5) 1:None/None 5:None/None 6:None/None
+"\u005cf\u005cn\u005cr\u005ct\u005cv" i=true input="\u000c\u000a\u000d\u0009\u000b" 0:Some(0..5)/Some(0..5) 1:None/None 5:None/None 6:None/None
+"\u005ccA\u005ccz\u005ccZ" i=false input="\u0001\u001a\u001a" 0:Some(0..3)/Some(0..3) 1:None/None 3:None/None 4:None/None
+"\u005ccA\u005ccz\u005ccZ" i=true input="\u0001\u001a\u001a" 0:Some(0..3)/Some(0..3) 1:None/None 3:None/None 4:None/None
+"\u005cx61\u005cu0062\u005c0" i=false input="ab\u0000" 0:Some(0..3)/Some(0..3) 1:None/None 3:None/None 4:None/None
+"\u005cx61\u005cu0062\u005c0" i=true input="ab\u0000" 0:Some(0..3)/Some(0..3) 1:None/None 3:None/None 4:None/None
+"\u005cuD800" i=false input="x" 0:None/None 1:None/None 1:None/None 2:None/None
+"\u005cuD800" i=true input="x" 0:None/None 1:None/None 1:None/None 2:None/None
+"\u005cuD83D\u005cuDCA9" i=false input="x\ud83d\udca9y" 0:Some(1..3)/None 1:Some(1..3)/Some(1..3) 4:None/None 5:None/None
+"\u005cuD83D\u005cuDCA9" i=true input="x\ud83d\udca9y" 0:Some(1..3)/None 1:Some(1..3)/Some(1..3) 4:None/None 5:None/None
+"\ud83d\udca9" i=false input="x\ud83d\udca9y" 0:Some(1..3)/None 1:Some(1..3)/Some(1..3) 4:None/None 5:None/None
+"\ud83d\udca9" i=true input="x\ud83d\udca9y" 0:Some(1..3)/None 1:Some(1..3)/Some(1..3) 4:None/None 5:None/None
+"\u000a\u2028" i=false input="x\u000a\u2028" 0:Some(1..3)/None 1:Some(1..3)/Some(1..3) 3:None/None 4:None/None
+"\u000a\u2028" i=true input="x\u000a\u2028" 0:Some(1..3)/None 1:Some(1..3)/Some(1..3) 3:None/None 4:None/None
+"abc" i=false input="xABC" 0:None/None 1:None/None 4:None/None 5:None/None
+"abc" i=true input="xABC" 0:Some(1..4)/None 1:Some(1..4)/Some(1..4) 4:None/None 5:None/None
+"\u00b5" i=false input="x\u039c" 0:None/None 1:None/None 2:None/None 3:None/None
+"\u00b5" i=true input="x\u039c" 0:Some(1..2)/None 1:Some(1..2)/Some(1..2) 2:None/None 3:None/None
+"\u03c3" i=false input="x\u03c2" 0:None/None 1:None/None 2:None/None 3:None/None
+"\u03c3" i=true input="x\u03c2" 0:Some(1..2)/None 1:Some(1..2)/Some(1..2) 2:None/None 3:None/None
+"s" i=false input="x\u017f" 0:None/None 1:None/None 2:None/None 3:None/None
+"s" i=true input="x\u017f" 0:None/None 1:None/None 2:None/None 3:None/None
+"k" i=false input="x\u212a" 0:None/None 1:None/None 2:None/None 3:None/None
+"k" i=true input="x\u212a" 0:None/None 1:None/None 2:None/None 3:None/None
+"\u00df" i=false input="SS" 0:None/None 1:None/None 2:None/None 3:None/None
+"\u00df" i=true input="SS" 0:None/None 1:None/None 2:None/None 3:None/None
+"\u00df" i=false input="\u1e9e" 0:None/None 1:None/None 1:None/None 2:None/None
+"\u00df" i=true input="\u1e9e" 0:None/None 1:None/None 1:None/None 2:None/None
+"\u0390" i=false input="\u0399\u0308\u0301" 0:None/None 1:None/None 3:None/None 4:None/None
+"\u0390" i=true input="\u0399\u0308\u0301" 0:None/None 1:None/None 3:None/None 4:None/None
+"(a)" i=false input="a" unsupported
+"(a)" i=true input="a" unsupported
+"(?:)" i=false input="" unsupported
+"(?:)" i=true input="" unsupported
+"a|b" i=false input="a" unsupported
+"a|b" i=true input="a" unsupported
+"[a]" i=false input="a" unsupported
+"[a]" i=true input="a" unsupported
+"." i=false input="a" unsupported
+"." i=true input="a" unsupported
+"^a$" i=false input="a" unsupported
+"^a$" i=true input="a" unsupported
+"a*" i=false input="aaa" unsupported
+"a*" i=true input="aaa" unsupported
+"a+" i=false input="aaa" unsupported
+"a+" i=true input="aaa" unsupported
+"a?" i=false input="a" unsupported
+"a?" i=true input="a" unsupported
+"a{2}" i=false input="aa" unsupported
+"a{2}" i=true input="aa" unsupported
+"\u005cb" i=false input="a" unsupported
+"\u005cb" i=true input="a" unsupported
+"\u005cB" i=false input="a" unsupported
+"\u005cB" i=true input="a" unsupported
+"\u005cd" i=false input="1" unsupported
+"\u005cd" i=true input="1" unsupported
+"\u005cs" i=false input=" " unsupported
+"\u005cs" i=true input=" " unsupported
+"\u005cw" i=false input="a" unsupported
+"\u005cw" i=true input="a" unsupported
+"\u005cp{ASCII}" i=false input="a" unsupported
+"\u005cp{ASCII}" i=true input="a" unsupported
+"\u005cu{61}" i=false input="a" unsupported
+"\u005cu{61}" i=true input="a" unsupported
+"\u005c1" i=false input="1" unsupported
+"\u005c1" i=true input="1" unsupported
+"\u005c01" i=false input="\u0001" unsupported
+"\u005c01" i=true input="\u0001" unsupported
+"\u005cc1" i=false input="1" unsupported
+"\u005cc1" i=true input="1" unsupported
+"\u005cx0" i=false input="0" unsupported
+"\u005cx0" i=true input="0" unsupported
+"\u005cu000" i=false input="0" unsupported
+"\u005cu000" i=true input="0" unsupported
+"\u005ca" i=false input="a" unsupported
+"\u005ca" i=true input="a" unsupported
+"\u005c" i=false input="" unsupported
+"\u005c" i=true input="" unsupported

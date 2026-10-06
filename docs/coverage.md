@@ -291,6 +291,18 @@ existing generator check covers the additional input locally and in CI. Both
 compiler versions pass the full unchanged corpus with ordinary
 unlimited defaults; native matching remains pending and receives no new pass credit.
 
+Core ordinary-mode literal Pattern compilation and matching have four regressions.
+An inspected 92-record insta snapshot covers empty and overlapping matches,
+sticky offsets, past-end offsets, all implemented character escapes, surrogate
+units, supplementary pairs, line terminators, pinned ignore-case boundaries and
+explicit unsupported productions. An independent JavaScript engine confirms all
+352 search/sticky results in its 44 supported records. Exhaustive short UTF-16
+inputs and Patterns agree with a separate sliding-window oracle in both case
+modes. A 60,001-unit Pattern against 120,001-unit repeated-prefix inputs exercises
+successful and failed linear searches, sticky failure and shared program lifetime
+with ordinary unlimited defaults. Both compiler versions pass the complete
+unchanged corpus; native matching remains pending and adds no conformance credit.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
