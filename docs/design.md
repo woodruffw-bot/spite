@@ -290,8 +290,13 @@ inside it also fail the minimum. Every repetition consumes one UTF-16 unit, so
 search is linear without allocation, recursive calls or a backtracking stack.
 Sticky matching still checks one start but may scan its complete input suffix;
 optional search work covers that suffix rather than the shorter Pattern text.
-This compiler contributes no captures. Groups, concatenated continuations,
-assertions, choices, backreferences and Unicode modes remain outside its subset.
+Transparent noncapturing groups can surround the atom or its quantified run at
+any depth. An iterative prefix/closing scan tracks group depth and the single
+quantifier without a recursive syntax tree. Moving that one quantifier across
+transparent one-atom wrappers retains its greedy/lazy behavior and exact bounds.
+The compiler still contributes no captures. Capturing or multi-atom groups,
+multiple quantifiers, concatenated continuations, assertions, choices,
+backreferences and Unicode modes remain outside its subset.
 
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped

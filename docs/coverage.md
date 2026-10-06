@@ -625,6 +625,24 @@ tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass. Earlier matcher snapshots retain their
 values.
 
+Transparent noncapturing groups now wrap a single consuming atom or its one
+quantified run at arbitrary depth. Two further core regressions cover an
+inspected 48-record insta snapshot, 100,000 nested wrappers with different
+quantifier placements, shared clones and complete-subset rejection before set
+construction. The prior quantifier snapshot changes only its three newly
+supported noncapturing rows. Node agrees on all 23,028 combined range comparisons
+and six runtime programs. Five runtime regressions cover inner/outer greedy/lazy
+placement, bounded/empty sets, flags and UTF-16 units, absent capture slots,
+original source and global/sticky state, generic consumers and empty advancement,
+copies after collection and constructor validation of 100,000 nested groups with
+unlimited defaults. Three older gap regressions retain unsupported multi-atom
+groups, including direct eval's ordered host-abort effects. Capturing/multi-atom
+groups, multiple quantifiers, continuations, assertions, choices and Unicode
+modes remain pending. The corpus and pin are unchanged.
+Stable and MSRV pass the complete 13486-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
+all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

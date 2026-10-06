@@ -315,6 +315,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile and execute outer input/multiline anchors around fixed ordinary character-set sequences, preserving captures, DotAll, escape parity and sticky boundaries.
 - [x] Compile and execute top-level alternatives of fixed literal/class sequences and outer anchors with source-order ties and global capture slots.
 - [x] Compile and execute single ordinary literal/class atoms with greedy/lazy and exact/ranged quantifiers, compact counts, UTF-16 runs and sticky semantics.
+- [x] Compile and execute transparent noncapturing wrappers around a single quantified consuming atom with iterative nesting and preserved repetition order.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

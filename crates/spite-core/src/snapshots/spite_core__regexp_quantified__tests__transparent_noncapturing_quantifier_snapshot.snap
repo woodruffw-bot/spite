@@ -1,0 +1,52 @@
+---
+source: crates/spite-core/src/regexp_quantified.rs
+expression: rows
+---
+"(?:a)+" i=false s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..4)/Some(1..4) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:a)+" i=true s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..4)/Some(1..4) "Aaa":Some(0..3)/Some(1..3) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:a)+" i=false s=true "":None/None "a":Some(0..1)/None "baaa":Some(1..4)/Some(1..4) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:a+)" i=false s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..4)/Some(1..4) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:a+)" i=true s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..4)/Some(1..4) "Aaa":Some(0..3)/Some(1..3) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:a+)" i=false s=true "":None/None "a":Some(0..1)/None "baaa":Some(1..4)/Some(1..4) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:(?:a)+?)" i=false s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..2)/Some(1..2) "Aaa":Some(1..2)/Some(1..2) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:(?:a)+?)" i=true s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..2)/Some(1..2) "Aaa":Some(0..1)/Some(1..2) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:(?:a)+?)" i=false s=true "":None/None "a":Some(0..1)/None "baaa":Some(1..2)/Some(1..2) "Aaa":Some(1..2)/Some(1..2) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:(?:a+?))" i=false s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..2)/Some(1..2) "Aaa":Some(1..2)/Some(1..2) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:(?:a+?))" i=true s=false "":None/None "a":Some(0..1)/None "baaa":Some(1..2)/Some(1..2) "Aaa":Some(0..1)/Some(1..2) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:(?:a+?))" i=false s=true "":None/None "a":Some(0..1)/None "baaa":Some(1..2)/Some(1..2) "Aaa":Some(1..2)/Some(1..2) "abba":Some(0..1)/None "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[ab]){2,3}" i=false s=false "":None/None "a":None/None "baaa":Some(0..3)/Some(1..4) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..3)/Some(1..4) "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[ab]){2,3}" i=true s=false "":None/None "a":None/None "baaa":Some(0..3)/Some(1..4) "Aaa":Some(0..3)/Some(1..3) "abba":Some(0..3)/Some(1..4) "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[ab]){2,3}" i=false s=true "":None/None "a":None/None "baaa":Some(0..3)/Some(1..4) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..3)/Some(1..4) "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[ab]{2,3}?)" i=false s=false "":None/None "a":None/None "baaa":Some(0..2)/Some(1..3) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..2)/Some(1..3) "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[ab]{2,3}?)" i=true s=false "":None/None "a":None/None "baaa":Some(0..2)/Some(1..3) "Aaa":Some(0..2)/Some(1..3) "abba":Some(0..2)/Some(1..3) "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[ab]{2,3}?)" i=false s=true "":None/None "a":None/None "baaa":Some(0..2)/Some(1..3) "Aaa":Some(1..3)/Some(1..3) "abba":Some(0..2)/Some(1..3) "12x":None/None "\u000a":None/None "\ud800\udc00":None/None
+"(?:[])*" i=false s=false "":Some(0..0)/None "a":Some(0..0)/Some(1..1) "baaa":Some(0..0)/Some(1..1) "Aaa":Some(0..0)/Some(1..1) "abba":Some(0..0)/Some(1..1) "12x":Some(0..0)/Some(1..1) "\u000a":Some(0..0)/Some(1..1) "\ud800\udc00":Some(0..0)/Some(1..1)
+"(?:[])*" i=true s=false "":Some(0..0)/None "a":Some(0..0)/Some(1..1) "baaa":Some(0..0)/Some(1..1) "Aaa":Some(0..0)/Some(1..1) "abba":Some(0..0)/Some(1..1) "12x":Some(0..0)/Some(1..1) "\u000a":Some(0..0)/Some(1..1) "\ud800\udc00":Some(0..0)/Some(1..1)
+"(?:[])*" i=false s=true "":Some(0..0)/None "a":Some(0..0)/Some(1..1) "baaa":Some(0..0)/Some(1..1) "Aaa":Some(0..0)/Some(1..1) "abba":Some(0..0)/Some(1..1) "12x":Some(0..0)/Some(1..1) "\u000a":Some(0..0)/Some(1..1) "\ud800\udc00":Some(0..0)/Some(1..1)
+"(?:[^]{2})" i=false s=false "":None/None "a":None/None "baaa":Some(0..2)/Some(1..3) "Aaa":Some(0..2)/Some(1..3) "abba":Some(0..2)/Some(1..3) "12x":Some(0..2)/Some(1..3) "\u000a":None/None "\ud800\udc00":Some(0..2)/None
+"(?:[^]{2})" i=true s=false "":None/None "a":None/None "baaa":Some(0..2)/Some(1..3) "Aaa":Some(0..2)/Some(1..3) "abba":Some(0..2)/Some(1..3) "12x":Some(0..2)/Some(1..3) "\u000a":None/None "\ud800\udc00":Some(0..2)/None
+"(?:[^]{2})" i=false s=true "":None/None "a":None/None "baaa":Some(0..2)/Some(1..3) "Aaa":Some(0..2)/Some(1..3) "abba":Some(0..2)/Some(1..3) "12x":Some(0..2)/Some(1..3) "\u000a":None/None "\ud800\udc00":Some(0..2)/None
+"(?:\\d)+" i=false s=false "":None/None "a":None/None "baaa":None/None "Aaa":None/None "abba":None/None "12x":Some(0..2)/Some(1..2) "\u000a":None/None "\ud800\udc00":None/None
+"(?:\\d)+" i=true s=false "":None/None "a":None/None "baaa":None/None "Aaa":None/None "abba":None/None "12x":Some(0..2)/Some(1..2) "\u000a":None/None "\ud800\udc00":None/None
+"(?:\\d)+" i=false s=true "":None/None "a":None/None "baaa":None/None "Aaa":None/None "abba":None/None "12x":Some(0..2)/Some(1..2) "\u000a":None/None "\ud800\udc00":None/None
+"(?:.)+" i=false s=false "":None/None "a":Some(0..1)/None "baaa":Some(0..4)/Some(1..4) "Aaa":Some(0..3)/Some(1..3) "abba":Some(0..4)/Some(1..4) "12x":Some(0..3)/Some(1..3) "\u000a":None/None "\ud800\udc00":Some(0..2)/Some(1..2)
+"(?:.)+" i=true s=false "":None/None "a":Some(0..1)/None "baaa":Some(0..4)/Some(1..4) "Aaa":Some(0..3)/Some(1..3) "abba":Some(0..4)/Some(1..4) "12x":Some(0..3)/Some(1..3) "\u000a":None/None "\ud800\udc00":Some(0..2)/Some(1..2)
+"(?:.)+" i=false s=true "":None/None "a":Some(0..1)/None "baaa":Some(0..4)/Some(1..4) "Aaa":Some(0..3)/Some(1..3) "abba":Some(0..4)/Some(1..4) "12x":Some(0..3)/Some(1..3) "\u000a":Some(0..1)/None "\ud800\udc00":Some(0..2)/Some(1..2)
+"(?:a)" i=false s=false unsupported
+"(?:a)" i=true s=false unsupported
+"(?:a)" i=false s=true unsupported
+"(?:ab)+" i=false s=false unsupported
+"(?:ab)+" i=true s=false unsupported
+"(?:ab)+" i=false s=true unsupported
+"(?:(?:a)+)+" i=false s=false unsupported
+"(?:(?:a)+)+" i=true s=false unsupported
+"(?:(?:a)+)+" i=false s=true unsupported
+"(?:a*)?" i=false s=false unsupported
+"(?:a*)?" i=true s=false unsupported
+"(?:a*)?" i=false s=true unsupported
+"(a)+" i=false s=false unsupported
+"(a)+" i=true s=false unsupported
+"(a)+" i=false s=true unsupported
+"(?:a+)(?:)" i=false s=false unsupported
+"(?:a+)(?:)" i=true s=false unsupported
+"(?:a+)(?:)" i=false s=true unsupported

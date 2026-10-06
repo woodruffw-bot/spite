@@ -6,9 +6,11 @@ use std::{ops::Range, sync::Arc};
 
 /// Immutable ordinary-mode matcher for one quantified character or set atom.
 ///
-/// The complete Pattern must already be validated without `u` or `v`. Groups,
-/// concatenations, assertions, alternatives and backreferences remain outside
-/// this compiler. Repetition bounds never expand the atom or use native recursion.
+/// The complete Pattern must already be validated without `u` or `v`. Transparent
+/// noncapturing groups may wrap the atom or its one quantifier. Capturing groups,
+/// concatenations, assertions, alternatives, multiple quantifiers and
+/// backreferences remain outside this compiler. Repetition bounds and group
+/// nesting never expand the atom or use native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpQuantifiedMatcher(Arc<Program>);
 
@@ -55,10 +57,7 @@ impl RegExpQuantifiedMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
-        let Some((prepared, end)) = prepare_atom(units, dot_all) else {
-            return Ok(None);
-        };
-        let Some((min, max, greedy)) = quantifier(&units[end..]) else {
+        let Some((prepared, (min, max, greedy))) = prepare(units, dot_all) else {
             return Ok(None);
         };
         charge(units.len())?;
@@ -143,7 +142,37 @@ fn prepare_atom(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, usize)> {
     Some((PreparedAtom::Character(unit), index))
 }
 
-fn quantifier(units: &[u16]) -> Option<(Option<usize>, Option<usize>, bool)> {
+type Bounds = (Option<usize>, Option<usize>, bool);
+
+fn prepare(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, Bounds)> {
+    let mut index = 0;
+    let mut groups = 0usize;
+    while units.get(index..index + 3) == Some(&[0x28, 0x3f, 0x3a]) {
+        index += 3;
+        groups += 1;
+    }
+    let (atom, end) = prepare_atom(&units[index..], dot_all)?;
+    index += end;
+    let mut bounds = None;
+    loop {
+        if matches!(units.get(index), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
+            if bounds.is_some() {
+                return None;
+            }
+            let (parsed, consumed) = quantifier(&units[index..])?;
+            bounds = Some(parsed);
+            index += consumed;
+        }
+        if units.get(index) == Some(&0x29) && groups != 0 {
+            groups -= 1;
+            index += 1;
+        } else {
+            return (index == units.len() && groups == 0).then_some((atom, bounds?));
+        }
+    }
+}
+
+fn quantifier(units: &[u16]) -> Option<(Bounds, usize)> {
     let (min, max, mut index) = match *units.first()? {
         0x2a => (Some(0), None, 1),
         0x2b => (Some(1), None, 1),
@@ -173,7 +202,7 @@ fn quantifier(units: &[u16]) -> Option<(Option<usize>, Option<usize>, bool)> {
         index += 1;
     }
     // Validated Patterns guarantee the mathematical minimum <= maximum.
-    (index == units.len()).then_some((min, max, greedy))
+    Some(((min, max, greedy), index))
 }
 
 fn decimal(units: &[u16], index: &mut usize) -> Option<Option<usize>> {
@@ -271,6 +300,74 @@ mod tests {
 
     fn matcher(source: &str, i: bool, s: bool) -> Option<RegExpQuantifiedMatcher> {
         RegExpQuantifiedMatcher::compile(&JsString::from(source), i, s)
+    }
+
+    #[test]
+    fn transparent_noncapturing_quantifier_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(?:a)+",
+            "(?:a+)",
+            "(?:(?:a)+?)",
+            "(?:(?:a+?))",
+            "(?:[ab]){2,3}",
+            "(?:[ab]{2,3}?)",
+            "(?:[])*",
+            "(?:[^]{2})",
+            r"(?:\d)+",
+            "(?:.)+",
+            "(?:a)",
+            "(?:ab)+",
+            "(?:(?:a)+)+",
+            "(?:a*)?",
+            "(a)+",
+            "(?:a+)(?:)",
+        ] {
+            for (i, s) in [(false, false), (true, false), (false, true)] {
+                write!(rows, "{source:?} i={i} s={s}").unwrap();
+                if let Some(m) = matcher(source, i, s) {
+                    for input in ["", "a", "baaa", "Aaa", "abba", "12x", "\n", "\u{10000}"] {
+                        let input = JsString::from(input);
+                        write!(
+                            rows,
+                            " {input:?}:{:?}/{:?}",
+                            m.find(&input, 0, false),
+                            m.find(&input, 1, true)
+                        )
+                        .unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn arbitrary_transparent_nesting_preserves_runs_without_native_recursion() {
+        for (body, suffix) in [("[ab]", "+?"), ("[ab]+?", ""), ("a", "{1,3}")] {
+            let source = format!(
+                "{}{}{}{}",
+                "(?:".repeat(100_000),
+                body,
+                ")".repeat(100_000),
+                suffix
+            );
+            let m = matcher(&source, false, false).unwrap();
+            assert_eq!(
+                m.clone().find(&JsString::from("aaa"), 0, false),
+                Some(0..if body == "a" { 3 } else { 1 })
+            );
+        }
+        let rejected = RegExpQuantifiedMatcher::compile_with_work(
+            &JsString::from(r"(?:\d)+b"),
+            false,
+            false,
+            |_| Err("must not charge"),
+        );
+        assert!(matches!(rejected, Ok(None)));
     }
 
     #[test]
