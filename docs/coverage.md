@@ -754,6 +754,22 @@ three Date() files, one own-local-string parsing file and one global property
 helper file remain excluded for their pending capabilities. Original assertions
 and bytes, the pin, unlimited defaults and native-stack guards are unchanged.
 
+All seven local Date setters now derive defaults from the captured local calendar
+and resolve the resulting local time through the selected realm history before
+final clipping. Ordered conversions preserve hook mutations on abrupt completion
+and on the six captured-invalid branches that return NaN without writing. Only
+setFullYear revives an invalid Date from the local epoch calendar; its year
+conversion precedes local lookup and optional month/date conversions follow it.
+Literal short years are preserved. Eight native regressions cover omitted versus
+undefined fields, truncation and rollover, DST folds/gaps, half-hour changes,
+Apia's skipped day, historical seconds, captured-slot mutation, ordered abrupt
+conversions, branding, frozen slots, huge finite cancellations and recovery after
+recursive coercion. All seven setters round-trip twenty independent native-offset
+boundary calendars, including both Date endpoints without clipping local fields.
+A CLI regression verifies conversion/host-error ordering with malformed zone
+data and independent invalid-Date branches. Local/legacy strings and Date()
+function output remain pending; the fixture inventory is unchanged in this step.
+
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

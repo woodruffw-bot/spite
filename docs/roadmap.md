@@ -304,7 +304,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Load full-range immutable host time zones with pinned portable IANA fallback, explicit POSIX/fixed/TZif inputs and independent per-realm overrides.
 - [x] Implement Date local calendar getters and timezone offsets with exact historical seconds, unclipped local fields and independent host failure reporting.
 - [x] Implement finite Date numeric calendar construction and local interchange parsing with ordered conversions, short-year rules, gap/fold disambiguation and clipping after zone conversion.
-- [ ] Add Date numeric calendar construction, local calendar setters, local time zones and local/legacy string operations.
+- [x] Implement Date local calendar/time setters with captured values, ordered coercion, invalid-date revival, literal years and gap/fold resolution before clipping.
+- [ ] Add Date local/legacy string operations and Date function-call output.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.

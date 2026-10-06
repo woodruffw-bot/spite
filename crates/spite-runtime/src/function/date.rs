@@ -1,4 +1,4 @@
-//! Date objects and UTC timestamp operations (21.4).
+//! Date objects, calendar operations and timestamp conversion (21.4).
 
 use super::Builtin;
 use crate::{
@@ -477,15 +477,20 @@ impl Realm {
             | Method::GetMonth
             | Method::GetSeconds
             | Method::GetTimezoneOffset => self.date_get_local(method, time, span),
-            Method::SetDate
-            | Method::SetMonth
-            | Method::SetHours
+            Method::SetDate | Method::SetFullYear | Method::SetMonth => {
+                let Value::Object(object) = this else {
+                    unreachable!("Date brand");
+                };
+                self.date_set_local_calendar(method, object, time, arguments, span)
+            }
+            Method::SetHours
             | Method::SetMinutes
             | Method::SetSeconds
-            | Method::SetMilliseconds
-                if time.is_nan() =>
-            {
-                self.date_set_invalid_local(method, arguments, span)
+            | Method::SetMilliseconds => {
+                let Value::Object(object) = this else {
+                    unreachable!("Date brand");
+                };
+                self.date_set_local_time(method, object, time, arguments, span)
             }
             Method::SetTime => {
                 let value =
@@ -594,7 +599,7 @@ impl Realm {
             }
             _ => Err(Self::unsupported(
                 span,
-                "Date calendar mutation and local/legacy string operations",
+                "Date local/legacy string operations",
             )),
         }
     }
@@ -607,11 +612,7 @@ impl Realm {
         if time.is_nan() {
             return Ok(Value::Number(f64::NAN));
         }
-        let offset = self
-            .time_zone()
-            .map_err(|error| Self::date_time_zone_error(error, span))?
-            .offset_at(i128::from(time as i64));
-        let local = time as i64 + i64::from(offset) * 1000;
+        let local = self.date_local_time_value(time, span)?;
         if matches!(method, Method::GetTimezoneOffset) {
             // Preserve the specified subtraction/division, including +0 in UTC.
             return Ok(Value::Number((time - local as f64) / 60_000.0));
@@ -629,6 +630,15 @@ impl Realm {
             _ => unreachable!("local getter"),
         };
         Ok(Value::Number(value))
+    }
+
+    fn date_local_time_value(&mut self, time: f64, span: Span) -> Result<i64, Error> {
+        debug_assert!(time.is_finite());
+        let offset = self
+            .time_zone()
+            .map_err(|error| Self::date_time_zone_error(error, span))?
+            .offset_at(i128::from(time as i64));
+        Ok(time as i64 + i64::from(offset) * 1000)
     }
 
     fn date_time_zone_error(error: TimeZoneError, span: Span) -> Error {
@@ -674,20 +684,113 @@ impl Realm {
     }
 
     #[inline(never)]
-    fn date_set_invalid_local(
+    fn date_set_local_calendar(
         &mut self,
         method: Method,
+        object: ObjectHandle,
+        time: f64,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        // 21.4.4.20, 22–26: all present arguments convert before testing the
-        // captured NaN, and returning NaN does not write the slot. A conversion
-        // hook may have revived the object. setFullYear has different rules.
-        self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
-        for argument in arguments.take(method.length() as usize - 1) {
-            self.number(argument, span)?;
+        // 21.4.4.20–21 and 25: setFullYear obtains LocalTime after the year
+        // conversion and before the optional fields; the other calendar setters
+        // convert every present field before obtaining LocalTime. All use the
+        // captured time even if conversion hooks change the Date's slot.
+        let start = match method {
+            Method::SetFullYear => 0,
+            Method::SetMonth => 1,
+            Method::SetDate => 2,
+            _ => unreachable!("local calendar setter"),
+        };
+        let mut converted = [None; 3];
+        converted[start] = Some(self.number(arguments.next().unwrap_or(Value::Undefined), span)?);
+        let local = if matches!(method, Method::SetFullYear) {
+            // An invalid Date uses the local calendar epoch, not LocalTime(0).
+            Some(if time.is_nan() {
+                0
+            } else {
+                self.date_local_time_value(time, span)?
+            })
+        } else {
+            None
+        };
+        for (slot, argument) in converted[start + 1..].iter_mut().zip(arguments) {
+            *slot = Some(self.number(argument, span)?);
         }
-        Ok(Value::Number(f64::NAN))
+        let local = match local {
+            Some(local) => local,
+            None if time.is_nan() => return Ok(Value::Number(f64::NAN)),
+            None => self.date_local_time_value(time, span)?,
+        };
+        let previous = UtcDateTime::from_epoch_milliseconds(local);
+        let mut fields = [
+            f64::from(previous.year),
+            f64::from(previous.month),
+            f64::from(previous.day),
+        ];
+        for (field, converted) in fields.iter_mut().zip(converted) {
+            if let Some(value) = converted {
+                *field = value;
+            }
+        }
+        // Calendar setters preserve literal short years and unclipped local
+        // fields. Only the final UTC result is subject to TimeClip.
+        let day = self.date_make_day_value(fields[0], fields[1], fields[2], span)?;
+        let value =
+            self.date_clip_local_value(make_date(day, local.rem_euclid(MS_PER_DAY) as f64), span)?;
+        self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
+        Ok(Value::Number(value))
+    }
+
+    #[inline(never)]
+    fn date_set_local_time(
+        &mut self,
+        method: Method,
+        object: ObjectHandle,
+        time: f64,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 21.4.4.22–24 and 26: convert every supplied field before checking
+        // the captured NaN and obtaining LocalTime. Returning NaN does not write
+        // the slot, preserving any value installed by a conversion hook.
+        let start = match method {
+            Method::SetHours => 0,
+            Method::SetMinutes => 1,
+            Method::SetSeconds => 2,
+            Method::SetMilliseconds => 3,
+            _ => unreachable!("local time setter"),
+        };
+        let mut converted = [None; 4];
+        converted[start] = Some(self.number(arguments.next().unwrap_or(Value::Undefined), span)?);
+        for (slot, argument) in converted[start + 1..].iter_mut().zip(arguments) {
+            *slot = Some(self.number(argument, span)?);
+        }
+        if time.is_nan() {
+            return Ok(Value::Number(f64::NAN));
+        }
+        let local = self.date_local_time_value(time, span)?;
+        let previous = UtcDateTime::from_epoch_milliseconds(local);
+        let mut fields = [
+            f64::from(previous.hour),
+            f64::from(previous.minute),
+            f64::from(previous.second),
+            f64::from(previous.millisecond),
+        ];
+        for (field, converted) in fields.iter_mut().zip(converted) {
+            if let Some(value) = converted {
+                *field = value;
+            }
+        }
+        let value = self.date_clip_local_value(
+            make_date(
+                local.div_euclid(MS_PER_DAY) as f64,
+                make_time(fields[0], fields[1], fields[2], fields[3]),
+            ),
+            span,
+        )?;
+        self.object_work(span, |objects, _| objects.set_date_value(&object, value))?;
+        Ok(Value::Number(value))
     }
 
     // 21.4.4.28 and 32: retain the captured calendar and time of day through

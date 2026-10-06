@@ -247,3 +247,75 @@ fn calendar_inputs_preserve_nonfinite_utc_and_date_only_branches_before_zone_loa
     assert!(finite.stdout.is_empty());
     assert!(String::from_utf8(finite.stderr).unwrap().contains("Host"));
 }
+
+#[test]
+fn local_setter_conversions_and_host_lookup_follow_their_specified_order() {
+    let path = std::env::temp_dir().join(format!(
+        "spite-invalid-setter-zone-{}-{}.tzif",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    {
+        let mut file = std::fs::File::create_new(&path).unwrap();
+        file.write_all(b"invalid zone data").unwrap();
+    }
+    let run = |source: &str| {
+        Command::new(env!("CARGO_BIN_EXE_spite"))
+            .env("TZ", &path)
+            .args(["--eval", source])
+            .output()
+            .unwrap()
+    };
+    let mut independent = Vec::new();
+    for (method, arity) in [
+        ("setDate", 1),
+        ("setMonth", 2),
+        ("setHours", 4),
+        ("setMinutes", 3),
+        ("setSeconds", 2),
+        ("setMilliseconds", 1),
+    ] {
+        let mut args = vec!["NaN"; arity];
+        args[arity - 1] = "{valueOf(){throw 7;}}";
+        independent.push(run(&format!(
+            "let caught=false;try{{new Date(0).{method}({});}}catch(e){{caught=e===7;}}caught",
+            args.join(",")
+        )));
+        independent.push(run(&format!("let d=new Date(NaN);Number.isNaN(d.{method}({{valueOf(){{d.setTime(9);return 0;}}}})) && d.getTime()===9")));
+    }
+    for source in [
+        "let caught=false;try{new Date(0).setFullYear({valueOf(){throw 7;}},{valueOf(){throw 8;}});}catch(e){caught=e===7;}caught",
+        "let caught=false;try{new Date(NaN).setFullYear(NaN,{valueOf(){throw 8;}});}catch(e){caught=e===8;}caught",
+        "let d=new Date(NaN);Number.isNaN(d.setFullYear(NaN)) && Number.isNaN(d.getTime())",
+    ] {
+        independent.push(run(source));
+    }
+    let mut host_failures = Vec::new();
+    for source in [
+        "try{new Date(0).setFullYear(NaN,{valueOf(){throw 8;}});}catch{true;}",
+        "new Date(NaN).setFullYear(2000)",
+        "new Date(0).setHours(NaN)",
+        "new Date(0).setMonth(NaN)",
+        "new Date(0).setDate(NaN)",
+    ] {
+        host_failures.push(run(source));
+    }
+    std::fs::remove_file(path).unwrap();
+    for output in independent {
+        assert!(output.status.success(), "{:?}", output);
+        assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "true");
+        assert!(output.stderr.is_empty());
+    }
+    for output in host_failures {
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with("Host")
+        );
+    }
+}

@@ -121,18 +121,6 @@ fn later_abrupt_conversions_still_throw_after_an_earlier_nonfinite_field() {
 }
 
 #[test]
-fn finite_local_setters_remain_unresolved() {
-    for source in ["new Date(0).setMonth(0)", "new Date(NaN).setFullYear(2000)"] {
-        let mut realm = Realm::default();
-        assert!(
-            matches!(realm.eval(source), Err(Error::Unsupported { .. })),
-            "{source}"
-        );
-        assert_eq!(realm.eval("new Date(7).getTime()"), Ok(Value::Number(7.0)));
-    }
-}
-
-#[test]
 fn local_getters_return_nan_for_invalid_dates_and_check_their_own_slot() {
     for method in GETTERS {
         check(&format!(
