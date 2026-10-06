@@ -1,79 +1,131 @@
-//! Top-level literal Disjunction compilation and matching (22.2.2.3).
+//! Top-level fixed Disjunction compilation and matching (22.2.2.3).
 
-use crate::{JsString, RegExpLiteralMatcher};
+use crate::{JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpSequenceMatcher};
 use std::{ops::Range, sync::Arc};
 
-/// Immutable top-level alternatives of ordinary literal sequences.
+/// Immutable top-level alternatives of fixed ordinary sequences and outer anchors.
 ///
 /// The Pattern must already be validated without `u` or `v`. Every alternative
-/// must compile as a literal sequence. Unsupported alternatives reject the
-/// entire plan. Nested alternatives and quantified groups remain
-/// unsupported; compilation never expands combinations or uses native recursion.
+/// must compile as a literal, fixed class sequence or outer-anchored sequence.
+/// Unsupported alternatives reject the entire plan. Nested alternatives and
+/// quantified groups remain unsupported; compilation never expands combinations
+/// or uses native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpDisjunctionMatcher(Arc<Program>);
 
 #[derive(Debug)]
 struct Program {
-    alternatives: Vec<RegExpLiteralMatcher>,
+    alternatives: Vec<Alternative>,
     capture_offsets: Vec<usize>,
     capture_count: usize,
+}
+
+#[derive(Debug)]
+enum Alternative {
+    Literal(RegExpLiteralMatcher),
+    Sequence(RegExpSequenceMatcher),
+    Anchored(RegExpAnchoredMatcher),
+}
+
+impl Alternative {
+    fn capture_ranges(&self) -> &[Range<usize>] {
+        match self {
+            Self::Literal(m) => m.capture_ranges(),
+            Self::Sequence(m) => m.capture_ranges(),
+            Self::Anchored(m) => m.capture_ranges(),
+        }
+    }
+    fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        match self {
+            Self::Literal(m) => m.find(input, start, sticky),
+            Self::Sequence(m) => m.find(input, start, sticky),
+            Self::Anchored(m) => m.find(input, start, sticky),
+        }
+    }
+    fn search_passes(&self, sticky: bool) -> usize {
+        match self {
+            Self::Literal(_) => 1,
+            Self::Sequence(m) => {
+                if sticky {
+                    1
+                } else {
+                    m.atom_count().max(1)
+                }
+            }
+            Self::Anchored(m) => m.search_passes(sticky),
+        }
+    }
 }
 
 impl RegExpDisjunctionMatcher {
     /// Compiles two or more top-level alternatives, including empty alternatives.
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
+        Self::compile_with_work(source, ignore_case, false, false, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles with explicit multiline/DotAll and optional set preparation work.
+    ///
+    /// Top-level separators exclude escapes, classes and groups. Branch matching
+    /// retains source-order capture slots and the complete input's boundaries.
+    /// Rejected subsets and independent host charge failures remain distinct.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some(ranges) = alternative_ranges(source.code_units()) else {
+            return Ok(None);
+        };
         let units = source.code_units();
-        let mut ranges = Vec::new();
-        let mut start = 0;
-        let mut index = 0;
-        let mut depth = 0usize;
-        while let Some(&unit) = units.get(index) {
-            index += 1;
-            match unit {
-                0x5c => {
-                    units.get(index)?;
-                    index += 1;
-                }
-                0x28 => {
-                    if units.get(index) == Some(&u16::from(b'?')) {
-                        if units.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
-                            return None;
-                        }
-                        index += 2;
-                    }
-                    depth = depth.checked_add(1)?;
-                }
-                0x29 => depth = depth.checked_sub(1)?,
-                0x5b => return None,
-                0x7c => {
-                    if depth != 0 {
-                        return None;
-                    }
-                    ranges.push(start..index - 1);
-                    start = index;
-                }
-                _ => {}
-            }
-        }
-        if depth != 0 || ranges.is_empty() {
-            return None;
-        }
-        ranges.push(start..units.len());
         let mut alternatives = Vec::with_capacity(ranges.len());
         let mut capture_offsets = Vec::with_capacity(ranges.len());
         let mut capture_count = 0usize;
         for range in ranges {
             let source = JsString::from_code_units(units[range].to_vec());
-            let matcher = RegExpLiteralMatcher::compile(&source, ignore_case)?;
+            let matcher = if let Some(m) = RegExpLiteralMatcher::compile(&source, ignore_case) {
+                Alternative::Literal(m)
+            } else if let Some(m) = RegExpSequenceMatcher::compile_with_work(
+                &source,
+                ignore_case,
+                dot_all,
+                &mut charge,
+            )? {
+                Alternative::Sequence(m)
+            } else if let Some(m) = RegExpAnchoredMatcher::compile_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                dot_all,
+                &mut charge,
+            )? {
+                Alternative::Anchored(m)
+            } else {
+                return Ok(None);
+            };
             capture_offsets.push(capture_count);
-            capture_count = capture_count.checked_add(matcher.capture_ranges().len())?;
+            let Some(count) = capture_count.checked_add(matcher.capture_ranges().len()) else {
+                return Ok(None);
+            };
+            capture_count = count;
             alternatives.push(matcher);
         }
-        Some(Self(Arc::new(Program {
+        Ok(Some(Self(Arc::new(Program {
             alternatives,
             capture_offsets,
             capture_count,
-        })))
+        }))))
+    }
+
+    /// Conservative optional search passes across every branch's implementation.
+    pub fn search_passes(&self, sticky: bool) -> usize {
+        self.0.alternatives.iter().fold(0usize, |total, branch| {
+            total.saturating_add(branch.search_passes(sticky))
+        })
     }
 
     /// Number of alternatives, for optional worst-case work accounting.
@@ -99,9 +151,9 @@ impl RegExpDisjunctionMatcher {
 
     /// Finds the earliest match, choosing source order for equal start offsets.
     ///
-    /// Sticky matching considers only `start`. Each branch uses linear literal
-    /// search; worst-case work is proportional to the number of alternatives
-    /// times the input suffix length. Search allocates nothing.
+    /// Sticky matching considers only `start`. Literal branches retain linear
+    /// search; fixed class branches retain their input/atom candidate bound.
+    /// Search allocates nothing.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
         self.find_branch(input, start, sticky)
             .map(|(_, range)| range)
@@ -117,12 +169,9 @@ impl RegExpDisjunctionMatcher {
         let mut best: Option<(usize, Range<usize>)> = None;
         for (branch, alternative) in self.0.alternatives.iter().enumerate() {
             if let Some(found) = alternative.find(input, start, sticky) {
-                if found.start == start {
-                    return Some((branch, found));
-                }
                 if best
                     .as_ref()
-                    .is_none_or(|(_, best)| found.start < best.start)
+                    .is_none_or(|(_, current)| found.start < current.start)
                 {
                     best = Some((branch, found));
                 }
@@ -132,10 +181,190 @@ impl RegExpDisjunctionMatcher {
     }
 }
 
+fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
+    let mut ranges = Vec::new();
+    let mut start = 0;
+    let mut index = 0;
+    let mut depth = 0usize;
+    let mut in_class = false;
+    while let Some(&unit) = units.get(index) {
+        index += 1;
+        if in_class {
+            if unit == 0x5c {
+                units.get(index)?;
+                index += 1;
+            } else if unit == 0x5d {
+                in_class = false;
+            }
+            continue;
+        }
+        match unit {
+            0x5c => {
+                units.get(index)?;
+                index += 1;
+            }
+            0x28 => {
+                if units.get(index) == Some(&u16::from(b'?')) {
+                    if units.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
+                        return None;
+                    }
+                    index += 2;
+                }
+                depth = depth.checked_add(1)?;
+            }
+            0x29 => depth = depth.checked_sub(1)?,
+            0x5b => in_class = true,
+            0x7c => {
+                if depth != 0 {
+                    return None;
+                }
+                ranges.push(start..index - 1);
+                start = index;
+            }
+            _ => {}
+        }
+    }
+    if depth != 0 || in_class || ranges.is_empty() {
+        return None;
+    }
+    ranges.push(start..units.len());
+    Some(ranges)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn fixed_class_and_anchored_alternative_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "([ab])([a])|([a])",
+            "([a])|([ab])([a])",
+            "[a|b]|c",
+            "[(|)]|a",
+            r"[\]]|a",
+            "[[a]|b",
+            "[]|a",
+            "[^]|a",
+            ".|[a]",
+            r"\d|[a]",
+            "^([a])$|([b])$",
+            "^a|b$",
+            "^([a])|([b])$",
+            "()|([a])",
+            "([a])|()",
+            "[a]+|b",
+            "([a]|b)",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+            ] {
+                let matcher = RegExpDisjunctionMatcher::compile_with_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " captures={} branches={}",
+                        matcher.capture_count(),
+                        matcher.alternative_count()
+                    )
+                    .unwrap();
+                    for input in [
+                        "", "a", "ba", "aba", "A", "b\n", "x\na\nyb", "|", "(", "]", "[", "1", "\n",
+                    ] {
+                        let input = JsString::from(input);
+                        let found = matcher.find_branch(&input, 0, false);
+                        write!(
+                            rows,
+                            " {input:?}:{found:?}/{:?}",
+                            matcher.find_branch(&input, 1, true)
+                        )
+                        .unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn class_branches_preserve_position_first_source_order_and_global_capture_offsets() {
+        let matcher =
+            RegExpDisjunctionMatcher::compile(&JsString::from("([ab])([a])|([a])"), false).unwrap();
+        assert_eq!(matcher.capture_count(), 3);
+        assert_eq!(matcher.branch_captures(0), Some((0, &[0..1, 1..2][..])));
+        let (offset, ranges) = matcher.branch_captures(1).unwrap();
+        assert_eq!(offset, 2);
+        assert_eq!(ranges.len(), 1);
+        assert_eq!(ranges[0], 0..1);
+        let alphabet = [97, 98, 65, 10, 0xd800];
+        for length in 0..=5u32 {
+            for mut encoded in 0..alphabet.len().pow(length) {
+                let mut units = Vec::new();
+                for _ in 0..length {
+                    units.push(alphabet[encoded % alphabet.len()]);
+                    encoded /= alphabet.len();
+                }
+                let input = JsString::from_code_units(units.clone());
+                for start in 0..=units.len() + 1 {
+                    for sticky in [false, true] {
+                        let expected = (start..=units.len()).find_map(|offset| {
+                            if sticky && offset != start {
+                                return None;
+                            }
+                            if let Some(pair) = units.get(offset..offset + 2) {
+                                if matches!(pair[0], 97 | 98) && pair[1] == 97 {
+                                    return Some((0, offset..offset + 2));
+                                }
+                            }
+                            (units.get(offset) == Some(&97)).then_some((1, offset..offset + 1))
+                        });
+                        assert_eq!(
+                            matcher.find_branch(&input, start, sticky),
+                            expected,
+                            "{units:?} start={start} sticky={sticky}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn class_alternative_construction_work_remains_distinct_from_matching_failure() {
+        let result = RegExpDisjunctionMatcher::compile_with_work(
+            &JsString::from(r"\d|[a]"),
+            false,
+            false,
+            false,
+            |work| {
+                if work == 65_536 {
+                    Err("host abort")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(matches!(result, Err("host abort")));
+        let matcher =
+            RegExpDisjunctionMatcher::compile(&JsString::from("[a]a|^b$|c"), false).unwrap();
+        assert_eq!(matcher.search_passes(false), 5);
+        assert_eq!(matcher.search_passes(true), 4);
+        assert_eq!(matcher.find(&JsString::from("xx"), 0, false), None);
+    }
 
     #[test]
     fn top_level_literal_disjunction_snapshot() {

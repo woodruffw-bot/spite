@@ -131,7 +131,7 @@ fn opted_in_sticky_work_covers_one_candidate_instead_of_all_candidate_starts() {
 fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gaps() {
     for source in [
         "/[a]+/.test('a')",
-        "/[a]|b/.test('a')",
+        "/[a]+|b/.test('a')",
         "/^[a]+/.test('a')",
         "/[a]b+$/.test('ab')",
         r"/([a])\1/.test('aa')",

@@ -75,7 +75,7 @@ impl RegExpMatcher {
                     matcher.atom_count().max(1)
                 }
             }
-            Self::Disjunction(matcher) => matcher.alternative_count(),
+            Self::Disjunction(matcher) => matcher.search_passes(sticky),
         }
     }
 }

@@ -76,7 +76,7 @@ fn copied_long_anchored_plans_survive_collection_without_restarting_searches() {
 fn internal_assertions_alternatives_and_unicode_modes_remain_explicit_gaps() {
     for source in [
         "/(^a)/.test('a')",
-        "/^a|b$/.test('a')",
+        "/^a*|b$/.test('a')",
         "/^a*/.test('a')",
         "/^a$/u.test('a')",
         "/^a$/v.test('a')",

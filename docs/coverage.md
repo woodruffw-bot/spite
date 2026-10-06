@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, top-level literal alternatives and fixed class/escape/dot sequences with outer anchors, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13480 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -564,6 +564,28 @@ construction/search aborts. Existing literal anchor and sequence snapshots retai
 their values; literal scans keep their prefix-failure matcher. Internal assertions,
 choices, quantifiers and Unicode modes remain pending. The corpus, pin and default
 quota policy are unchanged.
+Stable and MSRV pass the complete 13480-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
+all pinned generator checks also pass.
+
+Top-level ordinary alternatives now combine fixed class/escape/dot sequences and
+outer input/multiline anchors with literal branches. Source order still breaks
+earliest-position ties, independently of match length. The delimiter scan keeps
+escaped units and class-contained bars/parentheses within their branch. Global
+capture slots retain own undefined match/indices elements for unselected groups,
+distinct from empty participating groups. Three core regressions cover an
+inspected 51-record insta snapshot, an independent exhaustive position/branch/
+capture oracle and separate opted-in construction/search accounting. The earlier
+literal disjunction snapshot changes only four newly supported class/dot rows.
+Node agrees on all 7,200 range/capture-slot comparisons and thirteen runtime
+programs. Nine runtime regressions cover ordering, captures and intrinsic own
+slots, global/sticky state, per-branch boundaries, DotAll and pinned case rules,
+surrogates and class delimiters, generic String consumers, copies and collection,
+host aborts and whole-plan unsupported boundaries. Six earlier gap regressions
+now use unsupported quantifiers. Internal/nested choices, quantifiers,
+backreferences, named/scoped groups and Unicode-mode matching remain pending.
+No additional reviewed whole Test262 programs become eligible; the corpus and
+pin are unchanged.
 Stable and MSRV pass the complete 13480-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.

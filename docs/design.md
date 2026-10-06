@@ -201,15 +201,21 @@ UTF-16 offsets and preserve both halves of surrogate pairs independently.
 Programs share immutable storage across clones, and search allocates nothing.
 Unicode-mode matching remains pending.
 
-Top-level ordinary literal Disjunction compilation (22.2.2.3) accepts only
-alternatives that each compile completely as an unquantified literal sequence.
-The iterative delimiter scan respects escapes and nested capturing/noncapturing
-groups; nested choices and unsupported productions reject the whole plan. Each branch uses the existing linear search. The earliest start wins,
-with source order breaking ties, including empty alternatives. Compilation never
-expands combinations; plans share immutable storage and matching allocates
-nothing. Worst-case search work is proportional to alternative count times input
-suffix length; opted-in accounting charges every possible branch search before
-execution. Ordinary unlimited defaults impose no branch or work cap.
+Top-level ordinary Disjunction compilation (22.2.2.3) accepts alternatives that
+each compile completely as a literal, fixed character-set sequence or outer-
+anchored sequence. The iterative delimiter scan skips escaped units and treats
+ordinary bracket classes as opaque, including their bars and parentheses.
+Nested capturing/noncapturing groups are tracked without native recursion;
+nested choices and unsupported productions reject the whole plan. Each branch
+reuses its existing matcher. The earliest start wins, with source order breaking
+ties, including empty alternatives; match length does not break a tie.
+Compilation never expands combinations; plans share immutable storage and
+matching allocates nothing. Literal branches retain linear prefix-failure search;
+class and anchored branches retain their candidate and boundary bounds.
+Opted-in accounting covers every branch's search passes before execution and
+reaches character-set construction. Sticky branches inspect one candidate with
+their original boundary semantics. Ordinary unlimited defaults impose no branch
+or work cap.
 The plan stores each branch's first source-order capture slot and its own
 relative ranges. Storage is linear in branches and captures, without a matrix of
 all groups for every branch. A successful match borrows its selected branch's
@@ -231,8 +237,8 @@ and relative captures. DotAll, ignore-case and multiline settings remain
 independent. Optional construction work reaches the class compiler, and optional
 search passes cover consuming terms plus boundaries while sticky mode checks
 one candidate.
-Compilation respects trailing escape parity; internal assertions, anchored
-alternatives and Unicode-mode matching remain pending. Optional accounting
+Compilation respects trailing escape parity; internal assertions and
+Unicode-mode matching remain pending. Optional accounting
 covers the literal scan and boundary checks without changing unlimited defaults.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
