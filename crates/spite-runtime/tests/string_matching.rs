@@ -1,4 +1,4 @@
-//! Ordered object hooks for matching/search; native RegExp fallback remains open.
+//! Ordered object hooks and native RegExp creation; native matching remains open.
 
 use spite_runtime::{Error, Limits, Realm, Value};
 
@@ -82,7 +82,7 @@ fn matchall_regexp_marker_and_global_flags_are_checked_before_the_hook() {
 }
 
 #[test]
-fn primitive_hooks_are_ignored_and_native_fallbacks_stay_unsupported() {
+fn primitive_hooks_are_ignored_and_fallbacks_create_native_patterns() {
     for (method, symbol) in [
         ("match", "match"),
         ("matchAll", "matchAll"),
@@ -96,19 +96,18 @@ fn primitive_hooks_are_ignored_and_native_fallbacks_stay_unsupported() {
             ("Symbol.prototype", "Symbol()"),
         ] {
             let mut realm = Realm::default();
-            realm.eval(&format!("let reads=0,flag=0;Object.defineProperty({prototype},Symbol.{symbol},{{get(){{reads++;throw 7;}}}});")).unwrap();
-            assert!(
-                matches!(
-                    realm.eval(&format!(
-                        "try{{'x'.{method}({pattern});}}catch{{flag=1;}}finally{{flag=2;}}"
-                    )),
-                    Err(Error::Unsupported { .. })
-                ),
-                "{method}/{pattern}"
-            );
+            realm.eval(&format!("let reads=0;Object.defineProperty({prototype},Symbol.{symbol},{{get(){{reads++;throw 7;}}}});RegExp.prototype[Symbol.{symbol}]=function(s){{return s;}};")).unwrap();
+            let source = if prototype == "Symbol.prototype" {
+                format!(
+                    "let caught=false;try{{'x'.{method}({pattern});}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
+                )
+            } else {
+                format!("'x'.{method}({pattern})==='x' && reads===0")
+            };
             assert_eq!(
-                realm.eval("reads===0 && flag===0"),
-                Ok(Value::Boolean(true))
+                realm.eval(&source),
+                Ok(Value::Boolean(true)),
+                "{method}/{pattern}"
             );
         }
         for pattern in [
@@ -119,16 +118,115 @@ fn primitive_hooks_are_ignored_and_native_fallbacks_stay_unsupported() {
             &format!("{{[Symbol.{symbol}]:undefined}}"),
         ] {
             let mut realm = Realm::default();
-            realm.eval("let log='',flag=0;").unwrap();
-            assert!(matches!(realm.eval(&format!("try{{String.prototype.{method}.call({{toString(){{log+='s';return 'x';}}}},{pattern});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported {..})));
-            assert_eq!(
-                realm.eval("log==='s' && flag===0"),
-                Ok(Value::Boolean(true))
-            );
+            realm
+                .eval(&format!(
+                    "let log='';RegExp.prototype[Symbol.{symbol}]=function(s){{return s;}};"
+                ))
+                .unwrap();
+            assert_eq!(realm.eval(&format!("String.prototype.{method}.call({{toString(){{log+='s';return 'x';}}}},{pattern})==='x' && log==='s'")),Ok(Value::Boolean(true)));
         }
         check(&format!(
             "let caught=false;try{{String.prototype.{method}.call({{toString(){{throw 7;}}}},null);}}catch(e){{caught=e===7;}}caught"
         ));
+    }
+}
+
+#[test]
+fn fallback_conversion_creates_fresh_native_objects_and_invokes_live_symbol_methods() {
+    for (method, flags) in [("match", ""), ("matchAll", "g"), ("search", "")] {
+        check(&format!(
+            "let t='',result={{}},seen,receiver={{[Symbol.toPrimitive](h){{t+='r'+h;return 'input';}}}},pattern={{get constructor(){{throw 7;}},get source(){{throw 8;}},get flags(){{throw 9;}},toString(){{t+='p';return 'a';}}}};Object.defineProperty(pattern,Symbol.{method},{{get(){{t+='k';return undefined;}}}});Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{t+='h';seen=this;return function(s){{'use strict';t+='c';if(this!==seen || s!=='input' || arguments.length!==1)throw 10;return result;}};}}}});let a=String.prototype.{method}.call(receiver,pattern);a===result && t==='krstringphc' && seen!==pattern && seen instanceof RegExp && seen.source==='a' && seen.flags==='{flags}' && seen.lastIndex===0"
+        ));
+        check(&format!(
+            "let first;RegExp.prototype[Symbol.{method}]=function(s){{if(first===undefined){{first=this;return this.source;}}return this!==first && this.source==='(?:)' && this.flags==='{flags}';}};'x'.{method}(undefined)==='(?:)' && 'x'.{method}(undefined)"
+        ));
+    }
+}
+
+#[test]
+fn direct_creation_bypasses_regexp_identity_native_copy_and_repeated_match_lookups() {
+    check(
+        "let t='',pattern={get [Symbol.match](){t+='m';return undefined;},get constructor(){throw 7;},get source(){throw 8;},get flags(){throw 9;},toString(){t+='p';return 'a';}};RegExp.prototype[Symbol.match]=function(s){return this.source;};'x'.match(pattern)==='a' && t==='mp'",
+    );
+    check(
+        "let t='',pattern={get [Symbol.match](){t+='m';return false;},get [Symbol.matchAll](){t+='a';return undefined;},get source(){throw 7;},get flags(){throw 8;},get constructor(){throw 9;},toString(){t+='p';return 'a';}};RegExp.prototype[Symbol.matchAll]=function(s){return this.source;};'x'.matchAll(pattern)==='a' && t==='map'",
+    );
+    check(
+        r"let r=new RegExp('a','g');r[Symbol.match]=null;r.toString=function(){return 'custom';};RegExp.prototype[Symbol.match]=function(s){return this.source;};'x'.match(r)==='custom'",
+    );
+    check(
+        "let r=new RegExp('a','g');r[Symbol.search]=undefined;RegExp.prototype[Symbol.search]=function(s){return this.source;};let expected=String.fromCharCode(92)+'/a'+String.fromCharCode(92)+'/g';'x'.search(r)===expected",
+    );
+}
+
+#[test]
+fn fallback_errors_follow_receiver_pattern_and_live_method_order() {
+    for method in ["match", "matchAll", "search"] {
+        check(&format!(
+            "let reads=0,caught=false;Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{reads++;throw 8;}}}});try{{'x'.{method}('(');}}catch(e){{caught=e instanceof SyntaxError;}}caught && reads===0"
+        ));
+        check(&format!(
+            "let t='',pattern={{toString(){{t+='p';throw 7;}}}};Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{t+='h';throw 8;}}}});try{{String.prototype.{method}.call({{toString(){{t+='r';return 'x';}}}},pattern);}}catch(e){{t+=e;}}t==='rp7'"
+        ));
+        for value in ["undefined", "null", "1", "{}"] {
+            check(&format!(
+                "RegExp.prototype[Symbol.{method}]={value};let caught=false;try{{'x'.{method}('a');}}catch(e){{caught=e instanceof TypeError;}}caught"
+            ));
+        }
+        check(&format!(
+            "let marker={{}},caught=false;Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{throw marker;}}}});try{{'x'.{method}('a');}}catch(e){{caught=e===marker;}}caught"
+        ));
+    }
+}
+
+#[test]
+fn matchall_creation_is_lazy_and_custom_exec_observes_the_new_native_matcher() {
+    check(
+        "let n=0,seen,result={0:'x',index:0,length:1};RegExp.prototype.exec=function(s){n++;seen=this;if(this.source!=='a' || this.flags!=='g' || s!=='input')throw 7;return n===1?result:null;};let it='input'.matchAll('a');let lazy=n===0,a=it.next(),b=it.next(),c=it.next();lazy && a.value===result && !a.done && b.done && c.done && n===2 && seen instanceof RegExp",
+    );
+    check(
+        "let n=0;RegExp.prototype.exec=function(s){n++;return null;};let iterator='x'.matchAll();n===0 && Object.getPrototypeOf(iterator)[Symbol.toStringTag]==='RegExp String Iterator' && iterator.next().done && n===1",
+    );
+    let mut realm = Realm::default();
+    realm.eval("let it='x'.matchAll('a'),flag=0").unwrap();
+    assert!(matches!(
+        realm.eval("try{it.next();}catch{flag=1;}finally{flag=2;}"),
+        Err(Error::Unsupported { .. })
+    ));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    assert!(matches!(
+        realm.eval("it.next()"),
+        Err(Error::Unsupported { .. })
+    ));
+}
+
+#[test]
+fn fallback_intrinsics_and_large_inputs_survive_global_replacement_and_collection() {
+    let mut realm = Realm::default();
+    realm.eval("let calls=0,input='a'.repeat(120000);RegExp.prototype.exec=function(s){calls++;return null;};let it=input.matchAll('a');RegExp=function(){throw 7;};String=function(){throw 8;};input=null;").unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("calls===0 && it.next().done && calls===1"),
+        Ok(Value::Boolean(true))
+    );
+    for method in ["match", "matchAll", "search"] {
+        check(&format!(
+            "let f=String.prototype.{method};RegExp.prototype[Symbol.{method}]=function(s){{return this.source==='a' && s==='x';}};RegExp=function(){{throw 7;}};f.call('x','a')"
+        ));
+    }
+}
+
+#[test]
+fn recursive_creation_conversions_and_fallback_methods_use_native_stack_guards() {
+    for source in [
+        "let p={toString(){return 'x'.match(p);}};'x'.match(p)",
+        "let p={toString(){return 'x'.matchAll(p);}};'x'.matchAll(p)",
+        "RegExp.prototype[Symbol.search]=function(s){return s.search('a');};'x'.search('a')",
+    ] {
+        assert!(
+            matches!(Realm::default().eval(source), Err(Error::Limit { .. })),
+            "{source}"
+        );
     }
 }
 

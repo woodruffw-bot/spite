@@ -64,8 +64,37 @@ impl Realm {
             (pattern, flags)
         };
         let new_target = new_target.unwrap_or(intrinsic);
-        // RegExpAlloc precedes both ToString conversions. Public source/flags
-        // Gets above are also complete before GetPrototypeFromConstructor.
+        self.regexp_allocate_initialize(new_target, pattern, flags, span)
+    }
+
+    // RegExpCreate (22.2.3.1) bypasses IsRegExp, call identity and original-slot
+    // copying. Its Pattern argument is always passed directly to ToString.
+    pub(in crate::function) fn regexp_create(
+        &mut self,
+        pattern: Value,
+        flags: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .regexp
+            .constructor
+            .clone();
+        self.regexp_allocate_initialize(constructor, pattern, flags, span)
+    }
+
+    #[inline(never)]
+    fn regexp_allocate_initialize(
+        &mut self,
+        new_target: ObjectHandle,
+        pattern: Value,
+        flags: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // RegExpAlloc precedes both ToString conversions. Constructor input's
+        // public source/flags Gets complete before GetPrototypeFromConstructor.
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = if let Value::Object(prototype) = prototype {
             prototype

@@ -1782,8 +1782,15 @@ String.match/matchAll/search support custom object Symbol hooks with original
 receivers, exact arguments, and unchanged results. MatchAll checks IsRegExp and
 global flags before hook lookup. Regressions cover coercion/getter order, abrupt
 identity, non-callable hooks, ignored primitive hooks, function metadata, collection,
-and host aborts. Receiver conversion precedes the unsupported native RegExp fallback;
-no substring approximation is counted as matching. The complete String property
+and host aborts. The direct RegExpCreate fallback now converts the receiver before
+allocating and initializing its pattern through the intrinsic, bypassing constructor
+identity and native-copy rules. It invokes the newly created object's live Symbol
+method with the converted String; matchAll supplies g and creates a lazy iterator.
+Thirteen integration tests cover fresh native objects, property/conversion order,
+exact receivers and arguments, syntax and method errors, ignored primitive hooks,
+lazy custom exec, collection, a 120,000-unit retained input and native stack guards.
+Native matching remains Unsupported; no substring approximation is counted as
+matching. The complete String property
 inventory supports ordered reflection, copying, enumeration, and integrity operations.
 
 The standalone ECMA-404 JSON parser preserves UTF-16 strings, duplicate names,

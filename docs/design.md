@@ -1556,8 +1556,15 @@ String.match, matchAll, and search delegate to object Symbol hooks before receiv
 conversion, preserving the original receiver and returning the hook result unchanged
 (22.1.3.11–12, 21). MatchAll performs IsRegExp, reads/coerces flags, and requires a
 lowercase g before looking up Symbol.matchAll. Edition 17 ignores primitive prototype
-hooks. If no hook is available, convert the receiver before reporting the remaining
-RegExpCreate/matcher gap as Unsupported. Do not approximate regular expressions
+hooks. If no hook is available, convert the receiver, then RegExpCreate allocates
+from the intrinsic constructor and initializes the pattern directly. It bypasses
+IsRegExp, constructor call identity and copying of native original slots. Undefined
+patterns become empty; matchAll supplies g while match/search supply undefined
+flags. Invoke reads the new object's live Symbol method and calls it with that
+object as receiver and the converted String as its sole argument. Missing or
+non-callable methods throw TypeError. Default matchAll creates its lazy native
+iterator; native matching remains Unsupported when execution reaches the matcher.
+Do not approximate regular expressions
 with literal substring matching. These native methods complete the baseline String
 property inventory, enabling ordered reflection, enumeration, copying, and integrity
 operations independently of the missing native matcher.

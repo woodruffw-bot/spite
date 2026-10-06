@@ -150,6 +150,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add String match/matchAll/search object-hook delegation with ordered receiver and global-flag checks.
 - [x] Complete the edition-17 String property inventory and enable prototype reflection, enumeration, and integrity operations.
 - [ ] Connect String match/matchAll/search fallbacks to native RegExp creation and matching.
+- [x] Implement direct RegExpCreate fallback allocation and live Symbol invocation for String match/matchAll/search, including lazy global matchAll creation.
 - [x] Add exact Number.prototype.toFixed rounding, argument order, and special cases.
 - [x] Add exact Number.prototype.toPrecision with significant zeros and exponent correction.
 - [x] Add Number.prototype.toExponential with shortest and explicit-digit formatting.

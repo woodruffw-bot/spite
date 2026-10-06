@@ -32,12 +32,20 @@ impl Realm {
                 return self.call(method, pattern, vec![receiver], span);
             }
         }
-        // ToString(receiver) precedes RegExpCreate. The native RegExp grammar
-        // and matcher are still missing; never substitute literal string search.
-        self.string(receiver, span)?;
-        Err(Self::unsupported(
-            span,
-            "native regular expression creation and matching are not implemented",
-        ))
+        // RegExpCreate uses the intrinsic directly without RegExp's callable
+        // identity or native-copy rules. Invoke then reads the new object's live
+        // Symbol method; only matchAll supplies the global flag (22.1.3.11–12, 21).
+        let string = self.string(receiver, span)?;
+        let flags = if matches!(symbol, WellKnownSymbol::MatchAll) {
+            Value::String(JsString::from("g"))
+        } else {
+            Value::Undefined
+        };
+        let regexp = self.regexp_create(pattern, flags, span)?;
+        let Value::Object(object) = &regexp else {
+            unreachable!("RegExpCreate returns Object")
+        };
+        let method = self.get_property(object, &symbol.symbol(), span)?;
+        self.call(method, regexp, vec![Value::String(string)], span)
     }
 }
