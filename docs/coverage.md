@@ -42,7 +42,7 @@ not an alternative language specification.
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13078 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13116 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -806,6 +806,15 @@ ignored hooks, branding, frozen instances, exact opt-in output limits and recove
 after recursive primitive conversion. A CLI control verifies malformed-host
 failures and independent invalid/saved-string branches. The three locale methods
 remain Unsupported; the fixture inventory is unchanged in this implementation step.
+
+A separate local string corpus review adds nineteen unchanged originals and 38
+normal/strict positives for Date() output/ignored values, own-string parsing,
+negative-year widths, branding and metadata. All 21 whole files in the three
+string directories and four earlier held-out programs were reviewed. Three
+invalid-Date files were already present; the three RegExp.exec-dependent format
+files remain excluded without pass credit. The cohort passes on both compilers
+under UTC, New York, Lord Howe and Paris. The pin, ten helpers, original assertions
+and unlimited defaults are unchanged.
 
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
@@ -1767,7 +1776,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13078 variants are four raw positives, 11601 positives using the upstream
+Rust. Its 13116 variants are four raw positives, 11639 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
