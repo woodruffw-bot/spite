@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction, original slots, getters and branding; ordinary-mode literal compilation/matching, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching and literal execution remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13390 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13426 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -320,6 +320,18 @@ cleanup. The existing slot-lifetime regression also retains a compiled matcher
 through collection. Broader Patterns and u/v still report Unsupported after the
 specified coercions. Both compilers pass the complete unchanged corpus; literals,
 new upstream fixtures and broader matching receive no additional pass credit.
+
+A focused RegExp exec fixture review reads twenty whole programs at the existing
+pin. Eighteen newly vendored originals add 36 normal/strict positives: native
+literal search and result Array stringification, exec metadata/descriptors,
+non-construction and brand rejection across ordinary objects, functions,
+wrappers, primitives and undefined. The prior not-a-constructor fixture is
+unchanged; one program requiring literal execution and broader matching remains
+outside the corpus. This is not a complete directory review. Original bytes,
+assertions and metadata are unchanged, and both compiler versions pass every
+selected variant with ordinary unlimited defaults. The pin, ten helpers and all
+prior exact negative expectations are unchanged. Corpus totals are 6993 fixtures,
+6974 reviewed Script sources and 13426 variants, including 11949 harness positives.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
@@ -2094,7 +2106,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13390 variants are four raw positives, 11913 positives using the upstream
+Rust. Its 13426 variants are four raw positives, 11949 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
