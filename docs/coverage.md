@@ -361,6 +361,19 @@ valid unsupported matching aborts after preceding effects and skips handlers and
 finalizers. Both compilers pass the unchanged complete corpus with unlimited
 defaults. No fixture, expected negative diagnostic, dependency or quota is added.
 
+Ordinary literal compilation now also flattens unquantified noncapturing groups.
+Three core regressions cover a reviewed 50-record insta snapshot, an independent
+sliding-window oracle over nested groups, and iterative compilation, matching and
+drop of 100,000 nested groups. The earlier snapshot changes only the two empty
+group records. An independent engine agrees on all 280 supported search/sticky
+ranges and nine runtime programs. Four runtime regressions preserve original
+source and flag text, absence of capture/group slots, UTF-16 indices, global and
+sticky lastIndex state, empty matches and advancement through generic consumers.
+Other group productions, quantified groups and Unicode matching remain explicitly
+unsupported. Both compilers pass the complete unchanged corpus and the native
+stack checks with ordinary unlimited defaults. No fixture, dependency, default
+quota or parse-negative expectation changes.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

@@ -5,8 +5,9 @@ use std::{ops::Range, sync::Arc};
 
 /// An immutable literal-only matcher for a validated non-Unicode Pattern.
 ///
-/// Compilation accepts concatenated literal characters and their character
-/// escapes. Other productions return `None`; callers must keep that distinct
+/// Compilation accepts concatenated literal characters, their character escapes,
+/// and noncapturing groups containing the same subset. Other productions return
+/// `None`; callers must keep that distinct
 /// from a failed match. The input must already have passed Pattern validation
 /// without `u` or `v`. Match ranges use UTF-16 code-unit offsets, not byte spans.
 /// Compilation and search are linear in Pattern and input length respectively.
@@ -25,9 +26,27 @@ impl RegExpLiteralMatcher {
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
         let source = source.code_units();
         let mut index = 0;
+        let mut groups = 0usize;
         let mut units = Vec::new();
         while let Some(&unit) = source.get(index) {
             index += 1;
+            // Atom :: (?: Disjunction ) (22.2.2). An unquantified group whose
+            // body is a literal concatenation has exactly that body's matcher,
+            // including the empty body, and contributes no capture. Flatten
+            // nested groups iteratively so compilation and storage never add
+            // native recursion. Every other group production remains unsupported.
+            if unit == u16::from(b'(') {
+                if source.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
+                    return None;
+                }
+                index += 2;
+                groups = groups.checked_add(1)?;
+                continue;
+            }
+            if unit == u16::from(b')') {
+                groups = groups.checked_sub(1)?;
+                continue;
+            }
             let unit = if unit == u16::from(b'\\') {
                 let escaped = *source.get(index)?;
                 index += 1;
@@ -57,6 +76,9 @@ impl RegExpLiteralMatcher {
                 unit
             };
             units.push(canonicalize(unit, ignore_case));
+        }
+        if groups != 0 {
+            return None;
         }
         let mut failure = vec![0; units.len()];
         let mut matched = 0;
@@ -303,5 +325,113 @@ mod tests {
         assert_eq!(clone.find(&input, 0, true), None);
         let miss = JsString::from(format!("{}c", "a".repeat(120_000)).as_str());
         assert_eq!(clone.find(&miss, 0, false), None);
+    }
+
+    #[test]
+    fn noncapturing_group_compilation_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(?:)",
+            "a(?:)b",
+            "(?:ab)",
+            "(?:a(?:b)c)",
+            "(?:(?:))",
+            "(?:a)(?:b)",
+            r"(?:\(\))",
+            r"(?:\uD83D)(?:\uDCA9)",
+            "(?:σ)",
+            "(?:s)",
+            "(?:a|b)",
+            "(?:a*)",
+            "(?:a)*",
+            "(?:a){1}",
+            "(?:a)?",
+            "(?i:a)",
+            "(?=a)",
+            "(?!a)",
+            "(?<=a)",
+            "(?<!a)",
+            "(?<x>a)",
+            "(a)",
+            "(?:a",
+            ")",
+            "(?:))",
+        ] {
+            for ignore_case in [false, true] {
+                let source = JsString::from(source);
+                write!(rows, "{source:?} i={ignore_case}").unwrap();
+                if let Some(matcher) = RegExpLiteralMatcher::compile(&source, ignore_case) {
+                    for input in ["", "xabcy", "AB", "()", "x💩y", "ς", "ſ"] {
+                        let input = JsString::from(input);
+                        write!(
+                            rows,
+                            " {input:?}:{:?}/{:?}",
+                            matcher.find(&input, 0, false),
+                            matcher.find(&input, 0, true)
+                        )
+                        .unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nested_groups_agree_with_independent_sliding_window_oracle() {
+        let inputs = words(4);
+        for units in words(2) {
+            let mut source = "(?:(?:)".encode_utf16().collect::<Vec<_>>();
+            for &unit in units.code_units() {
+                source.extend("(?:".encode_utf16());
+                source.push(unit);
+                source.push(u16::from(b')'));
+            }
+            source.extend(")(?:)".encode_utf16());
+            let source = JsString::from_code_units(source);
+            for ignore_case in [false, true] {
+                let matcher = RegExpLiteralMatcher::compile(&source, ignore_case).unwrap();
+                for input in &inputs {
+                    for start in 0..=input.len() + 1 {
+                        for sticky in [false, true] {
+                            let expected = (start..=input.len()).find_map(|offset| {
+                                if sticky && offset != start {
+                                    return None;
+                                }
+                                let end = offset.checked_add(units.len())?;
+                                input
+                                    .code_units()
+                                    .get(offset..end)?
+                                    .iter()
+                                    .zip(units.code_units())
+                                    .all(|(&a, &b)| {
+                                        canonicalize(a, ignore_case) == canonicalize(b, ignore_case)
+                                    })
+                                    .then_some(offset..end)
+                            });
+                            assert_eq!(
+                                matcher.find(input, start, sticky),
+                                expected,
+                                "{source:?} {input:?} start={start} i={ignore_case} y={sticky}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn deeply_nested_noncapturing_groups_compile_match_and_drop_iteratively() {
+        let source = format!("{}a{}", "(?:".repeat(100_000), ")".repeat(100_000));
+        let matcher =
+            RegExpLiteralMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        assert_eq!(matcher.0.units, [u16::from(b'a')]);
+        assert_eq!(matcher.find(&JsString::from("ba"), 0, false), Some(1..2));
+        assert_eq!(matcher.find(&JsString::from("ba"), 0, true), None);
+        drop(matcher);
     }
 }

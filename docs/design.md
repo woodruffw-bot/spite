@@ -162,8 +162,12 @@ preserve surrogate values. The existing case-table generator checks the pinned
 CaseFolding.txt input; Rust's Unicode version cannot change this behavior.
 
 Core literal-only Pattern compilation (22.2.2) accepts the ordinary UTF-16 mode,
-concatenated literal characters, control escapes, fixed hex/Unicode escapes and
-escaped syntax characters. Other productions return an explicit unsupported
+concatenated literal characters, control escapes, fixed hex/Unicode escapes,
+escaped syntax characters and unquantified noncapturing groups of that subset.
+Compilation flattens nested groups iteratively; each contributes the body's
+matcher, including an empty match, without capture slots. Grouped alternatives,
+quantifiers, assertions, capturing groups and scoped modifiers remain unsupported.
+Other productions return an explicit unsupported
 compilation result; that result is distinct from a failed search. Keep Pattern
 validation separate and require it before compilation. Fold each compiled unit
 with the pinned ordinary Canonicalize operation. A flat prefix-failure table

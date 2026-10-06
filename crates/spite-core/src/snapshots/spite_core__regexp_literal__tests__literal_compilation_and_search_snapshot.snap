@@ -48,8 +48,8 @@ expression: rows
 "\u0390" i=true input="\u0399\u0308\u0301" 0:None/None 1:None/None 3:None/None 4:None/None
 "(a)" i=false input="a" unsupported
 "(a)" i=true input="a" unsupported
-"(?:)" i=false input="" unsupported
-"(?:)" i=true input="" unsupported
+"(?:)" i=false input="" 0:Some(0..0)/Some(0..0) 1:None/None 0:Some(0..0)/Some(0..0) 1:None/None
+"(?:)" i=true input="" 0:Some(0..0)/Some(0..0) 1:None/None 0:Some(0..0)/Some(0..0) 1:None/None
 "a|b" i=false input="a" unsupported
 "a|b" i=true input="a" unsupported
 "[a]" i=false input="a" unsupported

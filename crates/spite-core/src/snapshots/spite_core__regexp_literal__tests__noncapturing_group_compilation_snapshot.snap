@@ -1,0 +1,54 @@
+---
+source: crates/spite-core/src/regexp_literal.rs
+expression: rows
+---
+"(?:)" i=false "":Some(0..0)/Some(0..0) "xabcy":Some(0..0)/Some(0..0) "AB":Some(0..0)/Some(0..0) "()":Some(0..0)/Some(0..0) "x\ud83d\udca9y":Some(0..0)/Some(0..0) "\u03c2":Some(0..0)/Some(0..0) "\u017f":Some(0..0)/Some(0..0)
+"(?:)" i=true "":Some(0..0)/Some(0..0) "xabcy":Some(0..0)/Some(0..0) "AB":Some(0..0)/Some(0..0) "()":Some(0..0)/Some(0..0) "x\ud83d\udca9y":Some(0..0)/Some(0..0) "\u03c2":Some(0..0)/Some(0..0) "\u017f":Some(0..0)/Some(0..0)
+"a(?:)b" i=false "":None/None "xabcy":Some(1..3)/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"a(?:)b" i=true "":None/None "xabcy":Some(1..3)/None "AB":Some(0..2)/Some(0..2) "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:ab)" i=false "":None/None "xabcy":Some(1..3)/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:ab)" i=true "":None/None "xabcy":Some(1..3)/None "AB":Some(0..2)/Some(0..2) "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:a(?:b)c)" i=false "":None/None "xabcy":Some(1..4)/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:a(?:b)c)" i=true "":None/None "xabcy":Some(1..4)/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:(?:))" i=false "":Some(0..0)/Some(0..0) "xabcy":Some(0..0)/Some(0..0) "AB":Some(0..0)/Some(0..0) "()":Some(0..0)/Some(0..0) "x\ud83d\udca9y":Some(0..0)/Some(0..0) "\u03c2":Some(0..0)/Some(0..0) "\u017f":Some(0..0)/Some(0..0)
+"(?:(?:))" i=true "":Some(0..0)/Some(0..0) "xabcy":Some(0..0)/Some(0..0) "AB":Some(0..0)/Some(0..0) "()":Some(0..0)/Some(0..0) "x\ud83d\udca9y":Some(0..0)/Some(0..0) "\u03c2":Some(0..0)/Some(0..0) "\u017f":Some(0..0)/Some(0..0)
+"(?:a)(?:b)" i=false "":None/None "xabcy":Some(1..3)/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:a)(?:b)" i=true "":None/None "xabcy":Some(1..3)/None "AB":Some(0..2)/Some(0..2) "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:\u005c(\u005c))" i=false "":None/None "xabcy":None/None "AB":None/None "()":Some(0..2)/Some(0..2) "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:\u005c(\u005c))" i=true "":None/None "xabcy":None/None "AB":None/None "()":Some(0..2)/Some(0..2) "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:\u005cuD83D)(?:\u005cuDCA9)" i=false "":None/None "xabcy":None/None "AB":None/None "()":None/None "x\ud83d\udca9y":Some(1..3)/None "\u03c2":None/None "\u017f":None/None
+"(?:\u005cuD83D)(?:\u005cuDCA9)" i=true "":None/None "xabcy":None/None "AB":None/None "()":None/None "x\ud83d\udca9y":Some(1..3)/None "\u03c2":None/None "\u017f":None/None
+"(?:\u03c3)" i=false "":None/None "xabcy":None/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:\u03c3)" i=true "":None/None "xabcy":None/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":Some(0..1)/Some(0..1) "\u017f":None/None
+"(?:s)" i=false "":None/None "xabcy":None/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:s)" i=true "":None/None "xabcy":None/None "AB":None/None "()":None/None "x\ud83d\udca9y":None/None "\u03c2":None/None "\u017f":None/None
+"(?:a|b)" i=false unsupported
+"(?:a|b)" i=true unsupported
+"(?:a*)" i=false unsupported
+"(?:a*)" i=true unsupported
+"(?:a)*" i=false unsupported
+"(?:a)*" i=true unsupported
+"(?:a){1}" i=false unsupported
+"(?:a){1}" i=true unsupported
+"(?:a)?" i=false unsupported
+"(?:a)?" i=true unsupported
+"(?i:a)" i=false unsupported
+"(?i:a)" i=true unsupported
+"(?=a)" i=false unsupported
+"(?=a)" i=true unsupported
+"(?!a)" i=false unsupported
+"(?!a)" i=true unsupported
+"(?<=a)" i=false unsupported
+"(?<=a)" i=true unsupported
+"(?<!a)" i=false unsupported
+"(?<!a)" i=true unsupported
+"(?<x>a)" i=false unsupported
+"(?<x>a)" i=true unsupported
+"(a)" i=false unsupported
+"(a)" i=true unsupported
+"(?:a" i=false unsupported
+"(?:a" i=true unsupported
+")" i=false unsupported
+")" i=true unsupported
+"(?:))" i=false unsupported
+"(?:))" i=true unsupported
