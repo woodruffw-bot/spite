@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding, constructor/prototype metadata, generic flags/toString, prototype flag/source exceptions, and custom-exec test/match/search delegation; native instances, construction, matching, matchAll/replace/split and the string iterator remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13222 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13264 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -316,6 +316,15 @@ inherited setters, surrogate pairs/unpaired units, end and safe-integer index
 boundaries, strict write failures, abrupt completion effects, String hook
 delegation, opted-in work aborts and recursive callbacks on the native stack
 guards. No native matcher, fixture count, dependency or default quota is added.
+
+A separate match/search review reads all 76 whole programs at the existing pin.
+Seven unchanged match and fourteen unchanged search originals add 42 passing
+normal/strict variants on both compilers for generic operation ordering,
+custom-exec validation, lastIndex preservation, abrupt completions and metadata.
+The other 55 whole programs require native instances or matching, including two
+not-a-constructor programs that first construct a RegExp; they remain excluded
+with no source rewriting or pass credit. The pin, ten helpers and unlimited
+defaults are unchanged; this cohort claims no native matcher coverage.
 
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
@@ -1862,7 +1871,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13222 variants are four raw positives, 11745 positives using the upstream
+Rust. Its 13264 variants are four raw positives, 11787 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
