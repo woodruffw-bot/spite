@@ -30,7 +30,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Scan syntactic lookahead on demand and preserve lexical failures across Script, eval, and dynamic Function grammar goals.
 - [x] Add explicit scanner lexical goals and lossless RegExp body/flag boundary scanning, with distinct unsupported Pattern diagnostics.
 - [x] Reject invalid and repeated RegExp literal flags and simultaneous u/v Unicode modes before Pattern parsing.
-- [x] Validate core RegExp groups, assertions, quantifiers, scoped modifiers, character escapes, and numbered backreferences without native recursion.
+- [x] Validate core RegExp groups, assertions, quantifiers, scoped modifiers, character escapes, numbered backreferences and the normative capture-count bound without native recursion.
 - [x] Validate ordinary RegExp character classes, character-valued range endpoints, and range ordering with Unicode surrogate escape pairing.
 - [x] Validate RegExp capture names, named forward references, and alternative-sensitive duplicate-name early errors.
 - [x] Validate flat UnicodeSetsMode class unions, ranges, reserved punctuation, string disjunctions, and inversion early errors.

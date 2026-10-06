@@ -396,6 +396,14 @@ backreference boundaries. Both compilers pass the complete unchanged corpus and
 native stack checks with ordinary unlimited defaults. No fixture, dependency,
 quota or expected parse diagnostic changes.
 
+The Pattern validator's capture-count bound now rejects the first forbidden
+total rather than admitting one extra group. An internal boundary regression
+checks the largest permitted count and rejection without counter mutation or
+overflow in ordinary, u and v modes, without allocating a huge source. This is
+the 22.2.1.1 grammar early error, not a default resource quota. Both compiler
+versions pass the complete unchanged corpus; fixture inventories and every
+prior negative expectation remain unchanged.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

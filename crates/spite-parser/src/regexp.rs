@@ -263,9 +263,9 @@ impl Pattern {
     }
 
     fn capture(&mut self) -> Result<(), Failure> {
-        // The specification rejects CountLeftCapturingParens >= 2^32 - 1.
+        // 22.2.1.1 rejects CountLeftCapturingParensWithin >= 2^32 - 1.
         // This is a grammar early error, not a host resource quota.
-        if self.captures == u32::MAX - 1 {
+        if self.captures >= u32::MAX - 2 {
             return Err(syntax("too many regular expression capturing groups"));
         }
         self.captures += 1;
@@ -634,4 +634,45 @@ fn decimal_cmp(left: &[u32], right: &[u32]) -> Ordering {
     let left = &left[significant(left)..];
     let right = &right[significant(right)..];
     left.len().cmp(&right.len()).then_with(|| left.cmp(right))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn capturing_group_count_rejects_the_first_forbidden_total_before_incrementing() {
+        // Pattern early errors (22.2.1.1) require a total strictly below 2^32-1.
+        // Exercise the counter directly so the boundary needs no huge source.
+        for mode in [
+            Mode {
+                unicode: false,
+                sets: false,
+            },
+            Mode {
+                unicode: true,
+                sets: false,
+            },
+            Mode {
+                unicode: true,
+                sets: true,
+            },
+        ] {
+            let mut pattern = Pattern::new(&JsString::default(), mode);
+            pattern.captures = u32::MAX - 3;
+            assert_eq!(pattern.capture(), Ok(()));
+            assert_eq!(pattern.captures, u32::MAX - 2);
+            for count in [u32::MAX - 2, u32::MAX - 1, u32::MAX] {
+                pattern.captures = count;
+                assert_eq!(
+                    pattern.capture(),
+                    Err((
+                        DiagnosticKind::Syntax,
+                        "too many regular expression capturing groups"
+                    ))
+                );
+                assert_eq!(pattern.captures, count);
+            }
+        }
+    }
 }

@@ -121,6 +121,9 @@ constructor input. It accepts the original UTF-16 body without literal delimiter
 including raw line terminators and lone surrogates, and returns the exact capture
 count. Flag errors precede Pattern errors. Diagnostics retain the caller's source
 span rather than treating UTF-16 offsets as source byte positions.
+Capturing-group totals must remain strictly below 2^32 - 1 (22.2.1.1). Reject
+the first forbidden total before incrementing the counter; this is the specified
+grammar early error, not a host resource quota.
 Validated literals produce AST values retaining the original body and flag Strings
 and the complete token byte span. Each evaluation calls intrinsic RegExpCreate
 (13.2.7), creating a fresh branded object with +0 lastIndex. Public RegExp bindings
