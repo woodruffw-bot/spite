@@ -259,8 +259,7 @@ impl Realm {
             )?;
             methods.push(method);
         }
-        // Materialize the complete edition-17 property graph. Pending bodies
-        // report Unsupported, so inherited methods never silently disappear.
+        // Materialize the complete edition-17 property graph.
         for method in Method::ALL {
             let function =
                 self.new_builtin(function_prototype, Builtin::DateMethod(method), span)?;
@@ -600,7 +599,15 @@ impl Realm {
                 };
                 Ok(Value::Number(value))
             }
-            _ => Err(Self::unsupported(span, "Date locale string formatting")),
+            // 21.4.4.38–40 permit an implementation-defined fallback when
+            // ECMA-402 is absent. This host uses fixed English conventions
+            // and ignores both reserved parameter positions.
+            Method::ToLocaleDateString => self.date_format_local(Method::ToDateString, time, span),
+            Method::ToLocaleTimeString => self.date_format_local(Method::ToTimeString, time, span),
+            Method::ToLocaleString => self.date_format_local(Method::ToString, time, span),
+            Method::ToJson | Method::ToPrimitive => {
+                unreachable!("generic Date methods dispatched above")
+            }
         }
     }
 

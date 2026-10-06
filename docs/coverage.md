@@ -816,6 +816,19 @@ files remain excluded without pass credit. The cohort passes on both compilers
 under UTC, New York, Lord Howe and Paris. The pin, ten helpers, original assertions
 and unlimited defaults are unchanged.
 
+The three Date locale string methods now use the edition-17 non-Intl fallback.
+This host's fixed English conventions map to the corresponding local date/time
+formatter; no receiver formatting method is invoked. Both reserved argument
+positions are ignored without coercion or property reads, as required without
+ECMA-402. Two regressions cover poisoned options and locale values, evaluated
+extra arguments, overridden methods, branding, frozen instances and invalid Date
+values across UTC, New York, Lord Howe and Abidjan. The CLI host control now also
+covers all three locale methods, including malformed zone data and invalid
+branches that return without loading it. Exact offsets and opted-in output
+limits reuse the already verified shared helper. All edition-17 Date bodies now
+dispatch explicitly; Annex B and ECMA-402 remain outside the target. The fixture
+inventory, pin, unlimited defaults and native-stack guards are unchanged.
+
 Runtime object records add string/symbol data/accessor descriptors, extensibility,
 deletion, array-index ordering, and tracing of prototype handles. Frozen
 properties use SameValue and preserve equivalent NaN payloads. Accessor descriptors

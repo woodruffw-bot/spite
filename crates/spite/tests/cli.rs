@@ -342,12 +342,15 @@ fn local_strings_load_host_data_but_invalid_and_saved_offset_strings_remain_inde
             .unwrap()
     };
     let independent = run(
-        "let d=new Date(NaN);d.toString()==='Invalid Date' && d.toDateString()==='Invalid Date' && d.toTimeString()==='Invalid Date' && Date.parse('Thu Jan 01 1970 00:00:00 GMT+0000')===0 && Date.parse('Thu Jan 01 1970 00:00:00 GMT+0000 (UTC+00:00:01)')===-1000 && new Date('Fri Dec 31 -0001 19:03:58 GMT-0456 (UTC-04:56:02)').getTime()===Date.parse('0000-01-01')",
+        "let d=new Date(NaN);d.toString()==='Invalid Date' && d.toDateString()==='Invalid Date' && d.toTimeString()==='Invalid Date' && d.toLocaleString(Symbol(),1n)==='Invalid Date' && d.toLocaleDateString(Symbol(),1n)==='Invalid Date' && d.toLocaleTimeString(Symbol(),1n)==='Invalid Date' && Date.parse('Thu Jan 01 1970 00:00:00 GMT+0000')===0 && Date.parse('Thu Jan 01 1970 00:00:00 GMT+0000 (UTC+00:00:01)')===-1000 && new Date('Fri Dec 31 -0001 19:03:58 GMT-0456 (UTC-04:56:02)').getTime()===Date.parse('0000-01-01')",
     );
     let failures = [
         "new Date(0).toString()",
         "new Date(0).toDateString()",
         "new Date(0).toTimeString()",
+        "new Date(0).toLocaleString({get timeZone(){throw 7;}})",
+        "new Date(0).toLocaleDateString({get timeZone(){throw 7;}})",
+        "new Date(0).toLocaleTimeString({get timeZone(){throw 7;}})",
         "Date({[Symbol.toPrimitive](){throw 7;}})",
     ]
     .map(|source| {

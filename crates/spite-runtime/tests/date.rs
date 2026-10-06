@@ -290,26 +290,7 @@ fn primitive_conversion_is_generic_validates_hint_without_coercion_and_orders_me
 }
 
 #[test]
-fn unsupported_locale_operations_remain_host_failures_and_calendar_coercion_keeps_order() {
-    for source in [
-        "new Date(0).toLocaleString()",
-        "new Date(0).toLocaleDateString()",
-        "new Date(0).toLocaleTimeString()",
-    ] {
-        let mut realm = Realm::default();
-        realm.eval("var marker=0").unwrap();
-        assert!(
-            matches!(
-                realm.eval(&format!(
-                    "try{{{source};}}catch{{marker=1;}}finally{{marker=2;}}"
-                )),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
-        assert_eq!(realm.eval("new Date(7).getTime()"), Ok(Value::Number(7.0)));
-    }
+fn calendar_coercion_keeps_order_and_propagates_abrupt_completions() {
     for source in [
         "new Date({valueOf(){trace+='a';return NaN;}},{valueOf(){trace+='b';throw 7;}})",
         "Date.UTC({valueOf(){trace+='a';return NaN;}},{valueOf(){trace+='b';throw 7;}})",

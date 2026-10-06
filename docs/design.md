@@ -52,7 +52,7 @@ measurements identify a problem and conformance tests protect the behavior.
 | `spite-heap` | Safe generational storage, explicit roots, and bounded tracing | std |
 | `spite-core` | Source locations, UTF-16 strings, shared language primitives | std, bigint |
 | `spite-parser` | Lexical grammar, AST, parsing, static semantics and early errors | core |
-| `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, heap, parser |
+| `spite-runtime` | Values, abstract operations, environments, objects, execution | core, bigint, heap, parser, jiff, jiff-tzdb |
 | `spite` | Small embedding facade and command-line host | core, parser, runtime |
 | `spite-test262` | Test262 metadata, execution modes, harness and result accounting | engine, development tooling |
 
@@ -2531,8 +2531,13 @@ OrdinaryToPrimitive directly, avoiding redispatch through its own hook. Generic
 toJSON boxes its receiver, requests a numeric primitive and returns null for
 non-finite Numbers before looking up toISOString; other primitive results invoke
 that method on the boxed original object with no arguments. Invalid Date string
-methods return "Invalid Date". The three locale string methods remain explicit
-Unsupported. UTC hour/minute/second/millisecond setters capture the time value
+methods return "Invalid Date". The three locale string methods use the edition-17
+non-Intl fallback (21.4.4.38–40). This host's fixed English conventions use the
+corresponding local date/time formatters directly, without invoking overridable
+receiver methods. Both reserved parameter positions are ignored without reading
+or coercing their values; ECMA-402 remains outside the target. Branding, invalid
+values, exact offsets, host errors and output quotas follow the shared formatter.
+UTC hour/minute/second/millisecond setters capture the time value
 before ordered argument conversion and retain omitted fields from that captured
 instant. They normalize rollover with MakeTime/MakeDate and then apply TimeClip.
 For a captured NaN time, all present arguments still convert before returning
