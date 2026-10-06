@@ -116,7 +116,7 @@ fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps
         "/(a)+/.test('a')",
         "/(?:ab)+/.test('a')",
         "/a+[b]/.test('ab')",
-        "/a+|b/.test('b')",
+        "/a+[b]|b/.test('b')",
         "/^a+$/.test('a')",
         "/a+/u.test('a')",
         "/[a]+/v.test('a')",

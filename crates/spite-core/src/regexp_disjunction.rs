@@ -1,15 +1,19 @@
-//! Top-level fixed Disjunction compilation and matching (22.2.2.3).
+//! Top-level ordinary Disjunction compilation and matching (22.2.2.3).
 
-use crate::{JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpSequenceMatcher};
+use crate::{
+    JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher,
+};
 use std::{ops::Range, sync::Arc};
 
-/// Immutable top-level alternatives of fixed ordinary sequences and outer anchors.
+/// Immutable top-level alternatives of supported ordinary consuming sequences.
 ///
 /// The Pattern must already be validated without `u` or `v`. Every alternative
-/// must compile as a literal, fixed class sequence or outer-anchored sequence.
+/// must compile as a literal, fixed class sequence, outer-anchored sequence,
+/// quantified atom or quantified prefix with a literal continuation.
 /// Unsupported alternatives reject the entire plan. Nested alternatives and
-/// quantified groups remain unsupported; compilation never expands combinations
-/// or uses native recursion.
+/// capturing quantified groups remain unsupported; compilation never expands
+/// combinations or uses native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpDisjunctionMatcher(Arc<Program>);
 
@@ -18,6 +22,7 @@ struct Program {
     alternatives: Vec<Alternative>,
     capture_offsets: Vec<usize>,
     capture_count: usize,
+    full_suffix: bool,
 }
 
 #[derive(Debug)]
@@ -25,6 +30,8 @@ enum Alternative {
     Literal(RegExpLiteralMatcher),
     Sequence(RegExpSequenceMatcher),
     Anchored(RegExpAnchoredMatcher),
+    Quantified(RegExpQuantifiedMatcher),
+    QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
 }
 
 impl Alternative {
@@ -33,6 +40,7 @@ impl Alternative {
             Self::Literal(m) => m.capture_ranges(),
             Self::Sequence(m) => m.capture_ranges(),
             Self::Anchored(m) => m.capture_ranges(),
+            Self::Quantified(_) | Self::QuantifiedContinuation(_) => &[],
         }
     }
     fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
@@ -40,6 +48,8 @@ impl Alternative {
             Self::Literal(m) => m.find(input, start, sticky),
             Self::Sequence(m) => m.find(input, start, sticky),
             Self::Anchored(m) => m.find(input, start, sticky),
+            Self::Quantified(m) => m.find(input, start, sticky),
+            Self::QuantifiedContinuation(m) => m.find(input, start, sticky),
         }
     }
     fn search_passes(&self, sticky: bool) -> usize {
@@ -53,6 +63,8 @@ impl Alternative {
                 }
             }
             Self::Anchored(m) => m.search_passes(sticky),
+            Self::Quantified(_) => 1,
+            Self::QuantifiedContinuation(_) => 2,
         }
     }
 }
@@ -104,6 +116,20 @@ impl RegExpDisjunctionMatcher {
                 &mut charge,
             )? {
                 Alternative::Anchored(m)
+            } else if let Some(m) = RegExpQuantifiedMatcher::compile_with_work(
+                &source,
+                ignore_case,
+                dot_all,
+                &mut charge,
+            )? {
+                Alternative::Quantified(m)
+            } else if let Some(m) = RegExpQuantifiedContinuationMatcher::compile_with_work(
+                &source,
+                ignore_case,
+                dot_all,
+                &mut charge,
+            )? {
+                Alternative::QuantifiedContinuation(m)
             } else {
                 return Ok(None);
             };
@@ -114,10 +140,18 @@ impl RegExpDisjunctionMatcher {
             capture_count = count;
             alternatives.push(matcher);
         }
+        charge(alternatives.len())?;
+        let full_suffix = alternatives.iter().any(|branch| {
+            matches!(
+                branch,
+                Alternative::Quantified(_) | Alternative::QuantifiedContinuation(_)
+            )
+        });
         Ok(Some(Self(Arc::new(Program {
             alternatives,
             capture_offsets,
             capture_count,
+            full_suffix,
         }))))
     }
 
@@ -131,6 +165,11 @@ impl RegExpDisjunctionMatcher {
     /// Number of alternatives, for optional worst-case work accounting.
     pub fn alternative_count(&self) -> usize {
         self.0.alternatives.len()
+    }
+
+    /// Quantified branches may inspect the entire suffix even at one sticky start.
+    pub fn requires_full_suffix(&self) -> bool {
+        self.0.full_suffix
     }
 
     /// Total capturing groups in source order, including unselected branches.
@@ -151,8 +190,8 @@ impl RegExpDisjunctionMatcher {
 
     /// Finds the earliest match, choosing source order for equal start offsets.
     ///
-    /// Sticky matching considers only `start`. Literal branches retain linear
-    /// search; fixed class branches retain their input/atom candidate bound.
+    /// Sticky matching considers only `start`. Literal/quantified branches retain
+    /// linear search; fixed class branches retain their input/atom candidate bound.
     /// Search allocates nothing.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
         self.find_branch(input, start, sticky)
@@ -234,6 +273,150 @@ fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn quantified_alternative_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "a+|a",
+            "a|a+",
+            "a+?|a+",
+            "a+|a+?",
+            "[ab]*ab|[ab]*?ab",
+            "[ab]*?ab|[ab]*ab",
+            "([x])|[ab]+",
+            "([x])()|[ab]+|([y])",
+            "[ab]+|([x])",
+            "a*|b",
+            "a|b*",
+            "[]+|a",
+            "[^]*x|([a])",
+            "^([a])$|b+",
+            "(?:a)+|([b])",
+            r"\d+x|([a])",
+            ".+|([a])",
+            "a+[b]|a",
+            "(a)+|b",
+            "(a+|b)",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+            ] {
+                let matcher = RegExpDisjunctionMatcher::compile_with_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " captures={} branches={} full_suffix={}",
+                        matcher.capture_count(),
+                        matcher.alternative_count(),
+                        matcher.requires_full_suffix()
+                    )
+                    .unwrap();
+                    for input in [
+                        "", "a", "aaaa", "baaa", "abab", "x", "y", "ABab", "12x", "a\nb", "\n",
+                        "x\na\n",
+                    ] {
+                        let input = JsString::from(input);
+                        write!(
+                            rows,
+                            " {input:?}:{:?}/{:?}",
+                            matcher.find_branch(&input, 0, false),
+                            matcher.find_branch(&input, 1, true)
+                        )
+                        .unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn quantified_branches_keep_position_first_source_order_and_capture_offsets() {
+        let m = RegExpDisjunctionMatcher::compile(&JsString::from("[ab]*?ab|([a])|[ab]+"), false)
+            .unwrap();
+        assert_eq!(m.capture_count(), 1);
+        assert_eq!(m.branch_captures(0), Some((0, &[][..])));
+        assert_eq!(m.branch_captures(2), Some((1, &[][..])));
+        for len in 0..=6u32 {
+            for mut encoded in 0..3usize.pow(len) {
+                let mut units = Vec::new();
+                for _ in 0..len {
+                    units.push([97, 98, 120][encoded % 3]);
+                    encoded /= 3;
+                }
+                let input = JsString::from_code_units(units.clone());
+                for start in 0..=units.len() + 1 {
+                    for sticky in [false, true] {
+                        let expected = (start..=units.len())
+                            .take(if sticky { 1 } else { usize::MAX })
+                            .find_map(|candidate| {
+                                for count in 0..=units.len() - candidate {
+                                    if units[candidate..candidate + count]
+                                        .iter()
+                                        .all(|u| matches!(u, 97 | 98))
+                                        && units.get(candidate + count..candidate + count + 2)
+                                            == Some(&[97, 98])
+                                    {
+                                        return Some((0, candidate..candidate + count + 2));
+                                    }
+                                }
+                                if units.get(candidate) == Some(&97) {
+                                    return Some((1, candidate..candidate + 1));
+                                }
+                                let count = units[candidate..]
+                                    .iter()
+                                    .take_while(|u| matches!(u, 97 | 98))
+                                    .count();
+                                (count > 0).then_some((2, candidate..candidate + count))
+                            });
+                        assert_eq!(
+                            m.find_branch(&input, start, sticky),
+                            expected,
+                            "{input:?} {start} {sticky}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn quantified_alternative_bounds_and_optional_host_charges_remain_distinct() {
+        let m = RegExpDisjunctionMatcher::compile(&JsString::from("a+|a*ab|([b])"), false).unwrap();
+        assert!(m.requires_full_suffix());
+        assert_eq!(m.search_passes(false), 4);
+        assert_eq!(m.search_passes(true), 4);
+        let fixed = RegExpDisjunctionMatcher::compile(&JsString::from("[ab]a|^b$"), false).unwrap();
+        assert!(!fixed.requires_full_suffix());
+        let abort = RegExpDisjunctionMatcher::compile_with_work(
+            &JsString::from(r"\d+|[a]"),
+            false,
+            false,
+            false,
+            |n| {
+                if n == 65_536 {
+                    Err("host work")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(matches!(abort, Err("host work")));
+    }
 
     #[test]
     fn fixed_class_and_anchored_alternative_snapshot() {

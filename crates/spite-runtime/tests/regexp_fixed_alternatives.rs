@@ -114,8 +114,8 @@ fn opted_in_construction_and_search_aborts_remain_host_failures() {
 fn nested_choices_quantifiers_backreferences_and_unicode_remain_explicit_gaps() {
     for source in [
         "/([a]|b)/.test('a')",
-        "/[a]+|b/.test('b')",
-        "/a|[b]*/.test('a')",
+        "/[a]+[b]|b/.test('b')",
+        "/a|[b]*[a]/.test('a')",
         r"/([a])\1|b/.test('b')",
         "/[a]|b/u.test('a')",
         "/[a]|b/v.test('a')",

@@ -317,6 +317,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile and execute single ordinary literal/class atoms with greedy/lazy and exact/ranged quantifiers, compact counts, UTF-16 runs and sticky semantics.
 - [x] Compile and execute transparent noncapturing wrappers around a single quantified consuming atom with iterative nesting and preserved repetition order.
 - [x] Compile and execute a quantified consuming prefix with a capture-free literal continuation, preserving earliest starts, greedy/lazy order and sticky semantics.
+- [x] Compile and execute top-level quantified atom/literal-continuation alternatives alongside fixed and anchored branches, preserving repetition order, source-order ties and global capture slots.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -202,20 +202,23 @@ Programs share immutable storage across clones, and search allocates nothing.
 Unicode-mode matching remains pending.
 
 Top-level ordinary Disjunction compilation (22.2.2.3) accepts alternatives that
-each compile completely as a literal, fixed character-set sequence or outer-
-anchored sequence. The iterative delimiter scan skips escaped units and treats
+each compile completely as a literal, fixed character-set sequence, outer-
+anchored sequence, quantified atom or quantified prefix with a capture-free
+literal continuation. The iterative delimiter scan skips escaped units and treats
 ordinary bracket classes as opaque, including their bars and parentheses.
 Nested capturing/noncapturing groups are tracked without native recursion;
 nested choices and unsupported productions reject the whole plan. Each branch
 reuses its existing matcher. The earliest start wins, with source order breaking
 ties, including empty alternatives; match length does not break a tie.
 Compilation never expands combinations; plans share immutable storage and
-matching allocates nothing. Literal branches retain linear prefix-failure search;
+matching allocates nothing. Literal and quantified branches retain linear search;
 class and anchored branches retain their candidate and boundary bounds.
 Opted-in accounting covers every branch's search passes before execution and
-reaches character-set construction. Sticky branches inspect one candidate with
-their original boundary semantics. Ordinary unlimited defaults impose no branch
-or work cap.
+reaches character-set construction. Sticky branches inspect one start with their
+original boundary semantics. A compiled flag records whether any quantified
+branch can inspect the full remaining input; opted-in sticky work then charges
+that suffix instead of bounding input work by the Pattern text length. Ordinary
+unlimited defaults impose no branch or work cap.
 The plan stores each branch's first source-order capture slot and its own
 relative ranges. Storage is linear in branches and captures, without a matrix of
 all groups for every branch. A successful match borrows its selected branch's

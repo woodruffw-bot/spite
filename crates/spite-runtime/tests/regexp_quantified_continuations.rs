@@ -124,7 +124,7 @@ fn captures_sets_multiple_quantifiers_assertions_and_choices_remain_explicit_gap
         "/a+b+/.test('ab')",
         "/(?:a+b)/.test('ab')",
         "/^a+b$/.test('ab')",
-        "/a+|b/.test('b')",
+        "/a+[b]|b/.test('b')",
         "/a+b/u.test('ab')",
     ] {
         assert!(

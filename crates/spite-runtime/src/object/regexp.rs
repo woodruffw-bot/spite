@@ -92,7 +92,12 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
-        if sticky && !matches!(self, Self::Quantified(_) | Self::QuantifiedContinuation(_)) {
+        let full_suffix = match self {
+            Self::Quantified(_) | Self::QuantifiedContinuation(_) => true,
+            Self::Disjunction(matcher) => matcher.requires_full_suffix(),
+            _ => false,
+        };
+        if sticky && !full_suffix {
             source_len.min(remaining)
         } else {
             remaining

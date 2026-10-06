@@ -676,6 +676,26 @@ Stable and MSRV pass the complete 13488-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
 
+Top-level alternatives now also accept quantified atoms and quantified prefixes
+with capture-free literal continuations, alongside the existing fixed and
+anchored branches. Three core regressions cover an inspected 60-record insta
+snapshot, exhaustive independent branch/capture selection and search accounting.
+Five newly supported rows change in two earlier snapshots. Node agrees on all
+11,730 range/global-capture comparisons and twelve runtime programs. Eight runtime
+regressions cover earliest starts and source-order ties, independent greedy/lazy
+branch order, own undefined global capture/indices slots, global/sticky state and
+strict writes, pinned flags and UTF-16 units, generic consumers and empty
+advancement, copies after collection and optional constructor/sticky-search host
+aborts. Existing gap regressions now retain unsupported character-set
+continuations and quantified captures. A compiled constant flag preserves full
+remaining-input charges for sticky quantified branches; default quotas remain
+unlimited. Plans remain immutable, and searches allocate nothing or expand
+repetitions. Nested choices, captured quantified groups, anchored quantified
+branches and Unicode modes remain pending. The corpus and pin are unchanged.
+Stable and MSRV pass the complete 13488-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
