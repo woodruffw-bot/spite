@@ -6818,3 +6818,15 @@ test/built-ins/Date/S15.9.2.1_A1.js	-	-	-
 test/built-ins/Date/S15.9.2.1_A2.js	-	-	-
 test/built-ins/Date/parse/zero.js	-	-	-
 test/built-ins/Date/value-to-primitive-get-meth-err.js	-	-	-
+test/built-ins/Date/prototype/toLocaleString/length.js	-	-	-
+test/built-ins/Date/prototype/toLocaleString/name.js	-	-	-
+test/built-ins/Date/prototype/toLocaleString/not-a-constructor.js	-	-	-
+test/built-ins/Date/prototype/toLocaleString/prop-desc.js	-	-	-
+test/built-ins/Date/prototype/toLocaleDateString/length.js	-	-	-
+test/built-ins/Date/prototype/toLocaleDateString/name.js	-	-	-
+test/built-ins/Date/prototype/toLocaleDateString/not-a-constructor.js	-	-	-
+test/built-ins/Date/prototype/toLocaleDateString/prop-desc.js	-	-	-
+test/built-ins/Date/prototype/toLocaleTimeString/length.js	-	-	-
+test/built-ins/Date/prototype/toLocaleTimeString/name.js	-	-	-
+test/built-ins/Date/prototype/toLocaleTimeString/not-a-constructor.js	-	-	-
+test/built-ins/Date/prototype/toLocaleTimeString/prop-desc.js	-	-	-
