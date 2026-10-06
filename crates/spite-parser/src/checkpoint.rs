@@ -58,6 +58,7 @@ impl Parser {
             self.computed_class_name = None;
         }
         self.arrow_heads.clear();
+        self.pattern_covers.clear();
         self.cache_next_token(true)
     }
 }

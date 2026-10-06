@@ -53,12 +53,12 @@ impl Parser {
             return Err(self.unsupported("for-await-of is not implemented"));
         }
         self.expect("(")?;
-        if let Some(end) = self.pattern_cover_end() {
-            if self.token_at(end + 1).is_some_and(|token| {
+        if let Some(cover) = self.pattern_cover()? {
+            if self.tokens.get(cover.end).is_some_and(|token| {
                 !token.escaped
                     && matches!(&token.kind, Kind::Word(name) if name == "in" || name == "of")
             }) {
-                let binding = ForBinding::Pattern(self.assignment_pattern()?);
+                let binding = ForBinding::Pattern(self.consume_pattern_cover(&cover)?);
                 let is_of = self.eat("of");
                 if !is_of {
                     self.expect("in")?;

@@ -130,13 +130,19 @@ scanner tokens but restore private-name uses and computed-name diagnostics;
 selected heads replay their own uses exactly once. Scanner failures remain
 authoritative, and RegExp rescans invalidate cached heads. Probes retain forbidden binding names and rest initializer/list continuations
 with a deferred diagnostic while consuming the expression/list grammar. The
-first deferred error keeps its exact rejection point; a validated RegExp literal
-similarly contributes only its boundary and an Unsupported diagnostic. Temporary
+first deferred error keeps its exact rejection point; a lexically complete RegExp
+literal contributes its boundary and its Pattern/flag or Unsupported diagnostic. Temporary
 probe values cannot enter a public AST: selecting the head reports the deferred
 error first, while ordinary expressions parse normally.
-Before returning executable RegExp ASTs, finish grammar-driven destructuring
-cover lookahead and native matching. Destructuring covers still balance raw
-Div-goal tokens.
+Destructuring assignment, nested-target and for-in/of covers similarly probe the
+supplemental AssignmentPattern grammar. Computed keys and initializers select
+expression goals. Selected patterns retain their exact rejection points and
+private-name uses; member/call/template continuations instead parse as ordinary
+references. Rest continuations and forbidden methods/accessors are consumed only
+inside probes, with a deferred error that prevents returning their temporary
+pattern ASTs. Ordinary object/array literals retain their own prototype-setter,
+initialized-shorthand and spread rules. RegExp rescans invalidate both cover memo
+tables. Before returning executable RegExp literal ASTs, implement native matching.
 Computed class accessor lookahead parses its name with the expression grammar and
 retains that AST and its private-name uses for the ensuing accessor or ASI field.
 Nested computed names are parsed once.

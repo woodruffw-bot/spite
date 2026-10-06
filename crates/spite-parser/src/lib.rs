@@ -184,6 +184,7 @@ struct Parser {
     template_braces: Vec<usize>,
     computed_class_name: Option<(usize, usize, PropertyName)>,
     arrow_heads: std::collections::BTreeMap<cover::Key, Option<arrow::Head>>,
+    pattern_covers: std::collections::BTreeMap<cover::Key, Option<assignment_pattern::Cover>>,
     probing_cover: bool,
     probe_error: Option<Diagnostic>,
     scan_error: Option<Diagnostic>,
@@ -223,6 +224,7 @@ impl Parser {
             template_braces,
             computed_class_name: None,
             arrow_heads: Default::default(),
+            pattern_covers: Default::default(),
             probing_cover: false,
             probe_error: None,
             scan_error: None,
@@ -273,8 +275,8 @@ impl Parser {
         self.tokens.get(index)
     }
 
-    // Cached cover lookahead still balances substitutions. The lexer has no
-    // brace state: the parser selects the supported Div/TemplateTail goal.
+    // The parser tracks template substitution braces. Grammar probes choose
+    // the RegExp goal at primary expressions; the lexer has no brace state.
     fn scan_token(&mut self, regexp: bool) -> Result<Token, Diagnostic> {
         let goal = match (regexp, self.template_braces.last() == Some(&0)) {
             (false, false) => Goal::Div,
@@ -919,11 +921,11 @@ impl Parser {
                 span,
             )?
         } else if minimum <= 2 {
-            if self.pattern_cover_end().is_some_and(|end| {
-                self.token_at(end + 1)
-                    .is_some_and(|token| token.kind == Kind::Punct("="))
-            }) {
-                let pattern = self.assignment_pattern()?;
+            let cover = self
+                .pattern_cover()?
+                .filter(|cover| self.tokens[cover.end].kind == Kind::Punct("="));
+            if let Some(cover) = cover {
+                let pattern = self.consume_pattern_cover(&cover)?;
                 self.expect("=")?;
                 let value = self.expression(2)?;
                 let span = Span::new(pattern.span.start, value.span.end);
@@ -1127,10 +1129,16 @@ impl Parser {
             Kind::RegExp { .. } | Kind::Punct("/" | "/=")
         ) {
             let diagnostic = self.regexp_diagnostic();
-            if !self.probing_cover || diagnostic.kind != DiagnosticKind::Unsupported {
+            if !self.probing_cover
+                || !matches!(self.current().kind, Kind::RegExp { .. })
+                || !matches!(
+                    diagnostic.kind,
+                    DiagnosticKind::Syntax | DiagnosticKind::Unsupported
+                )
+            {
                 return Err(diagnostic);
             }
-            // A cover probe only needs the validated literal boundary. This
+            // A cover probe only needs the scanned literal boundary. This
             // temporary value cannot escape: selecting the head reports the
             // deferred diagnostic before exposing its AST.
             if self.probe_error.is_none() {

@@ -2,35 +2,36 @@
 
 use super::*;
 
+pub(super) type Cover = std::rc::Rc<cover::Probe<AssignmentPattern>>;
+
 impl Parser {
-    // Refine an object/array cover only when the complete outer literal is
-    // followed by assignment or a for-in/of delimiter. Ordinary literals keep
-    // their own grammar, including prototype setters and initialized shorthand.
-    pub(super) fn pattern_cover_end(&mut self) -> Option<usize> {
+    // The supplemental AssignmentPattern grammar selects lexical goals in
+    // computed keys/defaults; ordinary literals keep their own grammar.
+    pub(super) fn pattern_cover(&mut self) -> Result<Option<Cover>, Diagnostic> {
         if !matches!(self.current().kind, Kind::Punct("{" | "[")) {
-            return None;
+            return Ok(None);
         }
-        let mut pending = Vec::new();
-        let mut index = self.index;
-        while let Some(token) = self.token_at(index) {
-            match token.kind {
-                Kind::Punct("(") => pending.push(")"),
-                Kind::Punct("[") => pending.push("]"),
-                Kind::Punct("{") => pending.push("}"),
-                Kind::Punct(close @ (")" | "]" | "}")) => {
-                    if pending.pop() != Some(close) {
-                        return None;
-                    }
-                    if pending.is_empty() {
-                        return Some(index);
-                    }
-                }
-                Kind::Eof => return None,
-                _ => {}
-            }
-            index += 1;
+        let key = self.cover_key(self.index);
+        if let Some(cover) = self.pattern_covers.get(&key) {
+            return Ok(cover.clone());
         }
-        None
+        let probe = self.probe_cover(Self::assignment_pattern);
+        let cover = match probe {
+            Ok(cover) => Some(cover),
+            Err(error) if error.kind == DiagnosticKind::Syntax => None,
+            Err(error) => return Err(error),
+        };
+        self.pattern_covers.insert(key, cover.clone());
+        Ok(cover)
+    }
+
+    #[inline(never)]
+    pub(super) fn consume_pattern_cover(
+        &mut self,
+        cover: &Cover,
+    ) -> Result<AssignmentPattern, Diagnostic> {
+        self.consume_cover(cover)?;
+        Ok(cover.value.clone())
     }
 
     pub(super) fn assignment_pattern(&mut self) -> Result<AssignmentPattern, Diagnostic> {
@@ -48,25 +49,71 @@ impl Parser {
             while !self.at("}") {
                 if self.eat("...") {
                     let target = self.destructuring_target()?;
-                    let AssignmentTarget::Reference(reference) = target else {
-                        return Err(early(
-                            target.span(),
-                            "object assignment rest requires a reference",
-                        ));
+                    let reference = match target {
+                        AssignmentTarget::Reference(reference) => reference,
+                        AssignmentTarget::Pattern(pattern) => {
+                            self.defer_cover_error(early(
+                                pattern.span,
+                                "object assignment rest requires a reference",
+                            ))?;
+                            Box::new(
+                                self.make_expr(ExprKind::Literal(Literal::Null), pattern.span)?,
+                            )
+                        }
                     };
                     rest = Some(reference);
+                    if self.probe_rest_continuation("}")? {
+                        continue;
+                    }
                     break;
                 }
                 let token = self.bump();
                 let key = self.object_property_name(token.clone())?;
-                let element = if self.eat(":") {
+                let element = if self.probing_cover && self.at("(") {
+                    let error = if matches!(token.kind, Kind::Word(_)) {
+                        self.error("expected }")
+                    } else {
+                        early(token.span, "expected assignment identifier")
+                    };
+                    self.defer_cover_error(error)?;
+                    self.object_method(token.span.start, PropertyKind::Method)?;
+                    AssignmentElement {
+                        target: AssignmentTarget::Reference(Box::new(
+                            self.make_expr(ExprKind::Literal(Literal::Null), token.span)?,
+                        )),
+                        initializer: None,
+                    }
+                } else if self.probing_cover
+                    && !token.escaped
+                    && matches!(&token.kind, Kind::Word(name) if name == "get" || name == "set")
+                    && !self.at(":")
+                    && !self.at("=")
+                    && !self.at(",")
+                    && !self.at("}")
+                {
+                    self.defer_cover_error(self.error("expected }"))?;
+                    let kind = if matches!(&token.kind, Kind::Word(name) if name == "get") {
+                        PropertyKind::Getter
+                    } else {
+                        PropertyKind::Setter
+                    };
+                    let name = self.bump();
+                    self.object_property_name(name)?;
+                    self.object_method(token.span.start, kind)?;
+                    AssignmentElement {
+                        target: AssignmentTarget::Reference(Box::new(
+                            self.make_expr(ExprKind::Literal(Literal::Null), token.span)?,
+                        )),
+                        initializer: None,
+                    }
+                } else if self.eat(":") {
                     self.assignment_element()?
                 } else {
                     let Kind::Word(name) = token.kind else {
                         return Err(early(token.span, "expected assignment identifier"));
                     };
                     if reserved(&name) {
-                        return Err(early(token.span, "invalid assignment identifier"));
+                        self.defer_cover_error(early(token.span, "invalid assignment identifier"))?;
                     }
                     let target = AssignmentTarget::Reference(Box::new(
                         self.make_expr(ExprKind::Identifier(name), token.span)?,
@@ -94,6 +141,9 @@ impl Parser {
                 }
                 if self.eat("...") {
                     rest = Some(self.destructuring_target()?);
+                    if self.probe_rest_continuation("]")? {
+                        continue;
+                    }
                     break;
                 }
                 elements.push(Some(self.assignment_element()?));
@@ -111,24 +161,24 @@ impl Parser {
     }
 
     fn destructuring_target(&mut self) -> Result<AssignmentTarget, Diagnostic> {
-        if let Some(end) = self.pattern_cover_end() {
+        if let Some(cover) = self.pattern_cover()? {
             // A literal followed by member/call/template syntax is part of a
             // reference expression rather than a nested AssignmentPattern.
             if !matches!(
-                self.token_at(end + 1).map(|t| &t.kind),
+                self.tokens.get(cover.end).map(|t| &t.kind),
                 Some(Kind::Punct("." | "[" | "(" | "?.")) | Some(Kind::Template { .. })
             ) {
                 return self
-                    .assignment_pattern()
+                    .consume_pattern_cover(&cover)
                     .map(|pattern| AssignmentTarget::Pattern(Box::new(pattern)));
             }
         }
         let reference = self.expression_with_in(3, true)?;
         if !assignment_target(&reference) {
-            return Err(early(
+            self.defer_cover_error(early(
                 reference.span,
                 "invalid destructuring assignment target",
-            ));
+            ))?;
         }
         Ok(AssignmentTarget::Reference(Box::new(reference)))
     }

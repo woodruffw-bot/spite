@@ -77,6 +77,17 @@ impl Parser {
         })
     }
 
+    pub(super) fn probe_rest_continuation(&mut self, close: &str) -> Result<bool, Diagnostic> {
+        if !self.probing_cover || self.at(close) {
+            return Ok(false);
+        }
+        self.defer_cover_error(self.error(&format!("expected {close}")))?;
+        if self.eat("=") {
+            self.expression_with_in(2, true)?;
+        }
+        Ok(self.eat(","))
+    }
+
     pub(super) fn defer_cover_error(&mut self, error: Diagnostic) -> Result<(), Diagnostic> {
         if !self.probing_cover {
             return Err(error);
@@ -152,6 +163,58 @@ mod tests {
         // Each position can be revisited at a different grammar depth. Results
         // at the same depth/context are shared rather than branching again.
         assert!(parser.arrow_heads.len() <= n * n);
+        assert!(parser.finish(Ok(())).is_ok());
+    }
+
+    #[test]
+    fn selected_patterns_replay_private_uses_once_and_unselected_patterns_restore_them() {
+        let mut parser = Parser::new("{[this.#x]: x}=source").unwrap();
+        parser.inherit_private_names(&BTreeSet::from(["#x".into()]));
+        let cover = parser.pattern_cover().unwrap().unwrap();
+        assert_eq!(parser.checkpoint_private_uses(), [0]);
+        let first = parser.consume_pattern_cover(&cover).unwrap();
+        assert_eq!(parser.checkpoint_private_uses(), [1]);
+        parser.restore_private_uses(&[0]);
+        parser.index = 0;
+        let cached = parser.pattern_cover().unwrap().unwrap();
+        assert_eq!(parser.consume_pattern_cover(&cached).unwrap(), first);
+        assert_eq!(parser.checkpoint_private_uses(), [1]);
+
+        let mut parser = Parser::new("{[this.#x]: x}.p").unwrap();
+        parser.inherit_private_names(&BTreeSet::from(["#x".into()]));
+        assert!(parser.pattern_cover().unwrap().is_some());
+        assert_eq!(parser.checkpoint_private_uses(), [0]);
+        parser.expression(3).unwrap();
+        assert_eq!(parser.checkpoint_private_uses(), [1]);
+    }
+
+    #[test]
+    fn regexp_rescans_invalidate_both_arrow_and_pattern_memo_tables() {
+        let mut parser = Parser::new("[old]; (x)=>x; [y=/[}]/]=source").unwrap();
+        parser.expression(1).unwrap();
+        parser.expect(";").unwrap();
+        assert!(!parser.pattern_covers.is_empty());
+        parser.arrow_expression().unwrap().unwrap();
+        parser.expect(";").unwrap();
+        assert!(!parser.arrow_heads.is_empty());
+        let cover = parser.pattern_cover().unwrap().unwrap();
+        assert!(parser.arrow_heads.is_empty());
+        assert_eq!(parser.pattern_covers.len(), 1);
+        assert_eq!(
+            parser.consume_pattern_cover(&cover).unwrap_err().kind,
+            DiagnosticKind::Unsupported
+        );
+        assert!(parser.scan_error.is_none());
+    }
+
+    #[test]
+    fn nested_pattern_fallbacks_reuse_contextual_probe_results() {
+        let n = 16;
+        let source = format!("{}1{}", "[x=".repeat(n), "]".repeat(n));
+        let mut parser = Parser::new(&source).unwrap();
+        assert!(parser.pattern_cover().unwrap().is_some());
+        parser.expression(3).unwrap();
+        assert!(parser.pattern_covers.len() <= n * n);
         assert!(parser.finish(Ok(())).is_ok());
     }
 }

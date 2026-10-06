@@ -1,0 +1,160 @@
+---
+source: crates/spite-parser/tests/pattern_covers.rs
+expression: diagnostics
+---
+[
+    (
+        "({x = /[}]/} = source)",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "[x = /[\\]]/] = source",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 11,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "({[/[}]/]: x} = source)",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 3,
+                end: 8,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "[{x = /[}]/}] = source",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "({x: [y = /[(]/]} = source)",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 10,
+                end: 15,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "[x = `${/[}`]/}tail`] = source",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 8,
+                end: 14,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "[x = /[}]/ / 2] = source",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 5,
+                end: 10,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "for ({x = /[}]/} of rows) ;",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 10,
+                end: 15,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "for ([x = /[\\]]/] in rows) ;",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 10,
+                end: 16,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "for ({[/[}]/]: x} of rows) ;",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 7,
+                end: 12,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "[{[/[}]/]: x}.p] = source",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 3,
+                end: 8,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "[...{[/[}]/]: x}.p] = source",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "({get x() { return /[}]/; }})",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 19,
+                end: 24,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+    (
+        "([{get x() { return /[}]/; }}.p] = source)",
+        Diagnostic {
+            kind: Unsupported,
+            span: Span {
+                start: 20,
+                end: 25,
+            },
+            message: "regular expression matching is not implemented",
+        },
+    ),
+]

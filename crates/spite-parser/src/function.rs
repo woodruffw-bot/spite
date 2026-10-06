@@ -112,14 +112,8 @@ impl Parser {
                 // A probe consumes forbidden rest continuations with the same
                 // expression/list grammar, retaining the original error. Its
                 // temporary parameter AST cannot be selected without reporting it.
-                if parenthesized && self.probing_cover && !self.at(")") {
-                    self.defer_cover_error(self.error("expected )"))?;
-                    if self.eat("=") {
-                        self.expression_with_in(2, true)?;
-                    }
-                    if self.eat(",") {
-                        continue;
-                    }
+                if parenthesized && self.probe_rest_continuation(")")? {
+                    continue;
                 }
                 // BindingRestElement has no initializer and no trailing comma.
                 break;

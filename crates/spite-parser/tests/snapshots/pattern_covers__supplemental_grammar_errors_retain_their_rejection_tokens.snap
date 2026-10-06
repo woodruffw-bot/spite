@@ -1,0 +1,182 @@
+---
+source: crates/spite-parser/tests/pattern_covers.rs
+expression: diagnostics
+---
+[
+    (
+        "[...x,] = source",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 5,
+                end: 6,
+            },
+            message: "expected ]",
+        },
+    ),
+    (
+        "[...x = 1] = source",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 7,
+            },
+            message: "expected ]",
+        },
+    ),
+    (
+        "({...x,y} = source)",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 7,
+            },
+            message: "expected }",
+        },
+    ),
+    (
+        "({...{x}} = source)",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 5,
+                end: 8,
+            },
+            message: "object assignment rest requires a reference",
+        },
+    ),
+    (
+        "[x+y] = source",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 1,
+                end: 4,
+            },
+            message: "invalid destructuring assignment target",
+        },
+    ),
+    (
+        "[f()] = source",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 1,
+                end: 4,
+            },
+            message: "invalid destructuring assignment target",
+        },
+    ),
+    (
+        "({bre\\u0061k} = source)",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 2,
+                end: 12,
+            },
+            message: "invalid assignment identifier",
+        },
+    ),
+    (
+        "[{get x() {}}] = source",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 7,
+            },
+            message: "expected }",
+        },
+    ),
+    (
+        "({m() {}} = source)",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 3,
+                end: 4,
+            },
+            message: "expected }",
+        },
+    ),
+    (
+        "({set x(v) {}} = source)",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 7,
+            },
+            message: "expected }",
+        },
+    ),
+    (
+        "({x=1})",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 3,
+                end: 4,
+            },
+            message: "initialized shorthand is not allowed in an object literal",
+        },
+    ),
+    (
+        "({__proto__:1,__proto__:2})",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 14,
+                end: 23,
+            },
+            message: "duplicate prototype setter in object literal",
+        },
+    ),
+    (
+        "({x = /a/gg} = source)",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "duplicate regular expression flag",
+        },
+    ),
+    (
+        "for ([x = /(/] of rows) ;",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 10,
+                end: 13,
+            },
+            message: "unterminated regular expression group",
+        },
+    ),
+    (
+        "({x = /a/gg} = {}) => x",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 11,
+            },
+            message: "duplicate regular expression flag",
+        },
+    ),
+    (
+        "([x = /(/] = []) => x",
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 6,
+                end: 9,
+            },
+            message: "unterminated regular expression group",
+        },
+    ),
+]

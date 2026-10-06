@@ -248,9 +248,8 @@ Two diagnostic snapshots were inspected. Computed class accessor lookahead retai
 its parsed key and private-name uses for the accessor or following ASI field;
 nested names are parsed once. A runtime regression verifies ordered single key
 evaluation, getters/setters, ASI fields, outer arguments, and private captures.
-No RegExp literal AST or execution pass is exposed. Native matching and
-grammar-driven destructuring cover lookahead remain pending. Matching still
-produces Unsupported and cannot receive positive execution credit.
+No RegExp literal AST or execution pass is exposed. Native matching remains
+pending, produces Unsupported and cannot receive positive execution credit.
 
 Arrow heads now use the parameter and expression grammars for lookahead.
 Four public regressions and three parser-internal regressions cover nested
@@ -265,6 +264,19 @@ keywords cannot begin expressions; dynamic import retains its Unsupported bounda
 while recognizing a head still produces Unsupported before exposing any public
 AST. Both compiler versions run the complete corpus with unchanged variants and
 ordinary unlimited defaults; no new quota or execution credit is introduced.
+
+Destructuring assignment and for-in/of covers now probe the supplemental grammar
+instead of balancing division-goal punctuation. Four public regressions and three
+parser-internal regressions cover computed/default/nested keys, literal bodies
+containing closers and template delimiters, division, member/rest references,
+methods/accessors, preserved prototype/shorthand/spread rules, Script/UTF-16/eval
+and dynamic Function goals, private-use rollback/replay, both memo-table
+invalidations, and existing guards on a two-mebibyte stack. Two new diagnostic
+insta snapshots were inspected. Lexically complete invalid Patterns/flags retain
+their RegExp rejection point through both arrow and destructuring probes. Every
+existing snapshot and all 1469 reviewed parse-negative variants retain their
+exact expectations. Both compiler versions pass the complete unchanged corpus
+with ordinary unlimited defaults; no literal execution credit or quota is added.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three

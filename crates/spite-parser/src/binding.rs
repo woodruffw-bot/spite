@@ -18,6 +18,9 @@ impl Parser {
             while !self.at("}") {
                 if self.eat("...") {
                     rest = Some(Box::new(self.binding_identifier()?));
+                    if self.probe_rest_continuation("}")? {
+                        continue;
+                    }
                     break;
                 }
                 let token = self.bump();
@@ -49,14 +52,8 @@ impl Parser {
                 }
                 if self.eat("...") {
                     rest = Some(Box::new(self.binding_pattern()?));
-                    if self.probing_cover && !self.at("]") {
-                        self.defer_cover_error(self.error("expected ]"))?;
-                        if self.eat("=") {
-                            self.expression_with_in(2, true)?;
-                        }
-                        if self.eat(",") {
-                            continue;
-                        }
+                    if self.probe_rest_continuation("]")? {
+                        continue;
                     }
                     break;
                 }

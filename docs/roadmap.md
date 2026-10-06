@@ -38,7 +38,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Validate RegExp Unicode property expressions, exact edition-17 aliases, pinned Unicode values, and v-mode string-property early errors.
 - [x] Restore scanner checkpoints and template substitution context when primary-expression RegExp goals replace cached division lookahead.
 - [x] Refine arrow heads with parameter/expression grammar, contextual memoization and private-name rollback instead of balancing division tokens.
-- [ ] Refine destructuring assignment and iteration covers with grammar-selected lexical goals.
+- [x] Refine destructuring assignment and iteration covers with grammar-selected lexical goals.
 - [x] Parse untagged template literals with cooked/raw text and nested substitutions.
 - [x] Evaluate untagged template substitutions and string conversion.
 - [x] Add tagged templates with call/member precedence, raw/cooked components, frozen per-realm template objects, and parse-site identity.
