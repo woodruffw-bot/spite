@@ -6980,3 +6980,7 @@ script-pass	d9a4eb07f1b04d7be069fc9e9fd515b0a1c799c6aff80c5a0eb3e63ff28e8ae6	tes
 script-pass	3272515db9f8d1938d74442627979c0422d0e8db57385ca32f0e7582734dff85	test/built-ins/RegExp/prototype/Symbol.replace/not-a-constructor.js
 script-pass	f73643d2113c31ac85d58e029f1dc8471383e08253b9e6413d53b1c532aa783b	test/built-ins/RegExp/prototype/Symbol.split/not-a-constructor.js
 script-pass	3234259a6044a895da9627ab20863844bdb7cbc77135c139466ccf827e260983	test/built-ins/RegExp/prototype/Symbol.matchAll/not-a-constructor.js
+script-pass	09efe1138b0249c2ab18c379d82e9ea53727eda41c6f89a741835f707160a0a6	test/built-ins/String/prototype/matchAll/regexp-is-undefined-or-null-invokes-matchAll.js
+script-pass	87d6c895e1fa9d6ee12239093ab7c8d25e4afbf83678ac7b3ef494571994c89f	test/built-ins/String/prototype/match/invoke-builtin-match.js
+script-pass	608fbe258a2486c4aed3eae08bc8436c4dd27ca9763242b0de156d19a6016a61	test/built-ins/String/prototype/search/invoke-builtin-search-searcher-undef.js
+script-pass	83ee7a2097f0bb462a0a222dbfb27903e14a8ffd1fa372dc1305547443d7ef86	test/built-ins/String/prototype/search/invoke-builtin-search.js

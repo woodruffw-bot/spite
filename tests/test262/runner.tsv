@@ -6951,3 +6951,7 @@ test/built-ins/RegExp/prototype/Symbol.search/not-a-constructor.js	-	-	-
 test/built-ins/RegExp/prototype/Symbol.replace/not-a-constructor.js	-	-	-
 test/built-ins/RegExp/prototype/Symbol.split/not-a-constructor.js	-	-	-
 test/built-ins/RegExp/prototype/Symbol.matchAll/not-a-constructor.js	-	-	-
+test/built-ins/String/prototype/matchAll/regexp-is-undefined-or-null-invokes-matchAll.js	-	-	-
+test/built-ins/String/prototype/match/invoke-builtin-match.js	-	-	-
+test/built-ins/String/prototype/search/invoke-builtin-search-searcher-undef.js	-	-	-
+test/built-ins/String/prototype/search/invoke-builtin-search.js	-	-	-

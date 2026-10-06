@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 6971 unmodified test fixtures and ten harness files come from
+These 6975 unmodified test fixtures and ten harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -1119,11 +1119,26 @@ ECMA-402. The pin, original bytes, helpers, and ordinary defaults remain unchang
 Fifteen unchanged match/matchAll/search sources add 30 Script/StrictScript variants
 for custom object hooks, getter errors, exact invocation arguments and receivers,
 non-coercible matchAll receivers, name/length/property descriptors, and
-non-construction. Originals requiring native RegExp creation or literals remain
-excluded and receive no pass credit. Native regressions also cover global-flag
+non-construction. The direct creation review below revisits the native creation
+boundary. Native regressions also cover global-flag
 ordering, non-callable hooks, ignored primitive hooks, preserved results, collection,
 and host aborts. Fallback matching remains Unsupported. The pin and all original
 bytes are unchanged; no default resource quota or test allowance is introduced.
+
+## String direct RegExp creation review
+
+The scoped review reads all twenty-five String.matchAll programs and thirteen
+match/search fallback programs at the existing pin. Six originals are already
+present. Four newly vendored whole programs add eight normal/strict positives for
+direct creation, native source/flags/lastIndex, live Symbol invocation, original
+results and converted String receivers. Both compilers pass every new variant.
+The other twenty-eight programs require RegExp literal execution or native
+matching and remain excluded without source rewriting or pass credit. Several
+primitive-hook programs exercise matching after their hook checks and therefore
+remain excluded. This is not a complete match or search directory review.
+Historical descriptions retain edition-17-compatible assertions. The pin, ten
+helpers, original bytes and unlimited defaults are unchanged; no native matching
+coverage is claimed.
 
 ## JSON value creation review
 
@@ -1638,7 +1653,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13382 variants from 6952 reviewed sources: the eleven
+The `spite-test262` command runs 13390 variants from 6956 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1672,7 +1687,7 @@ cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-11905 positives using the upstream harness, 1469 reviewed parse-negative variants,
+11913 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

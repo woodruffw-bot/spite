@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction, original source/flag slots and getters, lastIndex metadata and branding; generic test/match/search/replace/split/matchAll with custom exec and a branded iterator; native Pattern compilation and matching remain pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13382 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13390 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1793,6 +1793,18 @@ Native matching remains Unsupported; no substring approximation is counted as
 matching. The complete String property
 inventory supports ordered reflection, copying, enumeration, and integrity operations.
 
+A separate scoped review reads all 25 String.matchAll programs and thirteen
+match/search fallback programs at the same pin. Six originals already belong to
+the corpus. Four unchanged whole programs add eight passing normal/strict
+variants on both compilers for direct creation, native source/flags/lastIndex,
+live Symbol invocation, exact results and converted receivers. The other 28
+whole programs require literal execution or native matching, including primitive
+hook programs that subsequently perform matching. They remain excluded without
+rewriting or pass credit. Match/search directories are not claimed as completely
+reviewed. Older descriptions retain edition-17-compatible assertions. The pin,
+ten helpers, original bytes and unlimited defaults are unchanged; no native
+matching coverage is claimed.
+
 The standalone ECMA-404 JSON parser preserves UTF-16 strings, duplicate names,
 source lexemes, and correctly rounded Numbers. Insta snapshots cover flat trees
 and strict grammar diagnostics. Regressions check every raw noncontrol UTF-16 unit,
@@ -2014,7 +2026,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13382 variants are four raw positives, 11905 positives using the upstream
+Rust. Its 13390 variants are four raw positives, 11913 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
