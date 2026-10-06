@@ -5,6 +5,7 @@ mod case_data;
 pub mod date;
 mod normalization;
 mod normalization_data;
+mod regexp_escape;
 mod symbol;
 mod unicode;
 mod unicode_data;
@@ -14,6 +15,7 @@ pub use case::{is_unicode_case_ignorable, is_unicode_cased, unicode_case_mapping
 pub use normalization::{
     canonical_combining_class, canonical_composition, hangul_decomposition, unicode_decomposition,
 };
+pub use regexp_escape::regexp_escape_units;
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
 pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;

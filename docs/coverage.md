@@ -251,6 +251,14 @@ No RegExp literal AST or execution pass is exposed. Matching, intrinsics and
 grammar-driven cover lookahead remain pending. Matching still produces
 Unsupported and cannot receive positive execution credit.
 
+Core now streams RegExp.escape's edition-17 encoding without allocating. Two
+inspected snapshots cover every ASCII code point in leading and later positions,
+all non-ASCII ECMAScript WhiteSpace/LineTerminator values, ordinary Unicode,
+surrogate endpoints, paired and unpaired adjacency, and the empty string. An
+independent implementation of the published algorithm verifies all 271 snapshot
+records. Runtime exposure, RegExp objects and matching remain pending; this
+component addition changes no Test262 inventory or execution count.
+
 Scanner checkpoints now retain input positions and parser-owned template context
 before every token's trivia. Primary-expression RegExp rescans restore those
 checkpoints, truncate the division suffix, and cache the replacement token so
