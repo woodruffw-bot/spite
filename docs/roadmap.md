@@ -292,6 +292,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement generic RegExp Symbol.replace with collected exec results, ordered capture conversion, callbacks and captured/named substitution.
 - [x] Implement generic RegExp Symbol.split with ordered species construction, sticky flags, Unicode advancement, raw captures and ToUint32 limits.
 - [x] Implement generic RegExp Symbol.matchAll and the branded RegExp String Iterator with live exec, Unicode advancement, exact results and completion state.
+- [x] Share ParsePattern validation for arbitrary UTF-16 constructor Strings, with exact capture counts and ordered flag early errors.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.

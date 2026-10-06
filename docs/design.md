@@ -116,6 +116,12 @@ case-sensitive edition-17 property aliases and pinned Unicode 18 general-categor
 and script values. String properties require v mode, cannot use P escapes, and
 participate in class MayContainStrings analysis. Matching remains Unsupported
 after the supported grammar validates.
+The public validate_regexp_pattern entry point shares this validator with
+constructor input. It accepts the original UTF-16 body without literal delimiters,
+including raw line terminators and lone surrogates, and returns the exact capture
+count. Flag errors precede Pattern errors. Diagnostics retain the caller's source
+span rather than treating UTF-16 offsets as source byte positions. Literal
+validation keeps its existing Unsupported matching boundary.
 Before returning executable RegExp ASTs, complete grammar-driven cover lookahead.
 Arrow and destructuring covers still balance raw Div-goal tokens.
 Computed class accessor lookahead parses its name with the expression grammar and

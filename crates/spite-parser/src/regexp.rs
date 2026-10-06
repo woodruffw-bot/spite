@@ -15,10 +15,6 @@ fn syntax(message: &'static str) -> Failure {
     (DiagnosticKind::Syntax, message)
 }
 
-fn unsupported(message: &'static str) -> Failure {
-    (DiagnosticKind::Unsupported, message)
-}
-
 #[derive(Clone, Copy)]
 struct Mode {
     unicode: bool,
@@ -80,15 +76,35 @@ struct Group {
     names: Names,
 }
 
+/// Validates a UTF-16 Pattern and its flags, returning the capturing-group count.
+///
+/// The body has no literal delimiters and may contain raw line terminators or
+/// lone surrogates. Diagnostics use the caller's source span; matching is a
+/// separate operation.
+pub fn validate_regexp_pattern(
+    body: &JsString,
+    flags: &JsString,
+    span: Span,
+) -> Result<u32, Diagnostic> {
+    let mode =
+        pattern_mode(flags).map_err(|failure| Diagnostic::new(failure.0, span, failure.1))?;
+    let mut pattern = Pattern::new(body, mode);
+    pattern
+        .validate()
+        .map_err(|failure| Diagnostic::new(failure.0, span, failure.1))?;
+    Ok(pattern.captures)
+}
+
 pub(super) fn literal_diagnostic(body: &JsString, flags: &JsString, span: Span) -> Diagnostic {
-    let failure = match pattern_mode(flags) {
-        Err(failure) => failure,
-        Ok(mode) => Pattern::new(body, mode)
-            .validate()
-            .err()
-            .unwrap_or_else(|| unsupported("regular expression matching is not implemented")),
-    };
-    Diagnostic::new(failure.0, span, failure.1)
+    validate_regexp_pattern(body, flags, span)
+        .err()
+        .unwrap_or_else(|| {
+            Diagnostic::new(
+                DiagnosticKind::Unsupported,
+                span,
+                "regular expression matching is not implemented",
+            )
+        })
 }
 
 fn pattern_mode(flags: &JsString) -> Result<Mode, Failure> {

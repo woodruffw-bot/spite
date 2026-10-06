@@ -252,6 +252,15 @@ No RegExp literal AST or execution pass is exposed. Matching and
 grammar-driven cover lookahead remain pending. Matching still produces
 Unsupported and cannot receive positive execution credit.
 
+Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
+Strings and returns exact capture counts through the parser's public API. Three
+regressions cover constructor/literal boundary differences, ordered flag errors,
+100,000 nested capturing groups and 100,000 alternatives without default quotas.
+An inspected 89-record diagnostic snapshot covers all three Pattern modes, raw
+line terminators, surrogate units, capture counts and syntax failures. This shares
+the existing grammar implementation; native construction and matching remain
+pending, and the corpus inventory is unchanged.
+
 Core now streams RegExp.escape's edition-17 encoding without allocating. Two
 inspected snapshots cover every ASCII code point in leading and later positions,
 all non-ASCII ECMAScript WhiteSpace/LineTerminator values, ordinary Unicode,

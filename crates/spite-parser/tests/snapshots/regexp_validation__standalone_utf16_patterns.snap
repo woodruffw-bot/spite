@@ -1,0 +1,93 @@
+---
+source: crates/spite-parser/tests/regexp_validation.rs
+expression: records
+---
+"" flags="" => captures=0
+"" flags="u" => captures=0
+"" flags="v" => captures=0
+"abc" flags="" => captures=0
+"abc" flags="u" => captures=0
+"abc" flags="v" => captures=0
+"/" flags="" => captures=0
+"/" flags="u" => captures=0
+"/" flags="v" => captures=0
+"\u000a\u000d\u2028\u2029" flags="" => captures=0
+"\u000a\u000d\u2028\u2029" flags="u" => captures=0
+"\u000a\u000d\u2028\u2029" flags="v" => captures=0
+"^a$" flags="" => captures=0
+"^a$" flags="u" => captures=0
+"^a$" flags="v" => captures=0
+"(a)(?:b)(c)" flags="" => captures=2
+"(a)(?:b)(c)" flags="u" => captures=2
+"(a)(?:b)(c)" flags="v" => captures=2
+"\u005c2(a)(b)" flags="" => captures=2
+"\u005c2(a)(b)" flags="u" => captures=2
+"\u005c2(a)(b)" flags="v" => captures=2
+"\u005c3(a)(b)" flags="" => Syntax@37..42: regular expression backreference exceeds the capture count
+"\u005c3(a)(b)" flags="u" => Syntax@37..42: regular expression backreference exceeds the capture count
+"\u005c3(a)(b)" flags="v" => Syntax@37..42: regular expression backreference exceeds the capture count
+"\u005c0" flags="" => captures=0
+"\u005c0" flags="u" => captures=0
+"\u005c0" flags="v" => captures=0
+"\u005c08" flags="" => Syntax@37..42: legacy regular expression octal escapes are not in the core grammar
+"\u005c08" flags="u" => Syntax@37..42: legacy regular expression octal escapes are not in the core grammar
+"\u005c08" flags="v" => Syntax@37..42: legacy regular expression octal escapes are not in the core grammar
+"\u005c8" flags="" => Syntax@37..42: regular expression backreference exceeds the capture count
+"\u005c8" flags="u" => Syntax@37..42: regular expression backreference exceeds the capture count
+"\u005c8" flags="v" => Syntax@37..42: regular expression backreference exceeds the capture count
+"[a-z]" flags="" => captures=0
+"[a-z]" flags="u" => captures=0
+"[a-z]" flags="v" => captures=0
+"[z-a]" flags="" => Syntax@37..42: regular expression class range is reversed
+"[z-a]" flags="u" => Syntax@37..42: regular expression class range is reversed
+"[z-a]" flags="v" => Syntax@37..42: regular expression Unicode class range is reversed
+"[\u005cd-a]" flags="" => Syntax@37..42: regular expression class range requires character endpoints
+"[\u005cd-a]" flags="u" => Syntax@37..42: regular expression class range requires character endpoints
+"[\u005cd-a]" flags="v" => Syntax@37..42: regular expression Unicode class range requires character endpoints
+"[a&&b]" flags="" => captures=0
+"[a&&b]" flags="u" => captures=0
+"[a&&b]" flags="v" => captures=0
+"[\u005cq{ab}]" flags="" => Syntax@37..42: invalid regular expression identity escape
+"[\u005cq{ab}]" flags="u" => Syntax@37..42: invalid regular expression identity escape
+"[\u005cq{ab}]" flags="v" => captures=0
+"(?i:abc)" flags="" => captures=0
+"(?i:abc)" flags="u" => captures=0
+"(?i:abc)" flags="v" => captures=0
+"(?ii:abc)" flags="" => Syntax@37..42: duplicate regular expression modifier
+"(?ii:abc)" flags="u" => Syntax@37..42: duplicate regular expression modifier
+"(?ii:abc)" flags="v" => Syntax@37..42: duplicate regular expression modifier
+"(?<a>x)|(?<a>y)" flags="" => captures=2
+"(?<a>x)|(?<a>y)" flags="u" => captures=2
+"(?<a>x)|(?<a>y)" flags="v" => captures=2
+"(?<a>x)(?<a>y)" flags="" => Syntax@37..42: regular expression capture names might both participate
+"(?<a>x)(?<a>y)" flags="u" => Syntax@37..42: regular expression capture names might both participate
+"(?<a>x)(?<a>y)" flags="v" => Syntax@37..42: regular expression capture names might both participate
+"\u005ck<a>(?<a>x)" flags="" => captures=1
+"\u005ck<a>(?<a>x)" flags="u" => captures=1
+"\u005ck<a>(?<a>x)" flags="v" => captures=1
+"a{3,2}" flags="" => Syntax@37..42: regular expression quantifier bounds are reversed
+"a{3,2}" flags="u" => Syntax@37..42: regular expression quantifier bounds are reversed
+"a{3,2}" flags="v" => Syntax@37..42: regular expression quantifier bounds are reversed
+"(" flags="" => Syntax@37..42: unterminated regular expression group
+"(" flags="u" => Syntax@37..42: unterminated regular expression group
+"(" flags="v" => Syntax@37..42: unterminated regular expression group
+"]" flags="" => Syntax@37..42: unexpected regular expression syntax character
+"]" flags="u" => Syntax@37..42: unexpected regular expression syntax character
+"]" flags="v" => Syntax@37..42: unexpected regular expression syntax character
+"\ud800" flags="" => captures=0
+"\ud800" flags="u" => captures=0
+"\ud800" flags="v" => captures=0
+"\udc00" flags="" => captures=0
+"\udc00" flags="u" => captures=0
+"\udc00" flags="v" => captures=0
+"\ud800\udc00" flags="" => captures=0
+"\ud800\udc00" flags="u" => captures=0
+"\ud800\udc00" flags="v" => captures=0
+"(" flags="z" => Syntax@37..42: invalid regular expression flag
+"(" flags="gg" => Syntax@37..42: duplicate regular expression flag
+"(" flags="uu" => Syntax@37..42: duplicate regular expression flag
+"(" flags="uv" => Syntax@37..42: regular expression flags u and v are mutually exclusive
+"(" flags="vu" => Syntax@37..42: regular expression flags u and v are mutually exclusive
+"(" flags="uvz" => Syntax@37..42: invalid regular expression flag
+"(" flags="vvu" => Syntax@37..42: duplicate regular expression flag
+"(" flags="gG" => Syntax@37..42: invalid regular expression flag
