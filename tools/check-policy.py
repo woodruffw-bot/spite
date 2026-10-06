@@ -27,7 +27,7 @@ for package in metadata["packages"]:
         path = dep.get("path")
         if path and pathlib.Path(path).resolve() in paths:
             continue
-        allowed = {"regex", "jiff"} if dep["kind"] is None else {"insta"} if dep["kind"] == "dev" else set()
+        allowed = {"regex", "jiff", "jiff-tzdb"} if dep["kind"] is None else {"insta"} if dep["kind"] == "dev" else set()
         if dep["name"] in allowed and dep.get("source") == "registry+https://github.com/rust-lang/crates.io-index":
             continue
         errors.append(f'{package["name"]}: unapproved {dep["kind"] or "normal"} dependency {dep["name"]}')

@@ -19,12 +19,19 @@ their lexical metadata until the entire directive prologue establishes strictnes
 The optional legacy Object.prototype accessor/helpers in 20.1.3.8–9 are disabled;
 these clauses are explicitly Normative Optional, separately from Annex B.
 
-Production crates use Rust's standard library and workspace crates. Two direct
+Production crates use Rust's standard library and workspace crates. Three direct
 external production dependencies are approved when needed: `regex` for regular
-expressions and `jiff` for time APIs. No other new direct dependencies are approved.
-External build dependencies remain forbidden. The existing `insta` development
-dependency remains allowed. Review features and transitive dependencies when
-introducing either exception. Neither dependency is added preemptively.
+expressions, `jiff` for host time-zone discovery, and `jiff-tzdb` for portable raw
+IANA time-zone data. No other new direct dependencies are approved. External build
+dependencies remain forbidden. The existing `insta` development dependency remains
+allowed. Review features and transitive dependencies when introducing an exception.
+Do not add a dependency before its implementation needs it.
+
+Jiff's public calendar range does not cover all ECMAScript Date values. Read raw
+TZif data from the host or the pinned `jiff-tzdb` fallback and use the checked
+workspace implementation for historical and recurring offsets, including local
+time gaps and folds. Keep the data version explicit; do not map historical
+instants into a different year to fit a backend calendar range.
 
 These libraries are implementation tools, not alternative language specifications.
 RegExp syntax, matching, and UTF-16 behavior must still follow ECMA-262, including
