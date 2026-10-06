@@ -177,11 +177,16 @@ impl Realm {
                         budget.charge(source.len())?;
                         budget.charge(source.len())
                     })?;
-                    if let Some(matcher) = RegExpAnchoredMatcher::compile(
-                        &source,
-                        ignore_case,
-                        flags.code_units().contains(&u16::from(b'm')),
-                    ) {
+                    let anchored = self.object_work(span, |_, budget| {
+                        RegExpAnchoredMatcher::compile_with_work(
+                            &source,
+                            ignore_case,
+                            flags.code_units().contains(&u16::from(b'm')),
+                            flags.code_units().contains(&u16::from(b's')),
+                            |work| budget.charge(work),
+                        )
+                    })?;
+                    if let Some(matcher) = anchored {
                         Some(RegExpMatcher::Anchored(matcher))
                     } else {
                         self.object_work(span, |_, budget| {

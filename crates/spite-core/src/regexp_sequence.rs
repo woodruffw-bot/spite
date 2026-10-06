@@ -116,6 +116,17 @@ impl RegExpSequenceMatcher {
     /// Every consuming atom uses one UTF-16 unit, including lone surrogates.
     /// Empty sequences match at the requested start through the input's end.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        self.find_if(input, start, sticky, |_| true)
+    }
+
+    /// Continues candidate search after an outer boundary rejects a complete match.
+    pub(crate) fn find_if(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut accept: impl FnMut(&Range<usize>) -> bool,
+    ) -> Option<Range<usize>> {
         let input = input.code_units();
         input.get(start..)?;
         let last = input.len().checked_sub(self.0.terms.len())?;
@@ -135,7 +146,9 @@ impl RegExpSequenceMatcher {
                     }
                     Term::Set(set) => set.matches(unit),
                 });
-            matched.then_some(candidate..candidate + self.0.terms.len())
+            matched
+                .then_some(candidate..candidate + self.0.terms.len())
+                .filter(&mut accept)
         })
     }
 }

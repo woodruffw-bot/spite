@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, top-level literal alternatives, outer literal anchors and fixed class/escape/dot sequences with ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, top-level literal alternatives and fixed class/escape/dot sequences with outer anchors, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13480 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -533,7 +533,7 @@ surrogate units, generic String consumers, original-plan copies and collection,
 opted-in construction/search aborts and linear single-candidate sticky accounting.
 Older gap regressions now use unsupported quantifiers and retain their host-error
 expectations; identity-escape regressions also check successful fixed sequences.
-The corpus and pin are unchanged. Choices, assertions, quantifiers, backreferences,
+The corpus and pin are unchanged. Choices, internal assertions, quantifiers, backreferences,
 named/scoped groups and Unicode-mode sequences remain pending.
 Both compilers pass the complete 13480-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
@@ -548,6 +548,22 @@ collection under an opted-in allowance. All 4,818 independent Node range/capture
 comparisons remain identical. In one local unoptimized 20,000-identical-atom probe,
 peak process memory fell from 163880 KiB to 8448 KiB; both versions matched the
 same input. Existing snapshots and the corpus are unchanged.
+Stable and MSRV pass the complete 13480-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
+all pinned generator checks also pass.
+
+Outer input and multiline anchors now wrap fixed ordinary class/escape/dot
+sequences while preserving captures and independent ignore-case/DotAll settings.
+Three further core regressions cover an inspected 45-record insta snapshot,
+independent candidate/boundary/sticky enumeration and distinct construction host
+failures. Node agrees on 6,138 range/capture comparisons and thirteen runtime
+programs. Seven runtime regressions cover complete-input boundaries, all four
+LineTerminators and CRLF positions, sticky resets, captures/empty groups/indices,
+surrogate units, trailing escape parity, shared String consumers and opted-in
+construction/search aborts. Existing literal anchor and sequence snapshots retain
+their values; literal scans keep their prefix-failure matcher. Internal assertions,
+choices, quantifiers and Unicode modes remain pending. The corpus, pin and default
+quota policy are unchanged.
 Stable and MSRV pass the complete 13480-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.

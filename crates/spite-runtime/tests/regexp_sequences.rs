@@ -132,8 +132,8 @@ fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gap
     for source in [
         "/[a]+/.test('a')",
         "/[a]|b/.test('a')",
-        "/^[a]/.test('a')",
-        "/[a]b$/.test('ab')",
+        "/^[a]+/.test('a')",
+        "/[a]b+$/.test('ab')",
         r"/([a])\1/.test('aa')",
         "/(?<x>[a])/.test('a')",
         "/(?i:[a])/.test('a')",

@@ -66,7 +66,7 @@ impl RegExpMatcher {
     pub fn search_passes(&self, sticky: bool) -> usize {
         match self {
             Self::Literal(_) => 1,
-            Self::Anchored(_) => 2,
+            Self::Anchored(matcher) => matcher.search_passes(sticky),
             Self::Character(_) => 1,
             Self::Sequence(matcher) => {
                 if sticky {

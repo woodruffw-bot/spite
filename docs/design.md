@@ -217,14 +217,20 @@ immutable ranges; result construction visits the complete global capture count
 and creates own undefined String/indices elements for unselected groups. Empty
 participating groups retain empty Strings and zero-length indices pairs.
 
-Ordinary literal sequences also compile with leading ^, trailing $, or both
+Ordinary fixed sequences also compile with leading ^, trailing $, or both
 (CompileAssertion, 22.2.2.4). The assertions preserve capture offsets and consume
 no units. Without multiline, only the exact input beginning/end satisfies each
 boundary; sticky offsets do not change the meaning of ^. Multiline additionally
 checks the immediately preceding/following UTF-16 unit against all four
 LineTerminators, including each position around CRLF. Rejected candidates
-continue the same prefix-failure scan with overlaps preserved, rather than
-restarting literal search. Empty anchored bodies scan positions linearly.
+continue the same prefix-failure scan for literal bodies, with overlaps preserved.
+Class bodies continue their original candidate scan after a rejected boundary.
+Empty anchored bodies scan positions linearly. Literal bodies retain their
+existing matcher; class bodies reuse fixed-sequence compilation, shared set plans
+and relative captures. DotAll, ignore-case and multiline settings remain
+independent. Optional construction work reaches the class compiler, and optional
+search passes cover consuming terms plus boundaries while sticky mode checks
+one candidate.
 Compilation respects trailing escape parity; internal assertions, anchored
 alternatives and Unicode-mode matching remain pending. Optional accounting
 covers the literal scan and boundary checks without changing unlimited defaults.
