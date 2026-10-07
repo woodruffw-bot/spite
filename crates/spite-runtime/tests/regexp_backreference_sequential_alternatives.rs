@@ -137,10 +137,10 @@ fn explicit_sequential_choice_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn nested_choices_and_quantified_reference_bodies_remain_unsupported() {
     for source in [
-        r"/(?:(a|b)|c)(?:\1)+/.test('aa')",
-        r"/(?:a|(b|c))(?:\1)+/.test('bb')",
-        r"/((a|b)(c|d)|e)(?:\1)+/.test('acac')",
-        r"/(?:(?<x>a)|(?<x>b))(?:(?<y>a)|(?<y>b))\k<x>(?:\k<y>)+/.test('abab')",
+        r"/(?:(?:(a|b)|c)(?:\1)+){2}/.test('aa')",
+        r"/(?:(?:a|(b|c))(?:\1)+){2}/.test('bb')",
+        r"/(?:((a|b)(c|d)|e)(?:\1)+){2}/.test('acac')",
+        r"/(?:(?:(?<x>a)|(?<x>b))(?:(?<y>a)|(?<y>b))\k<x>(?:\k<y>)+){2}/.test('abab')",
         r"/(a|b)(c|d)\1/u.test('aca')",
     ] {
         assert!(

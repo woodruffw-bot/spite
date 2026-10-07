@@ -1073,8 +1073,8 @@ contains no heap-object edges and survives copying and collection. Optional work
 charges frame buffers, executed instructions, branch attempts, capture trail
 writes/resets, assertions and actual comparisons; aborts occur before lastIndex
 mutation and remain outside language handlers. Default work and heap quotas stay
-disabled. Quantified reference-containing groups, other consuming quantifiers,
-lookaround/scoped modifiers and Unicode matching remain pending.
+disabled. Capturing or composite reference-containing repetitions, other consuming
+quantifiers, lookaround/scoped modifiers and Unicode matching remain pending.
 
 Reference atoms accept greedy/lazy `*`, `+`, `?` and bounded quantifiers
 (CompileQuantifier, 22.2.2.5; RepeatMatcher, 22.2.2.3.1). Decimal bounds reuse exact
@@ -1094,8 +1094,18 @@ required finite repetition, including minimums too large for native integers.
 Execution can satisfy that minimum directly; optional empty iterations stop under
 RepeatMatcher's zero-progress rule. This optimization keeps huge finite empty
 reference bounds correct and avoids native loops or recursion. Typed named binding
-inventories must register every named escape outside classes. Default quotas stay
-disabled; reference-containing group repetitions, quantified consuming atoms,
+inventories must register every named escape outside classes.
+
+A quantified noncapturing group containing exactly one unquantified reference and
+any transparent noncapturing wrappers uses the same reference instruction and
+repetition frames. Compilation inspects its prepared body at the quantifier,
+accepts only that reference and no-op group boundaries, and retains the original
+capture ordinals and source. Empty noncapturing groups around the reference have
+no MatchState effects. Nested unquantified wrappers need no repeated body scans;
+100,000 wrappers remain iterative with linear storage. Capturing boundaries,
+multiple references, consuming terms, alternatives, assertions and an already
+quantified reference prevent this simplification. Default quotas stay disabled;
+capturing/composite reference repetitions, quantified consuming atoms,
 lookaround/scoped modifiers and Unicode matching remain pending in this program.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base

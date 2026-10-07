@@ -129,7 +129,7 @@ fn optional_work_and_variable_assertion_gaps_remain_distinct_from_exceptions() {
         r"/a^b+c+/m.test('abc')",
         r"/(a$|b)+/m.test('a')",
         r"/(a|bc)^/m.test('a')",
-        r"/(?<n>a)^(?:\k<n>)+/.test('a')",
+        r"/(?:(?<n>a)^(?:\k<n>)+){2}/.test('a')",
         r"/(^a)/u.test('a')",
     ] {
         assert!(

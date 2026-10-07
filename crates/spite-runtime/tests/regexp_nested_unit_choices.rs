@@ -196,8 +196,8 @@ fn opted_in_abort_and_wider_or_conditional_choices_remain_distinct() {
         r"/x(a|)y/.test('xay')",
         r"/x(a|[^b]c)y/.test('xay')",
         r"/(((?:[^z]|[^z])|(?:b|b))+(c|d)+)/.test('ac')",
-        r"/x(?<n>a|b)y(?:\k<n>)+/.test('xay')",
-        r"/x((?:[^z]|[^z])|(?:b|b))y(?:\1)+/.test('xaya')",
+        r"/(?:x(?<n>a|b)y(?:\k<n>)+){2}/.test('xay')",
+        r"/(?:x((?:[^z]|[^z])|(?:b|b))y(?:\1)+){2}/.test('xaya')",
         r"/x((?:[^z]|[^z])|(?:b|b))y/u.test('xay')",
     ] {
         assert!(

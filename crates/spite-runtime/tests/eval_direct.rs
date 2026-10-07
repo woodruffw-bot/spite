@@ -62,7 +62,11 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
             "let effects=0,caught=false;try{{eval('effects=1; /{pattern}/;');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
         ));
     }
-    for pattern in ["(?:ab|c)*", "[a-z]a+b+", "(?<a>a)|(?<a>b)(?:\\\\k<a>)+"] {
+    for pattern in [
+        "(?:ab|c)*",
+        "[a-z]a+b+",
+        "(?:(?<a>a)|(?<a>b)(?:\\\\k<a>)+){2}",
+    ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         assert!(matches!(
