@@ -805,6 +805,20 @@ before construction. Branch-specific captures, empty/wider alternatives,
 additional quantifiers, named groups, backreferences and Unicode modes remain
 pending.
 
+Complete ordinary noncapturing wrappers can also enclose an individual one-unit
+alternative branch (CompileSubpattern, 22.2.2.3). Branch preparation finds its
+complete group end and strips all complete ordinary wrappers iteratively. Any
+capturing wrapper rejects the predicate path; the remaining body must parse as
+exactly one literal, class, class escape or dot. This retains each branch's one
+consuming endpoint without introducing conditional capture slots. Bare and
+wrapped branches use the same positive/inverted union paths, original flags,
+fixed capture layout and repeated/partial capture plans. Root group captures
+remain source ordered, and zero repetitions leave their inner slots undefined.
+Deep branch wrappers use linear scans and flat immutable metadata, with no
+recursive matching, expanded choice combinations or default quotas. Branch
+captures, empty/wider bodies, nested choices within a branch, assertions inside
+branches, additional quantifiers and Unicode modes remain pending.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

@@ -347,6 +347,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile literal-unit choices inside fixed ordinary sequences and repeated fixed bodies, preserving static/final-iteration captures, partial enclosing ranges, fixed prefixes/sequels, assertions and alternative order.
 - [x] Compile capture-free one-unit ordinary class, class-escape and dot alternatives as a shared predicate, preserving exact range/escape boundaries, fixed/final-iteration captures, assertions, flags and alternative order.
 - [x] Compile one-unit inverted-class alternatives by merging canonicalized branch membership after inversion, preserving fixed/final-iteration/partial captures, assertions, flags, source order and shared immutable predicates.
+- [x] Compile complete noncapturing wrappers around single-unit alternative branches, preserving capture-free branch predicates, fixed/final-iteration/partial captures, assertions and flags with iterative preparation.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
