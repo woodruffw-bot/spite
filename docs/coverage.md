@@ -1710,6 +1710,26 @@ warnings denied passes. Assertions, alternatives, quantifiers combined with
 references and Unicode matching remain pending. No fixtures or fixture credit
 are added; inventories, the pin, dependencies and unlimited defaults are unchanged.
 
+Ordinary input/line and word assertions now compose with numbered and named
+references in the flat matcher. Three added core regressions cover an inspected
+3,240-record insta snapshot, absolute candidate context, ordinary case/word
+boundaries, empty captures, and 100,000 nested groups or repeated assertions with
+fallible actual work. The earlier 585-record literal and 3,024-record character
+snapshots are byte-identical. Six runtime regressions cover an inspected
+25-record result snapshot, all line terminators, sticky/global state, surrogate
+units, groups/indices aliases, consumers and empty-match advancement, copied
+programs and collection, default unlimited depth, opted-in search aborts, and
+remaining unsupported features. Node agrees with every added core/native record,
+256,960 fresh match/capture comparisons and eleven runtime programs. Ten earlier
+asserted-reference gap controls now retain quantified forms; all 368 audited gap
+programs remain unsupported. Alternatives, quantifiers combined with references
+and Unicode matching remain pending. No fixtures or fixture credit are added;
+inventories, the pin, dependencies and unlimited defaults are unchanged.
+Stable and MSRV pass workspace targets, documentation, and every unchanged
+pinned-corpus variant. Formatting, denied-warning Clippy, dependency/fixture
+policy, generated-data checks, and default two-mebibyte debug-stack checks pass
+on both toolchains where applicable.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

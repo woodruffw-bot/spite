@@ -1043,8 +1043,8 @@ matching remain pending, and default quotas remain disabled.
 
 Character-class, class-escape and dot atoms also compose with ordinary references
 (CompileAtom, 22.2.2.7; BackreferenceMatcher, 22.2.2.9). Complete preparation rejects
-unsupported assertions, alternatives and quantifiers before constructing any
-character predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
+unsupported alternatives and quantifiers before constructing any character
+predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
 inversion and DotAll behavior. Identical UTF-16 atom source shares one immutable
 predicate within a compilation, with charged cache setup, lookup and first
 construction. The flat reference program consumes one original UTF-16 unit per
@@ -1052,6 +1052,17 @@ predicate and retains input capture ranges for numbered and named references.
 Default compile helpers retain DotAll=false; the native constructor supplies its
 validated s flag explicitly. No native recursion or reference-string expansion is
 introduced, and optional matching work still charges actual executed operations.
+
+Ordinary references also compose with input/line and word assertions (22.2.2.4).
+The flat program reuses the existing assertion conjunction at each current
+absolute UTF-16 position, inspecting the complete input and the validated m flag.
+Searching from a later candidate or using sticky lastIndex never slices away the
+preceding unit or input boundaries. Each assertion preserves capture state and
+charges its execution before inspecting adjacent units. WordCharacters remains
+ASCII in ordinary mode even with IgnoreCase; all four ECMAScript line terminators
+use the existing Multiline rules. Empty assertions, forward/self references and
+nested groups retain source-order input ranges without recursion. Alternatives,
+quantifiers combined with references and Unicode-mode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

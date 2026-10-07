@@ -138,7 +138,7 @@ fn unsupported_reference_compositions_remain_distinct_from_match_failures() {
         r"/(a)\1+/.test('aa')",
         r"/(a|b)\1/.test('aa')",
         r"/([ab])\1+/.test('aa')",
-        r"/^(a)\1/.test('aa')",
+        r"/^(a)\1+/.test('aa')",
         r"/(?<x>a)\k<x>+/.test('aa')",
         r"/(a)\1/u.test('aa')",
     ] {

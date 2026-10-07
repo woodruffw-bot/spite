@@ -1,5 +1,6 @@
-//! Ordinary character concatenations with DecimalEscape references (22.2.2.9).
+//! Ordinary character concatenations, assertions and references (22.2.2.4, 22.2.2.9).
 
+use crate::regexp_assertion::Assertions;
 use crate::regexp_character::PreparedCharacter;
 use crate::regexp_literal::{character_escape, is_syntax};
 use crate::{JsString, RegExpCharacterMatcher, regexp_canonicalize_character};
@@ -9,10 +10,10 @@ use std::{collections::HashMap, ops::Range, sync::Arc};
 ///
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
-/// references, ordinary character sets and dot. Alternatives, quantifiers and
-/// assertions return `None`. At least one numbered reference is required; plain literals retain
-/// their existing linear-search matcher. References are never expanded into
-/// source or compiled literal strings.
+/// references, ordinary character sets, dot and word/input/line assertions.
+/// Alternatives and quantifiers return `None`. At least one numbered reference
+/// is required; plain literals retain their existing linear-search matcher.
+/// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
 pub struct RegExpBackreferenceMatcher(Arc<Program>);
 
@@ -21,12 +22,14 @@ struct Program {
     instructions: Vec<Instruction>,
     capture_count: usize,
     ignore_case: bool,
+    multiline: bool,
 }
 
 #[derive(Debug)]
 enum Instruction {
     Character(u16),
     Set(RegExpCharacterMatcher),
+    Assert(Assertions),
     Open(usize),
     Close(usize),
     Reference(usize),
@@ -72,6 +75,18 @@ impl RegExpBackreferenceMatcher {
     pub fn compile_with_flags_and_work<E>(
         source: &JsString,
         ignore_case: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_with_assertions_and_work(source, ignore_case, false, dot_all, charge)
+    }
+
+    /// Compiles ordinary word/input/line assertions with explicit Multiline.
+    /// Assertions use the complete input at the current consuming position.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
@@ -123,6 +138,7 @@ impl RegExpBackreferenceMatcher {
             instructions,
             capture_count,
             ignore_case,
+            multiline,
         }))))
     }
 
@@ -195,6 +211,12 @@ impl RegExpBackreferenceMatcher {
                             continue 'candidate;
                         }
                         cursor += 1;
+                    }
+                    Instruction::Assert(assertion) => {
+                        charge(2)?;
+                        if !assertion.accepts(input, cursor, self.0.multiline) {
+                            continue 'candidate;
+                        }
                     }
                     Instruction::Open(index) => starts[*index] = cursor,
                     Instruction::Close(index) => captures[*index] = Some(starts[*index]..cursor),
@@ -284,6 +306,20 @@ fn prepare(
                 )));
                 references += 1;
             }
+            0x5e | 0x24 => {
+                let mut assertion = Assertions::default();
+                assertion.add_input_boundary(unit == 0x5e);
+                instructions.push(PreparedInstruction::Ready(Instruction::Assert(assertion)));
+            }
+            0x5c if source
+                .get(cursor)
+                .is_some_and(|unit| matches!(unit, 0x62 | 0x42)) =>
+            {
+                let mut assertion = Assertions::default();
+                assertion.add_word_boundary(source[cursor] == 0x62);
+                cursor += 1;
+                instructions.push(PreparedInstruction::Ready(Instruction::Assert(assertion)));
+            }
             0x2e | 0x5b => {
                 let start = cursor - 1;
                 let (plan, length) = PreparedCharacter::parse(&source[start..], dot_all)?;
@@ -329,6 +365,138 @@ fn prepare(
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn asserted_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"^(a)\1$",
+            r"\b(\w)\1\b",
+            r"\B(.)\1\B",
+            r"(\w)\b\1",
+            r"(\w)\B\1",
+            r"(a($))\1",
+            r"(\1^a)\1",
+            r"^()\1$",
+            r"\b()\1\b",
+            r"\B()\1\B",
+            r"(\b)\1\w",
+            r"(\B)\1.",
+            r"(\1\b\w)\1",
+            r"^([\s\S])\1$",
+            r"\b\B(\w)\1",
+            r"^^(\w)\1$$",
+            r"\b(\w)\B\1\b",
+            r"((a)\1)^",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "aa",
+                    "Aa",
+                    "qaa",
+                    "aa\n",
+                    "\naa\n",
+                    "\raa\r\n",
+                    "aa aa",
+                    " bb ",
+                    "q\nbb\nq",
+                    "µΜ",
+                    "\n\n",
+                    "a\n a",
+                    "\u{2028}aa\u{2029}",
+                    "\r\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn absolute_assertion_positions_preserve_captures_and_ordinary_word_membership() {
+        let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+            &JsString::from(r"^(\w)\1$"),
+            false,
+            true,
+            false,
+            |_| Ok::<_, ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let found = matcher.find(&JsString::from("q\naa\nz"), 0, false).unwrap();
+        assert_eq!(found.range, 2..4);
+        assert_eq!(&*found.captures, &[Some(2..3)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"\b()\1\b"), false).unwrap();
+        assert_eq!(
+            matcher.find(&JsString::from(" a"), 0, false).unwrap().range,
+            1..1
+        );
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"\B(.)\1\B"), true).unwrap();
+        assert_eq!(
+            matcher.find(&JsString::from("µΜ"), 0, true).unwrap().range,
+            0..2
+        );
+        assert!(matcher.find(&JsString::from("aa"), 0, true).is_none());
+    }
+
+    #[test]
+    fn deep_assertion_streams_keep_flat_layouts_and_fallible_actual_search_work() {
+        let text = format!("{}(a)\\1{}", "^".repeat(100000), "$".repeat(100000));
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(text.as_str()), false).unwrap();
+        assert_eq!(
+            matcher.find(&JsString::from("aa"), 0, true).unwrap().range,
+            0..2
+        );
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("aa"), 0, true, |n| {
+                    work += n;
+                    if work > 1000 {
+                        Err("explicit work")
+                    } else {
+                        Ok(())
+                    }
+                })
+                .unwrap_err(),
+            "explicit work"
+        );
+        let text = format!(
+            "{}(\\b)(a)\\100002{}",
+            "(".repeat(100000),
+            ")".repeat(100000)
+        );
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(text.as_str()), false).unwrap();
+        let found = matcher.find(&JsString::from(" aa"), 0, false).unwrap();
+        assert_eq!(found.range, 1..3);
+        assert_eq!(found.captures[100000], Some(1..1));
+        assert_eq!(found.captures[100001], Some(1..2));
+    }
 
     #[test]
     fn character_reference_execution_snapshot() {
@@ -437,7 +605,7 @@ mod tests {
                 .len(),
             100000
         );
-        for text in [r"(\w)\1+", r"^([ab])\1", r"([ab]|c)\1"] {
+        for text in [r"(\w)\1+", r"^([ab])\1+", r"([ab]|c)\1"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_with_flags_and_work(
@@ -568,7 +736,7 @@ mod tests {
             r"(a|b)\1",
             r"(?<x>a)\k<x>",
             r"([ab])\1+",
-            r"^(a)\1",
+            r"^(a)\1+",
             r"(a)\2",
             "(a)",
         ] {

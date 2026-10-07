@@ -105,7 +105,7 @@ fn remaining_reference_compositions_keep_explicit_unsupported_outcomes() {
     for source in [
         r"/([ab])\1+/.test('aa')",
         r"/(a|b)\1/.test('aa')",
-        r"/^([ab])\1/.test('aa')",
+        r"/^([ab])\1+/.test('aa')",
         r"/(?<x>[ab])\k<x>/u.test('aa')",
     ] {
         assert!(

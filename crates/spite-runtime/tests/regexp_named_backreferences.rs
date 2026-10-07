@@ -137,7 +137,7 @@ fn pending_reference_compositions_remain_unsupported_and_failed_matches_return_n
         r"/(?<x>a)\k<x>+/.test('aa')",
         r"/(?<x>a)|(?<x>b)\k<x>/.test('bb')",
         r"/(?<x>[ab])\k<x>+/.test('aa')",
-        r"/^(?<x>a)\k<x>/.test('aa')",
+        r"/^(?<x>a)\k<x>+/.test('aa')",
         r"/(?<x>a)\k<x>/u.test('aa')",
     ] {
         assert!(
