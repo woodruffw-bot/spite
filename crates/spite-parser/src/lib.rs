@@ -22,7 +22,9 @@ mod source;
 mod template;
 
 pub use dynamic_function::{parse_dynamic_function, parse_dynamic_function_utf16};
-pub use regexp::validate_regexp_pattern;
+pub use regexp::{
+    RegExpNamedCapture, RegExpPatternMetadata, parse_regexp_pattern, validate_regexp_pattern,
+};
 
 use ast::*;
 use lexer::{Goal, Kind, Lexer, Token};

@@ -133,6 +133,19 @@ constructor input. It accepts the original UTF-16 body without literal delimiter
 including raw line terminators and lone surrogates, and returns the exact capture
 count. Flag errors precede Pattern errors. Diagnostics retain the caller's source
 span rather than treating UTF-16 offsets as source byte positions.
+The public parse_regexp_pattern entry point also retains CapturingGroupName
+metadata (22.2.1.5, 22.2.2.3). Each decoded name has its one-based source-order
+capture index and original UTF-16 GroupSpecifier range; permitted duplicate names
+retain their separate slots. Metadata collection is opt-in within the existing
+validator, so count-only validation adds no name records or offset conversion.
+Unicode-mode code-point boundaries translate to UTF-16 through one forward scan
+of disjoint specifiers, preserving surrogate pairs, lone surrogates, raw source
+and escape spelling. Names retain their decoded identifier units without
+normalization or case folding. Flag, duplicate-name and reference early errors
+still precede a successful result, and diagnostics keep the caller's source span.
+Collection, translation and deep groups use flat vectors and iterative scans.
+This supplies capture metadata for native matching; named result objects and
+named backreference execution remain pending.
 Capturing-group totals must remain strictly below 2^32 - 1 (22.2.1.1). Reject
 the first forbidden total before incrementing the counter; this is the specified
 grammar early error, not a host resource quota.

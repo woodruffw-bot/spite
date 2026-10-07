@@ -1552,6 +1552,25 @@ An inspected 89-record diagnostic snapshot covers all three Pattern modes, raw
 line terminators, surrogate units, capture counts and syntax failures. This shares
 the existing grammar implementation; the corpus inventory is unchanged.
 
+ParsePattern also retains decoded named capture names, their one-based capture
+indices and original UTF-16 GroupSpecifier ranges. Metadata collection is opt-in;
+count-only validation keeps its existing path. Three parser regressions cover an
+inspected 108-record insta snapshot across ordinary/u/v modes (86 accepted and
+22 rejected), explicit decoded-name/slot/specifier expectations, permitted
+alternative-specific duplicates, flag-error precedence and exact diagnostic
+spans, raw surrogate offsets, 100,000 nested captures and 100,000 unnamed slots
+without default quotas. Astral source/name units and escaped names retain their
+original UTF-16 ranges through one forward translation scan. All prior parser
+snapshots are unchanged, and every parser target and documentation check passes.
+Clippy with warnings denied passes. Named result objects and named backreference
+execution remain pending; no new matching or fixture credit is claimed, and
+corpus inventories, the pin, dependencies and runtime defaults are unchanged.
+
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Core EscapeRegExpPattern source serialization handles empty Patterns, solidus,
 all four raw line terminators and existing escape parity without allocating.
 Two inspected snapshots cover 46 UTF-16 records, including ordinary Pattern

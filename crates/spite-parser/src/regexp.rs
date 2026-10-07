@@ -76,6 +76,73 @@ struct Group {
     names: Names,
 }
 
+/// One decoded named capture and its source-order capture index.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RegExpNamedCapture {
+    /// Decoded CapturingGroupName, without normalization or case folding.
+    pub name: JsString,
+    /// One-based capture index, including preceding unnamed captures.
+    pub index: u32,
+    /// UTF-16 GroupSpecifier range, after `(` through the closing `>`.
+    pub specifier: Range<usize>,
+}
+
+/// Capture metadata retained after the complete Pattern and flags are valid.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RegExpPatternMetadata {
+    /// CountLeftCapturingParensWithin for the complete Pattern.
+    pub capture_count: u32,
+    /// Named captures in source order, including permitted duplicate names.
+    pub named_captures: Vec<RegExpNamedCapture>,
+}
+
+/// Parses a UTF-16 Pattern and flags, retaining named capture metadata.
+///
+/// Names use CapturingGroupName's Unicode identifier rules in every mode.
+/// Duplicate-name and reference early errors remain the same as validation.
+/// Specifier offsets always refer to the original UTF-16 body, including when
+/// Unicode-mode parsing treats surrogate pairs as single code points.
+pub fn parse_regexp_pattern(
+    body: &JsString,
+    flags: &JsString,
+    span: Span,
+) -> Result<RegExpPatternMetadata, Diagnostic> {
+    let mode =
+        pattern_mode(flags).map_err(|failure| Diagnostic::new(failure.0, span, failure.1))?;
+    let mut pattern = Pattern::new(body, mode);
+    pattern.named_captures = Some(Vec::new());
+    pattern
+        .validate()
+        .map_err(|failure| Diagnostic::new(failure.0, span, failure.1))?;
+    let mut point = 0;
+    let mut unit = 0;
+    let named_captures = pattern
+        .named_captures
+        .take()
+        .expect("metadata requested")
+        .into_iter()
+        .map(|mut capture| {
+            // Every GroupSpecifier is disjoint and follows the previous one.
+            // Translate code-point boundaries with one forward UTF-16 scan.
+            while point < capture.specifier.start {
+                unit += if pattern.points[point] > 0xffff { 2 } else { 1 };
+                point += 1;
+            }
+            let start = unit;
+            while point < capture.specifier.end {
+                unit += if pattern.points[point] > 0xffff { 2 } else { 1 };
+                point += 1;
+            }
+            capture.specifier = start..unit;
+            capture
+        })
+        .collect();
+    Ok(RegExpPatternMetadata {
+        capture_count: pattern.captures,
+        named_captures,
+    })
+}
+
 /// Validates a UTF-16 Pattern and its flags, returning the capturing-group count.
 ///
 /// The body has no literal delimiters and may contain raw line terminators or
@@ -130,6 +197,7 @@ struct Pattern {
     captures: u32,
     largest_reference: Option<Range<usize>>,
     named_references: HashSet<String>,
+    named_captures: Option<Vec<RegExpNamedCapture>>,
 }
 
 impl Pattern {
@@ -157,6 +225,7 @@ impl Pattern {
             captures: 0,
             largest_reference: None,
             named_references: HashSet::new(),
+            named_captures: None,
         }
     }
 
@@ -273,6 +342,7 @@ impl Pattern {
     }
 
     fn group(&mut self) -> Result<(bool, Option<String>), Failure> {
+        let specifier_start = self.pos;
         if !self.eat(b'?') {
             self.capture()?;
             return Ok((false, None));
@@ -286,6 +356,13 @@ impl Pattern {
             }
             let name = self.group_name()?;
             self.capture()?;
+            if let Some(captures) = &mut self.named_captures {
+                captures.push(RegExpNamedCapture {
+                    name: JsString::from(name.as_str()),
+                    index: self.captures,
+                    specifier: specifier_start..self.pos,
+                });
+            }
             return Ok((false, Some(name)));
         }
         // Includes (?:...), whose first modifier list is empty.

@@ -1,0 +1,112 @@
+---
+source: crates/spite-parser/tests/regexp_metadata.rs
+expression: rows
+---
+"" flags="" RegExpPatternMetadata { capture_count: 0, named_captures: [] }
+"" flags="u" RegExpPatternMetadata { capture_count: 0, named_captures: [] }
+"" flags="v" RegExpPatternMetadata { capture_count: 0, named_captures: [] }
+"()" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [] }
+"()" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [] }
+"()" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [] }
+"(?<x>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)(b)(?<y>c)" flags="" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 3, specifier: 11..15 }] }
+"(?<x>a)(b)(?<y>c)" flags="u" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 3, specifier: 11..15 }] }
+"(?<x>a)(b)(?<y>c)" flags="v" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 3, specifier: 11..15 }] }
+"((?<x>a))" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 2, specifier: 2..6 }] }
+"((?<x>a))" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 2, specifier: 2..6 }] }
+"((?<x>a))" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 2, specifier: 2..6 }] }
+"(?:(?<x>a))" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 4..8 }] }
+"(?:(?<x>a))" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 4..8 }] }
+"(?:(?<x>a))" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 4..8 }] }
+"(?<x>a)|(?<x>b)" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "x", index: 2, specifier: 9..13 }] }
+"(?<x>a)|(?<x>b)" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "x", index: 2, specifier: 9..13 }] }
+"(?<x>a)|(?<x>b)" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "x", index: 2, specifier: 9..13 }] }
+"(?:(?<x>a)|(?<x>b))" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 4..8 }, RegExpNamedCapture { name: "x", index: 2, specifier: 12..16 }] }
+"(?:(?<x>a)|(?<x>b))" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 4..8 }, RegExpNamedCapture { name: "x", index: 2, specifier: 12..16 }] }
+"(?:(?<x>a)|(?<x>b))" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 4..8 }, RegExpNamedCapture { name: "x", index: 2, specifier: 12..16 }] }
+"(?<x>a)|((?<y>b))" flags="" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 3, specifier: 10..14 }] }
+"(?<x>a)|((?<y>b))" flags="u" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 3, specifier: 10..14 }] }
+"(?<x>a)|((?<y>b))" flags="v" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 3, specifier: 10..14 }] }
+"(?<x>a)(?<x>b)" flags="" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>a)(?<x>b)" flags="u" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>a)(?<x>b)" flags="v" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>(?<x>a))" flags="" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>(?<x>a))" flags="u" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>(?<x>a))" flags="v" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<\u005cu0078>a)|(?<x>b)" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..10 }, RegExpNamedCapture { name: "x", index: 2, specifier: 14..18 }] }
+"(?<\u005cu0078>a)|(?<x>b)" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..10 }, RegExpNamedCapture { name: "x", index: 2, specifier: 14..18 }] }
+"(?<\u005cu0078>a)|(?<x>b)" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..10 }, RegExpNamedCapture { name: "x", index: 2, specifier: 14..18 }] }
+"(?<\u005cu{78}>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..10 }] }
+"(?<\u005cu{78}>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..10 }] }
+"(?<\u005cu{78}>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..10 }] }
+"(?<\u00b5>a)(?<\u039c>b)" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "\u00b5", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "\u039c", index: 2, specifier: 8..12 }] }
+"(?<\u00b5>a)(?<\u039c>b)" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "\u00b5", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "\u039c", index: 2, specifier: 8..12 }] }
+"(?<\u00b5>a)(?<\u039c>b)" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "\u00b5", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "\u039c", index: 2, specifier: 8..12 }] }
+"(?<a\u200c>b)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "a\u200c", index: 1, specifier: 1..6 }] }
+"(?<a\u200c>b)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "a\u200c", index: 1, specifier: 1..6 }] }
+"(?<a\u200c>b)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "a\u200c", index: 1, specifier: 1..6 }] }
+"(?<\ud801\udc00>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..6 }] }
+"(?<\ud801\udc00>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..6 }] }
+"(?<\ud801\udc00>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..6 }] }
+"(?<\u005cuD801\u005cuDC00>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..16 }] }
+"(?<\u005cuD801\u005cuDC00>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..16 }] }
+"(?<\u005cuD801\u005cuDC00>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..16 }] }
+"(?<\u005cu{10400}>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..13 }] }
+"(?<\u005cu{10400}>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..13 }] }
+"(?<\u005cu{10400}>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..13 }] }
+"\ud83d\udca9(?<x>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 3..7 }] }
+"\ud83d\udca9(?<x>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 3..7 }] }
+"\ud83d\udca9(?<x>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 3..7 }] }
+"(?<\ud801\udc00>\ud83d\udca9)(?<x>a)" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..6 }, RegExpNamedCapture { name: "x", index: 2, specifier: 10..14 }] }
+"(?<\ud801\udc00>\ud83d\udca9)(?<x>a)" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..6 }, RegExpNamedCapture { name: "x", index: 2, specifier: 10..14 }] }
+"(?<\ud801\udc00>\ud83d\udca9)(?<x>a)" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "\ud801\udc00", index: 1, specifier: 1..6 }, RegExpNamedCapture { name: "x", index: 2, specifier: 10..14 }] }
+"\u005c((?<x>a)\u005c)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 3..7 }] }
+"\u005c((?<x>a)\u005c)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 3..7 }] }
+"\u005c((?<x>a)\u005c)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 3..7 }] }
+"[(?<x>)](?<y>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "y", index: 1, specifier: 9..13 }] }
+"[(?<x>)](?<y>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "y", index: 1, specifier: 9..13 }] }
+"[(?<x>)](?<y>a)" flags="v" Syntax Span { start: 7, end: 11 }: unescaped regular expression Unicode class syntax character
+"(?<x>a)\u005c1" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)\u005c1" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)\u005c1" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)\u005ck<x>" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)\u005ck<x>" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)\u005ck<x>" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"\u005ck<x>(?<x>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 6..10 }] }
+"\u005ck<x>(?<x>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 6..10 }] }
+"\u005ck<x>(?<x>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 6..10 }] }
+"(?<x>a)\u005ck<y>" flags="" Syntax Span { start: 7, end: 11 }: regular expression named backreference has no capture
+"(?<x>a)\u005ck<y>" flags="u" Syntax Span { start: 7, end: 11 }: regular expression named backreference has no capture
+"(?<x>a)\u005ck<y>" flags="v" Syntax Span { start: 7, end: 11 }: regular expression named backreference has no capture
+"(?<x>a)+" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)+" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)+" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }] }
+"(?<x>a)|(?<x>b)(?<x>c)" flags="" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>a)|(?<x>b)(?<x>c)" flags="u" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>a)|(?<x>b)(?<x>c)" flags="v" Syntax Span { start: 7, end: 11 }: regular expression capture names might both participate
+"(?<x>a)(?:(?<y>b)|(?<y>c))" flags="" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 2, specifier: 11..15 }, RegExpNamedCapture { name: "y", index: 3, specifier: 19..23 }] }
+"(?<x>a)(?:(?<y>b)|(?<y>c))" flags="u" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 2, specifier: 11..15 }, RegExpNamedCapture { name: "y", index: 3, specifier: 19..23 }] }
+"(?<x>a)(?:(?<y>b)|(?<y>c))" flags="v" RegExpPatternMetadata { capture_count: 3, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 1..5 }, RegExpNamedCapture { name: "y", index: 2, specifier: 11..15 }, RegExpNamedCapture { name: "y", index: 3, specifier: 19..23 }] }
+"(?<__proto__>a)(?<constructor>b)" flags="" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "__proto__", index: 1, specifier: 1..13 }, RegExpNamedCapture { name: "constructor", index: 2, specifier: 16..30 }] }
+"(?<__proto__>a)(?<constructor>b)" flags="u" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "__proto__", index: 1, specifier: 1..13 }, RegExpNamedCapture { name: "constructor", index: 2, specifier: 16..30 }] }
+"(?<__proto__>a)(?<constructor>b)" flags="v" RegExpPatternMetadata { capture_count: 2, named_captures: [RegExpNamedCapture { name: "__proto__", index: 1, specifier: 1..13 }, RegExpNamedCapture { name: "constructor", index: 2, specifier: 16..30 }] }
+"(?=a)(?<x>a)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 6..10 }] }
+"(?=a)(?<x>a)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 6..10 }] }
+"(?=a)(?<x>a)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 6..10 }] }
+"(?<=a)(?<x>b)" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 7..11 }] }
+"(?<=a)(?<x>b)" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 7..11 }] }
+"(?<=a)(?<x>b)" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 7..11 }] }
+"(?i:(?<x>a))" flags="" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 5..9 }] }
+"(?i:(?<x>a))" flags="u" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 5..9 }] }
+"(?i:(?<x>a))" flags="v" RegExpPatternMetadata { capture_count: 1, named_captures: [RegExpNamedCapture { name: "x", index: 1, specifier: 5..9 }] }
+"(?<1x>a)" flags="" Syntax Span { start: 7, end: 11 }: invalid regular expression group name identifier
+"(?<1x>a)" flags="u" Syntax Span { start: 7, end: 11 }: invalid regular expression group name identifier
+"(?<1x>a)" flags="v" Syntax Span { start: 7, end: 11 }: invalid regular expression group name identifier
+"(?<\u005cuD800>a)" flags="" Syntax Span { start: 7, end: 11 }: invalid regular expression group name identifier
+"(?<\u005cuD800>a)" flags="u" Syntax Span { start: 7, end: 11 }: invalid regular expression group name identifier
+"(?<\u005cuD800>a)" flags="v" Syntax Span { start: 7, end: 11 }: invalid regular expression group name identifier
+"(?<x>a" flags="" Syntax Span { start: 7, end: 11 }: unterminated regular expression group
+"(?<x>a" flags="u" Syntax Span { start: 7, end: 11 }: unterminated regular expression group
+"(?<x>a" flags="v" Syntax Span { start: 7, end: 11 }: unterminated regular expression group
