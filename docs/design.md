@@ -410,9 +410,23 @@ anchors filter whole-prefix starts and repetition endpoints before selection.
 Alternatives retain their existing source-order choice and global capture slots.
 Optional search work conservatively covers three consuming passes, or four
 with outer anchors, including the complete suffix for sticky runs. Default
-quotas remain disabled. Groups, classes and dots in the fixed prefix, multiple
+quotas remain disabled. Classes and dots in the fixed prefix, multiple
 consuming quantifiers, nonliteral continuations and nested choices remain
 pending.
+
+Ordinary capturing and noncapturing groups may also form the fixed literal
+prefix, including nested and empty groups (CompileSubpattern, 22.2.2.3). A scalar
+nesting scan splits only complete top-level Atoms; a quantifier inside a group
+keeps that complete group in the consuming body. Literal compilation supplies
+fixed prefix capture endpoints in source order. The plan stores a checked total
+capture count; prefix ranges translate from the whole match start, while body
+and suffix slots use the remaining range after the decoded prefix. Empty
+prefixes delegate directly to the quantified body with the same anchor and
+sticky constraints, retaining participating empty captures. No per-candidate
+capture storage, wrapper tree or native recursion is added. Existing outer and
+branch capture prefixes compose with these slots. Nonliteral prefixes, grouped
+multi-atom repetition, multiple quantifiers, embedded choices, named groups,
+backreferences and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

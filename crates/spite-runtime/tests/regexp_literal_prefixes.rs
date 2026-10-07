@@ -128,8 +128,8 @@ fn optional_work_abort_and_complete_unsupported_prefixes_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/(a)b+/.test('ab')",
-        "/(?:a)b+/.test('ab')",
+        "/([a])b+/.test('ab')",
+        "/(?:[a])b+/.test('ab')",
         "/a.b+/.test('axb')",
         "/a[b]c+/.test('abc')",
         "/ab+c+/.test('abc')",

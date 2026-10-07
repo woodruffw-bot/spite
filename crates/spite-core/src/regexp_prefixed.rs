@@ -5,10 +5,11 @@ use crate::{
 };
 use std::{ops::Range, sync::Arc};
 
-/// An ordinary capture-free literal prefix before one quantified atom and suffix.
+/// An ordinary literal prefix before one quantified atom and suffix.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
-/// contains literal characters/escapes; the body reuses the complete quantified
+/// contains literal characters/escapes and unquantified ordinary groups, including
+/// empty captures; the body reuses the complete quantified
 /// atom/literal-continuation grammar. Search streams prefix occurrences and
 /// continuation candidates in monotone order, without allocation or recursion.
 #[derive(Clone, Debug)]
@@ -18,21 +19,33 @@ pub struct RegExpPrefixedMatcher(Arc<Program>);
 struct Program {
     prefix: RegExpLiteralMatcher,
     body: RegExpQuantifiedContinuationMatcher,
+    capture_count: usize,
 }
 
 impl RegExpPrefixedMatcher {
-    /// Total captures in the quantified atom and its fixed literal continuation.
+    /// Total captures in source order: prefix, quantified atom, and continuation.
     pub fn capture_count(&self) -> usize {
-        self.0.body.capture_count()
+        self.0.capture_count
     }
 
-    /// Absolute capture range after excluding the fixed literal prefix.
+    /// Absolute capture range, including fixed prefix and dynamic body captures.
     pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
+        if index >= self.capture_count() {
+            return None;
+        }
         let start = matched.start.checked_add(self.0.prefix.matched_len())?;
         if start > matched.end {
             return None;
         }
-        self.0.body.capture_range(index, &(start..matched.end))
+        let prefix_captures = self.0.prefix.capture_ranges();
+        if let Some(range) = prefix_captures.get(index) {
+            return Some(
+                matched.start.checked_add(range.start)?..matched.start.checked_add(range.end)?,
+            );
+        }
+        self.0
+            .body
+            .capture_range(index - prefix_captures.len(), &(start..matched.end))
     }
 
     /// Compiles the complete literal-prefix/quantified-body subset.
@@ -62,9 +75,6 @@ impl RegExpPrefixedMatcher {
         let Some(prefix) = RegExpLiteralMatcher::compile(&prefix, ignore_case) else {
             return Ok(None);
         };
-        if prefix.matched_len() == 0 || !prefix.capture_ranges().is_empty() {
-            return Ok(None);
-        }
         let body = JsString::from_code_units(source.code_units()[split..].to_vec());
         let body = if let Some(q) =
             RegExpQuantifiedMatcher::compile_with_work(&body, ignore_case, dot_all, &mut charge)?
@@ -80,7 +90,18 @@ impl RegExpPrefixedMatcher {
         } else {
             return Ok(None);
         };
-        Ok(Some(Self(Arc::new(Program { prefix, body }))))
+        let Some(capture_count) = prefix
+            .capture_ranges()
+            .len()
+            .checked_add(body.capture_count())
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self(Arc::new(Program {
+            prefix,
+            body,
+            capture_count,
+        }))))
     }
 
     /// Finds the earliest whole prefix match and its greedy/lazy body endpoint.
@@ -99,6 +120,12 @@ impl RegExpPrefixedMatcher {
         at_end: bool,
         multiline: bool,
     ) -> Option<Range<usize>> {
+        if self.0.prefix.matched_len() == 0 {
+            return self
+                .0
+                .body
+                .find_anchored(input, start, sticky, at_start, at_end, multiline);
+        }
         let units = input.code_units();
         let allowed_start = |position| {
             !at_start || position == 0 || (multiline && is_line_terminator(units[position - 1]))
@@ -139,26 +166,54 @@ impl RegExpPrefixedMatcher {
     }
 }
 
-/// Plain literal units/escapes precede the first consuming group/class/dot or
-/// quantifier. A quantifier belongs to the previous complete literal atom.
+/// Find the complete literal prefix before the first nonliteral or quantified
+/// Atom. Quantifiers inside a group retain the entire top-level group in the
+/// body; a quantifier after a group applies to that complete group (22.2.2.3).
+/// Only scalar nesting state is needed; literal capture compilation stays shared.
 fn prefix_end(units: &[u16]) -> Option<usize> {
     let mut index = 0;
     let mut last = None;
+    let mut depth = 0usize;
+    let mut group_start = 0;
     while let Some(&unit) = units.get(index) {
         let start = index;
         match unit {
-            40 | 46 | 91 => return Some(start),
-            42 | 43 | 63 | 123 => return last,
+            40 => {
+                if depth == 0 {
+                    group_start = start;
+                }
+                depth = depth.checked_add(1)?;
+                index += 1;
+                if units.get(index) == Some(&63) {
+                    if units.get(index..index + 2)? != [63, 58] {
+                        return None;
+                    }
+                    index += 2;
+                }
+                continue;
+            }
+            41 => {
+                depth = depth.checked_sub(1)?;
+                index += 1;
+                if depth == 0 {
+                    last = Some(group_start);
+                }
+                continue;
+            }
+            46 | 91 => return Some(if depth == 0 { start } else { group_start }),
+            42 | 43 | 63 | 123 => return if depth == 0 { last } else { Some(group_start) },
             92 => {
                 index += 1;
                 if crate::regexp_literal::character_escape(units, &mut index).is_none() {
-                    return Some(start);
+                    return Some(if depth == 0 { start } else { group_start });
                 }
             }
             _ if crate::regexp_literal::is_syntax(unit) || unit == 124 => return None,
             _ => index += 1,
         }
-        last = Some(start);
+        if depth == 0 {
+            last = Some(start);
+        }
     }
     None
 }
@@ -369,6 +424,205 @@ mod tests {
                 |_| Err("abort")
             )
             .unwrap_err(),
+            "abort"
+        );
+    }
+
+    #[test]
+    fn prefix_group_capture_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(a)b+",
+            "(?:a)b+",
+            "((a))b+",
+            "()(a)()b+",
+            "()a+",
+            "(?:)a+",
+            "()([ab])*()",
+            "()([ab])*?()",
+            "(a)(b)+((c)())",
+            "((ab))a*?a",
+            "(a())(b*)()",
+            "(a)(b)*()",
+            "(a)[]*()",
+            "()[]*()",
+            "()[]+()",
+            r"(\u0061)(b)+()",
+            r"(\n)(a)+",
+            "(µ)(a)+",
+            "(💩)a+",
+            "()(a){0,2}?()",
+            "((?:a)())((b)+)(c)",
+            "((a)b)+",
+            "(a|b)c+",
+            "([a])b+",
+            "(a)b+c+",
+            "(?<n>a)b+",
+            "(a)(?=b)b+",
+            "()a+u|x",
+            "(a)b+[c]",
+            "(a(b+))",
+        ] {
+            for (ignore_case, dot_all) in [(false, false), (true, false), (false, true)] {
+                let matcher =
+                    RegExpPrefixedMatcher::compile(&JsString::from(source), ignore_case, dot_all);
+                write!(rows, "{source:?} i={ignore_case} s={dot_all}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(rows, " captures={}", matcher.capture_count()).unwrap();
+                    for text in [
+                        "", "a", "ab", "abb", "abbc", "aaaa", "xabbc", "x", "ΜAA", "💩aa", "\nAA",
+                    ] {
+                        for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                            let input = JsString::from(text);
+                            let result = matcher.find(&input, start, sticky).map(|r| {
+                                let caps = (0..matcher.capture_count())
+                                    .map(|c| matcher.capture_range(c, &r))
+                                    .collect::<Vec<_>>();
+                                (r, caps)
+                            });
+                            write!(rows, " {text:?}@{start}/{sticky}:{result:?}").unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn prefix_captures_and_empty_groups_agree_with_independent_repetition_order() {
+        for prefix in ["", "a", "aa", "ab"] {
+            for style in 0..3 {
+                let prefix_source = match style {
+                    0 => format!("({prefix})"),
+                    1 => format!("(?:(?:({prefix})))"),
+                    _ => format!("()(?:({prefix}))()"),
+                };
+                for (quantifier, min, max) in
+                    [("*", 0, None), ("+", 1, None), ("{0,2}", 0, Some(2))]
+                {
+                    for suffix in ["", "a"] {
+                        for greedy in [false, true] {
+                            let source = format!(
+                                "{prefix_source}([ab]){quantifier}{}({suffix})()",
+                                if greedy { "" } else { "?" }
+                            );
+                            let matcher = RegExpPrefixedMatcher::compile(
+                                &JsString::from(source.as_str()),
+                                false,
+                                false,
+                            )
+                            .unwrap();
+                            let prefix_caps = if style == 2 { 3 } else { 1 };
+                            assert_eq!(matcher.capture_count(), prefix_caps + 3);
+                            for len in 0..=4u32 {
+                                for mut encoded in 0..3usize.pow(len) {
+                                    let mut units = Vec::new();
+                                    for _ in 0..len {
+                                        units.push([97, 98, 120][encoded % 3]);
+                                        encoded /= 3;
+                                    }
+                                    let input = JsString::from_code_units(units.clone());
+                                    for start in 0..=units.len() + 1 {
+                                        for sticky in [false, true] {
+                                            let expected = (start..=units.len())
+                                                .take(if sticky { 1 } else { usize::MAX })
+                                                .find_map(|candidate| {
+                                                    let begin = candidate + prefix.len();
+                                                    if !units
+                                                        .get(candidate..begin)?
+                                                        .iter()
+                                                        .copied()
+                                                        .eq(prefix.bytes().map(u16::from))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    let limit = max
+                                                        .unwrap_or(units.len() - begin)
+                                                        .min(units.len() - begin);
+                                                    let counts: Vec<_> = if greedy {
+                                                        (min..=limit).rev().collect()
+                                                    } else {
+                                                        (min..=limit).collect()
+                                                    };
+                                                    counts.into_iter().find_map(|count| {
+                                                        let end = begin + count;
+                                                        let finish = end + suffix.len();
+                                                        if !units[begin..end]
+                                                            .iter()
+                                                            .all(|u| [97, 98].contains(u))
+                                                            || !units
+                                                                .get(end..finish)?
+                                                                .iter()
+                                                                .copied()
+                                                                .eq(suffix.bytes().map(u16::from))
+                                                        {
+                                                            return None;
+                                                        }
+                                                        let mut caps = if style == 2 {
+                                                            vec![
+                                                                Some(candidate..candidate),
+                                                                Some(candidate..begin),
+                                                                Some(begin..begin),
+                                                            ]
+                                                        } else {
+                                                            vec![Some(candidate..begin)]
+                                                        };
+                                                        caps.extend([
+                                                            (count > 0).then(|| end - 1..end),
+                                                            Some(end..finish),
+                                                            Some(finish..finish),
+                                                        ]);
+                                                        Some((candidate..finish, caps))
+                                                    })
+                                                });
+                                            let actual =
+                                                matcher.find(&input, start, sticky).map(|r| {
+                                                    let caps = (0..matcher.capture_count())
+                                                        .map(|c| matcher.capture_range(c, &r))
+                                                        .collect::<Vec<_>>();
+                                                    (r, caps)
+                                                });
+                                            assert_eq!(
+                                                actual, expected,
+                                                "{source} {units:?} {start} {sticky}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn large_empty_prefix_capture_layouts_stay_flat_and_checked() {
+        let source = JsString::from(format!("{}(a)+()", "()".repeat(100_000)).as_str());
+        let matcher = RegExpPrefixedMatcher::compile(&source, false, false).unwrap();
+        let copy = matcher.clone();
+        assert_eq!(copy.capture_count(), 100_002);
+        let r = copy.find(&JsString::from("xaa"), 0, false).unwrap();
+        assert_eq!(r, 1..3);
+        assert_eq!(copy.capture_range(0, &r), Some(1..1));
+        assert_eq!(copy.capture_range(99_999, &r), Some(1..1));
+        assert_eq!(copy.capture_range(100_000, &r), Some(2..3));
+        assert_eq!(copy.capture_range(100_001, &r), Some(3..3));
+        assert_eq!(copy.capture_range(100_002, &r), None);
+        assert_eq!(copy.find(&JsString::from("aa"), 3, false), None);
+        assert_eq!(copy.find(&JsString::from("xaa"), 0, true), None);
+        let prefix =
+            RegExpPrefixedMatcher::compile(&JsString::from("(a)b+"), false, false).unwrap();
+        assert_eq!(prefix.capture_range(0, &(usize::MAX..usize::MAX)), None);
+        assert_eq!(prefix.capture_range(0, &Range { start: 2, end: 1 }), None);
+        assert_eq!(
+            RegExpPrefixedMatcher::compile_with_work(&source, false, false, |_| Err("abort"))
+                .unwrap_err(),
             "abort"
         );
     }

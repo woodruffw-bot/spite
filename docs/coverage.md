@@ -903,9 +903,32 @@ match/capture arrays and twenty runtime programs. Sticky accounting covers the
 complete remaining suffix; prefix search keeps its linear bound. The whole
 fixture review enables two unchanged greedy/lazy bounded-prefix programs,
 recorded in the separate fixture inventory above. The pin is unchanged.
-Groups/classes/dots in literal prefixes,
-multiple consuming quantifiers, nonliteral continuations, nested choices, named
+Classes and dots in literal prefixes, multiple consuming quantifiers, nonliteral continuations, nested choices, named
 groups, backreferences and Unicode modes remain pending.
+
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
+Literal prefixes now include ordinary capturing and noncapturing groups,
+including nested and empty groups. Three core regressions cover an inspected
+90-record insta snapshot, an independent prefix/candidate/repetition/capture
+oracle with participating empty groups, 100,000 flat prefix captures, shared
+clones, invalid ranges and opt-in preparation aborts. Six existing prefix
+snapshot records gain matching support; every earlier accepted value is retained.
+Eight runtime regressions cover prefix/body/suffix source order and indices,
+undefined versus participating empty groups, global/sticky and empty-match
+progress, strict writes, branch/outer capture and anchor composition, decoded
+escapes and UTF-16 ranges, pinned flags, generic consumers, intrinsic Arrays,
+100,000-group compilation and 1,000-group results after collection with unlimited
+defaults. Optional host failures remain outside JavaScript handlers. Node agrees
+on all 110,376 match/capture comparisons, all 5,547 stored arrays across both
+prefix snapshots, and twenty runtime programs. The existing gap regressions
+retain nonliteral prefixes and multiple quantifiers. The whole fixture review
+enables no further programs; the corpus, inventories and pin are unchanged.
+Classes/dots in prefixes, grouped multi-atom repetition, nonliteral
+continuations, nested choices, named groups, backreferences and Unicode modes
+remain pending.
 
 Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
