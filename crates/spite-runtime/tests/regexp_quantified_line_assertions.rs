@@ -124,8 +124,8 @@ fn optional_work_counts_full_sticky_suffixes_and_unsupported_repeated_atoms() {
     );
     for source in [
         r"/a+($)b+/.test('ab')",
-        r"/(a$)+/m.test('a')",
-        r"/(a^)+/m.test('a')",
+        r"/(a$|b)+/m.test('a')",
+        r"/(a^|b)+/m.test('a')",
         r"/a+(?=b)/.test('ab')",
         r"/a+(?<n>b)/.test('ab')",
         r"/a+($)/u.test('a')",

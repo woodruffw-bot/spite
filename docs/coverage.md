@@ -1125,6 +1125,30 @@ tests and debug-stack checks, including the fresh-array object regressions.
 Formatting, Clippy, policy, fixture inventories and all pinned generator checks
 also pass.
 
+Consuming repeated-group assertions have three core regressions: an inspected
+252-record insta snapshot, an independent exhaustive iteration/neighbor/capture
+oracle, and 100,000 collapsed assertion captures, large multiline runs, cloned
+plans, explicit flags, legacy entry-point boundaries and optional construction
+work. Earlier stored snapshots are unchanged. Eight runtime regressions cover
+earliest greedy/lazy and bounded word assertions, consuming one-unit groups with
+empty/undefined captures, multiline iterations and CRLF, complete enclosing and
+alternative captures, source-order ties, global/sticky state, DotAll, pinned case
+and surrogate neighbors, generic consumers and callbacks, intrinsic arrays,
+collection, large assertion captures with unlimited defaults and optional host
+aborts. The unchanged large runtime case retains the preceding fresh-array
+optimization. Node agrees on 54,720 stored results across eleven snapshots,
+206,584 additional match/capture comparisons and 20 runtime programs. Eight
+earlier gap programs now exercise choices inside repeated groups. Whole-fixture
+review enables no new programs; inventories and the pin are unchanged. Pure
+assertion/empty repeated groups, outer assertions and fixed terms around repeated
+groups, repeated choices, additional quantifiers, named groups, backreferences
+and Unicode modes remain pending.
+
+Stable and minimum-supported Rust pass all 13,494 unchanged full-corpus variants,
+workspace targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all offline
+Unicode, RegExp-property and number-table generators also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

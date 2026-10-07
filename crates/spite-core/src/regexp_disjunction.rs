@@ -219,9 +219,10 @@ fn compile_alternative<E>(
         RegExpRepeatedLiteralMatcher::compile_with_work(source, ignore_case, &mut *charge)?
     {
         Alternative::RepeatedLiteral(m)
-    } else if let Some(m) = RegExpRepeatedSequenceMatcher::compile_with_work(
+    } else if let Some(m) = RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
         source,
         ignore_case,
+        multiline,
         dot_all,
         &mut *charge,
     )? {

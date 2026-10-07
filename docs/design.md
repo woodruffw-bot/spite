@@ -331,9 +331,9 @@ whole-run/final-iteration slots, complete enclosing groups, outer boundaries and
 alternative offsets retain the shared layout. Runtime dispatch and complete-body
 fallbacks pass the same multiline flag throughout. Search remains monotone,
 allocation-free and iterative; optional work covers fixed boundary checks over
-the complete suffix even for sticky repetitions. Assertions inside a repeated
-atom, repeated groups containing choices, compositions around repeated
-consuming groups, multiple quantifiers, named groups, backreferences and Unicode
+the complete suffix even for sticky repetitions. Repeated groups containing
+choices, compositions around repeated consuming groups, multiple quantifiers,
+named groups, backreferences and Unicode
 modes remain pending.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
@@ -580,9 +580,29 @@ zero iterations leave inner slots undefined. Enclosing groups and alternatives
 retain their existing layouts. Nonsticky work is bounded by input length times
 group width plus one pass, including phase setup; sticky work covers two complete
 suffix passes. Default quotas remain disabled, and no recursive plans or expanded
-counts are introduced. Assertions inside or around these repeated groups,
+counts are introduced. Assertions around these repeated groups,
 surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
+
+An explicit flag-dependent repeated-group entry point accepts internal
+word/input/line assertions and fixed consuming groups of at least one UTF-16
+unit (CompileAssertion, 22.2.2.4; RepeatMatcher, 22.2.2.3.1). Preparation and each
+iteration share the fixed sequence plan's sparse boundary conjunctions, explicit
+multiline flag, pinned character behavior and actual consuming offsets. The
+minimum occurrence stream therefore admits only complete asserted iterations;
+greedy extension checks the next complete group against the same input neighbors.
+Captures still translate from the final successful iteration. Zero iterations
+leave every inner slot undefined; empty assertion/ordinary captures participate
+with exact empty ranges when an iteration succeeds. One-unit groups with empty
+inner captures use the same path. Existing body plans retain precedence, and the
+legacy assertion-free compiler preserves its two-unit subset. Complete outer
+captures and alternatives retain their shared layouts. Optional search metadata
+covers each assertion position in minimum search and extension over the complete
+suffix, including sticky runs. Duplicate assertions collapse without recursive
+plans, expanded counts or default quotas. Pure assertion/empty repeated groups,
+outer assertions and fixed terms around repeated groups, repeated choices,
+additional quantifiers, named groups, backreferences and Unicode modes remain
+pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

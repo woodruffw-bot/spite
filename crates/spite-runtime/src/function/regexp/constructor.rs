@@ -280,9 +280,10 @@ impl Realm {
                                                 )? {
                                                     Ok(Some(RegExpMatcherBody::RepeatedLiteral(matcher)))
                                                 } else {
-                                                    RegExpRepeatedSequenceMatcher::compile_with_work(
+                                                    RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
                                                         &matching_source,
                                                         ignore_case,
+                                                        flags.code_units().contains(&u16::from(b'm')),
                                                         dot_all,
                                                         |work| budget.charge(work),
                                                     ).map(|m| m.map(RegExpMatcherBody::RepeatedSequence))
