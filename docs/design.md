@@ -580,8 +580,7 @@ zero iterations leave inner slots undefined. Enclosing groups and alternatives
 retain their existing layouts. Nonsticky work is bounded by input length times
 group width plus one pass, including phase setup; sticky work covers two complete
 suffix passes. Default quotas remain disabled, and no recursive plans or expanded
-counts are introduced. Assertions around these repeated groups,
-surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
+counts are introduced. Surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
 
 RegExpBuiltinExec shares an immutable String with the previous participating
@@ -608,9 +607,27 @@ captures and alternatives retain their shared layouts. Optional search metadata
 covers each assertion position in minimum search and extension over the complete
 suffix, including sticky runs. Duplicate assertions collapse without recursive
 plans, expanded counts or default quotas. Pure assertion/empty repeated groups,
-outer assertions and fixed terms around repeated groups, repeated choices,
+fixed terms around repeated groups, repeated choices,
 additional quantifiers, named groups, backreferences and Unicode modes remain
 pending.
+
+Outer word/input/line assertions now constrain a repeated fixed consuming group
+inside the shared anchored plan (22.2.2.4; RepeatMatcher, 22.2.2.3.1). Sticky
+search checks the requested start and each eligible complete iteration endpoint.
+Nonsticky search tracks overlapping occurrence runs by their group-width phase.
+Each run retains the earliest allowed start in the moving minimum/maximum window;
+failed or expired starts advance monotonically. Endpoint checks choose the
+earliest source position first, then greedy or lazy length for that position.
+A separate earliest empty candidate handles zero iterations outside consuming
+runs. This avoids restarting a repetition scan at every rejected end assertion.
+The shared fixed-sequence candidate bound remains in effect, with constant work
+per outer assertion check and temporary storage proportional to group width.
+Enclosing captures span the whole match, inner captures retain the final
+iteration, and zero iterations leave inner slots undefined. Explicit multiline,
+DotAll and ordinary pinned case behavior flow through the group plan. Original
+source text and earlier successful plan layouts remain intact. Optional work
+metadata covers endpoint/window checks and complete sticky suffixes; there are
+no default quotas, recursive plans, expanded counts or new dependencies.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

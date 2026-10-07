@@ -1162,6 +1162,30 @@ workspace targets and documentation tests, and debug native-stack checks. Format
 Clippy with warnings denied, dependency policy, fixture inventories and all offline
 Unicode, RegExp-property and number-table generators also pass.
 
+Outer assertions around repeated fixed consuming groups have three core
+regressions: an inspected 172-record insta snapshot, an independent exhaustive
+candidate/count/capture oracle, and long overlapping bounded/failing runs, empty
+word-boundary candidates, 100,000 enclosing captures, clones, metadata and
+optional construction work. The snapshot accepts 132 records and rejects 40;
+three earlier word-boundary records now execute. Node agrees on 66,900 stored
+results across twelve snapshots, 245,280 additional match/capture comparisons
+and 19 runtime programs. Eight runtime regressions cover earliest starts and
+greedy/lazy endpoint order, word assertions and zero iterations, internal/outer
+multiline assertions and CRLF, enclosing/alternative/undefined slots, global and
+sticky state, DotAll, pinned case and surrogate positions, generic consumers and
+callbacks, intrinsic Arrays, collection, the unchanged 100,000-capture long-run
+stress case and optional host aborts. With the preceding immutable-capture
+sharing fix, all eight runtime groups complete in 3.49 seconds. Six earlier gap
+programs now retain repeated choices as the unsupported boundary. Whole-fixture
+review enables no new programs; corpus inventories and pin are unchanged. Pure
+assertion/empty repeated groups, fixed terms around repeated groups, repeated
+choices, additional quantifiers, named groups, backreferences and Unicode modes
+remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

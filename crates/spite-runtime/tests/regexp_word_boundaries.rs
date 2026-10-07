@@ -126,7 +126,7 @@ fn optional_work_and_remaining_unsupported_assertion_forms_keep_host_ordering() 
     );
     for source in [
         r"/a+^b+/.test('ab')",
-        r"/\b(ab)+\b/.test('ab')",
+        r"/\b(ab|a)+\b/.test('ab')",
         r"/\ba+b+\b/.test('ab')",
         r"/\b(?<n>a)\b/.test('a')",
         r"/\ba\b/u.test('a')",

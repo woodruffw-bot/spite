@@ -122,7 +122,7 @@ fn optional_host_work_covers_full_sticky_runs_and_remaining_group_features_stay_
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^(a[b])+$/.test('ab')",
+        r"/^(a[b]|c)+$/.test('ab')",
         r"/(a[b])+c/.test('abc')",
         r"/c(a[b])+/.test('cab')",
         r"/(ab|cd)+/.test('ab')",

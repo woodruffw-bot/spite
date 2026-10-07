@@ -28,6 +28,14 @@ struct Run {
     count: usize,
 }
 
+#[derive(Clone, Copy, Default)]
+struct AssertedRun {
+    end: usize,
+    count: usize,
+    cursor: usize,
+    allowed: bool,
+}
+
 impl RegExpRepeatedSequenceMatcher {
     /// Compiles a complete quantified fixed group, or returns `None`.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
@@ -89,7 +97,7 @@ impl RegExpRepeatedSequenceMatcher {
         else {
             return Ok(None);
         };
-        if width > isize::MAX as usize / std::mem::size_of::<Run>() {
+        if width > isize::MAX as usize / std::mem::size_of::<AssertedRun>() {
             return Ok(None);
         }
         charge(units.len())?;
@@ -158,6 +166,106 @@ impl RegExpRepeatedSequenceMatcher {
             }
         }
         Some(range)
+    }
+
+    /// Applies outer predicates before selecting repetition endpoints.
+    pub(crate) fn find_asserted(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut accept_start: impl FnMut(usize) -> bool,
+        mut accept_end: impl FnMut(usize) -> bool,
+    ) -> Option<Range<usize>> {
+        let program = &self.0;
+        let units = input.code_units();
+        let remaining = units.get(start..)?.len();
+        let width = program.atom.atom_count();
+        let min = program.min?;
+        if min > remaining / width {
+            return None;
+        }
+        if sticky {
+            if !accept_start(start) {
+                return None;
+            }
+            let mut best = None;
+            let mut count = 0;
+            let mut end = start;
+            loop {
+                if count >= min && accept_end(end) {
+                    best = Some(start..end);
+                    if !program.greedy {
+                        break;
+                    }
+                }
+                if program.max == Some(count) {
+                    break;
+                }
+                let Some(next) = program.atom.find(input, end, true) else {
+                    break;
+                };
+                count += 1;
+                end = next.end;
+            }
+            return best;
+        }
+
+        // Empty matches also exist outside consuming occurrence runs. Keep the
+        // earliest such candidate, then let earlier consuming starts or greedy
+        // endpoints replace it. Lazy start==requested is already minimal.
+        let mut best = if min == 0 {
+            (start..=units.len())
+                .find(|&position| accept_start(position) && accept_end(position))
+                .map(|position| position..position)
+        } else {
+            None
+        };
+        if program.max == Some(0)
+            || remaining < width
+            || !program.greedy && best.as_ref().is_some_and(|range| range.start == start)
+        {
+            return best;
+        }
+        let mut runs = vec![AssertedRun::default(); width];
+        for matched in program.atom.matches_from(units, start)? {
+            let run = &mut runs[matched.start % width];
+            if run.end == matched.start {
+                run.count += 1;
+            } else {
+                *run = AssertedRun {
+                    count: 1,
+                    cursor: matched.start,
+                    ..Default::default()
+                };
+            }
+            run.end = matched.end;
+            if run.count < min {
+                continue;
+            }
+            let max = program.max.unwrap_or(run.count).min(run.count);
+            let low = matched.end - max * width;
+            let high = matched.end - min * width;
+            if run.cursor < low {
+                run.cursor = low;
+                run.allowed = false;
+            }
+            while !run.allowed && run.cursor <= high {
+                run.allowed = accept_start(run.cursor);
+                if !run.allowed {
+                    run.cursor = run.cursor.saturating_add(width);
+                }
+            }
+            if run.cursor <= high && run.allowed && accept_end(matched.end) {
+                let candidate = run.cursor..matched.end;
+                if best.as_ref().is_none_or(|best| {
+                    candidate.start < best.start || candidate.start == best.start && program.greedy
+                }) {
+                    best = Some(candidate);
+                }
+            }
+        }
+        best
     }
 
     /// Number of capturing groups inside the repeated atom, in source order.

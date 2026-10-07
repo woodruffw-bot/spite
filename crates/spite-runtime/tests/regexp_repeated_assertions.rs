@@ -120,8 +120,8 @@ fn optional_assertion_work_aborts_bypass_handlers_and_remaining_group_features_a
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^(a())+$/.test('aaa')",
-        r"/\b(ab)+\b/.test('ab')",
+        r"/^(a()|b)+$/.test('aaa')",
+        r"/\b(ab|a)+\b/.test('ab')",
         r"/(a$)+b/.test('ab')",
         r"/b(a$)+/.test('ba')",
         r"/(a$|b)+/.test('a')",
