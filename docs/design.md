@@ -154,7 +154,7 @@ preserves its prior validation and flag-error precedence. Reference metadata doe
 not by itself add native matching support.
 
 This supplies capture metadata for native matching. Named result construction
-is described below; named backreference execution remains pending.
+is described below, together with ordinary literal named-reference matching.
 Capturing-group totals must remain strictly below 2^32 - 1 (22.2.1.1). Reject
 the first forbidden total before incrementing the counter; this is the specified
 grammar early error, not a host resource quota.
@@ -1005,8 +1005,8 @@ already allocated numeric capture pairs; updates through either reference affect
 the shared pair. Reassigning a property replaces that reference independently.
 Prototype hooks cannot intercept initialization, and generic consumers receive
 the resulting groups normally. Optional construction/result work remains
-explicitly charged; defaults remain unlimited. Named backreferences, unsupported
-conditional local choices and Unicode-mode matching remain pending.
+explicitly charged; defaults remain unlimited. Broader reference compositions,
+unsupported conditional local choices and Unicode-mode matching remain pending.
 
 Ordinary unquantified literal concatenations also execute numbered references
 (DecimalEscape and BackreferenceMatcher, 22.2.2.9). A flat instruction program
@@ -1023,8 +1023,23 @@ existing result builder. Optional work charges each executed instruction, captur
 reset and actual input comparison; host aborts occur before lastIndex mutation.
 Storage and execution are iterative, including deeply nested groups, and contain
 no heap-object edges. Named group metadata and indices aliases remain shared with
-the ordinary result path. Named references, assertions/classes or alternatives
-combined with references, quantified references and Unicode matching remain pending.
+the ordinary result path. Assertions/classes or alternatives combined with
+references, quantified references and Unicode matching remain pending.
+
+Ordinary named references in literal concatenations use the same reference program
+(CompileAtomEscape and BackreferenceMatcher, 22.2.2.9). Validated decoded names bind
+to source-order capture slots before a forward merge of GroupSpecifier and named
+AtomEscape ranges prepares the private matching source. Capture names are removed
+without removing capturing parentheses; each uniquely bound named reference becomes
+a numbered reference in a noncapturing wrapper. This preserves following decimal
+characters: \k<x>0 becomes (?:\1)0, retaining the separate literal zero. Names are
+neither normalized nor case-folded. Forward/self references reuse the ordinary
+capture state and return original input units. Public source text, copies, named
+groups and indices aliases retain their original behavior. Repeated references
+remain compact; preparation and lookup work is charged before construction.
+Alternative-specific duplicate-name references retain Unsupported until the
+reference matcher supports alternatives. Wider reference compositions and Unicode
+matching remain pending, and default quotas remain disabled.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

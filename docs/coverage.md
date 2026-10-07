@@ -1668,6 +1668,28 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Ordinary named references now execute in literal concatenations through validated
+decoded names and original UTF-16 escape/specifier ranges. A forward private-source
+merge preserves capture parentheses and wraps numeric reference tokens so following
+decimal characters stay distinct. Six runtime regressions cover an inspected
+23-record insta snapshot, source spelling and copies, escaped and astral names,
+forward/self/empty/repeated references, multi-digit capture slots, named groups and
+indices aliases, global/sticky state and generic consumers. Node agrees with all
+23 result records and thirteen runtime programs. Native regressions retain 100,000
+enclosing captures and 100,000 repeated named references through copy and collection
+with unlimited defaults. An explicit work limit aborts before lastIndex writes or
+language handlers. Five earlier named-reference gap controls now retain quantified
+compositions; all 360 audited gap programs remain unsupported. Every runtime target
+and Clippy with warnings denied passes. Alternative-specific duplicate-name
+references, wider reference compositions and Unicode matching remain pending.
+No upstream fixtures or fixture credit are added; inventories, the pin, dependencies
+and unlimited defaults are unchanged.
+
+Stable and minimum-supported Rust pass all 13,526 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
