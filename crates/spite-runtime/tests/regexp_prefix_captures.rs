@@ -130,7 +130,7 @@ fn optional_work_abort_and_remaining_nonliteral_prefixes_stay_host_failures() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/([a])b+/.test('ab')",
+        "/([a])b+c+/.test('ab')",
         "/(a|b)c+/.test('ac')",
         "/(a)b+c+/.test('abc')",
         "/(a)b+[c]/.test('abc')",

@@ -119,6 +119,23 @@ impl RegExpSequenceMatcher {
         self.find_if(input, start, sticky, |_| true)
     }
 
+    /// Streams overlapping fixed-width matches in increasing candidate order.
+    /// Every candidate is checked once; search allocates no result list.
+    pub(crate) fn matches_from<'a>(
+        &'a self,
+        input: &'a [u16],
+        start: usize,
+    ) -> Option<SequenceMatches<'a>> {
+        input.get(start..)?;
+        let last = input.len().checked_sub(self.atom_count())?;
+        Some(SequenceMatches {
+            matcher: self,
+            input,
+            next: (start <= last).then_some(start),
+            last,
+        })
+    }
+
     /// Continues candidate search after an outer boundary rejects a complete match.
     pub(crate) fn find_if(
         &self,
@@ -133,24 +150,46 @@ impl RegExpSequenceMatcher {
         if start > last {
             return None;
         }
-        let end = if sticky { start } else { last };
-        (start..=end).find_map(|candidate| {
-            let matched = self
-                .0
-                .terms
-                .iter()
-                .zip(&input[candidate..])
-                .all(|(term, &unit)| match term {
-                    Term::Character(expected) => {
-                        canonicalize(unit, self.0.ignore_case) == *expected
-                    }
-                    Term::Set(set) => set.matches(unit),
-                });
-            matched
-                .then_some(candidate..candidate + self.0.terms.len())
-                .filter(&mut accept)
-        })
+        if !sticky {
+            return self.matches_from(input, start)?.find(&mut accept);
+        }
+        let range = start..start + self.atom_count();
+        matches_at(&self.0, &input[range.clone()])
+            .then_some(range)
+            .filter(&mut accept)
     }
+}
+
+pub(crate) struct SequenceMatches<'a> {
+    matcher: &'a RegExpSequenceMatcher,
+    input: &'a [u16],
+    next: Option<usize>,
+    last: usize,
+}
+
+impl Iterator for SequenceMatches<'_> {
+    type Item = Range<usize>;
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(candidate) = self.next {
+            self.next = candidate.checked_add(1).filter(|&next| next <= self.last);
+            let range = candidate..candidate + self.matcher.atom_count();
+            if matches_at(&self.matcher.0, &self.input[range.clone()]) {
+                return Some(range);
+            }
+        }
+        None
+    }
+}
+
+fn matches_at(program: &Program, input: &[u16]) -> bool {
+    program
+        .terms
+        .iter()
+        .zip(input)
+        .all(|(term, &unit)| match term {
+            Term::Character(expected) => canonicalize(unit, program.ignore_case) == *expected,
+            Term::Set(set) => set.matches(unit),
+        })
 }
 
 fn canonicalize(unit: u16, ignore_case: bool) -> u16 {

@@ -1,25 +1,76 @@
-//! Fixed literal prefixes constrain a single quantified continuation (22.2.2.3).
+//! Fixed ordinary prefixes constrain a single quantified continuation (22.2.2.3).
 
 use crate::{
     JsString, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
+    RegExpSequenceMatcher, regexp_character::PreparedCharacter,
 };
 use std::{ops::Range, sync::Arc};
 
-/// An ordinary literal prefix before one quantified atom and suffix.
+/// An ordinary fixed-width prefix before one quantified atom and suffix.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
-/// contains literal characters/escapes and unquantified ordinary groups, including
-/// empty captures; the body reuses the complete quantified
+/// contains literal characters, sets, dots and unquantified ordinary groups,
+/// including empty captures; the body reuses the complete quantified
 /// atom/literal-continuation grammar. Search streams prefix occurrences and
 /// continuation candidates in monotone order, without allocation or recursion.
+/// Literal prefixes search linearly; fixed sequences inspect at most their atom
+/// count at each input candidate. Sticky search checks only one prefix.
 #[derive(Clone, Debug)]
 pub struct RegExpPrefixedMatcher(Arc<Program>);
 
 #[derive(Debug)]
 struct Program {
-    prefix: RegExpLiteralMatcher,
+    prefix: Prefix,
     body: RegExpQuantifiedContinuationMatcher,
     capture_count: usize,
+}
+
+#[derive(Debug)]
+enum Prefix {
+    Literal(RegExpLiteralMatcher),
+    Sequence(RegExpSequenceMatcher),
+}
+
+impl Prefix {
+    fn matched_len(&self) -> usize {
+        match self {
+            Self::Literal(m) => m.matched_len(),
+            Self::Sequence(m) => m.atom_count(),
+        }
+    }
+    fn capture_ranges(&self) -> &[Range<usize>] {
+        match self {
+            Self::Literal(m) => m.capture_ranges(),
+            Self::Sequence(m) => m.capture_ranges(),
+        }
+    }
+    fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        match self {
+            Self::Literal(m) => m.find(input, start, sticky),
+            Self::Sequence(m) => m.find(input, start, sticky),
+        }
+    }
+    fn matches_from<'a>(&'a self, input: &'a [u16], start: usize) -> Option<PrefixMatches<'a>> {
+        match self {
+            Self::Literal(m) => m.matches_from(input, start).map(PrefixMatches::Literal),
+            Self::Sequence(m) => m.matches_from(input, start).map(PrefixMatches::Sequence),
+        }
+    }
+}
+
+enum PrefixMatches<'a> {
+    Literal(crate::regexp_literal::LiteralMatches<'a>),
+    Sequence(crate::regexp_sequence::SequenceMatches<'a>),
+}
+
+impl Iterator for PrefixMatches<'_> {
+    type Item = Range<usize>;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::Literal(m) => m.next(),
+            Self::Sequence(m) => m.next(),
+        }
+    }
 }
 
 impl RegExpPrefixedMatcher {
@@ -48,7 +99,7 @@ impl RegExpPrefixedMatcher {
             .capture_range(index - prefix_captures.len(), &(start..matched.end))
     }
 
-    /// Compiles the complete literal-prefix/quantified-body subset.
+    /// Compiles the complete fixed-prefix/quantified-body subset.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, dot_all, |_| {
             Ok::<(), std::convert::Infallible>(())
@@ -72,7 +123,13 @@ impl RegExpPrefixedMatcher {
         charge(source.len())?;
         charge(source.len())?;
         let prefix = JsString::from_code_units(source.code_units()[..split].to_vec());
-        let Some(prefix) = RegExpLiteralMatcher::compile(&prefix, ignore_case) else {
+        let prefix = if let Some(m) = RegExpLiteralMatcher::compile(&prefix, ignore_case) {
+            Prefix::Literal(m)
+        } else if let Some(m) =
+            RegExpSequenceMatcher::compile_with_work(&prefix, ignore_case, dot_all, &mut charge)?
+        {
+            Prefix::Sequence(m)
+        } else {
             return Ok(None);
         };
         let body = JsString::from_code_units(source.code_units()[split..].to_vec());
@@ -102,6 +159,17 @@ impl RegExpPrefixedMatcher {
             body,
             capture_count,
         }))))
+    }
+
+    /// Conservative consuming passes for optional work accounting. Literal
+    /// prefixes retain linear KMP search; sequences inspect every prefix atom at
+    /// most once per input candidate, in addition to the two body passes.
+    pub fn search_passes(&self, sticky: bool) -> usize {
+        match &self.0.prefix {
+            Prefix::Literal(_) => 3,
+            Prefix::Sequence(_) if sticky => 3,
+            Prefix::Sequence(m) => m.atom_count().saturating_add(2),
+        }
     }
 
     /// Finds the earliest whole prefix match and its greedy/lazy body endpoint.
@@ -166,10 +234,10 @@ impl RegExpPrefixedMatcher {
     }
 }
 
-/// Find the complete literal prefix before the first nonliteral or quantified
+/// Find the complete fixed-width prefix before the first quantified
 /// Atom. Quantifiers inside a group retain the entire top-level group in the
 /// body; a quantifier after a group applies to that complete group (22.2.2.3).
-/// Only scalar nesting state is needed; literal capture compilation stays shared.
+/// Only scalar nesting state is needed; fixed capture compilation stays shared.
 fn prefix_end(units: &[u16]) -> Option<usize> {
     let mut index = 0;
     let mut last = None;
@@ -200,12 +268,16 @@ fn prefix_end(units: &[u16]) -> Option<usize> {
                 }
                 continue;
             }
-            46 | 91 => return Some(if depth == 0 { start } else { group_start }),
+            46 | 91 => {
+                let (_, consumed) = PreparedCharacter::parse(&units[index..], false)?;
+                index += consumed;
+            }
             42 | 43 | 63 | 123 => return if depth == 0 { last } else { Some(group_start) },
             92 => {
                 index += 1;
                 if crate::regexp_literal::character_escape(units, &mut index).is_none() {
-                    return Some(if depth == 0 { start } else { group_start });
+                    let (_, consumed) = PreparedCharacter::parse(&units[start..], false)?;
+                    index = start + consumed;
                 }
             }
             _ if crate::regexp_literal::is_syntax(unit) || unit == 124 => return None,
@@ -625,5 +697,219 @@ mod tests {
                 .unwrap_err(),
             "abort"
         );
+    }
+
+    #[test]
+    fn sequence_prefix_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "[ab]c+",
+            "([ab])(c)+()",
+            ".[ab]+",
+            "a.b+",
+            "a[b]c+",
+            "([^x])a*?a",
+            "([ab][ab])a+",
+            "([])a*",
+            "([^])a+",
+            "((a[bc]))(d)+()",
+            "(?:(.))a+",
+            r"(\d)(a)+",
+            r"(\w)(a)+",
+            r"(\s)(a)+",
+            r"(\D)(a)+",
+            "([µ])(a)+",
+            "([ſ])a+",
+            "([💩])a+",
+            "()[ab](c)*()",
+            "([ab])c{0,2}?()",
+            "[ab]c+()",
+            "[ab](c*)()",
+            "[ab](c)*()",
+            "([ab])c+[d]",
+            "([ab])c+d+",
+            "([ab]c)+",
+            "([ab]|c)d+",
+            "(?<n>[ab])c+",
+            "([ab])(?=c)c+",
+            "^([ab])c+",
+            "([ab])c+$",
+        ] {
+            for (ignore_case, dot_all) in [(false, false), (true, false), (false, true)] {
+                let m =
+                    RegExpPrefixedMatcher::compile(&JsString::from(source), ignore_case, dot_all);
+                write!(rows, "{source:?} i={ignore_case} s={dot_all}").unwrap();
+                if let Some(m) = m {
+                    write!(rows, " captures={}", m.capture_count()).unwrap();
+                    for text in [
+                        "", "a", "aa", "ac", "acc", "abccc", "xbc", "xaabb", "1aa", " aa", "ΜAA",
+                        "saa", "\naa", "💩aa",
+                    ] {
+                        for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                            let r = m.find(&JsString::from(text), start, sticky).map(|r| {
+                                let caps = (0..m.capture_count())
+                                    .map(|i| m.capture_range(i, &r))
+                                    .collect::<Vec<_>>();
+                                (r, caps)
+                            });
+                            write!(rows, " {text:?}@{start}/{sticky}:{r:?}").unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn sequence_prefixes_agree_with_independent_candidate_and_capture_order() {
+        for (prefix, width, kind) in [
+            ("[ab]", 1, 0),
+            ("a[ab]", 2, 1),
+            ("[ab][ab]", 2, 2),
+            (".", 1, 3),
+            ("[^x]", 1, 4),
+            ("[]", 1, 5),
+        ] {
+            for (quantifier, min, max) in [("*", 0, None), ("+", 1, None), ("{0,2}", 0, Some(2))] {
+                for suffix in ["", "a"] {
+                    for greedy in [false, true] {
+                        let source = format!(
+                            "({prefix})([ab]){quantifier}{}({suffix})()",
+                            if greedy { "" } else { "?" }
+                        );
+                        let matcher = RegExpPrefixedMatcher::compile(
+                            &JsString::from(source.as_str()),
+                            false,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(matcher.capture_count(), 4);
+                        for len in 0..=4u32 {
+                            for mut encoded in 0..4usize.pow(len) {
+                                let mut units = Vec::new();
+                                for _ in 0..len {
+                                    units.push([97, 98, 120, 10][encoded % 4]);
+                                    encoded /= 4;
+                                }
+                                let input = JsString::from_code_units(units.clone());
+                                for start in 0..=units.len() + 1 {
+                                    for sticky in [false, true] {
+                                        let expected = (start..=units.len())
+                                            .take(if sticky { 1 } else { usize::MAX })
+                                            .find_map(|candidate| {
+                                                let begin = candidate + width;
+                                                let p = units.get(candidate..begin)?;
+                                                let accepts = match kind {
+                                                    0 => [97, 98].contains(&p[0]),
+                                                    1 => p[0] == 97 && [97, 98].contains(&p[1]),
+                                                    2 => p.iter().all(|u| [97, 98].contains(u)),
+                                                    3 => p[0] != 10,
+                                                    4 => p[0] != 120,
+                                                    _ => false,
+                                                };
+                                                if !accepts {
+                                                    return None;
+                                                }
+                                                let limit = max
+                                                    .unwrap_or(units.len() - begin)
+                                                    .min(units.len() - begin);
+                                                let counts: Vec<_> = if greedy {
+                                                    (min..=limit).rev().collect()
+                                                } else {
+                                                    (min..=limit).collect()
+                                                };
+                                                counts.into_iter().find_map(|count| {
+                                                    let end = begin + count;
+                                                    let finish = end + suffix.len();
+                                                    if !units[begin..end]
+                                                        .iter()
+                                                        .all(|u| [97, 98].contains(u))
+                                                        || !units
+                                                            .get(end..finish)?
+                                                            .iter()
+                                                            .copied()
+                                                            .eq(suffix.bytes().map(u16::from))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    Some((
+                                                        candidate..finish,
+                                                        vec![
+                                                            Some(candidate..begin),
+                                                            (count > 0).then(|| end - 1..end),
+                                                            Some(end..finish),
+                                                            Some(finish..finish),
+                                                        ],
+                                                    ))
+                                                })
+                                            });
+                                        let actual = matcher.find(&input, start, sticky).map(|r| {
+                                            let caps = (0..matcher.capture_count())
+                                                .map(|i| matcher.capture_range(i, &r))
+                                                .collect::<Vec<_>>();
+                                            (r, caps)
+                                        });
+                                        assert_eq!(
+                                            actual, expected,
+                                            "{source} {units:?} {start} {sticky}"
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn shared_large_sequence_prefixes_preserve_clones_and_optional_work_bounds() {
+        let source = JsString::from(format!("{}(b)+()", "[a]".repeat(1000)).as_str());
+        let mut remaining = 100_000usize;
+        let m = RegExpPrefixedMatcher::compile_with_work(&source, false, false, |work| {
+            remaining = remaining.checked_sub(work).ok_or("abort")?;
+            Ok::<(), &str>(())
+        })
+        .unwrap()
+        .unwrap();
+        let copy = m.clone();
+        let input = JsString::from(format!("{}bb", "a".repeat(1000)).as_str());
+        let r = copy.find(&input, 0, true).unwrap();
+        assert_eq!(r, 0..1002);
+        assert_eq!(copy.capture_range(0, &r), Some(1001..1002));
+        assert_eq!(copy.capture_range(1, &r), Some(1002..1002));
+        assert_eq!(copy.search_passes(false), 1002);
+        assert_eq!(copy.search_passes(true), 3);
+        assert_eq!(
+            copy.find(
+                &JsString::from(format!("{}xbb", "a".repeat(999)).as_str()),
+                0,
+                true
+            ),
+            None
+        );
+        let literal =
+            RegExpPrefixedMatcher::compile(&JsString::from("(aaa)b+"), false, false).unwrap();
+        assert_eq!(literal.search_passes(false), 3);
+        let mut charges = Vec::new();
+        assert_eq!(
+            RegExpPrefixedMatcher::compile_with_work(
+                &JsString::from("([a])b+"),
+                false,
+                false,
+                |work| {
+                    charges.push(work);
+                    if work == 1024 { Err("abort") } else { Ok(()) }
+                }
+            )
+            .unwrap_err(),
+            "abort"
+        );
+        assert!(charges.contains(&1024));
     }
 }

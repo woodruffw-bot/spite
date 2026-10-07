@@ -410,7 +410,7 @@ anchors filter whole-prefix starts and repetition endpoints before selection.
 Alternatives retain their existing source-order choice and global capture slots.
 Optional search work conservatively covers three consuming passes, or four
 with outer anchors, including the complete suffix for sticky runs. Default
-quotas remain disabled. Classes and dots in the fixed prefix, multiple
+quotas remain disabled. Multiple
 consuming quantifiers, nonliteral continuations and nested choices remain
 pending.
 
@@ -424,9 +424,26 @@ and suffix slots use the remaining range after the decoded prefix. Empty
 prefixes delegate directly to the quantified body with the same anchor and
 sticky constraints, retaining participating empty captures. No per-candidate
 capture storage, wrapper tree or native recursion is added. Existing outer and
-branch capture prefixes compose with these slots. Nonliteral prefixes, grouped
+branch capture prefixes compose with these slots. Grouped
 multi-atom repetition, multiple quantifiers, embedded choices, named groups,
 backreferences and Unicode modes remain pending.
+
+Fixed ordinary character-set sequences can precede the quantified body too
+(CompileSubpattern, 22.2.2.3). Preparation shares the ordinary class/dot parser
+and tracks complete top-level Atom boundaries across groups and escapes. The
+prefix retains either the existing literal KMP plan or the existing fixed
+sequence plan, including shared immutable sets and static capture ranges. The
+sequence matcher exposes an allocation-free occurrence cursor, checking each
+overlapping candidate once; the body consumes that monotone stream through its
+existing endpoint and repetition constraints. Literal prefixes retain linear
+search. Set/dot prefixes require at most input length times prefix atom count,
+plus the linear body passes; optional work metadata includes every prefix atom.
+Sticky search checks one prefix and accounts conservatively for three input
+passes, plus one with anchors. Capture order, UTF-16 widths, pinned Canonicalize,
+inversion and dotAll reuse existing plans. No candidate lists, recursive plans
+or default quotas are introduced. Nonliteral continuations, repeated multi-atom
+groups, multiple consuming quantifiers, embedded choices, backreferences and
+Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

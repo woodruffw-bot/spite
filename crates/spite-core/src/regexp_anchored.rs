@@ -150,7 +150,7 @@ impl RegExpAnchoredMatcher {
         match &self.body {
             Body::Literal(_) => 2,
             Body::Quantified(_) => 3,
-            Body::Prefixed(_) => 4,
+            Body::Prefixed(m) => m.search_passes(sticky).saturating_add(1),
             Body::Sequence(matcher) => {
                 if sticky {
                     2

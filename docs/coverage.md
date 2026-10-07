@@ -903,7 +903,7 @@ match/capture arrays and twenty runtime programs. Sticky accounting covers the
 complete remaining suffix; prefix search keeps its linear bound. The whole
 fixture review enables two unchanged greedy/lazy bounded-prefix programs,
 recorded in the separate fixture inventory above. The pin is unchanged.
-Classes and dots in literal prefixes, multiple consuming quantifiers, nonliteral continuations, nested choices, named
+Multiple consuming quantifiers, nonliteral continuations, nested choices, named
 groups, backreferences and Unicode modes remain pending.
 
 Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
@@ -926,9 +926,34 @@ on all 110,376 match/capture comparisons, all 5,547 stored arrays across both
 prefix snapshots, and twenty runtime programs. The existing gap regressions
 retain nonliteral prefixes and multiple quantifiers. The whole fixture review
 enables no further programs; the corpus, inventories and pin are unchanged.
-Classes/dots in prefixes, grouped multi-atom repetition, nonliteral
+Grouped multi-atom repetition, nonliteral
 continuations, nested choices, named groups, backreferences and Unicode modes
 remain pending.
+
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
+Fixed prefixes now include ordinary classes, class escapes and dots, with
+static captures across nested groups. Three core regressions cover an inspected
+93-record insta snapshot, an independent position/repetition/capture oracle with
+empty and inverted sets, overlapping candidates, 1,000 shared set atoms, clones
+and optional construction/search bounds. Nine prior prefix snapshot records
+gain support; every earlier accepted record retains its match/capture values.
+The shared fixed-sequence occurrence cursor preserves the existing sequence
+oracle and snapshots. Eight runtime regressions cover earliest starts before
+greedy/lazy lengths, prefix/body/suffix and empty capture slots, global/sticky
+state and strict writes, branch/outer capture and anchor composition, classes
+and dots with pinned flags, surrogate offsets, generic consumers, intrinsic
+Arrays, shared sets after collection and unlimited defaults. Optional budgets
+account for every nonsticky prefix atom; sticky runs check one prefix and keep
+full-body accounting. Node agrees on 151,110 range/capture comparisons, all
+8,748 stored arrays across the three prefix snapshots, and nineteen runtime
+programs. Earlier gap tests retain multiple quantifiers and nonliteral
+continuations. The whole fixture review enables no additional programs; the
+corpus, inventories and pin are unchanged. Repeated multi-atom groups, multiple
+quantifiers, nonliteral continuations, nested choices, named groups,
+backreferences and Unicode modes remain pending.
 
 Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
