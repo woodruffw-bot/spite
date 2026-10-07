@@ -153,7 +153,11 @@ impl Realm {
             )?;
         }
         self.object_work(span, |_, budget| budget.charge(found.capture_count))?;
-        let length = found.capture_count as u64 + 1;
+        let count = found
+            .capture_count
+            .checked_add(1)
+            .ok_or_else(|| super::regexp_output_limit(span))?;
+        let length = count as u64;
         let array = self.create_intrinsic_array(length, span)?;
         self.regexp_match_property(
             &array,
@@ -162,8 +166,12 @@ impl Realm {
             span,
         )?;
         self.regexp_match_property(&array, "input", Value::String(string.clone()), span)?;
+        let mut elements = Vec::new();
+        elements
+            .try_reserve_exact(count)
+            .map_err(|_| super::regexp_output_limit(span))?;
         let matched = self.regexp_substring(&string.code_units()[found.range.clone()], span)?;
-        self.create_array_element(&array, 0, matched, span)?;
+        elements.push(matched);
         self.regexp_match_property(&array, "groups", Value::Undefined, span)?;
         // Every source-order group has an own element. A group in an unselected
         // alternative is undefined, distinct from a participating empty capture.
@@ -173,14 +181,21 @@ impl Realm {
             } else {
                 Value::Undefined
             };
-            self.create_array_element(&array, index as u64 + 1, value, span)?;
+            elements.push(value);
         }
+        self.object_work(span, |objects, budget| {
+            objects.initialize_array_elements(&array, elements, budget)
+        })?;
         if has_indices {
             let indices = self.create_intrinsic_array(length, span)?;
             self.regexp_match_property(&indices, "groups", Value::Undefined, span)?;
+            let mut elements = Vec::new();
+            elements
+                .try_reserve_exact(count)
+                .map_err(|_| super::regexp_output_limit(span))?;
             let ranges = std::iter::once(Some(found.range.clone()))
                 .chain((0..found.capture_count).map(|index| found.capture(index)));
-            for (index, range) in ranges.enumerate() {
+            for range in ranges {
                 let value = if let Some(range) = range {
                     let pair = self.create_intrinsic_array(2, span)?;
                     self.create_array_element(&pair, 0, Value::Number(range.start as f64), span)?;
@@ -189,8 +204,11 @@ impl Realm {
                 } else {
                     Value::Undefined
                 };
-                self.create_array_element(&indices, index as u64, value, span)?;
+                elements.push(value);
             }
+            self.object_work(span, |objects, budget| {
+                objects.initialize_array_elements(&indices, elements, budget)
+            })?;
             self.regexp_match_property(&array, "indices", Value::Object(indices), span)?;
         }
         Ok(Value::Object(array))

@@ -1,13 +1,73 @@
 //! Sparse Array exotic storage (10.4.2.1/2/4), after Realm length conversion.
 
 use super::{
-    Budget, DescriptorKind, Error, OrdinaryObject, Property, PropertyDescriptor, PropertyLimit,
-    array_index,
+    Budget, DataProperty, DescriptorKind, Error, OrdinaryObject, Property, PropertyDescriptor,
+    PropertyLimit, array_index,
 };
 use crate::Value;
 use spite_core::{PropertyKey, PropertyKeyRef};
 
 impl OrdinaryObject {
+    pub(super) fn initialize_array_elements(
+        &mut self,
+        values: Vec<Value>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        // Only an unexposed, extensible Array with its writable final length and
+        // no indexed properties may use this path. Existing named metadata is
+        // retained. Numeric keys are unique and below length by construction.
+        if !self.array || !self.extensible {
+            return Err(Error::WrongKind);
+        }
+        let (length, writable) = self.array_length();
+        if !writable || usize::try_from(length).ok() != Some(values.len()) {
+            return Err(Error::WrongKind);
+        }
+        budget.charge(self.properties.len())?;
+        if self
+            .properties
+            .iter()
+            .any(|(key, _)| array_index(key).is_some())
+        {
+            return Err(Error::WrongKind);
+        }
+        let count = self
+            .properties
+            .len()
+            .checked_add(values.len())
+            .ok_or(Error::PropertyLimit)?;
+        if self.max_properties.is_some_and(|limit| count > limit) {
+            return Err(Error::PropertyLimit);
+        }
+        // Complete every fallible charge/reservation before changing the record.
+        // No ordinary property lookup or ArraySetLength is required for these
+        // fresh own elements (RegExpBuiltinExec, 22.2.7.2).
+        for (index, value) in values.iter().enumerate() {
+            budget.charge(
+                index
+                    .checked_ilog10()
+                    .map_or(1, |digits| digits as usize + 1)
+                    + 1,
+            )?;
+            budget.value(value)?;
+        }
+        self.properties
+            .try_reserve(values.len())
+            .map_err(|_| Error::PropertyLimit)?;
+        for (index, value) in values.into_iter().enumerate() {
+            self.properties.push((
+                PropertyKey::from(spite_core::JsString::from(index.to_string().as_str())),
+                Property::Data(DataProperty {
+                    value,
+                    writable: true,
+                    enumerable: true,
+                    configurable: true,
+                }),
+            ));
+        }
+        Ok(())
+    }
+
     pub(super) fn prepare_array_definition(
         &self,
         key: &PropertyKey,

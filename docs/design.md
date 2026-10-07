@@ -228,6 +228,19 @@ global capture count
 and creates own undefined String/indices elements for unselected groups. Empty
 participating groups retain empty Strings and zero-length indices pairs.
 
+Fresh intrinsic RegExp result and indices Arrays initialize their indexed own
+data properties together (RegExpBuiltinExec, 22.2.7.2). The internal initializer
+requires an extensible Array with writable final length and no existing indexed
+properties. It validates object edges, logical length, optional property/work
+limits and storage capacity before appending unique numeric keys. Standard
+writable/enumerable/configurable attributes, named metadata order, undefined
+slots and Array length/truncation semantics retain ordinary storage behavior.
+Each indices pair remains a distinct intrinsic Array. This removes repeated
+ordinary property scans during initialization; work is linear in the number of
+captures and copied key/value units. It invokes no JavaScript hooks. lastIndex
+writes still precede result allocation, temporary value storage is checked, and
+default quotas remain disabled.
+
 Ordinary fixed sequences also compile with leading ^, trailing $, or both
 (CompileAssertion, 22.2.2.4). The assertions preserve capture offsets and consume
 no units. Without multiline, only the exact input beginning/end satisfies each

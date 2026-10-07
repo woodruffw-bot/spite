@@ -353,3 +353,144 @@ fn array_properties_trace_object_edges_and_release_truncated_elements() {
     assert_eq!(objects.collect([&array], 1000).unwrap().live, 1);
     assert!(objects.inspect(&element).is_err());
 }
+
+#[test]
+fn fresh_array_initialization_preserves_descriptors_keys_length_and_traced_edges() {
+    let mut objects = Objects::with_limits(None, None);
+    let mut budget = Budget::with_work_limit(None);
+    let child = objects.create(None).unwrap();
+    let array = objects.create_array(None, 3, &mut budget).unwrap();
+    objects
+        .define(
+            &array,
+            JsString::from("groups"),
+            data(Value::Undefined),
+            &mut budget,
+        )
+        .unwrap();
+    objects
+        .initialize_array_elements(
+            &array,
+            vec![
+                Value::Undefined,
+                Value::Object(child.clone()),
+                Value::Number(7.0),
+            ],
+            &mut budget,
+        )
+        .unwrap();
+    assert_eq!(length(&objects, &array), (3, true));
+    assert_eq!(
+        objects.inspect(&array).unwrap().own_keys(),
+        ["0", "1", "2", "length", "groups"].map(|key| PropertyKey::from(JsString::from(key)))
+    );
+    let property = objects
+        .inspect(&array)
+        .unwrap()
+        .own_property(&JsString::from("0"))
+        .unwrap()
+        .as_data()
+        .unwrap();
+    assert_eq!(property.value, Value::Undefined);
+    assert!(property.writable && property.enumerable && property.configurable);
+    assert_eq!(objects.collect([&array], usize::MAX).unwrap().live, 2);
+    assert!(objects.inspect(&child).is_ok());
+    assert!(define_length(&mut objects, &array, 1.0, None, &mut budget).unwrap());
+    assert_eq!(objects.collect([&array], usize::MAX).unwrap().live, 1);
+    assert!(objects.inspect(&child).is_err());
+    assert_eq!(
+        objects.inspect(&array).unwrap().own_keys(),
+        ["0", "length", "groups"].map(|key| PropertyKey::from(JsString::from(key)))
+    );
+}
+
+#[test]
+fn fresh_array_initialization_rejects_invalid_state_without_changing_properties() {
+    let mut objects = Objects::with_limits(None, None);
+    let mut budget = Budget::with_work_limit(None);
+    for mode in 0..5 {
+        let array = if mode == 0 {
+            objects.create(None).unwrap()
+        } else {
+            objects.create_array(None, 1, &mut budget).unwrap()
+        };
+        match mode {
+            1 => {
+                objects.prevent_extensions(&array).unwrap();
+            }
+            2 => {
+                assert!(
+                    define_length(&mut objects, &array, 1.0, Some(false), &mut budget).unwrap()
+                );
+            }
+            3 => {
+                objects
+                    .define(&array, JsString::from("0"), number(1.0), &mut budget)
+                    .unwrap();
+            }
+            _ => {}
+        }
+        let before = objects.inspect(&array).unwrap().properties.clone();
+        let values = if mode == 4 {
+            vec![]
+        } else {
+            vec![Value::Undefined]
+        };
+        assert_eq!(
+            objects.initialize_array_elements(&array, values, &mut budget),
+            Err(Error::WrongKind)
+        );
+        assert_eq!(objects.inspect(&array).unwrap().properties, before);
+    }
+    let mut foreign = Objects::with_limits(None, None);
+    let edge = foreign.create(None).unwrap();
+    let array = objects.create_array(None, 1, &mut budget).unwrap();
+    let before = objects.inspect(&array).unwrap().properties.clone();
+    assert!(matches!(
+        objects.initialize_array_elements(&array, vec![Value::Object(edge)], &mut budget),
+        Err(Error::Heap(spite_heap::Error::ForeignHandle))
+    ));
+    assert_eq!(objects.inspect(&array).unwrap().properties, before);
+    let edge = objects.create(None).unwrap();
+    objects.collect([&array], usize::MAX).unwrap();
+    assert!(matches!(
+        objects.initialize_array_elements(&array, vec![Value::Object(edge)], &mut budget),
+        Err(Error::Heap(spite_heap::Error::StaleHandle))
+    ));
+    assert_eq!(objects.inspect(&array).unwrap().properties, before);
+}
+
+#[test]
+fn fresh_array_initialization_checks_optional_capacity_and_work_before_mutation() {
+    for (properties, work, expected) in [
+        (Some(2), None, Error::PropertyLimit),
+        (None, Some(1), Error::WorkLimit),
+    ] {
+        let mut objects = Objects::with_limits(None, properties);
+        let mut unlimited = Budget::with_work_limit(None);
+        let array = objects.create_array(None, 2, &mut unlimited).unwrap();
+        let before = objects.inspect(&array).unwrap().properties.clone();
+        let mut budget = Budget::with_work_limit(work);
+        assert_eq!(
+            objects.initialize_array_elements(
+                &array,
+                vec![Value::Undefined, Value::Undefined],
+                &mut budget
+            ),
+            Err(expected)
+        );
+        assert_eq!(objects.inspect(&array).unwrap().properties, before);
+        assert_eq!(length(&objects, &array), (2, true));
+    }
+    let mut objects = Objects::with_limits(None, Some(3));
+    let mut budget = Budget::new(100);
+    let array = objects.create_array(None, 2, &mut budget).unwrap();
+    objects
+        .initialize_array_elements(
+            &array,
+            vec![Value::Undefined, Value::Undefined],
+            &mut budget,
+        )
+        .unwrap();
+    assert_eq!(objects.inspect(&array).unwrap().property_count(), 3);
+}

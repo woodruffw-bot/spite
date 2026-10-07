@@ -233,6 +233,24 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(record))?)
     }
 
+    /// Initializes all indexed elements of an unexposed fresh Array.
+    /// Validates value edges and preserves ordinary descriptor/length invariants.
+    pub(crate) fn initialize_array_elements(
+        &mut self,
+        array: &Handle,
+        values: Vec<Value>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        self.inspect(array)?;
+        for value in &values {
+            if let Value::Object(handle) = value {
+                self.inspect(handle)?;
+            }
+        }
+        self.object_mut(array)?
+            .initialize_array_elements(values, budget)
+    }
+
     pub(crate) fn create_builtin(
         &mut self,
         prototype: &Handle,

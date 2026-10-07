@@ -1108,6 +1108,23 @@ Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Fresh RegExp result/indices initialization has three object regressions for
+descriptors, key order, length/truncation and traced edges; rejection of invalid
+Array state and foreign/stale edges; and optional capacity/work failure before
+mutation. Four runtime regressions cover intrinsic prototypes and setter
+bypass, all property attributes and key order, sparse mutations and own undefined
+slots, distinct indices pairs, 100,000 captures with unlimited defaults and
+post-result collection, and optional property aborts after lastIndex writes.
+The unchanged eight-group repeated-assertion prototype suite drops from 156.29
+seconds to 0.76 seconds after this fix; no case or coverage is removed. A separate
+100,000-capture result/indices regression, including collection, completes with
+the other three runtime regressions in 1.34 seconds. Matching grammar, corpus
+inventories and the pinned Test262 revision are unchanged.
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks, including the fresh-array object regressions.
+Formatting, Clippy, policy, fixture inventories and all pinned generator checks
+also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
