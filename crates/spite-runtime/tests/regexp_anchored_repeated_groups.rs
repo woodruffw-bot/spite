@@ -117,7 +117,7 @@ fn optional_host_work_aborts_and_remaining_group_compositions_stay_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^(ab)+b$/.test('abb')",
+        r"/^(ab|a)+b$/.test('abb')",
         r"/^b(ab)+$/.test('bab')",
         r"/^(ab|a)+$/.test('ab')",
         r"/^(ab)+(a)+$/.test('aba')",

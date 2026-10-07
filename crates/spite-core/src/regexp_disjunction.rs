@@ -2,8 +2,9 @@
 
 use crate::{
     JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
-    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedLiteralMatcher,
-    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
+    RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedSequenceMatcher,
+    RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::{ops::Range, sync::Arc};
 
@@ -39,6 +40,7 @@ enum Alternative {
     Prefixed(RegExpPrefixedMatcher),
     RepeatedLiteral(RegExpRepeatedLiteralMatcher),
     RepeatedSequence(RegExpRepeatedSequenceMatcher),
+    RepeatedContinuation(RegExpRepeatedContinuationMatcher),
 }
 
 impl Alternative {
@@ -47,6 +49,7 @@ impl Alternative {
             Self::Prefixed(matcher) => matcher.capture_count(),
             Self::RepeatedLiteral(matcher) => matcher.capture_count(),
             Self::RepeatedSequence(matcher) => matcher.capture_count(),
+            Self::RepeatedContinuation(matcher) => matcher.capture_count(),
             Self::Quantified(matcher) => matcher.capture_count(),
             Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
             Self::Anchored(matcher) => matcher.capture_count(),
@@ -59,6 +62,7 @@ impl Alternative {
             Self::Prefixed(matcher) => matcher.capture_range(index, matched),
             Self::RepeatedLiteral(matcher) => matcher.capture_range(index, matched),
             Self::RepeatedSequence(matcher) => matcher.capture_range(index, matched),
+            Self::RepeatedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::Quantified(matcher) => matcher.capture_range(index, matched),
             Self::QuantifiedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::Anchored(matcher) => matcher.capture_range(index, matched),
@@ -81,7 +85,8 @@ impl Alternative {
             | Self::QuantifiedContinuation(_)
             | Self::Prefixed(_)
             | Self::RepeatedLiteral(_)
-            | Self::RepeatedSequence(_) => &[],
+            | Self::RepeatedSequence(_)
+            | Self::RepeatedContinuation(_) => &[],
         }
     }
     fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
@@ -92,6 +97,7 @@ impl Alternative {
             Self::Prefixed(m) => m.find(input, start, sticky),
             Self::RepeatedLiteral(m) => m.find(input, start, sticky),
             Self::RepeatedSequence(m) => m.find(input, start, sticky),
+            Self::RepeatedContinuation(m) => m.find(input, start, sticky),
             Self::Quantified(m) => m.find(input, start, sticky),
             Self::QuantifiedContinuation(m) => m.find(input, start, sticky),
         }
@@ -104,6 +110,7 @@ impl Alternative {
             Self::Prefixed(m) => m.search_passes(sticky),
             Self::RepeatedLiteral(m) => m.search_passes(),
             Self::RepeatedSequence(m) => m.search_passes(sticky),
+            Self::RepeatedContinuation(m) => m.search_passes(sticky),
             Self::Quantified(_) => 1,
             Self::QuantifiedContinuation(m) => m.search_passes(),
         }
@@ -227,6 +234,14 @@ fn compile_alternative<E>(
         &mut *charge,
     )? {
         Alternative::RepeatedSequence(m)
+    } else if let Some(m) = RegExpRepeatedContinuationMatcher::compile_with_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::RepeatedContinuation(m)
     } else {
         return Ok(None);
     };
@@ -304,7 +319,8 @@ impl RegExpDisjunctionMatcher {
             | Alternative::QuantifiedContinuation(_)
             | Alternative::Prefixed(_)
             | Alternative::RepeatedLiteral(_)
-            | Alternative::RepeatedSequence(_) => true,
+            | Alternative::RepeatedSequence(_)
+            | Alternative::RepeatedContinuation(_) => true,
             Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
             _ => false,
         });

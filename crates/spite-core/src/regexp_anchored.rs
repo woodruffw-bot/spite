@@ -3,8 +3,8 @@
 use crate::regexp_assertion::{Assertions, split_outer_assertions};
 use crate::{
     JsString, RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
-    regexp_outer_group_body,
+    RegExpQuantifiedMatcher, RegExpRepeatedContinuationMatcher, RegExpRepeatedSequenceMatcher,
+    RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::ops::Range;
 
@@ -33,6 +33,7 @@ enum Body {
     Quantified(RegExpQuantifiedContinuationMatcher),
     Prefixed(RegExpPrefixedMatcher),
     Repeated(RegExpRepeatedSequenceMatcher),
+    RepeatedContinuation(RegExpRepeatedContinuationMatcher),
 }
 
 impl RegExpAnchoredMatcher {
@@ -57,6 +58,9 @@ impl RegExpAnchoredMatcher {
             return matcher.capture_range(index, matched);
         }
         if let Body::Repeated(matcher) = &self.body {
+            return matcher.capture_range(index, matched);
+        }
+        if let Body::RepeatedContinuation(matcher) = &self.body {
             return matcher.capture_range(index, matched);
         }
         let relative = self.body.capture_ranges().get(index)?;
@@ -145,9 +149,10 @@ impl RegExpAnchoredMatcher {
             Body::Prefixed(m) => m.search_passes(sticky).saturating_add(1),
             Body::Sequence(matcher) => matcher.search_passes(sticky).saturating_add(1),
             Body::Repeated(matcher) => matcher.search_passes(sticky).saturating_add(2),
+            Body::RepeatedContinuation(matcher) => matcher.search_passes(sticky).saturating_add(2),
         };
         consuming.saturating_add(
-            (if matches!(self.body, Body::Repeated(_)) {
+            (if matches!(self.body, Body::Repeated(_) | Body::RepeatedContinuation(_)) {
                 4
             } else {
                 2
@@ -160,7 +165,10 @@ impl RegExpAnchoredMatcher {
     pub fn requires_full_suffix(&self) -> bool {
         matches!(
             self.body,
-            Body::Quantified(_) | Body::Prefixed(_) | Body::Repeated(_)
+            Body::Quantified(_)
+                | Body::Prefixed(_)
+                | Body::Repeated(_)
+                | Body::RepeatedContinuation(_)
         )
     }
 
@@ -201,6 +209,14 @@ impl RegExpAnchoredMatcher {
                 |position| self.leading.accepts(units, position, self.multiline),
                 |position| self.trailing.accepts(units, position, self.multiline),
             ),
+            Body::RepeatedContinuation(matcher) => matcher.find_asserted(
+                input,
+                start,
+                sticky,
+                self.leading,
+                self.trailing,
+                self.multiline,
+            ),
         }
     }
 }
@@ -211,6 +227,7 @@ impl Body {
             Self::Quantified(m) => m.capture_count(),
             Self::Prefixed(m) => m.capture_count(),
             Self::Repeated(m) => m.capture_count(),
+            Self::RepeatedContinuation(m) => m.capture_count(),
             _ => self.capture_ranges().len(),
         }
     }
@@ -218,7 +235,10 @@ impl Body {
         match self {
             Self::Literal(m) => m.capture_ranges(),
             Self::Sequence(m) => m.capture_ranges(),
-            Self::Quantified(_) | Self::Prefixed(_) | Self::Repeated(_) => &[],
+            Self::Quantified(_)
+            | Self::Prefixed(_)
+            | Self::Repeated(_)
+            | Self::RepeatedContinuation(_) => &[],
         }
     }
 }
@@ -283,6 +303,14 @@ fn compile_body<E>(
         &mut *charge,
     )? {
         Body::Repeated(m)
+    } else if let Some(m) = RegExpRepeatedContinuationMatcher::compile_with_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Body::RepeatedContinuation(m)
     } else {
         return Ok(None);
     };

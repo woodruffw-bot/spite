@@ -647,6 +647,25 @@ progress. Optional host errors remain separate and default quotas stay disabled.
 Surrounding fixed terms, repeated choices and variable bodies, additional
 quantifiers, named groups, backreferences and Unicode modes remain pending.
 
+A repeated fixed group can now be followed by a fixed sequel in one ordinary
+plan (RepeatMatcher, 22.2.2.3.1). Compilation reuses the exact quantifier scanner
+and accepts both complete fixed components before constructing immutable sets.
+The existing repeated-group endpoint selector checks the sequel at each eligible
+endpoint before choosing the earliest start and greedy or lazy length. Fixed
+sequel assertions use complete input neighbors and explicit multiline; outer
+assertions check the final sequel end. Captures before the sequel resolve from
+the last required iteration or remain undefined for zero iterations. Sequel
+captures translate from its actual start, and complete enclosing/alternative
+layouts retain their source order. Empty/assertion-only repeated groups and
+empty fixed sequels use the same composition. Earlier successful plans retain
+precedence and original source/flags remain unchanged. Candidate work is bounded
+by input length times the sum of both fixed widths and assertion positions;
+optional work metadata also covers endpoint/window checks and full sticky
+suffixes. There is no recursion, expanded repetition count, default quota or new
+dependency. Fixed prefixes around repeated groups, captures spanning partial
+variable bodies, repeated choices, additional quantifiers, named groups,
+backreferences and Unicode modes remain pending.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

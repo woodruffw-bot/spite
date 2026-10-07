@@ -250,7 +250,8 @@ fn prepare_prefix(units: &[u16], dot_all: bool) -> Option<PreparedPrefix> {
     }
 }
 
-fn quantifier(units: &[u16]) -> Option<(Bounds, usize)> {
+/// Exact bounds and consumed units of the first complete greedy/lazy quantifier.
+pub(crate) fn quantifier(units: &[u16]) -> Option<(Bounds, usize)> {
     let (min, max, mut index) = match *units.first()? {
         0x2a => (Some(0), None, 1),
         0x2b => (Some(1), None, 1),

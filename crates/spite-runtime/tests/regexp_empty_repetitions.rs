@@ -117,7 +117,7 @@ fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_sta
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/()*a/.test('a')",
+        r"/(|b)*a/.test('a')",
         r"/a()+/.test('a')",
         r"/(^|$)+/.test('a')",
         r"/(?<n>)+/.test('')",
