@@ -116,7 +116,7 @@ fn nested_choices_quantifiers_backreferences_and_unicode_remain_explicit_gaps() 
         "/a([^a]|bc)/.test('a')",
         "/[a]+[b]+|b/.test('b')",
         "/a|[b]*[a]+/.test('a')",
-        r"/([a])\1+|b/.test('b')",
+        r"/([a])(?:\1)+|b/.test('b')",
         "/[a]|b/u.test('a')",
         "/[a]|b/v.test('a')",
     ] {

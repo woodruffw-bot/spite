@@ -120,7 +120,7 @@ fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps
         "/^a+[b]+$/.test('a')",
         "/a+/u.test('a')",
         "/[a]+/v.test('a')",
-        r"/(a)\1+/.test('a')",
+        r"/(a)(?:\1)+/.test('a')",
     ] {
         assert!(
             matches!(

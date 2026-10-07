@@ -127,7 +127,7 @@ fn optional_assertion_work_aborts_bypass_handlers_and_remaining_group_features_a
         r"/(a$|b)+/.test('a')",
         r"/(a\B)+b+/.test('aaab')",
         r"/(?<n>a$)+\k<n>/.test('a')",
-        r"/(a$)\1+/.test('aa')",
+        r"/(a$)(?:\1)+/.test('aa')",
         r"/(a$)+/u.test('a')",
         r"/(^|$)*/.test('')",
         r"/($|^)+/.test('')",

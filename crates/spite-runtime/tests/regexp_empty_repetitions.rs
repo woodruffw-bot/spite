@@ -121,7 +121,7 @@ fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_sta
         r"/a(|b)+/.test('a')",
         r"/(^|$)+/.test('a')",
         r"/(?<n>)+\k<n>/.test('')",
-        r"/()\1+/.test('')",
+        r"/()(?:\1)+/.test('')",
         r"/(a*)*/.test('a')",
         r"/()+/u.test('')",
     ] {

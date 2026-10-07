@@ -3,6 +3,7 @@
 use crate::regexp_assertion::Assertions;
 use crate::regexp_character::PreparedCharacter;
 use crate::regexp_literal::{character_escape, is_syntax};
+use crate::regexp_quantified::{Bounds, quantifier};
 use crate::{JsString, RegExpCharacterMatcher, regexp_canonicalize_character};
 use std::{
     collections::{HashMap, HashSet},
@@ -36,8 +37,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
-/// Top-level and arbitrarily nested inner alternatives are accepted. Quantifiers
-/// return `None`. At least one numbered or registered named reference is required;
+/// Top-level and arbitrarily nested alternatives and quantified reference atoms
+/// are accepted. Other quantifiers return `None`. At least one numbered or registered named reference is required;
 /// plain literals retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
@@ -49,7 +50,7 @@ struct Program {
     capture_count: usize,
     ignore_case: bool,
     multiline: bool,
-    choice_count: usize,
+    frame_capacity: usize,
     capture_names: Vec<Option<usize>>,
     named_count: usize,
 }
@@ -66,6 +67,11 @@ enum Instruction {
     Close(usize),
     Reference(usize),
     NamedReference(usize),
+    QuantifiedReference {
+        index: usize,
+        named: bool,
+        bounds: Bounds,
+    },
 }
 
 enum PreparedInstruction {
@@ -118,9 +124,71 @@ impl GroupFrame {
 
 struct ChoiceFrame {
     instruction: usize,
-    alternative: usize,
-    prefix_end: usize,
     checkpoint: usize,
+    alternative: PendingAlternative,
+}
+
+enum PendingAlternative {
+    Choice {
+        next: usize,
+        prefix_end: usize,
+    },
+    Repetition {
+        next: Option<usize>,
+        limit: usize,
+        base: usize,
+        capture: Range<usize>,
+        greedy: bool,
+    },
+}
+
+impl ChoiceFrame {
+    fn retry<E>(
+        &mut self,
+        program: &Program,
+        input: &[u16],
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<(usize, usize)>, E> {
+        match &mut self.alternative {
+            PendingAlternative::Choice { next, prefix_end } => {
+                let Instruction::Choice(alternatives) = &program.instructions[self.instruction]
+                else {
+                    unreachable!("choice frame refers to a choice")
+                };
+                let Some(&pc) = alternatives.get(*next) else {
+                    return Ok(None);
+                };
+                *next += 1;
+                Ok(Some((pc, *prefix_end)))
+            }
+            PendingAlternative::Repetition {
+                next,
+                limit,
+                base,
+                capture,
+                greedy,
+            } => {
+                let Some(count) = *next else {
+                    return Ok(None);
+                };
+                if *greedy {
+                    // The constructor bounds counts by actual remaining input units.
+                    let end = *base + count * capture.len();
+                    *next = (count > *limit).then(|| count - 1);
+                    Ok(Some((self.instruction + 1, end)))
+                } else {
+                    let start = *base + (count - 1) * capture.len();
+                    let Some(end) = program.compare_reference(input, start, capture, charge)?
+                    else {
+                        *next = None;
+                        return Ok(None);
+                    };
+                    *next = (count < *limit).then(|| count + 1);
+                    Ok(Some((self.instruction + 1, end)))
+                }
+            }
+        }
+    }
 }
 
 enum ScopeStep {
@@ -314,7 +382,17 @@ impl RegExpBackreferenceMatcher {
             .iter()
             .filter(|i| matches!(i, PreparedInstruction::Ready(Instruction::Choice(_))))
             .count();
-        charge(choice_count)?;
+        let repetitions = prepared
+            .iter()
+            .filter(|i| {
+                matches!(
+                    i,
+                    PreparedInstruction::Ready(Instruction::QuantifiedReference { .. })
+                )
+            })
+            .count();
+        let frame_capacity = choice_count + repetitions;
+        charge(frame_capacity)?;
         for instruction in &prepared {
             if let PreparedInstruction::Ready(Instruction::Choice(alternatives)) = instruction {
                 charge(alternatives.len())?;
@@ -358,7 +436,7 @@ impl RegExpBackreferenceMatcher {
             capture_count,
             ignore_case,
             multiline,
-            choice_count,
+            frame_capacity,
             capture_names,
             named_count: bindings.groups.len(),
         }))))
@@ -414,8 +492,8 @@ impl RegExpBackreferenceMatcher {
             named: vec![None; self.0.named_count],
             touched: Vec::with_capacity(self.0.capture_count),
         };
-        charge(self.0.choice_count)?;
-        let mut frames = Vec::<ChoiceFrame>::with_capacity(self.0.choice_count);
+        charge(self.0.frame_capacity)?;
+        let mut frames = Vec::<ChoiceFrame>::with_capacity(self.0.frame_capacity);
         let end = if sticky { start } else { input.len() };
         'candidate: for candidate in start..=end {
             charge(1)?;
@@ -444,13 +522,8 @@ impl RegExpBackreferenceMatcher {
                     charge(1)?;
                     self.0
                         .clear_captures(&mut state, frame.checkpoint, &mut charge)?;
-                    let Instruction::Choice(alternatives) = &self.0.instructions[frame.instruction]
-                    else {
-                        unreachable!("choice frame refers to a choice instruction")
-                    };
-                    if let Some(&next) = alternatives.get(frame.alternative) {
-                        frame.alternative += 1;
-                        cursor = frame.prefix_end;
+                    if let Some((next, end)) = frame.retry(&self.0, input, &mut charge)? {
+                        cursor = end;
                         pc = next;
                         break;
                     }
@@ -507,8 +580,10 @@ impl Program {
                 charge(1)?;
                 frames.push(ChoiceFrame {
                     instruction: pc,
-                    alternative: 1,
-                    prefix_end: *cursor,
+                    alternative: PendingAlternative::Choice {
+                        next: 1,
+                        prefix_end: *cursor,
+                    },
                     checkpoint: state.touched.len(),
                 });
                 return Ok(Some(alternatives[0]));
@@ -558,32 +633,120 @@ impl Program {
                 } else {
                     &state.named[*index]
                 };
-                let Some(range) = range else {
+                if let Some(range) = range {
+                    let Some(next) = self.compare_reference(input, *cursor, range, charge)? else {
+                        return Ok(None);
+                    };
+                    *cursor = next;
+                }
+            }
+            Instruction::QuantifiedReference {
+                index,
+                named,
+                bounds: (min, max, greedy),
+            } => {
+                let range = if *named {
+                    &state.named[*index]
+                } else {
+                    &state.captures[*index]
+                };
+                // References carry no capture effects. Empty/undefined targets can
+                // satisfy any finite minimum without repeating an empty operation.
+                let Some(capture) = range.as_ref().filter(|r| !r.is_empty()) else {
                     return Ok(Some(pc + 1));
                 };
-                let Some(next) = cursor.checked_add(range.len()) else {
+                let Some(min) = *min else {
                     return Ok(None);
                 };
-                let Some(units) = input.get(*cursor..next) else {
+                let limit = max
+                    .unwrap_or(usize::MAX)
+                    .min((input.len() - *cursor) / capture.len());
+                if min > limit {
                     return Ok(None);
-                };
-                for (&actual, &captured) in units.iter().zip(&input[range.clone()]) {
-                    charge(2)?;
-                    if canonicalize(actual, self.ignore_case)
-                        != canonicalize(captured, self.ignore_case)
-                    {
-                        return Ok(None);
-                    }
                 }
-                *cursor = next;
+                let base = *cursor;
+                let mut count = 0;
+                let wanted = if *greedy { limit } else { min };
+                while count < wanted {
+                    charge(1)?;
+                    let Some(next) = self.compare_reference(input, *cursor, capture, charge)?
+                    else {
+                        break;
+                    };
+                    *cursor = next;
+                    count += 1;
+                }
+                if count < min {
+                    return Ok(None);
+                }
+                let next = if *greedy {
+                    (count > min).then(|| count - 1)
+                } else {
+                    (count < limit).then(|| count + 1)
+                };
+                if next.is_some() {
+                    charge(1)?;
+                    frames.push(ChoiceFrame {
+                        instruction: pc,
+                        checkpoint: state.touched.len(),
+                        alternative: PendingAlternative::Repetition {
+                            next,
+                            limit: if *greedy { min } else { limit },
+                            base,
+                            capture: capture.clone(),
+                            greedy: *greedy,
+                        },
+                    });
+                }
             }
         }
         Ok(Some(pc + 1))
+    }
+    fn compare_reference<E>(
+        &self,
+        input: &[u16],
+        start: usize,
+        capture: &Range<usize>,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<usize>, E> {
+        let Some(next) = start.checked_add(capture.len()) else {
+            return Ok(None);
+        };
+        let Some(units) = input.get(start..next) else {
+            return Ok(None);
+        };
+        for (&actual, &captured) in units.iter().zip(&input[capture.clone()]) {
+            charge(2)?;
+            if canonicalize(actual, self.ignore_case) != canonicalize(captured, self.ignore_case) {
+                return Ok(None);
+            }
+        }
+        Ok(Some(next))
     }
 }
 
 fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
+}
+
+fn reference_instruction(
+    source: &[u16],
+    cursor: &mut usize,
+    index: usize,
+    named: bool,
+) -> Option<Instruction> {
+    if let Some((bounds, consumed)) = quantifier(&source[*cursor..]) {
+        *cursor += consumed;
+        Some(Instruction::QuantifiedReference {
+            index,
+            named,
+            bounds,
+        })
+    } else if named {
+        Some(Instruction::NamedReference(index))
+    } else {
+        Some(Instruction::Reference(index))
+    }
 }
 
 fn prepare(
@@ -623,11 +786,14 @@ fn prepare(
             .is_some_and(|reference| reference.escape.start == cursor)
         {
             let reference = named_references.next().expect("reference selected");
-            instructions.push(PreparedInstruction::Ready(Instruction::NamedReference(
-                reference.group,
-            )));
-            references += 1;
             cursor = reference.escape.end;
+            instructions.push(PreparedInstruction::Ready(reference_instruction(
+                source,
+                &mut cursor,
+                reference.group,
+                true,
+            )?));
+            references += 1;
             continue;
         }
         cursor += 1;
@@ -672,9 +838,12 @@ fn prepare(
                         .checked_add(usize::from(digit - 0x30))?;
                     cursor += 1;
                 }
-                instructions.push(PreparedInstruction::Ready(Instruction::Reference(
+                instructions.push(PreparedInstruction::Ready(reference_instruction(
+                    source,
+                    &mut cursor,
                     number.checked_sub(1)?,
-                )));
+                    false,
+                )?));
                 references += 1;
             }
             0x7c => {
@@ -716,6 +885,9 @@ fn prepare(
                     source: start..cursor,
                 });
             }
+            0x5c if !bindings.groups.is_empty() && source.get(cursor) == Some(&0x6b) => {
+                return None;
+            }
             0x5c => instructions.push(PreparedInstruction::Ready(Instruction::Character(
                 canonicalize(character_escape(source, &mut cursor)?, ignore_case),
             ))),
@@ -729,7 +901,7 @@ fn prepare(
         return None;
     }
     if instructions.iter().any(|instruction| {
-        matches!(instruction, PreparedInstruction::Ready(Instruction::Reference(index)) if *index >= capture_count)
+        matches!(instruction, PreparedInstruction::Ready(Instruction::Reference(index) | Instruction::QuantifiedReference { index, named: false, .. }) if *index >= capture_count)
     }) {
         return None;
     }
@@ -828,7 +1000,7 @@ mod tests {
             (r"(a)\k<x>", vec![0], 3..9, 0),
             (r"(a)\k<x>", vec![0], 2..7, 0),
             (r"(a)[\k<x>]", vec![0], 4..9, 0),
-            (r"(a)\k<x>+", vec![0], 3..8, 0),
+            (r"(a)(?:\k<x>)+", vec![0], 6..11, 0),
         ] {
             let references = [RegExpBackreferenceNamedReference { escape, group }];
             let groups = [slots.as_slice()];
@@ -891,6 +1063,180 @@ mod tests {
         assert!(found.captures[..10000].iter().all(Option::is_none));
         assert_eq!(found.captures[10000], Some(0..1));
         assert!(work < 150000, "actual named-reference work {work}");
+    }
+
+    #[test]
+    fn quantified_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)\1*",
+            r"(a)\1*?",
+            r"(a)\1+",
+            r"(a)\1+?",
+            r"(a)\1?",
+            r"(a)\1??",
+            r"(ab)\1{2,3}",
+            r"(ab)\1{1,3}?",
+            r"(a)\1*ab",
+            r"(a)\1*?ab",
+            r"((a)\2+)\1",
+            r"((a)\2+?)\1",
+            r"(a|ab)\1+b",
+            r"(?:(a)|(ab))\1*\2+",
+            r"(a)(b)\1*\2*",
+            r"(a)(b)\1*?\2*?",
+            r"\1+(a)",
+            r"(\1+a)\1",
+            r"()\1{999999999999999999999999999999}",
+            r"(a)\1{999999999999999999999999999999}",
+            r"(a)\1{0,999999999999999999999999999999}?b",
+            r"^([µ])\1+$",
+            r"\b(\w)\1+\b",
+            r"(.)\1{1,2}a|()\2+",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "a",
+                    "aa",
+                    "aaaaaa",
+                    "ababab",
+                    "abababab",
+                    "aab",
+                    "aaaab",
+                    "ababb",
+                    "aaabbb",
+                    "AaAa",
+                    "µΜµ",
+                    "\n\n",
+                    " aaa ",
+                    "\u{2028}aa\u{2029}",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn greedy_and_lazy_reference_retries_restore_completed_enclosing_captures() {
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"((a)\2+)\1"), false).unwrap();
+        let found = matcher.find(&JsString::from("aaaaaa"), 0, true).unwrap();
+        assert_eq!(found.range, 0..6);
+        assert_eq!(&*found.captures, &[Some(0..3), Some(0..1)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"((a)\2+?)\1"), false).unwrap();
+        let found = matcher.find(&JsString::from("aaaaaa"), 0, true).unwrap();
+        assert_eq!(found.range, 0..4);
+        assert_eq!(&*found.captures, &[Some(0..2), Some(0..1)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"(a)\1*?ab"), false).unwrap();
+        let found = matcher.find(&JsString::from("qaaaab"), 0, false).unwrap();
+        assert_eq!(found.range, 1..6);
+        assert_eq!(&*found.captures, &[Some(1..2)]);
+    }
+
+    #[test]
+    fn empty_targets_huge_bounds_many_quantified_references_and_optional_work_stay_finite() {
+        let source = JsString::from(format!("()\\1{{{}}}", "9".repeat(10000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from(""), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 0..0);
+        assert_eq!(&*found.captures, &[Some(0..0)]);
+        assert!(work < 100, "actual empty-reference work {work}");
+        let source = JsString::from(format!("(a){}b", r"\1*?".repeat(100000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        assert!(matcher.0.instructions.len() <= source.len() * 2);
+        let found = matcher.find(&JsString::from("ab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(&*found.captures, &[Some(0..1)]);
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("aa"), 0, true, |n| {
+                    work += n;
+                    if work > 350000 { Err("host") } else { Ok(()) }
+                })
+                .unwrap_err(),
+            "host"
+        );
+    }
+
+    #[test]
+    fn missing_named_escape_metadata_and_quantified_bodies_remain_unsupported_before_charge() {
+        let source = JsString::from(r"(a)\k<x>\k<x>");
+        let references = named_escapes(&source);
+        let mut work = 0;
+        assert!(
+            RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+                &source,
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings {
+                    groups: &[&[0]],
+                    references: &references[..1]
+                },
+                |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                }
+            )
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(work, 0);
+        for source in [
+            r"(?:(a)\1){2}",
+            r"(a)(?:\1)+",
+            r"(a)+\1",
+            r"(?=(a))\1+",
+            r"(a)\2+",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert_eq!(work, 0, "{source}");
+        }
     }
 
     #[test]
@@ -1182,10 +1528,10 @@ mod tests {
             "host"
         );
         for source in [
-            r"(?:(a|b)|c)\1+",
-            r"(?:a|(b|c))\1+",
-            r"((a|b)(c|d)|e)\1+",
-            r"(a|b)(c|d)\1+",
+            r"(?:(a|b)|c)(?:\1)+",
+            r"(?:a|(b|c))(?:\1)+",
+            r"((a|b)(c|d)|e)(?:\1)+",
+            r"(a|b)(c|d)(?:\1)+",
         ] {
             let mut work = 0;
             assert!(
@@ -1739,7 +2085,7 @@ mod tests {
                 .len(),
             100000
         );
-        for text in [r"(\w)\1+", r"^([ab])\1+", r"([ab]|c)\1+"] {
+        for text in [r"(\w)(?:\1)+", r"^([ab])(?:\1)+", r"([ab]|c)(?:\1)+"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_with_flags_and_work(
@@ -1866,11 +2212,11 @@ mod tests {
         let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
         assert!(matcher.find(&JsString::from("aa"), 0, false).is_none());
         for source in [
-            r"(a)\1+",
-            r"(a|b)\1+",
+            r"(a)(?:\1)+",
+            r"(a|b)(?:\1)+",
             r"(?<x>a)\k<x>",
-            r"([ab])\1+",
-            r"^(a)\1+",
+            r"([ab])(?:\1)+",
+            r"^(a)(?:\1)+",
             r"(a)\2",
             "(a)",
         ] {

@@ -126,9 +126,9 @@ fn explicit_branch_search_work_aborts_before_last_index_and_language_handlers() 
 #[test]
 fn nested_repeated_duplicate_name_and_unicode_reference_choices_remain_unsupported() {
     for source in [
-        r"/(a|b)\1+/.test('aa')",
-        r"/(a)\1+|(b)\2/.test('aa')",
-        r"/(?<x>a)\k<x>|(?<x>b)\k<x>+/.test('bb')",
+        r"/(a|b)(?:\1)+/.test('aa')",
+        r"/(a)(?:\1)+|(b)\2/.test('aa')",
+        r"/(?<x>a)\k<x>|(?<x>b)(?:\k<x>)+/.test('bb')",
         r"/(?<x>a)\k<x>|(?<y>b)\k<y>/u.test('bb')",
     ] {
         assert!(

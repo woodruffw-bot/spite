@@ -1008,7 +1008,7 @@ the resulting groups normally. Optional construction/result work remains
 explicitly charged; defaults remain unlimited. Broader reference compositions,
 unsupported conditional local choices and Unicode-mode matching remain pending.
 
-Ordinary unquantified Patterns containing numbered or named references execute
+Ordinary Patterns containing numbered or named references execute
 through a flat immutable instruction program (CompileDisjunction, 22.2.2.3;
 BackreferenceMatcher, 22.2.2.9). Capturing/noncapturing groups, arbitrarily nested
 or sequential alternatives, literal units, character predicates and input/line/
@@ -1073,8 +1073,30 @@ contains no heap-object edges and survives copying and collection. Optional work
 charges frame buffers, executed instructions, branch attempts, capture trail
 writes/resets, assertions and actual comparisons; aborts occur before lastIndex
 mutation and remain outside language handlers. Default work and heap quotas stay
-disabled. Quantified reference bodies, lookaround/scoped modifiers and Unicode
-matching remain pending.
+disabled. Quantified reference-containing groups, other consuming quantifiers,
+lookaround/scoped modifiers and Unicode matching remain pending.
+
+Reference atoms accept greedy/lazy `*`, `+`, `?` and bounded quantifiers
+(CompileQuantifier, 22.2.2.5; RepeatMatcher, 22.2.2.3.1). Decimal bounds reuse exact
+integer parsing: a consuming minimum exceeding every representable input cannot
+match, while an oversized maximum cannot constrain that input. Repetition counts
+are bounded by remaining input units and the original nonempty capture width.
+Greedy execution validates the longest available run and saves shorter endpoints;
+lazy execution validates its minimum and compares one additional original capture
+when a failed continuation requests another repetition. Frames restore captures
+completed by the failed continuation before retrying; enclosing starts and prefix
+targets retain their original ranges. Any number of reference atoms can quantify
+without copying source or input strings.
+
+A reference atom contains no capturing parentheses and has no capture effects.
+Undefined or empty targets therefore preserve the same MatchState for every
+required finite repetition, including minimums too large for native integers.
+Execution can satisfy that minimum directly; optional empty iterations stop under
+RepeatMatcher's zero-progress rule. This optimization keeps huge finite empty
+reference bounds correct and avoids native loops or recursion. Typed named binding
+inventories must register every named escape outside classes. Default quotas stay
+disabled; reference-containing group repetitions, quantified consuming atoms,
+lookaround/scoped modifiers and Unicode matching remain pending in this program.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

@@ -1873,6 +1873,35 @@ targets and documentation tests. Formatting, denied-warning Clippy, dependency/
 fixture policy, offline generator checks and default two-mebibyte debug-stack
 checks pass.
 
+Quantified numbered and named reference atoms now compose with ordinary groups,
+alternatives, predicates and assertions. Four added core regressions cover an
+inspected 4,320-record insta snapshot, greedy/lazy retries and enclosing capture
+restoration, empty/forward/self targets, exact decimal bounds, 10,000-digit finite
+empty minimums, 100,000 quantified reference atoms with flat storage, opted-in
+work failures and missing named escape inventories rejected before charging.
+All eight earlier core reference snapshots remain byte-identical. Node agrees
+with 4,144 added core records; its native stack limit prevents the other 176 huge
+empty-reference records. Those records are checked against finite RepeatMatcher
+semantics: a reference has no inner captures or state effects, so its empty target
+satisfies the finite minimum without changing MatchState. No engine limit outcome
+receives fixture credit. Six runtime regressions cover an inspected 24-record
+result snapshot, ordered greedy/lazy lengths, restored ranges and groups/indices
+aliases, raw surrogates, global/sticky consumers, empty-match advancement,
+source-preserving copies, collection, huge finite empty/self minimums and 100,000
+reference atoms under unlimited defaults, explicit search aborts and remaining
+gaps. Node agrees with every added native snapshot record, 362,480 numbered and
+184,320 named fresh match/capture comparisons, and ten runtime programs. Existing
+reference snapshots are unchanged. Sixty-four direct controls and one eval
+control now quantify reference-containing groups; all 395 direct gap programs
+and three eval host-gap programs remain unsupported. Quantified reference bodies,
+other consuming quantifiers, lookaround/scoped modifiers and Unicode matching
+remain pending in this program. No fixtures or fixture credit are added;
+inventories, the pin, dependencies and unlimited defaults are unchanged.
+
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

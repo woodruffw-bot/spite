@@ -126,8 +126,8 @@ fn deep_named_copies_survive_collection_with_unlimited_defaults() {
 #[test]
 fn unsupported_backreferences_modes_and_conditionally_captured_local_choices_remain_distinct() {
     for source in [
-        r"/(?<x>a)\k<x>+/.test('aa')",
-        r"/(?<x>a)\1+/.test('aa')",
+        r"/(?<x>a)(?:\k<x>)+/.test('aa')",
+        r"/(?<x>a)(?:\1)+/.test('aa')",
         r"/x(?:(?<n>a)|(?<n>b))y/.test('xay')",
         r"/(?<x>a)/u.test('a')",
     ] {

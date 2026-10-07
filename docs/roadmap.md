@@ -362,6 +362,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute one ordinary inner choice per reference branch with shared common terms, source-order variable-width/empty alternatives, restored enclosing/inactive captures and mutually exclusive named bindings.
 - [x] Execute sequential ordinary inner choices with references through flat continuation frames, source-order combinations, restored capture checkpoints and checked noncoexisting named slots.
 - [x] Execute arbitrarily nested ordinary alternatives with references through flat choices/jumps, iterative failure restoration, checked MightBothParticipate bindings and exact original capture ranges.
+- [x] Execute greedy/lazy and exactly bounded numbered/named reference atoms with flat continuation frames, restored enclosing captures, unchanged targets and finite huge empty-reference minimums.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
