@@ -74,9 +74,9 @@ expression: rows
 "^(a+b)*$" i=false m=false s=false unsupported
 "^(a+b)*$" i=true m=true s=false unsupported
 "^(a+b)*$" i=false m=false s=true unsupported
-"^a(a+b)$" i=false m=false s=false unsupported
-"^a(a+b)$" i=true m=true s=false unsupported
-"^a(a+b)$" i=false m=false s=true unsupported
+"^a(a+b)$" i=false m=false s=false captures=1 full_suffix=true passes=9/9 ""@0/false:None ""@1/true:None "a"@0/false:None "a"@1/true:None "ab"@0/false:None "ab"@1/true:None "aaaa"@0/false:None "aaaa"@1/true:None "aaab"@0/false:Some((0..4, [Some(1..4)])) "aaab"@1/true:None "abab"@0/false:None "abab"@1/true:None "ABab"@0/false:None "ABab"@1/true:None "12x"@0/false:None "12x"@1/true:None "a\nb"@0/false:None "a\nb"@1/true:None "x\naaab\ny"@0/false:None "x\naaab\ny"@1/true:None "\r\nab\r\n"@0/false:None "\r\nab\r\n"@1/true:None "a$"@0/false:None "a$"@1/true:None "µµx"@0/false:None "µµx"@1/true:None
+"^a(a+b)$" i=true m=true s=false captures=1 full_suffix=true passes=9/9 ""@0/false:None ""@1/true:None "a"@0/false:None "a"@1/true:None "ab"@0/false:None "ab"@1/true:None "aaaa"@0/false:None "aaaa"@1/true:None "aaab"@0/false:Some((0..4, [Some(1..4)])) "aaab"@1/true:None "abab"@0/false:None "abab"@1/true:None "ABab"@0/false:None "ABab"@1/true:None "12x"@0/false:None "12x"@1/true:None "a\nb"@0/false:None "a\nb"@1/true:None "x\naaab\ny"@0/false:Some((2..6, [Some(3..6)])) "x\naaab\ny"@1/true:None "\r\nab\r\n"@0/false:None "\r\nab\r\n"@1/true:None "a$"@0/false:None "a$"@1/true:None "µµx"@0/false:None "µµx"@1/true:None
+"^a(a+b)$" i=false m=false s=true captures=1 full_suffix=true passes=9/9 ""@0/false:None ""@1/true:None "a"@0/false:None "a"@1/true:None "ab"@0/false:None "ab"@1/true:None "aaaa"@0/false:None "aaaa"@1/true:None "aaab"@0/false:Some((0..4, [Some(1..4)])) "aaab"@1/true:None "abab"@0/false:None "abab"@1/true:None "ABab"@0/false:None "ABab"@1/true:None "12x"@0/false:None "12x"@1/true:None "a\nb"@0/false:None "a\nb"@1/true:None "x\naaab\ny"@0/false:None "x\naaab\ny"@1/true:None "\r\nab\r\n"@0/false:None "\r\nab\r\n"@1/true:None "a$"@0/false:None "a$"@1/true:None "µµx"@0/false:None "µµx"@1/true:None
 "^(a|b)$" i=false m=false s=false unsupported
 "^(a|b)$" i=true m=true s=false unsupported
 "^(a|b)$" i=false m=false s=true unsupported

@@ -706,6 +706,20 @@ variable syntax before constructing sets. No recursion, expanded bounds, default
 quotas or dependencies are introduced. Repeated choices, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
 
+Partial enclosing captures also accept a single quantified literal character,
+class, class escape or dot (CompileAtom and RepeatMatcher, 22.2.2.3.1, 22.2.2.7).
+The iterative scan consumes complete decoded character escapes and class bodies
+before reading quantifiers; ordinary supplementary characters retain their two
+separate UTF-16 atoms. An ungrouped quantified atom receives a synthetic
+noncapturing wrapper in the private matching body, adding no capture slot. The
+existing one-unit repeated-group matcher and dry marker layout then supply exact
+greedy/lazy/bounded ranges and participating empty enclosing captures at zero
+iterations. Grouped bodies keep their earlier source and layouts. Classes, DotAll,
+ordinary pinned case behavior, assertions, complete wrappers and source-ordered
+alternatives use the shared paths. Original Pattern/flag text remains untouched,
+and preparation rejects multiple quantifiers before constructing sets. Counts
+remain scalar with no recursion, expanded alternatives or default quotas.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

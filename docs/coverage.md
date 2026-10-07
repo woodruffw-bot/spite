@@ -1286,6 +1286,29 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Partial captures around quantified character atoms add three core regressions:
+an inspected 160-record insta snapshot, an independent exhaustive candidate/count/
+capture oracle with outer multiline anchors, and 100,000 enclosing captures over
+long runs, decoded widths, clones, exact bounds and optional construction work.
+The new snapshot accepts 132 records and rejects 28; six earlier anchored/branch
+records now execute. Earlier accepted results and work metadata remain unchanged.
+Node agrees on 131,802 stored results across eighteen snapshots, 181,440 additional
+match/capture comparisons and 26 runtime programs. Eight runtime regressions cover
+literal/class and prefix/sequel captures, greedy/lazy/bounded order and huge bounds,
+empty participating slots, whole wrappers/alternatives/source/copies, global/sticky
+state, word/input/line assertions, complete character escapes and lexical barriers,
+DotAll, pinned case and surrogate offsets, generic consumers and callbacks,
+intrinsic Arrays, collection, deep captures and long runs with unlimited defaults,
+and optional host aborts. Two earlier gap programs retain multiple quantifiers
+as the unsupported boundary; all 271 audited gap programs remain unsupported.
+Whole-fixture review enables no new whole programs; inventories and the pin remain
+unchanged. Repeated choices, additional quantifiers, named groups, backreferences
+and Unicode modes remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
