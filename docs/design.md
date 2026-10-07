@@ -720,6 +720,23 @@ alternatives use the shared paths. Original Pattern/flag text remains untouched,
 and preparation rejects multiple quantifiers before constructing sets. Counts
 remain scalar with no recursion, expanded alternatives or default quotas.
 
+Repeated groups can contain two or more capture-free literal alternatives that
+each consume one UTF-16 unit (CompileSubpattern and RepeatMatcher, 22.2.2.3–3.1).
+Every successful branch has the same endpoint and no branch-specific capture,
+so source order cannot change the repeated group's capture or sequel selection.
+Preparation converts their decoded units to one escaped ordinary character class
+in the private matching body, retaining whether the group captures. The existing
+fixed repetition and partial-capture plans then preserve final-iteration ranges,
+undefined slots at zero iterations, exact bounds, greediness, prefix/sequel terms
+and complete input assertions. The top-level alternative scanner tracks ordinary
+groups iteratively and validates these inner choices before constructing or
+charging branches; unsupported unquantified choices still reject early. Original
+source, flags and pinned ordinary case behavior remain intact. Normalization is
+linear in source size, with no expanded repetition counts, recursive plans or
+default quotas. Empty/wider branches, captures within individual alternatives,
+extra enclosing groups inside the repeated atom, class/dot alternatives, multiple
+quantifiers, named groups, backreferences and Unicode modes remain pending.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

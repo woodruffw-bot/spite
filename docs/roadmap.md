@@ -342,6 +342,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile fixed prefixes around repeated groups and optional fixed sequels, filtering earliest complete starts without restarting repetition search and preserving prefix, final-iteration, undefined, sequel, enclosing and alternative captures.
 - [x] Compile partial ordinary enclosing groups around one fixed repetition, retaining source-order captures with start/end-relative endpoints, zero-iteration undefined slots, fixed surrounding terms, assertions and alternatives.
 - [x] Compile partial ordinary captures around one quantified character or class atom, preserving decoded escape boundaries, pinned flags, start/end-relative ranges, zero-width participation and fixed surrounding terms.
+- [x] Compile repeated literal-unit alternatives as an ordinary character-set union, preserving final-iteration/undefined captures, partial wrappers, fixed surrounding terms, assertions and top-level alternative order.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

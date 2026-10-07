@@ -16,8 +16,8 @@ use std::{ops::Range, sync::Arc};
 /// literal group.
 /// Complete ordinary capturing/noncapturing wrappers can enclose each body;
 /// captured wrappers precede that branch's retained capture slots.
-/// Unsupported alternatives reject the entire plan. Nested alternatives and
-/// multiple quantifiers remain unsupported; compilation never expands
+/// Unsupported alternatives reject the entire plan. Nested choices are accepted
+/// only by supported body plans; compilation never expands
 /// combinations or uses native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpDisjunctionMatcher(Arc<Program>);
@@ -451,7 +451,7 @@ fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
     let mut ranges = Vec::new();
     let mut start = 0;
     let mut index = 0;
-    let mut depth = 0usize;
+    let mut groups = Vec::new();
     let mut in_class = false;
     while let Some(&unit) = units.get(index) {
         index += 1;
@@ -470,27 +470,38 @@ fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
                 index += 1;
             }
             0x28 => {
+                let start = index - 1;
                 if units.get(index) == Some(&u16::from(b'?')) {
                     if units.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
                         return None;
                     }
                     index += 2;
                 }
-                depth = depth.checked_add(1)?;
+                groups.push((start, false));
             }
-            0x29 => depth = depth.checked_sub(1)?,
+            0x29 => {
+                let (start, has_choices) = groups.pop()?;
+                if has_choices {
+                    // Reject unsupported inner choices before compiling or
+                    // charging any branch. Only a quantified literal-unit union
+                    // has the fixed endpoints required by the current plans.
+                    crate::regexp_quantified::quantifier(&units[index..])?;
+                    crate::regexp_repeated_captures::literal_choice_atom(&units[start..index])?;
+                }
+            }
             0x5b => in_class = true,
             0x7c => {
-                if depth != 0 {
-                    return None;
+                if let Some((_, choices)) = groups.last_mut() {
+                    *choices = true;
+                } else {
+                    ranges.push(start..index - 1);
+                    start = index;
                 }
-                ranges.push(start..index - 1);
-                start = index;
             }
             _ => {}
         }
     }
-    if depth != 0 || in_class || ranges.is_empty() {
+    if !groups.is_empty() || in_class || ranges.is_empty() {
         return None;
     }
     ranges.push(start..units.len());

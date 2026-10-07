@@ -54,7 +54,7 @@ fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
         "/(?:(?:a)+)+/.test('a')",
         "/(?:a*)?/.test('a')",
         "/(?:a[b]|c)+/.test('ab')",
-        "/(?:a|b)+/.test('a')",
+        "/(?:a|bc)+/.test('a')",
         "/((?:ab|c)+)/.test('a')",
         "/(?<x>a)+/.test('a')",
         "/(?:a)+/u.test('a')",

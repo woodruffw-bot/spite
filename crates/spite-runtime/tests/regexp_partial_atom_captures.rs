@@ -140,7 +140,7 @@ fn optional_work_aborts_and_remaining_variable_features_are_unsupported() {
     for source in [
         r"/(a+)(b)+/.test('ab')",
         r"/(a+b+)c/.test('abc')",
-        r"/((a|b)+)c/.test('abc')",
+        r"/((a|bc)+)c/.test('abc')",
         r"/(?<n>a+)b/.test('ab')",
         r"/(a+)\1/.test('aa')",
         r"/x(a+)y/u.test('xay')",

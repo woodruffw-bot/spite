@@ -122,7 +122,7 @@ fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/(?:(?:a|b)+)/.test('a')",
+        "/(?:(?:a|bc)+)/.test('a')",
         "/(?:(a+[b]+))/.test('ab')",
         "/(?:a+[b]+)/.test('ab')",
         "/(?:a(?=b))/.test('ab')",

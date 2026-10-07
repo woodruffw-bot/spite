@@ -1309,6 +1309,32 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Repeated literal-unit alternatives add three core regressions: an inspected
+168-record insta snapshot, an independent exhaustive candidate/count/capture
+oracle with outer multiline anchors, and 100,000 choices, deep partial captures,
+long successful and failed duplicate-choice runs, clones, exact bounds and optional
+construction work. The new snapshot accepts 120 records and rejects 48; four
+earlier partial-capture records now execute. Earlier accepted stored results and
+metadata remain unchanged. Node agrees on 143,582 stored results across nineteen
+snapshots, 169,144 additional match/capture comparisons and 21 runtime programs.
+Duplicate-choice failure comparisons use short Node inputs to avoid its
+exponential backtracking; native successful/failed long-run regressions retain
+their full inputs. Eight runtime regressions cover greedy/lazy/bounded endpoints,
+final-iteration/undefined slots, zero-iteration and partial/complete wrappers,
+noncapturing groups, assertions and pinned case, decoded literal controls and
+surrogates, top-level alternative order, original source/copies/global/sticky
+state, generic consumers and callbacks, intrinsic Arrays, collection, deep
+captures and long runs with unlimited defaults, and optional host aborts. Four
+earlier gap programs retain wider alternatives as the unsupported boundary;
+all 281 audited gap programs remain unsupported. Whole-fixture review enables
+no new whole programs; inventories and the pin remain unchanged. Other repeated
+choices, extra groups inside the repeated atom, additional quantifiers, named
+groups, backreferences and Unicode modes remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
