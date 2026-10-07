@@ -999,6 +999,24 @@ the resulting groups normally. Optional construction/result work remains
 explicitly charged; defaults remain unlimited. Named backreferences, unsupported
 conditional local choices and Unicode-mode matching remain pending.
 
+Ordinary unquantified literal concatenations also execute numbered references
+(DecimalEscape and BackreferenceMatcher, 22.2.2.9). A flat instruction program
+retains group opens/closes, canonicalized literal units and source-order reference
+indices. Complete source validation precedes compilation. Enclosing groups stay
+in this program because removing them would change reference numbering. Forward
+and currently open captures have no completed range, so references match empty;
+closed captures compare against their actual input units with ordinary case
+canonicalization. Repeated references do not expand source or compiled strings.
+
+Search reuses one capture/start buffer across increasing candidate starts, checks
+only the requested sticky start, and returns absolute input capture ranges to the
+existing result builder. Optional work charges each executed instruction, capture
+reset and actual input comparison; host aborts occur before lastIndex mutation.
+Storage and execution are iterative, including deeply nested groups, and contain
+no heap-object edges. Named group metadata and indices aliases remain shared with
+the ordinary result path. Named references, assertions/classes or alternatives
+combined with references, quantified references and Unicode matching remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

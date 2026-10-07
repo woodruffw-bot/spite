@@ -1626,6 +1626,29 @@ Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass. The harness-count assertion now verifies eleven
 unchanged helpers; its correction passes on both compilers.
 
+Ordinary literal concatenations now execute numbered backreferences with nested,
+empty, forward and self-referencing captures, multi-digit source-order slots,
+ordinary ignore-case comparison and exact UTF-16 endpoints. Three core regressions
+cover an inspected 585-record insta snapshot, explicit capture ranges, 100,000
+nested groups and references, compact potentially exponential reference chains,
+and fallible opted-in work. Six runtime regressions cover an inspected 25-record
+result snapshot, original input case, named groups and indices aliases, global/
+sticky state, generic consumers, source copies and collection, deep native layouts,
+and explicit search aborts before lastIndex writes or JavaScript handlers.
+Node agrees with all 585 core records, 25 result records, 60,240 fresh match/capture
+range comparisons and eleven runtime programs. Every runtime target and Clippy
+with warnings denied passes. Six prior numbered-reference gap controls now retain
+unsupported quantified compositions; all 355 audited gap programs remain
+unsupported. Named references, reference compositions with assertions/classes,
+alternatives or quantifiers, and Unicode matching remain pending. This native
+implementation adds no upstream fixtures or fixture credit; inventories, the pin,
+dependencies and unlimited defaults are unchanged.
+
+Stable and minimum-supported Rust pass all 13,526 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

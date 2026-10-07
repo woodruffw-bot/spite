@@ -5,8 +5,8 @@ use crate::{
     object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpMatcherBody, RegExpNamedGroup},
 };
 use spite_core::{
-    DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
-    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
+    DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpBackreferenceMatcher,
+    RegExpCharacterMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
@@ -181,11 +181,26 @@ impl Realm {
             Ok((JsString::from_code_units(normalized), Arc::from(groups)))
         })?;
         let mut enclosing_captures = 0;
-        let matcher = if flags
+        let unicode = flags
             .code_units()
             .iter()
-            .any(|&unit| matches!(unit, 0x75 | 0x76))
-        {
+            .any(|&unit| matches!(unit, 0x75 | 0x76));
+        // References use the complete capture layout: removing an enclosing
+        // group would change DecimalEscape numbering and self-reference state.
+        let references = if unicode {
+            None
+        } else {
+            self.object_work(span, |_, budget| {
+                RegExpBackreferenceMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    |work| budget.charge(work),
+                )
+            })?
+        };
+        let matcher = if let Some(matcher) = references {
+            Some(RegExpMatcherBody::Backreferences(matcher))
+        } else if unicode {
             None
         } else {
             let matching_source = if capture_source.code_units().first() == Some(&0x28) {

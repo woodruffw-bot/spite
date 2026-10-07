@@ -2,17 +2,18 @@
 
 use super::{Error, Objects};
 use spite_core::{
-    JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher, RegExpDisjunctionMatcher,
-    RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher, RegExpRepeatedContinuationMatcher,
-    RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher, RegExpRepeatedSequenceMatcher,
-    RegExpSequenceMatcher,
+    JsString, RegExpAnchoredMatcher, RegExpBackreferenceMatcher, RegExpCharacterMatcher,
+    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
+    RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub(crate) enum RegExpMatcherBody {
+    Backreferences(RegExpBackreferenceMatcher),
     Literal(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
     Character(RegExpCharacterMatcher),
@@ -39,6 +40,7 @@ pub(crate) struct RegExpMatcher {
 impl RegExpMatcher {
     pub fn new(body: RegExpMatcherBody, enclosing_captures: usize) -> Self {
         let inner = match &body {
+            RegExpMatcherBody::Backreferences(m) => m.capture_count(),
             RegExpMatcherBody::Literal(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Character(_) => 0,
@@ -64,13 +66,37 @@ impl RegExpMatcher {
         }
     }
 
-    pub fn find<'a>(
+    pub fn find_with_work<'a, E>(
+        &'a self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpMatch<'a>>, E> {
+        if let RegExpMatcherBody::Backreferences(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: Some(found.captures),
+                    })
+                });
+        }
+        Ok(self.find_precharged(input, start, sticky))
+    }
+
+    fn find_precharged<'a>(
         &'a self,
         input: &JsString,
         start: usize,
         sticky: bool,
     ) -> Option<RegExpMatch<'a>> {
         let (range, branch) = match &self.body {
+            RegExpMatcherBody::Backreferences(_) => unreachable!("fallible reference dispatch"),
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::Anchored(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::Character(matcher) => (matcher.find(input, start, sticky)?, 0),
@@ -103,6 +129,7 @@ impl RegExpMatcher {
             matcher: self,
             branch,
             capture_count: self.capture_count(),
+            dynamic_captures: None,
         })
     }
     pub fn capture_count(&self) -> usize {
@@ -110,6 +137,8 @@ impl RegExpMatcher {
     }
     pub fn search_passes(&self, sticky: bool) -> usize {
         match &self.body {
+            // References charge actual operations through find_with_work.
+            RegExpMatcherBody::Backreferences(_) => 0,
             RegExpMatcherBody::Literal(_) => 1,
             RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
             RegExpMatcherBody::Character(_) => 1,
@@ -156,6 +185,7 @@ pub(crate) struct RegExpMatch<'a> {
     matcher: &'a RegExpMatcher,
     branch: usize,
     pub capture_count: usize,
+    dynamic_captures: Option<Box<[Option<Range<usize>>]>>,
 }
 
 impl RegExpMatch<'_> {
@@ -164,11 +194,15 @@ impl RegExpMatch<'_> {
         if index >= self.capture_count {
             return None;
         }
+        if let Some(captures) = &self.dynamic_captures {
+            return captures.get(index)?.clone();
+        }
         if index < self.matcher.enclosing_captures {
             return Some(self.range.clone());
         }
         let index = index - self.matcher.enclosing_captures;
         let fixed = match &self.matcher.body {
+            RegExpMatcherBody::Backreferences(_) => unreachable!("dynamic reference captures"),
             RegExpMatcherBody::Literal(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Character(_) => return None,
@@ -291,7 +325,8 @@ mod tests {
             data.matcher
                 .as_ref()
                 .unwrap()
-                .find(&source, 0, true)
+                .find_with_work(&source, 0, true, |_| Ok::<_, std::convert::Infallible>(()))
+                .unwrap()
                 .map(|found| found.range),
             Some(0..source.len())
         );

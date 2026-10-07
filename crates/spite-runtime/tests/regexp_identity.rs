@@ -56,7 +56,7 @@ fn class_quantifiers_assertions_and_backreferences_remain_distinct_from_identity
         r"/\s+[a]+/.test(' ')",
         r"/a+^b+/.test('ab')",
         r"/a+$b+/.test('ab')",
-        r"/(a)\1/.test('aa')",
+        r"/(a)\1+/.test('aa')",
     ] {
         assert!(
             matches!(

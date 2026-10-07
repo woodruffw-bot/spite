@@ -136,7 +136,9 @@ impl Realm {
                 }
                 Ok(())
             })?;
-            matcher.find(string, index, sticky)
+            self.object_work(span, |_, budget| {
+                matcher.find_with_work(string, index, sticky, |work| budget.charge(work))
+            })?
         };
         let Some(found) = found else {
             if update_index {
