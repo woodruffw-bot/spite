@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors, single-atom greedy/lazy quantifiers with fixed literal continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13494 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -897,13 +897,13 @@ empty groups, global/sticky state and strict writes, anchors and branch/outer
 capture composition, pinned flags, decoded escapes and ordinary-mode surrogate
 quantification, generic consumers and intrinsic Arrays, long copies after
 collection with unlimited defaults and optional work aborts. Earlier gap
-regressions retain nonliteral continuations and multiple quantifiers. Node
+regressions retain multiple quantifiers. Node
 agrees on all 68,328 range/capture comparisons, all 3,264 stored snapshot
 match/capture arrays and twenty runtime programs. Sticky accounting covers the
 complete remaining suffix; prefix search keeps its linear bound. The whole
 fixture review enables two unchanged greedy/lazy bounded-prefix programs,
 recorded in the separate fixture inventory above. The pin is unchanged.
-Multiple consuming quantifiers, nonliteral continuations, nested choices, named
+Multiple consuming quantifiers, nested choices, named
 groups, backreferences and Unicode modes remain pending.
 
 Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
@@ -949,11 +949,34 @@ Arrays, shared sets after collection and unlimited defaults. Optional budgets
 account for every nonsticky prefix atom; sticky runs check one prefix and keep
 full-body accounting. Node agrees on 151,110 range/capture comparisons, all
 8,748 stored arrays across the three prefix snapshots, and nineteen runtime
-programs. Earlier gap tests retain multiple quantifiers and nonliteral
-continuations. The whole fixture review enables no additional programs; the
+programs. Earlier gap tests retain multiple quantifiers. The whole fixture review enables no additional programs; the
 corpus, inventories and pin are unchanged. Repeated multi-atom groups, multiple
-quantifiers, nonliteral continuations, nested choices, named groups,
+quantifiers, nested choices, named groups,
 backreferences and Unicode modes remain pending.
+
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
+Quantified continuations now include fixed ordinary classes, class escapes
+and dots, with nested and empty captures. Three core regressions cover an
+inspected 99-record insta snapshot, an independent endpoint/repetition/capture
+oracle with empty and inverted sets, bounded greedy/lazy counts, 1,000 shared
+sets and captures, clones and optional preparation/search bounds. Twenty-seven
+records across nine earlier snapshots gain matching support; every earlier
+accepted match/capture value is unchanged. Eight runtime regressions cover
+earliest candidates, greedy/lazy endpoints, whole-run/final-iteration and fixed
+capture slots, undefined versus empty participation, global/sticky state and
+strict writes, prefix/outer capture, anchor and branch composition, pinned flags,
+UTF-16 offsets, generic consumers, intrinsic Arrays and 1,000-capture results
+after collection with unlimited defaults. Sticky work covers every continuation
+atom over all candidate endpoints. Node agrees on 391,572 independent
+match/capture comparisons, all 23,375 stored arrays across affected snapshots,
+and nineteen runtime programs. Earlier gap tests retain their coercion and host
+ordering assertions with unsupported multi-quantifier Patterns. The whole
+fixture review enables no further programs; the corpus, inventories and pin are
+unchanged. Repeated multi-atom groups, multiple quantifiers, embedded choices,
+named groups, backreferences and Unicode modes remain pending.
 
 Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories

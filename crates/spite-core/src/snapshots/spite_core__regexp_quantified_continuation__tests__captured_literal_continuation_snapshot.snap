@@ -74,9 +74,9 @@ expression: rows
 "a+(b|c)" i=false s=false unsupported
 "a+(b|c)" i=true s=false unsupported
 "a+(b|c)" i=false s=true unsupported
-"a+([b])" i=false s=false unsupported
-"a+([b])" i=true s=false unsupported
-"a+([b])" i=false s=true unsupported
+"a+([b])" i=false s=false captures=1 ""@0/false:None:None ""@1/true:None:None "a"@0/false:None:None "a"@1/true:None:None "aaab"@0/false:Some(0..4):Some([Some(3..4)]) "aaab"@1/true:Some(1..4):Some([Some(3..4)]) "abab"@0/false:Some(0..2):Some([Some(1..2)]) "abab"@1/true:None:None "ab"@0/false:Some(0..2):Some([Some(1..2)]) "ab"@1/true:None:None "b"@0/false:None:None "b"@1/true:None:None "ABab"@0/false:Some(2..4):Some([Some(3..4)]) "ABab"@1/true:None:None "12x"@0/false:None:None "12x"@1/true:None:None "a\u000ab"@0/false:None:None "a\u000ab"@1/true:None:None "x"@0/false:None:None "x"@1/true:None:None "aa\u00b5"@0/false:None:None "aa\u00b5"@1/true:None:None "\ud800\udc00"@0/false:None:None "\ud800\udc00"@1/true:None:None
+"a+([b])" i=true s=false captures=1 ""@0/false:None:None ""@1/true:None:None "a"@0/false:None:None "a"@1/true:None:None "aaab"@0/false:Some(0..4):Some([Some(3..4)]) "aaab"@1/true:Some(1..4):Some([Some(3..4)]) "abab"@0/false:Some(0..2):Some([Some(1..2)]) "abab"@1/true:None:None "ab"@0/false:Some(0..2):Some([Some(1..2)]) "ab"@1/true:None:None "b"@0/false:None:None "b"@1/true:None:None "ABab"@0/false:Some(0..2):Some([Some(1..2)]) "ABab"@1/true:None:None "12x"@0/false:None:None "12x"@1/true:None:None "a\u000ab"@0/false:None:None "a\u000ab"@1/true:None:None "x"@0/false:None:None "x"@1/true:None:None "aa\u00b5"@0/false:None:None "aa\u00b5"@1/true:None:None "\ud800\udc00"@0/false:None:None "\ud800\udc00"@1/true:None:None
+"a+([b])" i=false s=true captures=1 ""@0/false:None:None ""@1/true:None:None "a"@0/false:None:None "a"@1/true:None:None "aaab"@0/false:Some(0..4):Some([Some(3..4)]) "aaab"@1/true:Some(1..4):Some([Some(3..4)]) "abab"@0/false:Some(0..2):Some([Some(1..2)]) "abab"@1/true:None:None "ab"@0/false:Some(0..2):Some([Some(1..2)]) "ab"@1/true:None:None "b"@0/false:None:None "b"@1/true:None:None "ABab"@0/false:Some(2..4):Some([Some(3..4)]) "ABab"@1/true:None:None "12x"@0/false:None:None "12x"@1/true:None:None "a\u000ab"@0/false:None:None "a\u000ab"@1/true:None:None "x"@0/false:None:None "x"@1/true:None:None "aa\u00b5"@0/false:None:None "aa\u00b5"@1/true:None:None "\ud800\udc00"@0/false:None:None "\ud800\udc00"@1/true:None:None
 "(a+b)" i=false s=false unsupported
 "(a+b)" i=true s=false unsupported
 "(a+b)" i=false s=true unsupported

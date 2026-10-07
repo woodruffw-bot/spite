@@ -11,7 +11,7 @@ use std::{ops::Range, sync::Arc};
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
 /// contains literal characters, sets, dots and unquantified ordinary groups,
 /// including empty captures; the body reuses the complete quantified
-/// atom/literal-continuation grammar. Search streams prefix occurrences and
+/// atom/fixed-continuation grammar. Search streams prefix occurrences and
 /// continuation candidates in monotone order, without allocation or recursion.
 /// Literal prefixes search linearly; fixed sequences inspect at most their atom
 /// count at each input candidate. Sticky search checks only one prefix.
@@ -163,13 +163,14 @@ impl RegExpPrefixedMatcher {
 
     /// Conservative consuming passes for optional work accounting. Literal
     /// prefixes retain linear KMP search; sequences inspect every prefix atom at
-    /// most once per input candidate, in addition to the two body passes.
+    /// most once per input candidate, alongside the body and continuation passes.
     pub fn search_passes(&self, sticky: bool) -> usize {
-        match &self.0.prefix {
-            Prefix::Literal(_) => 3,
-            Prefix::Sequence(_) if sticky => 3,
-            Prefix::Sequence(m) => m.atom_count().saturating_add(2),
-        }
+        let prefix_passes = match &self.0.prefix {
+            Prefix::Literal(_) => 1,
+            Prefix::Sequence(_) if sticky => 1,
+            Prefix::Sequence(m) => m.atom_count(),
+        };
+        prefix_passes.saturating_add(self.0.body.search_passes())
     }
 
     /// Finds the earliest whole prefix match and its greedy/lazy body endpoint.

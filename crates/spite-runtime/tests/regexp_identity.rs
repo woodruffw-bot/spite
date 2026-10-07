@@ -51,9 +51,9 @@ fn class_quantifiers_assertions_and_backreferences_remain_distinct_from_identity
         r"/\d\d/.test('11')&&!/\d\d/.test('1')&&/\w\w/.test('ab')&&!/\w\w/.test('a')&&/\s\s/.test('  ')&&!/\s\s/.test(' ')",
     );
     for source in [
-        r"/\d+[a]/.test('1')",
-        r"/\w+[a]/.test('a')",
-        r"/\s+[a]/.test(' ')",
+        r"/\d+[a]+/.test('1')",
+        r"/\w+[a]+/.test('a')",
+        r"/\s+[a]+/.test(' ')",
         r"/\b/.test('a')",
         r"/\B/.test('a')",
         r"/(a)\1/.test('aa')",

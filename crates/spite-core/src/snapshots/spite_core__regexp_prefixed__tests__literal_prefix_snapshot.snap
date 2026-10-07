@@ -116,9 +116,9 @@ expression: rows
 "ab+(c|d)" i=false s=false unsupported
 "ab+(c|d)" i=true s=false unsupported
 "ab+(c|d)" i=false s=true unsupported
-"ab+[c]" i=false s=false unsupported
-"ab+[c]" i=true s=false unsupported
-"ab+[c]" i=false s=true unsupported
+"ab+[c]" i=false s=false captures=0 ""@0/false:None ""@1/true:None "a"@0/false:None "a"@1/true:None "ab"@0/false:None "ab"@1/true:None "abb"@0/false:None "abb"@1/true:None "abbb"@0/false:None "abbb"@1/true:None "aaa"@0/false:None "aaa"@1/true:None "aaaa"@0/false:None "aaaa"@1/true:None "aab"@0/false:None "aab"@1/true:None "aabab"@0/false:None "aabab"@1/true:None "xaab"@0/false:None "xaab"@1/true:None "xay"@0/false:None "xay"@1/true:None "xy"@0/false:None "xy"@1/true:None "12x"@0/false:None "12x"@1/true:None "a12x"@0/false:None "a12x"@1/true:None "ΜAA"@0/false:None "ΜAA"@1/true:None "x\n"@0/false:None "x\n"@1/true:None "abc"@0/false:Some((0..3, [])) "abc"@1/true:None
+"ab+[c]" i=true s=false captures=0 ""@0/false:None ""@1/true:None "a"@0/false:None "a"@1/true:None "ab"@0/false:None "ab"@1/true:None "abb"@0/false:None "abb"@1/true:None "abbb"@0/false:None "abbb"@1/true:None "aaa"@0/false:None "aaa"@1/true:None "aaaa"@0/false:None "aaaa"@1/true:None "aab"@0/false:None "aab"@1/true:None "aabab"@0/false:None "aabab"@1/true:None "xaab"@0/false:None "xaab"@1/true:None "xay"@0/false:None "xay"@1/true:None "xy"@0/false:None "xy"@1/true:None "12x"@0/false:None "12x"@1/true:None "a12x"@0/false:None "a12x"@1/true:None "ΜAA"@0/false:None "ΜAA"@1/true:None "x\n"@0/false:None "x\n"@1/true:None "abc"@0/false:Some((0..3, [])) "abc"@1/true:None
+"ab+[c]" i=false s=true captures=0 ""@0/false:None ""@1/true:None "a"@0/false:None "a"@1/true:None "ab"@0/false:None "ab"@1/true:None "abb"@0/false:None "abb"@1/true:None "abbb"@0/false:None "abbb"@1/true:None "aaa"@0/false:None "aaa"@1/true:None "aaaa"@0/false:None "aaaa"@1/true:None "aab"@0/false:None "aab"@1/true:None "aabab"@0/false:None "aabab"@1/true:None "xaab"@0/false:None "xaab"@1/true:None "xay"@0/false:None "xay"@1/true:None "xy"@0/false:None "xy"@1/true:None "12x"@0/false:None "12x"@1/true:None "a12x"@0/false:None "a12x"@1/true:None "ΜAA"@0/false:None "ΜAA"@1/true:None "x\n"@0/false:None "x\n"@1/true:None "abc"@0/false:Some((0..3, [])) "abc"@1/true:None
 "ab+(?<n>c)" i=false s=false unsupported
 "ab+(?<n>c)" i=true s=false unsupported
 "ab+(?<n>c)" i=false s=true unsupported

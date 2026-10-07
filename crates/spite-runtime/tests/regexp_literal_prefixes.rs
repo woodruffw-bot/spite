@@ -134,7 +134,7 @@ fn optional_work_abort_and_complete_unsupported_prefixes_remain_distinct() {
         "/a[b]c+d+/.test('abc')",
         "/ab+c+/.test('abc')",
         "/ab+(c|d)/.test('abc')",
-        "/ab+[c]/.test('abc')",
+        "/ab+[c]+/.test('abc')",
         "/ab+/u.test('ab')",
     ] {
         assert!(

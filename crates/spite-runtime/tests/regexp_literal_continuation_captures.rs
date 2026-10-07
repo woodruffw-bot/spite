@@ -113,9 +113,9 @@ fn opted_in_host_aborts_and_unsupported_suffixes_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/a+([b])/.test('ab')",
+        "/a+([b]+)/.test('ab')",
         "/a+(b|c)/.test('ab')",
-        "/(a+[b])/.test('ab')",
+        "/(a+[b]+)/.test('ab')",
         "/a+(b+)/.test('ab')",
         "/a+(?<x>b)/.test('ab')",
         "/a+(b)/u.test('ab')",

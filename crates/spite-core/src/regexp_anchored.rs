@@ -149,7 +149,7 @@ impl RegExpAnchoredMatcher {
     pub fn search_passes(&self, sticky: bool) -> usize {
         match &self.body {
             Body::Literal(_) => 2,
-            Body::Quantified(_) => 3,
+            Body::Quantified(m) => m.search_passes().saturating_add(1),
             Body::Prefixed(m) => m.search_passes(sticky).saturating_add(1),
             Body::Sequence(matcher) => {
                 if sticky {
@@ -659,7 +659,7 @@ mod tests {
         assert!(matches!(result, Err("host abort")));
         assert!(
             RegExpAnchoredMatcher::compile_with_work(
-                &JsString::from("^[a]+[b]$"),
+                &JsString::from("^[a]+[b]+$"),
                 false,
                 false,
                 false,

@@ -96,7 +96,7 @@ impl Alternative {
             Self::Anchored(m) => m.search_passes(sticky),
             Self::Prefixed(m) => m.search_passes(sticky),
             Self::Quantified(_) => 1,
-            Self::QuantifiedContinuation(_) => 2,
+            Self::QuantifiedContinuation(m) => m.search_passes(),
         }
     }
 }

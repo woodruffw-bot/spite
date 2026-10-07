@@ -90,7 +90,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Character(_) => 1,
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
-            RegExpMatcherBody::QuantifiedContinuation(_) => 2,
+            RegExpMatcherBody::QuantifiedContinuation(m) => m.search_passes(),
             RegExpMatcherBody::Sequence(matcher) => {
                 if sticky {
                     1

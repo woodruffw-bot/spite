@@ -204,15 +204,16 @@ Unicode-mode matching remains pending.
 Top-level ordinary Disjunction compilation (22.2.2.3) accepts alternatives that
 each compile completely as a literal, fixed character-set sequence, outer-
 anchored sequence, quantified atom or quantified prefix with a fixed
-literal continuation. The iterative delimiter scan skips escaped units and treats
+ordinary continuation. The iterative delimiter scan skips escaped units and treats
 ordinary bracket classes as opaque, including their bars and parentheses.
 Nested capturing/noncapturing groups are tracked without native recursion;
 nested choices and unsupported productions reject the whole plan. Each branch
 reuses its existing matcher. The earliest start wins, with source order breaking
 ties, including empty alternatives; match length does not break a tie.
 Compilation never expands combinations; plans share immutable storage and
-matching allocates nothing. Literal and quantified branches retain linear search;
-class and anchored branches retain their candidate and boundary bounds.
+matching allocates nothing. Literal branches and quantified atoms with literal
+continuations retain linear search; fixed sequences retain their per-candidate
+atom bounds, and anchors add boundary scans.
 Opted-in accounting covers every branch's search passes before execution and
 reaches character-set construction. Sticky branches inspect one start with their
 original boundary semantics. A compiled flag records whether any quantified
@@ -241,16 +242,17 @@ and relative captures. DotAll, ignore-case and multiline settings remain
 independent. Optional construction work reaches the class compiler, and optional
 search passes cover consuming terms plus boundaries while sticky mode checks
 one candidate.
-Quantified atoms and quantified prefixes with a fixed literal continuation
+Quantified atoms and quantified prefixes with a fixed ordinary continuation
 also accept these outer anchors. Standalone repeated atoms reuse the continuation
 scan with an empty literal, exposing every admissible repetition endpoint. The
 scan advances an additional monotone cursor to the next permitted input/line
-start and filters literal endpoints by the end assertion before selecting the
+start and filters continuation endpoints by the end assertion before selecting the
 shortest lazy or longest greedy repetition at the earliest start. It never
 commits an unconstrained match and then rejects its final length. Membership,
-literal search and boundary advancement each visit input linearly, without
-allocation, expanded counts or native recursion. Optional search accounting
-covers all three scans even at a single sticky start, including when the anchored
+literal search and boundary advancement each visit input linearly; set/dot
+continuations retain their fixed-sequence bound. Search needs no allocation,
+expanded counts or native recursion. Optional work covers all consuming and
+boundary scans even at a single sticky start, including when the anchored
 plan appears inside top-level alternatives. Fixed and quantified captured
 branches share their existing global slot layout.
 Compilation respects trailing escape parity; internal assertions and
@@ -411,7 +413,7 @@ Alternatives retain their existing source-order choice and global capture slots.
 Optional search work conservatively covers three consuming passes, or four
 with outer anchors, including the complete suffix for sticky runs. Default
 quotas remain disabled. Multiple
-consuming quantifiers, nonliteral continuations and nested choices remain
+consuming quantifiers and nested choices remain
 pending.
 
 Ordinary capturing and noncapturing groups may also form the fixed literal
@@ -437,13 +439,31 @@ sequence matcher exposes an allocation-free occurrence cursor, checking each
 overlapping candidate once; the body consumes that monotone stream through its
 existing endpoint and repetition constraints. Literal prefixes retain linear
 search. Set/dot prefixes require at most input length times prefix atom count,
-plus the linear body passes; optional work metadata includes every prefix atom.
+plus the body and continuation bounds; optional work metadata includes every prefix atom.
 Sticky search checks one prefix and accounts conservatively for three input
-passes, plus one with anchors. Capture order, UTF-16 widths, pinned Canonicalize,
+passes with literal continuations, plus one with anchors. Capture order, UTF-16 widths, pinned Canonicalize,
 inversion and dotAll reuse existing plans. No candidate lists, recursive plans
-or default quotas are introduced. Nonliteral continuations, repeated multi-atom
+or default quotas are introduced. Repeated multi-atom
 groups, multiple consuming quantifiers, embedded choices, backreferences and
 Unicode modes remain pending.
+
+Fixed ordinary classes, class escapes and dots can also follow the repeated
+atom (CompileSubpattern, 22.2.2.3). The continuation retains either its literal
+KMP plan or the shared fixed-sequence plan, including immutable sets and static
+capture ranges. Occurrences still arrive in monotone start order, so the existing
+run, bounds, start and end predicates select earliest starts before greedy/lazy
+endpoints. Decoded continuation width identifies the repetition endpoint for
+whole-run and final-iteration captures; fixed suffix slots translate from there.
+Prefix, repeated-body and suffix captures compose without per-candidate storage.
+Literal continuation search remains linear. Set/dot continuation work is bounded
+by input length times continuation atom count, plus one membership pass. This
+bound applies to sticky repetition too, because it can inspect every endpoint.
+Fixed prefixes and outer anchors add their existing bounds; optional metadata
+reaches the full runtime and alternative plans. Complete unsupported continuations
+reject before constructing the repeated set. No recursion, expanded counts,
+candidate lists or default quotas are added. Repeated multi-atom groups, multiple
+quantifiers, embedded choices, assertions, backreferences and Unicode modes
+remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

@@ -86,9 +86,9 @@ expression: rows
 "()a+u|x" i=false s=false unsupported
 "()a+u|x" i=true s=false unsupported
 "()a+u|x" i=false s=true unsupported
-"(a)b+[c]" i=false s=false unsupported
-"(a)b+[c]" i=true s=false unsupported
-"(a)b+[c]" i=false s=true unsupported
+"(a)b+[c]" i=false s=false captures=1 ""@0/false:None ""@0/true:None ""@1/true:None "a"@0/false:None "a"@0/true:None "a"@1/true:None "ab"@0/false:None "ab"@0/true:None "ab"@1/true:None "abb"@0/false:None "abb"@0/true:None "abb"@1/true:None "abbc"@0/false:Some((0..4, [Some(0..1)])) "abbc"@0/true:Some((0..4, [Some(0..1)])) "abbc"@1/true:None "aaaa"@0/false:None "aaaa"@0/true:None "aaaa"@1/true:None "xabbc"@0/false:Some((1..5, [Some(1..2)])) "xabbc"@0/true:None "xabbc"@1/true:Some((1..5, [Some(1..2)])) "x"@0/false:None "x"@0/true:None "x"@1/true:None "ΜAA"@0/false:None "ΜAA"@0/true:None "ΜAA"@1/true:None "💩aa"@0/false:None "💩aa"@0/true:None "💩aa"@1/true:None "\nAA"@0/false:None "\nAA"@0/true:None "\nAA"@1/true:None
+"(a)b+[c]" i=true s=false captures=1 ""@0/false:None ""@0/true:None ""@1/true:None "a"@0/false:None "a"@0/true:None "a"@1/true:None "ab"@0/false:None "ab"@0/true:None "ab"@1/true:None "abb"@0/false:None "abb"@0/true:None "abb"@1/true:None "abbc"@0/false:Some((0..4, [Some(0..1)])) "abbc"@0/true:Some((0..4, [Some(0..1)])) "abbc"@1/true:None "aaaa"@0/false:None "aaaa"@0/true:None "aaaa"@1/true:None "xabbc"@0/false:Some((1..5, [Some(1..2)])) "xabbc"@0/true:None "xabbc"@1/true:Some((1..5, [Some(1..2)])) "x"@0/false:None "x"@0/true:None "x"@1/true:None "ΜAA"@0/false:None "ΜAA"@0/true:None "ΜAA"@1/true:None "💩aa"@0/false:None "💩aa"@0/true:None "💩aa"@1/true:None "\nAA"@0/false:None "\nAA"@0/true:None "\nAA"@1/true:None
+"(a)b+[c]" i=false s=true captures=1 ""@0/false:None ""@0/true:None ""@1/true:None "a"@0/false:None "a"@0/true:None "a"@1/true:None "ab"@0/false:None "ab"@0/true:None "ab"@1/true:None "abb"@0/false:None "abb"@0/true:None "abb"@1/true:None "abbc"@0/false:Some((0..4, [Some(0..1)])) "abbc"@0/true:Some((0..4, [Some(0..1)])) "abbc"@1/true:None "aaaa"@0/false:None "aaaa"@0/true:None "aaaa"@1/true:None "xabbc"@0/false:Some((1..5, [Some(1..2)])) "xabbc"@0/true:None "xabbc"@1/true:Some((1..5, [Some(1..2)])) "x"@0/false:None "x"@0/true:None "x"@1/true:None "ΜAA"@0/false:None "ΜAA"@0/true:None "ΜAA"@1/true:None "💩aa"@0/false:None "💩aa"@0/true:None "💩aa"@1/true:None "\nAA"@0/false:None "\nAA"@0/true:None "\nAA"@1/true:None
 "(a(b+))" i=false s=false unsupported
 "(a(b+))" i=true s=false unsupported
 "(a(b+))" i=false s=true unsupported

@@ -97,8 +97,8 @@ fn internal_assertions_choices_quantifiers_and_unicode_remain_explicit_gaps() {
     for source in [
         "/a(^[a])/.test('a')",
         "/[a]^b/.test('ab')",
-        "/^[a]+[b]|b$/.test('a')",
-        "/^[a]*[b]$/.test('a')",
+        "/^[a]+[b]+|b$/.test('a')",
+        "/^[a]*[b]+$/.test('a')",
         "/^[a]$/u.test('a')",
         "/^[a]$/v.test('a')",
     ] {

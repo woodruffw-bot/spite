@@ -100,10 +100,10 @@ fn opted_in_construction_and_search_work_abort_outside_javascript() {
 #[test]
 fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps() {
     for source in [
-        "/a[a]+[a]/.test('aa')",
+        "/a[a]+[a]+/.test('aa')",
         "/([a]b)*/.test('a')",
-        "/[a]*[b]/.test('a')",
-        "/[a]+[b]|b/.test('a')",
+        "/[a]*[b]+/.test('a')",
+        "/[a]+[b]+|b/.test('a')",
         "/[a]/u.test('a')",
         "/./v.test('a')",
         r"/\b/.test('a')",
