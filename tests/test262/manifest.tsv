@@ -7054,3 +7054,4 @@ script-pass	8502bec728e5b0be039d97c812a0d3276b7b51f529a8c7a0b867e89e433fbe3c	tes
 script-pass	98709ba139639ba152cf95ae7a55b242b37514dd0302032eef02af89052e5e86	test/built-ins/RegExp/named-groups/non-unicode-property-names.js
 script-pass	2cb9213ef2cb5485ac869d0f6df537c9df0e3be5960e98886e69efebd1d83523	test/built-ins/RegExp/named-groups/unicode-property-names-invalid.js
 script-pass	88b3521cba2c754bcf78c2007af9d417780a66a97717d4bc606d67748741d274	test/built-ins/RegExp/named-groups/non-unicode-match.js
+script-pass	4789560eb118a7ca22abf9fd69a4be532836da1ba80edff5fbdc08fffdbc2b6e	test/built-ins/RegExp/named-groups/non-unicode-references.js

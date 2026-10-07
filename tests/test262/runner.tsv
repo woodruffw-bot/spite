@@ -7024,3 +7024,4 @@ test/built-ins/RegExp/named-groups/non-unicode-property-names-invalid.js	-	-	-
 test/built-ins/RegExp/named-groups/non-unicode-property-names.js	-	-	-
 test/built-ins/RegExp/named-groups/unicode-property-names-invalid.js	-	-	-
 test/built-ins/RegExp/named-groups/non-unicode-match.js	-	-	-
+test/built-ins/RegExp/named-groups/non-unicode-references.js	-	-	-
