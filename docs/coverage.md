@@ -1125,6 +1125,19 @@ tests and debug-stack checks, including the fresh-array object regressions.
 Formatting, Clippy, policy, fixture inventories and all pinned generator checks
 also pass.
 
+Equal participating RegExp capture ranges now share immutable String storage.
+Three runtime regressions cover 100,000 enclosing captures of a 200,001-unit
+match with unlimited defaults, original/copy state and collection; different and
+equal UTF-16 ranges, lone surrogates, own undefined slots, descriptors and distinct
+indices Arrays; and optional logical output-work aborts after lastIndex without
+running language handlers. All three complete in 1.51 seconds. The earlier
+outer-assertion prototype was killed while allocating repeated copies; its exact
+stress case remains in the prototype. Grammar, corpus inventories and pin are
+unchanged.
+Stable and minimum-supported Rust pass the complete 13,494-variant corpus,
+workspace/documentation tests and debug native-stack checks. Formatting, Clippy,
+dependency policy, fixture inventories and all offline generator checks pass.
+
 Consuming repeated-group assertions have three core regressions: an inspected
 252-record insta snapshot, an independent exhaustive iteration/neighbor/capture
 oracle, and 100,000 collapsed assertion captures, large multiline runs, cloned

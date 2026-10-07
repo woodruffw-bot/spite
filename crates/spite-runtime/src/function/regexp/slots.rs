@@ -171,13 +171,25 @@ impl Realm {
             .try_reserve_exact(count)
             .map_err(|_| super::regexp_output_limit(span))?;
         let matched = self.regexp_substring(&string.code_units()[found.range.clone()], span)?;
+        let mut previous = (found.range.clone(), matched.clone());
         elements.push(matched);
         self.regexp_match_property(&array, "groups", Value::Undefined, span)?;
         // Every source-order group has an own element. A group in an unselected
         // alternative is undefined, distinct from a participating empty capture.
         for index in 0..found.capture_count {
             let value = if let Some(capture) = found.capture(index) {
-                self.regexp_substring(&string.code_units()[capture], span)?
+                // Enclosing groups commonly share the same long range. Strings
+                // are immutable values, so retain one allocation for successive
+                // equal participating ranges, charging every capture as before.
+                if capture == previous.0 {
+                    self.regexp_string_work(capture.len(), span)?;
+                    previous.1.clone()
+                } else {
+                    let value =
+                        self.regexp_substring(&string.code_units()[capture.clone()], span)?;
+                    previous = (capture, value.clone());
+                    value
+                }
             } else {
                 Value::Undefined
             };

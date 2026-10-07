@@ -229,6 +229,16 @@ impl Realm {
     }
 
     fn regexp_string_buffer(&mut self, length: usize, span: Span) -> Result<Vec<u16>, Error> {
+        self.regexp_string_work(length, span)?;
+        let mut result = Vec::new();
+        result
+            .try_reserve_exact(length)
+            .map_err(|_| regexp_output_limit(span))?;
+        Ok(result)
+    }
+
+    // Shared immutable output still obeys each logical substring's host limits.
+    fn regexp_string_work(&mut self, length: usize, span: Span) -> Result<(), Error> {
         if self
             .limits
             .max_string_units
@@ -236,12 +246,7 @@ impl Realm {
         {
             return Err(regexp_output_limit(span));
         }
-        self.object_work(span, |_, budget| budget.charge(length))?;
-        let mut result = Vec::new();
-        result
-            .try_reserve_exact(length)
-            .map_err(|_| regexp_output_limit(span))?;
-        Ok(result)
+        self.object_work(span, |_, budget| budget.charge(length))
     }
 }
 

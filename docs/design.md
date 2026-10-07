@@ -584,6 +584,14 @@ counts are introduced. Assertions around these repeated groups,
 surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
 
+RegExpBuiltinExec shares an immutable String with the previous participating
+capture when their UTF-16 ranges are equal (22.2.7.2). This includes deeply nested
+enclosing captures that all span one long match. Range comparison uses constant
+space and does not compare or copy substring contents. Every logical substring
+still checks the optional String limit and consumes the same optional output work;
+lastIndex ordering, own result properties and distinct mutable indices Arrays
+retain their specified behavior. Different ranges use the existing checked copy.
+
 An explicit flag-dependent repeated-group entry point accepts internal
 word/input/line assertions and fixed consuming groups of at least one UTF-16
 unit (CompileAssertion, 22.2.2.4; RepeatMatcher, 22.2.2.3.1). Preparation and each
