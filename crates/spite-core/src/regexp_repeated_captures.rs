@@ -326,9 +326,10 @@ pub(crate) fn literal_choice_atom(units: &[u16]) -> Option<Vec<u16>> {
     if units.first() != Some(&40) || units.last() != Some(&41) {
         return None;
     }
-    let header = ordinary_group_end(units, 0)?;
-    let end = units.len() - 1;
-    let mut index = header;
+    let source = JsString::from_code_units(units.to_vec());
+    let group = crate::regexp_outer_group_body(&source)?;
+    let end = group.body.end;
+    let mut index = group.body.start;
     let mut characters = Vec::new();
     while index < end {
         let unit = units[index];
@@ -355,7 +356,11 @@ pub(crate) fn literal_choice_atom(units: &[u16]) -> Option<Vec<u16>> {
     if characters.len() < 2 {
         return None;
     }
-    let mut atom = units[..header].to_vec();
+    let mut atom = if group.captures == 0 {
+        vec![40, 63, 58]
+    } else {
+        vec![40; group.captures]
+    };
     atom.push(91);
     for unit in characters {
         atom.extend_from_slice(&[92, 117]);
@@ -364,7 +369,8 @@ pub(crate) fn literal_choice_atom(units: &[u16]) -> Option<Vec<u16>> {
             atom.push(if digit < 10 { 48 + digit } else { 87 + digit });
         }
     }
-    atom.extend_from_slice(&[93, 41]);
+    atom.push(93);
+    atom.extend(std::iter::repeat_n(41, group.captures.max(1)));
     Some(atom)
 }
 
@@ -372,6 +378,127 @@ pub(crate) fn literal_choice_atom(units: &[u16]) -> Option<Vec<u16>> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn enclosing_repeated_unit_choice_captures_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "((a|b))+",
+            "((a|b))+?",
+            "((a|b))*",
+            "((a|b)){0}",
+            "((a|b)){1,2}",
+            "((a|b)){1,2}?",
+            "((a|b))+(b)",
+            "((a|b))+?(b)",
+            "((a|b))*([ab]b)",
+            "(((a|b)))+",
+            "((?:a|b))+",
+            "(?:(a|b))+",
+            "(?:(?:a|b))+",
+            "(x)(((a|b))+)(y)",
+            "((x)((a|b))+)(y)",
+            "(x)(((a|b))+(y))",
+            "()((a|b))+()",
+            "(())(((a|b))*)()c()",
+            "x(?:(a|b))+(y)",
+            r"((\x61|\u0062))+(c)",
+            r"((\n|\r))+($)",
+            r"(^)(((a|b))+)($)(\n)",
+            r"(\b)(((a|b))+)(c)\b",
+            "((µ|Μ))+(x)",
+            "((ſ|S))+(x)",
+            r"((\uD800|\uDC00))+(c)",
+            r"((\uDCA9|a))+(b)",
+            "((a|b)){999999999999999999999999999999}(c)",
+            "((a|b)){0,999999999999999999999999999999}(c)",
+            "((ab|a))+",
+            "((a|))+",
+            "((a)|(b))+",
+            "((a|b)())+",
+            "(x(a|b))+",
+            "((a|[b]))+",
+            "((a|.))+",
+            r"((a|\b))+",
+            "((a|b))+(c)+",
+            "(?<n>(a|b))+",
+            r"((a|b))+\1",
+            "((a|b))+|c",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (false, true, false),
+                (true, true, false),
+                (false, true, true),
+            ] {
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) =
+                    RegExpRepeatedCaptureMatcher::compile(&JsString::from(source), i, m, s)
+                {
+                    write!(rows, " captures={}", matcher.capture_count()).unwrap();
+                    for input in [
+                        "", "a", "b", "ab", "abab", "abb", "ababc", "xay", "xababy", "xy", "c",
+                        "x\nab\n", "\n\r", "µΜµx", "ſSsx", "💩aaab",
+                    ] {
+                        let input = JsString::from(input);
+                        for (start, sticky) in [
+                            (0, false),
+                            (1, false),
+                            (0, true),
+                            (1, true),
+                            (input.len(), true),
+                        ] {
+                            let result = matcher.find(&input, start, sticky).map(|r| {
+                                let captures: Vec<_> = (0..matcher.capture_count())
+                                    .map(|i| matcher.capture_range(i, &r))
+                                    .collect();
+                                (r, captures)
+                            });
+                            write!(rows, " {input:?}@{start}/{sticky}:{result:?}").unwrap();
+                        }
+                    }
+                } else {
+                    write!(rows, " unsupported").unwrap();
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn deep_repeated_choice_wrappers_have_linear_preparation_and_shared_captures() {
+        let source = format!("{}(a|b){}+(c)|x", "(".repeat(100_000), ")".repeat(100_000));
+        let matcher =
+            crate::RegExpDisjunctionMatcher::compile(&JsString::from(source.as_str()), false)
+                .unwrap();
+        let input = JsString::from(format!("{}c", "a".repeat(200_000)).as_str());
+        let (branch, range) = matcher.clone().find_branch(&input, 0, false).unwrap();
+        assert_eq!(range, 0..200_001);
+        assert_eq!(matcher.capture_count(), 100_002);
+        for index in [0, 99_999, 100_000] {
+            assert_eq!(
+                matcher.capture_range(branch, index, &range),
+                Some(199_999..200_000)
+            );
+        }
+        assert_eq!(
+            matcher.capture_range(branch, 100_001, &range),
+            Some(200_000..200_001)
+        );
+        let empty = RegExpRepeatedCaptureMatcher::compile(
+            &JsString::from("(((a|b))){0}(c)"),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        let range = empty.find(&JsString::from("c"), 0, true).unwrap();
+        for index in 0..3 {
+            assert_eq!(empty.capture_range(index, &range), None);
+        }
+        assert_eq!(empty.capture_range(3, &range), Some(0..1));
+    }
 
     #[test]
     fn repeated_literal_unit_choices_snapshot() {
@@ -1224,6 +1351,132 @@ mod tests {
                                                     }
                                                     let mut captures = vec![
                                                         Some(candidate..body),
+                                                        (count > 0).then(|| tail - 1..tail),
+                                                        Some(tail..finish),
+                                                        Some(finish..finish),
+                                                    ];
+                                                    captures.insert(0, Some(candidate..tail));
+                                                    captures.insert(0, Some(candidate..finish));
+                                                    if anchored {
+                                                        captures.insert(0, Some(candidate..finish));
+                                                    }
+                                                    Some((candidate..finish, captures))
+                                                })
+                                            });
+                                        let actual = if anchored {
+                                            outer.find(&input, start, sticky).map(|range| {
+                                                let captures = (0..outer.capture_count())
+                                                    .map(|slot| outer.capture_range(slot, &range))
+                                                    .collect::<Vec<_>>();
+                                                (range, captures)
+                                            })
+                                        } else {
+                                            matcher.find(&input, start, sticky).map(|range| {
+                                                let captures = (0..matcher.capture_count())
+                                                    .map(|slot| matcher.capture_range(slot, &range))
+                                                    .collect::<Vec<_>>();
+                                                (range, captures)
+                                            })
+                                        };
+                                        assert_eq!(
+                                            actual, expected,
+                                            "{source} {units:?} {start} sticky={sticky} anchors={anchored} m={multiline}"
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn enclosing_choice_ranges_agree_with_independent_candidate_count_and_capture_order() {
+        let alphabet = [97, 98, 10];
+        for (quantifier, min, max) in [
+            ("*", 0, None),
+            ("+", 1, None),
+            ("{0,2}", 0, Some(2)),
+            ("{1,2}", 1, Some(2)),
+            ("{2}", 2, Some(2)),
+            ("{0}", 0, Some(0)),
+        ] {
+            for greedy in [false, true] {
+                let source = format!(
+                    "((([ab])((a|b)){quantifier}{})([ab]b))()",
+                    if greedy { "" } else { "?" }
+                );
+                for anchored in [false, true] {
+                    for multiline in [false, true] {
+                        let matcher = RegExpRepeatedCaptureMatcher::compile(
+                            &JsString::from(source.as_str()),
+                            false,
+                            multiline,
+                            false,
+                        )
+                        .unwrap();
+                        let outer = crate::RegExpAnchoredMatcher::compile(
+                            &JsString::from(format!("^({source})$").as_str()),
+                            false,
+                            multiline,
+                        )
+                        .unwrap();
+                        for length in 0..=7u32 {
+                            for mut encoded in 0..alphabet.len().pow(length) {
+                                let mut units = Vec::new();
+                                for _ in 0..length {
+                                    units.push(alphabet[encoded % alphabet.len()]);
+                                    encoded /= alphabet.len();
+                                }
+                                let input = JsString::from_code_units(units.clone());
+                                for start in 0..=units.len() + 1 {
+                                    for sticky in [false, true] {
+                                        let expected =
+                                            (start..=units.len()).find_map(|candidate| {
+                                                if sticky && candidate != start
+                                                    || anchored
+                                                        && candidate != 0
+                                                        && !(multiline
+                                                            && [10, 13, 0x2028, 0x2029]
+                                                                .contains(&units[candidate - 1]))
+                                                {
+                                                    return None;
+                                                }
+                                                if ![97, 98].contains(units.get(candidate)?) {
+                                                    return None;
+                                                }
+                                                let body = candidate + 1;
+                                                let limit = max
+                                                    .unwrap_or(units.len() - body)
+                                                    .min(units.len() - body);
+                                                let mut counts: Vec<_> = (min..=limit).collect();
+                                                if greedy {
+                                                    counts.reverse();
+                                                }
+                                                counts.into_iter().find_map(|count| {
+                                                    let tail = body + count;
+                                                    let finish = tail + 2;
+                                                    let suffix = units.get(tail..finish)?;
+                                                    if !units[body..tail]
+                                                        .iter()
+                                                        .all(|u| [97, 98].contains(u))
+                                                        || ![97, 98].contains(&suffix[0])
+                                                        || suffix[1] != 98
+                                                    {
+                                                        return None;
+                                                    }
+                                                    if anchored
+                                                        && finish != units.len()
+                                                        && !(multiline
+                                                            && [10, 13, 0x2028, 0x2029]
+                                                                .contains(&units[finish]))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    let mut captures = vec![
+                                                        Some(candidate..body),
+                                                        (count > 0).then(|| tail - 1..tail),
                                                         (count > 0).then(|| tail - 1..tail),
                                                         Some(tail..finish),
                                                         Some(finish..finish),

@@ -1335,6 +1335,30 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Complete enclosing captures inside repeated literal-unit choices add three core
+regressions: an inspected 164-record insta snapshot, an independent exhaustive
+candidate/count/capture oracle with outer multiline anchors, and 100,000 wrappers
+inside the repeated atom, long runs, clones and zero-iteration slots. The new
+snapshot accepts 116 records and rejects 48; four earlier choice records now
+execute. Earlier accepted results and metadata remain unchanged. Node agrees on
+153,242 stored results across twenty snapshots, 173,600 additional match/capture
+comparisons and 18 runtime programs. Eight runtime regressions cover final-unit
+captures through capturing/noncapturing layers, partial enclosing ranges,
+zero-iteration undefined slots, greedy/lazy/bounded and asserted endpoints,
+top-level alternative order, original source/copies/global/sticky state, decoded
+characters and pinned case, word boundaries and surrogates, generic consumers and
+callbacks, intrinsic Arrays, collection, deep inner wrappers and long runs with
+unlimited defaults, and optional host aborts. One earlier gap retains wider
+alternatives; all 291 audited gap programs remain unsupported. Whole-fixture
+review enables no new whole programs; inventories and the pin remain unchanged.
+Branch-specific captures, extra fixed terms inside the repeated choice body,
+other repeated choices, additional quantifiers, named groups, backreferences and
+Unicode modes remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

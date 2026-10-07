@@ -734,8 +734,22 @@ charging branches; unsupported unquantified choices still reject early. Original
 source, flags and pinned ordinary case behavior remain intact. Normalization is
 linear in source size, with no expanded repetition counts, recursive plans or
 default quotas. Empty/wider branches, captures within individual alternatives,
-extra enclosing groups inside the repeated atom, class/dot alternatives, multiple
+class/dot alternatives, multiple
 quantifiers, named groups, backreferences and Unicode modes remain pending.
+
+Complete ordinary capturing/noncapturing wrappers can also enclose a literal-unit
+choice inside its repeated atom (CompileSubpattern, 22.2.2.3). Preparation removes
+only complete wrappers, records their source-order capture count, and rebuilds the
+private character-set body with the same captured layers. Each such capture spans
+the final successful unit; zero iterations leave all of them undefined. Captures
+outside the repetition still retain their whole-run or partial ranges. The
+top-level scanner carries an inner choice through contiguous complete wrappers
+and validates it once at the quantified outer edge, keeping deeply nested
+preparation linear. Earlier accepted layouts and optional work remain unchanged.
+Copies share immutable metadata and result Strings; indices pairs remain distinct.
+Branch-specific captures, extra fixed terms inside the repeated choice body,
+empty/wider or class/dot alternatives, multiple quantifiers, named groups,
+backreferences and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

@@ -485,8 +485,23 @@ fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
                     // Reject unsupported inner choices before compiling or
                     // charging any branch. Only a quantified literal-unit union
                     // has the fixed endpoints required by the current plans.
-                    crate::regexp_quantified::quantifier(&units[index..])?;
-                    crate::regexp_repeated_captures::literal_choice_atom(&units[start..index])?;
+                    if crate::regexp_quantified::quantifier(&units[index..]).is_some() {
+                        crate::regexp_repeated_captures::literal_choice_atom(&units[start..index])?;
+                    } else {
+                        // A complete ordinary wrapper may carry the choice to
+                        // the quantified atom's outer edge. Other concatenations
+                        // or unquantified choices still reject before charges.
+                        let (parent, choices) = groups.last_mut()?;
+                        let header = if units.get(*parent + 1) == Some(&63) {
+                            *parent + 3
+                        } else {
+                            *parent + 1
+                        };
+                        if start != header || units.get(index) != Some(&41) {
+                            return None;
+                        }
+                        *choices = true;
+                    }
                 }
             }
             0x5b => in_class = true,
