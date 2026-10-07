@@ -132,7 +132,7 @@ fn optional_host_work_covers_full_sticky_runs_and_remaining_group_features_stay_
         r"/(?<n>a[b])+/.test('ab')",
         r"/(a[b])\1/.test('abab')",
         r"/(a[b])+/u.test('ab')",
-        r"/()*/.test('')",
+        r"/(|a)*/.test('')",
     ] {
         assert!(
             matches!(

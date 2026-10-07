@@ -1186,6 +1186,32 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks also pass.
 
+Empty/assertion-only fixed repetition has three core regressions: an inspected
+176-record insta snapshot, an independent exhaustive mandatory-iteration and
+capture oracle, and oversized decimal bounds, 100,000 collapsed assertion
+captures, cloned plans, outer assertions, legacy boundaries and optional
+construction work. The new snapshot accepts 140 records and rejects 36; 20
+earlier repeated-assertion records and eight outer-assertion records now execute.
+Earlier accepted results remain unchanged. Node agrees on 78,020 stored results
+across thirteen snapshots, 284,480 additional match/capture comparisons and 19
+runtime programs. Eight runtime regressions cover mandatory empty captures and
+optional undefined slots, failed assertions under zero minima, whole/alternative
+captures and source order, empty global/sticky lastIndex, failure reset, explicit
+multiline CRLF/Unicode line separators and ordinary ASCII word boundaries,
+surrogate positions, generic consumers and callback arguments, intrinsic Arrays,
+100,000 captures with huge positive counts and unlimited defaults, collection
+and optional host aborts. Eight earlier gap programs retain repeated choices
+as the unsupported boundary. Whole-fixture review enables no new whole programs; corpus inventories and the
+pin are unchanged. Surrounding fixed terms, repeated choices and
+variable bodies, additional quantifiers, named groups, backreferences and
+Unicode modes remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks also pass. The disk-full minimum-version workspace
+and runtime-integration batches pass after removing completed build artifacts;
+previously completed debug library checks remain valid.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

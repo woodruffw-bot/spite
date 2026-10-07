@@ -1,14 +1,14 @@
-//! Repetition of fixed consuming ordinary groups (22.2.2.3.1, 22.2.2.5–7).
+//! Repetition of fixed ordinary groups (22.2.2.3.1, 22.2.2.5–7).
 
 use crate::{JsString, RegExpSequenceMatcher};
 use std::{ops::Range, sync::Arc};
 
-/// Immutable matcher for a fixed consuming group and one complete quantifier.
+/// Immutable matcher for a fixed group and one complete quantifier.
 ///
-/// The Pattern must already be validated without `u` or `v`. Each iteration
-/// consumes at least two UTF-16 units, with ordinary literals, character sets,
+/// The Pattern must already be validated without `u` or `v`. Legacy entry points
+/// require at least two UTF-16 units, with ordinary literals, character sets,
 /// dots and nested capturing/noncapturing groups. An explicit assertion entry
-/// point also accepts consuming one-unit groups with word/input/line assertions.
+/// point also accepts one-unit, empty and assertion-only groups.
 /// Alternatives, surrounding terms and further quantifiers remain unsupported. Neither
 /// compilation nor matching expands repetition counts or uses native recursion.
 #[derive(Clone, Debug)]
@@ -60,11 +60,11 @@ impl RegExpRepeatedSequenceMatcher {
         Self::compile_plan(source, ignore_case, false, dot_all, false, charge)
     }
 
-    /// Compiles consuming fixed groups with word/input/line assertions.
+    /// Compiles fixed groups with word/input/line assertions, including empty bodies.
     ///
     /// Multiline is explicit and every iteration checks the complete input's
-    /// neighboring units. At least one unit must be consumed; pure assertion or
-    /// empty repeated groups remain unsupported. Legacy entry points preserve
+    /// neighboring units. Zero-width bodies collapse mandatory repetitions at
+    /// the unchanged input position. Legacy entry points preserve
     /// their assertion-free subset and require at least two consuming units.
     pub fn compile_with_assertions_and_work<E>(
         source: &JsString,
@@ -136,6 +136,16 @@ impl RegExpRepeatedSequenceMatcher {
         let units = input.code_units();
         let remaining = units.get(start..)?.len();
         let width = program.atom.atom_count();
+        if width == 0 {
+            // RepeatMatcher rejects another empty iteration once min is zero.
+            // A positive minimum repeats the same fixed assertions and captures
+            // at one position, including exact decimal bounds beyond usize.
+            return if program.min == Some(0) {
+                Some(start..start)
+            } else {
+                program.atom.find(input, start, sticky)
+            };
+        }
         let min = program.min?;
         if min > remaining / width {
             return None;
@@ -181,6 +191,17 @@ impl RegExpRepeatedSequenceMatcher {
         let units = input.code_units();
         let remaining = units.get(start..)?.len();
         let width = program.atom.atom_count();
+        if width == 0 {
+            if program.min != Some(0) {
+                return program.atom.find_if(input, start, sticky, |range| {
+                    accept_start(range.start) && accept_end(range.end)
+                });
+            }
+            return (start..=units.len())
+                .take(if sticky { 1 } else { usize::MAX })
+                .find(|&position| accept_start(position) && accept_end(position))
+                .map(|position| position..position);
+        }
         let min = program.min?;
         if min > remaining / width {
             return None;
@@ -275,10 +296,14 @@ impl RegExpRepeatedSequenceMatcher {
 
     /// Last-iteration capture range, or `None` when no iteration participated.
     ///
-    /// Every group in this fixed consuming subset participates in each iteration.
+    /// Every group in this fixed subset participates in each required iteration.
     /// Empty groups retain their final empty range (RepeatMatcher, 22.2.2.3.1).
     pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
         let relative = self.0.atom.capture_ranges().get(index)?;
+        if self.0.atom.atom_count() == 0 {
+            return (self.0.min != Some(0) && matched.start == matched.end)
+                .then_some(matched.clone());
+        }
         let last = matched.end.checked_sub(self.0.atom.atom_count())?;
         if last < matched.start {
             return None;
@@ -858,7 +883,7 @@ mod tests {
         ));
         assert!(
             RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
-                &JsString::from("(^)*"),
+                &JsString::from("(^|$)*"),
                 false,
                 true,
                 false,
@@ -867,5 +892,251 @@ mod tests {
             .unwrap()
             .is_none()
         );
+    }
+
+    #[test]
+    fn repeated_zero_width_groups_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "()*",
+            "()+",
+            "()*?",
+            "()+?",
+            "(){0}",
+            "(){2}",
+            "(){0,2}",
+            "(){1,2}?",
+            "(){999999999999999999999999999999}",
+            "(){0,999999999999999999999999999999}",
+            "(())+",
+            "((()))*",
+            "(?:)+",
+            "(?:())+",
+            "(^)*",
+            "(^)+",
+            "(^){2}",
+            "($)*",
+            "($)+",
+            "($){2}",
+            "(^$)+",
+            "(^$)*",
+            r"(\b)+",
+            r"(\b)*",
+            r"(\b){2}",
+            r"(\B)+",
+            r"(\B)*",
+            r"(\b\B)+",
+            r"(\b\B)*",
+            r"((^)(\b)())+",
+            r"(($)(\B)())+",
+            r"((^)(\b)())*",
+            r"(\B^$){2}",
+            "(^^$$)+",
+            "()*a",
+            "a()+",
+            "(^|$)+",
+            "(?<n>)+",
+            r"()\1+",
+            "(?=a)+",
+            "(a*)*",
+            "^()*$",
+            "(a())+",
+            "(a$)+|x",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (false, true, false),
+                (true, true, false),
+                (false, true, true),
+            ] {
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                let matcher = RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                if let Some(matcher) = matcher {
+                    write!(rows, " captures={}", matcher.capture_count()).unwrap();
+                    for text in [
+                        "",
+                        "a",
+                        "ab",
+                        " a ",
+                        "_1",
+                        "µ",
+                        "Μ",
+                        "ſ",
+                        "K",
+                        "a\nb",
+                        "\r\n",
+                        "\u{2028}a\u{2029}",
+                        "💩",
+                        "\n",
+                    ] {
+                        let input = JsString::from(text);
+                        for (start, sticky) in [
+                            (0, false),
+                            (1, false),
+                            (0, true),
+                            (1, true),
+                            (input.len(), true),
+                        ] {
+                            let result = matcher.find(&input, start, sticky).map(|range| {
+                                let captures = (0..matcher.capture_count())
+                                    .map(|slot| matcher.capture_range(slot, &range))
+                                    .collect::<Vec<_>>();
+                                (range, captures)
+                            });
+                            write!(rows, " {input:?}@{start}/{sticky}:{result:?}").unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn zero_width_repetition_agrees_with_independent_mandatory_iteration_oracle() {
+        let alphabet = [97, 32, 10, 13, 0xd800];
+        for assertion in ["", "^", "$", "^$", r"\b", r"\B", r"\b\B", r"^\b", r"$\B"] {
+            for (quantifier, min, max) in [
+                ("*", 0, None),
+                ("+", 1, None),
+                ("{2}", 2, Some(2)),
+                ("{0,2}", 0, Some(2)),
+                ("{1,3}", 1, Some(3)),
+                ("{0}", 0, Some(0)),
+            ] {
+                for greedy in [false, true] {
+                    let source = format!(
+                        "(({assertion})){quantifier}{}",
+                        if greedy { "" } else { "?" }
+                    );
+                    for multiline in [false, true] {
+                        let matcher =
+                            RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
+                                &JsString::from(source.as_str()),
+                                false,
+                                multiline,
+                                false,
+                                |_| Ok::<(), ()>(()),
+                            )
+                            .unwrap()
+                            .unwrap();
+                        for length in 0..=4u32 {
+                            for mut encoded in 0..alphabet.len().pow(length) {
+                                let mut units = Vec::new();
+                                for _ in 0..length {
+                                    units.push(alphabet[encoded % alphabet.len()]);
+                                    encoded /= alphabet.len();
+                                }
+                                let input = JsString::from_code_units(units.clone());
+                                for start in 0..=units.len() + 1 {
+                                    for sticky in [false, true] {
+                                        let expected=(start..=units.len()).find_map(|position| {
+                                            if sticky&&position!=start{return None;}
+                                            let word=|unit:&u16|matches!(*unit,48..=57|65..=90|95|97..=122);
+                                            let boundary=position.checked_sub(1).and_then(|p|units.get(p)).is_some_and(word)!=units.get(position).is_some_and(word);
+                                            let succeeds=(!assertion.contains('^')||position==0||multiline&&[10,13,0x2028,0x2029].contains(&units[position-1]))
+                                                &&(!assertion.contains('$')||position==units.len()||multiline&&[10,13,0x2028,0x2029].contains(&units[position]))
+                                                &&(!assertion.contains(r"\b")||boundary)&&(!assertion.contains(r"\B")||!boundary);
+                                            let mut capture=None;
+                                            let attempts=if greedy {max.unwrap_or(min+1)} else {min};
+                                            for iteration in 0..attempts {
+                                                if !succeeds {
+                                                    if iteration<min {return None;}
+                                                    break;
+                                                }
+                                                // Every body has zero width. Optional attempts
+                                                // fail before their captures replace prior state.
+                                                if iteration>=min {break;}
+                                                capture=Some(position..position);
+                                            }
+                                            Some((position..position,vec![capture;2]))
+                                        });
+                                        let actual =
+                                            matcher.find(&input, start, sticky).map(|range| {
+                                                let captures = (0..2)
+                                                    .map(|slot| matcher.capture_range(slot, &range))
+                                                    .collect::<Vec<_>>();
+                                                (range, captures)
+                                            });
+                                        assert_eq!(
+                                            actual, expected,
+                                            "{source} {units:?} {start} sticky={sticky} m={multiline}"
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn zero_width_huge_bounds_collapsed_captures_clones_and_optional_work_stay_flat() {
+        let source = format!(
+            "({}){{999999999999999999999999999999}}",
+            "(^)".repeat(100_000)
+        );
+        let source = JsString::from(source.as_str());
+        assert!(RegExpRepeatedSequenceMatcher::compile(&source, false, false).is_none());
+        let matcher = RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
+            &source,
+            false,
+            true,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let input = JsString::from("a\n".repeat(100_000).as_str());
+        let matched = matcher.clone().find(&input, 1, false).unwrap();
+        assert_eq!(matched, 2..2);
+        assert_eq!(matcher.capture_count(), 100_001);
+        assert_eq!(matcher.capture_range(100_000, &matched), Some(2..2));
+        assert_eq!(matcher.capture_range(100_001, &matched), None);
+        assert_eq!(matcher.find(&input, 1, true), None);
+        assert_eq!(matcher.find(&input, usize::MAX, false), None);
+        let zero = RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
+            &JsString::from(r"(\b\B){0,999999999999999999999999999999}"),
+            false,
+            false,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            zero.find(&input, input.len(), true),
+            Some(input.len()..input.len())
+        );
+        assert_eq!(zero.capture_range(0, &(0..0)), None);
+        assert_eq!(
+            RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
+                &source,
+                false,
+                true,
+                false,
+                |_| Err("host")
+            )
+            .unwrap_err(),
+            "host"
+        );
+        let anchored =
+            crate::RegExpAnchoredMatcher::compile(&JsString::from(r"\b((\B)*)\b"), false, false)
+                .unwrap();
+        assert_eq!(anchored.find(&input, 1, false), Some(1..1));
+        assert_eq!(anchored.capture_range(0, &(1..1)), Some(1..1));
+        assert_eq!(anchored.capture_range(1, &(1..1)), None);
     }
 }

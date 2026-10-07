@@ -337,6 +337,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile standalone fixed class/dot groups with one greedy/lazy quantifier, preserving overlapping minimum candidates, shared sets, flags, final-iteration/undefined captures and complete enclosing/alternative slots.
 - [x] Compile word/input/line assertions inside fixed consuming repeated groups, passing multiline explicitly and preserving complete iterations, one-unit empty captures, final-iteration/undefined slots and enclosing/alternative captures.
 - [x] Compile outer word/input/line assertions around fixed consuming repeated groups, choosing earliest overlapping starts before greedy/lazy endpoints and preserving bounded, empty, enclosing and alternative captures.
+- [x] Compile empty/assertion-only fixed repeated groups, collapsing mandatory zero-width iterations and exact oversized bounds while preserving undefined/empty captures, outer assertions, alternatives and consumer progress.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

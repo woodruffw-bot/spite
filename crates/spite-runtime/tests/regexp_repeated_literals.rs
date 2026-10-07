@@ -138,7 +138,7 @@ fn optional_host_work_covers_sticky_repetitions_and_remaining_groups_are_unsuppo
         r"/(?<n>ab)+/.test('ab')",
         r"/(ab)\1/.test('abab')",
         r"/(ab)+/u.test('ab')",
-        r"/()*/.test('')",
+        r"/(|a)*/.test('')",
     ] {
         assert!(
             matches!(

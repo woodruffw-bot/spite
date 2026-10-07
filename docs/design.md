@@ -560,7 +560,7 @@ last iteration; zero iterations leave every such slot undefined. Empty inner
 groups preserve their last empty range. Complete outer captures and top-level
 alternative offsets use their existing layouts. Compilation, matching, clones
 and destruction remain iterative, with no default quotas. Assertions or fixed
-terms surrounding these groups, repeated choices/empty groups, additional
+terms surrounding these groups, repeated choices, additional
 quantifiers, named groups, backreferences and Unicode modes remain pending.
 
 Standalone fixed consuming groups can also repeat classes, class escapes and
@@ -580,7 +580,7 @@ zero iterations leave inner slots undefined. Enclosing groups and alternatives
 retain their existing layouts. Nonsticky work is bounded by input length times
 group width plus one pass, including phase setup; sticky work covers two complete
 suffix passes. Default quotas remain disabled, and no recursive plans or expanded
-counts are introduced. Surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
+counts are introduced. Surrounding fixed terms, repeated choices, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
 
 RegExpBuiltinExec shares an immutable String with the previous participating
@@ -606,8 +606,7 @@ legacy assertion-free compiler preserves its two-unit subset. Complete outer
 captures and alternatives retain their shared layouts. Optional search metadata
 covers each assertion position in minimum search and extension over the complete
 suffix, including sticky runs. Duplicate assertions collapse without recursive
-plans, expanded counts or default quotas. Pure assertion/empty repeated groups,
-fixed terms around repeated groups, repeated choices,
+plans, expanded counts or default quotas. Fixed terms around repeated groups, repeated choices,
 additional quantifiers, named groups, backreferences and Unicode modes remain
 pending.
 
@@ -628,6 +627,25 @@ DotAll and ordinary pinned case behavior flow through the group plan. Original
 source text and earlier successful plan layouts remain intact. Optional work
 metadata covers endpoint/window checks and complete sticky suffixes; there are
 no default quotas, recursive plans, expanded counts or new dependencies.
+
+The fixed repeated-group plan also accepts empty and assertion-only bodies
+(RepeatMatcher, 22.2.2.3.1). Its explicit flag-dependent compiler admits zero
+consuming width while legacy entry points retain their existing subset. A zero
+minimum takes zero iterations and leaves every inner capture undefined, even
+when the body assertions fail. Once the minimum is satisfied, another empty
+iteration fails the unchanged-EndIndex check; greedy and lazy order therefore
+produce the same result for this deterministic fixed subset. A positive minimum
+tests the shared fixed assertions at one unchanged input position and supplies
+participating empty captures. Repeating that pure body cannot change assertion
+truth or capture ranges, so even oversized exact positive decimal minima collapse
+without expanding a counter or recursing. Outer assertions still filter candidate
+positions, enclosing captures span the empty match, and alternatives retain
+source order and their global undefined slots. Zero-width dispatch occurs before
+division, phase storage or consuming iteration loops. Native exec preserves an
+empty match's lastIndex; existing String consumers handle their specified forward
+progress. Optional host errors remain separate and default quotas stay disabled.
+Surrounding fixed terms, repeated choices and variable bodies, additional
+quantifiers, named groups, backreferences and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

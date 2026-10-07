@@ -124,8 +124,8 @@ fn optional_host_work_aborts_and_remaining_group_compositions_stay_distinct() {
         r"/^(?<n>ab)+$/.test('ab')",
         r"/^(ab)\1$/.test('abab')",
         r"/^(ab)+$/u.test('ab')",
-        r"/^()*$/.test('')",
-        r"/^(^)+$/.test('')",
+        r"/^(|a)*$/.test('')",
+        r"/^(^|$)+$/.test('')",
     ] {
         assert!(
             matches!(

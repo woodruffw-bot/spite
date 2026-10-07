@@ -51,9 +51,12 @@ impl RegExpSequenceMatcher {
         assertions: bool,
     ) -> Option<usize> {
         let prepared = prepare(source.code_units(), dot_all, assertions)?;
-        (prepared.terms.len() >= if assertions { 1 } else { 2 }
-            && (assertions || prepared.boundaries.is_empty()))
-        .then_some(prepared.terms.len())
+        if assertions {
+            Some(prepared.terms.len())
+        } else {
+            (prepared.terms.len() >= 2 && prepared.boundaries.is_empty())
+                .then_some(prepared.terms.len())
+        }
     }
 
     /// Compiles fixed terms and word assertions, returning None for other syntax.
