@@ -1026,20 +1026,25 @@ no heap-object edges. Named group metadata and indices aliases remain shared wit
 the ordinary result path. Inner alternatives, quantified references and Unicode
 matching remain pending.
 
-Ordinary named references in literal concatenations use the same reference program
-(CompileAtomEscape and BackreferenceMatcher, 22.2.2.9). Validated decoded names bind
-to source-order capture slots before a forward merge of GroupSpecifier and named
-AtomEscape ranges prepares the private matching source. Capture names are removed
-without removing capturing parentheses; each uniquely bound named reference becomes
-a numbered reference in a noncapturing wrapper. This preserves following decimal
-characters: \k<x>0 becomes (?:\1)0, retaining the separate literal zero. Names are
-neither normalized nor case-folded. Forward/self references reuse the ordinary
-capture state and return original input units. Public source text, copies, named
-groups and indices aliases retain their original behavior. Repeated references
-remain compact; preparation and lookup work is charged before construction.
-Alternative-specific duplicate-name references retain Unsupported; named
-reference execution still requires each target to have one capture slot. Wider reference compositions and Unicode
-matching remain pending, and default quotas remain disabled.
+Ordinary named references use direct binding instructions in the flat program
+(CompileAtomEscape and BackreferenceMatcher, 22.2.2.9). Validated decoded names
+bind to shared source-order slot inventories. A forward merge removes only
+capture-name specifiers, retains the original named escapes, and records their
+new absolute UTF-16 intervals with a binding index. Following decimal characters
+stay separate literals without decimal-source rewriting. Public source text,
+copies, named groups and indices aliases retain their original behavior.
+
+Compilation checks ordered/disjoint escape intervals, slot bounds and ownership,
+and at most one slot per name in each accepted top-level branch. The immutable
+program stores one capture-to-name map and scalar named-reference instructions.
+Each execution stores one completed input range per name; closing a named capture
+updates it, and moving to another branch/candidate clears the previous capture
+interval and its named values. Undefined, forward and open references match empty;
+completed references compare actual input units with pinned ordinary case rules.
+Lookup is constant work per reference; neither source nor target lists expand per
+possible slot. Preparation, capture updates and matching remain iterative and
+fallible under opt-in host work. Inner choices, repeated references and Unicode
+matching remain pending; default quotas remain disabled.
 
 Character-class, class-escape and dot atoms also compose with ordinary references
 (CompileAtom, 22.2.2.7; BackreferenceMatcher, 22.2.2.9). Complete preparation rejects
@@ -1077,7 +1082,7 @@ assertions keep existing flags and input-unit behavior. Actual branch attempts,
 capture resets and comparisons are charged before work without default quotas.
 Preparation, execution and dropping stay iterative; no alternative expansion or
 recursive backtracking is introduced. Inner choices, repeated references,
-duplicate-name reference selection and Unicode matching remain pending.
+Unicode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

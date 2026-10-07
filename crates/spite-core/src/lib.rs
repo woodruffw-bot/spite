@@ -35,7 +35,10 @@ pub use normalization::{
     canonical_combining_class, canonical_composition, hangul_decomposition, unicode_decomposition,
 };
 pub use regexp_anchored::RegExpAnchoredMatcher;
-pub use regexp_backreference::{RegExpBackreferenceMatch, RegExpBackreferenceMatcher};
+pub use regexp_backreference::{
+    RegExpBackreferenceMatch, RegExpBackreferenceMatcher, RegExpBackreferenceNamedBindings,
+    RegExpBackreferenceNamedReference,
+};
 pub use regexp_canonicalize::regexp_canonicalize_character;
 pub use regexp_character::RegExpCharacterMatcher;
 pub use regexp_disjunction::RegExpDisjunctionMatcher;

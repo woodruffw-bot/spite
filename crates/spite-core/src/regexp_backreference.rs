@@ -6,6 +6,27 @@ use crate::regexp_literal::{character_escape, is_syntax};
 use crate::{JsString, RegExpCharacterMatcher, regexp_canonicalize_character};
 use std::{collections::HashMap, ops::Range, sync::Arc};
 
+/// One validated named-reference escape in a name-stripped private source.
+#[derive(Clone, Debug)]
+pub struct RegExpBackreferenceNamedReference {
+    /// Complete absolute UTF-16 escape interval, including the closing `>`.
+    pub escape: Range<usize>,
+    /// Index into the shared name binding inventory.
+    pub group: usize,
+}
+
+/// Shared original capture slots and ordered named-reference escape intervals.
+///
+/// Capture slots are zero-based. Each capture belongs to at most one name;
+/// duplicate-name slots must be mutually exclusive in the validated Pattern.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct RegExpBackreferenceNamedBindings<'a> {
+    /// One shared slot slice per decoded name.
+    pub groups: &'a [&'a [usize]],
+    /// Ordered, disjoint escapes in the private source.
+    pub references: &'a [RegExpBackreferenceNamedReference],
+}
+
 /// A flat, immutable ordinary character and numbered-backreference program.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
@@ -25,6 +46,8 @@ struct Program {
     ignore_case: bool,
     multiline: bool,
     branches: Vec<Branch>,
+    capture_names: Vec<Option<usize>>,
+    named_count: usize,
 }
 
 #[derive(Debug)]
@@ -35,6 +58,7 @@ enum Instruction {
     Open(usize),
     Close(usize),
     Reference(usize),
+    NamedReference(usize),
 }
 
 enum PreparedInstruction {
@@ -102,16 +126,39 @@ impl RegExpBackreferenceMatcher {
         ignore_case: bool,
         multiline: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_with_named_bindings_and_work(
+            source,
+            ignore_case,
+            multiline,
+            dot_all,
+            RegExpBackreferenceNamedBindings::default(),
+            charge,
+        )
+    }
+
+    /// Compiles validated named references using shared source-order bindings.
+    /// The private source has capture-name specifiers removed and original named
+    /// escapes retained. Invalid binding intervals or slot inventories return `None`
+    /// before host work is charged. Named targets are never expanded into source.
+    pub fn compile_with_named_bindings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        bindings: RegExpBackreferenceNamedBindings<'_>,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        if !source
-            .code_units()
-            .windows(2)
-            .any(|units| units[0] == 0x5c && (0x31..=0x39).contains(&units[1]))
+        if bindings.references.is_empty()
+            && !source
+                .code_units()
+                .windows(2)
+                .any(|units| units[0] == 0x5c && (0x31..=0x39).contains(&units[1]))
         {
             return Ok(None);
         }
-        let Some(plan) = prepare(source.code_units(), ignore_case, dot_all) else {
+        let Some(plan) = prepare(source.code_units(), ignore_case, dot_all, bindings) else {
             return Ok(None);
         };
         let PreparedProgram {
@@ -119,6 +166,36 @@ impl RegExpBackreferenceMatcher {
             capture_count,
             branches,
         } = plan;
+        let mut capture_names = if bindings.groups.is_empty() {
+            Vec::new()
+        } else {
+            vec![None; capture_count]
+        };
+        for (group, slots) in bindings.groups.iter().enumerate() {
+            if slots.is_empty() {
+                return Ok(None);
+            }
+            for &slot in *slots {
+                let Some(name) = capture_names.get_mut(slot) else {
+                    return Ok(None);
+                };
+                if name.replace(group).is_some() {
+                    return Ok(None);
+                }
+            }
+        }
+        let mut last_branch = vec![None; bindings.groups.len()];
+        for (branch_index, branch) in branches.iter().enumerate() {
+            for slot in branch.captures.clone() {
+                if let Some(Some(group)) = capture_names.get(slot) {
+                    if last_branch[*group].replace(branch_index) == Some(branch_index) {
+                        return Ok(None);
+                    }
+                }
+            }
+        }
+        charge(capture_names.len())?;
+        charge(bindings.groups.len())?;
         charge(branches.len())?;
         charge(source.len())?;
         charge(prepared.len())?;
@@ -159,6 +236,8 @@ impl RegExpBackreferenceMatcher {
             ignore_case,
             multiline,
             branches,
+            capture_names,
+            named_count: bindings.groups.len(),
         }))))
     }
 
@@ -206,6 +285,8 @@ impl RegExpBackreferenceMatcher {
         // must remain undefined to references even after some body has consumed.
         charge(self.0.capture_count)?;
         let mut starts = vec![0; self.0.capture_count];
+        charge(self.0.named_count)?;
+        let mut named: Vec<Option<Range<usize>>> = vec![None; self.0.named_count];
         let end = if sticky { start } else { input.len() };
         let mut dirty = 0..0;
         for candidate in start..=end {
@@ -213,6 +294,14 @@ impl RegExpBackreferenceMatcher {
                 charge(1)?;
                 charge(dirty.len())?;
                 captures[dirty.clone()].fill(None);
+                if !self.0.capture_names.is_empty() {
+                    charge(dirty.len())?;
+                    for slot in dirty.clone() {
+                        if let Some(group) = self.0.capture_names[slot] {
+                            named[group] = None;
+                        }
+                    }
+                }
                 dirty = branch.captures.clone();
                 let mut cursor = candidate;
                 for instruction in &self.0.instructions[branch.instructions.clone()] {
@@ -246,10 +335,22 @@ impl RegExpBackreferenceMatcher {
                         }
                         Instruction::Open(index) => starts[*index] = cursor,
                         Instruction::Close(index) => {
-                            captures[*index] = Some(starts[*index]..cursor)
+                            let range = starts[*index]..cursor;
+                            captures[*index] = Some(range.clone());
+                            if !self.0.capture_names.is_empty() {
+                                charge(2)?;
+                                if let Some(group) = self.0.capture_names[*index] {
+                                    named[group] = Some(range);
+                                }
+                            }
                         }
-                        Instruction::Reference(index) => {
-                            let Some(range) = &captures[*index] else {
+                        Instruction::Reference(index) | Instruction::NamedReference(index) => {
+                            let range = if matches!(instruction, Instruction::Reference(_)) {
+                                &captures[*index]
+                            } else {
+                                &named[*index]
+                            };
+                            let Some(range) = range else {
                                 continue;
                             };
                             let Some(next) = cursor.checked_add(range.len()) else {
@@ -286,7 +387,24 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn prepare(source: &[u16], ignore_case: bool, dot_all: bool) -> Option<PreparedProgram> {
+fn prepare(
+    source: &[u16],
+    ignore_case: bool,
+    dot_all: bool,
+    bindings: RegExpBackreferenceNamedBindings<'_>,
+) -> Option<PreparedProgram> {
+    let mut previous_end = 0;
+    for reference in bindings.references {
+        if reference.group >= bindings.groups.len() || reference.escape.start < previous_end {
+            return None;
+        }
+        let units = source.get(reference.escape.clone())?;
+        if units.len() < 5 || units.get(..3)? != [0x5c, 0x6b, 0x3c] || units.last() != Some(&0x3e) {
+            return None;
+        }
+        previous_end = reference.escape.end;
+    }
+    let mut named_references = bindings.references.iter().peekable();
     let mut instructions = Vec::new();
     let mut groups = Vec::new();
     let mut branches = Vec::new();
@@ -296,6 +414,24 @@ fn prepare(source: &[u16], ignore_case: bool, dot_all: bool) -> Option<PreparedP
     let mut references = 0usize;
     let mut cursor = 0;
     while let Some(&unit) = source.get(cursor) {
+        if named_references
+            .peek()
+            .is_some_and(|reference| reference.escape.start < cursor)
+        {
+            return None;
+        }
+        if named_references
+            .peek()
+            .is_some_and(|reference| reference.escape.start == cursor)
+        {
+            let reference = named_references.next().expect("reference selected");
+            instructions.push(PreparedInstruction::Ready(Instruction::NamedReference(
+                reference.group,
+            )));
+            references += 1;
+            cursor = reference.escape.end;
+            continue;
+        }
         cursor += 1;
         match unit {
             0x28 => {
@@ -386,7 +522,7 @@ fn prepare(source: &[u16], ignore_case: bool, dot_all: bool) -> Option<PreparedP
             ))),
         }
     }
-    if !groups.is_empty() || references == 0 {
+    if !groups.is_empty() || references == 0 || named_references.peek().is_some() {
         return None;
     }
     if instructions.iter().any(|instruction| {
@@ -409,6 +545,153 @@ fn prepare(source: &[u16], ignore_case: bool, dot_all: bool) -> Option<PreparedP
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    fn named_escapes(source: &JsString) -> Vec<RegExpBackreferenceNamedReference> {
+        source
+            .code_units()
+            .windows(5)
+            .enumerate()
+            .filter_map(|(start, units)| {
+                if units[..3] == [0x5c, 0x6b, 0x3c] && units[4] == 0x3e {
+                    Some(RegExpBackreferenceNamedReference {
+                        escape: start..start + 5,
+                        group: usize::from(units[3] - 0x78),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    #[test]
+    fn named_binding_execution_snapshot() {
+        let cases: &[(&str, &[&[usize]])] = &[
+            (r"(a)\k<x>|(b)\k<x>", &[&[0, 1]]),
+            (r"(a)|(\k<x>b)\k<x>", &[&[0, 1]]),
+            (r"(\k<x>a)\k<x>|(b)\k<x>", &[&[0, 1]]),
+            (r"(a)\k<x>0|(b)\k<x>0", &[&[0, 1]]),
+            (r"((a)\k<x>)|(b)\k<x>", &[&[1, 2]]),
+            (r"\k<x>(a)|(b)\k<x>", &[&[0, 1]]),
+            (r"([µ])\k<x>|(\w)\k<x>", &[&[0, 1]]),
+            (r"(a)\k<x>c|(b)\k<x>", &[&[0, 1]]),
+            (r"^()\k<x>$|(\b)\k<x>\w", &[&[0, 1]]),
+            (r"(a)(b)\k<x>\k<y>|(b)(a)\k<x>\k<y>", &[&[0, 2], &[1, 3]]),
+            (r"^([\s\S])\k<x>$|^([ab])\k<x>$", &[&[0, 1]]),
+            (r"(a)\k<x>|", &[&[0]]),
+        ];
+        let mut rows = String::new();
+        for &(text, groups) in cases {
+            let source = JsString::from(text);
+            let references = named_escapes(&source);
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, true, true),
+            ] {
+                let matcher = RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+                    &source,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    RegExpBackreferenceNamedBindings {
+                        groups,
+                        references: &references,
+                    },
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "", "aa", "bb", "qbb", "aabb", "bb0", "Aa", "µΜ", " aa ", "\naa\n", "abab",
+                    "baba",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{source:?} groups={groups:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn invalid_named_binding_metadata_returns_none_before_charging() {
+        for (text, slots, escape, group) in [
+            (r"(a)\k<x>", vec![0], 3..8, 1),
+            (r"(a)\k<x>", vec![1], 3..8, 0),
+            (r"(a)\k<x>", vec![], 3..8, 0),
+            (r"(a)\k<x>", vec![0, 0], 3..8, 0),
+            (r"(a)(b)\k<x>", vec![0, 1], 6..11, 0),
+            (r"(a)\k<x>", vec![0], 3..9, 0),
+            (r"(a)\k<x>", vec![0], 2..7, 0),
+            (r"(a)[\k<x>]", vec![0], 4..9, 0),
+            (r"(a)\k<x>+", vec![0], 3..8, 0),
+        ] {
+            let references = [RegExpBackreferenceNamedReference { escape, group }];
+            let groups = [slots.as_slice()];
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+                    &JsString::from(text),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings {
+                        groups: &groups,
+                        references: &references
+                    },
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{text}"
+            );
+            assert_eq!(work, 0, "{text}");
+        }
+    }
+
+    #[test]
+    fn shared_named_bindings_keep_wide_choices_and_many_references_compact() {
+        let source = JsString::from(
+            format!("{}(a){}", "(b)|".repeat(10000), r"\k<x>".repeat(10000)).as_str(),
+        );
+        let references = named_escapes(&source);
+        let slots: Vec<_> = (0..10001).collect();
+        let groups = [slots.as_slice()];
+        let matcher = RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+            &source,
+            false,
+            false,
+            false,
+            RegExpBackreferenceNamedBindings {
+                groups: &groups,
+                references: &references,
+            },
+            |_| Ok::<_, ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert!(matcher.0.instructions.len() <= source.len());
+        assert_eq!(matcher.0.capture_names.len(), 10001);
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from("a".repeat(10001).as_str()), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 0..10001);
+        assert!(found.captures[..10000].iter().all(Option::is_none));
+        assert_eq!(found.captures[10000], Some(0..1));
+        assert!(work < 150000, "actual named-reference work {work}");
+    }
 
     #[test]
     fn alternative_reference_execution_snapshot() {

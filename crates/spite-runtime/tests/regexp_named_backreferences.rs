@@ -135,7 +135,7 @@ fn explicit_search_work_aborts_before_last_index_and_language_handlers() {
 fn pending_reference_compositions_remain_unsupported_and_failed_matches_return_null() {
     for source in [
         r"/(?<x>a)\k<x>+/.test('aa')",
-        r"/(?<x>a)|(?<x>b)\k<x>/.test('bb')",
+        r"/(?<x>a)|(?<x>b)\k<x>+/.test('bb')",
         r"/(?<x>[ab])\k<x>+/.test('aa')",
         r"/^(?<x>a)\k<x>+/.test('aa')",
         r"/(?<x>a)\k<x>/u.test('aa')",

@@ -153,80 +153,72 @@ impl Realm {
             }
         })?;
         let captures = metadata.capture_count;
-        let (capture_source, named_groups) = self.object_work(span, |_, budget| {
-            if metadata.named_captures.is_empty() {
-                return Ok((source.clone(), Arc::from([])));
-            }
-            budget.charge(source.len())?;
-            budget.charge(metadata.named_captures.len())?;
-            budget.charge(metadata.named_captures.len())?;
-            let mut groups = Vec::<RegExpNamedGroup>::new();
-            let mut names = HashMap::new();
-            for capture in &metadata.named_captures {
-                let slot = (capture.index - 1) as usize;
-                let group = *names.entry(capture.name.clone()).or_insert_with(|| {
-                    let index = groups.len();
-                    groups.push(RegExpNamedGroup {
-                        name: capture.name.clone(),
-                        slots: Vec::new(),
+        let (capture_source, named_groups, named_references) =
+            self.object_work(span, |_, budget| {
+                if metadata.named_captures.is_empty() {
+                    return Ok((
+                        source.clone(),
+                        Arc::<[RegExpNamedGroup]>::from([]),
+                        Vec::new(),
+                    ));
+                }
+                budget.charge(source.len())?;
+                budget.charge(metadata.named_captures.len())?;
+                budget.charge(metadata.named_captures.len())?;
+                let mut groups = Vec::<RegExpNamedGroup>::new();
+                let mut names = HashMap::new();
+                for capture in &metadata.named_captures {
+                    let slot = (capture.index - 1) as usize;
+                    let group = *names.entry(capture.name.clone()).or_insert_with(|| {
+                        let index = groups.len();
+                        groups.push(RegExpNamedGroup {
+                            name: capture.name.clone(),
+                            slots: Vec::new(),
+                        });
+                        index
                     });
-                    index
-                });
-                groups[group].slots.push(slot);
-            }
-            // This reference program has no alternatives. A name with multiple
-            // source slots needs the pending alternative-aware reference matcher.
-            // Leave those escapes intact so the whole Pattern stays unsupported.
-            budget.charge(metadata.named_references.len())?;
-            let mut rewrite_references = true;
-            for reference in &metadata.named_references {
-                budget.charge(reference.name.len())?;
-                if groups[names[&reference.name]].slots.len() != 1 {
-                    rewrite_references = false;
+                    groups[group].slots.push(slot);
                 }
-            }
-            let mut references = metadata.named_references.into_iter().peekable();
-            if !rewrite_references {
-                // No partially translated references: preserve the Unsupported
-                // boundary for the complete Pattern, including unselected branches.
-                references = Vec::new().into_iter().peekable();
-            }
-            let mut captures = metadata.named_captures.into_iter().peekable();
-            let mut normalized = Vec::new();
-            let mut start = 0;
-            while captures.peek().is_some() || references.peek().is_some() {
-                let remove_capture = captures.peek().is_some_and(|capture| {
-                    references
-                        .peek()
-                        .is_none_or(|reference| capture.specifier.start < reference.escape.start)
-                });
-                if remove_capture {
-                    let capture = captures.next().expect("capture selected");
-                    normalized
-                        .extend_from_slice(&source.code_units()[start..capture.specifier.start]);
-                    start = capture.specifier.end;
-                } else {
-                    let reference = references.next().expect("reference selected");
-                    normalized
-                        .extend_from_slice(&source.code_units()[start..reference.escape.start]);
-                    start = reference.escape.end;
-                    budget.charge(reference.name.len())?;
-                    let slot = groups[names[&reference.name]].slots[0];
-                    let index = slot + 1;
-                    let digits_len = index.ilog10() as usize + 1;
-                    budget.charge(digits_len)?;
-                    budget.charge(5)?;
-                    let digits = index.to_string();
-                    // The noncapturing wrapper preserves DecimalEscape boundaries:
-                    // \k<x>0 must become (?:\1)0, never the different reference \10.
-                    normalized.extend([0x28, 0x3f, 0x3a, 0x5c]);
-                    normalized.extend(digits.encode_utf16());
-                    normalized.push(0x29);
+                budget.charge(metadata.named_references.len())?;
+                let mut references = metadata.named_references.into_iter().peekable();
+                let mut named_references = Vec::new();
+                let mut captures = metadata.named_captures.into_iter().peekable();
+                let mut normalized = Vec::new();
+                let mut start = 0;
+                while captures.peek().is_some() || references.peek().is_some() {
+                    let remove_capture = captures.peek().is_some_and(|capture| {
+                        references.peek().is_none_or(|reference| {
+                            capture.specifier.start < reference.escape.start
+                        })
+                    });
+                    if remove_capture {
+                        let capture = captures.next().expect("capture selected");
+                        normalized.extend_from_slice(
+                            &source.code_units()[start..capture.specifier.start],
+                        );
+                        start = capture.specifier.end;
+                    } else {
+                        let reference = references.next().expect("reference selected");
+                        normalized
+                            .extend_from_slice(&source.code_units()[start..reference.escape.start]);
+                        start = reference.escape.end;
+                        budget.charge(reference.name.len())?;
+                        let group = names[&reference.name];
+                        let begin = normalized.len();
+                        normalized.extend_from_slice(&source.code_units()[reference.escape]);
+                        named_references.push(spite_core::RegExpBackreferenceNamedReference {
+                            escape: begin..normalized.len(),
+                            group,
+                        });
+                    }
                 }
-            }
-            normalized.extend_from_slice(&source.code_units()[start..]);
-            Ok((JsString::from_code_units(normalized), Arc::from(groups)))
-        })?;
+                normalized.extend_from_slice(&source.code_units()[start..]);
+                Ok((
+                    JsString::from_code_units(normalized),
+                    Arc::<[RegExpNamedGroup]>::from(groups),
+                    named_references,
+                ))
+            })?;
         let mut enclosing_captures = 0;
         let unicode = flags
             .code_units()
@@ -238,11 +230,20 @@ impl Realm {
             None
         } else {
             self.object_work(span, |_, budget| {
-                RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                budget.charge(named_groups.len())?;
+                let groups: Vec<&[usize]> = named_groups
+                    .iter()
+                    .map(|group| group.slots.as_slice())
+                    .collect();
+                RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     flags.code_units().contains(&u16::from(b's')),
+                    spite_core::RegExpBackreferenceNamedBindings {
+                        groups: &groups,
+                        references: &named_references,
+                    },
                     |work| budget.charge(work),
                 )
             })?

@@ -1775,6 +1775,30 @@ Stable and MSRV pass every pinned-corpus variant, workspace target and
 documentation test. Formatting, denied-warning Clippy, dependency/fixture policy,
 offline generator checks and default two-mebibyte debug-stack checks pass.
 
+Ordinary top-level reference alternatives now select mutually exclusive duplicate
+names through checked shared binding inventories and direct capture/name updates.
+Three added core regressions cover an inspected 1,296-record insta snapshot,
+malformed interval/slot inventories returning unsupported before charging, and
+10,000 alternative targets combined with 10,000 references without source or
+instruction expansion. Counter bounds verify linear storage and actual matching
+work; they impose no execution quota. All four earlier core reference snapshots
+remain byte-identical. Six runtime regressions cover an inspected 18-record
+result snapshot, active and inactive slots, failed branch/candidate resets,
+self/forward/empty references, digit boundaries, multiple names, escaped names,
+ordinary case/surrogate/input context, null-prototype groups and indices aliases,
+global/sticky consumers, source-preserving copies, collection, large unlimited
+programs and opted-in host aborts. Node agrees with every new core/native record,
+152,640 fresh match/capture comparisons and ten runtime programs. Existing reference
+integration snapshots are unchanged. Three earlier duplicate-name gap controls now
+retain quantified references; all 376 direct gap programs and the three eval
+host-gap programs remain unsupported.
+Inner choices, repeated references and Unicode matching remain pending. No
+fixtures or fixture credit are added; inventories, the pin, dependencies and
+unlimited defaults are unchanged.
+Stable and MSRV pass all 13,530 pinned-corpus variants, workspace targets and
+documentation tests. Formatting, denied-warning Clippy, dependency/fixture policy,
+offline generator checks and default two-mebibyte debug-stack checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
