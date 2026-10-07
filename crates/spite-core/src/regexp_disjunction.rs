@@ -2,7 +2,7 @@
 
 use crate::{
     JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
-    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
 };
@@ -42,6 +42,7 @@ enum Alternative {
     RepeatedSequence(RegExpRepeatedSequenceMatcher),
     RepeatedContinuation(RegExpRepeatedContinuationMatcher),
     RepeatedPrefixed(RegExpRepeatedPrefixedMatcher),
+    RepeatedCaptures(RegExpRepeatedCaptureMatcher),
 }
 
 impl Alternative {
@@ -52,6 +53,7 @@ impl Alternative {
             Self::RepeatedSequence(matcher) => matcher.capture_count(),
             Self::RepeatedContinuation(matcher) => matcher.capture_count(),
             Self::RepeatedPrefixed(matcher) => matcher.capture_count(),
+            Self::RepeatedCaptures(matcher) => matcher.capture_count(),
             Self::Quantified(matcher) => matcher.capture_count(),
             Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
             Self::Anchored(matcher) => matcher.capture_count(),
@@ -66,6 +68,7 @@ impl Alternative {
             Self::RepeatedSequence(matcher) => matcher.capture_range(index, matched),
             Self::RepeatedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::RepeatedPrefixed(matcher) => matcher.capture_range(index, matched),
+            Self::RepeatedCaptures(matcher) => matcher.capture_range(index, matched),
             Self::Quantified(matcher) => matcher.capture_range(index, matched),
             Self::QuantifiedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::Anchored(matcher) => matcher.capture_range(index, matched),
@@ -90,7 +93,8 @@ impl Alternative {
             | Self::RepeatedLiteral(_)
             | Self::RepeatedSequence(_)
             | Self::RepeatedContinuation(_)
-            | Self::RepeatedPrefixed(_) => &[],
+            | Self::RepeatedPrefixed(_)
+            | Self::RepeatedCaptures(_) => &[],
         }
     }
     fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
@@ -103,6 +107,7 @@ impl Alternative {
             Self::RepeatedSequence(m) => m.find(input, start, sticky),
             Self::RepeatedContinuation(m) => m.find(input, start, sticky),
             Self::RepeatedPrefixed(m) => m.find(input, start, sticky),
+            Self::RepeatedCaptures(m) => m.find(input, start, sticky),
             Self::Quantified(m) => m.find(input, start, sticky),
             Self::QuantifiedContinuation(m) => m.find(input, start, sticky),
         }
@@ -117,6 +122,7 @@ impl Alternative {
             Self::RepeatedSequence(m) => m.search_passes(sticky),
             Self::RepeatedContinuation(m) => m.search_passes(sticky),
             Self::RepeatedPrefixed(m) => m.search_passes(sticky),
+            Self::RepeatedCaptures(m) => m.search_passes(sticky),
             Self::Quantified(_) => 1,
             Self::QuantifiedContinuation(m) => m.search_passes(),
         }
@@ -256,6 +262,14 @@ fn compile_alternative<E>(
         &mut *charge,
     )? {
         Alternative::RepeatedPrefixed(m)
+    } else if let Some(m) = RegExpRepeatedCaptureMatcher::compile_with_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::RepeatedCaptures(m)
     } else {
         return Ok(None);
     };
@@ -335,7 +349,8 @@ impl RegExpDisjunctionMatcher {
             | Alternative::RepeatedLiteral(_)
             | Alternative::RepeatedSequence(_)
             | Alternative::RepeatedContinuation(_)
-            | Alternative::RepeatedPrefixed(_) => true,
+            | Alternative::RepeatedPrefixed(_)
+            | Alternative::RepeatedCaptures(_) => true,
             Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
             _ => false,
         });

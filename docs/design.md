@@ -682,9 +682,29 @@ the selected endpoint. Zero iterations retain undefined inner slots. Complete
 enclosing groups and alternatives keep their existing layouts and original
 source/flags. Conservative optional work covers prefix checks, assertion windows
 and complete sticky suffixes; bounds stay scalar, with no recursive plans or
-default quotas. Captures spanning partial variable bodies, repeated choices,
-additional quantifiers, named groups, backreferences and Unicode modes remain
+default quotas. Repeated choices, additional quantifiers, named groups,
+backreferences and Unicode modes remain
 pending.
+
+Ordinary groups can now enclose only part of a fixed repeated expression, as in
+`((ab)+)c` or `(x)((ab)+(c))` (CompileSubpattern, 22.2.2.3). An iterative group
+scan identifies the single quantified group. A dry fixed-sequence layout replaces
+that complete repetition with a one-unit capture marker, distinguishing endpoints
+before and after even a zero-width repetition. Captures outside the repeated atom
+store checked offsets from the successful match's start or end; captures inside
+it delegate to the existing final-iteration/undefined layout. Every enclosing
+capture participates even when its repeated contents take zero iterations.
+The matching body removes outside group delimiters with empty noncapturing
+barriers, preserving lexical boundaries so `\0()1` cannot become an octal escape.
+It then reuses the fixed-prefix/group/sequel matcher without changing candidate
+order, assertion neighbors or greedy/lazy endpoints. Complete outer wrappers
+retain their earlier scalar layouts and optional work. Shared immutable capture
+metadata keeps clones and destruction iterative; result Strings retain equal-range
+sharing while indices pairs remain distinct. Original source, flags, global/sticky
+state and generic consumers use their existing paths. Preparation rejects other
+variable syntax before constructing sets. No recursion, expanded bounds, default
+quotas or dependencies are introduced. Repeated choices, additional quantifiers,
+named groups, backreferences and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

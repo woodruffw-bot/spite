@@ -1262,6 +1262,30 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Partial enclosing captures around one repeated fixed group have four core
+regressions: an inspected 172-record insta snapshot, direct source-order and
+zero-iteration ranges, an independent exhaustive candidate/count/capture oracle
+including outer multiline anchors, and 100,000 partial captures, long overlapping
+runs, clones, bounds, metadata and optional construction work. The new snapshot
+accepts 136 records and rejects 36. Earlier stored results and complete-wrapper
+work metadata remain unchanged. Node agrees on 117,240 stored results across
+sixteen snapshots, 175,840 additional match/capture comparisons and 24 runtime
+programs. Eight runtime regressions cover partial prefix/sequel captures,
+greedy/lazy/bounded and overlapping endpoints, empty/undefined slots and huge
+positive zero-width minima, inner/outer word/input/line assertions, complete
+wrappers and alternatives, original source and copies, global/sticky state,
+escape boundaries, DotAll, pinned case and surrogate positions, generic consumers
+and callbacks, intrinsic Arrays, collection, deep captures and long runs with
+unlimited defaults, and optional host aborts. Two earlier gap programs retain
+repeated choices as the unsupported boundary; all 265 audited gap programs remain
+unsupported. Whole-fixture review enables no new whole programs; inventories
+and the pin remain unchanged. Repeated choices, additional quantifiers, named
+groups, backreferences and Unicode modes remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

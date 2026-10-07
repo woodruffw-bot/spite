@@ -7,7 +7,7 @@ use crate::{
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
-    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
 };
@@ -289,7 +289,7 @@ impl Realm {
                                                         |work| budget.charge(work),
                                                     )? {Ok(Some(RegExpMatcherBody::RepeatedSequence(matcher)))}else{
                                                         if let Some(matcher)=RegExpRepeatedContinuationMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work))? {Ok(Some(RegExpMatcherBody::RepeatedContinuation(matcher)))}else{
-                                                            RegExpRepeatedPrefixedMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work)).map(|m|m.map(RegExpMatcherBody::RepeatedPrefixed))
+                                                            if let Some(matcher)=RegExpRepeatedPrefixedMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work))? {Ok(Some(RegExpMatcherBody::RepeatedPrefixed(matcher)))}else{RegExpRepeatedCaptureMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work)).map(|m|m.map(RegExpMatcherBody::RepeatedCaptures))}
                                                         }
                                                     }
                                                 }

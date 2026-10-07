@@ -45,6 +45,14 @@ struct PreparedSequence {
 }
 
 impl RegExpSequenceMatcher {
+    pub(crate) fn fixed_capture_layout(
+        source: &JsString,
+        dot_all: bool,
+    ) -> Option<(usize, Vec<Range<usize>>)> {
+        let prepared = prepare(source.code_units(), dot_all, true)?;
+        Some((prepared.terms.len(), prepared.captures))
+    }
+
     pub(crate) fn repeated_atom_width(
         source: &JsString,
         dot_all: bool,
