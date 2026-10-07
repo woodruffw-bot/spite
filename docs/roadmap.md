@@ -330,6 +330,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile fixed ordinary class/dot sequences before a single quantified atom/literal continuation, preserving overlapping candidates, captures, flags and assertion-constrained endpoints.
 - [x] Compile fixed ordinary class/dot continuations after a single quantified atom, composing prefix/body/suffix captures, anchors and alternatives with ordered repetition endpoints.
 - [x] Compile outer ordinary word-boundary/non-boundary assertion sequences around supported bodies, composing input/line boundaries, ordered repetition endpoints, captures and alternatives at UTF-16 positions.
+- [x] Compile ordinary word assertions within fixed consuming sequences and groups, including fixed prefixes/continuations of one quantified atom, with exact consuming widths and zero-width captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

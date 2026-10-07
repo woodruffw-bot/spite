@@ -8,7 +8,7 @@ use std::{ops::Range, sync::Arc};
 ///
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
 /// uses one quantifier, with ordinary capturing/noncapturing wrappers. The
-/// remainder uses fixed characters, sets, dots and ordinary capturing/noncapturing groups.
+/// remainder uses fixed characters, sets, dots, word assertions and ordinary groups.
 /// Literal continuations search linearly; fixed sets inspect at most their atom
 /// count per input candidate, without allocation, expanded repetitions or recursion.
 #[derive(Clone, Debug)]
@@ -148,7 +148,7 @@ impl RegExpQuantifiedContinuationMatcher {
     pub fn search_passes(&self) -> usize {
         match &self.0.suffix {
             Suffix::Literal(_) => 2,
-            Suffix::Sequence(m) => m.atom_count().saturating_add(1),
+            Suffix::Sequence(m) => m.search_passes(false).saturating_add(1),
         }
     }
 

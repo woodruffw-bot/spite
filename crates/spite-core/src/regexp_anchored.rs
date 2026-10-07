@@ -9,8 +9,8 @@ use std::ops::Range;
 
 /// A supported ordinary sequence with outer `^`, `$`, `\b` or `\B` assertions.
 ///
-/// Patterns must already be validated without `u` or `v`. Assertions embedded
-/// within consuming bodies remain unsupported. Capture ranges retain the body's
+/// Patterns must already be validated without `u` or `v`. Input/line assertions
+/// embedded within consuming bodies remain unsupported. Capture ranges retain the body's
 /// relative UTF-16 offsets; quantified capture ranges depend on the match.
 /// Compilation is iterative; literal and quantified search remain linear.
 /// Fixed class bodies retain the sequence candidate search bound.
@@ -135,13 +135,7 @@ impl RegExpAnchoredMatcher {
             Body::Literal(_) => 2,
             Body::Quantified(m) => m.search_passes().saturating_add(1),
             Body::Prefixed(m) => m.search_passes(sticky).saturating_add(1),
-            Body::Sequence(matcher) => {
-                if sticky {
-                    2
-                } else {
-                    matcher.atom_count().max(1).saturating_add(1)
-                }
-            }
+            Body::Sequence(matcher) => matcher.search_passes(sticky).saturating_add(1),
         };
         consuming.saturating_add(
             2 * (usize::from(self.leading.has_word_boundary())

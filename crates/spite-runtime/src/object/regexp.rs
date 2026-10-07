@@ -91,13 +91,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
             RegExpMatcherBody::QuantifiedContinuation(m) => m.search_passes(),
-            RegExpMatcherBody::Sequence(matcher) => {
-                if sticky {
-                    1
-                } else {
-                    matcher.atom_count().max(1)
-                }
-            }
+            RegExpMatcherBody::Sequence(matcher) => matcher.search_passes(sticky),
             RegExpMatcherBody::Disjunction(matcher) => matcher.search_passes(sticky),
         }
     }

@@ -10,12 +10,12 @@ use std::{ops::Range, sync::Arc};
 /// An ordinary fixed-width prefix before one quantified atom and suffix.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
-/// contains literal characters, sets, dots and unquantified ordinary groups,
+/// contains literal characters, sets, dots, word assertions and unquantified groups,
 /// including empty captures; the body reuses the complete quantified
 /// atom/fixed-continuation grammar. Search streams prefix occurrences and
 /// continuation candidates in monotone order, without allocation or recursion.
-/// Literal prefixes search linearly; fixed sequences inspect at most their atom
-/// count at each input candidate. Sticky search checks only one prefix.
+/// Literal prefixes search linearly; fixed sequences inspect consuming terms and
+/// assertion offsets at each input candidate. Sticky search checks one prefix.
 #[derive(Clone, Debug)]
 pub struct RegExpPrefixedMatcher(Arc<Program>);
 
@@ -168,8 +168,7 @@ impl RegExpPrefixedMatcher {
     pub fn search_passes(&self, sticky: bool) -> usize {
         let prefix_passes = match &self.0.prefix {
             Prefix::Literal(_) => 1,
-            Prefix::Sequence(_) if sticky => 1,
-            Prefix::Sequence(m) => m.atom_count(),
+            Prefix::Sequence(m) => m.search_passes(sticky),
         };
         prefix_passes.saturating_add(self.0.body.search_passes())
     }
@@ -197,7 +196,11 @@ impl RegExpPrefixedMatcher {
         trailing: Assertions,
         multiline: bool,
     ) -> Option<Range<usize>> {
-        if self.0.prefix.matched_len() == 0 {
+        let unconstrained_empty = match &self.0.prefix {
+            Prefix::Literal(m) => m.matched_len() == 0,
+            Prefix::Sequence(m) => m.atom_count() == 0 && !m.has_word_assertions(),
+        };
+        if unconstrained_empty {
             return self
                 .0
                 .body
@@ -278,6 +281,12 @@ fn prefix_end(units: &[u16]) -> Option<usize> {
                 index += consumed;
             }
             42 | 43 | 63 | 123 => return if depth == 0 { last } else { Some(group_start) },
+            92 if units
+                .get(index + 1)
+                .is_some_and(|&unit| unit == 98 || unit == 66) =>
+            {
+                index += 2;
+            }
             92 => {
                 index += 1;
                 if crate::regexp_literal::character_escape(units, &mut index).is_none() {

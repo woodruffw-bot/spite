@@ -86,13 +86,7 @@ impl Alternative {
     fn search_passes(&self, sticky: bool) -> usize {
         match self {
             Self::Literal(_) => 1,
-            Self::Sequence(m) => {
-                if sticky {
-                    1
-                } else {
-                    m.atom_count().max(1)
-                }
-            }
+            Self::Sequence(m) => m.search_passes(sticky),
             Self::Anchored(m) => m.search_passes(sticky),
             Self::Prefixed(m) => m.search_passes(sticky),
             Self::Quantified(_) => 1,

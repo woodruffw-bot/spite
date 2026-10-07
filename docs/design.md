@@ -274,10 +274,29 @@ whole-match starts with the leading conjunction. Existing capture layouts,
 branch order, sticky behavior and generic consumers stay shared. Search needs no
 new allocation or native recursion. Optional search passes include word-neighbor
 checks, including the complete remaining suffix for sticky repetitions; unlimited
-defaults remain unchanged. Assertions embedded inside consuming sequences or
-inside groups within an outer assertion body, and Unicode-mode matching, remain
-pending. Complete enclosing groups around supported root assertion Patterns
-retain the existing normalization and whole-match capture behavior.
+defaults remain unchanged. Complete enclosing groups around supported root
+assertion Patterns retain the existing normalization and whole-match captures.
+
+Fixed consuming sequences also store word assertions at their actual UTF-16
+consuming offsets, including assertions within ordinary groups. Captures use
+consuming widths, so assertion-only and empty groups have exact empty ranges.
+A sparse, ordered vector stores one conjunction per offset; duplicate assertions
+collapse even across group delimiters, and contradictory conjunctions fail. Checks
+read the complete input's neighboring units, preserving boundaries outside the
+matched slice. Search remains iterative and allocates nothing. Programs and
+character sets retain their existing immutable sharing, with optional work covering
+each distinct assertion offset separately from consuming terms.
+
+Fixed prefixes and continuations reuse these plans. An assertion-only prefix must
+filter the candidate stream instead of taking the unconstrained empty-prefix
+shortcut. A continuation's consuming width determines repetition and capture
+endpoints even when assertions add zero-width groups. Greedy/lazy endpoint order,
+whole-run/final-iteration captures, outer boundaries, group normalization and
+alternative offsets stay shared. This also composes word assertions inside
+complete groups around a supported quantified concatenation. Input/line
+assertions embedded within consuming bodies, assertions within a repeated atom,
+multiple quantifiers, named groups, backreferences and Unicode modes remain
+pending.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
 22.2.2.7.1). One bracket class supports raw/escaped characters, ordered ranges,
