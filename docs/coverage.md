@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13496 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13526 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -95,7 +95,7 @@ comma call receivers and indirect eval, String/BigInt results, 100,000 arithmeti
 operations, 1,000 string concatenations, and opted-in host aborts. Ten independent
 Node programs confirm the semantic expectations. Genuine recursive syntax retains
 the existing stack guards; no default quota or test-only allowance is added.
-Stable and MSRV pass the complete 13496-variant corpus, workspace and documentation
+Stable and MSRV pass the complete 13526-variant corpus, workspace and documentation
 tests, and the debug-symbol stack checks. Formatting, Clippy, dependency policy,
 fixture inventory and the pinned Unicode/numeric generator checks also pass.
 
@@ -1601,6 +1601,30 @@ Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspac
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
+
+Fifteen unchanged built-ins/RegExp/named-groups originals add 30 normal/strict
+harness-positive variants after review of all 36 whole programs and metadata at
+the existing pin. They cover native groups/indices and duplicate-name order,
+generic matchAll/replace/replaceAll/search/split, and custom-exec groups. Two
+originals assert invalid group-name SyntaxErrors; these do not establish Unicode
+matching coverage. Twenty-one originals requiring pending named backreferences,
+Unicode matching, lookbehind or additional quantifiers remain excluded without
+credit. The unchanged compareIterator.js helper is newly vendored from the same
+pin, preserving every assertion, source byte, metadata field and copyright.
+Git blob identities and manifest SHA-256 verify all sixteen new files.
+
+The current inventory is 7043 fixtures, eleven unchanged harness files and 7024
+reviewed Script sources. Its 13526 variants are 12049 harness positives, 1469
+parse negatives, four raw positives and four runtime negatives. RegExp builtin
+coverage is 196 positive whole programs in the builtin area, separate from 337 grammar
+fixtures. The exec selection remains 54 of 79 whole originals, with 25 exclusions.
+No pin, prior negative expectation, dependency or unlimited runtime default changes.
+
+Stable and minimum-supported Rust pass all 30 added variants and all 13,526
+full-corpus variants, workspace targets and documentation tests. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass. The harness-count assertion now verifies eleven
+unchanged helpers; its correction passes on both compilers.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
@@ -3359,7 +3383,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13496 variants are four raw positives, 12019 positives using the upstream
+Rust. Its 13526 variants are four raw positives, 12049 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
