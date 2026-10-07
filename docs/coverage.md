@@ -845,6 +845,32 @@ Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Complete ordinary capturing/noncapturing consuming groups now compile inside
+outer input/multiline anchors. Three core regressions cover an inspected
+87-record insta snapshot, independent boundary/repetition/capture ordering over
+all four LineTerminators, 100,000 enclosing groups with shared clones, long
+successful/failed input runs, unchanged fixed capture APIs and optional host
+charge separation. Three newly supported noncapturing rows change in the prior
+quantified-anchor snapshot; other snapshots retain their values. Eight runtime
+regressions cover whole and final-iteration ranges, lazy repetition constrained
+by assertions, exact input ends and multiline boundaries, participating empty
+groups and undefined captures, global/sticky state and strict writes, composition
+with branch and outer capture prefixes, original slots, pinned case/DotAll and
+UTF-16 ranges, generic consumers and intrinsic Arrays, deep copies after
+collection, unlimited constructor/result sizes and optional host aborts. One
+older gap regression retains an unsupported character-set continuation. All
+145 reviewed constant RegExp gap-loop programs retain Unsupported. Node agrees
+on all 34,410 range/capture comparisons, all 1,716 stored snapshot match/capture
+arrays and sixteen runtime programs. Scalar counts retain the existing
+nonrecursive body plan and search bounds without a wrapper tree or capture
+matrix. Choices inside anchored bodies, quantified multi-atom groups, embedded
+assertions/continuations, named groups, backreferences and Unicode modes remain
+pending. The fixture review enables no further whole programs. The corpus,
+inventories and pin are unchanged.
+Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

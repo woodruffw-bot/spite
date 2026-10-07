@@ -376,6 +376,21 @@ there is no wrapper tree, capture matrix, recursion or repetition expansion.
 Nested alternative bodies, groups followed by unsupported continuations and
 quantified multi-atom groups remain pending.
 
+Outer input/multiline anchors can also contain complete ordinary consuming
+groups. The anchored compiler retains existing fixed layouts when a body
+already compiles. Otherwise it removes only complete ordinary wrappers and
+retries the same literal, sequence, quantified and literal-continuation plans.
+A checked total count and one whole-body prefix count resolve enclosing capture
+slots before shifted inner captures. Assertions constrain repetition endpoints
+before capture ranges are resolved, including lazy runs and zero iterations.
+The same prefix layout composes with alternative offsets and outer runtime
+captures. Groups with their own quantifier or a following continuation stay in
+the body; unsupported whole bodies still reject the complete plan. Optional
+construction work covers group scans, the private copy and retry. Search keeps
+the existing assertion and consuming bounds without a wrapper tree, recursion,
+capture matrices or allocation. Choices inside an anchored body, embedded
+assertions, named groups and backreferences remain pending.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

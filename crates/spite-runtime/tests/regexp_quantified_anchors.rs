@@ -134,7 +134,7 @@ fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
         "/^a+[b]$/.test('ab')",
         "/^(ab)+$/.test('a')",
         "/^a+b+$/.test('ab')",
-        "/^(?:a+b)$/.test('ab')",
+        "/^(?:a+[b])$/.test('ab')",
         "/^a+$/u.test('a')",
     ] {
         assert!(

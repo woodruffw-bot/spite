@@ -104,9 +104,9 @@ expression: rows
 "^a+b+$" i=false m=false s=false unsupported
 "^a+b+$" i=true m=true s=false unsupported
 "^a+b+$" i=false m=false s=true unsupported
-"^(?:a+b)$" i=false m=false s=false unsupported
-"^(?:a+b)$" i=true m=true s=false unsupported
-"^(?:a+b)$" i=false m=false s=true unsupported
+"^(?:a+b)$" i=false m=false s=false captures=[] full_suffix=true passes=3/3 "":None/None "a":None/None "A":None/None "aaaa":None/None "baaa":None/None "abab":None/None "a\u000ab":None/None "a\u000d\u000ab":None/None "\u000d\u000a":None/None "x\u000aaaa\u000dy":None/None "aa\u2028a":None/None "\u2029":None/None "aax":None/None "12x":None/None "Nevermore":None/None "evermore":None/None "aaa$":None/None "aaa\u005c":None/None
+"^(?:a+b)$" i=true m=true s=false captures=[] full_suffix=true passes=3/3 "":None/None "a":None/None "A":None/None "aaaa":None/None "baaa":None/None "abab":None/None "a\u000ab":None/None "a\u000d\u000ab":None/None "\u000d\u000a":None/None "x\u000aaaa\u000dy":None/None "aa\u2028a":None/None "\u2029":None/None "aax":None/None "12x":None/None "Nevermore":None/None "evermore":None/None "aaa$":None/None "aaa\u005c":None/None
+"^(?:a+b)$" i=false m=false s=true captures=[] full_suffix=true passes=3/3 "":None/None "a":None/None "A":None/None "aaaa":None/None "baaa":None/None "abab":None/None "a\u000ab":None/None "a\u000d\u000ab":None/None "\u000d\u000a":None/None "x\u000aaaa\u000dy":None/None "aa\u2028a":None/None "\u2029":None/None "aax":None/None "12x":None/None "Nevermore":None/None "evermore":None/None "aaa$":None/None "aaa\u005c":None/None
 "^^a*$" i=false m=false s=false unsupported
 "^^a*$" i=true m=true s=false unsupported
 "^^a*$" i=false m=false s=true unsupported
