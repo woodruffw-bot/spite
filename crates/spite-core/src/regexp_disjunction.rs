@@ -452,6 +452,7 @@ fn alternative_ranges(units: &[u16], dot_all: bool) -> Option<Vec<Range<usize>>>
     let mut start = 0;
     let mut index = 0;
     let mut groups = Vec::new();
+    let mut choice_groups = Vec::new();
     let mut in_class = false;
     while let Some(&unit) = units.get(index) {
         index += 1;
@@ -477,24 +478,20 @@ fn alternative_ranges(units: &[u16], dot_all: bool) -> Option<Vec<Range<usize>>>
                     }
                     index += 2;
                 }
-                groups.push((start, false));
+                groups.push((start, false, choice_groups.len()));
             }
             0x29 => {
-                let (start, has_choices) = groups.pop()?;
+                let (start, has_choices, first_choice) = groups.pop()?;
                 if has_choices {
-                    // Reject wider or capture-dependent choices before any
-                    // branch construction. One-unit unions have the same
-                    // endpoints in both fixed and quantified compositions.
-                    if crate::regexp_sequence::unit_choice_atom(&units[start..index], dot_all)
-                        .is_none()
-                    {
-                        crate::regexp_sequence::unit_choice_plan(&units[start..index], dot_all)?;
-                    }
+                    // Validate only disjoint containing choices after the scan.
+                    // Nested one-unit choices must not rescan every ancestor.
+                    choice_groups.truncate(first_choice);
+                    choice_groups.push(start..index);
                 }
             }
             0x5b => in_class = true,
             0x7c => {
-                if let Some((_, choices)) = groups.last_mut() {
+                if let Some((_, choices, _)) = groups.last_mut() {
                     *choices = true;
                 } else {
                     ranges.push(start..index - 1);
@@ -506,6 +503,13 @@ fn alternative_ranges(units: &[u16], dot_all: bool) -> Option<Vec<Range<usize>>>
     }
     if !groups.is_empty() || in_class || ranges.is_empty() {
         return None;
+    }
+    // Complete rejection remains before any branch construction or work charge.
+    for range in choice_groups {
+        let source = &units[range];
+        if crate::regexp_sequence::unit_choice_atom(source, dot_all).is_none() {
+            crate::regexp_sequence::unit_choice_plan(source, dot_all)?;
+        }
     }
     ranges.push(start..units.len());
     Some(ranges)

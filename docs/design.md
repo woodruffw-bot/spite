@@ -805,19 +805,20 @@ before construction. Branch-specific captures, empty/wider alternatives,
 additional quantifiers, named groups, backreferences and Unicode modes remain
 pending.
 
-Complete ordinary noncapturing wrappers can also enclose an individual one-unit
-alternative branch (CompileSubpattern, 22.2.2.3). Branch preparation finds its
-complete group end and strips all complete ordinary wrappers iteratively. Any
-capturing wrapper rejects the predicate path; the remaining body must parse as
-exactly one literal, class, class escape or dot. This retains each branch's one
-consuming endpoint without introducing conditional capture slots. Bare and
-wrapped branches use the same positive/inverted union paths, original flags,
-fixed capture layout and repeated/partial capture plans. Root group captures
-remain source ordered, and zero repetitions leave their inner slots undefined.
-Deep branch wrappers use linear scans and flat immutable metadata, with no
-recursive matching, expanded choice combinations or default quotas. Branch
-captures, empty/wider bodies, nested choices within a branch, assertions inside
-branches, additional quantifiers and Unicode modes remain pending.
+Capture-free one-unit alternatives can nest within ordinary noncapturing groups
+(CompileSubpattern, 22.2.2.3). An explicit stack verifies that every branch has
+exactly one consuming literal, class, class escape or dot, while collecting its
+leaves into one flat predicate. Groups containing direct choices own their
+nested choice ranges, so preparation visits disjoint source spans in order;
+it does not repeatedly normalize nested groups or expand branch combinations.
+All leaves have the same endpoint and no conditional capture slots. Root group
+captures remain source ordered, and zero repetitions leave their inner slots
+undefined. Positive leaves use the existing escaped class representation;
+inverted leaves merge their individual canonicalized-and-inverted memberships.
+Fixed, repeated and partial capture plans retain original flags and source text.
+Deep nesting uses linear scans and explicit frames, with no native recursion or
+default quotas. Branch captures, empty/wider bodies, assertions inside branches,
+additional quantifiers and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

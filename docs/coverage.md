@@ -1487,6 +1487,35 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Nested capture-free one-unit alternatives add three core regressions: an
+inspected 248-record insta snapshot, an independent exhaustive candidate/capture
+oracle, and 100,000 nested choices both within a fixed body and before a top-level
+alternative. Deep layouts, shared clones, 10,000 independent slots sharing a
+predicate within an opted-in construction allowance, early host aborts and
+unsupported-before-construction behavior are retained. The new snapshot accepts
+176 records and rejects 72. Twelve earlier rows become accepted; every earlier
+accepted row remains unchanged. Node agrees on 236,682 stored results across 30
+snapshots, 359,156 additional match/capture comparisons and 38 runtime programs.
+The 10,000-capture source exceeds Node's compiled-Pattern capacity and remains a
+native regression. Eleven runtime regressions cover nested literal/class/
+inverted/escape/dot choices, static/final-iteration/partial captures, bounds,
+internal/outer assertions, alternative offsets, original source and copies/
+global/sticky state, case, escapes and surrogates, consumers/callbacks, intrinsic
+Arrays, collection, 100,000 nested choices and long runs with unlimited defaults,
+and optional host aborts. Alternative preflight validates disjoint containing
+choice groups once, preserving early rejection and avoiding repeated ancestor
+parsing. All 336 audited gap programs remain unsupported, and all runtime targets pass.
+Whole-fixture diagnostics retain 30 passed and 50 unsupported variants with zero
+failures or limits; no additional whole original becomes eligible, and inventories
+and the pin remain unchanged. Branch-specific captures, empty/wider bodies,
+assertions within branches, additional quantifiers, named groups, backreferences
+and Unicode modes remain pending.
+
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
