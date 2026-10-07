@@ -3,8 +3,8 @@
 use super::{Error, Objects};
 use spite_core::{
     JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher, RegExpDisjunctionMatcher,
-    RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
-    RegExpSequenceMatcher,
+    RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher,
 };
 use spite_heap::Handle;
 use std::ops::Range;
@@ -18,6 +18,7 @@ pub(crate) enum RegExpMatcherBody {
     Disjunction(RegExpDisjunctionMatcher),
     Quantified(RegExpQuantifiedMatcher),
     QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
+    Prefixed(RegExpPrefixedMatcher),
 }
 
 /// A complete body's plan with a prefix of enclosing whole-match captures.
@@ -34,6 +35,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Literal(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Character(_) => 0,
+            RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::Anchored(m) => m.capture_count(),
             RegExpMatcherBody::Disjunction(m) => m.capture_count(),
             RegExpMatcherBody::Quantified(m) => m.capture_count(),
@@ -60,6 +62,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::Anchored(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::Character(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::Prefixed(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::QuantifiedContinuation(matcher) => {
                 (matcher.find(input, start, sticky)?, 0)
@@ -86,6 +89,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
             RegExpMatcherBody::Character(_) => 1,
             RegExpMatcherBody::Quantified(_) => 1,
+            RegExpMatcherBody::Prefixed(_) => 3,
             RegExpMatcherBody::QuantifiedContinuation(_) => 2,
             RegExpMatcherBody::Sequence(matcher) => {
                 if sticky {
@@ -101,7 +105,9 @@ impl RegExpMatcher {
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
         let full_suffix = match &self.body {
-            RegExpMatcherBody::Quantified(_) | RegExpMatcherBody::QuantifiedContinuation(_) => true,
+            RegExpMatcherBody::Quantified(_)
+            | RegExpMatcherBody::QuantifiedContinuation(_)
+            | RegExpMatcherBody::Prefixed(_) => true,
             RegExpMatcherBody::Anchored(matcher) => matcher.requires_full_suffix(),
             RegExpMatcherBody::Disjunction(matcher) => matcher.requires_full_suffix(),
             _ => false,
@@ -137,6 +143,9 @@ impl RegExpMatch<'_> {
             RegExpMatcherBody::Literal(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Character(_) => return None,
+            RegExpMatcherBody::Prefixed(matcher) => {
+                return matcher.capture_range(index, &self.range);
+            }
             RegExpMatcherBody::Anchored(matcher) => {
                 return matcher.capture_range(index, &self.range);
             }

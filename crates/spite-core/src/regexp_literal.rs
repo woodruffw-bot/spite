@@ -111,6 +111,25 @@ impl RegExpLiteralMatcher {
         self.find_if(input, start, sticky, |_| true)
     }
 
+    /// Streams nonempty literal occurrences, retaining the failure state between
+    /// overlapping matches. Each input unit is visited only once.
+    pub(crate) fn matches_from<'a>(
+        &'a self,
+        input: &'a [u16],
+        start: usize,
+    ) -> Option<LiteralMatches<'a>> {
+        if self.0.units.is_empty() {
+            return None;
+        }
+        input.get(start..)?;
+        Some(LiteralMatches {
+            program: &self.0,
+            input,
+            cursor: start,
+            matched: 0,
+        })
+    }
+
     /// Continues the same linear scan after a boundary assertion rejects a match.
     pub(crate) fn find_if(
         &self,
@@ -141,22 +160,34 @@ impl RegExpLiteralMatcher {
                 .then_some(start..start + program.units.len())
                 .filter(&mut accept);
         }
-        let mut matched = 0;
-        for (index, &unit) in suffix.iter().enumerate() {
-            let unit = canonicalize(unit, program.ignore_case);
-            while matched > 0 && unit != program.units[matched] {
-                matched = program.failure[matched - 1];
+        self.matches_from(input, start)?.find(&mut accept)
+    }
+}
+
+pub(crate) struct LiteralMatches<'a> {
+    program: &'a Program,
+    input: &'a [u16],
+    cursor: usize,
+    matched: usize,
+}
+
+impl Iterator for LiteralMatches<'_> {
+    type Item = Range<usize>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(&unit) = self.input.get(self.cursor) {
+            self.cursor += 1;
+            let unit = canonicalize(unit, self.program.ignore_case);
+            while self.matched > 0 && unit != self.program.units[self.matched] {
+                self.matched = self.program.failure[self.matched - 1];
             }
-            if unit == program.units[matched] {
-                matched += 1;
+            if unit == self.program.units[self.matched] {
+                self.matched += 1;
             }
-            if matched == program.units.len() {
-                let end = start + index + 1;
-                let range = end - matched..end;
-                if accept(&range) {
-                    return Some(range);
-                }
-                matched = program.failure[matched - 1];
+            if self.matched == self.program.units.len() {
+                let range = self.cursor - self.matched..self.cursor;
+                self.matched = self.program.failure[self.matched - 1];
+                return Some(range);
             }
         }
         None

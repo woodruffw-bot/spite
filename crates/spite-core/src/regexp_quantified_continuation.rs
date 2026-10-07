@@ -154,7 +154,7 @@ impl RegExpQuantifiedContinuationMatcher {
         )
     }
 
-    fn find_with(
+    pub(crate) fn find_with(
         &self,
         input: &JsString,
         start: usize,

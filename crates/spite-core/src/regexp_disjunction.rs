@@ -1,8 +1,9 @@
 //! Top-level ordinary Disjunction compilation and matching (22.2.2.3).
 
 use crate::{
-    JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
+    JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher,
+    regexp_outer_group_body,
 };
 use std::{ops::Range, sync::Arc};
 
@@ -34,11 +35,13 @@ enum Alternative {
     Anchored(RegExpAnchoredMatcher),
     Quantified(RegExpQuantifiedMatcher),
     QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
+    Prefixed(RegExpPrefixedMatcher),
 }
 
 impl Alternative {
     fn capture_count(&self) -> usize {
         match self {
+            Self::Prefixed(matcher) => matcher.capture_count(),
             Self::Quantified(matcher) => matcher.capture_count(),
             Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
             Self::Anchored(matcher) => matcher.capture_count(),
@@ -48,6 +51,7 @@ impl Alternative {
 
     fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
         match self {
+            Self::Prefixed(matcher) => matcher.capture_range(index, matched),
             Self::Quantified(matcher) => matcher.capture_range(index, matched),
             Self::QuantifiedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::Anchored(matcher) => matcher.capture_range(index, matched),
@@ -66,7 +70,7 @@ impl Alternative {
             Self::Literal(m) => m.capture_ranges(),
             Self::Sequence(m) => m.capture_ranges(),
             Self::Anchored(m) => m.capture_ranges(),
-            Self::Quantified(_) | Self::QuantifiedContinuation(_) => &[],
+            Self::Quantified(_) | Self::QuantifiedContinuation(_) | Self::Prefixed(_) => &[],
         }
     }
     fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
@@ -74,6 +78,7 @@ impl Alternative {
             Self::Literal(m) => m.find(input, start, sticky),
             Self::Sequence(m) => m.find(input, start, sticky),
             Self::Anchored(m) => m.find(input, start, sticky),
+            Self::Prefixed(m) => m.find(input, start, sticky),
             Self::Quantified(m) => m.find(input, start, sticky),
             Self::QuantifiedContinuation(m) => m.find(input, start, sticky),
         }
@@ -89,6 +94,7 @@ impl Alternative {
                 }
             }
             Self::Anchored(m) => m.search_passes(sticky),
+            Self::Prefixed(_) => 3,
             Self::Quantified(_) => 1,
             Self::QuantifiedContinuation(_) => 2,
         }
@@ -172,6 +178,10 @@ fn compile_alternative<E>(
         &mut *charge,
     )? {
         Alternative::QuantifiedContinuation(m)
+    } else if let Some(m) =
+        RegExpPrefixedMatcher::compile_with_work(source, ignore_case, dot_all, &mut *charge)?
+    {
+        Alternative::Prefixed(m)
     } else {
         return Ok(None);
     };
@@ -245,7 +255,9 @@ impl RegExpDisjunctionMatcher {
         }
         charge(alternatives.len())?;
         let full_suffix = alternatives.iter().any(|branch| match &branch.matcher {
-            Alternative::Quantified(_) | Alternative::QuantifiedContinuation(_) => true,
+            Alternative::Quantified(_)
+            | Alternative::QuantifiedContinuation(_)
+            | Alternative::Prefixed(_) => true,
             Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
             _ => false,
         });

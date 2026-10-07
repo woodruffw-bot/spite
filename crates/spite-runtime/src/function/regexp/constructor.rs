@@ -6,8 +6,9 @@ use crate::{
 };
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
-    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
+    RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span,
+    regexp_outer_group_body,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -248,15 +249,26 @@ impl Realm {
                                     if let Some(matcher) = quantified {
                                         Ok(Some(RegExpMatcherBody::Quantified(matcher)))
                                     } else {
-                                        RegExpQuantifiedContinuationMatcher::compile_with_work(
-                                            &matching_source,
-                                            ignore_case,
-                                            dot_all,
-                                            |work| budget.charge(work),
-                                        )
-                                        .map(|matcher| {
-                                            matcher.map(RegExpMatcherBody::QuantifiedContinuation)
-                                        })
+                                        if let Some(matcher) =
+                                            RegExpQuantifiedContinuationMatcher::compile_with_work(
+                                                &matching_source,
+                                                ignore_case,
+                                                dot_all,
+                                                |work| budget.charge(work),
+                                            )?
+                                        {
+                                            Ok(Some(RegExpMatcherBody::QuantifiedContinuation(
+                                                matcher,
+                                            )))
+                                        } else {
+                                            RegExpPrefixedMatcher::compile_with_work(
+                                                &matching_source,
+                                                ignore_case,
+                                                dot_all,
+                                                |work| budget.charge(work),
+                                            )
+                                            .map(|m| m.map(RegExpMatcherBody::Prefixed))
+                                        }
                                     }
                                 }
                             }

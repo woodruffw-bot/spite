@@ -871,6 +871,34 @@ Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Capture-free literal prefixes now precede one quantified atom and optional
+fixed literal continuation. Three core regressions cover an inspected 132-record
+insta snapshot, independent prefix/candidate/repetition/capture ordering across
+overlapping literals and exact bounds, 100,000-unit prefixes, long successful
+and failed overlaps, shared clones, decoded escape lengths, raw surrogate units
+and optional host construction aborts. Existing snapshots keep their values.
+The literal search cursor retains prefix-failure state between occurrences;
+every cursor remains monotone and search allocates no candidate list or capture
+matrix. Eight runtime regressions cover earliest starts before greedy/lazy
+lengths, body/suffix captures excluding the prefix, zero-run undefined versus
+empty groups, global/sticky state and strict writes, anchors and branch/outer
+capture composition, pinned flags, decoded escapes and ordinary-mode surrogate
+quantification, generic consumers and intrinsic Arrays, long copies after
+collection with unlimited defaults and optional work aborts. Earlier gap
+regressions retain nonliteral continuations and multiple quantifiers. Node
+agrees on all 68,328 range/capture comparisons, all 3,264 stored snapshot
+match/capture arrays and twenty runtime programs. Sticky accounting covers the
+complete remaining suffix; prefix search keeps its linear bound. The whole
+fixture review now enables two additional greedy/lazy bounded-prefix programs,
+which are reserved for a separate unchanged-fixture commit. The current corpus,
+inventories and pin are unchanged. Groups/classes/dots in literal prefixes,
+multiple consuming quantifiers, nonliteral continuations, nested choices, named
+groups, backreferences and Unicode modes remain pending.
+
+Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

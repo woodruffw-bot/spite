@@ -391,6 +391,29 @@ the existing assertion and consuming bounds without a wrapper tree, recursion,
 capture matrices or allocation. Choices inside an anchored body, embedded
 assertions, named groups and backreferences remain pending.
 
+A capture-free literal prefix can precede a single quantified atom with a fixed
+literal continuation (CompileSubpattern, 22.2.2.3). Compilation splits only
+complete literal characters/escapes before the first consuming group, class, dot
+or quantifier; unsupported complete bodies remain rejected. Prefix unit length
+comes from the compiled literal, keeping escaped characters and surrogate units
+aligned with input offsets. The existing literal prefix-failure search now
+exposes an allocation-free occurrence cursor that retains its failure state
+between overlapping matches. The quantified continuation asks that cursor for
+the next prefix endpoint at or after its monotone run/bounds frontier. Increasing
+prefix endpoints also mean increasing whole-match starts, preserving earliest
+starts before greedy/lazy endpoint selection. Each cursor visits input units
+only linearly; no candidate list, repeated suffix scans, capture matrix or native
+recursion is needed. Captures resolve through the body range after excluding
+the fixed prefix; enclosing whole-match captures still include the prefix.
+Sticky matching first checks the prefix at the exact requested start. Outer
+anchors filter whole-prefix starts and repetition endpoints before selection.
+Alternatives retain their existing source-order choice and global capture slots.
+Optional search work conservatively covers three consuming passes, or four
+with outer anchors, including the complete suffix for sticky runs. Default
+quotas remain disabled. Groups, classes and dots in the fixed prefix, multiple
+consuming quantifiers, nonliteral continuations and nested choices remain
+pending.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

@@ -179,7 +179,7 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         ("a|[b]+[a]", ""),
         (".a*", ""),
         ("[a]a+", ""),
-        ("ab+", ""),
+        ("ab+c+", ""),
         ("a", "u"),
         ("a", "v"),
     ] {

@@ -13,6 +13,7 @@ mod regexp_escape;
 mod regexp_literal;
 mod regexp_outer_noncapturing;
 mod regexp_pattern_source;
+mod regexp_prefixed;
 mod regexp_quantified;
 mod regexp_quantified_continuation;
 mod regexp_sequence;
@@ -36,6 +37,7 @@ pub use regexp_outer_noncapturing::{
     RegExpOuterGroupBody, regexp_outer_group_body, regexp_outer_noncapturing_body,
 };
 pub use regexp_pattern_source::regexp_pattern_source_units;
+pub use regexp_prefixed::RegExpPrefixedMatcher;
 pub use regexp_quantified::RegExpQuantifiedMatcher;
 pub use regexp_quantified_continuation::RegExpQuantifiedContinuationMatcher;
 pub use regexp_sequence::RegExpSequenceMatcher;

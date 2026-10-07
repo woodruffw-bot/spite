@@ -1,8 +1,8 @@
 //! Ordinary consuming sequences with outer input/line anchors (22.2.2.4).
 
 use crate::{
-    JsString, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
-    RegExpSequenceMatcher, regexp_outer_group_body,
+    JsString, RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::ops::Range;
 
@@ -28,6 +28,7 @@ enum Body {
     Literal(RegExpLiteralMatcher),
     Sequence(RegExpSequenceMatcher),
     Quantified(RegExpQuantifiedContinuationMatcher),
+    Prefixed(RegExpPrefixedMatcher),
 }
 
 impl RegExpAnchoredMatcher {
@@ -46,6 +47,9 @@ impl RegExpAnchoredMatcher {
         }
         let index = index - self.enclosing_captures;
         if let Body::Quantified(matcher) = &self.body {
+            return matcher.capture_range(index, matched);
+        }
+        if let Body::Prefixed(matcher) = &self.body {
             return matcher.capture_range(index, matched);
         }
         let relative = self.body.capture_ranges().get(index)?;
@@ -146,6 +150,7 @@ impl RegExpAnchoredMatcher {
         match &self.body {
             Body::Literal(_) => 2,
             Body::Quantified(_) => 3,
+            Body::Prefixed(_) => 4,
             Body::Sequence(matcher) => {
                 if sticky {
                     2
@@ -158,7 +163,7 @@ impl RegExpAnchoredMatcher {
 
     /// Repetition may inspect the entire remaining input even at one sticky start.
     pub fn requires_full_suffix(&self) -> bool {
-        matches!(self.body, Body::Quantified(_))
+        matches!(self.body, Body::Quantified(_) | Body::Prefixed(_))
     }
 
     /// Finds the earliest match whose anchors both succeed.
@@ -180,6 +185,14 @@ impl RegExpAnchoredMatcher {
         match &self.body {
             Body::Literal(matcher) => matcher.find_if(input, start, sticky, accept),
             Body::Sequence(matcher) => matcher.find_if(input, start, sticky, accept),
+            Body::Prefixed(matcher) => matcher.find_anchored(
+                input,
+                start,
+                sticky,
+                self.at_start,
+                self.at_end,
+                self.multiline,
+            ),
             Body::Quantified(matcher) => matcher.find_anchored(
                 input,
                 start,
@@ -196,6 +209,7 @@ impl Body {
     fn capture_count(&self) -> usize {
         match self {
             Self::Quantified(m) => m.capture_count(),
+            Self::Prefixed(m) => m.capture_count(),
             _ => self.capture_ranges().len(),
         }
     }
@@ -203,7 +217,7 @@ impl Body {
         match self {
             Self::Literal(m) => m.capture_ranges(),
             Self::Sequence(m) => m.capture_ranges(),
-            Self::Quantified(_) => &[],
+            Self::Quantified(_) | Self::Prefixed(_) => &[],
         }
     }
 }
@@ -231,6 +245,10 @@ fn compile_body<E>(
         &mut *charge,
     )? {
         Body::Quantified(m)
+    } else if let Some(m) =
+        RegExpPrefixedMatcher::compile_with_work(source, ignore_case, dot_all, &mut *charge)?
+    {
+        Body::Prefixed(m)
     } else {
         return Ok(None);
     };
