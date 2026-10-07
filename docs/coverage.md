@@ -1386,6 +1386,35 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+One-unit ordinary class/class-escape/dot alternatives add three core regressions:
+an inspected 240-record insta snapshot, exhaustive membership checks over every
+UTF-16 unit including complemented class escapes and exact dotAll exclusions,
+and 100,000 enclosing captures, 100,000 class alternatives, 10,000 distinct slots
+sharing one predicate, clones and optional construction aborts. The new snapshot
+accepts 168 records and rejects 72; 37 earlier snapshot records now execute.
+Every earlier accepted row remains unchanged. Node agrees on 194,182 stored
+results across 27 snapshots, 330,876 additional match/capture comparisons and
+32 runtime programs. The 10,000-capture source exceeds Node's compiled-Pattern
+capacity and remains a native regression. Ten runtime regressions cover class
+range/escape boundaries, complemented class escapes, dotAll and line terminators,
+empty-set alternatives and zero iterations, static/final-iteration/partial
+captures, bounds and asserted endpoints, alternatives, original source and
+copies/global/sticky state, pinned case and surrogates, consumers/callbacks,
+intrinsic Arrays, collection, deep captures and long runs with unlimited defaults,
+and optional host aborts. Six earlier gap programs retain inverted alternatives;
+all 309 audited gap programs remain unsupported. All runtime targets pass.
+Whole-fixture diagnostics now pass 30 variants and report 50 unsupported, with
+zero failures or limits; one additional whole original passes both Script modes.
+Vendoring that unchanged source remains a separate review/commit, so this change
+adds no fixture credit and preserves inventories and the existing pin. Outer
+inverted-class and branch-specific choices, empty/wider alternatives, additional
+quantifiers, named groups, backreferences and Unicode modes remain pending.
+
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

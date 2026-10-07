@@ -38,8 +38,8 @@ expression: rows
 "[a]{1}" i=true: captures=None matches=None
 "[a]|b" i=false: captures=None matches=None
 "[a]|b" i=true: captures=None matches=None
-"([a]|b)" i=false: captures=None matches=None
-"([a]|b)" i=true: captures=None matches=None
+"([a]|b)" i=false: captures=Some([0..1]) matches=Some([None, Some(1..2), Some(1..2), Some(0..1), Some(0..1), Some(3..4)])
+"([a]|b)" i=true: captures=Some([0..1]) matches=Some([None, Some(0..1), Some(1..2), Some(0..1), Some(0..1), Some(3..4)])
 "^[a]" i=false: captures=None matches=None
 "^[a]" i=true: captures=None matches=None
 "[a]$" i=false: captures=None matches=None

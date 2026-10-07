@@ -100,6 +100,29 @@ impl PreparedCharacter {
         ))
     }
 
+    /// Emits a unionable ordinary class body without fusing range boundaries.
+    /// Outer inverted classes need predicate unions and are not flattened here.
+    pub(crate) fn append_union_body(&self, output: &mut Vec<u16>) -> Option<()> {
+        if self.inverted {
+            return None;
+        }
+        for &atom in &self.atoms {
+            match atom {
+                Atom::Character(unit) => append_class_unit(output, unit),
+                Atom::Range(start, end) => append_class_range(output, start, end),
+                Atom::Set(kind) => output.extend_from_slice(&[92, kind]),
+                Atom::Dot(true) => append_class_range(output, 0, u16::MAX),
+                Atom::Dot(false) => {
+                    // Dot excludes exactly LF, CR, LS and PS in ordinary mode.
+                    for (start, end) in [(0, 9), (11, 12), (14, 0x2027), (0x202a, u16::MAX)] {
+                        append_class_range(output, start, end);
+                    }
+                }
+            }
+        }
+        Some(())
+    }
+
     pub(crate) fn compile_with_work<E>(
         self,
         ignore_case: bool,
@@ -165,6 +188,20 @@ impl Program {
             }
         }
     }
+}
+
+pub(crate) fn append_class_unit(output: &mut Vec<u16>, unit: u16) {
+    output.extend_from_slice(&[92, 117]);
+    for shift in [12, 8, 4, 0] {
+        let digit = (unit >> shift) & 15;
+        output.push(if digit < 10 { 48 + digit } else { 87 + digit });
+    }
+}
+
+fn append_class_range(output: &mut Vec<u16>, start: u16, end: u16) {
+    append_class_unit(output, start);
+    output.push(45);
+    append_class_unit(output, end);
 }
 
 fn prepare(units: &[u16], dot_all: bool) -> Option<(Vec<Atom>, bool, usize)> {

@@ -65,7 +65,7 @@ impl RegExpRepeatedCaptureMatcher {
             return Ok(None);
         }
         let normalized =
-            crate::regexp_sequence::normalize_literal_unit_choices(source.code_units())
+            crate::regexp_sequence::normalize_unit_choices(source.code_units(), dot_all)
                 .map(JsString::from_code_units);
         let matching_source = normalized.as_ref().unwrap_or(source);
         let units = matching_source.code_units();

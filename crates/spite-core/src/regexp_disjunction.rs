@@ -297,7 +297,7 @@ impl RegExpDisjunctionMatcher {
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let Some(ranges) = alternative_ranges(source.code_units()) else {
+        let Some(ranges) = alternative_ranges(source.code_units(), dot_all) else {
             return Ok(None);
         };
         let units = source.code_units();
@@ -447,7 +447,7 @@ impl RegExpDisjunctionMatcher {
     }
 }
 
-fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
+fn alternative_ranges(units: &[u16], dot_all: bool) -> Option<Vec<Range<usize>>> {
     let mut ranges = Vec::new();
     let mut start = 0;
     let mut index = 0;
@@ -483,9 +483,9 @@ fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
                 let (start, has_choices) = groups.pop()?;
                 if has_choices {
                     // Reject wider or capture-dependent choices before any
-                    // branch construction. Literal-unit unions have the same
+                    // branch construction. One-unit unions have the same
                     // endpoints in both fixed and quantified compositions.
-                    crate::regexp_sequence::literal_choice_atom(&units[start..index])?;
+                    crate::regexp_sequence::unit_choice_atom(&units[start..index], dot_all)?;
                 }
             }
             0x5b => in_class = true,

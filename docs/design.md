@@ -734,7 +734,7 @@ charging branches; wider or capture-dependent choices still reject early. Origin
 source, flags and pinned ordinary case behavior remain intact. Normalization is
 linear in source size, with no expanded repetition counts, recursive plans or
 default quotas. Empty/wider branches, captures within individual alternatives,
-class/dot alternatives, multiple
+outer inverted-class alternatives, multiple
 quantifiers, named groups, backreferences and Unicode modes remain pending.
 
 Complete ordinary capturing/noncapturing wrappers can also enclose a literal-unit
@@ -746,7 +746,7 @@ outside the repetition still retain their whole-run or partial ranges. The
 top-level scanner validates each direct choice once at its ordinary group edge,
 keeping deeply nested preparation linear. Earlier accepted layouts remain unchanged.
 Copies share immutable metadata and result Strings; indices pairs remain distinct.
-Branch-specific captures, empty/wider or class/dot alternatives, multiple
+Branch-specific captures, empty/wider or outer inverted-class alternatives, multiple
 quantifiers, named groups, backreferences and Unicode modes remain pending.
 
 Literal-unit choices also compose inside fixed sequences and fixed repeated
@@ -763,7 +763,23 @@ groups, retaining start/end-relative and final-iteration ranges. Preparation
 remains linear without expanded alternatives, recursive plans or default quotas;
 optional construction work accounts for the private source and shares identical
 immutable predicates. Wider/empty alternatives, branch-specific captures,
-class/dot alternatives, multiple quantifiers and Unicode modes remain pending.
+outer inverted-class alternatives, multiple quantifiers and Unicode modes remain pending.
+
+Capture-free alternatives may also contain one ordinary non-inverted character
+class, class escape or dot (CompileSubpattern and CharacterSetMatcher,
+22.2.2.3, 22.2.2.7.1, 22.2.2.8–9). Each successful branch still consumes one unit
+with identical capture endpoints. Preparation serializes parsed class members
+as complete escaped characters/ranges and retains class escapes, so concatenating
+bodies cannot turn `[a-]|[-b]` into a range. Dot emits the complete UTF-16 range
+with `s`, or ranges excluding exactly the four line terminators otherwise.
+Empty classes contribute no members; zero iterations leave repeated captures
+undefined. The normalized private body uses the same fixed, assertion and
+repetition plans and their immutable predicate cache. Ordinary Canonicalize and
+class-escape complements remain unchanged. Source-size preparation is linear and
+optional work accounts for each source/bitmap construction; no default quota or
+expanded choice combinations are introduced. Outer inverted classes need a union
+of already-inverted predicates and remain unsupported, as do branch-specific
+captures, empty/wider alternatives, additional quantifiers and Unicode modes.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

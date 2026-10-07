@@ -119,7 +119,7 @@ fn optional_work_aborts_and_branch_specific_captures_remain_unsupported() {
         r"/(x(a|bc))+/.test('xab')",
         r"/((ab|a))+/.test('aba')",
         r"/((a|))+/.test('a')",
-        r"/((a|[b]))+/.test('ab')",
+        r"/((a|[^b]))+/.test('ab')",
         r"/((a|b))+(c)+/.test('abc')",
         r"/(?<n>(a|b))+/.test('ab')",
         r"/((a|b))+\1/.test('aa')",
