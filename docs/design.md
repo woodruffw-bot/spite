@@ -144,6 +144,15 @@ and escape spelling. Names retain their decoded identifier units without
 normalization or case folding. Flag, duplicate-name and reference early errors
 still precede a successful result, and diagnostics keep the caller's source span.
 Collection, translation and deep groups use flat vectors and iterative scans.
+ParsePattern additionally retains each decoded named backreference and its complete
+original UTF-16 AtomEscape range (22.2.1, GroupSpecifiersThatMatch). Repeated,
+forward and self references stay in source order; escaped spellings and astral or
+surrogate source offsets remain exact. Capture specifiers and reference escapes
+are translated by separate forward scans, keeping preparation linear. The
+count-only validation API collects neither optional metadata inventory and
+preserves its prior validation and flag-error precedence. Reference metadata does
+not by itself add native matching support.
+
 This supplies capture metadata for native matching. Named result construction
 is described below; named backreference execution remains pending.
 Capturing-group totals must remain strictly below 2^32 - 1 (22.2.1.1). Reject

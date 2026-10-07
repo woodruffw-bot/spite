@@ -35,6 +35,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Validate ordinary RegExp character classes, character-valued range endpoints, and range ordering with Unicode surrogate escape pairing.
 - [x] Validate RegExp capture names, named forward references, and alternative-sensitive duplicate-name early errors.
 - [x] Retain decoded CapturingGroupName metadata with source-order capture slots, permitted duplicate names and original UTF-16 GroupSpecifier ranges in ParsePattern.
+- [x] Retain decoded named-reference metadata with complete original UTF-16 AtomEscape ranges, repeated/forward/self uses and unchanged name/flag early errors in ParsePattern.
 - [x] Validate flat UnicodeSetsMode class unions, ranges, reserved punctuation, string disjunctions, and inversion early errors.
 - [x] Validate nested UnicodeSetsMode classes, intersection/subtraction grammar, and their MayContainStrings semantics without native recursion.
 - [x] Validate RegExp Unicode property expressions, exact edition-17 aliases, pinned Unicode values, and v-mode string-property early errors.

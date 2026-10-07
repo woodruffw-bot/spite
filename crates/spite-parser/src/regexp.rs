@@ -87,16 +87,27 @@ pub struct RegExpNamedCapture {
     pub specifier: Range<usize>,
 }
 
-/// Capture metadata retained after the complete Pattern and flags are valid.
+/// One decoded named reference and its original AtomEscape location.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RegExpNamedReference {
+    /// Decoded CapturingGroupName, without normalization or case folding.
+    pub name: JsString,
+    /// UTF-16 range of the entire `\k<name>` escape in the original Pattern.
+    pub escape: Range<usize>,
+}
+
+/// Named capture and reference metadata after the complete Pattern and flags are valid.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RegExpPatternMetadata {
     /// CountLeftCapturingParensWithin for the complete Pattern.
     pub capture_count: u32,
     /// Named captures in source order, including permitted duplicate names.
     pub named_captures: Vec<RegExpNamedCapture>,
+    /// Named references in source order, including repetitions and forward uses.
+    pub named_references: Vec<RegExpNamedReference>,
 }
 
-/// Parses a UTF-16 Pattern and flags, retaining named capture metadata.
+/// Parses a UTF-16 Pattern and flags, retaining named capture and reference metadata.
 ///
 /// Names use CapturingGroupName's Unicode identifier rules in every mode.
 /// Duplicate-name and reference early errors remain the same as validation.
@@ -111,36 +122,56 @@ pub fn parse_regexp_pattern(
         pattern_mode(flags).map_err(|failure| Diagnostic::new(failure.0, span, failure.1))?;
     let mut pattern = Pattern::new(body, mode);
     pattern.named_captures = Some(Vec::new());
+    pattern.reference_metadata = Some(Vec::new());
     pattern
         .validate()
         .map_err(|failure| Diagnostic::new(failure.0, span, failure.1))?;
-    let mut point = 0;
-    let mut unit = 0;
+    let mut translate = utf16_ranges(&pattern.points);
     let named_captures = pattern
         .named_captures
         .take()
         .expect("metadata requested")
         .into_iter()
         .map(|mut capture| {
-            // Every GroupSpecifier is disjoint and follows the previous one.
-            // Translate code-point boundaries with one forward UTF-16 scan.
-            while point < capture.specifier.start {
-                unit += if pattern.points[point] > 0xffff { 2 } else { 1 };
-                point += 1;
-            }
-            let start = unit;
-            while point < capture.specifier.end {
-                unit += if pattern.points[point] > 0xffff { 2 } else { 1 };
-                point += 1;
-            }
-            capture.specifier = start..unit;
+            capture.specifier = translate(capture.specifier);
             capture
+        })
+        .collect();
+    let mut translate = utf16_ranges(&pattern.points);
+    let named_references = pattern
+        .reference_metadata
+        .take()
+        .expect("metadata requested")
+        .into_iter()
+        .map(|mut reference| {
+            reference.escape = translate(reference.escape);
+            reference
         })
         .collect();
     Ok(RegExpPatternMetadata {
         capture_count: pattern.captures,
         named_captures,
+        named_references,
     })
+}
+
+// Each inventory contains ordered, disjoint ranges. Separate forward scans
+// translate capture specifiers and reference escapes in linear source work.
+fn utf16_ranges(points: &[u32]) -> impl FnMut(Range<usize>) -> Range<usize> + '_ {
+    let mut point = 0;
+    let mut unit = 0;
+    move |range| {
+        while point < range.start {
+            unit += if points[point] > 0xffff { 2 } else { 1 };
+            point += 1;
+        }
+        let start = unit;
+        while point < range.end {
+            unit += if points[point] > 0xffff { 2 } else { 1 };
+            point += 1;
+        }
+        start..unit
+    }
 }
 
 /// Validates a UTF-16 Pattern and its flags, returning the capturing-group count.
@@ -198,6 +229,7 @@ struct Pattern {
     largest_reference: Option<Range<usize>>,
     named_references: HashSet<String>,
     named_captures: Option<Vec<RegExpNamedCapture>>,
+    reference_metadata: Option<Vec<RegExpNamedReference>>,
 }
 
 impl Pattern {
@@ -226,6 +258,7 @@ impl Pattern {
             largest_reference: None,
             named_references: HashSet::new(),
             named_captures: None,
+            reference_metadata: None,
         }
     }
 
@@ -500,12 +533,19 @@ impl Pattern {
                 self.property_escape(point == 0x50)?;
             }
             0x6b => {
+                let escape_start = self.pos - 2;
                 if !self.eat(b'<') {
                     return Err(syntax(
                         "regular expression named backreference requires a group name",
                     ));
                 }
                 let name = self.group_name()?;
+                if let Some(references) = &mut self.reference_metadata {
+                    references.push(RegExpNamedReference {
+                        name: JsString::from(name.as_str()),
+                        escape: escape_start..self.pos,
+                    });
+                }
                 self.named_references.insert(name);
             }
             _ => {

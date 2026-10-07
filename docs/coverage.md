@@ -1571,6 +1571,25 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+ParsePattern also retains decoded named references and complete original UTF-16
+AtomEscape ranges in source order. Three parser regressions cover an inspected
+72-record insta snapshot across ordinary/u/v modes (54 accepted and 18 rejected),
+explicit names and source spellings, forward/self/repeated references, escaped
+backslash boundaries, case-sensitive name lookup, astral and lone-surrogate offsets,
+flag-error precedence, 100,000 nested groups and 100,000 repeated references with
+unlimited defaults. Each metadata inventory uses its own linear UTF-16 translation
+scan; count-only validation collects neither inventory. The existing 108-record
+capture snapshot adds the reference field; all earlier capture fields, diagnostics
+and outcomes compare exactly with the previous snapshot. Every parser target and
+documentation check passes, as does Clippy with warnings denied. No matching or
+fixture credit is added, and corpus inventories, the pin, dependencies and runtime
+defaults are unchanged. Native named-reference execution remains pending.
+
+Stable and minimum-supported Rust pass all 13,526 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Core EscapeRegExpPattern source serialization handles empty Patterns, solidus,
 all four raw line terminators and existing escape parity without allocating.
 Two inspected snapshots cover 46 UTF-16 records, including ordinary Pattern
