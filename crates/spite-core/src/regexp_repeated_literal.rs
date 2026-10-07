@@ -206,7 +206,7 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn group_end(units: &[u16]) -> Option<usize> {
+pub(crate) fn group_end(units: &[u16]) -> Option<usize> {
     if units.first() != Some(&0x28) {
         return None;
     }

@@ -45,6 +45,12 @@ struct PreparedSequence {
 }
 
 impl RegExpSequenceMatcher {
+    pub(crate) fn repeated_atom_width(source: &JsString, dot_all: bool) -> Option<usize> {
+        let prepared = prepare(source.code_units(), dot_all, false)?;
+        (prepared.terms.len() >= 2 && prepared.boundaries.is_empty())
+            .then_some(prepared.terms.len())
+    }
+
     /// Compiles fixed terms and word assertions, returning None for other syntax.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, dot_all, |_| {

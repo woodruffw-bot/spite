@@ -1088,6 +1088,26 @@ Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Standalone repeated fixed class/dot groups have three core regressions: an
+inspected 150-record insta snapshot, an independent exhaustive phase-run and
+capture oracle, and large minimums, shared sets, 100,000 nested captures,
+100,000-unit sticky groups, cloned plans and optional construction work. Earlier
+stored snapshots remain unchanged. Eight runtime regressions cover earliest
+greedy/lazy and bounded iterations, overlapping candidates, exact nested/empty
+and undefined slots, complete enclosing/branch captures, source-order ties,
+global/sticky state, class escapes, DotAll, pinned case behavior, surrogate
+offsets, generic consumers and callbacks, intrinsic results, collection, large
+minimums with unlimited defaults and optional host aborts. Node agrees on 49,200
+stored results across ten snapshots, 118,560 additional match/capture comparisons
+and 22 runtime programs. Eight earlier gap programs now exercise choices inside
+repeated groups. Whole-fixture review enables no new programs; inventories and
+the Test262 pin are unchanged. Assertions inside or around repeated groups,
+surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
+named groups, backreferences and Unicode modes remain pending.
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

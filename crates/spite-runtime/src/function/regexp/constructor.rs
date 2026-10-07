@@ -8,7 +8,7 @@ use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedLiteralMatcher,
-    RegExpSequenceMatcher, Span, regexp_outer_group_body,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -273,11 +273,20 @@ impl Realm {
                                             )? {
                                                 Ok(Some(RegExpMatcherBody::Prefixed(matcher)))
                                             } else {
-                                                RegExpRepeatedLiteralMatcher::compile_with_work(
+                                                if let Some(matcher) = RegExpRepeatedLiteralMatcher::compile_with_work(
                                                     &matching_source,
                                                     ignore_case,
                                                     |work| budget.charge(work),
-                                                ).map(|m| m.map(RegExpMatcherBody::RepeatedLiteral))
+                                                )? {
+                                                    Ok(Some(RegExpMatcherBody::RepeatedLiteral(matcher)))
+                                                } else {
+                                                    RegExpRepeatedSequenceMatcher::compile_with_work(
+                                                        &matching_source,
+                                                        ignore_case,
+                                                        dot_all,
+                                                        |work| budget.charge(work),
+                                                    ).map(|m| m.map(RegExpMatcherBody::RepeatedSequence))
+                                                }
                                             }
                                         }
                                     }

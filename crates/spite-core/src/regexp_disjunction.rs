@@ -3,7 +3,7 @@
 use crate::{
     JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedLiteralMatcher,
-    RegExpSequenceMatcher, regexp_outer_group_body,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::{ops::Range, sync::Arc};
 
@@ -38,6 +38,7 @@ enum Alternative {
     QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
     Prefixed(RegExpPrefixedMatcher),
     RepeatedLiteral(RegExpRepeatedLiteralMatcher),
+    RepeatedSequence(RegExpRepeatedSequenceMatcher),
 }
 
 impl Alternative {
@@ -45,6 +46,7 @@ impl Alternative {
         match self {
             Self::Prefixed(matcher) => matcher.capture_count(),
             Self::RepeatedLiteral(matcher) => matcher.capture_count(),
+            Self::RepeatedSequence(matcher) => matcher.capture_count(),
             Self::Quantified(matcher) => matcher.capture_count(),
             Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
             Self::Anchored(matcher) => matcher.capture_count(),
@@ -56,6 +58,7 @@ impl Alternative {
         match self {
             Self::Prefixed(matcher) => matcher.capture_range(index, matched),
             Self::RepeatedLiteral(matcher) => matcher.capture_range(index, matched),
+            Self::RepeatedSequence(matcher) => matcher.capture_range(index, matched),
             Self::Quantified(matcher) => matcher.capture_range(index, matched),
             Self::QuantifiedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::Anchored(matcher) => matcher.capture_range(index, matched),
@@ -77,7 +80,8 @@ impl Alternative {
             Self::Quantified(_)
             | Self::QuantifiedContinuation(_)
             | Self::Prefixed(_)
-            | Self::RepeatedLiteral(_) => &[],
+            | Self::RepeatedLiteral(_)
+            | Self::RepeatedSequence(_) => &[],
         }
     }
     fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
@@ -87,6 +91,7 @@ impl Alternative {
             Self::Anchored(m) => m.find(input, start, sticky),
             Self::Prefixed(m) => m.find(input, start, sticky),
             Self::RepeatedLiteral(m) => m.find(input, start, sticky),
+            Self::RepeatedSequence(m) => m.find(input, start, sticky),
             Self::Quantified(m) => m.find(input, start, sticky),
             Self::QuantifiedContinuation(m) => m.find(input, start, sticky),
         }
@@ -98,6 +103,7 @@ impl Alternative {
             Self::Anchored(m) => m.search_passes(sticky),
             Self::Prefixed(m) => m.search_passes(sticky),
             Self::RepeatedLiteral(m) => m.search_passes(),
+            Self::RepeatedSequence(m) => m.search_passes(sticky),
             Self::Quantified(_) => 1,
             Self::QuantifiedContinuation(m) => m.search_passes(),
         }
@@ -213,6 +219,13 @@ fn compile_alternative<E>(
         RegExpRepeatedLiteralMatcher::compile_with_work(source, ignore_case, &mut *charge)?
     {
         Alternative::RepeatedLiteral(m)
+    } else if let Some(m) = RegExpRepeatedSequenceMatcher::compile_with_work(
+        source,
+        ignore_case,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::RepeatedSequence(m)
     } else {
         return Ok(None);
     };
@@ -289,7 +302,8 @@ impl RegExpDisjunctionMatcher {
             Alternative::Quantified(_)
             | Alternative::QuantifiedContinuation(_)
             | Alternative::Prefixed(_)
-            | Alternative::RepeatedLiteral(_) => true,
+            | Alternative::RepeatedLiteral(_)
+            | Alternative::RepeatedSequence(_) => true,
             Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
             _ => false,
         });

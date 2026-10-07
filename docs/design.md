@@ -319,8 +319,8 @@ alternative offsets retain the shared layout. Runtime dispatch and complete-body
 fallbacks pass the same multiline flag throughout. Search remains monotone,
 allocation-free and iterative; optional work covers fixed boundary checks over
 the complete suffix even for sticky repetitions. Assertions inside a repeated
-atom, repeated groups containing sets or choices, compositions around repeated
-literal groups, multiple quantifiers, named groups, backreferences and Unicode
+atom, repeated groups containing choices, compositions around repeated
+consuming groups, multiple quantifiers, named groups, backreferences and Unicode
 modes remain pending.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
@@ -547,8 +547,29 @@ last iteration; zero iterations leave every such slot undefined. Empty inner
 groups preserve their last empty range. Complete outer captures and top-level
 alternative offsets use their existing layouts. Compilation, matching, clones
 and destruction remain iterative, with no default quotas. Assertions or fixed
-terms surrounding these groups, repeated sets/choices/empty groups, additional
+terms surrounding these groups, repeated choices/empty groups, additional
 quantifiers, named groups, backreferences and Unicode modes remain pending.
+
+Standalone fixed consuming groups can also repeat classes, class escapes and
+dots (CompileSubpattern and RepeatMatcher, 22.2.2.3–3.1). Their existing sequence
+plan supplies pinned case behavior, DotAll, decoded widths, shared immutable
+sets and static nested/empty capture ranges. Preparation rejects assertions or
+other unsupported terms before constructing sets. Nonsticky searches with a
+minimum above one retain one run counter per offset modulo the group width,
+visiting each overlapping fixed-group candidate once. Equal minimum widths make
+the first qualifying endpoint the earliest start. This temporary storage depends
+on the group's width, with checked platform capacity; repetition bounds remain
+scalar. One-iteration minimums use the existing sequence search directly. Sticky
+minimums and greedy extension check consecutive groups without phase storage.
+Lazy matches return the minimum complete iterations, while a zero minimum keeps
+the requested empty candidate. Captures translate from the final iteration;
+zero iterations leave inner slots undefined. Enclosing groups and alternatives
+retain their existing layouts. Nonsticky work is bounded by input length times
+group width plus one pass, including phase setup; sticky work covers two complete
+suffix passes. Default quotas remain disabled, and no recursive plans or expanded
+counts are introduced. Assertions inside or around these repeated groups,
+surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
+named groups, backreferences and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

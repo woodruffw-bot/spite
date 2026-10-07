@@ -85,7 +85,7 @@ fn named_quantified_and_backreference_patterns_remain_unsupported() {
         "/(?<x>a)/.test('a')",
         "/(ab|c)*/.test('a')",
         "/a(a|b)/.test('a')",
-        "/([a]b)*/.test('a')",
+        "/([a]b|c)*/.test('a')",
         r"/(a)\1/.test('aa')",
         "/(a)/u.test('a')",
     ] {

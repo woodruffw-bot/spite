@@ -130,7 +130,7 @@ fn optional_host_work_covers_sticky_repetitions_and_remaining_groups_are_unsuppo
         r"/^(ab)+$/.test('ab')",
         r"/(ab)+c/.test('abc')",
         r"/c(ab)+/.test('cab')",
-        r"/(a[bc])+/.test('ab')",
+        r"/(a[bc]|d)+/.test('ab')",
         r"/(ab|cd)+/.test('ab')",
         r"/(a\bb)+/.test('ab')",
         r"/(ab$)+/.test('ab')",

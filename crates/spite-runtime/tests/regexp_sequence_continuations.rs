@@ -128,7 +128,7 @@ fn sticky_optional_work_covers_all_continuation_candidates_and_host_failures() {
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
         "/a+[b]+/.test('ab')",
-        "/(a[b])+/.test('ab')",
+        "/(a[b]|c)+/.test('ab')",
         "/a+(b|c)/.test('ab')",
         "/a+(?<n>b)/.test('ab')",
         "/a+[b]/u.test('ab')",

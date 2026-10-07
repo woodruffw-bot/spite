@@ -48,7 +48,7 @@ fn other_group_productions_and_quantified_groups_remain_unsupported() {
     for source in [
         "/a(?:a|b)/.test('a')",
         "/(?:ab|c)*/.test('a')",
-        "/(?:a[b]){1}/.test('a')",
+        "/(?:a[b]|c){1}/.test('a')",
         "/(?i:a)/.test('a')",
         "/(?=a)/.test('a')",
         "/(?<x>a)/.test('a')",
