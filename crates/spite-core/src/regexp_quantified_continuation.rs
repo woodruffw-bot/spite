@@ -6,8 +6,8 @@ use std::{ops::Range, sync::Arc};
 /// Immutable ordinary-mode repeated atom with a capture-free literal continuation.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
-/// uses one quantifier, with transparent noncapturing wrappers. The remainder
-/// must compile completely as literal characters and noncapturing groups.
+/// uses one quantifier, with ordinary capturing/noncapturing wrappers. The
+/// remainder compiles completely as literal characters and noncapturing groups.
 /// Search is linear without allocation, expanded repetitions or native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpQuantifiedContinuationMatcher(Arc<Program>);
@@ -19,6 +19,17 @@ struct Program {
 }
 
 impl RegExpQuantifiedContinuationMatcher {
+    /// Number of ordinary capturing wrappers around the repeated prefix.
+    pub fn capture_count(&self) -> usize {
+        self.0.prefix.capture_count()
+    }
+
+    /// Absolute capture range in a successful match from this plan.
+    pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
+        let end = matched.end.checked_sub(self.0.suffix.matched_len())?;
+        self.0.prefix.capture_range(index, &(matched.start..end))
+    }
+
     /// An empty continuation exposes all repetition endpoints to outer anchors.
     pub(crate) fn from_quantified(prefix: RegExpQuantifiedMatcher) -> Self {
         let suffix = RegExpLiteralMatcher::compile(&JsString::from(""), false)

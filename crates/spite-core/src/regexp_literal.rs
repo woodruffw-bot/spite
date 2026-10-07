@@ -22,6 +22,10 @@ struct Program {
 }
 
 impl RegExpLiteralMatcher {
+    pub(crate) fn matched_len(&self) -> usize {
+        self.0.units.len()
+    }
+
     /// Compiles the literal-only subset, returning `None` for other syntax.
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
         let source = source.code_units();

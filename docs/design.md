@@ -221,8 +221,9 @@ that suffix instead of bounding input work by the Pattern text length. Ordinary
 unlimited defaults impose no branch or work cap.
 The plan stores each branch's first source-order capture slot and its own
 relative ranges. Storage is linear in branches and captures, without a matrix of
-all groups for every branch. A successful match borrows its selected branch's
-immutable ranges; result construction visits the complete global capture count
+all groups for every branch. A successful match borrows its immutable plan
+and resolves the selected branch's ranges; result construction visits the complete
+global capture count
 and creates own undefined String/indices elements for unselected groups. Empty
 participating groups retain empty Strings and zero-length indices pairs.
 
@@ -250,8 +251,8 @@ commits an unconstrained match and then rejects its final length. Membership,
 literal search and boundary advancement each visit input linearly, without
 allocation, expanded counts or native recursion. Optional search accounting
 covers all three scans even at a single sticky start, including when the anchored
-plan appears inside top-level alternatives. Quantified bodies have no capture
-slots; fixed captured branches retain their existing global layout.
+plan appears inside top-level alternatives. Fixed and quantified captured
+branches share their existing global slot layout.
 Compilation respects trailing escape parity; internal assertions and
 Unicode-mode matching remain pending. Optional accounting
 covers the literal scan and boundary checks without changing unlimited defaults.
@@ -309,9 +310,26 @@ Transparent noncapturing groups can surround the atom or its quantified run at
 any depth. An iterative prefix/closing scan tracks group depth and the single
 quantifier without a recursive syntax tree. Moving that one quantifier across
 transparent one-atom wrappers retains its greedy/lazy behavior and exact bounds.
-The compiler still contributes no captures. Capturing or multi-atom groups,
-multiple quantifiers, concatenated continuations, assertions, choices,
-backreferences and Unicode modes remain outside its subset.
+Multi-atom groups, multiple quantifiers, concatenated continuations, assertions,
+choices, backreferences and Unicode modes remain outside its subset.
+
+Ordinary capturing wrappers use the same nested single-atom grammar. Their
+opening source text is an implicit stack: closing a group before the quantifier
+places its capture inside each iteration; closing it afterwards captures the
+complete run (RepeatMatcher, 22.2.2.3.1). Source-order groups are therefore a prefix
+of whole-run captures followed by final-iteration captures, recorded with two
+counts rather than a vector or recursive tree. A successful match resolves each
+range in constant time. A group such as (a)+ captures only the last UTF-16 unit;
+(a+) captures the complete run. Zero repetitions leave inner groups undefined,
+while outer groups capture an empty String. Noncapturing wrappers can mix with
+capturing wrappers at any depth without changing these distinctions.
+Continuation plans resolve prefix captures using the final prefix endpoint,
+excluding the fixed literal suffix. Anchored plans preserve the chosen repetition
+ranges; alternatives keep their global capture offsets and own undefined slots
+for every unselected group. Runtime results borrow the immutable matcher and its
+selected branch without constructing a capture matrix or allocating during
+search. Captured suffixes, multi-atom groups, named groups and multiple
+quantifiers remain outside these consuming plans.
 
 A quantified consuming atom can additionally precede a complete capture-free
 literal continuation (CompileSubpattern, 22.2.2.3). Prefix atom membership and
@@ -330,7 +348,7 @@ most once, and the literal prefix-failure scan remains linear. Search allocates
 nothing and uses no recursion or backtracking stack. Sticky matching fixes the
 whole start while still inspecting continuation occurrences within the suffix.
 Optional accounting covers both complete-input passes, including sticky runs.
-Captures, character-set continuations, multiple quantifiers, enclosing groups
+Captured suffixes, character-set continuations, multiple quantifiers, enclosing groups
 around the complete concatenation, assertions, choices and Unicode modes remain
 outside this compiler.
 

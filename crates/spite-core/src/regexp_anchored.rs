@@ -10,9 +10,9 @@ use std::ops::Range;
 ///
 /// Patterns must already be validated without `u` or `v`. Assertions inside
 /// groups or alternatives remain unsupported. Capture ranges retain the body's
-/// relative UTF-16 offsets. Quantified bodies have no captures. Compilation is
-/// iterative; literal and quantified search remain linear. Fixed class bodies
-/// retain the sequence candidate search bound.
+/// relative UTF-16 offsets; quantified capture ranges depend on the match.
+/// Compilation is iterative; literal and quantified search remain linear.
+/// Fixed class bodies retain the sequence candidate search bound.
 #[derive(Clone, Debug)]
 pub struct RegExpAnchoredMatcher {
     body: Body,
@@ -29,6 +29,24 @@ enum Body {
 }
 
 impl RegExpAnchoredMatcher {
+    /// Number of ordinary captures in the complete consuming body.
+    pub fn capture_count(&self) -> usize {
+        match &self.body {
+            Body::Literal(matcher) => matcher.capture_ranges().len(),
+            Body::Sequence(matcher) => matcher.capture_ranges().len(),
+            Body::Quantified(matcher) => matcher.capture_count(),
+        }
+    }
+
+    /// Absolute capture range in a successful match from this plan.
+    pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
+        if let Body::Quantified(matcher) = &self.body {
+            return matcher.capture_range(index, matched);
+        }
+        let relative = self.capture_ranges().get(index)?;
+        Some(matched.start.checked_add(relative.start)?..matched.start.checked_add(relative.end)?)
+    }
+
     /// Compiles an anchored sequence with DotAll disabled, preserving escapes.
     pub fn compile(source: &JsString, ignore_case: bool, multiline: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, multiline, false, |_| {
@@ -102,7 +120,8 @@ impl RegExpAnchoredMatcher {
         }))
     }
 
-    /// Relative ranges of the body's ordered captures.
+    /// Fixed relative capture ranges; quantified bodies return an empty slice.
+    /// Use `capture_count` and `capture_range` to resolve every supported body.
     pub fn capture_ranges(&self) -> &[Range<usize>] {
         match &self.body {
             Body::Literal(matcher) => matcher.capture_ranges(),
@@ -238,6 +257,9 @@ mod tests {
                         matcher.search_passes(true)
                     )
                     .unwrap();
+                    if matcher.capture_count() != matcher.capture_ranges().len() {
+                        write!(rows, " dynamic_captures={}", matcher.capture_count()).unwrap();
+                    }
                     for input in [
                         "",
                         "a",

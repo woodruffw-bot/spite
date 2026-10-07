@@ -49,13 +49,13 @@ fn deeply_nested_plans_and_copies_survive_collection_with_unlimited_defaults() {
 }
 
 #[test]
-fn multiple_quantifiers_captures_choices_and_multi_atom_groups_remain_explicit_gaps() {
+fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
     for source in [
         "/(?:(?:a)+)+/.test('a')",
         "/(?:a*)?/.test('a')",
         "/(?:ab)+/.test('ab')",
         "/(?:a|b)+/.test('a')",
-        "/((?:a)+)/.test('a')",
+        "/((?:ab)+)/.test('a')",
         "/(?<x>a)+/.test('a')",
         "/(?:a)+/u.test('a')",
     ] {

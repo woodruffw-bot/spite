@@ -718,6 +718,29 @@ Stable and MSRV pass the complete 13488-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Ordinary capturing wrappers now surround a quantified atom or repeated prefix.
+Three core regressions cover an inspected 99-record insta snapshot, independent
+nested capture/repetition ordering, 100,000 nested groups with compact layouts,
+continuation endpoints and global alternative slots. Fifteen newly supported
+rows change in four earlier snapshots. Node agrees on all 43,710 range/capture
+comparisons, all 1,782 stored match/capture arrays and fifteen runtime programs.
+Nine runtime regressions cover whole-run versus final-iteration captures,
+zero-iteration undefined versus empty groups, greedy/lazy continuation ranges,
+anchors and global/sticky state, alternative offsets, generic consumers and
+callbacks, intrinsic capture/indices Arrays and strict writes, pinned flags and
+surrogates, copies after collection, constructor validation of 100,000 groups and
+1,000-capture results with unlimited defaults, optional host aborts and complete
+unsupported bodies. Prior capture gap regressions retain unsupported multi-atom
+groups. Capturing layout uses two counts and the source's implicit opening stack;
+search still allocates nothing, expands no repetition counts and uses no native
+recursion. Captured suffixes, multi-atom/named groups, nested choices, multiple
+quantifiers and Unicode modes remain pending. The corpus and pin are unchanged.
+One further reviewed whole exec program is eligible for a separate unchanged-
+fixture commit.
+Stable and MSRV pass the complete 13488-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

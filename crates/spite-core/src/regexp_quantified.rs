@@ -7,8 +7,8 @@ use std::{ops::Range, sync::Arc};
 /// Immutable ordinary-mode matcher for one quantified character or set atom.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. Transparent
-/// noncapturing groups may wrap the atom or its one quantifier. Capturing groups,
-/// concatenations, assertions, alternatives, multiple quantifiers and
+/// capturing/noncapturing groups may wrap the atom or its one quantifier.
+/// Concatenations, assertions, alternatives, multiple quantifiers and
 /// backreferences remain outside this compiler. Repetition bounds and group
 /// nesting never expand the atom or use native recursion.
 #[derive(Clone, Debug)]
@@ -22,6 +22,8 @@ struct Program {
     // None means unbounded, or larger than any representable input length.
     max: Option<usize>,
     greedy: bool,
+    capture_count: usize,
+    whole_captures: usize,
 }
 
 #[derive(Debug)]
@@ -57,7 +59,9 @@ impl RegExpQuantifiedMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
-        let Some((prepared, (min, max, greedy), end)) = prepare_prefix(units, dot_all) else {
+        let Some((prepared, (min, max, greedy), end, captures, whole_captures)) =
+            prepare_prefix(units, dot_all)
+        else {
             return Ok(None);
         };
         if end != units.len() {
@@ -76,6 +80,8 @@ impl RegExpQuantifiedMatcher {
             min,
             max,
             greedy,
+            capture_count: captures,
+            whole_captures,
         }))))
     }
 
@@ -116,7 +122,28 @@ impl RegExpQuantifiedMatcher {
     }
 
     pub(crate) fn prefix_end(source: &JsString, dot_all: bool) -> Option<usize> {
-        prepare_prefix(source.code_units(), dot_all).map(|(_, _, end)| end)
+        prepare_prefix(source.code_units(), dot_all).map(|(_, _, end, _, _)| end)
+    }
+
+    /// Number of ordinary capturing wrappers in source order.
+    pub fn capture_count(&self) -> usize {
+        self.0.capture_count
+    }
+
+    /// Absolute range for a capture of a successful match from this plan.
+    ///
+    /// Groups outside the quantifier capture the whole run; groups inside it
+    /// capture only the final one-unit iteration (22.2.2.3.1). Zero iterations
+    /// leave those inner groups undefined, while an outer group captures empty.
+    pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
+        if index >= self.0.capture_count || matched.start > matched.end {
+            return None;
+        }
+        if index < self.0.whole_captures {
+            Some(matched.clone())
+        } else {
+            (matched.start < matched.end).then(|| matched.end - 1..matched.end)
+        }
     }
 
     pub(crate) fn bounds(&self) -> Bounds {
@@ -159,13 +186,28 @@ fn prepare_atom(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, usize)> {
 
 type Bounds = (Option<usize>, Option<usize>, bool);
 
-fn prepare_prefix(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, Bounds, usize)> {
+type PreparedPrefix = (PreparedAtom, Bounds, usize, usize, usize);
+
+fn prepare_prefix(units: &[u16], dot_all: bool) -> Option<PreparedPrefix> {
     let mut index = 0;
     let mut groups = 0usize;
-    while units.get(index..index + 3) == Some(&[0x28, 0x3f, 0x3a]) {
-        index += 3;
+    let mut captures = 0usize;
+    while units.get(index) == Some(&0x28) {
+        if units.get(index + 1) == Some(&0x3f) {
+            if units.get(index..index + 3) != Some(&[0x28, 0x3f, 0x3a]) {
+                return None;
+            }
+            index += 3;
+        } else {
+            index += 1;
+            captures += 1;
+        }
         groups += 1;
     }
+    // All wrappers are nested around one atom. Their opening text itself is an
+    // implicit stack, so closing them needs no recursive tree or wrapper vector.
+    let mut opening_end = index;
+    let mut inner_captures = 0usize;
     let (atom, end) = prepare_atom(&units[index..], dot_all)?;
     index += end;
     let mut bounds = None;
@@ -179,10 +221,26 @@ fn prepare_prefix(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, Bounds,
             index += consumed;
         }
         if units.get(index) == Some(&0x29) && groups != 0 {
+            if opening_end
+                .checked_sub(3)
+                .and_then(|start| units.get(start..opening_end))
+                == Some(&[0x28, 0x3f, 0x3a])
+            {
+                opening_end -= 3;
+            } else {
+                opening_end -= 1;
+                inner_captures += usize::from(bounds.is_none());
+            }
             groups -= 1;
             index += 1;
         } else {
-            return (groups == 0).then_some((atom, bounds?, index));
+            return (groups == 0).then_some((
+                atom,
+                bounds?,
+                index,
+                captures,
+                captures - inner_captures,
+            ));
         }
     }
 }
@@ -315,6 +373,204 @@ mod tests {
 
     fn matcher(source: &str, i: bool, s: bool) -> Option<RegExpQuantifiedMatcher> {
         RegExpQuantifiedMatcher::compile(&JsString::from(source), i, s)
+    }
+
+    #[test]
+    fn quantified_capture_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(a)+",
+            "(a+)",
+            "((a)+)",
+            "((a))+",
+            "((a+))",
+            "(?:(a)+)",
+            "((?:a)+)",
+            "((?:a))+",
+            "(?:((a)+))",
+            "(a){0}",
+            "(a{0})",
+            "((a)){0}",
+            "((a{0}))",
+            "(a)?",
+            "(a??)",
+            "(a)??",
+            "((a)?)",
+            "([ab]){1,3}",
+            "([ab]{1,3}?)",
+            "([^])*",
+            "([])*",
+            "([]*)",
+            r"(\d)+",
+            "(.)+",
+            "(.+?)",
+            r"(\uD800)+",
+            "(µ)+",
+            "(ab)+",
+            "(a)+b",
+            "(?<x>a)+",
+            r"(a)\1+",
+            "(a*)?",
+            "((a)+)+",
+        ] {
+            for (i, s) in [(false, false), (true, false), (false, true)] {
+                write!(rows, "{source:?} i={i} s={s}").unwrap();
+                if let Some(m) = matcher(source, i, s) {
+                    write!(rows, " captures={}", m.capture_count()).unwrap();
+                    for input in [
+                        "",
+                        "a",
+                        "aaa",
+                        "baaa",
+                        "Aaa",
+                        "abba",
+                        "12x",
+                        "\n",
+                        "a\nb",
+                        "Μµ",
+                        "\u{10000}",
+                    ] {
+                        let input = JsString::from(input);
+                        for (start, sticky) in [(0, false), (1, true)] {
+                            let range = m.find(&input, start, sticky);
+                            let captures = range.as_ref().map(|r| {
+                                (0..m.capture_count())
+                                    .map(|c| m.capture_range(c, r))
+                                    .collect::<Vec<_>>()
+                            });
+                            write!(rows, " {input:?}@{start}/{sticky}:{range:?}:{captures:?}")
+                                .unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nested_capture_placement_agrees_with_independent_final_iteration_ranges() {
+        for (source, whole, last, min, max, greedy) in [
+            ("((([ab]))+)", 1, 2, 1, None, true),
+            ("((?:([ab])){0,2})", 1, 1, 0, Some(2), true),
+            ("(?:(?:([ab])))??", 0, 1, 0, Some(1), false),
+            ("((?:[ab]+?))", 1, 0, 1, None, false),
+            ("(([ab]{0}))", 2, 0, 0, Some(0), true),
+            ("(([ab])){0}", 0, 2, 0, Some(0), true),
+        ] {
+            let m = matcher(source, false, false).unwrap();
+            assert_eq!(m.capture_count(), whole + last);
+            for len in 0..=5u32 {
+                for mut encoded in 0..3usize.pow(len) {
+                    let mut units = Vec::new();
+                    for _ in 0..len {
+                        units.push([97, 98, 120][encoded % 3]);
+                        encoded /= 3;
+                    }
+                    let input = JsString::from_code_units(units.clone());
+                    for start in 0..=units.len() + 1 {
+                        for sticky in [false, true] {
+                            let expected = (start..=units.len())
+                                .take(if sticky { 1 } else { usize::MAX })
+                                .find_map(|candidate| {
+                                    let available = units[candidate..]
+                                        .iter()
+                                        .take_while(|u| [97, 98].contains(u))
+                                        .count();
+                                    if available < min {
+                                        return None;
+                                    }
+                                    let count = if greedy {
+                                        max.unwrap_or(available).min(available)
+                                    } else {
+                                        min
+                                    };
+                                    Some(candidate..candidate + count)
+                                });
+                            assert_eq!(
+                                m.find(&input, start, sticky),
+                                expected,
+                                "{source} {units:?} {start} {sticky}"
+                            );
+                            if let Some(r) = expected {
+                                for index in 0..whole + last {
+                                    let expected = if index < whole {
+                                        Some(r.clone())
+                                    } else if r.is_empty() {
+                                        None
+                                    } else {
+                                        Some(r.end - 1..r.end)
+                                    };
+                                    assert_eq!(
+                                        m.capture_range(index, &r),
+                                        expected,
+                                        "{source} capture={index}"
+                                    );
+                                }
+                                assert_eq!(m.capture_range(whole + last, &r), None);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn capture_layout_is_compact_at_deep_nesting_and_continuation_boundaries() {
+        let depth = 100000;
+        let outside =
+            JsString::from(format!("{}a+{}", "(".repeat(depth), ")".repeat(depth)).as_str());
+        let m = RegExpQuantifiedMatcher::compile(&outside, false, false).unwrap();
+        assert_eq!(m.capture_count(), depth);
+        let input = JsString::from("aaaa");
+        let range = m.find(&input, 0, false).unwrap();
+        assert_eq!(m.capture_range(0, &range), Some(0..4));
+        assert_eq!(m.clone().capture_range(depth - 1, &range), Some(0..4));
+        let inside =
+            JsString::from(format!("{}a{}*", "(".repeat(depth), ")".repeat(depth)).as_str());
+        let m = RegExpQuantifiedMatcher::compile(&inside, false, false).unwrap();
+        assert_eq!(m.capture_count(), depth);
+        let range = m.find(&input, 0, false).unwrap();
+        assert_eq!(m.capture_range(0, &range), Some(3..4));
+        assert_eq!(m.capture_range(depth - 1, &range), Some(3..4));
+        let empty = m.find(&JsString::from(""), 0, false).unwrap();
+        assert_eq!(m.capture_range(0, &empty), None);
+        let suffix = crate::RegExpQuantifiedContinuationMatcher::compile(
+            &JsString::from("((a)+)aa"),
+            false,
+            false,
+        )
+        .unwrap();
+        assert_eq!(suffix.capture_count(), 2);
+        let range = suffix.find(&input, 0, false).unwrap();
+        assert_eq!(range, 0..4);
+        assert_eq!(suffix.capture_range(0, &range), Some(0..2));
+        assert_eq!(suffix.capture_range(1, &range), Some(1..2));
+        let anchored =
+            crate::RegExpAnchoredMatcher::compile(&JsString::from("^((a)+)aa$"), false, false)
+                .unwrap();
+        assert_eq!(anchored.capture_count(), 2);
+        assert_eq!(
+            anchored.capture_range(1, &anchored.find(&input, 0, false).unwrap()),
+            Some(1..2)
+        );
+        let choices = crate::RegExpDisjunctionMatcher::compile(
+            &JsString::from("([x])|((a)+)aa|([y])"),
+            false,
+        )
+        .unwrap();
+        assert_eq!(choices.capture_count(), 4);
+        let (branch, range) = choices.find_branch(&input, 0, false).unwrap();
+        assert_eq!(branch, 1);
+        assert_eq!(choices.capture_range(branch, 0, &range), None);
+        assert_eq!(choices.capture_range(branch, 1, &range), Some(0..2));
+        assert_eq!(choices.capture_range(branch, 2, &range), Some(1..2));
+        assert_eq!(choices.capture_range(branch, 3, &range), None);
+        assert_eq!(choices.branch_captures(branch), None);
     }
 
     #[test]

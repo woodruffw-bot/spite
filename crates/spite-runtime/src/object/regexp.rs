@@ -27,47 +27,32 @@ impl RegExpMatcher {
         start: usize,
         sticky: bool,
     ) -> Option<RegExpMatch<'a>> {
-        let (range, capture_offset, captures) = match self {
-            Self::Literal(matcher) => (
-                matcher.find(input, start, sticky)?,
-                0,
-                matcher.capture_ranges(),
-            ),
-            Self::Anchored(matcher) => (
-                matcher.find(input, start, sticky)?,
-                0,
-                matcher.capture_ranges(),
-            ),
-            Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
-            Self::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0, &[][..]),
-            Self::QuantifiedContinuation(matcher) => {
-                (matcher.find(input, start, sticky)?, 0, &[][..])
-            }
-            Self::Sequence(matcher) => (
-                matcher.find(input, start, sticky)?,
-                0,
-                matcher.capture_ranges(),
-            ),
+        let (range, branch) = match self {
+            Self::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
+            Self::Anchored(matcher) => (matcher.find(input, start, sticky)?, 0),
+            Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0),
+            Self::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0),
+            Self::QuantifiedContinuation(matcher) => (matcher.find(input, start, sticky)?, 0),
+            Self::Sequence(matcher) => (matcher.find(input, start, sticky)?, 0),
             Self::Disjunction(matcher) => {
                 let (branch, range) = matcher.find_branch(input, start, sticky)?;
-                let (offset, captures) = matcher.branch_captures(branch).expect("matched branch");
-                (range, offset, captures)
+                (range, branch)
             }
         };
         Some(RegExpMatch {
             range,
-            capture_offset,
-            captures,
+            matcher: self,
+            branch,
             capture_count: self.capture_count(),
         })
     }
     pub fn capture_count(&self) -> usize {
         match self {
             Self::Literal(matcher) => matcher.capture_ranges().len(),
-            Self::Anchored(matcher) => matcher.capture_ranges().len(),
+            Self::Anchored(matcher) => matcher.capture_count(),
             Self::Character(_) => 0,
-            Self::Quantified(_) => 0,
-            Self::QuantifiedContinuation(_) => 0,
+            Self::Quantified(matcher) => matcher.capture_count(),
+            Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
             Self::Sequence(matcher) => matcher.capture_ranges().len(),
             Self::Disjunction(matcher) => matcher.capture_count(),
         }
@@ -110,17 +95,29 @@ impl RegExpMatcher {
 #[derive(Debug)]
 pub(crate) struct RegExpMatch<'a> {
     pub range: Range<usize>,
-    capture_offset: usize,
-    captures: &'a [Range<usize>],
+    matcher: &'a RegExpMatcher,
+    branch: usize,
     pub capture_count: usize,
 }
 
 impl RegExpMatch<'_> {
     /// Absolute UTF-16 range, or None for a group in an unselected branch.
     pub fn capture(&self, index: usize) -> Option<Range<usize>> {
-        let index = index.checked_sub(self.capture_offset)?;
-        let capture = self.captures.get(index)?;
-        Some(self.range.start + capture.start..self.range.start + capture.end)
+        let fixed = match self.matcher {
+            RegExpMatcher::Literal(matcher) => matcher.capture_ranges(),
+            RegExpMatcher::Sequence(matcher) => matcher.capture_ranges(),
+            RegExpMatcher::Character(_) => return None,
+            RegExpMatcher::Anchored(matcher) => return matcher.capture_range(index, &self.range),
+            RegExpMatcher::Quantified(matcher) => return matcher.capture_range(index, &self.range),
+            RegExpMatcher::QuantifiedContinuation(matcher) => {
+                return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcher::Disjunction(matcher) => {
+                return matcher.capture_range(self.branch, index, &self.range);
+            }
+        };
+        let relative = fixed.get(index)?;
+        Some(self.range.start + relative.start..self.range.start + relative.end)
     }
 }
 

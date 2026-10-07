@@ -89,9 +89,9 @@ expression: rows
 "aa+" i=false s=false unsupported
 "aa+" i=true s=false unsupported
 "aa+" i=false s=true unsupported
-"(a)+" i=false s=false unsupported
-"(a)+" i=true s=false unsupported
-"(a)+" i=false s=true unsupported
+"(a)+" i=false s=false "":None/None "a":Some(0..1)/None "aaa":Some(0..3)/Some(1..3) "baaab":Some(1..4)/Some(1..4) "abbaa":Some(0..1)/None "Aaa":Some(1..3)/Some(1..3) "12x":None/None " \u000a":None/None "\u000a":None/None "+++":None/None "\ud800\udc00":None/None
+"(a)+" i=true s=false "":None/None "a":Some(0..1)/None "aaa":Some(0..3)/Some(1..3) "baaab":Some(1..4)/Some(1..4) "abbaa":Some(0..1)/None "Aaa":Some(0..3)/Some(1..3) "12x":None/None " \u000a":None/None "\u000a":None/None "+++":None/None "\ud800\udc00":None/None
+"(a)+" i=false s=true "":None/None "a":Some(0..1)/None "aaa":Some(0..3)/Some(1..3) "baaab":Some(1..4)/Some(1..4) "abbaa":Some(0..1)/None "Aaa":Some(1..3)/Some(1..3) "12x":None/None " \u000a":None/None "\u000a":None/None "+++":None/None "\ud800\udc00":None/None
 "(?:a)+" i=false s=false "":None/None "a":Some(0..1)/None "aaa":Some(0..3)/Some(1..3) "baaab":Some(1..4)/Some(1..4) "abbaa":Some(0..1)/None "Aaa":Some(1..3)/Some(1..3) "12x":None/None " \u000a":None/None "\u000a":None/None "+++":None/None "\ud800\udc00":None/None
 "(?:a)+" i=true s=false "":None/None "a":Some(0..1)/None "aaa":Some(0..3)/Some(1..3) "baaab":Some(1..4)/Some(1..4) "abbaa":Some(0..1)/None "Aaa":Some(0..3)/Some(1..3) "12x":None/None " \u000a":None/None "\u000a":None/None "+++":None/None "\ud800\udc00":None/None
 "(?:a)+" i=false s=true "":None/None "a":Some(0..1)/None "aaa":Some(0..3)/Some(1..3) "baaab":Some(1..4)/Some(1..4) "abbaa":Some(0..1)/None "Aaa":Some(1..3)/Some(1..3) "12x":None/None " \u000a":None/None "\u000a":None/None "+++":None/None "\ud800\udc00":None/None

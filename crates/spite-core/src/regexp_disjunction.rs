@@ -12,7 +12,7 @@ use std::{ops::Range, sync::Arc};
 /// must compile as a literal, fixed class sequence, outer-anchored sequence,
 /// quantified atom or quantified prefix with a literal continuation.
 /// Unsupported alternatives reject the entire plan. Nested alternatives and
-/// capturing quantified groups remain unsupported; compilation never expands
+/// multiple quantifiers remain unsupported; compilation never expands
 /// combinations or uses native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpDisjunctionMatcher(Arc<Program>);
@@ -35,6 +35,30 @@ enum Alternative {
 }
 
 impl Alternative {
+    fn capture_count(&self) -> usize {
+        match self {
+            Self::Quantified(matcher) => matcher.capture_count(),
+            Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
+            Self::Anchored(matcher) => matcher.capture_count(),
+            _ => self.capture_ranges().len(),
+        }
+    }
+
+    fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
+        match self {
+            Self::Quantified(matcher) => matcher.capture_range(index, matched),
+            Self::QuantifiedContinuation(matcher) => matcher.capture_range(index, matched),
+            Self::Anchored(matcher) => matcher.capture_range(index, matched),
+            _ => {
+                let relative = self.capture_ranges().get(index)?;
+                Some(
+                    matched.start.checked_add(relative.start)?
+                        ..matched.start.checked_add(relative.end)?,
+                )
+            }
+        }
+    }
+
     fn capture_ranges(&self) -> &[Range<usize>] {
         match self {
             Self::Literal(m) => m.capture_ranges(),
@@ -134,7 +158,7 @@ impl RegExpDisjunctionMatcher {
                 return Ok(None);
             };
             capture_offsets.push(capture_count);
-            let Some(count) = capture_count.checked_add(matcher.capture_ranges().len()) else {
+            let Some(count) = capture_count.checked_add(matcher.capture_count()) else {
                 return Ok(None);
             };
             capture_count = count;
@@ -178,13 +202,33 @@ impl RegExpDisjunctionMatcher {
 
     /// First capture slot and relative ranges for a selected branch.
     ///
-    /// Returns `None` for an invalid branch index. Groups in other branches do
-    /// not participate; consumers must represent those slots as undefined.
+    /// Returns `None` for an invalid index or a branch with dynamic captures.
+    /// Use `capture_range` to resolve all supported captures. Groups in other
+    /// branches do not participate; consumers represent those slots as undefined.
     pub fn branch_captures(&self, branch: usize) -> Option<(usize, &[Range<usize>])> {
+        let alternative = self.0.alternatives.get(branch)?;
+        if alternative.capture_count() != alternative.capture_ranges().len() {
+            return None;
+        }
         Some((
             *self.0.capture_offsets.get(branch)?,
             self.0.alternatives.get(branch)?.capture_ranges(),
         ))
+    }
+
+    /// Absolute capture range for a source-order slot in a successful branch match.
+    /// Unselected groups and zero-iteration inner groups return `None`.
+    pub fn capture_range(
+        &self,
+        branch: usize,
+        index: usize,
+        matched: &Range<usize>,
+    ) -> Option<Range<usize>> {
+        let local = index.checked_sub(*self.0.capture_offsets.get(branch)?)?;
+        self.0
+            .alternatives
+            .get(branch)?
+            .capture_range(local, matched)
     }
 
     /// Finds the earliest match, choosing source order for equal start offsets.

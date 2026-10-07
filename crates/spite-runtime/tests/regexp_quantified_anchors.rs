@@ -132,7 +132,7 @@ fn opted_in_constructor_and_sticky_branch_work_failures_bypass_js_handlers() {
 fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
     for source in [
         "/^a+[b]$/.test('ab')",
-        "/^(a)+$/.test('a')",
+        "/^(ab)+$/.test('a')",
         "/^a+b+$/.test('ab')",
         "/^(?:a+b)$/.test('ab')",
         "/^a+$/u.test('a')",

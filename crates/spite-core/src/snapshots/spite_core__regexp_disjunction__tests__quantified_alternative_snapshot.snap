@@ -56,9 +56,9 @@ expression: rows
 "a+[b]|a" i=false m=false s=false unsupported
 "a+[b]|a" i=true m=true s=false unsupported
 "a+[b]|a" i=false m=false s=true unsupported
-"(a)+|b" i=false m=false s=false unsupported
-"(a)+|b" i=true m=true s=false unsupported
-"(a)+|b" i=false m=false s=true unsupported
+"(a)+|b" i=false m=false s=false captures=1 branches=2 full_suffix=true "":None/None "a":Some((0, 0..1))/None "aaaa":Some((0, 0..4))/Some((0, 1..4)) "baaa":Some((1, 0..1))/Some((0, 1..4)) "abab":Some((0, 0..1))/Some((1, 1..2)) "x":None/None "y":None/None "ABab":Some((0, 2..3))/None "12x":None/None "a\u000ab":Some((0, 0..1))/None "\u000a":None/None "x\u000aa\u000a":Some((0, 2..3))/None
+"(a)+|b" i=true m=true s=false captures=1 branches=2 full_suffix=true "":None/None "a":Some((0, 0..1))/None "aaaa":Some((0, 0..4))/Some((0, 1..4)) "baaa":Some((1, 0..1))/Some((0, 1..4)) "abab":Some((0, 0..1))/Some((1, 1..2)) "x":None/None "y":None/None "ABab":Some((0, 0..1))/Some((1, 1..2)) "12x":None/None "a\u000ab":Some((0, 0..1))/None "\u000a":None/None "x\u000aa\u000a":Some((0, 2..3))/None
+"(a)+|b" i=false m=false s=true captures=1 branches=2 full_suffix=true "":None/None "a":Some((0, 0..1))/None "aaaa":Some((0, 0..4))/Some((0, 1..4)) "baaa":Some((1, 0..1))/Some((0, 1..4)) "abab":Some((0, 0..1))/Some((1, 1..2)) "x":None/None "y":None/None "ABab":Some((0, 2..3))/None "12x":None/None "a\u000ab":Some((0, 0..1))/None "\u000a":None/None "x\u000aa\u000a":Some((0, 2..3))/None
 "(a+|b)" i=false m=false s=false unsupported
 "(a+|b)" i=true m=true s=false unsupported
 "(a+|b)" i=false m=false s=true unsupported
