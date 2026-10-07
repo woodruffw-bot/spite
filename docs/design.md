@@ -319,8 +319,9 @@ alternative offsets retain the shared layout. Runtime dispatch and complete-body
 fallbacks pass the same multiline flag throughout. Search remains monotone,
 allocation-free and iterative; optional work covers fixed boundary checks over
 the complete suffix even for sticky repetitions. Assertions inside a repeated
-atom, repeated multi-atom groups, multiple quantifiers, named groups,
-backreferences and Unicode modes remain pending.
+atom, repeated groups containing sets or choices, compositions around repeated
+literal groups, multiple quantifiers, named groups, backreferences and Unicode
+modes remain pending.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
 22.2.2.7.1). One bracket class supports raw/escaped characters, ordered ranges,
@@ -527,6 +528,27 @@ reject before constructing the repeated set. No recursion, expanded counts,
 candidate lists or default quotas are added. Repeated multi-atom groups, multiple
 quantifiers, embedded choices, embedded assertions, backreferences and Unicode modes
 remain pending.
+
+Standalone literal groups of at least two decoded UTF-16 units can carry one
+greedy/lazy quantifier (CompileSubpattern and RepeatMatcher, 22.2.2.3–3.1).
+The immutable plan shares literal decoding, pinned ordinary Canonicalize, static
+inner capture endpoints and exact decimal quantifier parsing. It retains a KMP
+failure table for two word widths and the word's primitive period. A minimum
+search treats repetition as a virtual word: short prefix failures use the exact
+table, while prefixes longer than two widths fall back by the primitive period.
+Neither large bounds nor searches expand repetitions. The first minimum match
+has the earliest start. Greedy extension uses the existing overlapping literal
+cursor, skipping occurrences before the next complete-iteration boundary; a gap
+ends the run. A zero minimum considers the requested start before later matches.
+Lazy matching returns the minimum complete iterations. Search is linear and
+allocation-free, with two conservative input passes for optional work, including
+the full suffix during sticky matching. Captures inside the atom come from its
+last iteration; zero iterations leave every such slot undefined. Empty inner
+groups preserve their last empty range. Complete outer captures and top-level
+alternative offsets use their existing layouts. Compilation, matching, clones
+and destruction remain iterative, with no default quotas. Assertions or fixed
+terms surrounding these groups, repeated sets/choices/empty groups, additional
+quantifiers, named groups, backreferences and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

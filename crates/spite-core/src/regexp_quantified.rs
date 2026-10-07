@@ -184,7 +184,12 @@ fn prepare_atom(units: &[u16], dot_all: bool) -> Option<(PreparedAtom, usize)> {
     Some((PreparedAtom::Character(unit), index))
 }
 
-type Bounds = (Option<usize>, Option<usize>, bool);
+pub(crate) type Bounds = (Option<usize>, Option<usize>, bool);
+
+pub(crate) fn complete_quantifier(units: &[u16]) -> Option<Bounds> {
+    let (bounds, consumed) = quantifier(units)?;
+    (consumed == units.len()).then_some(bounds)
+}
 
 type PreparedPrefix = (PreparedAtom, Bounds, usize, usize, usize);
 

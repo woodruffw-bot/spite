@@ -1067,6 +1067,27 @@ Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Standalone repeated literal groups have three core regressions: an inspected
+116-record insta snapshot, an independent exhaustive candidate/repetition/capture
+oracle, and exact border comparisons for compact virtual-word failure tables,
+large bounds, 100,000 nested captures, cloned plans and optional host work.
+Every earlier stored snapshot is unchanged. Eight runtime regressions cover
+earliest greedy/lazy and bounded runs, overlapping literal occurrences,
+last-iteration and empty/undefined slots, complete enclosing/branch captures,
+source-order ties, global/sticky state, decoded escapes, pinned case behavior,
+surrogate offsets, generic consumers and callbacks, intrinsic result arrays,
+collection, large minimums with unlimited defaults and optional host aborts.
+Node agrees on 46,392 stored match/capture arrays across nine snapshots, 93,480
+additional match/capture comparisons and 23 runtime programs. Eleven earlier
+gap programs now cover repeated choices or sets instead. Assertions and fixed
+terms around repeated literal groups, repeated sets/choices/empty groups,
+multiple quantifiers, named groups, backreferences and Unicode modes remain
+pending. The whole-fixture review enables no additional programs; inventories
+and the existing Test262 pin are unchanged.
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

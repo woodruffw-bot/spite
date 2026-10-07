@@ -2,8 +2,8 @@
 
 use crate::{
     JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
-    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher,
-    regexp_outer_group_body,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedLiteralMatcher,
+    RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::{ops::Range, sync::Arc};
 
@@ -11,7 +11,8 @@ use std::{ops::Range, sync::Arc};
 ///
 /// The Pattern must already be validated without `u` or `v`. Every alternative
 /// must compile as a literal, fixed class sequence, outer-anchored sequence,
-/// quantified atom or quantified prefix with a literal continuation.
+/// quantified atom, quantified prefix with a fixed continuation, or repeated
+/// literal group.
 /// Complete ordinary capturing/noncapturing wrappers can enclose each body;
 /// captured wrappers precede that branch's retained capture slots.
 /// Unsupported alternatives reject the entire plan. Nested alternatives and
@@ -36,12 +37,14 @@ enum Alternative {
     Quantified(RegExpQuantifiedMatcher),
     QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
     Prefixed(RegExpPrefixedMatcher),
+    RepeatedLiteral(RegExpRepeatedLiteralMatcher),
 }
 
 impl Alternative {
     fn capture_count(&self) -> usize {
         match self {
             Self::Prefixed(matcher) => matcher.capture_count(),
+            Self::RepeatedLiteral(matcher) => matcher.capture_count(),
             Self::Quantified(matcher) => matcher.capture_count(),
             Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
             Self::Anchored(matcher) => matcher.capture_count(),
@@ -52,6 +55,7 @@ impl Alternative {
     fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
         match self {
             Self::Prefixed(matcher) => matcher.capture_range(index, matched),
+            Self::RepeatedLiteral(matcher) => matcher.capture_range(index, matched),
             Self::Quantified(matcher) => matcher.capture_range(index, matched),
             Self::QuantifiedContinuation(matcher) => matcher.capture_range(index, matched),
             Self::Anchored(matcher) => matcher.capture_range(index, matched),
@@ -70,7 +74,10 @@ impl Alternative {
             Self::Literal(m) => m.capture_ranges(),
             Self::Sequence(m) => m.capture_ranges(),
             Self::Anchored(m) => m.capture_ranges(),
-            Self::Quantified(_) | Self::QuantifiedContinuation(_) | Self::Prefixed(_) => &[],
+            Self::Quantified(_)
+            | Self::QuantifiedContinuation(_)
+            | Self::Prefixed(_)
+            | Self::RepeatedLiteral(_) => &[],
         }
     }
     fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
@@ -79,6 +86,7 @@ impl Alternative {
             Self::Sequence(m) => m.find(input, start, sticky),
             Self::Anchored(m) => m.find(input, start, sticky),
             Self::Prefixed(m) => m.find(input, start, sticky),
+            Self::RepeatedLiteral(m) => m.find(input, start, sticky),
             Self::Quantified(m) => m.find(input, start, sticky),
             Self::QuantifiedContinuation(m) => m.find(input, start, sticky),
         }
@@ -89,6 +97,7 @@ impl Alternative {
             Self::Sequence(m) => m.search_passes(sticky),
             Self::Anchored(m) => m.search_passes(sticky),
             Self::Prefixed(m) => m.search_passes(sticky),
+            Self::RepeatedLiteral(m) => m.search_passes(),
             Self::Quantified(_) => 1,
             Self::QuantifiedContinuation(m) => m.search_passes(),
         }
@@ -200,6 +209,10 @@ fn compile_alternative<E>(
         &mut *charge,
     )? {
         Alternative::Prefixed(m)
+    } else if let Some(m) =
+        RegExpRepeatedLiteralMatcher::compile_with_work(source, ignore_case, &mut *charge)?
+    {
+        Alternative::RepeatedLiteral(m)
     } else {
         return Ok(None);
     };
@@ -275,7 +288,8 @@ impl RegExpDisjunctionMatcher {
         let full_suffix = alternatives.iter().any(|branch| match &branch.matcher {
             Alternative::Quantified(_)
             | Alternative::QuantifiedContinuation(_)
-            | Alternative::Prefixed(_) => true,
+            | Alternative::Prefixed(_)
+            | Alternative::RepeatedLiteral(_) => true,
             Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
             _ => false,
         });

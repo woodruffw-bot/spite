@@ -83,7 +83,7 @@ fn many_flat_captures_and_plans_survive_collection_without_default_count_quota()
 fn named_quantified_and_backreference_patterns_remain_unsupported() {
     for source in [
         "/(?<x>a)/.test('a')",
-        "/(ab)*/.test('a')",
+        "/(ab|c)*/.test('a')",
         "/a(a|b)/.test('a')",
         "/([a]b)*/.test('a')",
         r"/(a)\1/.test('aa')",

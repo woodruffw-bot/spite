@@ -7,8 +7,8 @@ use crate::{
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
-    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span,
-    regexp_outer_group_body,
+    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedLiteralMatcher,
+    RegExpSequenceMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -264,14 +264,21 @@ impl Realm {
                                                 matcher,
                                             )))
                                         } else {
-                                            RegExpPrefixedMatcher::compile_with_assertions_and_work(
+                                            if let Some(matcher) = RegExpPrefixedMatcher::compile_with_assertions_and_work(
                                                 &matching_source,
                                                 ignore_case,
                                                 flags.code_units().contains(&u16::from(b'm')),
                                                 dot_all,
                                                 |work| budget.charge(work),
-                                            )
-                                            .map(|m| m.map(RegExpMatcherBody::Prefixed))
+                                            )? {
+                                                Ok(Some(RegExpMatcherBody::Prefixed(matcher)))
+                                            } else {
+                                                RegExpRepeatedLiteralMatcher::compile_with_work(
+                                                    &matching_source,
+                                                    ignore_case,
+                                                    |work| budget.charge(work),
+                                                ).map(|m| m.map(RegExpMatcherBody::RepeatedLiteral))
+                                            }
                                         }
                                     }
                                 }

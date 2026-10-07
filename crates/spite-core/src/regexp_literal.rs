@@ -26,6 +26,10 @@ impl RegExpLiteralMatcher {
         self.0.units.len()
     }
 
+    pub(crate) fn matched_units(&self) -> &[u16] {
+        &self.0.units
+    }
+
     /// Compiles the literal-only subset, returning `None` for other syntax.
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
         let source = source.code_units();
