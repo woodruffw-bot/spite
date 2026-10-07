@@ -1,15 +1,16 @@
-//! Ordinary literal concatenations with DecimalEscape references (22.2.2.9).
+//! Ordinary character concatenations with DecimalEscape references (22.2.2.9).
 
+use crate::regexp_character::PreparedCharacter;
 use crate::regexp_literal::{character_escape, is_syntax};
-use crate::{JsString, regexp_canonicalize_character};
-use std::{ops::Range, sync::Arc};
+use crate::{JsString, RegExpCharacterMatcher, regexp_canonicalize_character};
+use std::{collections::HashMap, ops::Range, sync::Arc};
 
-/// A flat, immutable ordinary-mode literal and numbered-backreference program.
+/// A flat, immutable ordinary character and numbered-backreference program.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
-/// references. Alternatives, quantifiers, assertions and character sets return
-/// `None`. At least one numbered reference is required; plain literals retain
+/// references, ordinary character sets and dot. Alternatives, quantifiers and
+/// assertions return `None`. At least one numbered reference is required; plain literals retain
 /// their existing linear-search matcher. References are never expanded into
 /// source or compiled literal strings.
 #[derive(Clone, Debug)]
@@ -25,9 +26,18 @@ struct Program {
 #[derive(Debug)]
 enum Instruction {
     Character(u16),
+    Set(RegExpCharacterMatcher),
     Open(usize),
     Close(usize),
     Reference(usize),
+}
+
+enum PreparedInstruction {
+    Ready(Instruction),
+    Set {
+        plan: Box<PreparedCharacter>,
+        source: Range<usize>,
+    },
 }
 
 /// Absolute UTF-16 endpoints from one successful execution.
@@ -52,6 +62,17 @@ impl RegExpBackreferenceMatcher {
     pub fn compile_with_work<E>(
         source: &JsString,
         ignore_case: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_with_flags_and_work(source, ignore_case, false, charge)
+    }
+
+    /// Compiles ordinary sets and dot with explicit DotAll and optional work.
+    /// Identical set source shares one immutable predicate within this program.
+    pub fn compile_with_flags_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         if !source
@@ -61,11 +82,43 @@ impl RegExpBackreferenceMatcher {
         {
             return Ok(None);
         }
-        let Some((instructions, capture_count)) = prepare(source.code_units(), ignore_case) else {
+        let Some((prepared, capture_count)) = prepare(source.code_units(), ignore_case, dot_all)
+        else {
             return Ok(None);
         };
         charge(source.len())?;
-        charge(instructions.len())?;
+        charge(prepared.len())?;
+        charge(prepared.len())?;
+        let set_count = prepared
+            .iter()
+            .filter(|instruction| matches!(instruction, PreparedInstruction::Set { .. }))
+            .count();
+        charge(set_count)?;
+        charge(set_count)?;
+        let mut sets = HashMap::<&[u16], RegExpCharacterMatcher>::with_capacity(set_count);
+        let mut instructions = Vec::with_capacity(prepared.len());
+        for instruction in prepared {
+            instructions.push(match instruction {
+                PreparedInstruction::Ready(instruction) => instruction,
+                PreparedInstruction::Set {
+                    plan,
+                    source: range,
+                } => {
+                    let key = &source.code_units()[range];
+                    charge(key.len())?;
+                    charge(key.len())?;
+                    let matcher = if let Some(matcher) = sets.get(key) {
+                        matcher.clone()
+                    } else {
+                        charge(key.len())?;
+                        let matcher = plan.compile_with_work(ignore_case, &mut charge)?;
+                        sets.insert(key, matcher.clone());
+                        matcher
+                    };
+                    Instruction::Set(matcher)
+                }
+            });
+        }
         Ok(Some(Self(Arc::new(Program {
             instructions,
             capture_count,
@@ -122,21 +175,31 @@ impl RegExpBackreferenceMatcher {
             let mut cursor = candidate;
             for instruction in &self.0.instructions {
                 charge(1)?;
-                match *instruction {
+                match instruction {
                     Instruction::Character(expected) => {
                         let Some(&unit) = input.get(cursor) else {
                             continue 'candidate;
                         };
                         charge(1)?;
-                        if canonicalize(unit, self.0.ignore_case) != expected {
+                        if canonicalize(unit, self.0.ignore_case) != *expected {
                             continue 'candidate;
                         }
                         cursor += 1;
                     }
-                    Instruction::Open(index) => starts[index] = cursor,
-                    Instruction::Close(index) => captures[index] = Some(starts[index]..cursor),
+                    Instruction::Set(matcher) => {
+                        let Some(&unit) = input.get(cursor) else {
+                            continue 'candidate;
+                        };
+                        charge(1)?;
+                        if !matcher.matches(unit) {
+                            continue 'candidate;
+                        }
+                        cursor += 1;
+                    }
+                    Instruction::Open(index) => starts[*index] = cursor,
+                    Instruction::Close(index) => captures[*index] = Some(starts[*index]..cursor),
                     Instruction::Reference(index) => {
-                        let Some(range) = &captures[index] else {
+                        let Some(range) = &captures[*index] else {
                             continue;
                         };
                         let Some(next) = cursor.checked_add(range.len()) else {
@@ -172,7 +235,11 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn prepare(source: &[u16], ignore_case: bool) -> Option<(Vec<Instruction>, usize)> {
+fn prepare(
+    source: &[u16],
+    ignore_case: bool,
+    dot_all: bool,
+) -> Option<(Vec<PreparedInstruction>, usize)> {
     let mut instructions = Vec::new();
     let mut groups = Vec::new();
     let mut capture_count = 0usize;
@@ -191,14 +258,14 @@ fn prepare(source: &[u16], ignore_case: bool) -> Option<(Vec<Instruction>, usize
                 } else {
                     let index = capture_count;
                     capture_count = capture_count.checked_add(1)?;
-                    instructions.push(Instruction::Open(index));
+                    instructions.push(PreparedInstruction::Ready(Instruction::Open(index)));
                     Some(index)
                 };
                 groups.push(group);
             }
             0x29 => {
                 if let Some(index) = groups.pop()? {
-                    instructions.push(Instruction::Close(index));
+                    instructions.push(PreparedInstruction::Ready(Instruction::Close(index)));
                 }
             }
             0x5c if source
@@ -212,22 +279,46 @@ fn prepare(source: &[u16], ignore_case: bool) -> Option<(Vec<Instruction>, usize
                         .checked_add(usize::from(digit - 0x30))?;
                     cursor += 1;
                 }
-                instructions.push(Instruction::Reference(number.checked_sub(1)?));
+                instructions.push(PreparedInstruction::Ready(Instruction::Reference(
+                    number.checked_sub(1)?,
+                )));
                 references += 1;
             }
-            0x5c => instructions.push(Instruction::Character(canonicalize(
-                character_escape(source, &mut cursor)?,
-                ignore_case,
+            0x2e | 0x5b => {
+                let start = cursor - 1;
+                let (plan, length) = PreparedCharacter::parse(&source[start..], dot_all)?;
+                cursor = start.checked_add(length)?;
+                instructions.push(PreparedInstruction::Set {
+                    plan: Box::new(plan),
+                    source: start..cursor,
+                });
+            }
+            0x5c if source
+                .get(cursor)
+                .is_some_and(|unit| matches!(unit, 0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57)) =>
+            {
+                let start = cursor - 1;
+                let (plan, length) = PreparedCharacter::parse(&source[start..], dot_all)?;
+                cursor = start.checked_add(length)?;
+                instructions.push(PreparedInstruction::Set {
+                    plan: Box::new(plan),
+                    source: start..cursor,
+                });
+            }
+            0x5c => instructions.push(PreparedInstruction::Ready(Instruction::Character(
+                canonicalize(character_escape(source, &mut cursor)?, ignore_case),
             ))),
             _ if is_syntax(unit) || unit == 0x7c => return None,
-            _ => instructions.push(Instruction::Character(canonicalize(unit, ignore_case))),
+            _ => instructions.push(PreparedInstruction::Ready(Instruction::Character(
+                canonicalize(unit, ignore_case),
+            ))),
         }
     }
     if !groups.is_empty() || references == 0 {
         return None;
     }
     if instructions.iter().any(|instruction| {
-        matches!(instruction, Instruction::Reference(index) if *index >= capture_count)
+        matches!(instruction, PreparedInstruction::Ready(Instruction::Reference(index)) if *index >= capture_count)
     }) {
         return None;
     }
@@ -238,6 +329,132 @@ fn prepare(source: &[u16], ignore_case: bool) -> Option<(Vec<Instruction>, usize
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn character_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"([ab])\1",
+            r"([^a])\1",
+            r"([µ])\1",
+            r"([ſ])\1",
+            r"(\w)\1",
+            r"(\W)\1",
+            r"(\d)\1",
+            r"(\D)\1",
+            r"(\s)\1",
+            r"(\S)\1",
+            r"(.)\1",
+            r"([^])\1",
+            r"([])\1",
+            r"\1(\w)",
+            r"(\w\1)",
+            r"([ab])(\1.)\2",
+            r"(\w)(\w)\1\2",
+            r"([\uD800])\1",
+        ] {
+            for ignore_case in [false, true] {
+                for dot_all in [false, true] {
+                    let body = JsString::from(source);
+                    let matcher = RegExpBackreferenceMatcher::compile_with_flags_and_work(
+                        &body,
+                        ignore_case,
+                        dot_all,
+                        |_| Ok::<_, ()>(()),
+                    )
+                    .unwrap()
+                    .unwrap();
+                    for text in [
+                        "", "aa", "aA", "bb", "11", "__", "µΜ", "ſS", "ſſ", "\n\n", "  ", "abab",
+                        "abbb", "qabacac",
+                    ] {
+                        let input = JsString::from(text);
+                        for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                            let found = matcher.find(&input, start, sticky);
+                            writeln!(rows,"{body:?} i={ignore_case} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn character_captures_and_ordinary_case_boundaries_use_original_input_units() {
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"([ab])(\1.)\2"), false).unwrap();
+        let found = matcher.find(&JsString::from("qaacac"), 0, false).unwrap();
+        assert_eq!(found.range, 1..6);
+        assert_eq!(&*found.captures, &[Some(1..2), Some(2..4)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"([µ])\1"), true).unwrap();
+        assert_eq!(
+            matcher.find(&JsString::from("Μµ"), 0, true).unwrap().range,
+            0..2
+        );
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"(\w)\1"), true).unwrap();
+        assert!(matcher.find(&JsString::from("ſſ"), 0, true).is_none());
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"([\uD800])\1"), false).unwrap();
+        assert_eq!(
+            matcher
+                .find(&JsString::from_code_units(vec![0xd800, 0xd800]), 0, true)
+                .unwrap()
+                .range,
+            0..2
+        );
+    }
+
+    #[test]
+    fn identical_character_predicates_share_construction_in_deep_reference_programs() {
+        let text = format!("{}\\1", r"(\w)".repeat(10000));
+        let source = JsString::from(text.as_str());
+        let mut work = 0;
+        let matcher =
+            RegExpBackreferenceMatcher::compile_with_flags_and_work(&source, true, false, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert!(work < source.len() * 12 + 131072, "work={work}");
+        let found = matcher
+            .find(&JsString::from("a".repeat(10001).as_str()), 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..10001);
+        assert_eq!(found.captures.len(), 10000);
+        assert_eq!(found.captures[9999], Some(9999..10000));
+        let text = format!("{}\\w{}\\100000", "(".repeat(100000), ")".repeat(100000));
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(text.as_str()), false).unwrap();
+        assert_eq!(
+            matcher
+                .find(&JsString::from("aa"), 0, true)
+                .unwrap()
+                .captures
+                .len(),
+            100000
+        );
+        for text in [r"(\w)\1+", r"^([ab])\1", r"([ab]|c)\1"] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_flags_and_work(
+                    &JsString::from(text),
+                    true,
+                    false,
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none()
+            );
+            assert_eq!(work, 0);
+        }
+    }
 
     #[test]
     fn numbered_reference_execution_snapshot() {
@@ -350,7 +567,7 @@ mod tests {
             r"(a)\1+",
             r"(a|b)\1",
             r"(?<x>a)\k<x>",
-            r"([ab])\1",
+            r"([ab])\1+",
             r"^(a)\1",
             r"(a)\2",
             "(a)",

@@ -1023,8 +1023,8 @@ existing result builder. Optional work charges each executed instruction, captur
 reset and actual input comparison; host aborts occur before lastIndex mutation.
 Storage and execution are iterative, including deeply nested groups, and contain
 no heap-object edges. Named group metadata and indices aliases remain shared with
-the ordinary result path. Assertions/classes or alternatives combined with
-references, quantified references and Unicode matching remain pending.
+the ordinary result path. Assertions or alternatives combined with references, quantified references and
+Unicode matching remain pending.
 
 Ordinary named references in literal concatenations use the same reference program
 (CompileAtomEscape and BackreferenceMatcher, 22.2.2.9). Validated decoded names bind
@@ -1040,6 +1040,18 @@ remain compact; preparation and lookup work is charged before construction.
 Alternative-specific duplicate-name references retain Unsupported until the
 reference matcher supports alternatives. Wider reference compositions and Unicode
 matching remain pending, and default quotas remain disabled.
+
+Character-class, class-escape and dot atoms also compose with ordinary references
+(CompileAtom, 22.2.2.7; BackreferenceMatcher, 22.2.2.9). Complete preparation rejects
+unsupported assertions, alternatives and quantifiers before constructing any
+character predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
+inversion and DotAll behavior. Identical UTF-16 atom source shares one immutable
+predicate within a compilation, with charged cache setup, lookup and first
+construction. The flat reference program consumes one original UTF-16 unit per
+predicate and retains input capture ranges for numbered and named references.
+Default compile helpers retain DotAll=false; the native constructor supplies its
+validated s flag explicitly. No native recursion or reference-string expansion is
+introduced, and optional matching work still charges actual executed operations.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

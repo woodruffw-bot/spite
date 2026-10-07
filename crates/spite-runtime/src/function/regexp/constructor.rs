@@ -238,9 +238,10 @@ impl Realm {
             None
         } else {
             self.object_work(span, |_, budget| {
-                RegExpBackreferenceMatcher::compile_with_work(
+                RegExpBackreferenceMatcher::compile_with_flags_and_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b's')),
                     |work| budget.charge(work),
                 )
             })?

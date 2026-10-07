@@ -355,6 +355,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute ordinary named captures across supported plans, retaining decoded names and duplicate-name slots, null-prototype groups, undefined participation and aliased MatchIndices groups for native and generic consumers.
 - [x] Execute numbered references in ordinary literal concatenations with iterative capture state, empty forward/self references, pinned case comparison, exact input ranges and fallible opt-in search accounting.
 - [x] Execute named references in ordinary literal concatenations through decoded source-name lookup, preserved reference/digit boundaries, iterative forward/self capture state and original source/groups/indices behavior.
+- [x] Execute ordinary character-class, class-escape and dot concatenations with numbered/named references, shared pinned predicates, explicit DotAll and original input capture ranges.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

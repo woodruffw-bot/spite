@@ -1690,6 +1690,26 @@ targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
 
+Ordinary classes, six class escapes and dot now compose with numbered and named
+references through shared immutable character predicates and explicit DotAll.
+Three added core regressions cover an inspected 3,024-record insta snapshot,
+original capture ranges, ordinary case boundaries, lone surrogates, 10,000 shared
+predicates/captures with linear construction work, and 100,000 nested groups.
+The earlier 585-record literal-reference snapshot is byte-identical. Five runtime
+regressions cover an inspected 21-record result snapshot, groups/indices aliases,
+case and surrogate units, global/sticky consumers, deep copies and collection,
+and distinct pending features. Node agrees with all 3,024 core records, 21 native
+records, 120,480 fresh match/capture comparisons and nine runtime programs.
+Stable and MSRV pass workspace targets, documentation, and every unchanged
+pinned-corpus variant. Formatting, denied-warning Clippy, dependency/fixture
+policy, generated-data checks, and default two-mebibyte debug-stack checks pass
+on both toolchains where applicable.
+Five earlier character-reference gap controls now retain quantified forms; all
+364 audited gap programs remain unsupported. Every runtime target and Clippy with
+warnings denied passes. Assertions, alternatives, quantifiers combined with
+references and Unicode matching remain pending. No fixtures or fixture credit
+are added; inventories, the pin, dependencies and unlimited defaults are unchanged.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
