@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13526 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13528 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -95,7 +95,7 @@ comma call receivers and indirect eval, String/BigInt results, 100,000 arithmeti
 operations, 1,000 string concatenations, and opted-in host aborts. Ten independent
 Node programs confirm the semantic expectations. Genuine recursive syntax retains
 the existing stack guards; no default quota or test-only allowance is added.
-Stable and MSRV pass the complete 13526-variant corpus, workspace and documentation
+Stable and MSRV pass the complete 13528-variant corpus, workspace and documentation
 tests, and the debug-symbol stack checks. Formatting, Clippy, dependency policy,
 fixture inventory and the pinned Unicode/numeric generator checks also pass.
 
@@ -1626,16 +1626,28 @@ harness-positive variants after review of all 36 whole programs and metadata at
 the existing pin. They cover native groups/indices and duplicate-name order,
 generic matchAll/replace/replaceAll/search/split, and custom-exec groups. Two
 originals assert invalid group-name SyntaxErrors; these do not establish Unicode
-matching coverage. Twenty-one originals requiring pending named backreferences,
+matching coverage. Twenty originals requiring pending named references through alternatives,
 Unicode matching, lookbehind or additional quantifiers remain excluded without
 credit. The unchanged compareIterator.js helper is newly vendored from the same
 pin, preserving every assertion, source byte, metadata field and copyright.
 Git blob identities and manifest SHA-256 verify all sixteen new files.
 
-The current inventory is 7043 fixtures, eleven unchanged harness files and 7024
-reviewed Script sources. Its 13526 variants are 12049 harness positives, 1469
+One further unchanged built-ins/RegExp/named-groups/non-unicode-match.js original
+adds two normal/strict harness-positive variants. Its full program checks dot,
+class and literal captures, named/numbered references, capture groups containing
+references, source-order named groups and String.match arrays. Stable and MSRV
+pass both variants with ordinary unlimited defaults. The named-directory
+selection is now 16 of 36 complete originals; the other twenty remain excluded.
+Every source byte, assertion, metadata field and Git blob/SHA-256 identity is
+preserved at the existing pin, using the same eleven unchanged helpers.
+Stable and MSRV pass all 13,528 full-corpus variants, workspace targets and
+documentation tests. Formatting, denied-warning Clippy, dependency/fixture
+policy and all pinned offline generator checks pass.
+
+The current inventory is 7044 fixtures, eleven unchanged harness files and 7025
+reviewed Script sources. Its 13528 variants are 12051 harness positives, 1469
 parse negatives, four raw positives and four runtime negatives. RegExp builtin
-coverage is 196 positive whole programs in the builtin area, separate from 337 grammar
+coverage is 197 positive whole programs in the builtin area, separate from 337 grammar
 fixtures. The exec selection remains 54 of 79 whole originals, with 25 exclusions.
 No pin, prior negative expectation, dependency or unlimited runtime default changes.
 
@@ -3487,7 +3499,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13526 variants are four raw positives, 12049 positives using the upstream
+Rust. Its 13528 variants are four raw positives, 12051 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
