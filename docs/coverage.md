@@ -1238,6 +1238,30 @@ offline generator checks pass. The disk-full workspace/integration batches
 pass after clearing accumulated completed test executables; previously passed
 generator and debug library checks remain valid.
 
+Fixed prefixes around repeated groups have three core regressions: an inspected
+180-record insta snapshot, an independent exhaustive candidate/count/capture
+oracle including outer multiline anchors, and long overlapping runs, 100,000
+prefix captures, clones, metadata and optional construction work. The new snapshot
+accepts 148 records and rejects 32; four earlier outer-assertion records now
+execute. Earlier accepted stored results remain unchanged. Node agrees on
+104,320 stored results across fifteen snapshots, 377,440 additional match/capture
+comparisons and 23 runtime programs. Eight runtime regressions cover earliest
+complete greedy/lazy/bounded starts and disconnected runs, exact prefix/iteration/
+sequel/empty/undefined slots, zero-width bodies and huge positive minima,
+outer/internal word/input/line assertions, enclosing and alternative captures,
+global/sticky state and original source, escaped/class delimiters, DotAll, pinned
+case and surrogate offsets, generic consumers and callbacks, intrinsic Arrays,
+collection, 100,000 captures and long runs with unlimited defaults, and optional
+host aborts. Eight earlier gap programs retain repeated choices as the unsupported
+boundary; all 259 audited gap programs remain unsupported. Whole-fixture review
+enables no new whole programs; inventories and the pin remain unchanged. Captures
+spanning partial variable bodies, repeated choices, additional quantifiers,
+named groups, backreferences and Unicode modes remain pending.
+Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

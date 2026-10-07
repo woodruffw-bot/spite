@@ -662,9 +662,29 @@ precedence and original source/flags remain unchanged. Candidate work is bounded
 by input length times the sum of both fixed widths and assertion positions;
 optional work metadata also covers endpoint/window checks and full sticky
 suffixes. There is no recursion, expanded repetition count, default quota or new
-dependency. Fixed prefixes around repeated groups, captures spanning partial
+dependency. Captures spanning partial
 variable bodies, repeated choices, additional quantifiers, named groups,
 backreferences and Unicode modes remain pending.
+
+Fixed prefixes now compose with one repeated fixed group and an optional fixed
+sequel (CompileSubpattern and RepeatMatcher, 22.2.2.3–3.1). The prefix has a fixed
+consuming width and may contain captures, classes, dots and word/input/line
+assertions, including assertion-only and empty groups. Preparation identifies a
+complete quantified group outside the prefix's groups and classes, then accepts
+both components before constructing prefix sets. Matching translates each body
+start to its prefix start and checks the fixed prefix against complete input
+neighbors. The repeated-group moving window caches this immutable start predicate,
+so rejecting a prefix never restarts the complete repetition search. Earliest
+body starts correspond to earliest prefix starts; sequel and outer endpoint
+predicates retain greedy/lazy order. Prefix captures translate from the actual
+match start, repeated captures from the last iteration, and sequel captures from
+the selected endpoint. Zero iterations retain undefined inner slots. Complete
+enclosing groups and alternatives keep their existing layouts and original
+source/flags. Conservative optional work covers prefix checks, assertion windows
+and complete sticky suffixes; bounds stay scalar, with no recursive plans or
+default quotas. Captures spanning partial variable bodies, repeated choices,
+additional quantifiers, named groups, backreferences and Unicode modes remain
+pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

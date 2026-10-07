@@ -133,7 +133,7 @@ fn optional_work_counts_assertions_in_fixed_prefixes_and_continuations() {
         r"/a\Bb+c+/.test('abc')",
         r"/a\B(?<n>b)/.test('ab')",
         r"/a\Bb/u.test('ab')",
-        r"/^((\b(ab)+\b))$/.test('ab')",
+        r"/^((\b(ab|a)+\b))$/.test('ab')",
     ] {
         assert!(
             matches!(

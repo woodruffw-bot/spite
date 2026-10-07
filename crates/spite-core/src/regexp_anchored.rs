@@ -3,8 +3,8 @@
 use crate::regexp_assertion::{Assertions, split_outer_assertions};
 use crate::{
     JsString, RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpRepeatedContinuationMatcher, RegExpRepeatedSequenceMatcher,
-    RegExpSequenceMatcher, regexp_outer_group_body,
+    RegExpQuantifiedMatcher, RegExpRepeatedContinuationMatcher, RegExpRepeatedPrefixedMatcher,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::ops::Range;
 
@@ -34,6 +34,7 @@ enum Body {
     Prefixed(RegExpPrefixedMatcher),
     Repeated(RegExpRepeatedSequenceMatcher),
     RepeatedContinuation(RegExpRepeatedContinuationMatcher),
+    RepeatedPrefixed(RegExpRepeatedPrefixedMatcher),
 }
 
 impl RegExpAnchoredMatcher {
@@ -61,6 +62,9 @@ impl RegExpAnchoredMatcher {
             return matcher.capture_range(index, matched);
         }
         if let Body::RepeatedContinuation(matcher) = &self.body {
+            return matcher.capture_range(index, matched);
+        }
+        if let Body::RepeatedPrefixed(matcher) = &self.body {
             return matcher.capture_range(index, matched);
         }
         let relative = self.body.capture_ranges().get(index)?;
@@ -150,9 +154,13 @@ impl RegExpAnchoredMatcher {
             Body::Sequence(matcher) => matcher.search_passes(sticky).saturating_add(1),
             Body::Repeated(matcher) => matcher.search_passes(sticky).saturating_add(2),
             Body::RepeatedContinuation(matcher) => matcher.search_passes(sticky).saturating_add(2),
+            Body::RepeatedPrefixed(matcher) => matcher.search_passes(sticky).saturating_add(2),
         };
         consuming.saturating_add(
-            (if matches!(self.body, Body::Repeated(_) | Body::RepeatedContinuation(_)) {
+            (if matches!(
+                self.body,
+                Body::Repeated(_) | Body::RepeatedContinuation(_) | Body::RepeatedPrefixed(_)
+            ) {
                 4
             } else {
                 2
@@ -169,6 +177,7 @@ impl RegExpAnchoredMatcher {
                 | Body::Prefixed(_)
                 | Body::Repeated(_)
                 | Body::RepeatedContinuation(_)
+                | Body::RepeatedPrefixed(_)
         )
     }
 
@@ -202,6 +211,14 @@ impl RegExpAnchoredMatcher {
                 self.trailing,
                 self.multiline,
             ),
+            Body::RepeatedPrefixed(matcher) => matcher.find_asserted(
+                input,
+                start,
+                sticky,
+                self.leading,
+                self.trailing,
+                self.multiline,
+            ),
             Body::Repeated(matcher) => matcher.find_asserted(
                 input,
                 start,
@@ -228,6 +245,7 @@ impl Body {
             Self::Prefixed(m) => m.capture_count(),
             Self::Repeated(m) => m.capture_count(),
             Self::RepeatedContinuation(m) => m.capture_count(),
+            Self::RepeatedPrefixed(m) => m.capture_count(),
             _ => self.capture_ranges().len(),
         }
     }
@@ -238,7 +256,8 @@ impl Body {
             Self::Quantified(_)
             | Self::Prefixed(_)
             | Self::Repeated(_)
-            | Self::RepeatedContinuation(_) => &[],
+            | Self::RepeatedContinuation(_)
+            | Self::RepeatedPrefixed(_) => &[],
         }
     }
 }
@@ -311,6 +330,14 @@ fn compile_body<E>(
         &mut *charge,
     )? {
         Body::RepeatedContinuation(m)
+    } else if let Some(m) = RegExpRepeatedPrefixedMatcher::compile_with_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Body::RepeatedPrefixed(m)
     } else {
         return Ok(None);
     };

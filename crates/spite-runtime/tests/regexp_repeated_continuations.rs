@@ -117,7 +117,7 @@ fn optional_full_suffix_work_aborts_and_other_group_compositions_stay_unsupporte
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/x(ab)+c/.test('xababc')",
+        r"/x(ab|a)+c/.test('xababc')",
         r"/(ab|a)+c/.test('abc')",
         r"/(ab)+(a)+/.test('aba')",
         r"/(ab)+a+/.test('aba')",

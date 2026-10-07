@@ -8,8 +8,8 @@ use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
-    RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedSequenceMatcher,
-    RegExpSequenceMatcher, Span, regexp_outer_group_body,
+    RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -288,7 +288,9 @@ impl Realm {
                                                         dot_all,
                                                         |work| budget.charge(work),
                                                     )? {Ok(Some(RegExpMatcherBody::RepeatedSequence(matcher)))}else{
-                                                        RegExpRepeatedContinuationMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work)).map(|m|m.map(RegExpMatcherBody::RepeatedContinuation))
+                                                        if let Some(matcher)=RegExpRepeatedContinuationMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work))? {Ok(Some(RegExpMatcherBody::RepeatedContinuation(matcher)))}else{
+                                                            RegExpRepeatedPrefixedMatcher::compile_with_work(&matching_source,ignore_case,flags.code_units().contains(&u16::from(b'm')),dot_all,|work|budget.charge(work)).map(|m|m.map(RegExpMatcherBody::RepeatedPrefixed))
+                                                        }
                                                     }
                                                 }
                                             }

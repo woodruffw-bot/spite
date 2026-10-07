@@ -1,24 +1,68 @@
-//! A repeated fixed group followed by a fixed sequel (22.2.2.3.1).
+//! Fixed prefixes around repeated fixed groups (22.2.2.3.1–3).
 
 use crate::regexp_assertion::Assertions;
-use crate::{JsString, RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher};
+use crate::{
+    JsString, RegExpRepeatedContinuationMatcher, RegExpRepeatedSequenceMatcher,
+    RegExpSequenceMatcher,
+};
 use std::ops::Range;
 
-/// A complete ordinary fixed repeated group followed by a fixed sequel.
+/// An ordinary fixed prefix, one repeated fixed group and an optional fixed sequel.
 ///
-/// The Pattern must already be validated without `u` or `v`. Both components
-/// support nested ordinary captures and word/input/line assertions with explicit
-/// flags. The sequel may be empty but contain no further quantifier or nested choice. Counts
-/// remain compact and matching uses the fixed-sequence candidate bound.
+/// Patterns must already be validated without `u` or `v`. Every fixed component
+/// supports ordinary captures and word/input/line assertions with explicit flags.
+/// Matching retains the fixed candidate bound without expanding counts or recursion.
 #[derive(Clone, Debug)]
-pub struct RegExpRepeatedContinuationMatcher {
-    repeated: RegExpRepeatedSequenceMatcher,
-    sequel: RegExpSequenceMatcher,
+pub struct RegExpRepeatedPrefixedMatcher {
+    prefix: RegExpSequenceMatcher,
+    body: Body,
     capture_count: usize,
 }
 
-impl RegExpRepeatedContinuationMatcher {
-    /// Compiles the complete group/quantifier/sequel layout with explicit flags.
+#[derive(Clone, Debug)]
+enum Body {
+    Repeated(RegExpRepeatedSequenceMatcher),
+    Continuation(RegExpRepeatedContinuationMatcher),
+}
+
+impl Body {
+    fn capture_count(&self) -> usize {
+        match self {
+            Self::Repeated(m) => m.capture_count(),
+            Self::Continuation(m) => m.capture_count(),
+        }
+    }
+    fn capture_range(&self, index: usize, range: &Range<usize>) -> Option<Range<usize>> {
+        match self {
+            Self::Repeated(m) => m.capture_range(index, range),
+            Self::Continuation(m) => m.capture_range(index, range),
+        }
+    }
+    fn find_filtered(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        accept_start: impl FnMut(usize) -> bool,
+        accept_end: impl FnMut(usize) -> bool,
+    ) -> Option<Range<usize>> {
+        match self {
+            Self::Repeated(m) => m.find_asserted(input, start, sticky, accept_start, accept_end),
+            Self::Continuation(m) => {
+                m.find_filtered(input, start, sticky, accept_start, accept_end)
+            }
+        }
+    }
+    fn search_passes(&self, sticky: bool) -> usize {
+        match self {
+            Self::Repeated(m) => m.search_passes(sticky).saturating_add(2),
+            Self::Continuation(m) => m.search_passes(sticky),
+        }
+    }
+}
+
+impl RegExpRepeatedPrefixedMatcher {
+    /// Compiles a complete fixed prefix/group/quantifier/sequel layout.
     pub fn compile(
         source: &JsString,
         ignore_case: bool,
@@ -31,7 +75,7 @@ impl RegExpRepeatedContinuationMatcher {
         .unwrap_or_else(|never| match never {})
     }
 
-    /// Accepts both complete components before charging optional construction work.
+    /// Rejects unsupported component syntax before constructing the prefix's sets.
     pub fn compile_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -40,37 +84,36 @@ impl RegExpRepeatedContinuationMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
-        let Some(end) = crate::regexp_repeated_literal::group_end(units) else {
+        let Some(split) = repeated_start(units) else {
             return Ok(None);
         };
-        let Some((_, width)) = crate::regexp_quantified::quantifier(&units[end..]) else {
-            return Ok(None);
-        };
-        let split = end + width;
-        if split == units.len() {
+        let prefix = JsString::from_code_units(units[..split].to_vec());
+        if RegExpSequenceMatcher::repeated_atom_width(&prefix, dot_all, true).is_none() {
             return Ok(None);
         }
-        let atom = JsString::from_code_units(units[..end].to_vec());
-        let sequel = JsString::from_code_units(units[split..].to_vec());
-        if RegExpSequenceMatcher::repeated_atom_width(&atom, dot_all, true).is_none()
-            || RegExpSequenceMatcher::repeated_atom_width(&sequel, dot_all, true).is_none()
-        {
-            return Ok(None);
-        }
-        charge(units.len())?;
-        let repeated = JsString::from_code_units(units[..split].to_vec());
-        let Some(repeated) = RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
-            &repeated,
+        let body = JsString::from_code_units(units[split..].to_vec());
+        let body = if let Some(m) = RegExpRepeatedSequenceMatcher::compile_with_assertions_and_work(
+            &body,
             ignore_case,
             multiline,
             dot_all,
             &mut charge,
-        )?
-        else {
+        )? {
+            Body::Repeated(m)
+        } else if let Some(m) = RegExpRepeatedContinuationMatcher::compile_with_work(
+            &body,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )? {
+            Body::Continuation(m)
+        } else {
             return Ok(None);
         };
-        let Some(sequel) = RegExpSequenceMatcher::compile_with_assertions_and_work(
-            &sequel,
+        charge(units.len())?;
+        let Some(prefix) = RegExpSequenceMatcher::compile_with_assertions_and_work(
+            &prefix,
             ignore_case,
             multiline,
             dot_all,
@@ -79,44 +122,49 @@ impl RegExpRepeatedContinuationMatcher {
         else {
             return Ok(None);
         };
-        let Some(capture_count) = repeated
-            .capture_count()
-            .checked_add(sequel.capture_ranges().len())
+        let Some(capture_count) = prefix
+            .capture_ranges()
+            .len()
+            .checked_add(body.capture_count())
         else {
             return Ok(None);
         };
         Ok(Some(Self {
-            repeated,
-            sequel,
+            prefix,
+            body,
             capture_count,
         }))
     }
 
-    /// Source-order captures across the repeated group and fixed sequel.
+    /// Source-order captures across the prefix, repeated group and sequel.
     pub fn capture_count(&self) -> usize {
         self.capture_count
     }
 
-    /// Absolute final-iteration, undefined or fixed-sequel capture range.
+    /// Absolute fixed-prefix, final-iteration, undefined or sequel capture range.
     pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
         if index >= self.capture_count {
             return None;
         }
-        let end = matched.end.checked_sub(self.sequel.atom_count())?;
-        if matched.start > end {
+        let body_start = matched.start.checked_add(self.prefix.atom_count())?;
+        if body_start > matched.end {
             return None;
         }
-        if index < self.repeated.capture_count() {
-            return self.repeated.capture_range(index, &(matched.start..end));
+        if index < self.prefix.capture_ranges().len() {
+            let relative = self.prefix.capture_ranges().get(index)?;
+            Some(
+                matched.start.checked_add(relative.start)?
+                    ..matched.start.checked_add(relative.end)?,
+            )
+        } else {
+            self.body.capture_range(
+                index - self.prefix.capture_ranges().len(),
+                &(body_start..matched.end),
+            )
         }
-        let relative = self
-            .sequel
-            .capture_ranges()
-            .get(index - self.repeated.capture_count())?;
-        Some(end.checked_add(relative.start)?..end.checked_add(relative.end)?)
     }
 
-    /// Earliest start and greedy/lazy repetition length that satisfies the sequel.
+    /// Earliest complete prefix start with greedy/lazy asserted repetition endpoints.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
         self.find_asserted(
             input,
@@ -138,40 +186,59 @@ impl RegExpRepeatedContinuationMatcher {
         multiline: bool,
     ) -> Option<Range<usize>> {
         let units = input.code_units();
-        self.find_filtered(
+        let body_start = start.checked_add(self.prefix.atom_count())?;
+        let matched = self.body.find_filtered(
             input,
-            start,
+            body_start,
             sticky,
-            |position| leading.accepts(units, position, multiline),
+            |position| {
+                let Some(prefix_start) = position.checked_sub(self.prefix.atom_count()) else {
+                    return false;
+                };
+                leading.accepts(units, prefix_start, multiline)
+                    && self.prefix.find(input, prefix_start, true).is_some()
+            },
             |position| trailing.accepts(units, position, multiline),
-        )
+        )?;
+        Some(matched.start.checked_sub(self.prefix.atom_count())?..matched.end)
     }
 
-    pub(crate) fn find_filtered(
-        &self,
-        input: &JsString,
-        start: usize,
-        sticky: bool,
-        accept_start: impl FnMut(usize) -> bool,
-        mut accept_end: impl FnMut(usize) -> bool,
-    ) -> Option<Range<usize>> {
-        let repeated =
-            self.repeated
-                .find_asserted(input, start, sticky, accept_start, |position| {
-                    self.sequel
-                        .find(input, position, true)
-                        .is_some_and(|range| accept_end(range.end))
-                })?;
-        Some(repeated.start..repeated.end.checked_add(self.sequel.atom_count())?)
-    }
-
-    /// Conservative passes for group candidates, endpoint selection and fixed sequels.
+    /// Conservative passes for fixed-prefix checks and complete repeated-body search.
     pub fn search_passes(&self, sticky: bool) -> usize {
-        self.repeated
+        self.body
             .search_passes(sticky)
-            .saturating_add(2)
-            .saturating_add(self.sequel.search_passes(false))
+            .saturating_add(self.prefix.search_passes(false).saturating_mul(2))
     }
+}
+
+fn repeated_start(units: &[u16]) -> Option<usize> {
+    let mut index = 0;
+    while let Some(&unit) = units.get(index) {
+        match unit {
+            92 => index = index.checked_add(2)?,
+            91 => {
+                index += 1;
+                while let Some(&unit) = units.get(index) {
+                    index += 1;
+                    if unit == 92 {
+                        index = index.checked_add(1)?;
+                    } else if unit == 93 {
+                        break;
+                    }
+                }
+            }
+            40 => {
+                let end = index
+                    .checked_add(crate::regexp_repeated_literal::group_end(&units[index..])?)?;
+                if crate::regexp_quantified::quantifier(&units[end..]).is_some() {
+                    return (index > 0).then_some(index);
+                }
+                index = end;
+            }
+            _ => index += 1,
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -180,52 +247,54 @@ mod tests {
     use std::fmt::Write;
 
     #[test]
-    fn repeated_fixed_sequel_snapshot() {
+    fn fixed_prefix_repeated_groups_snapshot() {
         let mut rows = String::new();
         for source in [
-            "(ab)+ab",
-            "(ab)+?ab",
-            "(ab)*(ab)",
-            "(ab)*?(ab)",
-            "(ab){1,2}(ab)",
-            "(ab){1,2}?(ab)",
-            "([ab][ab])+([ab]b)",
-            "([ab][ab]){0,1}([ab]b)",
-            "(([ab])([ab])()){2}([ab]b)()",
-            "(a())+b",
-            "(a())+($)(\\n)",
-            r"(^a$\n){2}(a)",
-            r"(a\B)+b",
-            r"(\Ba)+b",
-            r"(ab)+\b",
-            r"(ab)+$",
-            r"(ab)+^x",
-            "(ab)+()",
-            "(ab){0}([ab])",
-            "(ab){999999999999999999999999999999}c",
-            "()*(a)",
-            "()+(a)",
-            "(){999999999999999999999999999999}(a)",
-            r"(^){2}(a)",
-            r"(\b\B)*(a)",
-            r"(\b\B)+(a)",
-            "(?:ab)+(?:[ab])",
-            "(.a)+([ab])",
-            "([µ][µ])+(x)",
-            r"(\uD83D\uDCA9)+(\uDCA9)",
-            "(ab)+[.$]",
-            "(ab)+c",
-            "(ab)+",
-            "^(ab)+c$",
+            "x(ab)+",
             "x(ab)+c",
-            "(ab|a)+c",
-            "(ab)+(a)+",
-            "(ab)+a+",
-            "(a*)+b",
-            "(?<n>ab)+c",
-            r"(ab)+\1",
-            "(ab)+(?=c)",
-            "((ab)+)c",
+            "x(ab)+?ab",
+            "x(ab)*c",
+            "x(ab)*?c",
+            "x(ab){1,2}c",
+            "(a)(aa)+(ab)",
+            "(a)(aa){1,2}(ab)",
+            "([ab])([ab][ab])+([ab]b)",
+            "([ab])(([ab])([ab])()){2}([ab]b)()",
+            "()(ab)+",
+            "a()*(b)",
+            "a()+(b)",
+            "a(){999999999999999999999999999999}(b)",
+            r"(\b)(a)(a\B)+b",
+            r"(^)(a)(a())+($)(\n)",
+            r"(^)(a)(^a$\n)+b",
+            r"a(^){2}b",
+            r"a(\b\B)*b",
+            r"a(\b\B)+b",
+            r"\b(a)(aa)*\b",
+            r"\b(a)(aa)*?\b",
+            r"^x(ab)+c$",
+            r"\((ab)+c",
+            r"\x28(ab)+c",
+            r"[(](ab)+c",
+            r"[()](ab)+[.$]",
+            "(µ)([µ][µ])+(x)",
+            r"\uDCA9(ab)+(\uDCA9)",
+            "💩(ab)+(c)",
+            "(.)(.a)+([ab])",
+            "x(?:ab)+(?:c)",
+            "x(ab)+(ab)()",
+            "x(ab)+()",
+            "x(ab)+$",
+            "x(ab)+^c",
+            "(x(ab)+c)",
+            "(x)(ab)+c",
+            "a+b(ab)+c",
+            "x(ab|a)+c",
+            "x(ab)+(c)+",
+            "x(?<n>ab)+c",
+            r"x(ab)+\1",
+            "x((ab)+)c",
+            "(ab)+c",
         ] {
             for (i, m, s) in [
                 (false, false, false),
@@ -235,28 +304,29 @@ mod tests {
             ] {
                 write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
                 if let Some(matcher) =
-                    RegExpRepeatedContinuationMatcher::compile(&JsString::from(source), i, m, s)
+                    RegExpRepeatedPrefixedMatcher::compile(&JsString::from(source), i, m, s)
                 {
                     write!(rows, " captures={}", matcher.capture_count()).unwrap();
                     for text in [
                         "",
-                        "a",
-                        "b",
                         "ab",
-                        "abab",
-                        "ababab",
-                        "abababa",
-                        "xababab",
+                        "abc",
+                        "xabc",
+                        "xababc",
+                        "xabababc",
+                        "xababxc",
+                        "aaab",
                         "aaaaab",
                         "aaaaaab",
-                        "ABab",
-                        "aaab",
+                        "XABabc",
                         "aaa\n",
-                        "x\na\na\na\n",
-                        "a\r\n",
-                        "\na\nab",
-                        "Μµx",
-                        "💩💩",
+                        "x\naaaa\n",
+                        "a\na\nb",
+                        "(ababc",
+                        "abab.",
+                        "µΜµx",
+                        "💩ababc",
+                        "\n\naab",
                     ] {
                         let input = JsString::from(text);
                         for (start, sticky) in [
@@ -285,7 +355,7 @@ mod tests {
     }
 
     #[test]
-    fn fixed_sequels_agree_with_independent_candidate_repetition_and_capture_order() {
+    fn fixed_prefix_candidates_and_captures_agree_with_independent_count_order() {
         let alphabet = [97, 98, 10];
         for (quantifier, min, max) in [
             ("*", 0, None),
@@ -297,12 +367,12 @@ mod tests {
         ] {
             for greedy in [false, true] {
                 let source = format!(
-                    "(([ab])([ab])()){quantifier}{}([ab]b)()",
+                    "([ab])(([ab])([ab])()){quantifier}{}([ab]b)()",
                     if greedy { "" } else { "?" }
                 );
                 for anchored in [false, true] {
                     for multiline in [false, true] {
-                        let matcher = RegExpRepeatedContinuationMatcher::compile(
+                        let matcher = RegExpRepeatedPrefixedMatcher::compile(
                             &JsString::from(source.as_str()),
                             false,
                             multiline,
@@ -315,7 +385,7 @@ mod tests {
                             multiline,
                         )
                         .unwrap();
-                        for length in 0..=6u32 {
+                        for length in 0..=7u32 {
                             for mut encoded in 0..alphabet.len().pow(length) {
                                 let mut units = Vec::new();
                                 for _ in 0..length {
@@ -336,18 +406,22 @@ mod tests {
                                                 {
                                                     return None;
                                                 }
+                                                if ![97, 98].contains(units.get(candidate)?) {
+                                                    return None;
+                                                }
+                                                let body = candidate + 1;
                                                 let limit = max
-                                                    .unwrap_or((units.len() - candidate) / 2)
-                                                    .min((units.len() - candidate) / 2);
+                                                    .unwrap_or((units.len() - body) / 2)
+                                                    .min((units.len() - body) / 2);
                                                 let mut counts: Vec<_> = (min..=limit).collect();
                                                 if greedy {
                                                     counts.reverse();
                                                 }
                                                 counts.into_iter().find_map(|count| {
-                                                    let tail = candidate + count * 2;
+                                                    let tail = body + count * 2;
                                                     let finish = tail + 2;
                                                     let suffix = units.get(tail..finish)?;
-                                                    if !units[candidate..tail]
+                                                    if !units[body..tail]
                                                         .iter()
                                                         .all(|u| [97, 98].contains(u))
                                                         || ![97, 98].contains(&suffix[0])
@@ -364,6 +438,7 @@ mod tests {
                                                         return None;
                                                     }
                                                     let mut captures = vec![
+                                                        Some(candidate..body),
                                                         (count > 0).then(|| tail - 2..tail),
                                                         (count > 0).then(|| tail - 2..tail - 1),
                                                         (count > 0).then(|| tail - 1..tail),
@@ -407,30 +482,31 @@ mod tests {
     }
 
     #[test]
-    fn long_fixed_sequel_runs_counts_copies_and_optional_construction_stay_checked() {
+    fn long_prefix_runs_deep_captures_clones_and_optional_work_keep_fixed_bounds() {
         let input = JsString::from(format!("{}b", "a".repeat(200_000)).as_str());
-        let matcher = RegExpRepeatedContinuationMatcher::compile(
-            &JsString::from("(aa)+(ab)"),
+        let matcher = RegExpRepeatedPrefixedMatcher::compile(
+            &JsString::from("(a)(aa)+(ab)"),
             false,
             false,
             false,
         )
         .unwrap();
-        assert_eq!(matcher.clone().find(&input, 0, false), Some(1..200_001));
-        assert_eq!(matcher.find(&input, 0, true), None);
+        assert_eq!(matcher.clone().find(&input, 0, false), Some(0..200_001));
+        assert_eq!(matcher.find(&input, 0, true), Some(0..200_001));
+        assert_eq!(matcher.capture_range(0, &(0..200_001)), Some(0..1));
         assert_eq!(
-            matcher.capture_range(0, &(1..200_001)),
+            matcher.capture_range(1, &(0..200_001)),
             Some(199_997..199_999)
         );
         assert_eq!(
-            matcher.capture_range(1, &(1..200_001)),
+            matcher.capture_range(2, &(0..200_001)),
             Some(199_999..200_001)
         );
-        assert_eq!(matcher.search_passes(true), 6);
-        assert_eq!(matcher.search_passes(false), 7);
+        assert_eq!(matcher.search_passes(true), 8);
+        assert_eq!(matcher.search_passes(false), 9);
         assert_eq!(matcher.find(&input, usize::MAX, false), None);
-        let source = format!("({}a{})+(b)", "(".repeat(100_000), ")".repeat(100_000));
-        let deep = RegExpRepeatedContinuationMatcher::compile(
+        let source = format!("{}a{}(aa)+(ab)", "(".repeat(100_000), ")".repeat(100_000));
+        let deep = RegExpRepeatedPrefixedMatcher::compile(
             &JsString::from(source.as_str()),
             false,
             false,
@@ -439,17 +515,18 @@ mod tests {
         .unwrap();
         let matched = deep.find(&input, 0, false).unwrap();
         assert_eq!(deep.capture_count(), 100_002);
+        assert_eq!(deep.capture_range(99_999, &matched), Some(0..1));
         assert_eq!(
             deep.capture_range(100_000, &matched),
-            Some(199_999..200_000)
+            Some(199_997..199_999)
         );
         assert_eq!(
             deep.capture_range(100_001, &matched),
-            Some(200_000..200_001)
+            Some(199_999..200_001)
         );
         assert_eq!(
-            RegExpRepeatedContinuationMatcher::compile_with_work(
-                &JsString::from(r"(ab)+(\d)"),
+            RegExpRepeatedPrefixedMatcher::compile_with_work(
+                &JsString::from(r"(\d)(ab)+(c)"),
                 false,
                 false,
                 false,
@@ -459,8 +536,8 @@ mod tests {
             "host"
         );
         assert!(
-            RegExpRepeatedContinuationMatcher::compile_with_work(
-                &JsString::from("([ab][ab])+(a)+"),
+            RegExpRepeatedPrefixedMatcher::compile_with_work(
+                &JsString::from("[ab](ab|a)+(c)"),
                 false,
                 false,
                 false,
