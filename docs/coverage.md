@@ -821,6 +821,30 @@ Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Complete ordinary capturing/noncapturing groups now enclose supported top-level
+alternative bodies. Three core regressions cover an inspected 93-record insta
+snapshot, independent position/source/repetition/capture ordering, 100,000
+branch wrappers and shared clones, preserved fixed capture APIs and optional
+host charge separation. All prior snapshots keep their values. Eight runtime
+regressions cover earliest starts and source-order ties, greedy/lazy branch
+selection, input/multiline assertions, whole-branch versus inner capture slots,
+global/sticky state and strict writes, participating empty groups and unselected
+slots, pinned case/DotAll and UTF-16 ranges, generic consumers and callbacks,
+intrinsic Arrays, original sources and copies after collection, 100,000-group
+constructor validation and 1,000-capture results without default quotas, optional
+host aborts and complete unsupported bodies. All 137 reviewed constant RegExp
+gap-loop programs retain Unsupported. Node agrees on all 36,270 range/capture
+comparisons, all 1,800 stored snapshot match/capture arrays and seventeen runtime
+programs. Scalar branch prefix/total counts retain immutable plan sharing and
+existing search bounds without recursion, a wrapper tree or search allocation.
+Nested choices, quantified multi-atom groups, embedded continuations/assertions,
+named groups, backreferences and Unicode modes remain pending. The fixture
+review enables no further whole programs. The corpus, inventories and pin are
+unchanged.
+Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

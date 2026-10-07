@@ -361,6 +361,21 @@ Character-set continuations, multiple quantifiers, enclosing groups
 around the complete concatenation, assertions, choices and Unicode modes remain
 outside this compiler.
 
+Top-level alternative bodies also accept complete ordinary enclosing groups.
+Each branch first tries the existing complete literal, sequence, anchored or
+quantified compiler, retaining every prior fixed capture layout. If those
+compilers reject it, the shared outer-group analysis removes complete ordinary
+wrappers and retries the same consuming compilers. A branch stores one checked
+total capture count and one whole-match prefix count beside its nonrecursive
+body plan. Prefix captures resolve to that selected branch's complete range;
+shifted inner slots keep their existing layout. Global offsets still follow
+source order, and every group in an unselected branch remains undefined.
+Optional accounting covers the group scans, private copy and retry before their
+work runs. Search retains the body's existing pass count and full-suffix metadata;
+there is no wrapper tree, capture matrix, recursion or repetition expansion.
+Nested alternative bodies, groups followed by unsupported continuations and
+quantified multi-atom groups remain pending.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups

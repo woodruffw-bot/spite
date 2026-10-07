@@ -2,7 +2,7 @@
 
 use crate::{
     JsString, RegExpAnchoredMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpSequenceMatcher,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher, regexp_outer_group_body,
 };
 use std::{ops::Range, sync::Arc};
 
@@ -11,6 +11,8 @@ use std::{ops::Range, sync::Arc};
 /// The Pattern must already be validated without `u` or `v`. Every alternative
 /// must compile as a literal, fixed class sequence, outer-anchored sequence,
 /// quantified atom or quantified prefix with a literal continuation.
+/// Complete ordinary capturing/noncapturing wrappers can enclose each body;
+/// captured wrappers precede that branch's retained capture slots.
 /// Unsupported alternatives reject the entire plan. Nested alternatives and
 /// multiple quantifiers remain unsupported; compilation never expands
 /// combinations or uses native recursion.
@@ -19,7 +21,7 @@ pub struct RegExpDisjunctionMatcher(Arc<Program>);
 
 #[derive(Debug)]
 struct Program {
-    alternatives: Vec<Alternative>,
+    alternatives: Vec<Branch>,
     capture_offsets: Vec<usize>,
     capture_count: usize,
     full_suffix: bool,
@@ -93,6 +95,89 @@ impl Alternative {
     }
 }
 
+/// An existing body plan with a scalar prefix of whole-branch captures.
+#[derive(Debug)]
+struct Branch {
+    matcher: Alternative,
+    enclosing_captures: usize,
+    capture_count: usize,
+}
+
+impl Branch {
+    fn new(matcher: Alternative, enclosing_captures: usize) -> Option<Self> {
+        let capture_count = enclosing_captures.checked_add(matcher.capture_count())?;
+        Some(Self {
+            matcher,
+            enclosing_captures,
+            capture_count,
+        })
+    }
+    fn capture_count(&self) -> usize {
+        self.capture_count
+    }
+    fn capture_ranges(&self) -> &[Range<usize>] {
+        if self.enclosing_captures == 0 {
+            self.matcher.capture_ranges()
+        } else {
+            &[]
+        }
+    }
+    fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
+        if index >= self.capture_count || matched.start > matched.end {
+            return None;
+        }
+        if index < self.enclosing_captures {
+            return Some(matched.clone());
+        }
+        self.matcher
+            .capture_range(index - self.enclosing_captures, matched)
+    }
+    fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        self.matcher.find(input, start, sticky)
+    }
+    fn search_passes(&self, sticky: bool) -> usize {
+        self.matcher.search_passes(sticky)
+    }
+}
+
+fn compile_alternative<E>(
+    source: &JsString,
+    ignore_case: bool,
+    multiline: bool,
+    dot_all: bool,
+    charge: &mut impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Alternative>, E> {
+    let matcher = if let Some(m) = RegExpLiteralMatcher::compile(source, ignore_case) {
+        Alternative::Literal(m)
+    } else if let Some(m) =
+        RegExpSequenceMatcher::compile_with_work(source, ignore_case, dot_all, &mut *charge)?
+    {
+        Alternative::Sequence(m)
+    } else if let Some(m) = RegExpAnchoredMatcher::compile_with_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::Anchored(m)
+    } else if let Some(m) =
+        RegExpQuantifiedMatcher::compile_with_work(source, ignore_case, dot_all, &mut *charge)?
+    {
+        Alternative::Quantified(m)
+    } else if let Some(m) = RegExpQuantifiedContinuationMatcher::compile_with_work(
+        source,
+        ignore_case,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::QuantifiedContinuation(m)
+    } else {
+        return Ok(None);
+    };
+    Ok(Some(matcher))
+}
+
 impl RegExpDisjunctionMatcher {
     /// Compiles two or more top-level alternatives, including empty alternatives.
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
@@ -123,38 +208,32 @@ impl RegExpDisjunctionMatcher {
         let mut capture_count = 0usize;
         for range in ranges {
             let source = JsString::from_code_units(units[range].to_vec());
-            let matcher = if let Some(m) = RegExpLiteralMatcher::compile(&source, ignore_case) {
-                Alternative::Literal(m)
-            } else if let Some(m) = RegExpSequenceMatcher::compile_with_work(
-                &source,
-                ignore_case,
-                dot_all,
-                &mut charge,
-            )? {
-                Alternative::Sequence(m)
-            } else if let Some(m) = RegExpAnchoredMatcher::compile_with_work(
-                &source,
-                ignore_case,
-                multiline,
-                dot_all,
-                &mut charge,
-            )? {
-                Alternative::Anchored(m)
-            } else if let Some(m) = RegExpQuantifiedMatcher::compile_with_work(
-                &source,
-                ignore_case,
-                dot_all,
-                &mut charge,
-            )? {
-                Alternative::Quantified(m)
-            } else if let Some(m) = RegExpQuantifiedContinuationMatcher::compile_with_work(
-                &source,
-                ignore_case,
-                dot_all,
-                &mut charge,
-            )? {
-                Alternative::QuantifiedContinuation(m)
+            // Keep existing fixed layouts before trying complete group wrappers.
+            let matcher = if let Some(matcher) =
+                compile_alternative(&source, ignore_case, multiline, dot_all, &mut charge)?
+            {
+                Branch::new(matcher, 0)
+            } else if source.code_units().first() == Some(&40) {
+                charge(source.len())?;
+                charge(source.len())?;
+                charge(source.len())?;
+                let Some(group) = regexp_outer_group_body(&source) else {
+                    return Ok(None);
+                };
+                charge(group.body.len())?;
+                let body = JsString::from_code_units(source.code_units()[group.body].to_vec());
+                charge(body.len())?;
+                charge(body.len())?;
+                let Some(matcher) =
+                    compile_alternative(&body, ignore_case, multiline, dot_all, &mut charge)?
+                else {
+                    return Ok(None);
+                };
+                Branch::new(matcher, group.captures)
             } else {
+                return Ok(None);
+            };
+            let Some(matcher) = matcher else {
                 return Ok(None);
             };
             capture_offsets.push(capture_count);
@@ -165,7 +244,7 @@ impl RegExpDisjunctionMatcher {
             alternatives.push(matcher);
         }
         charge(alternatives.len())?;
-        let full_suffix = alternatives.iter().any(|branch| match branch {
+        let full_suffix = alternatives.iter().any(|branch| match &branch.matcher {
             Alternative::Quantified(_) | Alternative::QuantifiedContinuation(_) => true,
             Alternative::Anchored(matcher) => matcher.requires_full_suffix(),
             _ => false,
@@ -801,6 +880,193 @@ mod tests {
         assert_eq!(
             matcher.find_branch(&JsString::from("b"), 0, false),
             Some((1, 0..1))
+        );
+    }
+    #[test]
+    fn complete_branch_group_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(a+b)|x",
+            "x|(a+b)",
+            "((a+b))|x",
+            "(?:(a+b))|x",
+            "(?:a+b)|x",
+            "(a+?aa)|(a+aa)",
+            "((a)+b)|(b+)",
+            "(^a+$)|x",
+            "(^a+?aa$)|(b+)",
+            "x|(^((a)+)(b)$)",
+            "(a$)|(^b)",
+            "((a)*())|x",
+            "x|((a*)())",
+            "(?:[ab]+ab)|x",
+            "([x])|((a)+(b))|([y])",
+            "((?:a)*x)|([y])",
+            "([ab](c))|x",
+            "((ab))|x",
+            "()|(a+b)",
+            "(a+b)|()",
+            r"(\d+x)|([a])",
+            "(.+x)|([a])",
+            "(µ+x)|([a])",
+            r"(\uD800+x)|([a])",
+            "(a+[b])|x",
+            "(a+b)*|x",
+            "a(a+b)|x",
+            "(a|b)|x",
+            "(?:(a|b))|x",
+            "(?<n>a)|x",
+            "(a+b)|x*",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+            ] {
+                let matcher = RegExpDisjunctionMatcher::compile_with_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " captures={} branches={} full_suffix={}",
+                        matcher.capture_count(),
+                        matcher.alternative_count(),
+                        matcher.requires_full_suffix()
+                    )
+                    .unwrap();
+                    for text in [
+                        "",
+                        "a",
+                        "aaaa",
+                        "aaab",
+                        "baaa",
+                        "abab",
+                        "x",
+                        "y",
+                        "ABab",
+                        "12x",
+                        "a\nb",
+                        "x\naaab\ny",
+                    ] {
+                        let input = JsString::from(text);
+                        for (start, sticky) in [(0, false), (1, true)] {
+                            let result =
+                                matcher
+                                    .find_branch(&input, start, sticky)
+                                    .map(|(branch, r)| {
+                                        let captures = (0..matcher.capture_count())
+                                            .map(|slot| matcher.capture_range(branch, slot, &r))
+                                            .collect::<Vec<_>>();
+                                        (branch, r, captures)
+                                    });
+                            write!(rows, " {text:?}@{start}/{sticky}:{result:?}").unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn wrapped_branch_captures_follow_independent_position_and_repetition_order() {
+        let matcher =
+            RegExpDisjunctionMatcher::compile(&JsString::from("((a)+b)|(b+)"), false).unwrap();
+        assert_eq!(matcher.capture_count(), 3);
+        for len in 0..=5u32 {
+            for mut encoded in 0..3usize.pow(len) {
+                let mut units = Vec::new();
+                for _ in 0..len {
+                    units.push([97, 98, 120][encoded % 3]);
+                    encoded /= 3;
+                }
+                let input = JsString::from_code_units(units.clone());
+                for start in 0..=units.len() + 1 {
+                    for sticky in [false, true] {
+                        let expected = (start..=units.len())
+                            .take(if sticky { 1 } else { usize::MAX })
+                            .find_map(|candidate| {
+                                let mut end = candidate;
+                                while units.get(end) == Some(&97) {
+                                    end += 1;
+                                }
+                                if end > candidate && units.get(end) == Some(&98) {
+                                    return Some((
+                                        0,
+                                        candidate..end + 1,
+                                        vec![Some(candidate..end + 1), Some(end - 1..end), None],
+                                    ));
+                                }
+                                end = candidate;
+                                while units.get(end) == Some(&98) {
+                                    end += 1;
+                                }
+                                (end > candidate).then(|| {
+                                    (1, candidate..end, vec![None, None, Some(candidate..end)])
+                                })
+                            });
+                        let actual =
+                            matcher
+                                .find_branch(&input, start, sticky)
+                                .map(|(branch, r)| {
+                                    let caps = (0..3)
+                                        .map(|i| matcher.capture_range(branch, i, &r))
+                                        .collect::<Vec<_>>();
+                                    (branch, r, caps)
+                                });
+                        assert_eq!(actual, expected, "{units:?} {start} {sticky}");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn deep_branch_wrappers_static_layouts_and_optional_work_stay_distinct() {
+        let source = format!("{}a+b{}|x", "(".repeat(100_000), ")".repeat(100_000));
+        let matcher =
+            RegExpDisjunctionMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        let copy = matcher.clone();
+        let input = JsString::from("aaab");
+        let (branch, r) = copy.find_branch(&input, 0, false).unwrap();
+        assert_eq!(copy.capture_count(), 100_000);
+        assert_eq!(copy.capture_range(branch, 0, &r), Some(0..4));
+        assert_eq!(copy.capture_range(branch, 99_999, &r), Some(0..4));
+        assert_eq!(copy.capture_range(branch, 100_000, &r), None);
+        assert_eq!(copy.branch_captures(branch), None);
+        let fixed = RegExpDisjunctionMatcher::compile(&JsString::from("((ab))|x"), false).unwrap();
+        assert_eq!(fixed.branch_captures(0), Some((0, &[0..2, 0..2][..])));
+        assert_eq!(
+            RegExpDisjunctionMatcher::compile_with_work(
+                &JsString::from("(^[a])|x"),
+                false,
+                false,
+                false,
+                |_| Err("abort")
+            )
+            .unwrap_err(),
+            "abort"
+        );
+        assert!(
+            RegExpDisjunctionMatcher::compile_with_work(
+                &JsString::from("(a|b)|x"),
+                false,
+                false,
+                false,
+                |_| Err::<(), _>("unexpected charge")
+            )
+            .unwrap()
+            .is_none()
         );
     }
 }
