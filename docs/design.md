@@ -734,8 +734,8 @@ charging branches; wider or capture-dependent choices still reject early. Origin
 source, flags and pinned ordinary case behavior remain intact. Normalization is
 linear in source size, with no expanded repetition counts, recursive plans or
 default quotas. Empty/wider branches, captures within individual alternatives,
-outer inverted-class alternatives, multiple
-quantifiers, named groups, backreferences and Unicode modes remain pending.
+additional quantifiers, named groups, backreferences and Unicode modes remain
+pending.
 
 Complete ordinary capturing/noncapturing wrappers can also enclose a literal-unit
 choice inside its repeated atom (CompileSubpattern, 22.2.2.3). Preparation removes
@@ -746,8 +746,8 @@ outside the repetition still retain their whole-run or partial ranges. The
 top-level scanner validates each direct choice once at its ordinary group edge,
 keeping deeply nested preparation linear. Earlier accepted layouts remain unchanged.
 Copies share immutable metadata and result Strings; indices pairs remain distinct.
-Branch-specific captures, empty/wider or outer inverted-class alternatives, multiple
-quantifiers, named groups, backreferences and Unicode modes remain pending.
+Branch-specific captures, empty/wider alternatives, additional quantifiers,
+named groups, backreferences and Unicode modes remain pending.
 
 Literal-unit choices also compose inside fixed sequences and fixed repeated
 bodies (CompileSubpattern, 22.2.2.3). After the ordinary fixed preparation fails,
@@ -763,7 +763,7 @@ groups, retaining start/end-relative and final-iteration ranges. Preparation
 remains linear without expanded alternatives, recursive plans or default quotas;
 optional construction work accounts for the private source and shares identical
 immutable predicates. Wider/empty alternatives, branch-specific captures,
-outer inverted-class alternatives, multiple quantifiers and Unicode modes remain pending.
+additional quantifiers and Unicode modes remain pending.
 
 Capture-free alternatives may also contain one ordinary non-inverted character
 class, class escape or dot (CompileSubpattern and CharacterSetMatcher,
@@ -777,9 +777,33 @@ undefined. The normalized private body uses the same fixed, assertion and
 repetition plans and their immutable predicate cache. Ordinary Canonicalize and
 class-escape complements remain unchanged. Source-size preparation is linear and
 optional work accounts for each source/bitmap construction; no default quota or
-expanded choice combinations are introduced. Outer inverted classes need a union
-of already-inverted predicates and remain unsupported, as do branch-specific
-captures, empty/wider alternatives, additional quantifiers and Unicode modes.
+expanded choice combinations are introduced. Branch-specific captures,
+empty/wider alternatives, additional quantifiers and Unicode modes remain
+unsupported.
+
+One-unit inverted-class alternatives use a flat union of compiled predicates
+(CompileSubpattern, CharacterSetMatcher and Canonicalize, 22.2.2.3,
+22.2.2.7.1–7.3). Each branch first canonicalizes its member set with the same
+ordinary `i` flag, then applies its own inversion; bitmap union combines those
+membership predicates. Complementing raw characters before canonicalization
+would wrongly accept `A` for `([^a]|b)` with `i`, so these choices are never
+rewritten as a positive raw class. Positive members share one predicate build;
+inverted branches reuse one temporary bitmap and merge into the immutable union.
+Matching retains one membership lookup per consuming term.
+
+An iterative group inventory records direct choices before fixed preparation.
+Capture-free branches consume exactly one unit, so ordinary group captures
+retain their fixed positions and complete wrappers remain iterative. Partial
+repetition preparation preserves outside choice bodies as noncapturing unions;
+the original captures already use the separate fixed endpoint layout. Repeated
+choices still preserve final-iteration/undefined slots, bounds, assertions and
+alternative order. Identical complete choice sources share compiled predicates.
+The plan contains only flat atom vectors, with no recursive union tree, expanded
+branch combinations or default quotas. Optional construction work charges the
+additional parsing passes, atom bounds, temporary clearing and bitmap merges
+before construction. Branch-specific captures, empty/wider alternatives,
+additional quantifiers, named groups, backreferences and Unicode modes remain
+pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

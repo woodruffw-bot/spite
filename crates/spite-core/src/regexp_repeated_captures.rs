@@ -283,6 +283,8 @@ fn flatten(
     // Empty noncapturing barriers preserve each removed group's lexical boundary:
     // removing delimiters directly could fuse `\0()1` into an octal escape.
     let barrier = [40, 63, 58, 41];
+    let choices = crate::regexp_sequence::choice_group_ranges(units).unwrap_or_default();
+    let mut choices = choices.into_iter().peekable();
     let mut flat = barrier.to_vec();
     let mut index = 0;
     while index < units.len() {
@@ -300,6 +302,20 @@ fn flatten(
             }
             index = repeated.source.end;
         } else if units[index] == 40 {
+            while choices.peek().is_some_and(|range| range.start < index) {
+                choices.next();
+            }
+            if choices.peek().is_some_and(|range| range.start == index) {
+                let range = choices.next()?;
+                let body = ordinary_group_end(units, index)?;
+                // Outside captures already use the fixed endpoint layout. Keep
+                // this union's predicate but add no second captured slot.
+                flat.extend_from_slice(&[40, 63, 58]);
+                flat.extend_from_slice(&units[body..range.end - 1]);
+                flat.push(41);
+                index = range.end;
+                continue;
+            }
             index = ordinary_group_end(units, index)?;
             flat.extend_from_slice(&barrier);
         } else if units[index] == 41 {

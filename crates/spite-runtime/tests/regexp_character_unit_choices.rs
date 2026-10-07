@@ -171,7 +171,7 @@ fn opted_in_abort_and_wider_or_conditional_choices_remain_distinct() {
         r"/(x(a|bc))+/.test('xa')",
         r"/x((a)|(b))y/.test('xay')",
         r"/x(a|)y/.test('xay')",
-        r"/x(a|[^b])y/.test('xay')",
+        r"/x(a|[^b]c)y/.test('xay')",
         r"/(([a]|b)+(c|d)+)/.test('ac')",
         r"/x(?<n>a|b)y/.test('xay')",
         r"/x([a]|b)y\1/.test('xaya')",

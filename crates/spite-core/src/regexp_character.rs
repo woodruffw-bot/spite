@@ -31,6 +31,12 @@ pub(crate) struct PreparedCharacter {
     atoms: Vec<Atom>,
     inverted: bool,
     source_len: usize,
+    alternatives: Vec<PreparedAlternative>,
+}
+
+struct PreparedAlternative {
+    atoms: Vec<Atom>,
+    inverted: bool,
 }
 
 impl RegExpCharacterMatcher {
@@ -95,15 +101,50 @@ impl PreparedCharacter {
                 atoms,
                 inverted,
                 source_len,
+                alternatives: Vec::new(),
             },
             source_len,
         ))
     }
 
+    pub(crate) fn literal(unit: u16) -> Self {
+        Self {
+            atoms: vec![Atom::Character(unit)],
+            inverted: false,
+            source_len: 1,
+            alternatives: Vec::new(),
+        }
+    }
+
+    pub(crate) fn union(parts: Vec<Self>, source_len: usize) -> Option<Self> {
+        let mut atoms = Vec::new();
+        let mut alternatives = Vec::new();
+        for part in parts {
+            // Branch parsing produces flat atoms, never nested union programs.
+            if !part.alternatives.is_empty() {
+                return None;
+            }
+            if part.inverted {
+                alternatives.push(PreparedAlternative {
+                    atoms: part.atoms,
+                    inverted: true,
+                });
+            } else {
+                atoms.extend(part.atoms);
+            }
+        }
+        Some(Self {
+            atoms,
+            inverted: false,
+            source_len,
+            alternatives,
+        })
+    }
+
     /// Emits a unionable ordinary class body without fusing range boundaries.
     /// Outer inverted classes need predicate unions and are not flattened here.
     pub(crate) fn append_union_body(&self, output: &mut Vec<u16>) -> Option<()> {
-        if self.inverted {
+        if self.inverted || !self.alternatives.is_empty() {
             return None;
         }
         for &atom in &self.atoms {
@@ -137,6 +178,17 @@ impl PreparedCharacter {
                 Atom::Set(_) | Atom::Dot(_) => 65_536,
             })?;
         }
+        for alternative in &self.alternatives {
+            charge(1024)?; // Clear the reusable temporary predicate.
+            charge(1024)?; // Merge its membership after inversion.
+            for atom in &alternative.atoms {
+                charge(match *atom {
+                    Atom::Character(_) => 1,
+                    Atom::Range(start, end) => usize::from(end) - usize::from(start) + 1,
+                    Atom::Set(_) | Atom::Dot(_) => 65_536,
+                })?;
+            }
+        }
         let mut program = Program {
             bits: Box::new([0; 1024]),
             inverted: self.inverted,
@@ -144,6 +196,23 @@ impl PreparedCharacter {
         };
         for atom in self.atoms {
             program.add(atom);
+        }
+        if !self.alternatives.is_empty() {
+            let mut branch = Program {
+                bits: Box::new([0; 1024]),
+                inverted: false,
+                ignore_case,
+            };
+            for alternative in self.alternatives {
+                branch.bits.fill(0);
+                branch.inverted = alternative.inverted;
+                for atom in alternative.atoms {
+                    branch.add(atom);
+                }
+                for (target, &bits) in program.bits.iter_mut().zip(branch.bits.iter()) {
+                    *target |= if branch.inverted { !bits } else { bits };
+                }
+            }
         }
         Ok(RegExpCharacterMatcher(Arc::new(program)))
     }

@@ -128,7 +128,7 @@ fn optional_search_budget_covers_all_prefix_atoms_and_keeps_unsupported_host_err
         "/([ab])c+d+/.test('acd')",
         "/([ab]c|d)+/.test('ac')",
         "/([ab])c+[d]+/.test('acd')",
-        "/([^ab]|c)d+/.test('ad')",
+        "/([^ab]|cd)d+/.test('ad')",
         "/([ab])c+/u.test('ac')",
     ] {
         assert!(

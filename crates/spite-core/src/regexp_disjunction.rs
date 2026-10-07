@@ -485,7 +485,11 @@ fn alternative_ranges(units: &[u16], dot_all: bool) -> Option<Vec<Range<usize>>>
                     // Reject wider or capture-dependent choices before any
                     // branch construction. One-unit unions have the same
                     // endpoints in both fixed and quantified compositions.
-                    crate::regexp_sequence::unit_choice_atom(&units[start..index], dot_all)?;
+                    if crate::regexp_sequence::unit_choice_atom(&units[start..index], dot_all)
+                        .is_none()
+                    {
+                        crate::regexp_sequence::unit_choice_plan(&units[start..index], dot_all)?;
+                    }
                 }
             }
             0x5b => in_class = true,

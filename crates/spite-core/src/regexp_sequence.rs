@@ -123,13 +123,13 @@ impl RegExpSequenceMatcher {
                 boundaries,
             },
             matching_source,
-            normalized,
+            preparation_passes,
         )) = prepare_source(source, dot_all, input_assertions)
         else {
             return Ok(None);
         };
         charge(source.len())?;
-        if normalized {
+        for _ in 0..preparation_passes {
             charge(matching_source.len())?;
         }
         charge(prepared.len())?;
@@ -295,26 +295,50 @@ fn prepare_source(
     source: &JsString,
     dot_all: bool,
     input_assertions: bool,
-) -> Option<(PreparedSequence, JsString, bool)> {
+) -> Option<(PreparedSequence, JsString, usize)> {
     if let Some(prepared) = prepare_units(source.code_units(), dot_all, input_assertions) {
-        return Some((prepared, source.clone(), false));
+        return Some((prepared, source.clone(), 0));
     }
-    let normalized =
-        JsString::from_code_units(normalize_unit_choices(source.code_units(), dot_all)?);
-    let prepared = prepare_units(normalized.code_units(), dot_all, input_assertions)?;
-    Some((prepared, normalized, true))
+    if let Some(normalized) = normalize_unit_choices(source.code_units(), dot_all) {
+        let normalized = JsString::from_code_units(normalized);
+        let prepared = prepare_units(normalized.code_units(), dot_all, input_assertions)?;
+        return Some((prepared, normalized, 1));
+    }
+    let mut choices = HashMap::new();
+    for range in choice_group_ranges(source.code_units())? {
+        let (plan, captures) = unit_choice_plan(&source.code_units()[range.clone()], dot_all)?;
+        choices.insert(range.start, (range.end, plan, captures));
+    }
+    if choices.is_empty() {
+        return None;
+    }
+    let prepared =
+        prepare_units_with_choices(source.code_units(), dot_all, input_assertions, choices)?;
+    // Account for the additional group/branch/fixed preparation passes.
+    Some((prepared, source.clone(), 3))
 }
 
 pub(crate) fn normalize_unit_choices(units: &[u16], dot_all: bool) -> Option<Vec<u16>> {
-    // Only direct choices are rewritten. Their capture-free one-unit branches
-    // have equal endpoints, so enclosing fixed captures remain source ordered.
-    // Successful replacements are disjoint; neither nesting nor branch count
-    // expands a Cartesian product or introduces recursive matching.
+    let ranges = choice_group_ranges(units)?;
+    let mut normalized = Vec::new();
+    let mut start = 0;
+    for range in ranges {
+        normalized.extend_from_slice(units.get(start..range.start)?);
+        normalized.extend(unit_choice_atom(&units[range.clone()], dot_all)?);
+        start = range.end;
+    }
+    normalized.extend_from_slice(&units[start..]);
+    Some(normalized)
+}
+
+pub(crate) fn choice_group_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
+    // Inventory direct choice groups iteratively. The containing plan validates
+    // their branch widths/captures before any predicate construction.
     if !units.contains(&124) {
         return None;
     }
     let mut groups = Vec::new();
-    let mut replacements = Vec::new();
+    let mut ranges = Vec::new();
     let mut index = 0;
     let mut in_class = false;
     while let Some(&unit) = units.get(index) {
@@ -347,34 +371,32 @@ pub(crate) fn normalize_unit_choices(units: &[u16], dot_all: bool) -> Option<Vec
             41 => {
                 let (start, choices) = groups.pop()?;
                 if choices {
-                    replacements.push((
-                        start..index,
-                        unit_choice_atom(&units[start..index], dot_all)?,
-                    ));
+                    ranges.push(start..index);
                 }
             }
             124 => groups.last_mut()?.1 = true,
             _ => {}
         }
     }
-    if !groups.is_empty() || in_class || replacements.is_empty() {
+    if !groups.is_empty() || in_class || ranges.is_empty() {
         return None;
     }
-    let mut normalized = Vec::new();
-    let mut start = 0;
-    for (range, atom) in replacements {
-        normalized.extend_from_slice(units.get(start..range.start)?);
-        normalized.extend(atom);
-        start = range.end;
-    }
-    normalized.extend_from_slice(&units[start..]);
-    Some(normalized)
+    Some(ranges)
 }
 
 fn prepare_units(
     source: &[u16],
     dot_all: bool,
     input_assertions: bool,
+) -> Option<PreparedSequence> {
+    prepare_units_with_choices(source, dot_all, input_assertions, HashMap::new())
+}
+
+fn prepare_units_with_choices(
+    source: &[u16],
+    dot_all: bool,
+    input_assertions: bool,
+    mut choices: HashMap<usize, (usize, PreparedCharacter, usize)>,
 ) -> Option<PreparedSequence> {
     let mut index = 0;
     let mut terms = Vec::new();
@@ -410,6 +432,16 @@ fn prepare_units(
                 .add_word_boundary(source[index + 1] == 98);
             index += 2;
         } else if unit == u16::from(b'(') {
+            if let Some((end, plan, count)) = choices.remove(&index) {
+                let offset = terms.len();
+                captures.extend(std::iter::repeat_n(offset..offset + 1, count));
+                terms.push(PreparedTerm::Set {
+                    plan,
+                    source: index..end,
+                });
+                index = end;
+                continue;
+            }
             index += 1;
             let capture = if source.get(index) == Some(&u16::from(b'?')) {
                 if source.get(index..index + 2)? != [u16::from(b'?'), u16::from(b':')] {
@@ -510,12 +542,281 @@ pub(crate) fn unit_choice_atom(units: &[u16], dot_all: bool) -> Option<Vec<u16>>
     Some(atom)
 }
 
+pub(crate) fn unit_choice_plan(units: &[u16], dot_all: bool) -> Option<(PreparedCharacter, usize)> {
+    let source = JsString::from_code_units(units.to_vec());
+    let group = crate::regexp_outer_group_body(&source)?;
+    let mut index = group.body.start;
+    let end = group.body.end;
+    let mut parts = Vec::new();
+    while index < end {
+        if let Some((part, consumed)) = PreparedCharacter::parse(&units[index..end], dot_all) {
+            parts.push(part);
+            index += consumed;
+        } else {
+            let unit = units[index];
+            index += 1;
+            let unit = if unit == 92 {
+                crate::regexp_literal::character_escape(units, &mut index)?
+            } else if crate::regexp_literal::is_syntax(unit) {
+                return None;
+            } else {
+                unit
+            };
+            parts.push(PreparedCharacter::literal(unit));
+        }
+        if index == end {
+            break;
+        }
+        if units.get(index) != Some(&124) {
+            return None;
+        }
+        index += 1;
+        if index == end {
+            return None;
+        }
+    }
+    if parts.len() < 2 {
+        return None;
+    }
+    Some((
+        PreparedCharacter::union(parts, units.len())?,
+        group.captures,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fmt::Write;
 
     type UnitPredicate = fn(u16) -> bool;
+
+    #[test]
+    fn ordinary_inverted_unit_choices_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "([^a]|b)",
+            "(a|[^b])",
+            "([^a]|a)",
+            "([^a]|[^b])",
+            "([^a]|[^a])",
+            "([^]|a)",
+            "([^]|[])",
+            "([]|[^])",
+            "([^a]|[])",
+            "([^a-z]|[A])",
+            "([^µ]|[Μ])",
+            "([^ſ]|S)",
+            "([^σ]|[ς])",
+            r"([^\w]|\w)",
+            r"([^\D]|[1])",
+            r"([^\W]|\d)",
+            r"([^\s]|\s)",
+            r"([^\S]|[\n])",
+            r"([^\n]|.)",
+            r"([^\r\n\u2028\u2029]|.)",
+            r"([^\uD800]|\uDC00)",
+            "x([^a]|b)y",
+            "(x([^a]|b)y)",
+            "(x)([^a]|b)(y)",
+            "([^a]|b)([^c]|d)",
+            "(([^a]|b))",
+            "(?:(?:[^a]|b))",
+            "((?:[^a]|b))",
+            "(?:[^a]|b)()",
+            r"\0()([^a]|b)1",
+            r"\b([^a]|b)\b",
+            r"([^a]|b)(\B)",
+            "^([^a]|b)$",
+            "(^)([^a]|b)($)",
+            r"([^a]|b)$\n^c",
+            "([^a]|b)()",
+            "([^a]|bc)",
+            "(ab|[^c])",
+            "([^a]|)",
+            "(|[^b])",
+            "(([^a])|b)",
+            "([^a]|(b))",
+            "([^a]|b)+",
+            "(x([^a]|b))+",
+            "([^a]|b)|x",
+            "(([^a]|b)|c)",
+            "(?<n>[^a]|b)",
+            "(?i:[^a]|b)",
+            "(?=[^a]|b)",
+            r"([^a]|b)\1",
+            "([^a]|b)[",
+            "([^a]|b",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (true, false, false),
+                (false, true, false),
+                (false, false, true),
+            ] {
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                let matcher = RegExpSequenceMatcher::compile_with_assertions_and_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " width={} captures={:?}",
+                        matcher.atom_count(),
+                        matcher.capture_ranges()
+                    )
+                    .unwrap();
+                    for text in [
+                        "",
+                        "a",
+                        "b",
+                        "ab",
+                        "xabcy",
+                        "xay",
+                        "xby",
+                        "ac",
+                        "bd",
+                        "AB",
+                        "µΜ",
+                        "ſSσς",
+                        "a\nc",
+                        "\ra\r\n",
+                        "\0a1",
+                        "()[]|?",
+                        "surrogates",
+                    ] {
+                        let input = if text == "surrogates" {
+                            JsString::from_code_units(vec![0xd800, 0xdc00])
+                        } else {
+                            JsString::from(text)
+                        };
+                        for (start, sticky) in [
+                            (0, false),
+                            (1, false),
+                            (0, true),
+                            (1, true),
+                            (input.len(), true),
+                        ] {
+                            let found = matcher.find(&input, start, sticky).map(|r| {
+                                let captures = matcher
+                                    .capture_ranges()
+                                    .iter()
+                                    .map(|c| Some(r.start + c.start..r.start + c.end))
+                                    .collect::<Vec<_>>();
+                                (r, captures)
+                            });
+                            write!(rows, " {input:?}@{start}/{sticky}:{found:?}").unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn inverted_choice_membership_agrees_with_canonicalize_before_inversion() {
+        for ignore_case in [false, true] {
+            let canon = |unit| canonicalize(unit, ignore_case);
+            let cases: [(&str, usize); 8] = [
+                ("([^a]|b)", 0),
+                ("([^a]|a)", 1),
+                ("([^a]|[^b])", 1),
+                (r"([^\w]|\w)", 1),
+                (r"([^\D]|[1])", 2),
+                ("([^µ]|[Μ])", 3),
+                ("([^a-z]|[A])", 4),
+                ("([^ſ]|S)", 5),
+            ];
+            for (source, kind) in cases {
+                let matcher =
+                    RegExpSequenceMatcher::compile(&JsString::from(source), ignore_case, false)
+                        .unwrap();
+                assert_eq!(
+                    matcher.capture_ranges(),
+                    std::iter::once(0..1).collect::<Vec<_>>()
+                );
+                for unit in 0..=u16::MAX {
+                    let c = canon(unit);
+                    let expected = match kind {
+                        0 => c != canon(97) || c == canon(98),
+                        1 => true,
+                        2 => matches!(c, 48..=57),
+                        3 => c != canon(0xb5) || c == canon(0x39c),
+                        4 => !(97..=122).any(|u| canon(u) == c) || c == canon(65),
+                        5 => c != canon(0x17f) || c == canon(83),
+                        _ => unreachable!(),
+                    };
+                    assert_eq!(
+                        matcher.find(&JsString::from_code_units(vec![unit]), 0, true),
+                        expected.then_some(0..1),
+                        "{source} i={ignore_case} {unit:#06x}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn deep_inverted_choices_share_flat_predicates_and_keep_optional_work_fallible() {
+        let source = JsString::from(
+            format!("{}([^a]|b){}", "(".repeat(100_000), ")".repeat(100_000)).as_str(),
+        );
+        let matcher = RegExpSequenceMatcher::compile(&source, true, false).unwrap();
+        assert_eq!(matcher.capture_ranges().len(), 100_001);
+        assert!(matcher.capture_ranges().iter().all(|r| *r == (0..1)));
+        assert_eq!(
+            matcher.clone().find(&JsString::from("b"), 0, true),
+            Some(0..1)
+        );
+        assert_eq!(matcher.find(&JsString::from("A"), 0, true), None);
+        let source = JsString::from("([^a]|b)".repeat(10_000).as_str());
+        let mut remaining = 600_000usize;
+        let matcher = RegExpSequenceMatcher::compile_with_work(&source, false, false, |work| {
+            remaining = remaining.checked_sub(work).ok_or("abort")?;
+            Ok::<(), &str>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(matcher.capture_ranges()[9999], 9999..10_000);
+        assert_eq!(
+            matcher.find(&JsString::from("b".repeat(10_000).as_str()), 0, true),
+            Some(0..10_000)
+        );
+        let source = JsString::from(format!("({}[^a])", "[^a]|".repeat(1000)).as_str());
+        let matcher = RegExpSequenceMatcher::compile(&source, false, false).unwrap();
+        assert_eq!(matcher.find(&JsString::from("b"), 0, true), Some(0..1));
+        assert_eq!(matcher.find(&JsString::from("a"), 0, true), None);
+        assert!(matches!(
+            RegExpSequenceMatcher::compile_with_work(
+                &JsString::from("([^a]|b)"),
+                false,
+                false,
+                |work| if work == 1024 { Err("abort") } else { Ok(()) }
+            ),
+            Err("abort")
+        ));
+        for source in ["([^a]|bc)", "([^a]|b)c+", "(([^a])|b)", "([^a]|b)|c"] {
+            assert!(
+                RegExpSequenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    |_| Err::<(), _>("unexpected charge")
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+    }
 
     #[test]
     fn ordinary_character_unit_choices_snapshot() {
@@ -745,7 +1046,7 @@ mod tests {
             ),
             Err("abort")
         ));
-        for source in ["([^a]|b)", "([a]|bc)", "([a]|b)+c+", "(([a])|b)"] {
+        for source in ["([^a]|bc)", "([a]|bc)", "([a]|b)+c+", "(([a])|b)"] {
             assert!(
                 RegExpSequenceMatcher::compile_with_work(
                     &JsString::from(source),
