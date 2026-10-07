@@ -184,6 +184,22 @@ fn compile_alternative<E>(
         &mut *charge,
     )? {
         Alternative::Sequence(m)
+    } else if let Some(m) = RegExpQuantifiedContinuationMatcher::compile_with_assertions_and_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::QuantifiedContinuation(m)
+    } else if let Some(m) = RegExpPrefixedMatcher::compile_with_assertions_and_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::Prefixed(m)
     } else {
         return Ok(None);
     };

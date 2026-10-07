@@ -99,6 +99,32 @@ impl RegExpQuantifiedContinuationMatcher {
         source: &JsString,
         ignore_case: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_plan(source, ignore_case, false, dot_all, false, charge)
+    }
+
+    /// Compiles fixed components with input/line assertions and explicit multiline.
+    ///
+    /// The complete Pattern must already be validated without `u` or `v`. The
+    /// repeated atom retains its consuming grammar; assertions in fixed parts
+    /// use complete-input positions and preserve zero-width capture ranges.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_plan(source, ignore_case, multiline, dot_all, true, charge)
+    }
+
+    fn compile_plan<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        input_assertions: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let Some(end) = RegExpQuantifiedMatcher::prefix_end(source, dot_all) else {
@@ -110,15 +136,27 @@ impl RegExpQuantifiedContinuationMatcher {
         let suffix_source = JsString::from_code_units(source.code_units()[end..].to_vec());
         let suffix = if let Some(m) = RegExpLiteralMatcher::compile(&suffix_source, ignore_case) {
             Suffix::Literal(m)
-        } else if let Some(m) = RegExpSequenceMatcher::compile_with_work(
-            &suffix_source,
-            ignore_case,
-            dot_all,
-            &mut charge,
-        )? {
-            Suffix::Sequence(m)
         } else {
-            return Ok(None);
+            let sequence = if input_assertions {
+                RegExpSequenceMatcher::compile_with_assertions_and_work(
+                    &suffix_source,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    &mut charge,
+                )?
+            } else {
+                RegExpSequenceMatcher::compile_with_work(
+                    &suffix_source,
+                    ignore_case,
+                    dot_all,
+                    &mut charge,
+                )?
+            };
+            let Some(m) = sequence else {
+                return Ok(None);
+            };
+            Suffix::Sequence(m)
         };
         charge(source.len())?;
         charge(source.len())?;
@@ -241,7 +279,236 @@ impl RegExpQuantifiedContinuationMatcher {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::RegExpPrefixedMatcher;
     use std::fmt::Write;
+
+    #[test]
+    fn quantified_input_line_continuation_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"a+($)",
+            r"a+?($)",
+            r"(a)+($)",
+            r"(a)+?($)",
+            r"((a)*)($)()",
+            r"((a)*?)($)()",
+            r"(a)+($)(\n)(^)(b)",
+            r"(a)+?($)(\n)(^)(b)",
+            r"[ab]{1,3}($)",
+            r"[ab]{1,3}?($)",
+            r"a*(^)",
+            r"a*?(^)",
+            r"(a){0}(^)()",
+            r"[ab]+($)(\r)($)(\n)",
+            r"[^]+?(^)(a)",
+            r".+?(^)(a)",
+            r"a+(^\b)(a)",
+            r"a+(\b$)",
+            r"a+(\B$)",
+            r"a+($^)",
+            r"a+($$)",
+            r"a+($)(\u2028)(^)(b)",
+            r"a+($)(\uD800)",
+            r"(a)+(\B)($)",
+            r"a+($)(b)+",
+            r"(a$)+",
+            r"^a+($)",
+            r"a+((?=b))",
+            r"a+(?<n>b)",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (false, true, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let matcher =
+                    RegExpQuantifiedContinuationMatcher::compile_with_assertions_and_work(
+                        &JsString::from(source),
+                        i,
+                        m,
+                        s,
+                        |_| Ok::<(), ()>(()),
+                    )
+                    .unwrap();
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " captures={} passes={}",
+                        matcher.capture_count(),
+                        matcher.search_passes()
+                    )
+                    .unwrap();
+                    for text in [
+                        "",
+                        "a",
+                        "aaa",
+                        "AAAA",
+                        "baa",
+                        "aaab",
+                        "a\na",
+                        "aaa\nb",
+                        "x\naaa\nb\ny",
+                        "aaa\r\n",
+                        "\r\na",
+                        "a\u{2028}b",
+                        "aaa💩",
+                        "aaab\n",
+                        "a\naaa\n",
+                    ] {
+                        let input = JsString::from(text);
+                        let results: Vec<_> = [
+                            (0, false),
+                            (1, false),
+                            (0, true),
+                            (1, true),
+                            (input.len(), true),
+                        ]
+                        .into_iter()
+                        .map(|(start, sticky)| {
+                            matcher.find(&input, start, sticky).map(|r| {
+                                let captures: Vec<_> = (0..matcher.capture_count())
+                                    .map(|slot| matcher.capture_range(slot, &r))
+                                    .collect();
+                                (r, captures)
+                            })
+                        })
+                        .collect();
+                        write!(rows, " {input:?}:{results:?}").unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn quantified_line_endpoints_and_captures_agree_with_independent_repetition_oracle() {
+        for m in [false, true] {
+            for (quantifier, minimum, maximum) in [
+                ("*", 0, usize::MAX),
+                ("+", 1, usize::MAX),
+                ("{0,2}", 0, 2),
+                ("{2,3}", 2, 3),
+            ] {
+                for lazy in [false, true] {
+                    let source = format!("((a){quantifier}{})($)()", if lazy { "?" } else { "" });
+                    let matcher =
+                        RegExpQuantifiedContinuationMatcher::compile_with_assertions_and_work(
+                            &JsString::from(source.as_str()),
+                            false,
+                            m,
+                            false,
+                            |_| Ok::<(), ()>(()),
+                        )
+                        .unwrap()
+                        .unwrap();
+                    let alphabet = [97, 98, 10, 13, 0x2028, 0xd800];
+                    for length in 0..=4u32 {
+                        for mut n in 0..alphabet.len().pow(length) {
+                            let units: Vec<_> = (0..length)
+                                .map(|_| {
+                                    let c = alphabet[n % alphabet.len()];
+                                    n /= alphabet.len();
+                                    c
+                                })
+                                .collect();
+                            let input = JsString::from_code_units(units.clone());
+                            for start in 0..=units.len() + 1 {
+                                for sticky in [false, true] {
+                                    let expected = (start..=units.len())
+                                        .filter(|&p| !sticky || p == start)
+                                        .find_map(|p| {
+                                            let run = units[p..]
+                                                .iter()
+                                                .take_while(|&&c| c == 97)
+                                                .count()
+                                                .min(maximum);
+                                            let endings: Vec<_> = (minimum..=run)
+                                                .filter(|&count| {
+                                                    p + count == units.len()
+                                                        || (m
+                                                            && [10, 13, 0x2028, 0x2029]
+                                                                .contains(&units[p + count]))
+                                                })
+                                                .collect();
+                                            let count = if lazy {
+                                                endings.first()
+                                            } else {
+                                                endings.last()
+                                            }?;
+                                            Some(p..p + count)
+                                        });
+                                    let actual = matcher.find(&input, start, sticky);
+                                    assert_eq!(
+                                        actual, expected,
+                                        "{source} {units:?} m={m} {start} {sticky}"
+                                    );
+                                    if let Some(r) = actual {
+                                        assert_eq!(matcher.capture_range(0, &r), Some(r.clone()));
+                                        assert_eq!(
+                                            matcher.capture_range(1, &r),
+                                            (r.start != r.end).then(|| r.end - 1..r.end)
+                                        );
+                                        assert_eq!(
+                                            matcher.capture_range(2, &r),
+                                            Some(r.end..r.end)
+                                        );
+                                        assert_eq!(
+                                            matcher.capture_range(3, &r),
+                                            Some(r.end..r.end)
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn assertion_only_prefixes_keep_large_runs_captures_clones_and_explicit_flags() {
+        let source = JsString::from(format!("({})(a)+($)", "^".repeat(100_000)).as_str());
+        assert!(RegExpPrefixedMatcher::compile(&source, false, false).is_none());
+        let matcher = RegExpPrefixedMatcher::compile_with_assertions_and_work(
+            &source,
+            false,
+            true,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+        .clone();
+        let input = JsString::from(format!("x\n{}\n", "a".repeat(100_000)).as_str());
+        let matched = matcher.find(&input, 0, false).unwrap();
+        assert_eq!(matched, 2..100_002);
+        assert_eq!(matcher.capture_count(), 3);
+        assert_eq!(matcher.capture_range(0, &matched), Some(2..2));
+        assert_eq!(matcher.capture_range(1, &matched), Some(100_001..100_002));
+        assert_eq!(matcher.capture_range(2, &matched), Some(100_002..100_002));
+        assert_eq!(matcher.search_passes(false), 7);
+        assert_eq!(matcher.search_passes(true), 7);
+        assert_eq!(matcher.find(&input, 3, true), None);
+        assert_eq!(matcher.find(&input, usize::MAX, false), None);
+        let plain = RegExpPrefixedMatcher::compile_with_assertions_and_work(
+            &source,
+            false,
+            false,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(plain.find(&input, 0, false), None);
+    }
 
     #[test]
     fn captured_literal_continuation_snapshot() {

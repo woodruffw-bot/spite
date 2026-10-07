@@ -252,9 +252,10 @@ impl Realm {
                                         Ok(Some(RegExpMatcherBody::Quantified(matcher)))
                                     } else {
                                         if let Some(matcher) =
-                                            RegExpQuantifiedContinuationMatcher::compile_with_work(
+                                            RegExpQuantifiedContinuationMatcher::compile_with_assertions_and_work(
                                                 &matching_source,
                                                 ignore_case,
+                                                flags.code_units().contains(&u16::from(b'm')),
                                                 dot_all,
                                                 |work| budget.charge(work),
                                             )?
@@ -263,9 +264,10 @@ impl Realm {
                                                 matcher,
                                             )))
                                         } else {
-                                            RegExpPrefixedMatcher::compile_with_work(
+                                            RegExpPrefixedMatcher::compile_with_assertions_and_work(
                                                 &matching_source,
                                                 ignore_case,
+                                                flags.code_units().contains(&u16::from(b'm')),
                                                 dot_all,
                                                 |work| budget.charge(work),
                                             )

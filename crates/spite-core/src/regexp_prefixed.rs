@@ -113,9 +113,35 @@ impl RegExpPrefixedMatcher {
         source: &JsString,
         ignore_case: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_plan(source, ignore_case, false, dot_all, false, charge)
+    }
+
+    /// Compiles fixed components with input/line assertions and explicit multiline.
+    ///
+    /// The complete Pattern must already be validated without `u` or `v`. The
+    /// repeated atom retains its consuming grammar; assertions in fixed parts
+    /// use complete-input positions and preserve zero-width capture ranges.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_plan(source, ignore_case, multiline, dot_all, true, charge)
+    }
+
+    fn compile_plan<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        input_assertions: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let Some(split) = prefix_end(source.code_units()) else {
+        let Some(split) = prefix_end(source.code_units(), input_assertions) else {
             return Ok(None);
         };
         if split == 0 {
@@ -126,27 +152,54 @@ impl RegExpPrefixedMatcher {
         let prefix = JsString::from_code_units(source.code_units()[..split].to_vec());
         let prefix = if let Some(m) = RegExpLiteralMatcher::compile(&prefix, ignore_case) {
             Prefix::Literal(m)
-        } else if let Some(m) =
-            RegExpSequenceMatcher::compile_with_work(&prefix, ignore_case, dot_all, &mut charge)?
-        {
-            Prefix::Sequence(m)
         } else {
-            return Ok(None);
+            let sequence = if input_assertions {
+                RegExpSequenceMatcher::compile_with_assertions_and_work(
+                    &prefix,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    &mut charge,
+                )?
+            } else {
+                RegExpSequenceMatcher::compile_with_work(
+                    &prefix,
+                    ignore_case,
+                    dot_all,
+                    &mut charge,
+                )?
+            };
+            let Some(m) = sequence else {
+                return Ok(None);
+            };
+            Prefix::Sequence(m)
         };
         let body = JsString::from_code_units(source.code_units()[split..].to_vec());
         let body = if let Some(q) =
             RegExpQuantifiedMatcher::compile_with_work(&body, ignore_case, dot_all, &mut charge)?
         {
             RegExpQuantifiedContinuationMatcher::from_quantified(q)
-        } else if let Some(q) = RegExpQuantifiedContinuationMatcher::compile_with_work(
-            &body,
-            ignore_case,
-            dot_all,
-            &mut charge,
-        )? {
-            q
         } else {
-            return Ok(None);
+            let continuation = if input_assertions {
+                RegExpQuantifiedContinuationMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    &mut charge,
+                )?
+            } else {
+                RegExpQuantifiedContinuationMatcher::compile_with_work(
+                    &body,
+                    ignore_case,
+                    dot_all,
+                    &mut charge,
+                )?
+            };
+            let Some(q) = continuation else {
+                return Ok(None);
+            };
+            q
         };
         let Some(capture_count) = prefix
             .capture_ranges()
@@ -246,7 +299,7 @@ impl RegExpPrefixedMatcher {
 /// Atom. Quantifiers inside a group retain the entire top-level group in the
 /// body; a quantifier after a group applies to that complete group (22.2.2.3).
 /// Only scalar nesting state is needed; fixed capture compilation stays shared.
-fn prefix_end(units: &[u16]) -> Option<usize> {
+fn prefix_end(units: &[u16], input_assertions: bool) -> Option<usize> {
     let mut index = 0;
     let mut last = None;
     let mut depth = 0usize;
@@ -276,6 +329,7 @@ fn prefix_end(units: &[u16]) -> Option<usize> {
                 }
                 continue;
             }
+            94 | 36 if input_assertions => index += 1,
             46 | 91 => {
                 let (_, consumed) = PreparedCharacter::parse(&units[index..], false)?;
                 index += consumed;

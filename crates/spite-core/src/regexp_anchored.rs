@@ -238,6 +238,22 @@ fn compile_body<E>(
         &mut *charge,
     )? {
         Body::Sequence(m)
+    } else if let Some(m) = RegExpQuantifiedContinuationMatcher::compile_with_assertions_and_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Body::Quantified(m)
+    } else if let Some(m) = RegExpPrefixedMatcher::compile_with_assertions_and_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Body::Prefixed(m)
     } else {
         return Ok(None);
     };

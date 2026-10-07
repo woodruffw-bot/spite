@@ -106,7 +106,7 @@ fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps()
         "/[a]+[b]+|b/.test('a')",
         "/[a]/u.test('a')",
         "/./v.test('a')",
-        r"/a+^b/.test('ab')",
+        r"/a+^b+/.test('ab')",
     ] {
         assert!(
             matches!(

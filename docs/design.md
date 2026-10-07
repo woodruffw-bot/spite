@@ -306,8 +306,20 @@ Assertions compare the complete input's neighboring UTF-16 units, including both
 positions around CRLF; sticky offsets do not redefine input beginning/end.
 IgnoreCase and DotAll remain independent. Fixed searches keep their existing
 candidate stream, shared immutable plans and optional boundary accounting,
-without allocation or native recursion. Input/line assertions within variable
-consuming bodies or repeated atoms, multiple quantifiers, named groups,
+without allocation or native recursion.
+
+Fixed prefixes and continuations around one quantified atom can also carry these
+input/line assertions. Their explicit flag-dependent entry points pass multiline
+to each fixed component and preserve the word-only entry points. Prefix delimiter
+scanning accepts assertions without assigning them consuming width. The existing
+prefix stream filters assertion-only starts, and the continuation stream filters
+complete endpoints before repetition selection. Empty assertion captures,
+whole-run/final-iteration slots, complete enclosing groups, outer boundaries and
+alternative offsets retain the shared layout. Runtime dispatch and complete-body
+fallbacks pass the same multiline flag throughout. Search remains monotone,
+allocation-free and iterative; optional work covers fixed boundary checks over
+the complete suffix even for sticky repetitions. Assertions inside a repeated
+atom, repeated multi-atom groups, multiple quantifiers, named groups,
 backreferences and Unicode modes remain pending.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
