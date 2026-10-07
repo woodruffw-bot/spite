@@ -1023,8 +1023,8 @@ existing result builder. Optional work charges each executed instruction, captur
 reset and actual input comparison; host aborts occur before lastIndex mutation.
 Storage and execution are iterative, including deeply nested groups, and contain
 no heap-object edges. Named group metadata and indices aliases remain shared with
-the ordinary result path. Inner alternatives, quantified references and Unicode
-matching remain pending.
+the ordinary result path. Additional inner choices, quantified references and
+Unicode matching remain pending.
 
 Ordinary named references use direct binding instructions in the flat program
 (CompileAtomEscape and BackreferenceMatcher, 22.2.2.9). Validated decoded names
@@ -1035,21 +1035,25 @@ stay separate literals without decimal-source rewriting. Public source text,
 copies, named groups and indices aliases retain their original behavior.
 
 Compilation checks ordered/disjoint escape intervals, slot bounds and ownership,
-and at most one slot per name in each accepted top-level branch. The immutable
+and mutually exclusive capture owners within accepted alternatives. Each slot
+belongs to a top-level branch and either its common terms or one inner alternative.
+A common slot cannot share a name with another slot in that branch; duplicate-name
+slots must belong to distinct alternatives. The immutable
 program stores one capture-to-name map and scalar named-reference instructions.
 Each execution stores one completed input range per name; closing a named capture
-updates it, and moving to another branch/candidate clears the previous capture
-interval and its named values. Undefined, forward and open references match empty;
+updates it, and moving to another branch/candidate clears captures completed by
+the previous attempt and their named values. Undefined, forward and open references
+match empty;
 completed references compare actual input units with pinned ordinary case rules.
 Lookup is constant work per reference; neither source nor target lists expand per
 possible slot. Preparation, capture updates and matching remain iterative and
-fallible under opt-in host work. Inner choices, repeated references and Unicode
-matching remain pending; default quotas remain disabled.
+fallible under opt-in host work. Additional inner choices, quantified references
+and Unicode matching remain pending; default quotas remain disabled.
 
 Character-class, class-escape and dot atoms also compose with ordinary references
 (CompileAtom, 22.2.2.7; BackreferenceMatcher, 22.2.2.9). Complete preparation rejects
-unsupported inner alternatives and quantifiers before constructing any character
-predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
+unsupported additional inner choices and quantifiers before constructing any
+character predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
 inversion and DotAll behavior. Identical UTF-16 atom source shares one immutable
 predicate within a compilation, with charged cache setup, lookup and first
 construction. The flat reference program consumes one original UTF-16 unit per
@@ -1066,23 +1070,43 @@ preceding unit or input boundaries. Each assertion preserves capture state and
 charges its execution before inspecting adjacent units. WordCharacters remains
 ASCII in ordinary mode even with IgnoreCase; all four ECMAScript line terminators
 use the existing Multiline rules. Empty assertions, forward/self references and
-nested groups retain source-order input ranges without recursion. Inner alternatives,
-quantifiers combined with references and Unicode-mode matching remain pending.
+nested groups retain source-order input ranges without recursion. Additional inner
+choices, quantifiers combined with references and Unicode-mode matching remain pending.
 
 Top-level ordinary alternatives also compose with references (22.2.2.3,
 22.2.2.9). Complete preparation records each branch's flat instruction interval
 and contiguous source-order capture interval. At each increasing candidate start,
 execution tries complete branches in source order; each sticky execution checks
 only its requested start. A single capture buffer clears only the previous
-attempt's capture interval before trying another branch or candidate. Inactive
+attempt's completed captures before trying another branch or candidate. Inactive
 branch captures stay undefined, so their forward/cross-branch references match
 empty and result groups/indices retain the original global numbering. Empty
 branches participate in the same order. Shared character predicates and full-input
 assertions keep existing flags and input-unit behavior. Actual branch attempts,
 capture resets and comparisons are charged before work without default quotas.
 Preparation, execution and dropping stay iterative; no alternative expansion or
-recursive backtracking is introduced. Inner choices, repeated references,
-Unicode matching remain pending.
+recursive backtracking is introduced. Additional inner choices, quantified
+references and Unicode matching remain pending.
+
+One inner ordinary disjunction per top-level reference branch also executes
+(CompileDisjunction, 22.2.2.3). Its containing capturing/noncapturing group may have
+arbitrary nested transparent wrappers, common prefixes/sequels, and alternatives
+with different consuming widths or empty participation. Preparation records the
+original flat instruction spans for common leading terms, each alternative and
+the continuation, without expanding any source or copying common instructions.
+
+A branch executes its common prefix once, records the completed-capture checkpoint
+and input position, then tries its inner alternatives in source order. Failure in
+either a body or its continuation clears only captures completed since that
+checkpoint. Completed common prefix captures stay available, and groups opened
+before the choice keep their start positions when closing after a retried body.
+All original capture slots and duplicate-name updates retain undefined/empty
+participation, original input ranges and indices aliases. Capture trails and
+instruction spans stay flat, with linear storage and iterative destruction. Actual
+attempts, trail writes/resets, assertions and comparisons remain fallible under
+explicit host work; default work and heap quotas remain disabled. Additional
+nested or sequential inner choices, quantified reference bodies and Unicode
+matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

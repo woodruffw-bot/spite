@@ -32,8 +32,9 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
-/// Top-level alternatives are accepted; inner alternatives and quantifiers
-/// return `None`. At least one numbered reference is required; plain literals
+/// Top-level alternatives and one inner choice per top-level branch are accepted.
+/// Additional inner choices and quantifiers return `None`. At least one numbered
+/// or registered named reference is required; plain literals
 /// retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
@@ -71,8 +72,41 @@ enum PreparedInstruction {
 
 #[derive(Debug)]
 struct Branch {
-    instructions: Range<usize>,
+    leading: Range<usize>,
+    alternatives: Vec<Range<usize>>,
+    trailing: Range<usize>,
     captures: Range<usize>,
+}
+
+struct GroupFrame {
+    capture: Option<usize>,
+    body_start: usize,
+    alternative_start: usize,
+    alternatives: Vec<Range<usize>>,
+}
+
+struct Choice {
+    start: usize,
+    end: usize,
+    alternatives: Vec<Range<usize>>,
+}
+
+fn branch_plan(start: usize, end: usize, captures: Range<usize>, choice: Option<Choice>) -> Branch {
+    if let Some(choice) = choice {
+        Branch {
+            leading: start..choice.start,
+            alternatives: choice.alternatives,
+            trailing: choice.end..end,
+            captures,
+        }
+    } else {
+        Branch {
+            leading: start..start,
+            alternatives: std::iter::once(start..end).collect(),
+            trailing: end..end,
+            captures,
+        }
+    }
 }
 
 struct PreparedProgram {
@@ -184,19 +218,56 @@ impl RegExpBackreferenceMatcher {
                 }
             }
         }
-        let mut last_branch = vec![None; bindings.groups.len()];
-        for (branch_index, branch) in branches.iter().enumerate() {
-            for slot in branch.captures.clone() {
-                if let Some(Some(group)) = capture_names.get(slot) {
-                    if last_branch[*group].replace(branch_index) == Some(branch_index) {
+        let mut owners = vec![(0, None); capture_count];
+        for (root, branch) in branches.iter().enumerate() {
+            if branch.captures.is_empty() {
+                continue;
+            }
+            let begin = branch.leading.start;
+            let end = branch.trailing.end;
+            let mut alternative = 0;
+            for (position, instruction) in prepared.iter().enumerate().take(end).skip(begin) {
+                if let PreparedInstruction::Ready(Instruction::Open(slot)) = instruction {
+                    let owner = if branch.alternatives.len() > 1
+                        && position >= branch.leading.end
+                        && position < branch.trailing.start
+                    {
+                        while position >= branch.alternatives[alternative].end {
+                            alternative += 1;
+                        }
+                        Some(alternative)
+                    } else {
+                        None
+                    };
+                    owners[*slot] = (root, owner);
+                }
+            }
+        }
+        for slots in bindings.groups {
+            let mut previous_slot = None;
+            let mut previous_owner: Option<(usize, Option<usize>)> = None;
+            for &slot in *slots {
+                if previous_slot.is_some_and(|old| old >= slot) {
+                    return Ok(None);
+                }
+                let owner = owners[slot];
+                if let Some((root, alternative)) = previous_owner {
+                    if root == owner.0
+                        && (alternative.is_none() || owner.1.is_none() || alternative == owner.1)
+                    {
                         return Ok(None);
                     }
                 }
+                previous_slot = Some(slot);
+                previous_owner = Some(owner);
             }
         }
         charge(capture_names.len())?;
         charge(bindings.groups.len())?;
         charge(branches.len())?;
+        for branch in &branches {
+            charge(branch.alternatives.len())?;
+        }
         charge(source.len())?;
         charge(prepared.len())?;
         charge(prepared.len())?;
@@ -261,9 +332,10 @@ impl RegExpBackreferenceMatcher {
 
     /// Charges capture resets, executed instructions and actual unit comparisons.
     ///
-    /// A single capture buffer is reset and reused across source-order branches at
-    /// each ordered candidate start. Only the previously attempted branch
-    /// capture interval is cleared; references to other branches stay undefined.
+    /// Capture buffers are reused across source-order branches at each ordered
+    /// candidate start. Inner alternatives retain completed prefix captures and
+    /// clear only captures completed by the failed body or continuation. Common
+    /// prefixes execute once per branch; inactive captures remain undefined.
     /// An open or forward capture has no completed range and its reference matches
     /// the empty string, as required by BackreferenceMatcher (22.2.2.9.2). Ignore-case
     /// comparison canonicalizes both input units with the ordinary ASCII boundary.
@@ -280,106 +352,166 @@ impl RegExpBackreferenceMatcher {
             return Ok(None);
         }
         charge(self.0.capture_count)?;
-        let mut captures: Vec<Option<Range<usize>>> = vec![None; self.0.capture_count];
-        // Starts are needed independently of completed ranges: an open capture
-        // must remain undefined to references even after some body has consumed.
         charge(self.0.capture_count)?;
-        let mut starts = vec![0; self.0.capture_count];
+        charge(self.0.capture_count)?;
         charge(self.0.named_count)?;
-        let mut named: Vec<Option<Range<usize>>> = vec![None; self.0.named_count];
+        let mut state = CaptureState {
+            captures: vec![None; self.0.capture_count],
+            starts: vec![0; self.0.capture_count],
+            named: vec![None; self.0.named_count],
+            touched: Vec::with_capacity(self.0.capture_count),
+        };
         let end = if sticky { start } else { input.len() };
-        let mut dirty = 0..0;
         for candidate in start..=end {
-            'branch: for branch in &self.0.branches {
+            for branch in &self.0.branches {
                 charge(1)?;
-                charge(dirty.len())?;
-                captures[dirty.clone()].fill(None);
-                if !self.0.capture_names.is_empty() {
-                    charge(dirty.len())?;
-                    for slot in dirty.clone() {
-                        if let Some(group) = self.0.capture_names[slot] {
-                            named[group] = None;
-                        }
-                    }
+                self.0.clear_captures(&mut state, 0, &mut charge)?;
+                let mut prefix_end = candidate;
+                if !self.0.execute(
+                    input,
+                    &mut prefix_end,
+                    branch.leading.clone(),
+                    &mut state,
+                    &mut charge,
+                )? {
+                    continue;
                 }
-                dirty = branch.captures.clone();
-                let mut cursor = candidate;
-                for instruction in &self.0.instructions[branch.instructions.clone()] {
+                let checkpoint = state.touched.len();
+                for alternative in &branch.alternatives {
                     charge(1)?;
-                    match instruction {
-                        Instruction::Character(expected) => {
-                            let Some(&unit) = input.get(cursor) else {
-                                continue 'branch;
-                            };
-                            charge(1)?;
-                            if canonicalize(unit, self.0.ignore_case) != *expected {
-                                continue 'branch;
-                            }
-                            cursor += 1;
-                        }
-                        Instruction::Set(matcher) => {
-                            let Some(&unit) = input.get(cursor) else {
-                                continue 'branch;
-                            };
-                            charge(1)?;
-                            if !matcher.matches(unit) {
-                                continue 'branch;
-                            }
-                            cursor += 1;
-                        }
-                        Instruction::Assert(assertion) => {
-                            charge(2)?;
-                            if !assertion.accepts(input, cursor, self.0.multiline) {
-                                continue 'branch;
-                            }
-                        }
-                        Instruction::Open(index) => starts[*index] = cursor,
-                        Instruction::Close(index) => {
-                            let range = starts[*index]..cursor;
-                            captures[*index] = Some(range.clone());
-                            if !self.0.capture_names.is_empty() {
-                                charge(2)?;
-                                if let Some(group) = self.0.capture_names[*index] {
-                                    named[group] = Some(range);
-                                }
-                            }
-                        }
-                        Instruction::Reference(index) | Instruction::NamedReference(index) => {
-                            let range = if matches!(instruction, Instruction::Reference(_)) {
-                                &captures[*index]
-                            } else {
-                                &named[*index]
-                            };
-                            let Some(range) = range else {
-                                continue;
-                            };
-                            let Some(next) = cursor.checked_add(range.len()) else {
-                                continue 'branch;
-                            };
-                            let Some(candidate_units) = input.get(cursor..next) else {
-                                continue 'branch;
-                            };
-                            for (&actual, &captured) in
-                                candidate_units.iter().zip(&input[range.clone()])
-                            {
-                                charge(2)?;
-                                if canonicalize(actual, self.0.ignore_case)
-                                    != canonicalize(captured, self.0.ignore_case)
-                                {
-                                    continue 'branch;
-                                }
-                            }
-                            cursor = next;
-                        }
+                    self.0.clear_captures(&mut state, checkpoint, &mut charge)?;
+                    let mut cursor = prefix_end;
+                    if !self.0.execute(
+                        input,
+                        &mut cursor,
+                        alternative.clone(),
+                        &mut state,
+                        &mut charge,
+                    )? || !self.0.execute(
+                        input,
+                        &mut cursor,
+                        branch.trailing.clone(),
+                        &mut state,
+                        &mut charge,
+                    )? {
+                        continue;
                     }
+                    return Ok(Some(RegExpBackreferenceMatch {
+                        range: candidate..cursor,
+                        captures: state.captures.into_boxed_slice(),
+                    }));
                 }
-                return Ok(Some(RegExpBackreferenceMatch {
-                    range: candidate..cursor,
-                    captures: captures.into_boxed_slice(),
-                }));
             }
         }
         Ok(None)
+    }
+}
+
+struct CaptureState {
+    captures: Vec<Option<Range<usize>>>,
+    starts: Vec<usize>,
+    named: Vec<Option<Range<usize>>>,
+    touched: Vec<usize>,
+}
+
+impl Program {
+    fn clear_captures<E>(
+        &self,
+        state: &mut CaptureState,
+        checkpoint: usize,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        charge(state.touched.len() - checkpoint)?;
+        if !self.capture_names.is_empty() {
+            charge(state.touched.len() - checkpoint)?;
+        }
+        for slot in state.touched.drain(checkpoint..) {
+            state.captures[slot] = None;
+            if let Some(Some(group)) = self.capture_names.get(slot) {
+                state.named[*group] = None;
+            }
+        }
+        Ok(())
+    }
+
+    fn execute<E>(
+        &self,
+        input: &[u16],
+        cursor: &mut usize,
+        range: Range<usize>,
+        state: &mut CaptureState,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        for instruction in &self.instructions[range] {
+            charge(1)?;
+            match instruction {
+                Instruction::Character(expected) => {
+                    let Some(&unit) = input.get(*cursor) else {
+                        return Ok(false);
+                    };
+                    charge(1)?;
+                    if canonicalize(unit, self.ignore_case) != *expected {
+                        return Ok(false);
+                    }
+                    *cursor += 1;
+                }
+                Instruction::Set(matcher) => {
+                    let Some(&unit) = input.get(*cursor) else {
+                        return Ok(false);
+                    };
+                    charge(1)?;
+                    if !matcher.matches(unit) {
+                        return Ok(false);
+                    }
+                    *cursor += 1;
+                }
+                Instruction::Assert(assertion) => {
+                    charge(2)?;
+                    if !assertion.accepts(input, *cursor, self.multiline) {
+                        return Ok(false);
+                    }
+                }
+                Instruction::Open(index) => state.starts[*index] = *cursor,
+                Instruction::Close(index) => {
+                    charge(1)?;
+                    let range = state.starts[*index]..*cursor;
+                    state.captures[*index] = Some(range.clone());
+                    state.touched.push(*index);
+                    if !self.capture_names.is_empty() {
+                        charge(2)?;
+                        if let Some(group) = self.capture_names[*index] {
+                            state.named[group] = Some(range);
+                        }
+                    }
+                }
+                Instruction::Reference(index) | Instruction::NamedReference(index) => {
+                    let range = if matches!(instruction, Instruction::Reference(_)) {
+                        &state.captures[*index]
+                    } else {
+                        &state.named[*index]
+                    };
+                    let Some(range) = range else {
+                        continue;
+                    };
+                    let Some(next) = cursor.checked_add(range.len()) else {
+                        return Ok(false);
+                    };
+                    let Some(units) = input.get(*cursor..next) else {
+                        return Ok(false);
+                    };
+                    for (&actual, &captured) in units.iter().zip(&input[range.clone()]) {
+                        charge(2)?;
+                        if canonicalize(actual, self.ignore_case)
+                            != canonicalize(captured, self.ignore_case)
+                        {
+                            return Ok(false);
+                        }
+                    }
+                    *cursor = next;
+                }
+            }
+        }
+        Ok(true)
     }
 }
 
@@ -406,7 +538,9 @@ fn prepare(
     }
     let mut named_references = bindings.references.iter().peekable();
     let mut instructions = Vec::new();
-    let mut groups = Vec::new();
+    let mut groups = Vec::<GroupFrame>::new();
+    let mut choice_started = false;
+    let mut choice = None;
     let mut branches = Vec::new();
     let mut branch_start = 0;
     let mut branch_capture_start = 0;
@@ -447,10 +581,26 @@ fn prepare(
                     instructions.push(PreparedInstruction::Ready(Instruction::Open(index)));
                     Some(index)
                 };
-                groups.push(group);
+                groups.push(GroupFrame {
+                    capture: group,
+                    body_start: instructions.len(),
+                    alternative_start: instructions.len(),
+                    alternatives: Vec::new(),
+                });
             }
             0x29 => {
-                if let Some(index) = groups.pop()? {
+                let mut group = groups.pop()?;
+                if !group.alternatives.is_empty() {
+                    group
+                        .alternatives
+                        .push(group.alternative_start..instructions.len());
+                    choice = Some(Choice {
+                        start: group.body_start,
+                        end: instructions.len(),
+                        alternatives: group.alternatives,
+                    });
+                }
+                if let Some(index) = group.capture {
                     instructions.push(PreparedInstruction::Ready(Instruction::Close(index)));
                 }
             }
@@ -471,12 +621,28 @@ fn prepare(
                 references += 1;
             }
             0x7c if groups.is_empty() => {
-                branches.push(Branch {
-                    instructions: branch_start..instructions.len(),
-                    captures: branch_capture_start..capture_count,
-                });
+                branches.push(branch_plan(
+                    branch_start,
+                    instructions.len(),
+                    branch_capture_start..capture_count,
+                    choice.take(),
+                ));
                 branch_start = instructions.len();
                 branch_capture_start = capture_count;
+                choice_started = false;
+            }
+            0x7c => {
+                let group = groups.last_mut()?;
+                if group.alternatives.is_empty() {
+                    if choice_started {
+                        return None;
+                    }
+                    choice_started = true;
+                }
+                group
+                    .alternatives
+                    .push(group.alternative_start..instructions.len());
+                group.alternative_start = instructions.len();
             }
             0x5e | 0x24 => {
                 let mut assertion = Assertions::default();
@@ -530,10 +696,12 @@ fn prepare(
     }) {
         return None;
     }
-    branches.push(Branch {
-        instructions: branch_start..instructions.len(),
-        captures: branch_capture_start..capture_count,
-    });
+    branches.push(branch_plan(
+        branch_start,
+        instructions.len(),
+        branch_capture_start..capture_count,
+        choice,
+    ));
     Some(PreparedProgram {
         instructions,
         capture_count,
@@ -691,6 +859,171 @@ mod tests {
         assert!(found.captures[..10000].iter().all(Option::is_none));
         assert_eq!(found.captures[10000], Some(0..1));
         assert!(work < 150000, "actual named-reference work {work}");
+    }
+
+    #[test]
+    fn inner_choice_binding_owners_reject_common_and_same_branch_duplicates() {
+        for (text, slots) in [
+            (r"(q)(?:(a)|(b))\k<x>", &[0, 1][..]),
+            (r"(?:(a)|(b))(q)\k<x>", &[1, 2][..]),
+            (r"(?:(a)(b)|(c))\k<x>", &[0, 1][..]),
+            (r"((a)|(b))\k<x>", &[0, 2][..]),
+        ] {
+            let source = JsString::from(text);
+            let references = named_escapes(&source);
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+                    &source,
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings {
+                        groups: &[slots],
+                        references: &references,
+                    },
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    },
+                )
+                .unwrap()
+                .is_none(),
+                "{text}"
+            );
+            assert_eq!(work, 0, "{text}");
+        }
+        let source = JsString::from(r"(?:(a)|()|(b))\k<x>|(c)\k<x>");
+        let references = named_escapes(&source);
+        let matcher = RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+            &source,
+            false,
+            false,
+            false,
+            RegExpBackreferenceNamedBindings {
+                groups: &[&[0, 1, 2, 3]],
+                references: &references,
+            },
+            |_| Ok::<_, ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let found = matcher.find(&JsString::from("b"), 0, true).unwrap();
+        assert_eq!(found.range, 0..0);
+        assert_eq!(&*found.captures, &[None, Some(0..0), None, None]);
+    }
+
+    #[test]
+    fn inner_alternative_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a|b)\1",
+            r"(a|ab)\1",
+            r"(ab|a)\1",
+            r"x(a|ab)\1y",
+            r"(a|ab)\1b",
+            r"((a)|(ab))\1",
+            r"((a)|(ab))\2\3",
+            r"(?:(a)|(b))\1\2",
+            r"(?:(a)|)\1",
+            r"(?:|(a))\1",
+            r"(q)(?:(a)|(b))\1\2\3",
+            r"(?:(a\1)|(b\2))\1\2",
+            r"((\1a)|b)\1",
+            r"^(\w|\W)\1$",
+            r"([^µ]|[ab])\1",
+            r"\b(a|\w)\1\b",
+            r"((a)|())\1",
+            r"x(((a)|b))\2y",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "aa",
+                    "Aa",
+                    "qaa",
+                    "aa\n",
+                    "\naa\n",
+                    "\raa\r\n",
+                    "aa aa",
+                    " bb ",
+                    "q\nbb\nq",
+                    "µΜ",
+                    "\n\n",
+                    "a\n a",
+                    "\u{2028}aa\u{2029}",
+                    "\r\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn common_capture_checkpoints_survive_failed_choices_and_enclosing_closes() {
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"((a)|(ab))\1"), false).unwrap();
+        let found = matcher.find(&JsString::from("qabab"), 0, false).unwrap();
+        assert_eq!(found.range, 1..5);
+        assert_eq!(&*found.captures, &[Some(1..3), None, Some(1..3)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"(q)(?:(a)|(b))\1\2\3"), false)
+                .unwrap();
+        let found = matcher.find(&JsString::from("qbqb"), 0, true).unwrap();
+        assert_eq!(&*found.captures, &[Some(0..1), None, Some(1..2)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"((a)|())\1"), false).unwrap();
+        let found = matcher.find(&JsString::from("b"), 0, true).unwrap();
+        assert_eq!(found.range, 0..0);
+        assert_eq!(&*found.captures, &[Some(0..0), None, Some(0..0)]);
+    }
+
+    #[test]
+    fn shared_common_regions_and_capture_checkpoints_keep_wide_choices_linear() {
+        let source = JsString::from(
+            format!("{}(?:(?:{})a)\\1", "(a)".repeat(10000), "b|".repeat(10000)).as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        assert!(matcher.0.instructions.len() <= source.len());
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from("a".repeat(10002).as_str()), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 0..10002);
+        assert_eq!(found.captures[9999], Some(9999..10000));
+        assert!(work < 200000, "actual prefix/alternative work {work}");
+        let source = JsString::from(
+            format!("{}(a|ab){}\\100001", "(".repeat(100000), ")".repeat(100000)).as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("abab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..4);
+        assert_eq!(found.captures[100000], Some(0..2));
     }
 
     #[test]
@@ -1062,7 +1395,7 @@ mod tests {
                 .len(),
             100000
         );
-        for text in [r"(\w)\1+", r"^([ab])\1+", r"([ab]|c)\1"] {
+        for text in [r"(\w)\1+", r"^([ab])\1+", r"([ab]|c)\1+"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_with_flags_and_work(
@@ -1190,7 +1523,7 @@ mod tests {
         assert!(matcher.find(&JsString::from("aa"), 0, false).is_none());
         for source in [
             r"(a)\1+",
-            r"(a|b)\1",
+            r"(a|b)\1+",
             r"(?<x>a)\k<x>",
             r"([ab])\1+",
             r"^(a)\1+",

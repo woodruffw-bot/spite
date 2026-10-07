@@ -127,7 +127,7 @@ fn explicit_assertion_search_work_aborts_before_last_index_and_language_handlers
 fn pending_reference_compositions_keep_unsupported_outcomes() {
     for source in [
         r"/^([ab])\1+$/.test('aa')",
-        r"/^(a|b)\1$/.test('aa')",
+        r"/^(a|b)\1+$/.test('aa')",
         r"/(?=(a))\1/.test('a')",
         r"/\b(?<x>a)\k<x>\b/u.test('aa')",
     ] {

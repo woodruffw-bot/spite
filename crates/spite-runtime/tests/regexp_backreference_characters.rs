@@ -104,7 +104,7 @@ fn deep_shared_predicates_and_captures_survive_copy_and_collection_without_quota
 fn remaining_reference_compositions_keep_explicit_unsupported_outcomes() {
     for source in [
         r"/([ab])\1+/.test('aa')",
-        r"/(a|b)\1/.test('aa')",
+        r"/(a|b)\1+/.test('aa')",
         r"/^([ab])\1+/.test('aa')",
         r"/(?<x>[ab])\k<x>/u.test('aa')",
     ] {

@@ -1799,6 +1799,32 @@ Stable and MSRV pass all 13,530 pinned-corpus variants, workspace targets and
 documentation tests. Formatting, denied-warning Clippy, dependency/fixture policy,
 offline generator checks and default two-mebibyte debug-stack checks pass.
 
+
+One ordinary inner choice per top-level reference branch now executes with common
+prefixes/sequels, variable-width or empty alternatives and enclosing captures.
+Four added core regressions cover an inspected 3,240-record insta snapshot,
+restoration after failed continuations, invalid common/same-branch named bindings
+rejected before charging, 10,000 shared prefix captures combined with 10,000
+alternatives, and 100,000 enclosing groups. Counter bounds verify storage and
+matching complexity without imposing an execution quota. All five earlier core
+reference snapshots remain byte-identical. Six runtime regressions cover an
+inspected 22-record result snapshot, undefined/empty/common/enclosing capture
+ranges, duplicate-name selection and groups/indices aliases, self/forward
+references, ordinary predicates and full-input assertions, global/sticky consumers,
+empty-match advancement, copied programs, collection, unlimited wide/deep patterns,
+opted-in search aborts and remaining compositions. Node agrees with every added
+core/native record, 244,512 numbered-reference and 158,208 named-reference fresh
+match/capture comparisons, and ten runtime programs. Existing reference snapshots
+are unchanged. Fifteen earlier gap controls now retain quantified references; all
+380 direct gap programs and three eval host-gap programs remain unsupported.
+Additional nested/sequential inner choices, quantified reference bodies and Unicode
+matching remain pending. No fixtures or fixture credit are added; inventories,
+the pin, dependencies and unlimited defaults are unchanged.
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation tests. Formatting, denied-warning Clippy, dependency/
+fixture policy, offline generator checks and default two-mebibyte debug-stack
+checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
