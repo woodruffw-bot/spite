@@ -1023,8 +1023,8 @@ existing result builder. Optional work charges each executed instruction, captur
 reset and actual input comparison; host aborts occur before lastIndex mutation.
 Storage and execution are iterative, including deeply nested groups, and contain
 no heap-object edges. Named group metadata and indices aliases remain shared with
-the ordinary result path. Assertions or alternatives combined with references, quantified references and
-Unicode matching remain pending.
+the ordinary result path. Inner alternatives, quantified references and Unicode
+matching remain pending.
 
 Ordinary named references in literal concatenations use the same reference program
 (CompileAtomEscape and BackreferenceMatcher, 22.2.2.9). Validated decoded names bind
@@ -1037,13 +1037,13 @@ neither normalized nor case-folded. Forward/self references reuse the ordinary
 capture state and return original input units. Public source text, copies, named
 groups and indices aliases retain their original behavior. Repeated references
 remain compact; preparation and lookup work is charged before construction.
-Alternative-specific duplicate-name references retain Unsupported until the
-reference matcher supports alternatives. Wider reference compositions and Unicode
+Alternative-specific duplicate-name references retain Unsupported; named
+reference execution still requires each target to have one capture slot. Wider reference compositions and Unicode
 matching remain pending, and default quotas remain disabled.
 
 Character-class, class-escape and dot atoms also compose with ordinary references
 (CompileAtom, 22.2.2.7; BackreferenceMatcher, 22.2.2.9). Complete preparation rejects
-unsupported alternatives and quantifiers before constructing any character
+unsupported inner alternatives and quantifiers before constructing any character
 predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
 inversion and DotAll behavior. Identical UTF-16 atom source shares one immutable
 predicate within a compilation, with charged cache setup, lookup and first
@@ -1061,8 +1061,23 @@ preceding unit or input boundaries. Each assertion preserves capture state and
 charges its execution before inspecting adjacent units. WordCharacters remains
 ASCII in ordinary mode even with IgnoreCase; all four ECMAScript line terminators
 use the existing Multiline rules. Empty assertions, forward/self references and
-nested groups retain source-order input ranges without recursion. Alternatives,
+nested groups retain source-order input ranges without recursion. Inner alternatives,
 quantifiers combined with references and Unicode-mode matching remain pending.
+
+Top-level ordinary alternatives also compose with references (22.2.2.3,
+22.2.2.9). Complete preparation records each branch's flat instruction interval
+and contiguous source-order capture interval. At each increasing candidate start,
+execution tries complete branches in source order; each sticky execution checks
+only its requested start. A single capture buffer clears only the previous
+attempt's capture interval before trying another branch or candidate. Inactive
+branch captures stay undefined, so their forward/cross-branch references match
+empty and result groups/indices retain the original global numbering. Empty
+branches participate in the same order. Shared character predicates and full-input
+assertions keep existing flags and input-unit behavior. Actual branch attempts,
+capture resets and comparisons are charged before work without default quotas.
+Preparation, execution and dropping stay iterative; no alternative expansion or
+recursive backtracking is introduced. Inner choices, repeated references,
+duplicate-name reference selection and Unicode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

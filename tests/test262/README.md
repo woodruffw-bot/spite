@@ -28,9 +28,9 @@ references, captures containing references, source-order groups, and String.matc
 arrays. The native named-directory selection is now 16 of 36 complete originals;
 Git blob and SHA-256 identities preserve its full source and metadata.
 
-Twenty whole originals still require named references through alternatives, Unicode-mode
-matching, lookbehind or additional quantified patterns and remain excluded
-without passing credit. The separate exec inventory remains 54 of 79 originals,
+Twenty whole originals remain excluded without passing credit: one awaits its
+separate reference-alternative review; the others require Unicode-mode matching,
+lookbehind or additional quantified patterns. The separate exec inventory remains 54 of 79 originals,
 with 25 exclusions. The corpus now has 7044 fixtures, eleven helpers and 7025
 reviewed Script sources: 13528 variants comprising 12051 harness positives,
 1469 parse negatives, four raw positives and four runtime negatives.

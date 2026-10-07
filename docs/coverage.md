@@ -1626,9 +1626,9 @@ harness-positive variants after review of all 36 whole programs and metadata at
 the existing pin. They cover native groups/indices and duplicate-name order,
 generic matchAll/replace/replaceAll/search/split, and custom-exec groups. Two
 originals assert invalid group-name SyntaxErrors; these do not establish Unicode
-matching coverage. Twenty originals requiring pending named references through alternatives,
-Unicode matching, lookbehind or additional quantifiers remain excluded without
-credit. The unchanged compareIterator.js helper is newly vendored from the same
+matching coverage. Twenty originals remain excluded without credit: one awaits its separate
+reference-alternative review; the others require Unicode matching, lookbehind or
+additional quantifiers. The unchanged compareIterator.js helper is newly vendored from the same
 pin, preserving every assertion, source byte, metadata field and copyright.
 Git blob identities and manifest SHA-256 verify all sixteen new files.
 
@@ -1741,6 +1741,30 @@ Stable and MSRV pass workspace targets, documentation, and every unchanged
 pinned-corpus variant. Formatting, denied-warning Clippy, dependency/fixture
 policy, generated-data checks, and default two-mebibyte debug-stack checks pass
 on both toolchains where applicable.
+
+Ordinary top-level alternatives now compose with numbered and uniquely bound
+named references. Three added core regressions cover an inspected 3,240-record
+insta snapshot, earliest candidate and branch order, inactive/failed capture
+slots, empty and cross-branch references, 10,000 branches with linear capture
+reset work, opted-in aborts, and 100,000 nested captures. The work-counter bound
+checks algorithmic complexity and imposes no execution quota. All three earlier
+reference snapshots remain byte-identical. Six runtime regressions cover an
+inspected 22-record result snapshot, original global capture numbering and groups/
+indices aliases, failed candidate resets, ordinary case/surrogate/line contexts,
+global/sticky consumers and empty-branch advancement, copying and collection,
+unlimited wide/deep programs, explicit search aborts, and pending compositions.
+Node agrees with every new core/native record, 231,264 fresh match/capture
+comparisons and ten runtime programs. Three earlier gap controls now retain
+quantified references; all 372 audited gap programs remain unsupported. A fresh
+diagnostic review of the 36 whole named-group originals has 34 passing and 38
+unsupported variants, with no failed, limit or setup outcomes. The additional
+passing original awaits its separate fixture review and receives no corpus
+credit here. Inner choices, repeated references, duplicate-name reference
+selection and Unicode matching remain pending. Fixtures, inventories, the pin,
+dependencies and unlimited defaults are unchanged.
+Stable and MSRV pass every pinned-corpus variant, workspace target and
+documentation test. Formatting, denied-warning Clippy, dependency/fixture policy,
+offline generator checks and default two-mebibyte debug-stack checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.

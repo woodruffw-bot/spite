@@ -11,8 +11,9 @@ use std::{collections::HashMap, ops::Range, sync::Arc};
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
-/// Alternatives and quantifiers return `None`. At least one numbered reference
-/// is required; plain literals retain their existing linear-search matcher.
+/// Top-level alternatives are accepted; inner alternatives and quantifiers
+/// return `None`. At least one numbered reference is required; plain literals
+/// retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
 pub struct RegExpBackreferenceMatcher(Arc<Program>);
@@ -23,6 +24,7 @@ struct Program {
     capture_count: usize,
     ignore_case: bool,
     multiline: bool,
+    branches: Vec<Branch>,
 }
 
 #[derive(Debug)]
@@ -41,6 +43,18 @@ enum PreparedInstruction {
         plan: Box<PreparedCharacter>,
         source: Range<usize>,
     },
+}
+
+#[derive(Debug)]
+struct Branch {
+    instructions: Range<usize>,
+    captures: Range<usize>,
+}
+
+struct PreparedProgram {
+    instructions: Vec<PreparedInstruction>,
+    capture_count: usize,
+    branches: Vec<Branch>,
 }
 
 /// Absolute UTF-16 endpoints from one successful execution.
@@ -97,10 +111,15 @@ impl RegExpBackreferenceMatcher {
         {
             return Ok(None);
         }
-        let Some((prepared, capture_count)) = prepare(source.code_units(), ignore_case, dot_all)
-        else {
+        let Some(plan) = prepare(source.code_units(), ignore_case, dot_all) else {
             return Ok(None);
         };
+        let PreparedProgram {
+            instructions: prepared,
+            capture_count,
+            branches,
+        } = plan;
+        charge(branches.len())?;
         charge(source.len())?;
         charge(prepared.len())?;
         charge(prepared.len())?;
@@ -139,6 +158,7 @@ impl RegExpBackreferenceMatcher {
             capture_count,
             ignore_case,
             multiline,
+            branches,
         }))))
     }
 
@@ -162,9 +182,11 @@ impl RegExpBackreferenceMatcher {
 
     /// Charges capture resets, executed instructions and actual unit comparisons.
     ///
-    /// A single capture buffer is reused across ordered candidate starts. An open
-    /// or forward capture has no completed range and its reference matches the
-    /// empty string, as required by BackreferenceMatcher (22.2.2.9.2). Ignore-case
+    /// A single capture buffer is reset and reused across source-order branches at
+    /// each ordered candidate start. Only the previously attempted branch
+    /// capture interval is cleared; references to other branches stay undefined.
+    /// An open or forward capture has no completed range and its reference matches
+    /// the empty string, as required by BackreferenceMatcher (22.2.2.9.2). Ignore-case
     /// comparison canonicalizes both input units with the ordinary ASCII boundary.
     /// No recursion, backtracking stack or expanded reference string is used.
     pub fn find_with_work<E>(
@@ -185,69 +207,76 @@ impl RegExpBackreferenceMatcher {
         charge(self.0.capture_count)?;
         let mut starts = vec![0; self.0.capture_count];
         let end = if sticky { start } else { input.len() };
-        'candidate: for candidate in start..=end {
-            charge(captures.len())?;
-            captures.fill(None);
-            let mut cursor = candidate;
-            for instruction in &self.0.instructions {
+        let mut dirty = 0..0;
+        for candidate in start..=end {
+            'branch: for branch in &self.0.branches {
                 charge(1)?;
-                match instruction {
-                    Instruction::Character(expected) => {
-                        let Some(&unit) = input.get(cursor) else {
-                            continue 'candidate;
-                        };
-                        charge(1)?;
-                        if canonicalize(unit, self.0.ignore_case) != *expected {
-                            continue 'candidate;
+                charge(dirty.len())?;
+                captures[dirty.clone()].fill(None);
+                dirty = branch.captures.clone();
+                let mut cursor = candidate;
+                for instruction in &self.0.instructions[branch.instructions.clone()] {
+                    charge(1)?;
+                    match instruction {
+                        Instruction::Character(expected) => {
+                            let Some(&unit) = input.get(cursor) else {
+                                continue 'branch;
+                            };
+                            charge(1)?;
+                            if canonicalize(unit, self.0.ignore_case) != *expected {
+                                continue 'branch;
+                            }
+                            cursor += 1;
                         }
-                        cursor += 1;
-                    }
-                    Instruction::Set(matcher) => {
-                        let Some(&unit) = input.get(cursor) else {
-                            continue 'candidate;
-                        };
-                        charge(1)?;
-                        if !matcher.matches(unit) {
-                            continue 'candidate;
+                        Instruction::Set(matcher) => {
+                            let Some(&unit) = input.get(cursor) else {
+                                continue 'branch;
+                            };
+                            charge(1)?;
+                            if !matcher.matches(unit) {
+                                continue 'branch;
+                            }
+                            cursor += 1;
                         }
-                        cursor += 1;
-                    }
-                    Instruction::Assert(assertion) => {
-                        charge(2)?;
-                        if !assertion.accepts(input, cursor, self.0.multiline) {
-                            continue 'candidate;
-                        }
-                    }
-                    Instruction::Open(index) => starts[*index] = cursor,
-                    Instruction::Close(index) => captures[*index] = Some(starts[*index]..cursor),
-                    Instruction::Reference(index) => {
-                        let Some(range) = &captures[*index] else {
-                            continue;
-                        };
-                        let Some(next) = cursor.checked_add(range.len()) else {
-                            continue 'candidate;
-                        };
-                        let Some(candidate_units) = input.get(cursor..next) else {
-                            continue 'candidate;
-                        };
-                        for (&actual, &captured) in
-                            candidate_units.iter().zip(&input[range.clone()])
-                        {
+                        Instruction::Assert(assertion) => {
                             charge(2)?;
-                            if canonicalize(actual, self.0.ignore_case)
-                                != canonicalize(captured, self.0.ignore_case)
-                            {
-                                continue 'candidate;
+                            if !assertion.accepts(input, cursor, self.0.multiline) {
+                                continue 'branch;
                             }
                         }
-                        cursor = next;
+                        Instruction::Open(index) => starts[*index] = cursor,
+                        Instruction::Close(index) => {
+                            captures[*index] = Some(starts[*index]..cursor)
+                        }
+                        Instruction::Reference(index) => {
+                            let Some(range) = &captures[*index] else {
+                                continue;
+                            };
+                            let Some(next) = cursor.checked_add(range.len()) else {
+                                continue 'branch;
+                            };
+                            let Some(candidate_units) = input.get(cursor..next) else {
+                                continue 'branch;
+                            };
+                            for (&actual, &captured) in
+                                candidate_units.iter().zip(&input[range.clone()])
+                            {
+                                charge(2)?;
+                                if canonicalize(actual, self.0.ignore_case)
+                                    != canonicalize(captured, self.0.ignore_case)
+                                {
+                                    continue 'branch;
+                                }
+                            }
+                            cursor = next;
+                        }
                     }
                 }
+                return Ok(Some(RegExpBackreferenceMatch {
+                    range: candidate..cursor,
+                    captures: captures.into_boxed_slice(),
+                }));
             }
-            return Ok(Some(RegExpBackreferenceMatch {
-                range: candidate..cursor,
-                captures: captures.into_boxed_slice(),
-            }));
         }
         Ok(None)
     }
@@ -257,13 +286,12 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn prepare(
-    source: &[u16],
-    ignore_case: bool,
-    dot_all: bool,
-) -> Option<(Vec<PreparedInstruction>, usize)> {
+fn prepare(source: &[u16], ignore_case: bool, dot_all: bool) -> Option<PreparedProgram> {
     let mut instructions = Vec::new();
     let mut groups = Vec::new();
+    let mut branches = Vec::new();
+    let mut branch_start = 0;
+    let mut branch_capture_start = 0;
     let mut capture_count = 0usize;
     let mut references = 0usize;
     let mut cursor = 0;
@@ -305,6 +333,14 @@ fn prepare(
                     number.checked_sub(1)?,
                 )));
                 references += 1;
+            }
+            0x7c if groups.is_empty() => {
+                branches.push(Branch {
+                    instructions: branch_start..instructions.len(),
+                    captures: branch_capture_start..capture_count,
+                });
+                branch_start = instructions.len();
+                branch_capture_start = capture_count;
             }
             0x5e | 0x24 => {
                 let mut assertion = Assertions::default();
@@ -358,13 +394,151 @@ fn prepare(
     }) {
         return None;
     }
-    Some((instructions, capture_count))
+    branches.push(Branch {
+        instructions: branch_start..instructions.len(),
+        captures: branch_capture_start..capture_count,
+    });
+    Some(PreparedProgram {
+        instructions,
+        capture_count,
+        branches,
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn alternative_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)\1|(b)\2",
+            r"(a)\1|b",
+            r"a|(ab)\1",
+            r"(ab)\1|a",
+            r"(a)\1|(a)\2",
+            r"(a)\1|",
+            r"|(a)\1",
+            r"(a)\1|\1(b)",
+            r"\2(a)\1|(b)\2",
+            r"(a)\1|(\2b)\2",
+            r"(\1a)\1|b",
+            r"^()\1$|(\b)\2\w",
+            r"([µ])\1|(\w)\2",
+            r"([])\1|([^])\2",
+            r"(a)\1|\B(.)\2\B",
+            r"^^(a)\1$$|bb",
+            r"(a)\1c|\1b",
+            r"(a)\1c|(\1b)\2",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "aa",
+                    "Aa",
+                    "qaa",
+                    "aa\n",
+                    "\naa\n",
+                    "\raa\r\n",
+                    "aa aa",
+                    " bb ",
+                    "q\nbb\nq",
+                    "µΜ",
+                    "\n\n",
+                    "a\n a",
+                    "\u{2028}aa\u{2029}",
+                    "\r\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn failed_branches_clear_only_their_original_capture_slots() {
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"(a)\1c|(\1b)\2"), false).unwrap();
+        let found = matcher.find(&JsString::from("aabb"), 0, false).unwrap();
+        assert_eq!(found.range, 2..4);
+        assert_eq!(&*found.captures, &[None, Some(2..3)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"(a)\1|b"), false).unwrap();
+        let found = matcher.find(&JsString::from("baa"), 0, false).unwrap();
+        assert_eq!(found.range, 0..1);
+        assert_eq!(&*found.captures, &[None]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"a|(ab)\1"), false).unwrap();
+        assert_eq!(
+            matcher
+                .find(&JsString::from("abab"), 0, true)
+                .unwrap()
+                .range,
+            0..1
+        );
+    }
+
+    #[test]
+    fn wide_reference_choices_have_linear_capture_resets_and_fallible_work() {
+        let source = format!("{}(a)\\10001", "(b)|".repeat(10000));
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from("aa"), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 0..2);
+        assert!(found.captures[..10000].iter().all(Option::is_none));
+        assert_eq!(found.captures[10000], Some(0..1));
+        assert!(work < 150000, "actual branch/reset work {work}");
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("aa"), 0, true, |n| {
+                    work += n;
+                    if work > 1000 {
+                        Err("explicit work")
+                    } else {
+                        Ok(())
+                    }
+                })
+                .unwrap_err(),
+            "explicit work"
+        );
+        let source = format!("{}b{}|(a)\\100001", "(".repeat(100000), ")".repeat(100000));
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(source.as_str()), false).unwrap();
+        let found = matcher.find(&JsString::from("aa"), 0, true).unwrap();
+        assert_eq!(found.range, 0..2);
+        assert!(found.captures[..100000].iter().all(Option::is_none));
+        assert_eq!(found.captures[100000], Some(0..1));
+    }
 
     #[test]
     fn asserted_reference_execution_snapshot() {
