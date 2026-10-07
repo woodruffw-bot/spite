@@ -186,9 +186,9 @@ fn logical_assignment_can_skip_a_forbidden_primitive_write() {
 #[test]
 fn unavailable_regexp_operations_are_distinct_from_absent_and_annex_b_properties() {
     for source in [
-        "'s'.matchAll('(x|y)').next()",
-        "'s'.search('(x|y)')",
-        "'s'.match('(x|y)')",
+        "'s'.matchAll('x(x|y)').next()",
+        "'s'.search('x(x|y)')",
+        "'s'.match('x(x|y)')",
     ] {
         assert!(
             matches!(

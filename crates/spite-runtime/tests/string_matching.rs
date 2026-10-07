@@ -188,7 +188,7 @@ fn matchall_creation_is_lazy_and_custom_exec_observes_the_new_native_matcher() {
         "let n=0;RegExp.prototype.exec=function(s){n++;return null;};let iterator='x'.matchAll();n===0 && Object.getPrototypeOf(iterator)[Symbol.toStringTag]==='RegExp String Iterator' && iterator.next().done && n===1",
     );
     let mut realm = Realm::default();
-    realm.eval("let it='x'.matchAll('(a|b)'),flag=0").unwrap();
+    realm.eval("let it='x'.matchAll('a(a|b)'),flag=0").unwrap();
     assert!(matches!(
         realm.eval("try{it.next();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })

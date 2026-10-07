@@ -10,7 +10,7 @@ use spite_heap::Handle;
 use std::ops::Range;
 
 #[derive(Clone, Debug)]
-pub(crate) enum RegExpMatcher {
+pub(crate) enum RegExpMatcherBody {
     Literal(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
     Character(RegExpCharacterMatcher),
@@ -20,21 +20,52 @@ pub(crate) enum RegExpMatcher {
     QuantifiedContinuation(RegExpQuantifiedContinuationMatcher),
 }
 
+/// A complete body's plan with a prefix of enclosing whole-match captures.
+#[derive(Clone, Debug)]
+pub(crate) struct RegExpMatcher {
+    body: RegExpMatcherBody,
+    enclosing_captures: usize,
+    capture_count: usize,
+}
+
 impl RegExpMatcher {
+    pub fn new(body: RegExpMatcherBody, enclosing_captures: usize) -> Self {
+        let inner = match &body {
+            RegExpMatcherBody::Literal(m) => m.capture_ranges().len(),
+            RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
+            RegExpMatcherBody::Character(_) => 0,
+            RegExpMatcherBody::Anchored(m) => m.capture_count(),
+            RegExpMatcherBody::Disjunction(m) => m.capture_count(),
+            RegExpMatcherBody::Quantified(m) => m.capture_count(),
+            RegExpMatcherBody::QuantifiedContinuation(m) => m.capture_count(),
+        };
+        // Both counts come from the same validated CapturingGroupsCount bound.
+        let capture_count = enclosing_captures
+            .checked_add(inner)
+            .expect("validated capture count");
+        Self {
+            body,
+            enclosing_captures,
+            capture_count,
+        }
+    }
+
     pub fn find<'a>(
         &'a self,
         input: &JsString,
         start: usize,
         sticky: bool,
     ) -> Option<RegExpMatch<'a>> {
-        let (range, branch) = match self {
-            Self::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
-            Self::Anchored(matcher) => (matcher.find(input, start, sticky)?, 0),
-            Self::Character(matcher) => (matcher.find(input, start, sticky)?, 0),
-            Self::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0),
-            Self::QuantifiedContinuation(matcher) => (matcher.find(input, start, sticky)?, 0),
-            Self::Sequence(matcher) => (matcher.find(input, start, sticky)?, 0),
-            Self::Disjunction(matcher) => {
+        let (range, branch) = match &self.body {
+            RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::Anchored(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::Character(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::Quantified(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::QuantifiedContinuation(matcher) => {
+                (matcher.find(input, start, sticky)?, 0)
+            }
+            RegExpMatcherBody::Sequence(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::Disjunction(matcher) => {
                 let (branch, range) = matcher.find_branch(input, start, sticky)?;
                 (range, branch)
             }
@@ -47,40 +78,32 @@ impl RegExpMatcher {
         })
     }
     pub fn capture_count(&self) -> usize {
-        match self {
-            Self::Literal(matcher) => matcher.capture_ranges().len(),
-            Self::Anchored(matcher) => matcher.capture_count(),
-            Self::Character(_) => 0,
-            Self::Quantified(matcher) => matcher.capture_count(),
-            Self::QuantifiedContinuation(matcher) => matcher.capture_count(),
-            Self::Sequence(matcher) => matcher.capture_ranges().len(),
-            Self::Disjunction(matcher) => matcher.capture_count(),
-        }
+        self.capture_count
     }
     pub fn search_passes(&self, sticky: bool) -> usize {
-        match self {
-            Self::Literal(_) => 1,
-            Self::Anchored(matcher) => matcher.search_passes(sticky),
-            Self::Character(_) => 1,
-            Self::Quantified(_) => 1,
-            Self::QuantifiedContinuation(_) => 2,
-            Self::Sequence(matcher) => {
+        match &self.body {
+            RegExpMatcherBody::Literal(_) => 1,
+            RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
+            RegExpMatcherBody::Character(_) => 1,
+            RegExpMatcherBody::Quantified(_) => 1,
+            RegExpMatcherBody::QuantifiedContinuation(_) => 2,
+            RegExpMatcherBody::Sequence(matcher) => {
                 if sticky {
                     1
                 } else {
                     matcher.atom_count().max(1)
                 }
             }
-            Self::Disjunction(matcher) => matcher.search_passes(sticky),
+            RegExpMatcherBody::Disjunction(matcher) => matcher.search_passes(sticky),
         }
     }
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
-        let full_suffix = match self {
-            Self::Quantified(_) | Self::QuantifiedContinuation(_) => true,
-            Self::Anchored(matcher) => matcher.requires_full_suffix(),
-            Self::Disjunction(matcher) => matcher.requires_full_suffix(),
+        let full_suffix = match &self.body {
+            RegExpMatcherBody::Quantified(_) | RegExpMatcherBody::QuantifiedContinuation(_) => true,
+            RegExpMatcherBody::Anchored(matcher) => matcher.requires_full_suffix(),
+            RegExpMatcherBody::Disjunction(matcher) => matcher.requires_full_suffix(),
             _ => false,
         };
         if sticky && !full_suffix {
@@ -103,21 +126,35 @@ pub(crate) struct RegExpMatch<'a> {
 impl RegExpMatch<'_> {
     /// Absolute UTF-16 range, or None for a group in an unselected branch.
     pub fn capture(&self, index: usize) -> Option<Range<usize>> {
-        let fixed = match self.matcher {
-            RegExpMatcher::Literal(matcher) => matcher.capture_ranges(),
-            RegExpMatcher::Sequence(matcher) => matcher.capture_ranges(),
-            RegExpMatcher::Character(_) => return None,
-            RegExpMatcher::Anchored(matcher) => return matcher.capture_range(index, &self.range),
-            RegExpMatcher::Quantified(matcher) => return matcher.capture_range(index, &self.range),
-            RegExpMatcher::QuantifiedContinuation(matcher) => {
+        if index >= self.capture_count {
+            return None;
+        }
+        if index < self.matcher.enclosing_captures {
+            return Some(self.range.clone());
+        }
+        let index = index - self.matcher.enclosing_captures;
+        let fixed = match &self.matcher.body {
+            RegExpMatcherBody::Literal(matcher) => matcher.capture_ranges(),
+            RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
+            RegExpMatcherBody::Character(_) => return None,
+            RegExpMatcherBody::Anchored(matcher) => {
                 return matcher.capture_range(index, &self.range);
             }
-            RegExpMatcher::Disjunction(matcher) => {
+            RegExpMatcherBody::Quantified(matcher) => {
+                return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::QuantifiedContinuation(matcher) => {
+                return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::Disjunction(matcher) => {
                 return matcher.capture_range(self.branch, index, &self.range);
             }
         };
         let relative = fixed.get(index)?;
-        Some(self.range.start + relative.start..self.range.start + relative.end)
+        Some(
+            self.range.start.checked_add(relative.start)?
+                ..self.range.start.checked_add(relative.end)?,
+        )
     }
 }
 
@@ -179,7 +216,7 @@ mod tests {
                     source: source.clone(),
                     flags: JsString::from("yg"),
                     matcher: RegExpLiteralMatcher::compile(&source, false)
-                        .map(RegExpMatcher::Literal),
+                        .map(|body| RegExpMatcher::new(RegExpMatcherBody::Literal(body), 0)),
                 },
             )
             .unwrap();

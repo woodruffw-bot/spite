@@ -123,7 +123,7 @@ fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
     );
     for source in [
         "/(?:(?:a|b)+)/.test('a')",
-        "/(?:(a+b))/.test('ab')",
+        "/(?:(a+[b]))/.test('ab')",
         "/(?:a+[b])/.test('ab')",
         "/(?:a(?=b))/.test('ab')",
         "/(?:a+b)/u.test('ab')",

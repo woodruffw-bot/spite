@@ -32,7 +32,9 @@ pub use regexp_character::RegExpCharacterMatcher;
 pub use regexp_disjunction::RegExpDisjunctionMatcher;
 pub use regexp_escape::regexp_escape_units;
 pub use regexp_literal::RegExpLiteralMatcher;
-pub use regexp_outer_noncapturing::regexp_outer_noncapturing_body;
+pub use regexp_outer_noncapturing::{
+    RegExpOuterGroupBody, regexp_outer_group_body, regexp_outer_noncapturing_body,
+};
 pub use regexp_pattern_source::regexp_pattern_source_units;
 pub use regexp_quantified::RegExpQuantifiedMatcher;
 pub use regexp_quantified_continuation::RegExpQuantifiedContinuationMatcher;

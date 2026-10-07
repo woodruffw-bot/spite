@@ -374,7 +374,23 @@ all inner capture slots. No matcher search or repetition ordering changes.
 Optional construction accounting covers both scans and the body copy; defaults
 remain unlimited. A group followed by a quantifier or continuation stays inside
 the body, where the existing compiler accepts or rejects its complete grammar.
-Capturing groups enclosing complete concatenations or choices remain pending.
+Ordinary capturing outer groups use a corresponding three-scan body-range
+analysis that can mix capturing and noncapturing openers at arbitrary depth.
+Every removed capture encloses the complete chosen body match, and its opening
+precedes every retained capture in source order. The runtime plan stores one
+whole-match prefix count and a checked total capture count beside the existing
+nonrecursive body enum. Capture lookup returns the complete range for a prefix
+slot, then delegates shifted slots to the existing body layout. Zero-iteration
+whole captures participate with empty Strings; repeated inner captures retain
+their final-iteration or undefined state. Unselected alternative captures remain
+undefined. No wrapper tree, search allocation or capture matrix is needed.
+Original Pattern validation and the normative capture-count bound still precede
+compilation. Optional work covers all three scans and the private body copy;
+original source/flags, constructor identity/copies and observable coercions keep
+their existing order. Groups with their own quantifier or following continuation
+stay in the body and require an existing complete supported plan. Named groups,
+backreferences, embedded choices and multiple consuming quantifiers remain
+pending.
 
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped

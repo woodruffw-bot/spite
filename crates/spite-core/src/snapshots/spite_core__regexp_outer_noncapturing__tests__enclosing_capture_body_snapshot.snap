@@ -1,0 +1,46 @@
+---
+source: crates/spite-core/src/regexp_outer_noncapturing.rs
+expression: rows
+---
+"" => None
+"a" => None
+"()" => Some(RegExpOuterGroupBody { body: 1..1, captures: 1 })
+"(())" => Some(RegExpOuterGroupBody { body: 2..2, captures: 2 })
+"((?:))" => Some(RegExpOuterGroupBody { body: 4..4, captures: 1 })
+"(?:(()))" => Some(RegExpOuterGroupBody { body: 5..5, captures: 2 })
+"(a+b)" => Some(RegExpOuterGroupBody { body: 1..4, captures: 1 })
+"((a+b))" => Some(RegExpOuterGroupBody { body: 2..5, captures: 2 })
+"(?:(a+b))" => Some(RegExpOuterGroupBody { body: 4..7, captures: 1 })
+"((?:a+b))" => Some(RegExpOuterGroupBody { body: 4..7, captures: 1 })
+"(a+|b)" => Some(RegExpOuterGroupBody { body: 1..5, captures: 1 })
+"((x)|(a)+(b)|(y))" => Some(RegExpOuterGroupBody { body: 1..16, captures: 1 })
+"(a$|^b)" => Some(RegExpOuterGroupBody { body: 1..6, captures: 1 })
+"(^a+$)" => Some(RegExpOuterGroupBody { body: 1..5, captures: 1 })
+"((a)*())" => Some(RegExpOuterGroupBody { body: 1..7, captures: 1 })
+"((a*)())" => Some(RegExpOuterGroupBody { body: 1..7, captures: 1 })
+"((a)*)" => Some(RegExpOuterGroupBody { body: 1..5, captures: 1 })
+"((a)+)" => Some(RegExpOuterGroupBody { body: 1..5, captures: 1 })
+"((?:a)*)" => Some(RegExpOuterGroupBody { body: 1..7, captures: 1 })
+"(?:(a)*)" => Some(RegExpOuterGroupBody { body: 3..7, captures: 0 })
+"(a)*" => None
+"(a)+" => None
+"(a+b)*" => None
+"((a|b)+)" => Some(RegExpOuterGroupBody { body: 1..7, captures: 1 })
+"(a+b)c" => None
+"((a+b))c" => None
+"(a)|(b)" => None
+"((a)(b))" => Some(RegExpOuterGroupBody { body: 1..7, captures: 1 })
+"((?:a)(?:b))" => Some(RegExpOuterGroupBody { body: 1..11, captures: 1 })
+"(?:(a)(b))" => Some(RegExpOuterGroupBody { body: 3..9, captures: 0 })
+"([()|])" => Some(RegExpOuterGroupBody { body: 1..6, captures: 1 })
+"([[])" => Some(RegExpOuterGroupBody { body: 1..4, captures: 1 })
+"(\\(\\))" => Some(RegExpOuterGroupBody { body: 1..5, captures: 1 })
+"(µ)" => Some(RegExpOuterGroupBody { body: 1..2, captures: 1 })
+"((😀))" => Some(RegExpOuterGroupBody { body: 2..4, captures: 2 })
+"(?<x>a)" => None
+"(?=a)" => None
+"(?!a)" => None
+"(?<=a)" => None
+"(?i:a)" => None
+"((?<x>a))" => Some(RegExpOuterGroupBody { body: 1..8, captures: 1 })
+"((?=a))" => Some(RegExpOuterGroupBody { body: 1..6, captures: 1 })

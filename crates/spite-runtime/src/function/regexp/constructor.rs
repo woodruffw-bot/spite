@@ -2,12 +2,12 @@
 
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, RegExpData, RegExpMatcher},
+    object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpMatcherBody},
 };
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span, regexp_outer_noncapturing_body,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -150,6 +150,7 @@ impl Realm {
                     },
                 },
             )?;
+        let mut enclosing_captures = 0;
         let matcher = if flags
             .code_units()
             .iter()
@@ -157,19 +158,23 @@ impl Realm {
         {
             None
         } else {
-            let matching_source = if source.code_units().starts_with(&[0x28, 0x3f, 0x3a]) {
-                self.object_work(span, |_, budget| {
+            let matching_source = if source.code_units().first() == Some(&0x28) {
+                let (body, captures) = self.object_work(span, |_, budget| {
                     budget.charge(source.len())?;
                     budget.charge(source.len())?;
-                    if let Some(body) = regexp_outer_noncapturing_body(&source) {
-                        budget.charge(body.len())?;
-                        Ok(JsString::from_code_units(
-                            source.code_units()[body].to_vec(),
+                    budget.charge(source.len())?;
+                    if let Some(group) = regexp_outer_group_body(&source) {
+                        budget.charge(group.body.len())?;
+                        Ok((
+                            JsString::from_code_units(source.code_units()[group.body].to_vec()),
+                            group.captures,
                         ))
                     } else {
-                        Ok(source.clone())
+                        Ok((source.clone(), 0))
                     }
-                })?
+                })?;
+                enclosing_captures = captures;
+                body
             } else {
                 source.clone()
             };
@@ -179,7 +184,7 @@ impl Realm {
             })?;
             let ignore_case = flags.code_units().contains(&u16::from(b'i'));
             if let Some(matcher) = RegExpLiteralMatcher::compile(&matching_source, ignore_case) {
-                Some(RegExpMatcher::Literal(matcher))
+                Some(RegExpMatcherBody::Literal(matcher))
             } else {
                 // Cover the top-level scan and remaining per-branch compilation
                 // passes. Accounting remains optional, as for literal plans.
@@ -197,7 +202,7 @@ impl Realm {
                     )
                 })?;
                 if let Some(matcher) = disjunction {
-                    Some(RegExpMatcher::Disjunction(matcher))
+                    Some(RegExpMatcherBody::Disjunction(matcher))
                 } else {
                     self.object_work(span, |_, budget| {
                         budget.charge(source.len())?;
@@ -213,7 +218,7 @@ impl Realm {
                         )
                     })?;
                     if let Some(matcher) = anchored {
-                        Some(RegExpMatcher::Anchored(matcher))
+                        Some(RegExpMatcherBody::Anchored(matcher))
                     } else {
                         self.object_work(span, |_, budget| {
                             let dot_all = flags.code_units().contains(&u16::from(b's'));
@@ -223,7 +228,7 @@ impl Realm {
                                 dot_all,
                                 |work| budget.charge(work),
                             )? {
-                                Ok(Some(RegExpMatcher::Character(matcher)))
+                                Ok(Some(RegExpMatcherBody::Character(matcher)))
                             } else {
                                 let sequence = RegExpSequenceMatcher::compile_with_work(
                                     &matching_source,
@@ -232,7 +237,7 @@ impl Realm {
                                     |work| budget.charge(work),
                                 )?;
                                 if let Some(matcher) = sequence {
-                                    Ok(Some(RegExpMatcher::Sequence(matcher)))
+                                    Ok(Some(RegExpMatcherBody::Sequence(matcher)))
                                 } else {
                                     let quantified = RegExpQuantifiedMatcher::compile_with_work(
                                         &matching_source,
@@ -241,7 +246,7 @@ impl Realm {
                                         |work| budget.charge(work),
                                     )?;
                                     if let Some(matcher) = quantified {
-                                        Ok(Some(RegExpMatcher::Quantified(matcher)))
+                                        Ok(Some(RegExpMatcherBody::Quantified(matcher)))
                                     } else {
                                         RegExpQuantifiedContinuationMatcher::compile_with_work(
                                             &matching_source,
@@ -250,7 +255,7 @@ impl Realm {
                                             |work| budget.charge(work),
                                         )
                                         .map(|matcher| {
-                                            matcher.map(RegExpMatcher::QuantifiedContinuation)
+                                            matcher.map(RegExpMatcherBody::QuantifiedContinuation)
                                         })
                                     }
                                 }
@@ -260,6 +265,7 @@ impl Realm {
                 }
             }
         };
+        let matcher = matcher.map(|body| RegExpMatcher::new(body, enclosing_captures));
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the
             // RegExp Record's validated CapturingGroupsCount (22.2.7.2).

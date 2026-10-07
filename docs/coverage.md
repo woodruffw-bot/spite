@@ -798,6 +798,29 @@ Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Complete ordinary enclosing captures now compile around every supported
+Pattern body, including quantified continuations, anchored bodies and top-level
+choices. Three core regressions cover an inspected 42-record insta snapshot,
+4,320 independent mixed-group boundary/count comparisons and 100,000 mixed
+wrappers with 50,000 whole-match captures. The prior noncapturing snapshot keeps
+all values. Eight runtime regressions cover whole-match prefix slots versus
+final iterations and fixed suffixes, source-order alternative slots, own
+undefined elements and intrinsic Arrays, zero runs and empty groups, assertion-
+constrained repetition, global/sticky state and strict writes, original slots,
+pinned flags and UTF-16 ranges, generic consumers and callbacks, constructor
+validation of 100,000 enclosing captures, 1,000-capture results, copies after
+collection with unlimited defaults and optional host aborts. Earlier rejection
+regressions retain unsupported embedded choices/assertions and character-set
+continuations. All 130 constant RegExp gap-loop programs retain Unsupported.
+Node agrees on all 106,020 range/capture comparisons and twenty runtime
+programs. Matcher storage adds only scalar prefix/total counts to the existing
+body plan, without native recursion, a wrapper tree or search allocations.
+Backreferences remain unsupported after normalization. The fixture review
+enables no further whole programs. The corpus, inventories and pin are unchanged.
+Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

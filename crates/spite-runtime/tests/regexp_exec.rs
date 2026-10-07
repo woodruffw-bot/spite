@@ -175,7 +175,7 @@ fn generic_match_search_replace_split_and_matchall_use_native_literal_execution(
 #[test]
 fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
     for (source, flags) in [
-        ("(a|b)", ""),
+        ("a(a|b)", ""),
         ("a|[b]+[a]", ""),
         (".a*", ""),
         ("[a]a+", ""),
@@ -191,7 +191,7 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         ));
         assert_eq!(realm.eval("t"), Ok(Value::String(JsString::from("si"))));
     }
-    check("let r=new RegExp('(a|b)','g');r.lastIndex=2;r.exec('a')===null && r.lastIndex===0");
+    check("let r=new RegExp('a(a|b)','g');r.lastIndex=2;r.exec('a')===null && r.lastIndex===0");
 }
 
 #[test]
