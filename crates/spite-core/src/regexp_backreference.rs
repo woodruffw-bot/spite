@@ -32,8 +32,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
-/// Top-level alternatives and one inner choice per top-level branch are accepted.
-/// Additional inner choices and quantifiers return `None`. At least one numbered
+/// Top-level and sequential inner alternatives are accepted. Nested inner choices
+/// and quantifiers return `None`. At least one numbered
 /// or registered named reference is required; plain literals
 /// retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
@@ -72,9 +72,8 @@ enum PreparedInstruction {
 
 #[derive(Debug)]
 struct Branch {
-    leading: Range<usize>,
-    alternatives: Vec<Range<usize>>,
-    trailing: Range<usize>,
+    instructions: Range<usize>,
+    choices: Vec<Choice>,
     captures: Range<usize>,
 }
 
@@ -85,28 +84,17 @@ struct GroupFrame {
     alternatives: Vec<Range<usize>>,
 }
 
+#[derive(Debug)]
 struct Choice {
     start: usize,
     end: usize,
     alternatives: Vec<Range<usize>>,
 }
 
-fn branch_plan(start: usize, end: usize, captures: Range<usize>, choice: Option<Choice>) -> Branch {
-    if let Some(choice) = choice {
-        Branch {
-            leading: start..choice.start,
-            alternatives: choice.alternatives,
-            trailing: choice.end..end,
-            captures,
-        }
-    } else {
-        Branch {
-            leading: start..start,
-            alternatives: std::iter::once(start..end).collect(),
-            trailing: end..end,
-            captures,
-        }
-    }
+struct ChoiceFrame {
+    alternative: usize,
+    prefix_end: usize,
+    checkpoint: usize,
 }
 
 struct PreparedProgram {
@@ -223,19 +211,32 @@ impl RegExpBackreferenceMatcher {
             if branch.captures.is_empty() {
                 continue;
             }
-            let begin = branch.leading.start;
-            let end = branch.trailing.end;
+            let mut choice_index = 0;
             let mut alternative = 0;
-            for (position, instruction) in prepared.iter().enumerate().take(end).skip(begin) {
+            for (position, instruction) in prepared
+                .iter()
+                .enumerate()
+                .take(branch.instructions.end)
+                .skip(branch.instructions.start)
+            {
                 if let PreparedInstruction::Ready(Instruction::Open(slot)) = instruction {
-                    let owner = if branch.alternatives.len() > 1
-                        && position >= branch.leading.end
-                        && position < branch.trailing.start
+                    while branch
+                        .choices
+                        .get(choice_index)
+                        .is_some_and(|c| position >= c.end)
                     {
-                        while position >= branch.alternatives[alternative].end {
+                        choice_index += 1;
+                        alternative = 0;
+                    }
+                    let owner = if let Some(choice) = branch
+                        .choices
+                        .get(choice_index)
+                        .filter(|c| position >= c.start)
+                    {
+                        while position >= choice.alternatives[alternative].end {
                             alternative += 1;
                         }
-                        Some(alternative)
+                        Some((choice_index, alternative))
                     } else {
                         None
                     };
@@ -245,7 +246,7 @@ impl RegExpBackreferenceMatcher {
         }
         for slots in bindings.groups {
             let mut previous_slot = None;
-            let mut previous_owner: Option<(usize, Option<usize>)> = None;
+            let mut previous_owner: Option<(usize, Option<(usize, usize)>)> = None;
             for &slot in *slots {
                 if previous_slot.is_some_and(|old| old >= slot) {
                     return Ok(None);
@@ -253,7 +254,7 @@ impl RegExpBackreferenceMatcher {
                 let owner = owners[slot];
                 if let Some((root, alternative)) = previous_owner {
                     if root == owner.0
-                        && (alternative.is_none() || owner.1.is_none() || alternative == owner.1)
+                        && !matches!((alternative, owner.1), (Some((a, x)), Some((b, y))) if a == b && x != y)
                     {
                         return Ok(None);
                     }
@@ -266,7 +267,10 @@ impl RegExpBackreferenceMatcher {
         charge(bindings.groups.len())?;
         charge(branches.len())?;
         for branch in &branches {
-            charge(branch.alternatives.len())?;
+            charge(branch.choices.len())?;
+            for choice in &branch.choices {
+                charge(choice.alternatives.len())?;
+            }
         }
         charge(source.len())?;
         charge(prepared.len())?;
@@ -339,7 +343,8 @@ impl RegExpBackreferenceMatcher {
     /// An open or forward capture has no completed range and its reference matches
     /// the empty string, as required by BackreferenceMatcher (22.2.2.9.2). Ignore-case
     /// comparison canonicalizes both input units with the ordinary ASCII boundary.
-    /// No recursion, backtracking stack or expanded reference string is used.
+    /// Pending alternatives use a flat frame buffer; no recursion or expanded
+    /// reference string is used.
     pub fn find_with_work<E>(
         &self,
         input: &JsString,
@@ -361,26 +366,63 @@ impl RegExpBackreferenceMatcher {
             named: vec![None; self.0.named_count],
             touched: Vec::with_capacity(self.0.capture_count),
         };
+        let choice_count = self
+            .0
+            .branches
+            .iter()
+            .map(|b| b.choices.len())
+            .max()
+            .unwrap_or(0);
+        charge(choice_count)?;
+        let mut frames = Vec::<ChoiceFrame>::with_capacity(choice_count);
         let end = if sticky { start } else { input.len() };
         for candidate in start..=end {
             for branch in &self.0.branches {
                 charge(1)?;
                 self.0.clear_captures(&mut state, 0, &mut charge)?;
+                frames.clear();
                 let mut prefix_end = candidate;
+                let leading_end = branch
+                    .choices
+                    .first()
+                    .map_or(branch.instructions.end, |c| c.start);
                 if !self.0.execute(
                     input,
                     &mut prefix_end,
-                    branch.leading.clone(),
+                    branch.instructions.start..leading_end,
                     &mut state,
                     &mut charge,
                 )? {
                     continue;
                 }
-                let checkpoint = state.touched.len();
-                for alternative in &branch.alternatives {
+                if branch.choices.is_empty() {
+                    return Ok(Some(RegExpBackreferenceMatch {
+                        range: candidate..prefix_end,
+                        captures: state.captures.into_boxed_slice(),
+                    }));
+                }
+                charge(1)?;
+                frames.push(ChoiceFrame {
+                    alternative: 0,
+                    prefix_end,
+                    checkpoint: state.touched.len(),
+                });
+                while !frames.is_empty() {
+                    let choice_index = frames.len() - 1;
+                    let frame = &mut frames[choice_index];
+                    let choice = &branch.choices[choice_index];
+                    self.0
+                        .clear_captures(&mut state, frame.checkpoint, &mut charge)?;
+                    let Some(alternative) = choice.alternatives.get(frame.alternative) else {
+                        charge(1)?;
+                        frames.pop();
+                        continue;
+                    };
                     charge(1)?;
-                    self.0.clear_captures(&mut state, checkpoint, &mut charge)?;
-                    let mut cursor = prefix_end;
+                    frame.alternative += 1;
+                    let mut cursor = frame.prefix_end;
+                    let following = branch.choices.get(choice_index + 1);
+                    let trailing_end = following.map_or(branch.instructions.end, |c| c.start);
                     if !self.0.execute(
                         input,
                         &mut cursor,
@@ -390,16 +432,24 @@ impl RegExpBackreferenceMatcher {
                     )? || !self.0.execute(
                         input,
                         &mut cursor,
-                        branch.trailing.clone(),
+                        choice.end..trailing_end,
                         &mut state,
                         &mut charge,
                     )? {
                         continue;
                     }
-                    return Ok(Some(RegExpBackreferenceMatch {
-                        range: candidate..cursor,
-                        captures: state.captures.into_boxed_slice(),
-                    }));
+                    if following.is_none() {
+                        return Ok(Some(RegExpBackreferenceMatch {
+                            range: candidate..cursor,
+                            captures: state.captures.into_boxed_slice(),
+                        }));
+                    }
+                    charge(1)?;
+                    frames.push(ChoiceFrame {
+                        alternative: 0,
+                        prefix_end: cursor,
+                        checkpoint: state.touched.len(),
+                    });
                 }
             }
         }
@@ -539,8 +589,8 @@ fn prepare(
     let mut named_references = bindings.references.iter().peekable();
     let mut instructions = Vec::new();
     let mut groups = Vec::<GroupFrame>::new();
-    let mut choice_started = false;
-    let mut choice = None;
+    let mut choices = Vec::<Choice>::new();
+    let mut choice_in_progress = false;
     let mut branches = Vec::new();
     let mut branch_start = 0;
     let mut branch_capture_start = 0;
@@ -594,7 +644,8 @@ fn prepare(
                     group
                         .alternatives
                         .push(group.alternative_start..instructions.len());
-                    choice = Some(Choice {
+                    choice_in_progress = false;
+                    choices.push(Choice {
                         start: group.body_start,
                         end: instructions.len(),
                         alternatives: group.alternatives,
@@ -621,23 +672,24 @@ fn prepare(
                 references += 1;
             }
             0x7c if groups.is_empty() => {
-                branches.push(branch_plan(
-                    branch_start,
-                    instructions.len(),
-                    branch_capture_start..capture_count,
-                    choice.take(),
-                ));
+                branches.push(Branch {
+                    instructions: branch_start..instructions.len(),
+                    captures: branch_capture_start..capture_count,
+                    choices: std::mem::take(&mut choices),
+                });
                 branch_start = instructions.len();
                 branch_capture_start = capture_count;
-                choice_started = false;
+                choice_in_progress = false;
             }
             0x7c => {
                 let group = groups.last_mut()?;
                 if group.alternatives.is_empty() {
-                    if choice_started {
+                    if choice_in_progress
+                        || choices.last().is_some_and(|c| c.start >= group.body_start)
+                    {
                         return None;
                     }
-                    choice_started = true;
+                    choice_in_progress = true;
                 }
                 group
                     .alternatives
@@ -696,12 +748,11 @@ fn prepare(
     }) {
         return None;
     }
-    branches.push(branch_plan(
-        branch_start,
-        instructions.len(),
-        branch_capture_start..capture_count,
-        choice,
-    ));
+    branches.push(Branch {
+        instructions: branch_start..instructions.len(),
+        captures: branch_capture_start..capture_count,
+        choices,
+    });
     Some(PreparedProgram {
         instructions,
         capture_count,
@@ -859,6 +910,174 @@ mod tests {
         assert!(found.captures[..10000].iter().all(Option::is_none));
         assert_eq!(found.captures[10000], Some(0..1));
         assert!(work < 150000, "actual named-reference work {work}");
+    }
+
+    #[test]
+    fn sequential_alternative_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a|ab)(b|)\1\2",
+            r"(ab|a)(a|b)\1\2",
+            r"((a)|(ab))((b)|())\2\3\5\6",
+            r"(q)(a|ab)(b|)\1\2\3",
+            r"(?:(a)|(b))\1\2(?:(a)|(b))\3\4",
+            r"((a|ab)(b|))\1",
+            r"(?:(a)|)(?:|(b))\1\2",
+            r"\2(a|b)\1(c|)\2",
+            r"(a|b)((\1a)|b)\2",
+            r"^(\w|\W)(\d|\D)\1\2$",
+            r"([^µ]|[ab])(µ|.)\1\2",
+            r"\b(a|\w)(b|\w)\1\2\b",
+            r"()(|a)(|b)\1\2\3",
+            r"x(((a)|b))(?:(c)|(d))\2\4\5y",
+            r"(a|ab)(b|)\1\2|(b)\3",
+            r"(a|ab)(b|)\1\2|",
+            r"(|(a))((b)|)\2\4",
+            r"(?:(a\1)|(b\2))(?:(a\3)|(b\4))\1\2\3\4",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "aa",
+                    "bb",
+                    "abab",
+                    "abba",
+                    "ababb",
+                    "qababqabab",
+                    "qabab",
+                    "aabb",
+                    "AaBa",
+                    "µΜµΜ",
+                    "\n\n\n\n",
+                    " ab ab ",
+                    "\u{2028}abab\u{2029}",
+                    "\r\n\r\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn later_choices_restore_prior_branches_common_captures_and_enclosing_ranges() {
+        let matcher = RegExpBackreferenceMatcher::compile(
+            &JsString::from(r"((a)|(ab))((c)|())\2\3\5\6"),
+            false,
+        )
+        .unwrap();
+        let found = matcher.find(&JsString::from("qabab"), 0, false).unwrap();
+        assert_eq!(found.range, 1..5);
+        assert_eq!(
+            &*found.captures,
+            &[Some(1..3), None, Some(1..3), Some(3..3), None, Some(3..3)]
+        );
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"((a|ab)(b|))\1"), false).unwrap();
+        let found = matcher.find(&JsString::from("abab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..4);
+        assert_eq!(&*found.captures, &[Some(0..2), Some(0..1), Some(1..2)]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"(a|ab)(b|)\1\2"), false).unwrap();
+        let found = matcher.find(&JsString::from("ababb"), 0, true).unwrap();
+        assert_eq!(found.range, 0..4);
+        assert_eq!(&*found.captures, &[Some(0..1), Some(1..2)]);
+    }
+
+    #[test]
+    fn sequential_choice_name_owners_reject_coexisting_slots_before_charging() {
+        for (text, slots) in [
+            (r"(?:(a)|(b))(?:(a)|(b))\k<x>", &[0, 2][..]),
+            (r"(q)(?:(a)|(b))(?:(a)|(b))\k<x>", &[0, 2][..]),
+            (r"(?:(a)|(b))(?:(a)|(b))\k<x>", &[0, 1, 2, 3][..]),
+        ] {
+            let source = JsString::from(text);
+            let references = named_escapes(&source);
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+                    &source,
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings {
+                        groups: &[slots],
+                        references: &references
+                    },
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{text}"
+            );
+            assert_eq!(work, 0);
+        }
+    }
+
+    #[test]
+    fn many_sequential_choices_keep_flat_capture_checkpoints_and_fallible_work() {
+        let source = JsString::from(format!("{}\\1", "(a|b)".repeat(100000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        assert!(matcher.0.instructions.len() <= source.len());
+        let input = JsString::from("a".repeat(100001).as_str());
+        let found = matcher.find(&input, 0, true).unwrap();
+        assert_eq!(found.range, 0..100001);
+        assert_eq!(found.captures[99999], Some(99999..100000));
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 350000 { Err("host") } else { Ok(()) }
+                })
+                .unwrap_err(),
+            "host"
+        );
+        for source in [
+            r"(?:(a|b)|c)\1",
+            r"(?:a|(b|c))\1",
+            r"((a|b)(c|d)|e)\1",
+            r"(a|b)(c|d)\1+",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert_eq!(work, 0);
+        }
     }
 
     #[test]

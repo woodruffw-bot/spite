@@ -1825,6 +1825,28 @@ targets and documentation tests. Formatting, denied-warning Clippy, dependency/
 fixture policy, offline generator checks and default two-mebibyte debug-stack
 checks pass.
 
+Sequential ordinary inner choices now compose with numbered and named references.
+Four added core regressions cover an inspected 3,240-record insta snapshot,
+backtracking from later choices, common/enclosing/inactive capture restoration,
+invalid coexisting named slots rejected before charging, and 100,000 consecutive
+choices with flat capture checkpoints and opted-in aborts. All six earlier core
+reference snapshots remain byte-identical. Six runtime regressions cover an
+inspected 24-record result snapshot, source-order combinations, defined empty and
+undefined slots, shared named groups/indices aliases, ordinary flags and raw
+surrogates, global/sticky consumers, empty-match advancement, copying/collection,
+100,000 unlimited consecutive choices, explicit search aborts and remaining gaps.
+Node agrees with every added core/native record, 257,760 numbered-reference and
+167,040 named-reference fresh match/capture comparisons, and ten runtime programs.
+Existing reference snapshots are unchanged. One earlier sequential-choice gap
+control now retains a quantified reference; all 385 direct gap programs remain
+unsupported. Nested choices, quantified reference bodies and Unicode matching
+remain pending. No fixtures or fixture credit are added; inventories, the pin,
+dependencies and unlimited defaults are unchanged.
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation tests. Formatting, denied-warning Clippy, dependency/
+fixture policy, offline generator checks and default two-mebibyte debug-stack
+checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

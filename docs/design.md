@@ -1023,7 +1023,7 @@ existing result builder. Optional work charges each executed instruction, captur
 reset and actual input comparison; host aborts occur before lastIndex mutation.
 Storage and execution are iterative, including deeply nested groups, and contain
 no heap-object edges. Named group metadata and indices aliases remain shared with
-the ordinary result path. Additional inner choices, quantified references and
+the ordinary result path. Nested inner choices, quantified references and
 Unicode matching remain pending.
 
 Ordinary named references use direct binding instructions in the flat program
@@ -1038,7 +1038,7 @@ Compilation checks ordered/disjoint escape intervals, slot bounds and ownership,
 and mutually exclusive capture owners within accepted alternatives. Each slot
 belongs to a top-level branch and either its common terms or one inner alternative.
 A common slot cannot share a name with another slot in that branch; duplicate-name
-slots must belong to distinct alternatives. The immutable
+slots must belong to distinct alternatives of the same inner choice. The immutable
 program stores one capture-to-name map and scalar named-reference instructions.
 Each execution stores one completed input range per name; closing a named capture
 updates it, and moving to another branch/candidate clears captures completed by
@@ -1047,12 +1047,12 @@ match empty;
 completed references compare actual input units with pinned ordinary case rules.
 Lookup is constant work per reference; neither source nor target lists expand per
 possible slot. Preparation, capture updates and matching remain iterative and
-fallible under opt-in host work. Additional inner choices, quantified references
+fallible under opt-in host work. Nested inner choices, quantified references
 and Unicode matching remain pending; default quotas remain disabled.
 
 Character-class, class-escape and dot atoms also compose with ordinary references
 (CompileAtom, 22.2.2.7; BackreferenceMatcher, 22.2.2.9). Complete preparation rejects
-unsupported additional inner choices and quantifiers before constructing any
+unsupported nested inner choices and quantifiers before constructing any
 character predicates. Accepted atoms reuse the pinned ordinary Canonicalize,
 inversion and DotAll behavior. Identical UTF-16 atom source shares one immutable
 predicate within a compilation, with charged cache setup, lookup and first
@@ -1070,7 +1070,7 @@ preceding unit or input boundaries. Each assertion preserves capture state and
 charges its execution before inspecting adjacent units. WordCharacters remains
 ASCII in ordinary mode even with IgnoreCase; all four ECMAScript line terminators
 use the existing Multiline rules. Empty assertions, forward/self references and
-nested groups retain source-order input ranges without recursion. Additional inner
+nested groups retain source-order input ranges without recursion. Nested inner
 choices, quantifiers combined with references and Unicode-mode matching remain pending.
 
 Top-level ordinary alternatives also compose with references (22.2.2.3,
@@ -1085,10 +1085,10 @@ branches participate in the same order. Shared character predicates and full-inp
 assertions keep existing flags and input-unit behavior. Actual branch attempts,
 capture resets and comparisons are charged before work without default quotas.
 Preparation, execution and dropping stay iterative; no alternative expansion or
-recursive backtracking is introduced. Additional inner choices, quantified
+recursive backtracking is introduced. Nested inner choices, quantified
 references and Unicode matching remain pending.
 
-One inner ordinary disjunction per top-level reference branch also executes
+Sequential inner ordinary disjunctions in top-level reference branches also execute
 (CompileDisjunction, 22.2.2.3). Its containing capturing/noncapturing group may have
 arbitrary nested transparent wrappers, common prefixes/sequels, and alternatives
 with different consuming widths or empty participation. Preparation records the
@@ -1105,8 +1105,22 @@ participation, original input ranges and indices aliases. Capture trails and
 instruction spans stay flat, with linear storage and iterative destruction. Actual
 attempts, trail writes/resets, assertions and comparisons remain fallible under
 explicit host work; default work and heap quotas remain disabled. Additional
-nested or sequential inner choices, quantified reference bodies and Unicode
+nested inner choices, quantified reference bodies and Unicode
 matching remain pending.
+
+Sequential choices retain each original body/alternative interval and common
+instruction span without enumerating combinations (CompileDisjunction, 22.2.2.3).
+Execution records a flat frame containing each choice's next alternative, prefix
+input position and completed-capture checkpoint. Exhausting a later choice returns
+to the preceding frame, restores its capture state and tries its next alternative.
+Common terms execute once for each prefix that reaches them, with enclosing and
+inactive captures retaining their original ranges and named/indices behavior.
+Duplicate-name slots within a top-level branch must share one inner choice and
+belong to different alternatives; slots in separate sequential choices can both
+participate and are rejected during preparation. Frames, instruction spans and
+capture trails use linear storage, iterative execution/destruction and fallible
+actual work. Nested choices, quantified reference bodies and Unicode matching
+remain pending; default work and heap quotas remain disabled.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
