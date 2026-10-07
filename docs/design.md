@@ -255,9 +255,29 @@ expanded counts or native recursion. Optional work covers all consuming and
 boundary scans even at a single sticky start, including when the anchored
 plan appears inside top-level alternatives. Fixed and quantified captured
 branches share their existing global slot layout.
-Compilation respects trailing escape parity; internal assertions and
-Unicode-mode matching remain pending. Optional accounting
-covers the literal scan and boundary checks without changing unlimited defaults.
+Outer assertion sequences now also accept ordinary word boundaries (`\b`) and
+non-boundaries (`\B`), alongside repeated or mixed `^` and `$` assertions
+(CompileAssertion, 22.2.2.4; WordCharacters, 22.2.2.9.3). A forward source scan
+keeps escape pairs, bracket classes and group contents opaque. Each side stores
+one constant-size conjunction; duplicate assertions do not add matcher nodes,
+and contradictory boundary/non-boundary assertions always fail. Assertions
+consume no units and add no capture slots. In ordinary mode, WordCharacters is
+exactly ASCII letters, digits and underscore, including with IgnoreCase; long s,
+Kelvin sign, other non-ASCII units and surrogate halves remain non-word units.
+Missing neighbors are non-word, so boundaries work at both input ends and at
+individual UTF-16 positions within surrogate pairs.
+
+Fixed bodies test both conjunctions at each complete candidate. Quantified
+bodies advance the same monotone start cursor to an allowed position and test
+continuation endpoints before greedy/lazy selection. Fixed prefixes filter their
+whole-match starts with the leading conjunction. Existing capture layouts,
+branch order, sticky behavior and generic consumers stay shared. Search needs no
+new allocation or native recursion. Optional search passes include word-neighbor
+checks, including the complete remaining suffix for sticky repetitions; unlimited
+defaults remain unchanged. Assertions embedded inside consuming sequences or
+inside groups within an outer assertion body, and Unicode-mode matching, remain
+pending. Complete enclosing groups around supported root assertion Patterns
+retain the existing normalization and whole-match capture behavior.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
 22.2.2.7.1). One bracket class supports raw/escaped characters, ordered ranges,
@@ -312,7 +332,7 @@ Transparent noncapturing groups can surround the atom or its quantified run at
 any depth. An iterative prefix/closing scan tracks group depth and the single
 quantifier without a recursive syntax tree. Moving that one quantifier across
 transparent one-atom wrappers retains its greedy/lazy behavior and exact bounds.
-Multi-atom groups, multiple quantifiers, concatenated continuations, assertions,
+Multi-atom groups, multiple quantifiers, concatenated continuations, embedded assertions,
 choices, backreferences and Unicode modes remain outside its subset.
 
 Ordinary capturing wrappers use the same nested single-atom grammar. Their
@@ -462,7 +482,7 @@ Fixed prefixes and outer anchors add their existing bounds; optional metadata
 reaches the full runtime and alternative plans. Complete unsupported continuations
 reject before constructing the repeated set. No recursion, expanded counts,
 candidate lists or default quotas are added. Repeated multi-atom groups, multiple
-quantifiers, embedded choices, assertions, backreferences and Unicode modes
+quantifiers, embedded choices, embedded assertions, backreferences and Unicode modes
 remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported

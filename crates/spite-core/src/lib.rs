@@ -6,6 +6,7 @@ pub mod date;
 mod normalization;
 mod normalization_data;
 mod regexp_anchored;
+mod regexp_assertion;
 mod regexp_canonicalize;
 mod regexp_character;
 mod regexp_disjunction;

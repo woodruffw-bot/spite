@@ -1,5 +1,6 @@
 //! A quantified consuming atom followed by a fixed continuation (22.2.2.3).
 
+use crate::regexp_assertion::Assertions;
 use crate::{JsString, RegExpLiteralMatcher, RegExpQuantifiedMatcher, RegExpSequenceMatcher};
 use std::{ops::Range, sync::Arc};
 
@@ -168,13 +169,13 @@ impl RegExpQuantifiedContinuationMatcher {
     /// Outer assertions constrain starts and endpoints before choosing repetition
     /// order (22.2.2.3.1, 22.2.2.4). The next permitted start is monotone, so its
     /// boundary cursor also visits the input only linearly.
-    pub(crate) fn find_anchored(
+    pub(crate) fn find_asserted(
         &self,
         input: &JsString,
         start: usize,
         sticky: bool,
-        at_start: bool,
-        at_end: bool,
+        leading: Assertions,
+        trailing: Assertions,
         multiline: bool,
     ) -> Option<Range<usize>> {
         let units = input.code_units();
@@ -183,26 +184,8 @@ impl RegExpQuantifiedContinuationMatcher {
             input,
             start,
             sticky,
-            |candidate| {
-                if !at_start {
-                    return Some(candidate);
-                }
-                if !multiline {
-                    return (candidate == 0).then_some(0);
-                }
-                boundary = boundary.max(candidate);
-                while boundary <= units.len() {
-                    if boundary == 0 || is_line_terminator(units[boundary - 1]) {
-                        return Some(boundary);
-                    }
-                    if boundary == units.len() {
-                        break;
-                    }
-                    boundary += 1;
-                }
-                None
-            },
-            |end| !at_end || end == units.len() || (multiline && is_line_terminator(units[end])),
+            |candidate| leading.next_position(units, &mut boundary, candidate, multiline),
+            |end| trailing.accepts(units, end, multiline),
         )
     }
 
@@ -253,10 +236,6 @@ impl RegExpQuantifiedContinuationMatcher {
         });
         best
     }
-}
-
-fn is_line_terminator(unit: u16) -> bool {
-    matches!(unit, 0x0a | 0x0d | 0x2028 | 0x2029)
 }
 
 #[cfg(test)]

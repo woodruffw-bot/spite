@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
-| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13494 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -977,6 +977,28 @@ ordering assertions with unsupported multi-quantifier Patterns. The whole
 fixture review enables no further programs; the corpus, inventories and pin are
 unchanged. Repeated multi-atom groups, multiple quantifiers, embedded choices,
 named groups, backreferences and Unicode modes remain pending.
+
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
+Outer ordinary word assertions now compile with supported fixed and quantified
+bodies. Three core regressions cover an inspected 114-record insta snapshot,
+an independent exhaustive start/endpoint/capture oracle, 100,000 duplicate
+assertions on each side, cloned plans, long inputs and surrogate positions.
+Eleven records across three older snapshots gain matching support; every earlier
+accepted value is unchanged. Eight runtime regressions cover ASCII WordCharacters
+with ordinary IgnoreCase, empty and contradictory assertions, greedy/lazy
+selection, participating/undefined captures, source-order alternatives, enclosing
+groups, multiline and sticky boundaries, UTF-16 offsets, zero-width lastIndex,
+strict writes, generic consumers, intrinsic Arrays, collection and optional host
+aborts with unlimited defaults. Node agrees on all 14,944 stored results across
+four affected snapshots, 140,160 independent match/capture comparisons and
+21 runtime programs. Four earlier gap programs now exercise assertions embedded
+within consuming sequences. The whole-fixture review enables no further
+Test262 programs; inventories and the pin are unchanged. Embedded assertions,
+assertions inside consuming groups within outer assertion bodies, and
+Unicode-mode matching remain pending.
 
 Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories

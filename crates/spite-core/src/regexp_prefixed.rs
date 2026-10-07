@@ -1,5 +1,6 @@
 //! Fixed ordinary prefixes constrain a single quantified continuation (22.2.2.3).
 
+use crate::regexp_assertion::Assertions;
 use crate::{
     JsString, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher,
     RegExpSequenceMatcher, regexp_character::PreparedCharacter,
@@ -175,33 +176,36 @@ impl RegExpPrefixedMatcher {
 
     /// Finds the earliest whole prefix match and its greedy/lazy body endpoint.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
-        self.find_anchored(input, start, sticky, false, false, false)
+        self.find_asserted(
+            input,
+            start,
+            sticky,
+            Assertions::default(),
+            Assertions::default(),
+            false,
+        )
     }
 
-    /// Whole-prefix anchors constrain starts and body endpoints before repetition
+    /// Whole-prefix assertions constrain starts and body endpoints before repetition
     /// selection. The prefix stream and repeated-body cursors remain monotone.
-    pub(crate) fn find_anchored(
+    pub(crate) fn find_asserted(
         &self,
         input: &JsString,
         start: usize,
         sticky: bool,
-        at_start: bool,
-        at_end: bool,
+        leading: Assertions,
+        trailing: Assertions,
         multiline: bool,
     ) -> Option<Range<usize>> {
         if self.0.prefix.matched_len() == 0 {
             return self
                 .0
                 .body
-                .find_anchored(input, start, sticky, at_start, at_end, multiline);
+                .find_asserted(input, start, sticky, leading, trailing, multiline);
         }
         let units = input.code_units();
-        let allowed_start = |position| {
-            !at_start || position == 0 || (multiline && is_line_terminator(units[position - 1]))
-        };
-        let allowed_end = |position| {
-            !at_end || position == units.len() || (multiline && is_line_terminator(units[position]))
-        };
+        let allowed_start = |position| leading.accepts(units, position, multiline);
+        let allowed_end = |position| trailing.accepts(units, position, multiline);
         let len = self.0.prefix.matched_len();
         let body_start = start.checked_add(len)?;
         let matched = if sticky {
@@ -289,10 +293,6 @@ fn prefix_end(units: &[u16]) -> Option<usize> {
         }
     }
     None
-}
-
-fn is_line_terminator(unit: u16) -> bool {
-    matches!(unit, 10 | 13 | 0x2028 | 0x2029)
 }
 
 #[cfg(test)]

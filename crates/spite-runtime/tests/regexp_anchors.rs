@@ -80,7 +80,7 @@ fn internal_assertions_alternatives_and_unicode_modes_remain_explicit_gaps() {
         "/^a*[b]+/.test('a')",
         "/^a$/u.test('a')",
         "/^a$/v.test('a')",
-        r"/^a\b/.test('a')",
+        r"/^a\bb/.test('ab')",
     ] {
         assert!(
             matches!(
