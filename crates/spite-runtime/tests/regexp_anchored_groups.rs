@@ -124,7 +124,7 @@ fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
         "/^(a+[b]+)$/.test('ab')",
         "/^(a+b)*$/.test('ab')",
         "/^a(a+b+)$/.test('aab')",
-        "/^(a|b)$/.test('a')",
+        "/^(a|bc)$/.test('a')",
         "/^(?<n>a)$/.test('a')",
         "/^((^a+b+))$/.test('ab')",
         "/^(a+b)$/u.test('ab')",

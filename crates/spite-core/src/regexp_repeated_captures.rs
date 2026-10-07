@@ -58,29 +58,21 @@ impl RegExpRepeatedCaptureMatcher {
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let units = source.code_units();
         // Complete wrappers already have a scalar capture layout. Preserve their
         // existing body selection and optional work by leaving unwrapping to
         // the caller; this fallback handles groups around only part of a body.
         if crate::regexp_outer_group_body(source).is_some() {
             return Ok(None);
         }
+        let normalized =
+            crate::regexp_sequence::normalize_literal_unit_choices(source.code_units())
+                .map(JsString::from_code_units);
+        let matching_source = normalized.as_ref().unwrap_or(source);
+        let units = matching_source.code_units();
         let Some(repeated) = repeated_atom(units, dot_all) else {
             return Ok(None);
         };
-        let original_atom = JsString::from_code_units(units[repeated.atom.clone()].to_vec());
-        let atom = if RegExpSequenceMatcher::repeated_atom_width(&original_atom, dot_all, true)
-            .is_some()
-        {
-            original_atom
-        } else if repeated.grouped {
-            let Some(atom) = literal_choice_atom(original_atom.code_units()) else {
-                return Ok(None);
-            };
-            JsString::from_code_units(atom)
-        } else {
-            return Ok(None);
-        };
+        let atom = JsString::from_code_units(units[repeated.atom.clone()].to_vec());
         if RegExpSequenceMatcher::repeated_atom_width(&atom, dot_all, true).is_none() {
             return Ok(None);
         }
@@ -106,7 +98,10 @@ impl RegExpRepeatedCaptureMatcher {
         let Some(flat) = flatten(units, &repeated, dot_all, atom.code_units()) else {
             return Ok(None);
         };
-        charge(units.len())?;
+        charge(source.len())?;
+        if normalized.is_some() {
+            charge(units.len())?;
+        }
         charge(flat.len())?;
         charge(fixed.len())?;
         let Some(body) = RegExpRepeatedPrefixedMatcher::compile_with_work(
@@ -317,61 +312,6 @@ fn flatten(
         }
     }
     Some(flat)
-}
-
-pub(crate) fn literal_choice_atom(units: &[u16]) -> Option<Vec<u16>> {
-    // Equal-width capture-free branches have identical endpoints. Their source
-    // order therefore cannot change captures or subsequent endpoint selection;
-    // one ordinary character set implements the same union of predicates.
-    if units.first() != Some(&40) || units.last() != Some(&41) {
-        return None;
-    }
-    let source = JsString::from_code_units(units.to_vec());
-    let group = crate::regexp_outer_group_body(&source)?;
-    let end = group.body.end;
-    let mut index = group.body.start;
-    let mut characters = Vec::new();
-    while index < end {
-        let unit = units[index];
-        index += 1;
-        let character = if unit == 92 {
-            crate::regexp_literal::character_escape(units, &mut index)?
-        } else if crate::regexp_literal::is_syntax(unit) {
-            return None;
-        } else {
-            unit
-        };
-        characters.push(character);
-        if index == end {
-            break;
-        }
-        if units.get(index) != Some(&124) {
-            return None;
-        }
-        index += 1;
-        if index == end {
-            return None;
-        }
-    }
-    if characters.len() < 2 {
-        return None;
-    }
-    let mut atom = if group.captures == 0 {
-        vec![40, 63, 58]
-    } else {
-        vec![40; group.captures]
-    };
-    atom.push(91);
-    for unit in characters {
-        atom.extend_from_slice(&[92, 117]);
-        for shift in [12, 8, 4, 0] {
-            let digit = (unit >> shift) & 15;
-            atom.push(if digit < 10 { 48 + digit } else { 87 + digit });
-        }
-    }
-    atom.push(93);
-    atom.extend(std::iter::repeat_n(41, group.captures.max(1)));
-    Some(atom)
 }
 
 #[cfg(test)]

@@ -730,7 +730,7 @@ fixed repetition and partial-capture plans then preserve final-iteration ranges,
 undefined slots at zero iterations, exact bounds, greediness, prefix/sequel terms
 and complete input assertions. The top-level alternative scanner tracks ordinary
 groups iteratively and validates these inner choices before constructing or
-charging branches; unsupported unquantified choices still reject early. Original
+charging branches; wider or capture-dependent choices still reject early. Original
 source, flags and pinned ordinary case behavior remain intact. Normalization is
 linear in source size, with no expanded repetition counts, recursive plans or
 default quotas. Empty/wider branches, captures within individual alternatives,
@@ -743,13 +743,27 @@ only complete wrappers, records their source-order capture count, and rebuilds t
 private character-set body with the same captured layers. Each such capture spans
 the final successful unit; zero iterations leave all of them undefined. Captures
 outside the repetition still retain their whole-run or partial ranges. The
-top-level scanner carries an inner choice through contiguous complete wrappers
-and validates it once at the quantified outer edge, keeping deeply nested
-preparation linear. Earlier accepted layouts and optional work remain unchanged.
+top-level scanner validates each direct choice once at its ordinary group edge,
+keeping deeply nested preparation linear. Earlier accepted layouts remain unchanged.
 Copies share immutable metadata and result Strings; indices pairs remain distinct.
-Branch-specific captures, extra fixed terms inside the repeated choice body,
-empty/wider or class/dot alternatives, multiple quantifiers, named groups,
-backreferences and Unicode modes remain pending.
+Branch-specific captures, empty/wider or class/dot alternatives, multiple
+quantifiers, named groups, backreferences and Unicode modes remain pending.
+
+Literal-unit choices also compose inside fixed sequences and fixed repeated
+bodies (CompileSubpattern, 22.2.2.3). After the ordinary fixed preparation fails,
+an iterative scanner rewrites disjoint direct choices to escaped character
+classes without changing group delimiters or capture order. Every branch
+consumes one unit and has no internal capture, so all fixed capture endpoints
+remain static. Enclosing wrappers and adjacent empty groups retain their lexical
+boundaries, including `\0()1`. Set-cache keys borrow the private normalized
+source; original source and flags remain exposed unchanged. Existing fixed
+prefix, continuation, assertion and repetition plans use the same preparation.
+Partial enclosing capture preparation normalizes before flattening surrounding
+groups, retaining start/end-relative and final-iteration ranges. Preparation
+remains linear without expanded alternatives, recursive plans or default quotas;
+optional construction work accounts for the private source and shares identical
+immutable predicates. Wider/empty alternatives, branch-specific captures,
+class/dot alternatives, multiple quantifiers and Unicode modes remain pending.
 
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern

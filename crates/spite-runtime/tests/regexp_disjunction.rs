@@ -86,8 +86,8 @@ fn unsupported_alternatives_captures_nested_choices_and_unicode_remain_host_gaps
     for source in [
         "/a|[b]+[a]+/.test('a')",
         "/a|b*[a]+/.test('a')",
-        "/a(a|b)/.test('a')",
-        "/(?:a|b)|c/.test('a')",
+        "/a(a|bc)/.test('a')",
+        "/(?:a|bc)|c/.test('a')",
         "/a|b/u.test('a')",
         "/a|b/v.test('a')",
     ] {

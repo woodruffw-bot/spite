@@ -115,8 +115,8 @@ fn optional_work_aborts_and_branch_specific_captures_remain_unsupported() {
     );
     for source in [
         r"/((a)|(b))+/.test('ab')",
-        r"/((a|b)())+/.test('ab')",
-        r"/(x(a|b))+/.test('xab')",
+        r"/((a|bc)())+/.test('ab')",
+        r"/(x(a|bc))+/.test('xab')",
         r"/((ab|a))+/.test('aba')",
         r"/((a|))+/.test('a')",
         r"/((a|[b]))+/.test('ab')",

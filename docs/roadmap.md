@@ -344,6 +344,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile partial ordinary captures around one quantified character or class atom, preserving decoded escape boundaries, pinned flags, start/end-relative ranges, zero-width participation and fixed surrounding terms.
 - [x] Compile repeated literal-unit alternatives as an ordinary character-set union, preserving final-iteration/undefined captures, partial wrappers, fixed surrounding terms, assertions and top-level alternative order.
 - [x] Compile complete ordinary capturing/noncapturing wrappers inside repeated literal-unit choices, preserving every final-iteration/undefined slot, partial enclosing ranges and alternative offsets with linear preparation.
+- [x] Compile literal-unit choices inside fixed ordinary sequences and repeated fixed bodies, preserving static/final-iteration captures, partial enclosing ranges, fixed prefixes/sequels, assertions and alternative order.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

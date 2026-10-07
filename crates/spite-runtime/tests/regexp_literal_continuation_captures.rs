@@ -114,7 +114,7 @@ fn opted_in_host_aborts_and_unsupported_suffixes_remain_distinct() {
     );
     for source in [
         "/a+([b]+)/.test('ab')",
-        "/a+(b|c)/.test('ab')",
+        "/a+(b|cd)/.test('ab')",
         "/(a+[b]+)/.test('ab')",
         "/a+(b+)/.test('ab')",
         "/a+(?<x>b)/.test('ab')",

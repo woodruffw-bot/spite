@@ -8,7 +8,8 @@ use std::{collections::HashMap, ops::Range, sync::Arc};
 /// Immutable fixed-width sequence of ordinary characters and character-set atoms.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. Ordinary
-/// capturing/noncapturing groups and word assertions are flattened iteratively. Choices,
+/// capturing/noncapturing groups and word assertions are flattened iteratively.
+/// Literal-unit choices preserve static capture endpoints; other choices,
 /// quantifiers, backreferences and named/modifier groups remain unsupported.
 /// Search checks candidate starts in order without allocations or backtracking.
 /// Its conservative work is input length times consuming terms and assertion offsets.
@@ -49,7 +50,7 @@ impl RegExpSequenceMatcher {
         source: &JsString,
         dot_all: bool,
     ) -> Option<(usize, Vec<Range<usize>>)> {
-        let prepared = prepare(source.code_units(), dot_all, true)?;
+        let (prepared, _, _) = prepare_source(source, dot_all, true)?;
         Some((prepared.terms.len(), prepared.captures))
     }
 
@@ -58,7 +59,7 @@ impl RegExpSequenceMatcher {
         dot_all: bool,
         assertions: bool,
     ) -> Option<usize> {
-        let prepared = prepare(source.code_units(), dot_all, assertions)?;
+        let (prepared, _, _) = prepare_source(source, dot_all, assertions)?;
         if assertions {
             Some(prepared.terms.len())
         } else {
@@ -114,15 +115,22 @@ impl RegExpSequenceMatcher {
         input_assertions: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let Some(PreparedSequence {
-            terms: prepared,
-            captures,
-            boundaries,
-        }) = prepare(source.code_units(), dot_all, input_assertions)
+        let Some((
+            PreparedSequence {
+                terms: prepared,
+                captures,
+                boundaries,
+            },
+            matching_source,
+            normalized,
+        )) = prepare_source(source, dot_all, input_assertions)
         else {
             return Ok(None);
         };
         charge(source.len())?;
+        if normalized {
+            charge(matching_source.len())?;
+        }
         charge(prepared.len())?;
         if !boundaries.is_empty() {
             charge(boundaries.len())?;
@@ -145,7 +153,7 @@ impl RegExpSequenceMatcher {
                     plan,
                     source: range,
                 } => {
-                    let key = &source.code_units()[range];
+                    let key = &matching_source.code_units()[range];
                     charge(key.len())?;
                     charge(key.len())?;
                     let set = if let Some(set) = sets.get(key) {
@@ -282,7 +290,88 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn prepare(source: &[u16], dot_all: bool, input_assertions: bool) -> Option<PreparedSequence> {
+fn prepare_source(
+    source: &JsString,
+    dot_all: bool,
+    input_assertions: bool,
+) -> Option<(PreparedSequence, JsString, bool)> {
+    if let Some(prepared) = prepare_units(source.code_units(), dot_all, input_assertions) {
+        return Some((prepared, source.clone(), false));
+    }
+    let normalized =
+        JsString::from_code_units(normalize_literal_unit_choices(source.code_units())?);
+    let prepared = prepare_units(normalized.code_units(), dot_all, input_assertions)?;
+    Some((prepared, normalized, true))
+}
+
+pub(crate) fn normalize_literal_unit_choices(units: &[u16]) -> Option<Vec<u16>> {
+    // Only direct choices are rewritten. Their capture-free one-unit branches
+    // have equal endpoints, so enclosing fixed captures remain source ordered.
+    // Successful replacements are disjoint; neither nesting nor branch count
+    // expands a Cartesian product or introduces recursive matching.
+    if !units.contains(&124) {
+        return None;
+    }
+    let mut groups = Vec::new();
+    let mut replacements = Vec::new();
+    let mut index = 0;
+    let mut in_class = false;
+    while let Some(&unit) = units.get(index) {
+        index += 1;
+        if in_class {
+            if unit == 92 {
+                units.get(index)?;
+                index += 1;
+            } else if unit == 93 {
+                in_class = false;
+            }
+            continue;
+        }
+        match unit {
+            92 => {
+                units.get(index)?;
+                index += 1;
+            }
+            91 => in_class = true,
+            40 => {
+                let start = index - 1;
+                if units.get(index) == Some(&63) {
+                    if units.get(index..index + 2)? != [63, 58] {
+                        return None;
+                    }
+                    index += 2;
+                }
+                groups.push((start, false));
+            }
+            41 => {
+                let (start, choices) = groups.pop()?;
+                if choices {
+                    replacements.push((start..index, literal_choice_atom(&units[start..index])?));
+                }
+            }
+            124 => groups.last_mut()?.1 = true,
+            _ => {}
+        }
+    }
+    if !groups.is_empty() || in_class || replacements.is_empty() {
+        return None;
+    }
+    let mut normalized = Vec::new();
+    let mut start = 0;
+    for (range, atom) in replacements {
+        normalized.extend_from_slice(units.get(start..range.start)?);
+        normalized.extend(atom);
+        start = range.end;
+    }
+    normalized.extend_from_slice(&units[start..]);
+    Some(normalized)
+}
+
+fn prepare_units(
+    source: &[u16],
+    dot_all: bool,
+    input_assertions: bool,
+) -> Option<PreparedSequence> {
     let mut index = 0;
     let mut terms = Vec::new();
     let mut captures = Vec::new();
@@ -362,12 +451,308 @@ fn prepare(source: &[u16], dot_all: bool, input_assertions: bool) -> Option<Prep
     })
 }
 
+pub(crate) fn literal_choice_atom(units: &[u16]) -> Option<Vec<u16>> {
+    // Equal-width capture-free branches have identical endpoints. Their source
+    // order therefore cannot change captures or subsequent endpoint selection;
+    // one ordinary character set implements the same union of predicates.
+    if units.first() != Some(&40) || units.last() != Some(&41) {
+        return None;
+    }
+    let source = JsString::from_code_units(units.to_vec());
+    let group = crate::regexp_outer_group_body(&source)?;
+    let end = group.body.end;
+    let mut index = group.body.start;
+    let mut characters = Vec::new();
+    while index < end {
+        let unit = units[index];
+        index += 1;
+        let character = if unit == 92 {
+            crate::regexp_literal::character_escape(units, &mut index)?
+        } else if crate::regexp_literal::is_syntax(unit) {
+            return None;
+        } else {
+            unit
+        };
+        characters.push(character);
+        if index == end {
+            break;
+        }
+        if units.get(index) != Some(&124) {
+            return None;
+        }
+        index += 1;
+        if index == end {
+            return None;
+        }
+    }
+    if characters.len() < 2 {
+        return None;
+    }
+    let mut atom = if group.captures == 0 {
+        vec![40, 63, 58]
+    } else {
+        vec![40; group.captures]
+    };
+    atom.push(91);
+    for unit in characters {
+        atom.extend_from_slice(&[92, 117]);
+        for shift in [12, 8, 4, 0] {
+            let digit = (unit >> shift) & 15;
+            atom.push(if digit < 10 { 48 + digit } else { 87 + digit });
+        }
+    }
+    atom.push(93);
+    atom.extend(std::iter::repeat_n(41, group.captures.max(1)));
+    Some(atom)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fmt::Write;
 
     type UnitPredicate = fn(u16) -> bool;
+
+    #[test]
+    fn fixed_literal_unit_choices_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(a|b)",
+            "(?:a|b)",
+            "((a|b))",
+            "(?:(a|b))",
+            "((?:a|b))",
+            "x(a|b)y",
+            "(x(a|b)y)",
+            "(x)(a|b)(y)",
+            "x((a|b)y)",
+            "(a|b)(c|d)",
+            "((a|b)(c|d))",
+            "(?:a|b)()(?:c|d)",
+            "(a|a|b|a)",
+            "(µ|Μ)",
+            "(ſ|S)",
+            "(σ|ς)",
+            r"(\x61|\u0062)",
+            r"(\0|a)()1",
+            r"\0()(a|b)1",
+            r"(\(|\))",
+            r"(\[|\])",
+            r"(\||\?)",
+            r"(\n|\r)",
+            r"(\cA|\x01)",
+            r"(\uD800|\uDC00)",
+            r".(a|b).",
+            "[ab](a|b)[^c]",
+            r"\b(a|b)\b",
+            r"(\b(a|b))",
+            r"(a|b)(\B)",
+            "^(a|b)$",
+            "(^)(a|b)($)",
+            "((^)(a|b)($))",
+            r"(a|b)$\n^c",
+            r"(\r)(^)(a|b)",
+            r"(a|b)($)(\r)(\n)",
+            "(a|b)()",
+            "(a|bc)",
+            "(ab|c)",
+            "(a|)",
+            "(|b)",
+            "(a|(b))",
+            "((a)|b)",
+            "(a|[b])",
+            "([a]|b)",
+            "(.|a)",
+            r"(\w|a)",
+            r"(\b|a)",
+            "(a|b)+",
+            "x(a|b)+y",
+            "(x(a|b))+",
+            "(a|b)|x",
+            "((a|b)|c)",
+            "(?<n>a|b)",
+            "(?i:a|b)",
+            "(?=a|b)",
+            r"(a|b)\1",
+            "(a|b",
+            "(a|b)[",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (true, false, false),
+                (false, true, false),
+                (false, false, true),
+            ] {
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                let matcher = RegExpSequenceMatcher::compile_with_assertions_and_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " width={} captures={:?}",
+                        matcher.atom_count(),
+                        matcher.capture_ranges()
+                    )
+                    .unwrap();
+                    for text in [
+                        "",
+                        "a",
+                        "b",
+                        "ab",
+                        "xabcy",
+                        "xay",
+                        "xby",
+                        "ac",
+                        "bd",
+                        "AB",
+                        "µΜ",
+                        "ſSσς",
+                        "a\nc",
+                        "\ra\r\n",
+                        "\0a1",
+                        "()[]|?",
+                        "surrogates",
+                    ] {
+                        let input = if text == "surrogates" {
+                            JsString::from_code_units(vec![0xd800, 0xdc00])
+                        } else {
+                            JsString::from(text)
+                        };
+                        for (start, sticky) in [
+                            (0, false),
+                            (1, false),
+                            (0, true),
+                            (1, true),
+                            (input.len(), true),
+                        ] {
+                            let found = matcher.find(&input, start, sticky).map(|r| {
+                                let captures = matcher
+                                    .capture_ranges()
+                                    .iter()
+                                    .map(|c| Some(r.start + c.start..r.start + c.end))
+                                    .collect::<Vec<_>>();
+                                (r, captures)
+                            });
+                            write!(rows, " {input:?}@{start}/{sticky}:{found:?}").unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_choice_candidates_and_captures_agree_with_independent_unit_predicates() {
+        let alphabet = [97, 98, 99, 120, 10, 0xd800];
+        for (source, width, captures) in [
+            ("(a|b)", 1, std::iter::once(0..1).collect()),
+            ("((a|b))(a|b)", 2, vec![0..1, 0..1, 1..2]),
+            ("x(a|b)(c|x)", 3, vec![1..2, 2..3]),
+        ] {
+            let matcher =
+                RegExpSequenceMatcher::compile(&JsString::from(source), false, false).unwrap();
+            assert_eq!(matcher.capture_ranges(), captures);
+            for length in 0..=4u32 {
+                for mut encoded in 0..alphabet.len().pow(length) {
+                    let mut units = Vec::new();
+                    for _ in 0..length {
+                        units.push(alphabet[encoded % alphabet.len()]);
+                        encoded /= alphabet.len();
+                    }
+                    let input = JsString::from_code_units(units.clone());
+                    for start in 0..=units.len() + 1 {
+                        for sticky in [false, true] {
+                            let expected = (start..=units.len()).find_map(|at| {
+                                if sticky && at != start {
+                                    return None;
+                                }
+                                let candidate = units.get(at..at + width)?;
+                                let accepts = if width == 3 {
+                                    candidate[0] == 120
+                                        && matches!(candidate[1], 97 | 98)
+                                        && matches!(candidate[2], 99 | 120)
+                                } else {
+                                    candidate.iter().all(|u| matches!(u, 97 | 98))
+                                };
+                                accepts.then_some(at..at + width)
+                            });
+                            assert_eq!(
+                                matcher.find(&input, start, sticky),
+                                expected,
+                                "{source} {units:?} {start} {sticky}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn fixed_choice_normalization_stays_linear_and_sets_share_only_predicates() {
+        let source =
+            JsString::from(format!("{}(a|b){}", "(".repeat(100_000), ")".repeat(100_000)).as_str());
+        let matcher = RegExpSequenceMatcher::compile(&source, false, false).unwrap();
+        assert_eq!(matcher.capture_ranges().len(), 100_001);
+        assert!(matcher.capture_ranges().iter().all(|r| *r == (0..1)));
+        assert_eq!(
+            matcher.clone().find(&JsString::from("b"), 0, true),
+            Some(0..1)
+        );
+        let source = JsString::from("(a|b)".repeat(10_000).as_str());
+        let mut constructions = 0;
+        let matcher = RegExpSequenceMatcher::compile_with_work(&source, false, false, |work| {
+            constructions += usize::from(work == 1024);
+            Ok::<(), ()>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(constructions, 1);
+        assert_eq!(matcher.atom_count(), 10_000);
+        assert_eq!(matcher.capture_ranges()[9999], 9999..10_000);
+        assert_eq!(
+            matcher.find(&JsString::from("b".repeat(10_000).as_str()), 0, true),
+            Some(0..10_000)
+        );
+        assert!(matches!(
+            RegExpSequenceMatcher::compile_with_work(
+                &JsString::from("(a|b)"),
+                false,
+                false,
+                |_| Err::<(), _>("abort")
+            ),
+            Err("abort")
+        ));
+        for source in ["(a|b)[a]*", "(a|bc)", "((a)|b)", "(a|b)|c"] {
+            assert!(
+                RegExpSequenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    |_| Err::<(), _>("unexpected charge")
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+        let matcher =
+            RegExpSequenceMatcher::compile(&JsString::from(r"\0()(a|b)1"), false, false).unwrap();
+        assert_eq!(matcher.capture_ranges(), [1..1, 1..2]);
+        assert_eq!(
+            matcher.find(&JsString::from_code_units(vec![0, 98, 49]), 0, true),
+            Some(0..3)
+        );
+    }
 
     #[test]
     fn fixed_input_line_assertion_snapshot() {

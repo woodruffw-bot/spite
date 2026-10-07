@@ -482,26 +482,10 @@ fn alternative_ranges(units: &[u16]) -> Option<Vec<Range<usize>>> {
             0x29 => {
                 let (start, has_choices) = groups.pop()?;
                 if has_choices {
-                    // Reject unsupported inner choices before compiling or
-                    // charging any branch. Only a quantified literal-unit union
-                    // has the fixed endpoints required by the current plans.
-                    if crate::regexp_quantified::quantifier(&units[index..]).is_some() {
-                        crate::regexp_repeated_captures::literal_choice_atom(&units[start..index])?;
-                    } else {
-                        // A complete ordinary wrapper may carry the choice to
-                        // the quantified atom's outer edge. Other concatenations
-                        // or unquantified choices still reject before charges.
-                        let (parent, choices) = groups.last_mut()?;
-                        let header = if units.get(*parent + 1) == Some(&63) {
-                            *parent + 3
-                        } else {
-                            *parent + 1
-                        };
-                        if start != header || units.get(index) != Some(&41) {
-                            return None;
-                        }
-                        *choices = true;
-                    }
+                    // Reject wider or capture-dependent choices before any
+                    // branch construction. Literal-unit unions have the same
+                    // endpoints in both fixed and quantified compositions.
+                    crate::regexp_sequence::literal_choice_atom(&units[start..index])?;
                 }
             }
             0x5b => in_class = true,
@@ -1190,7 +1174,7 @@ mod tests {
         );
         assert!(
             RegExpDisjunctionMatcher::compile_with_work(
-                &JsString::from("(a|b)|x"),
+                &JsString::from("(a|bc)|x"),
                 false,
                 false,
                 false,

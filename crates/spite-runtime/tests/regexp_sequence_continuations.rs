@@ -129,7 +129,7 @@ fn sticky_optional_work_covers_all_continuation_candidates_and_host_failures() {
     for source in [
         "/a+[b]+/.test('ab')",
         "/(a[b]|c)+/.test('ab')",
-        "/a+(b|c)/.test('ab')",
+        "/a+(b|cd)/.test('ab')",
         "/a+(?<n>b)/.test('ab')",
         "/a+[b]/u.test('ab')",
     ] {

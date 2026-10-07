@@ -175,7 +175,7 @@ fn generic_match_search_replace_split_and_matchall_use_native_literal_execution(
 #[test]
 fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
     for (source, flags) in [
-        ("a(a|b)", ""),
+        ("a(a|bc)", ""),
         ("a|[b]+[a]+", ""),
         (".a*b*", ""),
         ("[a]a+b+", ""),
