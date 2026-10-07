@@ -203,7 +203,7 @@ Unicode-mode matching remains pending.
 
 Top-level ordinary Disjunction compilation (22.2.2.3) accepts alternatives that
 each compile completely as a literal, fixed character-set sequence, outer-
-anchored sequence, quantified atom or quantified prefix with a capture-free
+anchored sequence, quantified atom or quantified prefix with a fixed
 literal continuation. The iterative delimiter scan skips escaped units and treats
 ordinary bracket classes as opaque, including their bars and parentheses.
 Nested capturing/noncapturing groups are tracked without native recursion;
@@ -241,7 +241,7 @@ and relative captures. DotAll, ignore-case and multiline settings remain
 independent. Optional construction work reaches the class compiler, and optional
 search passes cover consuming terms plus boundaries while sticky mode checks
 one candidate.
-Quantified atoms and quantified prefixes with a capture-free literal continuation
+Quantified atoms and quantified prefixes with a fixed literal continuation
 also accept these outer anchors. Standalone repeated atoms reuse the continuation
 scan with an empty literal, exposing every admissible repetition endpoint. The
 scan advances an additional monotone cursor to the next permitted input/line
@@ -328,16 +328,25 @@ excluding the fixed literal suffix. Anchored plans preserve the chosen repetitio
 ranges; alternatives keep their global capture offsets and own undefined slots
 for every unselected group. Runtime results borrow the immutable matcher and its
 selected branch without constructing a capture matrix or allocating during
-search. Captured suffixes, multi-atom groups, named groups and multiple
-quantifiers remain outside these consuming plans.
+search. Multi-atom groups, named groups and multiple quantifiers remain outside
+these consuming plans.
 
-A quantified consuming atom can additionally precede a complete capture-free
+A quantified consuming atom can additionally precede a complete fixed
 literal continuation (CompileSubpattern, 22.2.2.3). Prefix atom membership and
 bounds reuse the single-quantifier plan, while the continuation retains its
 prefix-failure matcher, including overlapping occurrences and empty noncapturing
 groups. Compilation requires the complete supported continuation before building
 the prefix set. It never partially accepts an unsupported suffix or expands
 repetitions; plans share immutable storage across clones.
+The literal continuation also accepts ordinary nested and empty captures. Its
+static ranges follow every prefix capture in source order. Total capture count
+is their checked sum; resolving a suffix slot adds its fixed relative range to
+the selected prefix endpoint, rather than the complete match's start. Prefix
+whole-run/final-iteration semantics remain unchanged. Empty suffix groups still
+participate with empty Strings and zero-length indices, even when the prefix
+repeats zero times and its inner groups are undefined. Captures preserve original
+input units and reuse the same layout through anchors, alternatives and copies.
+No capture ranges are allocated or collected during search.
 Continuation occurrences arrive in increasing UTF-16 position order. Their
 earliest admissible prefix start is the maximum of the requested start, the
 preceding atom-run start and the maximum-repetition boundary. These quantities
@@ -348,7 +357,7 @@ most once, and the literal prefix-failure scan remains linear. Search allocates
 nothing and uses no recursion or backtracking stack. Sticky matching fixes the
 whole start while still inspecting continuation occurrences within the suffix.
 Optional accounting covers both complete-input passes, including sticky runs.
-Captured suffixes, character-set continuations, multiple quantifiers, enclosing groups
+Character-set continuations, multiple quantifiers, enclosing groups
 around the complete concatenation, assertions, choices and Unicode modes remain
 outside this compiler.
 

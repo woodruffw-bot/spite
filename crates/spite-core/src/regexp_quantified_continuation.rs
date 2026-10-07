@@ -3,11 +3,11 @@
 use crate::{JsString, RegExpLiteralMatcher, RegExpQuantifiedMatcher};
 use std::{ops::Range, sync::Arc};
 
-/// Immutable ordinary-mode repeated atom with a capture-free literal continuation.
+/// Immutable ordinary-mode repeated atom with a fixed literal continuation.
 ///
 /// The complete Pattern must already be validated without `u` or `v`. The prefix
 /// uses one quantifier, with ordinary capturing/noncapturing wrappers. The
-/// remainder compiles completely as literal characters and noncapturing groups.
+/// remainder uses literal characters and ordinary capturing/noncapturing groups.
 /// Search is linear without allocation, expanded repetitions or native recursion.
 #[derive(Clone, Debug)]
 pub struct RegExpQuantifiedContinuationMatcher(Arc<Program>);
@@ -16,25 +16,40 @@ pub struct RegExpQuantifiedContinuationMatcher(Arc<Program>);
 struct Program {
     prefix: RegExpQuantifiedMatcher,
     suffix: RegExpLiteralMatcher,
+    capture_count: usize,
 }
 
 impl RegExpQuantifiedContinuationMatcher {
-    /// Number of ordinary capturing wrappers around the repeated prefix.
+    /// Number of ordinary captures in the repeated prefix and literal continuation.
     pub fn capture_count(&self) -> usize {
-        self.0.prefix.capture_count()
+        self.0.capture_count
     }
 
     /// Absolute capture range in a successful match from this plan.
     pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
         let end = matched.end.checked_sub(self.0.suffix.matched_len())?;
-        self.0.prefix.capture_range(index, &(matched.start..end))
+        if end < matched.start {
+            return None;
+        }
+        let offset = self.0.prefix.capture_count();
+        if index < offset {
+            self.0.prefix.capture_range(index, &(matched.start..end))
+        } else {
+            let relative = self.0.suffix.capture_ranges().get(index - offset)?;
+            Some(end.checked_add(relative.start)?..end.checked_add(relative.end)?)
+        }
     }
 
     /// An empty continuation exposes all repetition endpoints to outer anchors.
     pub(crate) fn from_quantified(prefix: RegExpQuantifiedMatcher) -> Self {
         let suffix = RegExpLiteralMatcher::compile(&JsString::from(""), false)
             .expect("empty literal continuation");
-        Self(Arc::new(Program { prefix, suffix }))
+        let capture_count = prefix.capture_count();
+        Self(Arc::new(Program {
+            prefix,
+            suffix,
+            capture_count,
+        }))
     }
 
     /// Compiles the complete repeated-prefix/fixed-continuation subset.
@@ -62,9 +77,6 @@ impl RegExpQuantifiedContinuationMatcher {
         let Some(suffix) = RegExpLiteralMatcher::compile(&suffix_source, ignore_case) else {
             return Ok(None);
         };
-        if !suffix.capture_ranges().is_empty() {
-            return Ok(None);
-        }
         charge(source.len())?;
         charge(source.len())?;
         let prefix_source = JsString::from_code_units(source.code_units()[..end].to_vec());
@@ -75,7 +87,17 @@ impl RegExpQuantifiedContinuationMatcher {
             charge,
         )?
         .expect("accepted complete quantified prefix");
-        Ok(Some(Self(Arc::new(Program { prefix, suffix }))))
+        let Some(capture_count) = prefix
+            .capture_count()
+            .checked_add(suffix.capture_ranges().len())
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self(Arc::new(Program {
+            prefix,
+            suffix,
+            capture_count,
+        }))))
     }
 
     /// Selects the earliest start and its longest greedy or shortest lazy prefix.
@@ -189,6 +211,188 @@ fn is_line_terminator(unit: u16) -> bool {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn captured_literal_continuation_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "a+(b)",
+            "(a)+(b)",
+            "(a+)(b)",
+            "((a)+)(b)",
+            "([ab])*?(ab)",
+            "([ab])*(ab)",
+            "([ab]+?)(ab)",
+            "a*()",
+            "(a)*()",
+            "(a*)()",
+            "(a{0})(b)",
+            "(a){0}(b)",
+            "[]*(x)",
+            "[^]*?(x)",
+            "[^]*(x)",
+            "a+((b)())",
+            "a+((?:b))",
+            "(?:a)+((b))",
+            "a+(µ)",
+            r"\d+(x)",
+            r"a+(\uD800)",
+            "(a+)(?:)()",
+            "a+((?:))",
+            "a+(b|c)",
+            "a+([b])",
+            "(a+b)",
+            "a+(b+)",
+            "a+(?<x>b)",
+            r"a+(b)\1",
+        ] {
+            for (i, s) in [(false, false), (true, false), (false, true)] {
+                write!(rows, "{source:?} i={i} s={s}").unwrap();
+                if let Some(m) =
+                    RegExpQuantifiedContinuationMatcher::compile(&JsString::from(source), i, s)
+                {
+                    write!(rows, " captures={}", m.capture_count()).unwrap();
+                    for input in [
+                        "",
+                        "a",
+                        "aaab",
+                        "abab",
+                        "ab",
+                        "b",
+                        "ABab",
+                        "12x",
+                        "a\nb",
+                        "x",
+                        "aaµ",
+                        "\u{10000}",
+                    ] {
+                        let input = JsString::from(input);
+                        for (start, sticky) in [(0, false), (1, true)] {
+                            let range = m.find(&input, start, sticky);
+                            let captures = range.as_ref().map(|r| {
+                                (0..m.capture_count())
+                                    .map(|c| m.capture_range(c, r))
+                                    .collect::<Vec<_>>()
+                            });
+                            write!(rows, " {input:?}@{start}/{sticky}:{range:?}:{captures:?}")
+                                .unwrap();
+                        }
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn prefix_and_fixed_suffix_captures_agree_with_independent_repetition_order() {
+        for (source, min, greedy) in [
+            ("((a)*)((ab)())", 0, true),
+            ("((a)*?)((ab)())", 0, false),
+            ("((a)+)((ab)())", 1, true),
+            ("((a)+?)((ab)())", 1, false),
+        ] {
+            let m =
+                RegExpQuantifiedContinuationMatcher::compile(&JsString::from(source), false, false)
+                    .unwrap();
+            assert_eq!(m.capture_count(), 5);
+            for len in 0..=5u32 {
+                for mut encoded in 0..3usize.pow(len) {
+                    let mut units = Vec::new();
+                    for _ in 0..len {
+                        units.push([97, 98, 120][encoded % 3]);
+                        encoded /= 3;
+                    }
+                    let input = JsString::from_code_units(units.clone());
+                    for start in 0..=units.len() + 1 {
+                        for sticky in [false, true] {
+                            let expected = (start..=units.len())
+                                .take(if sticky { 1 } else { usize::MAX })
+                                .find_map(|candidate| {
+                                    let counts: Vec<_> = if greedy {
+                                        (min..=units.len() - candidate).rev().collect()
+                                    } else {
+                                        (min..=units.len() - candidate).collect()
+                                    };
+                                    counts.into_iter().find_map(|count| {
+                                        let end = candidate + count;
+                                        (units[candidate..end].iter().all(|u| *u == 97)
+                                            && units.get(end..end + 2) == Some(&[97, 98]))
+                                        .then_some((candidate..end + 2, count))
+                                    })
+                                });
+                            assert_eq!(
+                                m.find(&input, start, sticky),
+                                expected.as_ref().map(|(r, _)| r.clone()),
+                                "{source} {units:?} {start} {sticky}"
+                            );
+                            if let Some((range, count)) = expected {
+                                let end = range.start + count;
+                                let captures = [
+                                    Some(range.start..end),
+                                    (count > 0).then(|| end - 1..end),
+                                    Some(end..end + 2),
+                                    Some(end..end + 2),
+                                    Some(end + 2..end + 2),
+                                ];
+                                for (index, expected) in captures.into_iter().enumerate() {
+                                    assert_eq!(
+                                        m.capture_range(index, &range),
+                                        expected,
+                                        "{source} capture={index}"
+                                    );
+                                }
+                                assert_eq!(m.capture_range(5, &range), None);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn literal_suffix_capture_storage_clones_and_anchored_choices_preserve_layouts() {
+        let source =
+            JsString::from(format!("a+{}b{}", "(".repeat(100000), ")".repeat(100000)).as_str());
+        let m = RegExpQuantifiedContinuationMatcher::compile(&source, false, false).unwrap();
+        assert_eq!(m.capture_count(), 100000);
+        let input = JsString::from("aaab");
+        let range = m.find(&input, 0, false).unwrap();
+        assert_eq!(m.capture_range(0, &range), Some(3..4));
+        assert_eq!(m.clone().capture_range(99999, &range), Some(3..4));
+        let anchored =
+            crate::RegExpAnchoredMatcher::compile(&JsString::from("^((a)+)((b)())$"), false, false)
+                .unwrap();
+        assert_eq!(anchored.capture_count(), 5);
+        let range = anchored.find(&input, 0, false).unwrap();
+        assert_eq!(anchored.capture_range(4, &range), Some(4..4));
+        let choices = crate::RegExpDisjunctionMatcher::compile(
+            &JsString::from("([x])|((a)+)((b)())|([y])"),
+            false,
+        )
+        .unwrap();
+        assert_eq!(choices.capture_count(), 7);
+        let (branch, range) = choices.find_branch(&input, 0, false).unwrap();
+        assert_eq!(choices.capture_range(branch, 0, &range), None);
+        assert_eq!(choices.capture_range(branch, 2, &range), Some(2..3));
+        assert_eq!(choices.capture_range(branch, 3, &range), Some(3..4));
+        assert_eq!(choices.capture_range(branch, 5, &range), Some(4..4));
+        assert_eq!(choices.capture_range(branch, 6, &range), None);
+        assert!(
+            RegExpQuantifiedContinuationMatcher::compile_with_work(
+                &JsString::from(r"\d+([x])"),
+                false,
+                false,
+                |_| -> Result<(), ()> { panic!("unsupported suffix before set preparation") }
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
 
     #[test]
     fn quantified_literal_continuation_snapshot() {
@@ -336,7 +540,7 @@ mod tests {
             Some(0..300_000)
         );
         let rejected = RegExpQuantifiedContinuationMatcher::compile_with_work(
-            &JsString::from(r"\d+(a)"),
+            &JsString::from(r"\d+([a])"),
             false,
             false,
             |_| Err("must not charge"),

@@ -74,9 +74,9 @@ expression: rows
 "a+b+" i=false s=false unsupported
 "a+b+" i=true s=false unsupported
 "a+b+" i=false s=true unsupported
-"a+(b)" i=false s=false unsupported
-"a+(b)" i=true s=false unsupported
-"a+(b)" i=false s=true unsupported
+"a+(b)" i=false s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..2)/None "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+(b)" i=true s=false "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..2)/None "ABab":Some(0..2)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
+"a+(b)" i=false s=true "":None/None "a":None/None "aaaa":None/None "baaab":Some(1..5)/Some(1..5) "abab":Some(0..2)/None "ABab":Some(2..4)/None "evermore":None/None "Nevermore":None/None "xaxbxx":None/None "12x":None/None "a\u000ax":None/None
 "(?:a+b)" i=false s=false unsupported
 "(?:a+b)" i=true s=false unsupported
 "(?:a+b)" i=false s=true unsupported

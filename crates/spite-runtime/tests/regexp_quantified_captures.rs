@@ -126,7 +126,7 @@ fn unsupported_group_bodies_and_captured_suffixes_remain_host_failures() {
     for source in [
         "/(ab)+/.test('ab')",
         "/(a+b)/.test('ab')",
-        "/a+(b)/.test('ab')",
+        "/a+([b])/.test('ab')",
         "/(?<x>a)+/.test('a')",
         "/(a+)+/.test('a')",
         "/(a)+/u.test('a')",

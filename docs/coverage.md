@@ -753,6 +753,30 @@ Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Fixed literal continuations now accept ordinary nested and empty capturing
+groups after quantified prefixes. Three core regressions cover an inspected
+87-record insta snapshot, independent candidate/repetition/capture ordering,
+100,000 nested suffix groups with shared clones and anchored/alternative slots.
+Three newly supported rows change in the prior continuation snapshot; every
+other snapshot retains its values. Node agrees on all 43,710 range/capture
+comparisons, all 1,656 stored match/capture arrays and fifteen runtime programs.
+Eight runtime regressions cover prefix versus suffix ranges, greedy/lazy order,
+empty participating suffix groups versus undefined prefix captures, anchors and
+global/sticky state, pinned case/DotAll and surrogate units, generic consumers,
+callbacks and matchAll, intrinsic Arrays and strict writes, copies after
+collection, constructor validation of 100,000 suffix groups and 1,000-capture
+results with unlimited defaults, optional host aborts and complete unsupported
+suffixes. Prior capture gap regressions retain character-set suffixes. Fixed
+suffix ranges resolve from the chosen prefix endpoint without allocation or a
+capture matrix during search; the same two linear scans retain their existing
+work accounting. Enclosing concatenation groups, character-set continuations,
+nested choices, named groups, multiple quantifiers and Unicode modes remain
+pending. The diagnostic fixture review enables no further whole programs. The
+corpus, inventories and pin are unchanged.
+Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,

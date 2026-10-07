@@ -320,6 +320,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile and execute top-level quantified atom/literal-continuation alternatives alongside fixed and anchored branches, preserving repetition order, source-order ties and global capture slots.
 - [x] Compile and execute outer input/multiline anchors around quantified atoms and literal continuations, choosing repetition lengths that satisfy assertions and preserving sticky boundaries.
 - [x] Compile and execute ordinary capturing wrappers around quantified atoms and prefixes, preserving whole-run/final-iteration ranges, zero-iteration undefined slots, anchors and alternative capture offsets.
+- [x] Compile and execute ordinary nested/empty captures in fixed literal continuations of quantified prefixes, preserving source-order slots and ranges relative to the selected prefix endpoint.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
