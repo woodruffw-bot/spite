@@ -198,7 +198,7 @@ impl RegExpPrefixedMatcher {
     ) -> Option<Range<usize>> {
         let unconstrained_empty = match &self.0.prefix {
             Prefix::Literal(m) => m.matched_len() == 0,
-            Prefix::Sequence(m) => m.atom_count() == 0 && !m.has_word_assertions(),
+            Prefix::Sequence(m) => m.atom_count() == 0 && !m.has_assertions(),
         };
         if unconstrained_empty {
             return self

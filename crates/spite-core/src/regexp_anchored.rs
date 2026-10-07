@@ -9,8 +9,9 @@ use std::ops::Range;
 
 /// A supported ordinary sequence with outer `^`, `$`, `\b` or `\B` assertions.
 ///
-/// Patterns must already be validated without `u` or `v`. Input/line assertions
-/// embedded within consuming bodies remain unsupported. Capture ranges retain the body's
+/// Patterns must already be validated without `u` or `v`. Fixed bodies support
+/// embedded assertions; variable bodies retain their supported placement rules.
+/// Capture ranges retain the body's
 /// relative UTF-16 offsets; quantified capture ranges depend on the match.
 /// Compilation is iterative; literal and quantified search remain linear.
 /// Fixed class bodies retain the sequence candidate search bound.
@@ -85,7 +86,7 @@ impl RegExpAnchoredMatcher {
         let body = JsString::from_code_units(units.to_vec());
         // Preserve fixed relative layouts before removing complete wrappers.
         let (body, enclosing_captures) = if let Some(matcher) =
-            compile_body(&body, ignore_case, dot_all, &mut charge)?
+            compile_body(&body, ignore_case, multiline, dot_all, &mut charge)?
         {
             (matcher, 0)
         } else if body.code_units().first() == Some(&40) {
@@ -99,7 +100,9 @@ impl RegExpAnchoredMatcher {
             let source = JsString::from_code_units(body.code_units()[group.body].to_vec());
             charge(source.len())?;
             charge(source.len())?;
-            let Some(matcher) = compile_body(&source, ignore_case, dot_all, &mut charge)? else {
+            let Some(matcher) =
+                compile_body(&source, ignore_case, multiline, dot_all, &mut charge)?
+            else {
                 return Ok(None);
             };
             (matcher, group.captures)
@@ -202,6 +205,7 @@ impl Body {
 fn compile_body<E>(
     source: &JsString,
     ignore_case: bool,
+    multiline: bool,
     dot_all: bool,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Body>, E> {
@@ -226,6 +230,14 @@ fn compile_body<E>(
         RegExpPrefixedMatcher::compile_with_work(source, ignore_case, dot_all, &mut *charge)?
     {
         Body::Prefixed(m)
+    } else if let Some(m) = RegExpSequenceMatcher::compile_with_assertions_and_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Body::Sequence(m)
     } else {
         return Ok(None);
     };

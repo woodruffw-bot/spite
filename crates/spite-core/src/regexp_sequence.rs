@@ -21,6 +21,7 @@ struct Program {
     captures: Vec<Range<usize>>,
     boundaries: Vec<(usize, Assertions)>,
     ignore_case: bool,
+    multiline: bool,
 }
 
 #[derive(Debug)]
@@ -44,7 +45,7 @@ struct PreparedSequence {
 }
 
 impl RegExpSequenceMatcher {
-    /// Compiles the complete fixed-width subset, returning None for other syntax.
+    /// Compiles fixed terms and word assertions, returning None for other syntax.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, dot_all, |_| {
             Ok::<(), std::convert::Infallible>(())
@@ -62,13 +63,40 @@ impl RegExpSequenceMatcher {
         source: &JsString,
         ignore_case: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_plan(source, ignore_case, false, dot_all, false, charge)
+    }
+
+    /// Compiles fixed bodies with input/line assertions and an explicit multiline flag.
+    ///
+    /// The complete Pattern must be validated without `u` or `v`. Assertions in
+    /// ordinary groups use their consuming offsets; this does not add quantified
+    /// groups or variable concatenations. The existing word-only entry points
+    /// preserve their flag-independent behavior for quantified compositions.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_plan(source, ignore_case, multiline, dot_all, true, charge)
+    }
+
+    fn compile_plan<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        input_assertions: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let Some(PreparedSequence {
             terms: prepared,
             captures,
             boundaries,
-        }) = prepare(source.code_units(), dot_all)
+        }) = prepare(source.code_units(), dot_all, input_assertions)
         else {
             return Ok(None);
         };
@@ -115,6 +143,7 @@ impl RegExpSequenceMatcher {
             captures,
             boundaries,
             ignore_case,
+            multiline,
         }))))
     }
 
@@ -128,13 +157,13 @@ impl RegExpSequenceMatcher {
         self.0.terms.len()
     }
 
-    /// Conservative optional passes including word-neighbor checks at fixed offsets.
+    /// Conservative optional passes including boundary checks at fixed offsets.
     pub fn search_passes(&self, sticky: bool) -> usize {
         let consuming = if sticky { 1 } else { self.atom_count().max(1) };
         consuming.saturating_add(self.0.boundaries.len().saturating_mul(2))
     }
 
-    pub(crate) fn has_word_assertions(&self) -> bool {
+    pub(crate) fn has_assertions(&self) -> bool {
         !self.0.boundaries.is_empty()
     }
 
@@ -212,7 +241,7 @@ fn matches_at(program: &Program, input: &[u16], start: usize) -> bool {
     if !program
         .boundaries
         .iter()
-        .all(|&(offset, assertions)| assertions.accepts(input, start + offset, false))
+        .all(|&(offset, assertions)| assertions.accepts(input, start + offset, program.multiline))
     {
         return false;
     }
@@ -231,14 +260,24 @@ fn canonicalize(unit: u16, ignore_case: bool) -> u16 {
     regexp_canonicalize_character(u32::from(unit), ignore_case, false) as u16
 }
 
-fn prepare(source: &[u16], dot_all: bool) -> Option<PreparedSequence> {
+fn prepare(source: &[u16], dot_all: bool, input_assertions: bool) -> Option<PreparedSequence> {
     let mut index = 0;
     let mut terms = Vec::new();
     let mut captures = Vec::new();
     let mut groups = Vec::new();
     let mut boundaries: Vec<(usize, Assertions)> = Vec::new();
     while let Some(&unit) = source.get(index) {
-        if unit == 92
+        if input_assertions && (unit == 94 || unit == 36) {
+            let position = terms.len();
+            if boundaries
+                .last()
+                .is_none_or(|(offset, _)| *offset != position)
+            {
+                boundaries.push((position, Assertions::default()));
+            }
+            boundaries.last_mut()?.1.add_input_boundary(unit == 94);
+            index += 1;
+        } else if unit == 92
             && source
                 .get(index + 1)
                 .is_some_and(|&unit| unit == 98 || unit == 66)
@@ -307,6 +346,231 @@ mod tests {
     use std::fmt::Write;
 
     type UnitPredicate = fn(u16) -> bool;
+
+    #[test]
+    fn fixed_input_line_assertion_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "a^b",
+            "a$b",
+            "(^a)",
+            "(a$)",
+            "(a)(^)(b)",
+            "(a)($)(b)",
+            r"a$\n^b",
+            r"(a)($)(\n)(^)(b)",
+            r"([\s\S])(^)(.)",
+            r"([\s\S])($)(.)",
+            r"(\r)(^)(\n)(^)(a)",
+            r"(a)($)(\r)($)(\n)",
+            r"(.)(^)(.)",
+            r"(.)(\b^)(a)",
+            r"(a)($\b)(.)",
+            r"(\r)(^\b)(a)",
+            "(^)()",
+            "($)()",
+            "(^$)()",
+            r"(\B^$)()",
+            "(^^)(a)($$)",
+            "^((^a))$",
+            "^((a$))$",
+            r"(\^)(a)(\$)",
+            r"([\^$])(^)(a)",
+            r"([\b])(^)(a)",
+            r"(\uD800)(^)(a)",
+            r"(\uD800)($)(\uDC00)",
+            r"(^\b)([a-z])($\b)",
+            r"(a$)+",
+            r"a^b+",
+            r"a+($)",
+            r"(a|b)^",
+            r"(?<n>a)^",
+            r"(a)\1^",
+        ] {
+            for (i, m, s) in [
+                (false, false, false),
+                (false, true, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let matcher = RegExpSequenceMatcher::compile_with_assertions_and_work(
+                    &JsString::from(source),
+                    i,
+                    m,
+                    s,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap();
+                write!(rows, "{source:?} i={i} m={m} s={s}").unwrap();
+                if let Some(matcher) = matcher {
+                    write!(
+                        rows,
+                        " captures={} width={} passes={}/{}",
+                        matcher.capture_ranges().len(),
+                        matcher.atom_count(),
+                        matcher.search_passes(false),
+                        matcher.search_passes(true)
+                    )
+                    .unwrap();
+                    for input in [
+                        "",
+                        "a",
+                        "A",
+                        "ab",
+                        "a\nb",
+                        "x\na\ny",
+                        "\na",
+                        "a\n",
+                        "\ra",
+                        "a\r\n",
+                        "\r\na",
+                        "\u{2028}a",
+                        "a\u{2029}",
+                        "^a$",
+                        "💩a",
+                        "\u{8}a",
+                    ] {
+                        let input = JsString::from(input);
+                        let matches: Vec<_> = [
+                            (0, false),
+                            (1, false),
+                            (0, true),
+                            (1, true),
+                            (input.len(), true),
+                        ]
+                        .into_iter()
+                        .map(|(start, sticky)| {
+                            matcher.find(&input, start, sticky).map(|r| {
+                                let captures: Vec<_> = matcher
+                                    .capture_ranges()
+                                    .iter()
+                                    .map(|c| Some(r.start + c.start..r.start + c.end))
+                                    .collect();
+                                (r, captures)
+                            })
+                        })
+                        .collect();
+                        write!(rows, " {input:?}:{matches:?}").unwrap();
+                    }
+                } else {
+                    rows.push_str(" unsupported");
+                }
+                rows.push('\n');
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn input_line_offsets_agree_with_independent_position_oracle() {
+        fn accepts(assertion: &str, units: &[u16], p: usize, m: bool) -> bool {
+            let lt = |c: u16| [10, 13, 0x2028, 0x2029].contains(&c);
+            match assertion {
+                "^" => p == 0 || (m && lt(units[p - 1])),
+                "$" => p == units.len() || (m && lt(units[p])),
+                "" => true,
+                _ => unreachable!(),
+            }
+        }
+        for before in ["", "^", "$"] {
+            for middle in ["", "^", "$"] {
+                for after in ["", "^", "$"] {
+                    for m in [false, true] {
+                        let source = format!(r"({before})([\s\S])({middle})([\s\S])({after})()");
+                        let matcher = RegExpSequenceMatcher::compile_with_assertions_and_work(
+                            &JsString::from(source.as_str()),
+                            false,
+                            m,
+                            false,
+                            |_| Ok::<(), ()>(()),
+                        )
+                        .unwrap()
+                        .unwrap();
+                        assert_eq!(
+                            matcher.capture_ranges(),
+                            [0..0, 0..1, 1..1, 1..2, 2..2, 2..2]
+                        );
+                        let alphabet = [97, 10, 13, 0x2028, 0xd800];
+                        for length in 0..=4u32 {
+                            for mut n in 0..alphabet.len().pow(length) {
+                                let units: Vec<_> = (0..length)
+                                    .map(|_| {
+                                        let c = alphabet[n % alphabet.len()];
+                                        n /= alphabet.len();
+                                        c
+                                    })
+                                    .collect();
+                                let input = JsString::from_code_units(units.clone());
+                                for start in 0..=units.len() + 1 {
+                                    for sticky in [false, true] {
+                                        let expected = (start..units.len().saturating_sub(1))
+                                            .filter(|&p| !sticky || p == start)
+                                            .find(|&p| {
+                                                accepts(before, &units, p, m)
+                                                    && accepts(middle, &units, p + 1, m)
+                                                    && accepts(after, &units, p + 2, m)
+                                            })
+                                            .map(|p| p..p + 2);
+                                        assert_eq!(
+                                            matcher.find(&input, start, sticky),
+                                            expected,
+                                            "{source} {units:?} m={m} {start} {sticky}"
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn repeated_input_assertions_collapse_with_shared_captures_and_explicit_flags() {
+        let source = JsString::from(format!("a({})", "$".repeat(100_000)).as_str());
+        let plain = RegExpSequenceMatcher::compile_with_assertions_and_work(
+            &source,
+            false,
+            false,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let multiline = RegExpSequenceMatcher::compile_with_assertions_and_work(
+            &source,
+            false,
+            true,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+        .clone();
+        let input = JsString::from("a\n");
+        assert_eq!(plain.find(&input, 0, true), None);
+        assert_eq!(multiline.find(&input, 0, true), Some(0..1));
+        assert_eq!(multiline.capture_ranges().len(), 1);
+        assert_eq!(multiline.capture_ranges().first(), Some(&(1..1)));
+        assert_eq!(multiline.search_passes(false), 3);
+        assert_eq!(multiline.search_passes(true), 3);
+        assert!(RegExpSequenceMatcher::compile(&source, false, false).is_none());
+        let source = JsString::from(format!("({})a", "^".repeat(100_000)).as_str());
+        let matcher = RegExpSequenceMatcher::compile_with_assertions_and_work(
+            &source,
+            false,
+            true,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(matcher.find(&JsString::from("x\na"), 2, true), Some(2..3));
+        assert_eq!(matcher.find(&JsString::from("xaa"), 1, true), None);
+        assert_eq!(matcher.find(&JsString::from("a"), usize::MAX, false), None);
+    }
 
     #[test]
     fn fixed_word_assertion_snapshot() {

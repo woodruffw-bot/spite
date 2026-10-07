@@ -29,6 +29,10 @@ impl Assertions {
         self.add(if boundary { 98 } else { 66 });
     }
 
+    pub(crate) fn add_input_boundary(&mut self, at_start: bool) {
+        self.add(if at_start { 94 } else { 36 });
+    }
+
     pub(crate) fn has_word_boundary(self) -> bool {
         self.word_boundary.is_some()
     }

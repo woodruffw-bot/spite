@@ -176,6 +176,14 @@ fn compile_alternative<E>(
         RegExpPrefixedMatcher::compile_with_work(source, ignore_case, dot_all, &mut *charge)?
     {
         Alternative::Prefixed(m)
+    } else if let Some(m) = RegExpSequenceMatcher::compile_with_assertions_and_work(
+        source,
+        ignore_case,
+        multiline,
+        dot_all,
+        &mut *charge,
+    )? {
+        Alternative::Sequence(m)
     } else {
         return Ok(None);
     };

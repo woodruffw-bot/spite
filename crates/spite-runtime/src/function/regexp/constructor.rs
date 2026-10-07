@@ -231,12 +231,14 @@ impl Realm {
                             )? {
                                 Ok(Some(RegExpMatcherBody::Character(matcher)))
                             } else {
-                                let sequence = RegExpSequenceMatcher::compile_with_work(
-                                    &matching_source,
-                                    ignore_case,
-                                    dot_all,
-                                    |work| budget.charge(work),
-                                )?;
+                                let sequence =
+                                    RegExpSequenceMatcher::compile_with_assertions_and_work(
+                                        &matching_source,
+                                        ignore_case,
+                                        flags.code_units().contains(&u16::from(b'm')),
+                                        dot_all,
+                                        |work| budget.charge(work),
+                                    )?;
                                 if let Some(matcher) = sequence {
                                     Ok(Some(RegExpMatcherBody::Sequence(matcher)))
                                 } else {

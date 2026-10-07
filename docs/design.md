@@ -293,10 +293,22 @@ shortcut. A continuation's consuming width determines repetition and capture
 endpoints even when assertions add zero-width groups. Greedy/lazy endpoint order,
 whole-run/final-iteration captures, outer boundaries, group normalization and
 alternative offsets stay shared. This also composes word assertions inside
-complete groups around a supported quantified concatenation. Input/line
-assertions embedded within consuming bodies, assertions within a repeated atom,
-multiple quantifiers, named groups, backreferences and Unicode modes remain
-pending.
+complete groups around a supported quantified concatenation.
+
+Fixed consuming bodies can also compile embedded input/line assertions (`^`,
+`$`) with an explicit multiline flag. The flag-dependent entry point extends the
+same sparse offset conjunctions, preserving zero-width captures and duplicate
+collapse. Ordinary word-only entry points retain their existing flag-independent
+behavior for quantified compositions. Runtime fixed-body dispatch, outer
+assertion bodies and alternatives pass multiline explicitly. Existing complete
+body plans take precedence, preserving earlier capture layouts and accounting.
+Assertions compare the complete input's neighboring UTF-16 units, including both
+positions around CRLF; sticky offsets do not redefine input beginning/end.
+IgnoreCase and DotAll remain independent. Fixed searches keep their existing
+candidate stream, shared immutable plans and optional boundary accounting,
+without allocation or native recursion. Input/line assertions within variable
+consuming bodies or repeated atoms, multiple quantifiers, named groups,
+backreferences and Unicode modes remain pending.
 
 Ordinary single character-set atoms compile separately (CharacterSetMatcher,
 22.2.2.7.1). One bracket class supports raw/escaped characters, ordered ranges,

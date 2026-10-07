@@ -1025,6 +1025,27 @@ Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Input/line assertions now compile within fixed consuming bodies and ordinary
+groups, with explicit multiline flags. Three core regressions cover an inspected
+175-record insta snapshot, an independent exhaustive position/capture oracle,
+100,000 collapsed input assertions, cloned plans and exact sticky positions.
+Three records in the earlier complete-group snapshot gain support; all earlier
+accepted values are unchanged. Eight runtime regressions cover interior empty
+capture slots, all four LineTerminators and CRLF positions, independent flags,
+escape/class boundaries, sticky state and strict writes, zero-width groups,
+outer anchors and alternatives, generic consumers, intrinsic results, collection
+and long searches with unlimited defaults and optional host work. Node agrees
+on all 34,896 stored results across seven snapshots, 278,568 independent
+match/capture comparisons and 21 runtime programs. Ten earlier gap programs now
+exercise input/line assertions in variable bodies. The whole-fixture review
+enables no further programs; inventories and the pin are unchanged. Input/line
+assertions within variable consuming bodies or repeated atoms, multiple
+quantifiers, named groups, backreferences and Unicode modes remain pending.
+
+Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
