@@ -7,7 +7,7 @@ use crate::{
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpQuantifiedContinuationMatcher,
-    RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span,
+    RegExpQuantifiedMatcher, RegExpSequenceMatcher, Span, regexp_outer_noncapturing_body,
 };
 use spite_parser::validate_regexp_pattern;
 
@@ -157,12 +157,28 @@ impl Realm {
         {
             None
         } else {
+            let matching_source = if source.code_units().starts_with(&[0x28, 0x3f, 0x3a]) {
+                self.object_work(span, |_, budget| {
+                    budget.charge(source.len())?;
+                    budget.charge(source.len())?;
+                    if let Some(body) = regexp_outer_noncapturing_body(&source) {
+                        budget.charge(body.len())?;
+                        Ok(JsString::from_code_units(
+                            source.code_units()[body].to_vec(),
+                        ))
+                    } else {
+                        Ok(source.clone())
+                    }
+                })?
+            } else {
+                source.clone()
+            };
             self.object_work(span, |_, budget| {
                 budget.charge(source.len())?;
                 budget.charge(source.len())
             })?;
             let ignore_case = flags.code_units().contains(&u16::from(b'i'));
-            if let Some(matcher) = RegExpLiteralMatcher::compile(&source, ignore_case) {
+            if let Some(matcher) = RegExpLiteralMatcher::compile(&matching_source, ignore_case) {
                 Some(RegExpMatcher::Literal(matcher))
             } else {
                 // Cover the top-level scan and remaining per-branch compilation
@@ -173,7 +189,7 @@ impl Realm {
                 })?;
                 let disjunction = self.object_work(span, |_, budget| {
                     RegExpDisjunctionMatcher::compile_with_work(
-                        &source,
+                        &matching_source,
                         ignore_case,
                         flags.code_units().contains(&u16::from(b'm')),
                         flags.code_units().contains(&u16::from(b's')),
@@ -189,7 +205,7 @@ impl Realm {
                     })?;
                     let anchored = self.object_work(span, |_, budget| {
                         RegExpAnchoredMatcher::compile_with_work(
-                            &source,
+                            &matching_source,
                             ignore_case,
                             flags.code_units().contains(&u16::from(b'm')),
                             flags.code_units().contains(&u16::from(b's')),
@@ -202,7 +218,7 @@ impl Realm {
                         self.object_work(span, |_, budget| {
                             let dot_all = flags.code_units().contains(&u16::from(b's'));
                             if let Some(matcher) = RegExpCharacterMatcher::compile_with_work(
-                                &source,
+                                &matching_source,
                                 ignore_case,
                                 dot_all,
                                 |work| budget.charge(work),
@@ -210,7 +226,7 @@ impl Realm {
                                 Ok(Some(RegExpMatcher::Character(matcher)))
                             } else {
                                 let sequence = RegExpSequenceMatcher::compile_with_work(
-                                    &source,
+                                    &matching_source,
                                     ignore_case,
                                     dot_all,
                                     |work| budget.charge(work),
@@ -219,7 +235,7 @@ impl Realm {
                                     Ok(Some(RegExpMatcher::Sequence(matcher)))
                                 } else {
                                     let quantified = RegExpQuantifiedMatcher::compile_with_work(
-                                        &source,
+                                        &matching_source,
                                         ignore_case,
                                         dot_all,
                                         |work| budget.charge(work),
@@ -228,7 +244,7 @@ impl Realm {
                                         Ok(Some(RegExpMatcher::Quantified(matcher)))
                                     } else {
                                         RegExpQuantifiedContinuationMatcher::compile_with_work(
-                                            &source,
+                                            &matching_source,
                                             ignore_case,
                                             dot_all,
                                             |work| budget.charge(work),

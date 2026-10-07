@@ -361,6 +361,21 @@ Character-set continuations, multiple quantifiers, enclosing groups
 around the complete concatenation, assertions, choices and Unicode modes remain
 outside this compiler.
 
+Complete ordinary outer noncapturing groups can enclose any currently supported
+Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
+and capture count, two constant-space UTF-16 scans identify all leading groups
+whose closures occupy the end of the complete Pattern. Escapes and bracket
+classes remain opaque. A closure belonging to an earlier sibling group never
+substitutes for the original leading group. Unquantified whole wrappers are
+removed only from the private compilation input; original source/flag slots and
+source serialization remain unchanged. The body reuses existing literal, set,
+sequence, quantified, continuation, anchored and alternative plans, including
+all inner capture slots. No matcher search or repetition ordering changes.
+Optional construction accounting covers both scans and the body copy; defaults
+remain unlimited. A group followed by a quantifier or continuation stays inside
+the body, where the existing compiler accepts or rejects its complete grammar.
+Capturing groups enclosing complete concatenations or choices remain pending.
+
 EscapeRegExpPattern (22.2.6.11.1) separately streams an existing validated
 Pattern for literal source representation. Empty input becomes (?:). Unescaped
 solidus and raw line terminators gain escapes; existing reverse solidus parity

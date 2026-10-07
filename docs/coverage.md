@@ -777,6 +777,27 @@ Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
+Complete ordinary outer noncapturing groups now compile around supported
+Pattern bodies. Three core regressions cover an inspected 40-record insta
+snapshot, 2,940 independently paired group-boundary comparisons and 100,000
+nested wrappers without native recursion. Eight runtime regressions cover
+quantified continuations and choices, assertion-constrained repetition, source-
+order capture/indices slots and unselected alternatives, global/sticky state and
+strict writes, original source/flags and constructor conversion order, escapes,
+classes and surrogate units, pinned case/DotAll, generic consumers and callbacks,
+copies after collection, unlimited nesting and optional host aborts. Two prior
+gap regressions retain unsupported embedded choices and capturing concatenation
+groups. Node agrees on all 70,680 match/capture range comparisons and eighteen
+runtime programs. Group unwrapping uses constant space and two linear scans;
+search reuses the existing immutable plans without changing work accounting or
+allocating capture matrices. Capturing outer concatenation/choice groups, named
+groups, nested choices within concatenations, multiple quantifiers and Unicode
+modes remain pending. The diagnostic fixture review enables no further whole
+programs. The corpus, inventories and pin are unchanged.
+Stable and MSRV pass the complete 13490-variant corpus, workspace/documentation
+tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
+and all pinned generator checks also pass.
+
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
 regressions cover constructor/literal boundary differences, ordered flag errors,
