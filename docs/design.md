@@ -820,6 +820,17 @@ Deep nesting uses linear scans and explicit frames, with no native recursion or
 default quotas. Branch captures, empty/wider bodies, assertions inside branches,
 additional quantifiers and Unicode modes remain pending.
 
+Transparent empty noncapturing groups may precede or follow the consuming unit
+inside these alternative branches (CompileSubpattern, 22.2.2.3). Each explicit
+group frame records whether its current branch consumes a unit and whether the
+group has alternatives. Closing an empty group leaves the containing branch's
+width unchanged; a consuming group contributes its one unit and rejects a
+second consuming sibling. Every alternative still requires a consuming unit,
+so empty alternatives and differing widths remain unsupported. These groups
+add no capture slots, assertions or other matching effects. The same flat
+predicate paths preserve captures and flags in fixed, repeated, partial and
+top-level alternative plans, with linear preparation and no default quotas.
+
 Complete ordinary outer noncapturing groups can enclose any currently supported
 Pattern body (CompileSubpattern, 22.2.2.3). After validating the original Pattern
 and capture count, two constant-space UTF-16 scans identify all leading groups
