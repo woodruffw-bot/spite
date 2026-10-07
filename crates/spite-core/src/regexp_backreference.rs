@@ -4,7 +4,11 @@ use crate::regexp_assertion::Assertions;
 use crate::regexp_character::PreparedCharacter;
 use crate::regexp_literal::{character_escape, is_syntax};
 use crate::{JsString, RegExpCharacterMatcher, regexp_canonicalize_character};
-use std::{collections::HashMap, ops::Range, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Range,
+    sync::Arc,
+};
 
 /// One validated named-reference escape in a name-stripped private source.
 #[derive(Clone, Debug)]
@@ -32,10 +36,9 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// The complete Pattern must already be validated without `u` or `v`. Capturing
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
-/// Top-level and sequential inner alternatives are accepted. Nested inner choices
-/// and quantifiers return `None`. At least one numbered
-/// or registered named reference is required; plain literals
-/// retain their existing linear-search matcher.
+/// Top-level and arbitrarily nested inner alternatives are accepted. Quantifiers
+/// return `None`. At least one numbered or registered named reference is required;
+/// plain literals retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
 pub struct RegExpBackreferenceMatcher(Arc<Program>);
@@ -46,13 +49,16 @@ struct Program {
     capture_count: usize,
     ignore_case: bool,
     multiline: bool,
-    branches: Vec<Branch>,
+    choice_count: usize,
     capture_names: Vec<Option<usize>>,
     named_count: usize,
 }
 
 #[derive(Debug)]
 enum Instruction {
+    Nop,
+    Choice(Box<[usize]>),
+    Jump(usize),
     Character(u16),
     Set(RegExpCharacterMatcher),
     Assert(Assertions),
@@ -70,37 +76,122 @@ enum PreparedInstruction {
     },
 }
 
-#[derive(Debug)]
-struct Branch {
-    instructions: Range<usize>,
-    choices: Vec<Choice>,
-    captures: Range<usize>,
-}
-
 struct GroupFrame {
     capture: Option<usize>,
-    body_start: usize,
-    alternative_start: usize,
-    alternatives: Vec<Range<usize>>,
+    entry: usize,
+    alternatives: Vec<usize>,
+    exits: Vec<usize>,
 }
 
-#[derive(Debug)]
-struct Choice {
-    start: usize,
-    end: usize,
-    alternatives: Vec<Range<usize>>,
+impl GroupFrame {
+    fn open(capture: Option<usize>, instructions: &mut Vec<PreparedInstruction>) -> Self {
+        let entry = instructions.len();
+        instructions.push(PreparedInstruction::Ready(Instruction::Nop));
+        Self {
+            capture,
+            entry,
+            alternatives: Vec::new(),
+            exits: Vec::new(),
+        }
+    }
+    fn next_alternative(&mut self, instructions: &mut Vec<PreparedInstruction>) {
+        if self.alternatives.is_empty() {
+            self.alternatives.push(self.entry + 1);
+        }
+        self.exits.push(instructions.len());
+        instructions.push(PreparedInstruction::Ready(Instruction::Jump(usize::MAX)));
+        self.alternatives.push(instructions.len());
+    }
+    fn finish(self, instructions: &mut [PreparedInstruction]) -> Option<usize> {
+        if !self.alternatives.is_empty() {
+            instructions[self.entry] = PreparedInstruction::Ready(Instruction::Choice(
+                self.alternatives.into_boxed_slice(),
+            ));
+            let end = instructions.len();
+            for exit in self.exits {
+                instructions[exit] = PreparedInstruction::Ready(Instruction::Jump(end));
+            }
+        }
+        self.capture
+    }
 }
 
 struct ChoiceFrame {
+    instruction: usize,
     alternative: usize,
     prefix_end: usize,
     checkpoint: usize,
 }
 
+enum ScopeStep {
+    Capture(usize),
+    Open,
+    Close,
+    Alternative,
+}
+
+#[derive(Default)]
+struct NameScope {
+    current: HashSet<usize>,
+    alternatives: HashSet<usize>,
+}
+
+fn union_names(target: &mut HashSet<usize>, mut source: HashSet<usize>) -> usize {
+    if target.len() < source.len() {
+        std::mem::swap(target, &mut source);
+    }
+    let work = source.len();
+    target.extend(source);
+    work
+}
+
+// Apply MightBothParticipate without copying names through every enclosing group.
+// Keep preflight invalid/unsupported outcomes independent of host charging, then
+// charge the recorded set operations once the complete program is accepted.
+fn exclusive_names(steps: &[ScopeStep], names: &[Option<usize>]) -> Option<usize> {
+    if names.is_empty() {
+        return Some(0);
+    }
+    let mut scopes = Vec::new();
+    let mut current = NameScope::default();
+    let mut work = 0usize;
+    for step in steps {
+        work = work.saturating_add(1);
+        match step {
+            ScopeStep::Capture(slot) => {
+                if let Some(Some(name)) = names.get(*slot) {
+                    work = work.saturating_add(1);
+                    if !current.current.insert(*name) {
+                        return None;
+                    }
+                }
+            }
+            ScopeStep::Open => scopes.push(std::mem::take(&mut current)),
+            ScopeStep::Close => {
+                work = work.saturating_add(union_names(&mut current.alternatives, current.current));
+                let children = current.alternatives;
+                current = scopes.pop().expect("prepared group is balanced");
+                work = work.saturating_add(current.current.len().min(children.len()));
+                if !current.current.is_disjoint(&children) {
+                    return None;
+                }
+                work = work.saturating_add(union_names(&mut current.current, children));
+            }
+            ScopeStep::Alternative => {
+                work = work.saturating_add(union_names(
+                    &mut current.alternatives,
+                    std::mem::take(&mut current.current),
+                ));
+            }
+        }
+    }
+    Some(work)
+}
+
 struct PreparedProgram {
     instructions: Vec<PreparedInstruction>,
     capture_count: usize,
-    branches: Vec<Branch>,
+    scopes: Vec<ScopeStep>,
 }
 
 /// Absolute UTF-16 endpoints from one successful execution.
@@ -186,7 +277,7 @@ impl RegExpBackreferenceMatcher {
         let PreparedProgram {
             instructions: prepared,
             capture_count,
-            branches,
+            scopes,
         } = plan;
         let mut capture_names = if bindings.groups.is_empty() {
             Vec::new()
@@ -206,70 +297,27 @@ impl RegExpBackreferenceMatcher {
                 }
             }
         }
-        let mut owners = vec![(0, None); capture_count];
-        for (root, branch) in branches.iter().enumerate() {
-            if branch.captures.is_empty() {
-                continue;
-            }
-            let mut choice_index = 0;
-            let mut alternative = 0;
-            for (position, instruction) in prepared
-                .iter()
-                .enumerate()
-                .take(branch.instructions.end)
-                .skip(branch.instructions.start)
-            {
-                if let PreparedInstruction::Ready(Instruction::Open(slot)) = instruction {
-                    while branch
-                        .choices
-                        .get(choice_index)
-                        .is_some_and(|c| position >= c.end)
-                    {
-                        choice_index += 1;
-                        alternative = 0;
-                    }
-                    let owner = if let Some(choice) = branch
-                        .choices
-                        .get(choice_index)
-                        .filter(|c| position >= c.start)
-                    {
-                        while position >= choice.alternatives[alternative].end {
-                            alternative += 1;
-                        }
-                        Some((choice_index, alternative))
-                    } else {
-                        None
-                    };
-                    owners[*slot] = (root, owner);
-                }
-            }
+        if bindings
+            .groups
+            .iter()
+            .any(|slots| slots.windows(2).any(|p| p[0] >= p[1]))
+        {
+            return Ok(None);
         }
-        for slots in bindings.groups {
-            let mut previous_slot = None;
-            let mut previous_owner: Option<(usize, Option<(usize, usize)>)> = None;
-            for &slot in *slots {
-                if previous_slot.is_some_and(|old| old >= slot) {
-                    return Ok(None);
-                }
-                let owner = owners[slot];
-                if let Some((root, alternative)) = previous_owner {
-                    if root == owner.0
-                        && !matches!((alternative, owner.1), (Some((a, x)), Some((b, y))) if a == b && x != y)
-                    {
-                        return Ok(None);
-                    }
-                }
-                previous_slot = Some(slot);
-                previous_owner = Some(owner);
-            }
-        }
+        let Some(binding_work) = exclusive_names(&scopes, &capture_names) else {
+            return Ok(None);
+        };
+        charge(binding_work)?;
         charge(capture_names.len())?;
         charge(bindings.groups.len())?;
-        charge(branches.len())?;
-        for branch in &branches {
-            charge(branch.choices.len())?;
-            for choice in &branch.choices {
-                charge(choice.alternatives.len())?;
+        let choice_count = prepared
+            .iter()
+            .filter(|i| matches!(i, PreparedInstruction::Ready(Instruction::Choice(_))))
+            .count();
+        charge(choice_count)?;
+        for instruction in &prepared {
+            if let PreparedInstruction::Ready(Instruction::Choice(alternatives)) = instruction {
+                charge(alternatives.len())?;
             }
         }
         charge(source.len())?;
@@ -310,7 +358,7 @@ impl RegExpBackreferenceMatcher {
             capture_count,
             ignore_case,
             multiline,
-            branches,
+            choice_count,
             capture_names,
             named_count: bindings.groups.len(),
         }))))
@@ -339,7 +387,7 @@ impl RegExpBackreferenceMatcher {
     /// Capture buffers are reused across source-order branches at each ordered
     /// candidate start. Inner alternatives retain completed prefix captures and
     /// clear only captures completed by the failed body or continuation. Common
-    /// prefixes execute once per branch; inactive captures remain undefined.
+    /// terms are retained for each reachable prefix; inactive captures stay undefined.
     /// An open or forward capture has no completed range and its reference matches
     /// the empty string, as required by BackreferenceMatcher (22.2.2.9.2). Ignore-case
     /// comparison canonicalizes both input units with the ordinary ASCII boundary.
@@ -366,90 +414,47 @@ impl RegExpBackreferenceMatcher {
             named: vec![None; self.0.named_count],
             touched: Vec::with_capacity(self.0.capture_count),
         };
-        let choice_count = self
-            .0
-            .branches
-            .iter()
-            .map(|b| b.choices.len())
-            .max()
-            .unwrap_or(0);
-        charge(choice_count)?;
-        let mut frames = Vec::<ChoiceFrame>::with_capacity(choice_count);
+        charge(self.0.choice_count)?;
+        let mut frames = Vec::<ChoiceFrame>::with_capacity(self.0.choice_count);
         let end = if sticky { start } else { input.len() };
-        for candidate in start..=end {
-            for branch in &self.0.branches {
-                charge(1)?;
-                self.0.clear_captures(&mut state, 0, &mut charge)?;
-                frames.clear();
-                let mut prefix_end = candidate;
-                let leading_end = branch
-                    .choices
-                    .first()
-                    .map_or(branch.instructions.end, |c| c.start);
-                if !self.0.execute(
-                    input,
-                    &mut prefix_end,
-                    branch.instructions.start..leading_end,
-                    &mut state,
-                    &mut charge,
-                )? {
-                    continue;
-                }
-                if branch.choices.is_empty() {
+        'candidate: for candidate in start..=end {
+            charge(1)?;
+            self.0.clear_captures(&mut state, 0, &mut charge)?;
+            frames.clear();
+            let mut cursor = candidate;
+            let mut pc = 0;
+            loop {
+                if pc == self.0.instructions.len() {
                     return Ok(Some(RegExpBackreferenceMatch {
-                        range: candidate..prefix_end,
+                        range: candidate..cursor,
                         captures: state.captures.into_boxed_slice(),
                     }));
                 }
-                charge(1)?;
-                frames.push(ChoiceFrame {
-                    alternative: 0,
-                    prefix_end,
-                    checkpoint: state.touched.len(),
-                });
-                while !frames.is_empty() {
-                    let choice_index = frames.len() - 1;
-                    let frame = &mut frames[choice_index];
-                    let choice = &branch.choices[choice_index];
+                if let Some(next) =
                     self.0
-                        .clear_captures(&mut state, frame.checkpoint, &mut charge)?;
-                    let Some(alternative) = choice.alternatives.get(frame.alternative) else {
-                        charge(1)?;
-                        frames.pop();
-                        continue;
+                        .advance(input, &mut cursor, pc, &mut state, &mut frames, &mut charge)?
+                {
+                    pc = next;
+                    continue;
+                }
+                loop {
+                    let Some(frame) = frames.last_mut() else {
+                        continue 'candidate;
                     };
                     charge(1)?;
-                    frame.alternative += 1;
-                    let mut cursor = frame.prefix_end;
-                    let following = branch.choices.get(choice_index + 1);
-                    let trailing_end = following.map_or(branch.instructions.end, |c| c.start);
-                    if !self.0.execute(
-                        input,
-                        &mut cursor,
-                        alternative.clone(),
-                        &mut state,
-                        &mut charge,
-                    )? || !self.0.execute(
-                        input,
-                        &mut cursor,
-                        choice.end..trailing_end,
-                        &mut state,
-                        &mut charge,
-                    )? {
-                        continue;
+                    self.0
+                        .clear_captures(&mut state, frame.checkpoint, &mut charge)?;
+                    let Instruction::Choice(alternatives) = &self.0.instructions[frame.instruction]
+                    else {
+                        unreachable!("choice frame refers to a choice instruction")
+                    };
+                    if let Some(&next) = alternatives.get(frame.alternative) {
+                        frame.alternative += 1;
+                        cursor = frame.prefix_end;
+                        pc = next;
+                        break;
                     }
-                    if following.is_none() {
-                        return Ok(Some(RegExpBackreferenceMatch {
-                            range: candidate..cursor,
-                            captures: state.captures.into_boxed_slice(),
-                        }));
-                    }
-                    charge(1)?;
-                    frames.push(ChoiceFrame {
-                        alternative: 0,
-                        prefix_end: cursor,
-                        checkpoint: state.touched.len(),
-                    });
+                    frames.pop();
                 }
             }
         }
@@ -484,84 +489,96 @@ impl Program {
         Ok(())
     }
 
-    fn execute<E>(
+    fn advance<E>(
         &self,
         input: &[u16],
         cursor: &mut usize,
-        range: Range<usize>,
+        pc: usize,
         state: &mut CaptureState,
+        frames: &mut Vec<ChoiceFrame>,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
-    ) -> Result<bool, E> {
-        for instruction in &self.instructions[range] {
-            charge(1)?;
-            match instruction {
-                Instruction::Character(expected) => {
-                    let Some(&unit) = input.get(*cursor) else {
-                        return Ok(false);
-                    };
-                    charge(1)?;
-                    if canonicalize(unit, self.ignore_case) != *expected {
-                        return Ok(false);
-                    }
-                    *cursor += 1;
+    ) -> Result<Option<usize>, E> {
+        let instruction = &self.instructions[pc];
+        charge(1)?;
+        match instruction {
+            Instruction::Nop => {}
+            Instruction::Jump(target) => return Ok(Some(*target)),
+            Instruction::Choice(alternatives) => {
+                charge(1)?;
+                frames.push(ChoiceFrame {
+                    instruction: pc,
+                    alternative: 1,
+                    prefix_end: *cursor,
+                    checkpoint: state.touched.len(),
+                });
+                return Ok(Some(alternatives[0]));
+            }
+            Instruction::Character(expected) => {
+                let Some(&unit) = input.get(*cursor) else {
+                    return Ok(None);
+                };
+                charge(1)?;
+                if canonicalize(unit, self.ignore_case) != *expected {
+                    return Ok(None);
                 }
-                Instruction::Set(matcher) => {
-                    let Some(&unit) = input.get(*cursor) else {
-                        return Ok(false);
-                    };
-                    charge(1)?;
-                    if !matcher.matches(unit) {
-                        return Ok(false);
-                    }
-                    *cursor += 1;
+                *cursor += 1;
+            }
+            Instruction::Set(matcher) => {
+                let Some(&unit) = input.get(*cursor) else {
+                    return Ok(None);
+                };
+                charge(1)?;
+                if !matcher.matches(unit) {
+                    return Ok(None);
                 }
-                Instruction::Assert(assertion) => {
-                    charge(2)?;
-                    if !assertion.accepts(input, *cursor, self.multiline) {
-                        return Ok(false);
-                    }
-                }
-                Instruction::Open(index) => state.starts[*index] = *cursor,
-                Instruction::Close(index) => {
-                    charge(1)?;
-                    let range = state.starts[*index]..*cursor;
-                    state.captures[*index] = Some(range.clone());
-                    state.touched.push(*index);
-                    if !self.capture_names.is_empty() {
-                        charge(2)?;
-                        if let Some(group) = self.capture_names[*index] {
-                            state.named[group] = Some(range);
-                        }
-                    }
-                }
-                Instruction::Reference(index) | Instruction::NamedReference(index) => {
-                    let range = if matches!(instruction, Instruction::Reference(_)) {
-                        &state.captures[*index]
-                    } else {
-                        &state.named[*index]
-                    };
-                    let Some(range) = range else {
-                        continue;
-                    };
-                    let Some(next) = cursor.checked_add(range.len()) else {
-                        return Ok(false);
-                    };
-                    let Some(units) = input.get(*cursor..next) else {
-                        return Ok(false);
-                    };
-                    for (&actual, &captured) in units.iter().zip(&input[range.clone()]) {
-                        charge(2)?;
-                        if canonicalize(actual, self.ignore_case)
-                            != canonicalize(captured, self.ignore_case)
-                        {
-                            return Ok(false);
-                        }
-                    }
-                    *cursor = next;
+                *cursor += 1;
+            }
+            Instruction::Assert(assertion) => {
+                charge(2)?;
+                if !assertion.accepts(input, *cursor, self.multiline) {
+                    return Ok(None);
                 }
             }
+            Instruction::Open(index) => state.starts[*index] = *cursor,
+            Instruction::Close(index) => {
+                charge(1)?;
+                let range = state.starts[*index]..*cursor;
+                state.captures[*index] = Some(range.clone());
+                state.touched.push(*index);
+                if !self.capture_names.is_empty() {
+                    charge(2)?;
+                    if let Some(group) = self.capture_names[*index] {
+                        state.named[group] = Some(range);
+                    }
+                }
+            }
+            Instruction::Reference(index) | Instruction::NamedReference(index) => {
+                let range = if matches!(instruction, Instruction::Reference(_)) {
+                    &state.captures[*index]
+                } else {
+                    &state.named[*index]
+                };
+                let Some(range) = range else {
+                    return Ok(Some(pc + 1));
+                };
+                let Some(next) = cursor.checked_add(range.len()) else {
+                    return Ok(None);
+                };
+                let Some(units) = input.get(*cursor..next) else {
+                    return Ok(None);
+                };
+                for (&actual, &captured) in units.iter().zip(&input[range.clone()]) {
+                    charge(2)?;
+                    if canonicalize(actual, self.ignore_case)
+                        != canonicalize(captured, self.ignore_case)
+                    {
+                        return Ok(None);
+                    }
+                }
+                *cursor = next;
+            }
         }
-        Ok(true)
+        Ok(Some(pc + 1))
     }
 }
 
@@ -589,11 +606,8 @@ fn prepare(
     let mut named_references = bindings.references.iter().peekable();
     let mut instructions = Vec::new();
     let mut groups = Vec::<GroupFrame>::new();
-    let mut choices = Vec::<Choice>::new();
-    let mut choice_in_progress = false;
-    let mut branches = Vec::new();
-    let mut branch_start = 0;
-    let mut branch_capture_start = 0;
+    let mut current = GroupFrame::open(None, &mut instructions);
+    let mut scopes = Vec::new();
     let mut capture_count = 0usize;
     let mut references = 0usize;
     let mut cursor = 0;
@@ -629,29 +643,21 @@ fn prepare(
                     let index = capture_count;
                     capture_count = capture_count.checked_add(1)?;
                     instructions.push(PreparedInstruction::Ready(Instruction::Open(index)));
+                    scopes.push(ScopeStep::Capture(index));
                     Some(index)
                 };
-                groups.push(GroupFrame {
-                    capture: group,
-                    body_start: instructions.len(),
-                    alternative_start: instructions.len(),
-                    alternatives: Vec::new(),
-                });
+                scopes.push(ScopeStep::Open);
+                groups.push(std::mem::replace(
+                    &mut current,
+                    GroupFrame::open(group, &mut instructions),
+                ));
             }
             0x29 => {
-                let mut group = groups.pop()?;
-                if !group.alternatives.is_empty() {
-                    group
-                        .alternatives
-                        .push(group.alternative_start..instructions.len());
-                    choice_in_progress = false;
-                    choices.push(Choice {
-                        start: group.body_start,
-                        end: instructions.len(),
-                        alternatives: group.alternatives,
-                    });
-                }
-                if let Some(index) = group.capture {
+                let parent = groups.pop()?;
+                let group = std::mem::replace(&mut current, parent);
+                let capture = group.finish(&mut instructions);
+                scopes.push(ScopeStep::Close);
+                if let Some(index) = capture {
                     instructions.push(PreparedInstruction::Ready(Instruction::Close(index)));
                 }
             }
@@ -671,30 +677,9 @@ fn prepare(
                 )));
                 references += 1;
             }
-            0x7c if groups.is_empty() => {
-                branches.push(Branch {
-                    instructions: branch_start..instructions.len(),
-                    captures: branch_capture_start..capture_count,
-                    choices: std::mem::take(&mut choices),
-                });
-                branch_start = instructions.len();
-                branch_capture_start = capture_count;
-                choice_in_progress = false;
-            }
             0x7c => {
-                let group = groups.last_mut()?;
-                if group.alternatives.is_empty() {
-                    if choice_in_progress
-                        || choices.last().is_some_and(|c| c.start >= group.body_start)
-                    {
-                        return None;
-                    }
-                    choice_in_progress = true;
-                }
-                group
-                    .alternatives
-                    .push(group.alternative_start..instructions.len());
-                group.alternative_start = instructions.len();
+                scopes.push(ScopeStep::Alternative);
+                current.next_alternative(&mut instructions);
             }
             0x5e | 0x24 => {
                 let mut assertion = Assertions::default();
@@ -748,15 +733,11 @@ fn prepare(
     }) {
         return None;
     }
-    branches.push(Branch {
-        instructions: branch_start..instructions.len(),
-        captures: branch_capture_start..capture_count,
-        choices,
-    });
+    current.finish(&mut instructions);
     Some(PreparedProgram {
         instructions,
         capture_count,
-        branches,
+        scopes,
     })
 }
 
@@ -896,7 +877,7 @@ mod tests {
         )
         .unwrap()
         .unwrap();
-        assert!(matcher.0.instructions.len() <= source.len());
+        assert!(matcher.0.instructions.len() <= source.len() * 2);
         assert_eq!(matcher.0.capture_names.len(), 10001);
         let mut work = 0;
         let found = matcher
@@ -910,6 +891,150 @@ mod tests {
         assert!(found.captures[..10000].iter().all(Option::is_none));
         assert_eq!(found.captures[10000], Some(0..1));
         assert!(work < 150000, "actual named-reference work {work}");
+    }
+
+    #[test]
+    fn nested_alternative_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?:(a|ab)|b)\1",
+            r"(?:a|(b|bc))\1",
+            r"((a|ab)(c|)|e)\1",
+            r"((a)|(ab|abc))\1\2\3",
+            r"(?:(?:(a)|(ab))|(b))\1\2\3",
+            r"(q)(?:(a|ab)|b)(c|)\1\2\3",
+            r"(?:(?:(a)|)|(?:(b)|))\1\2",
+            r"((a|)|(b|))\1",
+            r"(?:(a\1|b)|c)\1",
+            r"((\1a|b)|c)\1",
+            r"(?:(\w|\W)|(\d|\D))\1\2",
+            r"([^µ]|(?:[ab]|µ))\1",
+            r"\b((a|\w)|b)\1\b",
+            r"((a|ab)|c)(b|(?:c|))\1\3",
+            r"(?:(a|ab)|b)\1|(c|cd)\2",
+            r"(?:(a|ab)|b)\1|",
+            r"((?:(a)|b)|())\1\2\3",
+            r"x(((a)|(?:b|c)))\2y",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "aa",
+                    "bb",
+                    "abab",
+                    "abcabc",
+                    "bcc",
+                    "qababqab",
+                    "qabab",
+                    "aabb",
+                    "AaBa",
+                    "µΜ",
+                    "\n\n",
+                    " bb ",
+                    "\u{2028}abab\u{2029}",
+                    "\r\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nested_branch_failures_restore_shared_and_enclosing_capture_ranges() {
+        let matcher = RegExpBackreferenceMatcher::compile(
+            &JsString::from(r"(?:(?:(a)|(ab))|(b))\1\2\3"),
+            false,
+        )
+        .unwrap();
+        let found = matcher.find(&JsString::from("qabab"), 0, false).unwrap();
+        assert_eq!(found.range, 1..5);
+        assert_eq!(&*found.captures, &[None, Some(1..3), None]);
+        let matcher =
+            RegExpBackreferenceMatcher::compile(&JsString::from(r"((a|ab)(c|)|e)\1"), false)
+                .unwrap();
+        let found = matcher.find(&JsString::from("abab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..4);
+        assert_eq!(&*found.captures, &[Some(0..2), Some(0..2), Some(2..2)]);
+        let found = matcher.find(&JsString::from("ee"), 0, true).unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(&*found.captures, &[Some(0..1), None, None]);
+    }
+
+    #[test]
+    fn nested_name_participation_accepts_exclusive_slots_and_rejects_coexisting_slots() {
+        for (text, slots, expected) in [
+            (r"(?:(?:(a)|(ab))|(b))\k<x>", &[0, 1, 2][..], true),
+            (r"(?:(a)(b)|(c))\k<x>", &[0, 1][..], false),
+            (r"((a)|(b|c))\k<x>", &[0, 1][..], false),
+            (r"(?:(a|ab)|(b))\k<x>", &[0, 1][..], true),
+            (r"(?:(?:(a)|(b))(c)|(d))\k<x>", &[0, 2, 3][..], false),
+        ] {
+            let source = JsString::from(text);
+            let references = named_escapes(&source);
+            let mut work = 0;
+            let matcher = RegExpBackreferenceMatcher::compile_with_named_bindings_and_work(
+                &source,
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings {
+                    groups: &[slots],
+                    references: &references,
+                },
+                |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                },
+            )
+            .unwrap();
+            assert_eq!(matcher.is_some(), expected, "{text}");
+            if !expected {
+                assert_eq!(work, 0, "{text}");
+            }
+        }
+    }
+
+    #[test]
+    fn deeply_nested_choices_keep_flat_storage_failure_unwinding_and_optional_work() {
+        let source =
+            JsString::from(format!("{}a{}\\1", "(".repeat(100000), "|b)".repeat(100000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        assert!(matcher.0.instructions.len() <= source.len() * 2 * 2);
+        let found = matcher.find(&JsString::from("aa"), 0, true).unwrap();
+        assert_eq!(found.range, 0..2);
+        assert!(found.captures.iter().all(|r| *r == Some(0..1)));
+        assert!(matcher.find(&JsString::from("x"), 0, true).is_none());
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("aa"), 0, true, |n| {
+                    work += n;
+                    if work > 350000 { Err("host") } else { Ok(()) }
+                })
+                .unwrap_err(),
+            "host"
+        );
     }
 
     #[test]
@@ -1041,7 +1166,7 @@ mod tests {
     fn many_sequential_choices_keep_flat_capture_checkpoints_and_fallible_work() {
         let source = JsString::from(format!("{}\\1", "(a|b)".repeat(100000)).as_str());
         let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
-        assert!(matcher.0.instructions.len() <= source.len());
+        assert!(matcher.0.instructions.len() <= source.len() * 2);
         let input = JsString::from("a".repeat(100001).as_str());
         let found = matcher.find(&input, 0, true).unwrap();
         assert_eq!(found.range, 0..100001);
@@ -1057,9 +1182,9 @@ mod tests {
             "host"
         );
         for source in [
-            r"(?:(a|b)|c)\1",
-            r"(?:a|(b|c))\1",
-            r"((a|b)(c|d)|e)\1",
+            r"(?:(a|b)|c)\1+",
+            r"(?:a|(b|c))\1+",
+            r"((a|b)(c|d)|e)\1+",
             r"(a|b)(c|d)\1+",
         ] {
             let mut work = 0;
@@ -1224,7 +1349,7 @@ mod tests {
             format!("{}(?:(?:{})a)\\1", "(a)".repeat(10000), "b|".repeat(10000)).as_str(),
         );
         let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
-        assert!(matcher.0.instructions.len() <= source.len());
+        assert!(matcher.0.instructions.len() <= source.len() * 2);
         let mut work = 0;
         let found = matcher
             .find_with_work(&JsString::from("a".repeat(10002).as_str()), 0, true, |n| {

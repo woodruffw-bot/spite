@@ -125,7 +125,7 @@ fn explicit_inner_choice_search_work_aborts_before_last_index_and_handlers() {
 fn additional_inner_choices_and_repeated_reference_bodies_keep_unsupported_outcomes() {
     for source in [
         r"/(a|b)(c|d)\1+/.test('aca')",
-        r"/(?:(a|b)|c)\1/.test('aa')",
+        r"/(?:(a|b)|c)\1+/.test('aa')",
         r"/(?:(?<x>a)|(?<x>b))\k<x>+/.test('bb')",
         r"/(?:(?<x>a)|(?<x>b))\k<x>/u.test('bb')",
     ] {

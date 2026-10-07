@@ -1847,6 +1847,32 @@ targets and documentation tests. Formatting, denied-warning Clippy, dependency/
 fixture policy, offline generator checks and default two-mebibyte debug-stack
 checks pass.
 
+Arbitrarily nested ordinary alternatives now compose with numbered and named
+references through flat ordered-choice and forward-jump instructions. Four added
+core regressions cover an inspected 3,240-record insta snapshot, failed nested
+body/continuation restoration, enclosing and inactive capture ranges, checked
+MightBothParticipate name inventories, and 100,000 nested choices with iterative
+failure unwinding and opted-in aborts. Storage-counter bounds permit control-flow
+instructions and verify linear storage without imposing an execution quota. All
+seven earlier core reference snapshots remain byte-identical. Six runtime
+regressions cover an inspected 24-record result snapshot, nested duplicate names,
+common prefix captures, undefined/empty participation and groups/indices aliases,
+ordinary predicates/flags/raw surrogates, global/sticky consumers, empty-match
+advancement, source-preserving copies, collection, 100,000 nested choices and
+named scopes under unlimited defaults, explicit search aborts and remaining gaps.
+Node agrees with every added core/native record, 268,128 numbered-reference and
+173,952 named-reference fresh match/capture comparisons, and ten runtime programs.
+Existing reference snapshots are unchanged. Six older nested-choice gap controls
+now retain quantified references; all 390 direct gap programs and three eval
+host-gap programs remain unsupported. Quantified reference bodies, lookaround/
+scoped modifiers and Unicode matching remain pending. No fixtures or fixture
+credit are added; inventories, the pin, dependencies and unlimited defaults are
+unchanged.
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation tests. Formatting, denied-warning Clippy, dependency/
+fixture policy, offline generator checks and default two-mebibyte debug-stack
+checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
