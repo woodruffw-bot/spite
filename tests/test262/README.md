@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7027 unmodified test fixtures and ten harness files come from
+These 7028 unmodified test fixtures and ten harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -11,11 +11,21 @@ The directory review covers all 79 whole programs at the existing pin. With
 native top-level literal alternatives, seven further unchanged originals add
 fourteen normal/strict positives: S15.10.6.2_A1_T1, T9, T10, T11, T14, T17 and T18.
 They verify source-order ties, earliest-position selection, match Array contents,
-and function/Number/Boolean/null/undefined input conversion. Fifty-three directory
-programs are now vendored, including the prior not-a-constructor original; 26
+and function/Number/Boolean/null/undefined input conversion. Fifty-four directory
+programs are now vendored, including the prior not-a-constructor original; 25
 still need broader execution and remain excluded. Both compilers pass all added
 variants with the ten original helpers and unlimited defaults. No source,
 assertion, helper, metadata or pin is changed to earn credit.
+
+One-unit dot/literal choices enable the unchanged complete
+S15.10.6.2_A12.js original and two normal/strict positives. After an earlier
+`/foo/` test, its original `(.|\r|\n)*` constructor verifies that `exec()` converts
+an absent argument to `"undefined"` rather than reusing prior matching input.
+The complete body, assertions and metadata were read and compared with the
+pinned upstream source; its Git blob and manifest SHA-256 verify the exact bytes.
+Both Script modes use the existing unchanged helpers and unlimited defaults.
+The directory selection is 54 of 79 whole originals, with 25 exclusions receiving
+no credit. No pin, helper or negative expectation changes.
 
 The ordinary dot matcher enables three further unchanged whole programs:
 success-g-lastindex-no-access.js, success-lastindex-access.js and
@@ -34,7 +44,7 @@ input conversion, intrinsic match Array contents/index/input, class ranges and
 eleven successive global matches through the complete original poem. All source
 bytes, assertions, metadata, ten helpers and the pin are unchanged. Both compilers
 pass all eight variants with unlimited defaults. The reviewed exec directory now
-has 53 vendored programs and 26 excluded programs, with no credit for exclusions.
+has 54 vendored programs and 25 excluded programs, with no credit for exclusions.
 
 Single-atom quantifiers add three unchanged whole programs and six normal/strict
 positives: S15.10.6.2_A1_T19, A3_T5 and A3_T7. They verify undefined input conversion
@@ -42,7 +52,7 @@ with exact repetition, three successive global digit runs, and ten nonglobal
 calls returning the same first run. Both compilers pass every selected variant
 with unlimited defaults. Git blob hashes and manifest SHA-256 digests verify the
 original bytes; assertions, metadata, the ten helpers and pin are unchanged.
-The exec-directory inventory is now 53 vendored programs and 26 exclusions out
+The exec-directory inventory is now 54 vendored programs and 25 exclusions out
 of 79 complete reviewed originals, with no passing credit for exclusions.
 
 Quantified literal continuations add the unchanged complete S15.10.6.2_A3_T3
@@ -50,7 +60,7 @@ program and two normal/strict positives. Its original poem requires twelve
 successive global [Nn]?evermore matches, including evermore without an initial N.
 Both compilers pass both variants with unlimited defaults, original assertions,
 metadata, ten helpers and pin. Git blob and manifest digests verify the original
-bytes. The reviewed exec directory now has 53 vendored originals and 26 excluded
+bytes. The reviewed exec directory now has 54 vendored originals and 25 excluded
 originals out of 79 complete programs, with no credit for exclusions.
 
 Quantified captures add the unchanged complete S15.10.6.2_A3_T6 program and two
@@ -58,7 +68,7 @@ normal/strict positives. Its original /(\d+)/g pattern finds three successive
 digit runs through the original loop and assertions. Both compilers pass both
 variants with unlimited defaults, original metadata, ten helpers and pin. Git
 blob and manifest digests verify the exact source bytes. The exec directory now
-has 53 vendored originals and 26 excluded originals out of 79 reviewed programs,
+has 54 vendored originals and 25 excluded originals out of 79 reviewed programs,
 with no credit for exclusions.
 
 Literal prefixes add the unchanged complete S15.10.6.2_A1_T3 and T4 programs
@@ -66,8 +76,8 @@ and four normal/strict positives. Their original greedy and lazy bounded pattern
 check boxed String and custom toString input conversion, match Array contents,
 index and input. Both compilers pass all four variants with unlimited defaults,
 original assertions and metadata, the ten helpers and the same pin. Git blob and
-manifest digests verify the exact bytes. The exec inventory is now 53 vendored
-originals and 26 excluded originals out of 79 reviewed programs, with no passing
+manifest digests verify the exact bytes. The exec inventory is now 54 vendored
+originals and 25 excluded originals out of 79 reviewed programs, with no passing
 credit for exclusions.
 
 A further focused review reads 25 whole exec programs after literal evaluation
@@ -1738,7 +1748,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13494 variants from 7008 reviewed sources: the eleven
+The `spite-test262` command runs 13496 variants from 7009 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1767,14 +1777,14 @@ parse-negative), and 48 private element parse-negative files, and 56 private-fie
 execution files, and 128 private method/accessor execution files, and 83 WeakSet
 files, and 337 RegExp literal boundary, flag, core Pattern, class-range, named
 capture, and Unicode property files (nineteen positives and 318 parse negatives),
-plus 180 RegExp builtin positives for escape, construction, slots, native exec and
+plus 181 RegExp builtin positives for escape, construction, slots, native exec and
 generic matching operations.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-12017 positives using the upstream harness, 1469 reviewed parse-negative variants,
+12019 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

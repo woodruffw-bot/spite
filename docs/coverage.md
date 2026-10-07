@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13494 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13496 reviewed Test262 variants, ten pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -95,7 +95,7 @@ comma call receivers and indirect eval, String/BigInt results, 100,000 arithmeti
 operations, 1,000 string concatenations, and opted-in host aborts. Ten independent
 Node programs confirm the semantic expectations. Genuine recursive syntax retains
 the existing stack guards; no default quota or test-only allowance is added.
-Stable and MSRV pass the complete 13494-variant corpus, workspace and documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace and documentation
 tests, and the debug-symbol stack checks. Formatting, Clippy, dependency policy,
 fixture inventory and the pinned Unicode/numeric generator checks also pass.
 
@@ -346,8 +346,8 @@ unchanged; one program requiring broader matching remains
 outside the corpus. This is not a complete directory review. Original bytes,
 assertions and metadata are unchanged, and both compiler versions pass every
 selected variant with ordinary unlimited defaults. The pin, ten helpers and all
-prior exact negative expectations are unchanged. Corpus totals are 7027 fixtures,
-7008 reviewed Script sources and 13494 variants, including 12017 harness positives.
+prior exact negative expectations are unchanged. Corpus totals are 7028 fixtures,
+7009 reviewed Script sources and 13496 variants, including 12019 harness positives.
 
 A subsequent focused exec review reads 25 further whole programs at the same pin.
 Twelve unchanged originals add 24 normal/strict positives for abrupt input
@@ -358,7 +358,7 @@ At that stage, thirteen reviewed originals required alternatives, classes,
 quantifiers or wildcard matching and remained excluded; the directory-wide
 inventory below records the current selection. Both compilers pass the full selected
 cohort and complete corpus with unchanged helpers and unlimited defaults. Totals
-are 7027 fixtures, 7008 Script sources and 13494 variants, including 12017 harness
+are 7028 fixtures, 7009 Script sources and 13496 variants, including 12019 harness
 positives. All prior negative expectations and upstream bytes remain unchanged.
 
 The exec-directory review covers all 79 whole programs at the same pin. After
@@ -369,8 +369,8 @@ directory programs are now vendored, including the prior non-construction
 original; 26 still need broader execution and remain excluded. Both compilers
 pass every added variant with unlimited defaults and the ten original helpers.
 Assertions, metadata, upstream bytes, the pin and every prior negative expectation
-remain unchanged. Totals are 7027 fixtures, 7008 reviewed Script sources and 13494
-variants, including 12017 harness positives.
+remain unchanged. Totals are 7028 fixtures, 7009 reviewed Script sources and 13496
+variants, including 12019 harness positives.
 
 The ordinary dot matcher enables three further unchanged exec originals and
 six normal/strict positives for lastIndex conversion, global writes, nonglobal
@@ -381,8 +381,8 @@ and 26 excluded. Iterative binary-chain parsing lets all three previously
 depth-limited concatenation programs parse normally. Fixed sequences enable
 S15.10.6.2_A3_T2; quantified literal continuations enable T3. T4 still needs
 nested choices and remains excluded without passing credit.
-Corpus totals are 7027 fixtures, 7008 reviewed Script sources and 13494 variants,
-including 12017 harness positives; the pin and every negative expectation remain
+Corpus totals are 7028 fixtures, 7009 reviewed Script sources and 13496 variants,
+including 12019 harness positives; the pin and every negative expectation remain
 unchanged.
 
 Fixed ordinary sequences add four unchanged whole exec programs and eight
@@ -391,9 +391,9 @@ Boolean/undefined input conversion, class ranges, original match Array contents,
 index/input properties and eleven successive global matches through the complete
 original poem. Both compilers pass all eight selected variants with the ten
 unchanged helpers, original assertions/metadata and unlimited defaults. The exec
-inventory is 53 of 79 whole programs vendored, with 26 exclusions receiving no
-passing credit. Totals are 7027 fixtures, 7008 reviewed Script sources, 13494
-variants and 12017 harness positives. The pin and every prior negative expectation
+inventory is 54 of 79 whole programs vendored, with 25 exclusions receiving no
+passing credit. Totals are 7028 fixtures, 7009 reviewed Script sources, 13496
+variants and 12019 harness positives. The pin and every prior negative expectation
 remain unchanged.
 
 Single-atom quantifiers add three unchanged whole exec programs and six
@@ -403,10 +403,10 @@ nonglobal calls returning the same first run. All original source blobs were
 verified by Git SHA-1 and the manifest retains their SHA-256 digests. Both
 compilers pass all six selected variants with unlimited defaults, the same ten
 helpers and original assertions/metadata. The exec-directory inventory is now
-53 of 79 whole programs vendored, with 26 exclusions receiving no credit.
-Totals are 7027 fixtures, 7008 reviewed Script sources, 13494 variants and 12017
+54 of 79 whole programs vendored, with 25 exclusions receiving no credit.
+Totals are 7028 fixtures, 7009 reviewed Script sources, 13496 variants and 12019
 harness positives. The pin and every prior negative expectation are unchanged.
-Stable and MSRV pass all 13494 corpus variants and workspace/documentation tests.
+Stable and MSRV pass all 13496 corpus variants and workspace/documentation tests.
 Formatting, Clippy, policy, fixture inventory and pinned generator checks pass.
 
 Quantified literal continuations add the unchanged whole S15.10.6.2_A3_T3 exec
@@ -414,10 +414,10 @@ program and its two normal/strict positives. Its original complete poem requires
 twelve successive global [Nn]?evermore matches, including the occurrence without
 an initial N. Both compilers pass both variants with unlimited defaults, original
 assertions/metadata and the same ten helpers. Git blob SHA-1 and manifest SHA-256
-verify the source bytes. The exec inventory is now 53 of 79 whole programs
-vendored, with 26 exclusions receiving no credit. Totals are 7027 fixtures, 7008
-reviewed Script sources, 13494 variants and 12017 harness positives. The pin and
-every prior negative expectation are unchanged. Both compilers pass all 13494
+verify the source bytes. The exec inventory is now 54 of 79 whole programs
+vendored, with 25 exclusions receiving no credit. Totals are 7028 fixtures, 7009
+reviewed Script sources, 13496 variants and 12019 harness positives. The pin and
+every prior negative expectation are unchanged. Both compilers pass all 13496
 corpus variants and workspace/documentation tests. Formatting, Clippy, policy,
 fixture inventories and pinned generator checks pass.
 
@@ -426,10 +426,10 @@ two normal/strict positives. The original global digit-capture pattern finds
 three successive runs through the complete original loop and assertions. Both
 compilers pass both variants with unlimited defaults, original metadata and the
 same ten helpers. Git blob SHA-1 and manifest SHA-256 verify the source bytes.
-The exec inventory is now 53 of 79 whole programs vendored, with 26 exclusions
-receiving no credit. Totals are 7027 fixtures, 7008 reviewed Script sources,
-13494 variants and 12017 harness positives. The pin and every prior negative
-expectation are unchanged. Stable and MSRV pass all 13494 corpus variants and
+The exec inventory is now 54 of 79 whole programs vendored, with 25 exclusions
+receiving no credit. Totals are 7028 fixtures, 7009 reviewed Script sources,
+13496 variants and 12019 harness positives. The pin and every prior negative
+expectation are unchanged. Stable and MSRV pass all 13496 corpus variants and
 workspace/documentation tests. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -439,10 +439,10 @@ verify boxed String and custom toString input conversion, match Array contents,
 index and input. Both compilers pass all four variants with unlimited defaults,
 original assertions and metadata, and the same ten helpers. Git blob SHA-1 and
 manifest SHA-256 verify the exact bytes. The exec inventory is now 53 of 79 whole
-programs vendored, with 26 exclusions receiving no credit. Totals are 7027
-fixtures, 7008 reviewed Script sources, 13494 variants and 12017 harness positives.
+programs vendored, with 25 exclusions receiving no credit. Totals are 7028
+fixtures, 7009 reviewed Script sources, 13496 variants and 12019 harness positives.
 The pin and every prior negative expectation are unchanged. Stable and MSRV pass
-all 13494 corpus variants and workspace/documentation tests. Formatting, Clippy,
+all 13496 corpus variants and workspace/documentation tests. Formatting, Clippy,
 policy, fixture inventories and all pinned generator checks also pass.
 
 RegExp literals now produce validated AST values and call intrinsic RegExpCreate
@@ -584,7 +584,7 @@ Older gap regressions now use unsupported quantifiers and retain their host-erro
 expectations; identity-escape regressions also check successful fixed sequences.
 The corpus and pin are unchanged. Choices, internal assertions, quantifiers, backreferences,
 named/scoped groups and Unicode-mode sequences remain pending.
-Both compilers pass the complete 13494-variant corpus, workspace/documentation
+Both compilers pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 the pinned Unicode/numeric generator checks pass. Existing snapshots are unchanged.
 
@@ -597,7 +597,7 @@ collection under an opted-in allowance. All 4,818 independent Node range/capture
 comparisons remain identical. In one local unoptimized 20,000-identical-atom probe,
 peak process memory fell from 163880 KiB to 8448 KiB; both versions matched the
 same input. Existing snapshots and the corpus are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
 
@@ -613,7 +613,7 @@ construction/search aborts. Existing literal anchor and sequence snapshots retai
 their values; literal scans keep their prefix-failure matcher. Internal assertions,
 choices, quantifiers and Unicode modes remain pending. The corpus, pin and default
 quota policy are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
 
@@ -635,7 +635,7 @@ now use unsupported quantifiers. Internal/nested choices, quantifiers,
 backreferences, named/scoped groups and Unicode-mode matching remain pending.
 No additional reviewed whole Test262 programs become eligible; the corpus and
 pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
 
@@ -656,7 +656,7 @@ concatenations. Quantified groups, continuations, assertions, choices,
 backreferences and Unicode-mode quantifiers remain pending. The corpus and pin
 are unchanged; three further whole reviewed exec programs are eligible for a
 separate unchanged-fixture commit recorded in the inventory above.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass. Earlier matcher snapshots retain their
 values.
@@ -675,7 +675,7 @@ unlimited defaults. Three older gap regressions retain unsupported multi-atom
 groups, including direct eval's ordered host-abort effects. Capturing/multi-atom
 groups, multiple quantifiers, continuations, assertions, choices and Unicode
 modes remain pending. The corpus and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
 
@@ -696,7 +696,7 @@ continuations, multiple quantifiers, enclosing concatenation groups, assertions,
 choices and Unicode modes remain pending. Existing snapshots, the corpus and pin
 are unchanged. One further reviewed whole exec poem program is vendored in the
 separate unchanged-fixture inventory above.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventory and
 all pinned generator checks also pass.
 
@@ -716,7 +716,7 @@ remaining-input charges for sticky quantified branches; default quotas remain
 unlimited. Plans remain immutable, and searches allocate nothing or expand
 repetitions. Nested choices, captured quantified groups, anchored quantified
 branches and Unicode modes remain pending. The corpus and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -738,7 +738,7 @@ recursion. Optional sticky work covers the entire remaining input, including
 anchored branches in choices; defaults remain unlimited. Captured quantified
 groups, nested choices, internal assertions, multiple quantifiers and Unicode
 modes remain pending. The corpus and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -761,7 +761,7 @@ recursion. Captured suffixes, multi-atom/named groups, nested choices, multiple
 quantifiers and Unicode modes remain pending. The corpus and pin are unchanged.
 The further reviewed whole exec program is vendored in the separate unchanged-
 fixture inventory above.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -785,7 +785,7 @@ work accounting. Enclosing concatenation groups, character-set continuations,
 nested choices, named groups, multiple quantifiers and Unicode modes remain
 pending. The diagnostic fixture review enables no further whole programs. The
 corpus, inventories and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -806,7 +806,7 @@ allocating capture matrices. Capturing outer concatenation/choice groups, named
 groups, nested choices within concatenations, multiple quantifiers and Unicode
 modes remain pending. The diagnostic fixture review enables no further whole
 programs. The corpus, inventories and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -829,7 +829,7 @@ programs. Matcher storage adds only scalar prefix/total counts to the existing
 body plan, without native recursion, a wrapper tree or search allocations.
 Backreferences remain unsupported after normalization. The fixture review
 enables no further whole programs. The corpus, inventories and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -853,7 +853,7 @@ Nested choices, quantified multi-atom groups, embedded continuations/assertions,
 named groups, backreferences and Unicode modes remain pending. The fixture
 review enables no further whole programs. The corpus, inventories and pin are
 unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -879,7 +879,7 @@ matrix. Choices inside anchored bodies, quantified multi-atom groups, embedded
 assertions/continuations, named groups, backreferences and Unicode modes remain
 pending. The fixture review enables no further whole programs. The corpus,
 inventories and pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -906,7 +906,7 @@ recorded in the separate fixture inventory above. The pin is unchanged.
 Multiple consuming quantifiers, nested choices, named
 groups, backreferences and Unicode modes remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -930,7 +930,7 @@ Grouped multi-atom repetition, nonliteral
 continuations, nested choices, named groups, backreferences and Unicode modes
 remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -954,7 +954,7 @@ corpus, inventories and pin are unchanged. Repeated multi-atom groups, multiple
 quantifiers, nested choices, named groups,
 backreferences and Unicode modes remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -978,7 +978,7 @@ fixture review enables no further programs; the corpus, inventories and pin are
 unchanged. Repeated multi-atom groups, multiple quantifiers, embedded choices,
 named groups, backreferences and Unicode modes remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1000,7 +1000,7 @@ Test262 programs; inventories and the pin are unchanged. Embedded assertions,
 assertions inside consuming groups within outer assertion bodies, and
 Unicode-mode matching remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1021,7 +1021,7 @@ unchanged. Input/line assertions embedded within consuming bodies, assertions
 within a repeated atom, multiple quantifiers, named groups, backreferences and
 Unicode modes remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1042,7 +1042,7 @@ enables no further programs; inventories and the pin are unchanged. Input/line
 assertions within variable consuming bodies or repeated atoms, multiple
 quantifiers, named groups, backreferences and Unicode modes remain pending.
 
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1063,7 +1063,7 @@ whole-fixture review enables no further programs; inventories and the pin are
 unchanged. Assertions inside a repeated atom, repeated multi-atom groups,
 multiple quantifiers, named groups, backreferences and Unicode modes remain
 pending.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1084,7 +1084,7 @@ terms around repeated literal groups, repeated sets/choices/empty groups,
 multiple quantifiers, named groups, backreferences and Unicode modes remain
 pending. The whole-fixture review enables no additional programs; inventories
 and the existing Test262 pin are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1104,7 +1104,7 @@ repeated groups. Whole-fixture review enables no new programs; inventories and
 the Test262 pin are unchanged. Assertions inside or around repeated groups,
 surrounding fixed terms, repeated choices/empty groups, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks. Formatting, Clippy, policy, fixture inventories
 and all pinned generator checks also pass.
 
@@ -1120,7 +1120,7 @@ seconds to 0.76 seconds after this fix; no case or coverage is removed. A separa
 100,000-capture result/indices regression, including collection, completes with
 the other three runtime regressions in 1.34 seconds. Matching grammar, corpus
 inventories and the pinned Test262 revision are unchanged.
-Stable and MSRV pass the complete 13494-variant corpus, workspace/documentation
+Stable and MSRV pass the complete 13496-variant corpus, workspace/documentation
 tests and debug-stack checks, including the fresh-array object regressions.
 Formatting, Clippy, policy, fixture inventories and all pinned generator checks
 also pass.
@@ -1134,7 +1134,7 @@ running language handlers. All three complete in 1.51 seconds. The earlier
 outer-assertion prototype was killed while allocating repeated copies; its exact
 stress case remains in the prototype. Grammar, corpus inventories and pin are
 unchanged.
-Stable and minimum-supported Rust pass the complete 13,494-variant corpus,
+Stable and minimum-supported Rust pass the complete 13,496-variant corpus,
 workspace/documentation tests and debug native-stack checks. Formatting, Clippy,
 dependency policy, fixture inventories and all offline generator checks pass.
 
@@ -1157,7 +1157,7 @@ assertion/empty repeated groups, outer assertions and fixed terms around repeate
 groups, repeated choices, additional quantifiers, named groups, backreferences
 and Unicode modes remain pending.
 
-Stable and minimum-supported Rust pass all 13,494 unchanged full-corpus variants,
+Stable and minimum-supported Rust pass all 13,496 unchanged full-corpus variants,
 workspace targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all offline
 Unicode, RegExp-property and number-table generators also pass.
@@ -1181,7 +1181,7 @@ review enables no new programs; corpus inventories and pin are unchanged. Pure
 assertion/empty repeated groups, fixed terms around repeated groups, repeated
 choices, additional quantifiers, named groups, backreferences and Unicode modes
 remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks also pass.
@@ -1205,7 +1205,7 @@ as the unsupported boundary. Whole-fixture review enables no new whole programs;
 pin are unchanged. Surrounding fixed terms, repeated choices and
 variable bodies, additional quantifiers, named groups, backreferences and
 Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks also pass. The disk-full minimum-version workspace
@@ -1231,7 +1231,7 @@ boundary. Whole-fixture review enables no new whole programs; inventories and
 the pin remain unchanged. Fixed prefixes around repeated groups, captures spanning partial
 variable bodies, repeated choices, additional quantifiers, named groups,
 backreferences and Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass. The disk-full workspace/integration batches
@@ -1257,7 +1257,7 @@ boundary; all 259 audited gap programs remain unsupported. Whole-fixture review
 enables no new whole programs; inventories and the pin remain unchanged. Captures
 spanning partial variable bodies, repeated choices, additional quantifiers,
 named groups, backreferences and Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
@@ -1281,7 +1281,7 @@ repeated choices as the unsupported boundary; all 265 audited gap programs remai
 unsupported. Whole-fixture review enables no new whole programs; inventories
 and the pin remain unchanged. Repeated choices, additional quantifiers, named
 groups, backreferences and Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
@@ -1304,7 +1304,7 @@ as the unsupported boundary; all 271 audited gap programs remain unsupported.
 Whole-fixture review enables no new whole programs; inventories and the pin remain
 unchanged. Repeated choices, additional quantifiers, named groups, backreferences
 and Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
@@ -1330,7 +1330,7 @@ all 281 audited gap programs remain unsupported. Whole-fixture review enables
 no new whole programs; inventories and the pin remain unchanged. Other repeated
 choices, extra groups inside the repeated atom, additional quantifiers, named
 groups, backreferences and Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
@@ -1354,7 +1354,7 @@ review enables no new whole programs; inventories and the pin remain unchanged.
 Branch-specific captures, extra fixed terms inside the repeated choice body,
 other repeated choices, additional quantifiers, named groups, backreferences and
 Unicode modes remain pending.
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
@@ -1381,7 +1381,7 @@ programs; inventories and the existing pin remain unchanged. Wider/empty and
 capture-dependent alternatives, class/dot choices, additional quantifiers, named
 groups, backreferences and Unicode modes remain pending.
 
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
@@ -1410,10 +1410,29 @@ adds no fixture credit and preserves inventories and the existing pin. Outer
 inverted-class and branch-specific choices, empty/wider alternatives, additional
 quantifiers, named groups, backreferences and Unicode modes remain pending.
 
-Stable and minimum-supported Rust pass all 13,494 full-corpus variants, workspace
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
 targets and documentation tests, and debug native-stack checks. Formatting,
 Clippy with warnings denied, dependency policy, fixture inventories and all
 offline generator checks pass.
+
+The unchanged whole RegExp.prototype.exec S15.10.6.2_A12.js original adds two
+harness-positive Script variants at the existing pin. Its dot/CR/LF choice under
+`*` verifies absent-input conversion to `"undefined"` after an earlier native
+match, retaining every source byte, assertion, metadata field and helper.
+Fresh pinned-upstream comparison, Git blob identity and manifest SHA-256 verify
+the original. The exec selection is 54 of 79 complete originals, with 25 excluded;
+RegExp builtin coverage is 181 native positives, separate from 337 grammar
+fixtures. Corpus totals are 7028 fixtures, ten unchanged helpers, 7009 reviewed
+Script sources and 13496 variants: 12019 harness positives, 1469 parse negatives,
+four raw positives and four runtime negatives. No unsupported program earns
+credit, and no negative expectation or pin changes.
+
+
+Stable and minimum-supported Rust pass both new Script variants and all 13,496
+full-corpus variants, workspace targets and documentation tests. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass. Native implementation and stack-safety coverage
+remain covered by the preceding implementation commit's complete checks.
 
 Standalone ParsePattern validation now accepts arbitrary UTF-16 constructor
 Strings and returns exact capture counts through the parser's public API. Three
@@ -3188,7 +3207,7 @@ verify successful assertions and explicit assertion failures. String comparison
 failure formatting now uses JSON.stringify and reports ordinary assertion failures;
 Array.fromAsync, other includes, async completion, and agents
 remain gaps. CI runs the reviewed corpus on Linux and Windows with MSRV and stable
-Rust. Its 13494 variants are four raw positives, 12017 positives using the upstream
+Rust. Its 13496 variants are four raw positives, 12019 positives using the upstream
 harness, 1469 reviewed parse negatives, and four runtime negatives. Component fixtures and harness files do
 not enter this count; it is not a whole-suite conformance measurement.
 The unchanged propertyHelper.js verifies the installed Math functions' name and
