@@ -130,7 +130,7 @@ fn sticky_optional_work_covers_all_continuation_candidates_and_host_failures() {
         "/a+[b]+/.test('ab')",
         "/(a[b]|c)+/.test('ab')",
         "/a+(b|cd)/.test('ab')",
-        "/a+(?<n>b)/.test('ab')",
+        "/a+(?<n>b)\\k<n>/.test('ab')",
         "/a+[b]/u.test('ab')",
     ] {
         assert!(

@@ -132,7 +132,7 @@ fn optional_host_work_aborts_and_remaining_variable_group_features_are_unsupport
         r"/a+b(ab)+c/.test('ababc')",
         r"/x(ab|a)+c/.test('xabc')",
         r"/x(ab)+(c)+/.test('xabc')",
-        r"/x(?<n>ab)+c/.test('xabc')",
+        r"/x(?<n>ab)+c\k<n>/.test('xabc')",
         r"/x(ab)+\1/.test('xabab')",
         r"/x((ab|a)+)c/.test('xabc')",
         r"/x(ab)+c/u.test('xabc')",

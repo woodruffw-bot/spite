@@ -133,7 +133,7 @@ fn optional_host_failures_and_remaining_variable_group_features_are_distinct() {
         r"/((ab|a)+)c/.test('abc')",
         r"/((ab)+)(c)+/.test('abc')",
         r"/((a*)+)b/.test('ab')",
-        r"/(?<n>(ab)+)c/.test('abc')",
+        r"/(?<n>(ab)+)c\k<n>/.test('abc')",
         r"/((ab)+)\1/.test('abab')",
         r"/x((ab)+)c/u.test('xabc')",
     ] {

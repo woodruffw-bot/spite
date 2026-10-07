@@ -1579,6 +1579,29 @@ revalidates constructor inputs and their serialized forms, checks capture counts
 and confirms the output passes literal boundary scanning. Native source getter
 exposure and matching remain pending; no fixture or matching credit is added.
 
+Native ordinary named captures now reuse all supported fixed, repeated, partial,
+anchored and top-level alternative plans through validated source-order metadata.
+Six runtime regressions cover an inspected 31-record result snapshot, exact slots,
+null prototypes, key order, descriptors, duplicate-name participation, undefined
+and empty captures, shared indices pairs and independent reassignment, generic
+consumers and replacement callbacks/substitutions, original-source copies,
+prototype setter bypass, 100,000 enclosing captures, slot and result collection,
+and opted-in property aborts. Node agrees with all 31 snapshot records and 12
+runtime programs. Two native storage regressions pass with immutable name metadata.
+Thirty-two earlier named-group gap controls now retain named backreferences; an
+additional eval control also retains a named backreference. All 349 audited gap
+programs remain unsupported. Every runtime target and Clippy with warnings denied
+passes. Whole exec-fixture diagnostics retain 30 passed and 50 unsupported variants
+with zero failures or limits. No upstream fixture changes or fixture credit accompany
+this implementation change. Named backreferences, unsupported conditional local
+choices and Unicode-mode matching remain pending. Inventories, the pin,
+dependencies and unlimited defaults are unchanged.
+
+Stable and minimum-supported Rust pass all 13,496 full-corpus variants, workspace
+targets and documentation tests, and debug native-stack checks. Formatting,
+Clippy with warnings denied, dependency policy, fixture inventories and all
+offline generator checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

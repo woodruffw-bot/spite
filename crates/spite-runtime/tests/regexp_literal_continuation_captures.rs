@@ -117,7 +117,7 @@ fn opted_in_host_aborts_and_unsupported_suffixes_remain_distinct() {
         "/a+(b|cd)/.test('ab')",
         "/(a+[b]+)/.test('ab')",
         "/a+(b+)/.test('ab')",
-        "/a+(?<x>b)/.test('ab')",
+        "/a+(?<x>b)\\k<x>/.test('ab')",
         "/a+(b)/u.test('ab')",
     ] {
         assert!(

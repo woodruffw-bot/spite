@@ -351,6 +351,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile complete noncapturing wrappers around single-unit alternative branches, preserving capture-free branch predicates, fixed/final-iteration/partial captures, assertions and flags with iterative preparation.
 - [x] Compile nested capture-free one-unit alternatives with iterative branch validation and flat predicates, preserving canonicalized inversion, fixed/final-iteration/partial captures, assertions, flags and source order.
 - [x] Compile transparent empty noncapturing groups inside one-unit alternative branches, preserving consuming widths, flat predicates, capture layouts, assertions and flags with iterative preparation.
+- [x] Execute ordinary named captures across supported plans, retaining decoded names and duplicate-name slots, null-prototype groups, undefined participation and aliased MatchIndices groups for native and generic consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

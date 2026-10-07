@@ -2,7 +2,7 @@
 
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpMatcherBody},
+    object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpMatcherBody, RegExpNamedGroup},
 };
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpCharacterMatcher,
@@ -11,7 +11,8 @@ use spite_core::{
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
 };
-use spite_parser::validate_regexp_pattern;
+use spite_parser::parse_regexp_pattern;
+use std::{collections::HashMap, sync::Arc};
 
 impl Realm {
     #[inline(never)]
@@ -139,19 +140,46 @@ impl Realm {
             budget.charge(source.len())?;
             budget.charge(flags.len())
         })?;
-        let captures =
-            validate_regexp_pattern(&source, &flags, span).map_err(
-                |diagnostic| match diagnostic.kind {
-                    DiagnosticKind::Syntax => {
-                        Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
-                    }
-                    DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
-                    DiagnosticKind::Limit => Error::Limit {
-                        span,
-                        message: diagnostic.message,
-                    },
+        let metadata = parse_regexp_pattern(&source, &flags, span).map_err(|diagnostic| {
+            match diagnostic.kind {
+                DiagnosticKind::Syntax => {
+                    Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
+                }
+                DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
+                DiagnosticKind::Limit => Error::Limit {
+                    span,
+                    message: diagnostic.message,
                 },
-            )?;
+            }
+        })?;
+        let captures = metadata.capture_count;
+        let (capture_source, named_groups) = self.object_work(span, |_, budget| {
+            if metadata.named_captures.is_empty() {
+                return Ok((source.clone(), Arc::from([])));
+            }
+            budget.charge(source.len())?;
+            budget.charge(metadata.named_captures.len())?;
+            let mut normalized = Vec::new();
+            let mut start = 0;
+            let mut groups = Vec::<RegExpNamedGroup>::new();
+            let mut names = HashMap::new();
+            for capture in metadata.named_captures {
+                normalized.extend_from_slice(&source.code_units()[start..capture.specifier.start]);
+                start = capture.specifier.end;
+                let slot = (capture.index - 1) as usize;
+                let group = *names.entry(capture.name.clone()).or_insert_with(|| {
+                    let index = groups.len();
+                    groups.push(RegExpNamedGroup {
+                        name: capture.name,
+                        slots: Vec::new(),
+                    });
+                    index
+                });
+                groups[group].slots.push(slot);
+            }
+            normalized.extend_from_slice(&source.code_units()[start..]);
+            Ok((JsString::from_code_units(normalized), Arc::from(groups)))
+        })?;
         let mut enclosing_captures = 0;
         let matcher = if flags
             .code_units()
@@ -160,25 +188,27 @@ impl Realm {
         {
             None
         } else {
-            let matching_source = if source.code_units().first() == Some(&0x28) {
+            let matching_source = if capture_source.code_units().first() == Some(&0x28) {
                 let (body, captures) = self.object_work(span, |_, budget| {
-                    budget.charge(source.len())?;
-                    budget.charge(source.len())?;
-                    budget.charge(source.len())?;
-                    if let Some(group) = regexp_outer_group_body(&source) {
+                    budget.charge(capture_source.len())?;
+                    budget.charge(capture_source.len())?;
+                    budget.charge(capture_source.len())?;
+                    if let Some(group) = regexp_outer_group_body(&capture_source) {
                         budget.charge(group.body.len())?;
                         Ok((
-                            JsString::from_code_units(source.code_units()[group.body].to_vec()),
+                            JsString::from_code_units(
+                                capture_source.code_units()[group.body].to_vec(),
+                            ),
                             group.captures,
                         ))
                     } else {
-                        Ok((source.clone(), 0))
+                        Ok((capture_source.clone(), 0))
                     }
                 })?;
                 enclosing_captures = captures;
                 body
             } else {
-                source.clone()
+                capture_source.clone()
             };
             self.object_work(span, |_, budget| {
                 budget.charge(source.len())?;
@@ -316,6 +346,7 @@ impl Realm {
                     source,
                     flags,
                     matcher,
+                    named_groups,
                 },
             )
         })?;

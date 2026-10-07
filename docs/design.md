@@ -144,8 +144,8 @@ and escape spelling. Names retain their decoded identifier units without
 normalization or case folding. Flag, duplicate-name and reference early errors
 still precede a successful result, and diagnostics keep the caller's source span.
 Collection, translation and deep groups use flat vectors and iterative scans.
-This supplies capture metadata for native matching; named result objects and
-named backreference execution remain pending.
+This supplies capture metadata for native matching. Named result construction
+is described below; named backreference execution remains pending.
 Capturing-group totals must remain strictly below 2^32 - 1 (22.2.1.1). Reject
 the first forbidden total before incrementing the counter; this is the specified
 grammar early error, not a host resource quota.
@@ -961,8 +961,8 @@ Brands are own slots, never inherited or inferred from public properties. The
 ordinary intrinsic prototype retains its special source/flag getter results.
 IsRegExp's undefined-marker fallback and Object.prototype.toString inspect the
 native brand. Exec requires that brand before converting its argument.
-Validated ordinary-mode literal Patterns compile to an immutable shared matcher;
-all other valid Patterns retain an explicit Unsupported execution result.
+Supported ordinary-mode Patterns compile to an immutable shared matcher;
+broader valid syntax retains an explicit Unsupported execution result.
 No matcher dependency or default quota is activated.
 
 RegExpBuiltinExec (22.2.7.2) converts lastIndex after the input, including when g/y
@@ -971,13 +971,33 @@ and d indices; public flag/source overrides cannot change execution. Non-global,
 non-sticky matching starts at zero without writing lastIndex. A failed g/y search
 resets +0; success writes its end before result construction. A past-end offset
 fails without invoking the matcher. Fresh intrinsic Arrays own the whole match
-and ordered capture strings, index, input and undefined groups. With d, indices
+and ordered capture strings, index, input and groups (undefined without names).
+With d, indices
 owns an intrinsic start/end pair for the whole match and each capture, plus
-undefined groups (22.2.7.8). All offsets count UTF-16 units. Array and
+a groups property (22.2.7.8). All offsets count UTF-16 units. Array and
 prototype overrides cannot intercept these data properties. RegExpExec's
 non-callable-exec fallback uses the same native operation; custom exec and all
 generic consumers retain live lookup. Opted-in work accounting charges the
 compiler and linear search; host aborts remain outside JavaScript handlers.
+
+Ordinary named captures reuse these plans (CapturingGroupName, 22.2.1.5;
+CompileSubpattern, 22.2.2.3; RegExpBuiltinExec, 22.2.7.2). Validated GroupSpecifier
+ranges remove only name prefixes from the private matching source, retaining
+ordinary capturing parentheses, source-order slots, flags and original source
+text. Decoded names bind to source-order slot lists, with duplicate names merged
+in first-appearance order. MightBothParticipate ensures at most one such slot
+participates; a selected empty capture remains distinct from undefined.
+Immutable metadata is shared through Arc and contains no heap-object edges.
+Existing fixed, repeated, partial, anchored and alternative capture plans supply
+the ranges. Result groups are fresh null-prototype ordinary Objects with own
+writable, enumerable, configurable data properties for every name, including
+unmatched groups. With d, indices.groups has the same keys and refers to the
+already allocated numeric capture pairs; updates through either reference affect
+the shared pair. Reassigning a property replaces that reference independently.
+Prototype hooks cannot intercept initialization, and generic consumers receive
+the resulting groups normally. Optional construction/result work remains
+explicitly charged; defaults remain unlimited. Named backreferences, unsupported
+conditional local choices and Unicode-mode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

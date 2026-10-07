@@ -9,7 +9,7 @@ use spite_core::{
     RegExpSequenceMatcher,
 };
 use spite_heap::Handle;
-use std::ops::Range;
+use std::{ops::Range, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub(crate) enum RegExpMatcherBody {
@@ -212,10 +212,17 @@ impl RegExpMatch<'_> {
 }
 
 #[derive(Clone, Debug)]
+pub(crate) struct RegExpNamedGroup {
+    pub name: JsString,
+    pub slots: Vec<usize>,
+}
+
+#[derive(Clone, Debug)]
 pub(crate) struct RegExpData {
     pub source: JsString,
     pub flags: JsString,
     pub matcher: Option<RegExpMatcher>,
+    pub named_groups: Arc<[RegExpNamedGroup]>,
 }
 
 impl Objects {
@@ -250,7 +257,7 @@ mod tests {
             (&stale, spite_heap::Error::StaleHandle),
         ] {
             assert!(
-                matches!(objects.initialize_regexp(object, RegExpData { source: JsString::from("a"), flags: JsString::from("g"),matcher:None }), Err(Error::Heap(error)) if error == expected)
+                matches!(objects.initialize_regexp(object, RegExpData { source: JsString::from("a"), flags: JsString::from("g"),matcher:None, named_groups: Arc::from([]) }), Err(Error::Heap(error)) if error == expected)
             );
         }
         assert!(objects.inspect(&live).unwrap().regexp_data().is_none());
@@ -270,6 +277,7 @@ mod tests {
                     flags: JsString::from("yg"),
                     matcher: RegExpLiteralMatcher::compile(&source, false)
                         .map(|body| RegExpMatcher::new(RegExpMatcherBody::Literal(body), 0)),
+                    named_groups: Arc::from([]),
                 },
             )
             .unwrap();
@@ -293,7 +301,8 @@ mod tests {
                 RegExpData {
                     source: JsString::default(),
                     flags: JsString::default(),
-                    matcher: None
+                    matcher: None,
+                    named_groups: Arc::from([]),
                 }
             ),
             Err(Error::WrongKind)

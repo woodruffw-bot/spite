@@ -173,7 +173,7 @@ impl Realm {
         let matched = self.regexp_substring(&string.code_units()[found.range.clone()], span)?;
         let mut previous = (found.range.clone(), matched.clone());
         elements.push(matched);
-        self.regexp_match_property(&array, "groups", Value::Undefined, span)?;
+
         // Every source-order group has an own element. A group in an unselected
         // alternative is undefined, distinct from a participating empty capture.
         for index in 0..found.capture_count {
@@ -195,12 +195,14 @@ impl Realm {
             };
             elements.push(value);
         }
+        let groups = self.regexp_named_groups(&data.named_groups, &elements, span)?;
+        self.regexp_match_property(&array, "groups", groups, span)?;
         self.object_work(span, |objects, budget| {
             objects.initialize_array_elements(&array, elements, budget)
         })?;
         if has_indices {
             let indices = self.create_intrinsic_array(length, span)?;
-            self.regexp_match_property(&indices, "groups", Value::Undefined, span)?;
+
             let mut elements = Vec::new();
             elements
                 .try_reserve_exact(count)
@@ -218,12 +220,54 @@ impl Realm {
                 };
                 elements.push(value);
             }
+            let groups = self.regexp_named_groups(&data.named_groups, &elements, span)?;
+            self.regexp_match_property(&indices, "groups", groups, span)?;
             self.object_work(span, |objects, budget| {
                 objects.initialize_array_elements(&indices, elements, budget)
             })?;
             self.regexp_match_property(&array, "indices", Value::Object(indices), span)?;
         }
         Ok(Value::Object(array))
+    }
+
+    fn regexp_named_groups(
+        &mut self,
+        names: &[crate::object::RegExpNamedGroup],
+        captures: &[Value],
+        span: Span,
+    ) -> Result<Value, Error> {
+        if names.is_empty() {
+            return Ok(Value::Undefined);
+        }
+        let groups = self.object_work(span, |objects, budget| {
+            budget.charge(names.len())?;
+            objects.create(None)
+        })?;
+        for group in names {
+            // MightBothParticipate rejects duplicate names that could both be
+            // selected. Keep the participating slot, including an empty capture.
+            self.object_work(span, |_, budget| budget.charge(group.slots.len()))?;
+            let value = group
+                .slots
+                .iter()
+                .map(|&slot| &captures[slot + 1])
+                .find(|value| !matches!(value, Value::Undefined))
+                .cloned()
+                .unwrap_or(Value::Undefined);
+            self.define_property_or_throw(
+                &groups,
+                group.name.clone(),
+                crate::object::DataDescriptor {
+                    value: Some(value),
+                    writable: Some(true),
+                    enumerable: Some(true),
+                    configurable: Some(true),
+                }
+                .into(),
+                span,
+            )?;
+        }
+        Ok(Value::Object(groups))
     }
 
     fn regexp_match_property(

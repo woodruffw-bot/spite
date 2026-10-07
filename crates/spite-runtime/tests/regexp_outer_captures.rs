@@ -133,7 +133,7 @@ fn optional_host_aborts_and_unsupported_bodies_remain_separate() {
         "/a(a|bc)/.test('ab')",
         "/((a|bc)+)/.test('ab')",
         "/(a+b)/u.test('ab')",
-        "/((?<x>a))/.test('a')",
+        "/((?<x>a))\\k<x>/.test('a')",
         r"/(\1a)/.test('a')",
         r"/((a)\1)/.test('aa')",
     ] {

@@ -127,7 +127,7 @@ fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
         "/(?:a+[b]+)/.test('ab')",
         "/(?:a(?=b))/.test('ab')",
         "/(?:a+b)/u.test('ab')",
-        "/(?:a+(?<x>b))/.test('ab')",
+        "/(?:a+(?<x>b))\\k<x>/.test('ab')",
     ] {
         assert!(
             matches!(
