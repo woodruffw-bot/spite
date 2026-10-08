@@ -2023,7 +2023,7 @@ proof independently of their enclosing backward assertion's direction. Negative
 failures retain scoped rollback and imported ranges.
 
 Right-hand targets retain their spans for fixed backward matching;
-units mixing outside Input reads with Open/Local/Future reads, unproved variable counts,
+units mixing outside Input reads with dependent Future reads, unproved variable counts,
 choices and Unicode modes remain pending. Exact-zero bodies keep their existing
 skip path. No new matching algorithm, count expansion, default quota, dependency
 or native recursion is introduced.
@@ -2050,10 +2050,34 @@ undefined Future reads and retain their rightmost capture effects. Negative and
 failed assertions use the existing scoped checkpoint rollback.
 
 Outside bare references can accompany these proved fixed units. Mixing outside
-reads into the same dependent unit, variable consuming counts, capture-dependent
+reads into the same unit with dependent Future reads, variable consuming counts, capture-dependent
 child assertions, unproved choices and Unicode modes remain pending. Checked
 width overflow does not establish a fixed proof. There is no default quota,
 dependency addition, repeated-source expansion or native recursion.
+
+
+Mixed exact-count ordinary lookbehind units can combine stable outside Input
+captures with proved empty same-unit Local, Open and Empty reads (22.2.2.3.1,
+22.2.2.8, 22.2.2.9.2). Local spans ending before their read are unmatched after
+RepeatMatcher clears owned captures in backward matching. Open spans remain
+unclosed, and Empty represents a known-empty right-hand span. These reads add
+zero to the complete owner's checked width inventory.
+
+The existing sequence resolver receives the matching direction. Ordinary forward
+resolution keeps its previous local-range calculation, charges and future/open
+undefined behavior. Backward mixed resolution treats proved Local reads as empty
+and retains imported outside ranges and source-order capture offsets. The complete
+owner proof still excludes every outside numeric or named alias that belongs to
+its owned scope, so imported values stay immutable while all units are compared.
+Existing matching exports the first backward iteration and restores owned slots
+after completed negative failures without overwriting imported captures.
+
+Consuming mixed units still require exact representable counts. Unrepresentable
+required minima retain one pass only for wholly empty resolved units; nonempty
+widths cannot fit a finite input. Dependent nonempty Future reads mixed with Input,
+unproved variable counts, choices and Unicode modes remain pending. This shares
+the existing resolver and matcher with no source expansion, recursion, dependency
+addition or default resource quota.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

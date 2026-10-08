@@ -1289,7 +1289,7 @@ impl Program {
                 let Some(ResolvedReferenceSequence {
                     ranges: captures,
                     offsets,
-                }) = self.resolve_reference_sequence(references, state, charge)?
+                }) = self.resolve_reference_sequence(references, state, false, charge)?
                 else {
                     return Ok((*min == Some(0)).then_some(pc + 1));
                 };
@@ -1460,6 +1460,7 @@ impl Program {
         &self,
         references: &[ReferenceTarget],
         state: &CaptureState,
+        backward: bool,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<ResolvedReferenceSequence>, E> {
         charge(references.len())?;
@@ -1484,8 +1485,14 @@ impl Program {
                 }
                 ReferenceTarget::Local(span) => {
                     charge(2)?;
-                    let range = offsets[span.start]..offsets[span.end];
-                    (!range.is_empty()).then_some(ReferenceRange::Local(range))
+                    if backward {
+                        // Its owned target lies to the left and has not matched
+                        // in this cleared backward iteration (22.2.2.3.1).
+                        None
+                    } else {
+                        let range = offsets[span.start]..offsets[span.end];
+                        (!range.is_empty()).then_some(ReferenceRange::Local(range))
+                    }
                 }
                 ReferenceTarget::Empty | ReferenceTarget::Open | ReferenceTarget::Future(_) => None,
                 ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
@@ -1974,12 +1981,16 @@ impl Program {
                             .iter()
                             .any(|target| matches!(target, ReferenceTarget::Input { .. }))
                     {
-                        // The complete owner's proof excludes internal reads
-                        // and variable counts. Outside ranges are immutable;
-                        // source-order comparison of each proved unit is valid
+                        // The complete owner's proof permits only immutable
+                        // outside ranges and proved empty internal reads.
+                        // Source-order comparison of each proved unit is valid
                         // backward too (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
-                        let Some(resolved) =
-                            self.resolve_reference_sequence(references, state, charge)?
+                        let Some(resolved) = self.resolve_reference_sequence(
+                            references,
+                            state,
+                            !current.rightmost_iteration,
+                            charge,
+                        )?
                         else {
                             current.cursor = None;
                             continue;
@@ -3067,7 +3078,7 @@ fn outside_reference_lookbehind_width(
                     if min.is_some() && min != max {
                         return None;
                     }
-                    for target in references {
+                    for (ordinal, target) in references.iter().enumerate() {
                         match *target {
                             ReferenceTarget::Input { index, named } => {
                                 if !outside(index, named)? {
@@ -3098,8 +3109,12 @@ fn outside_reference_lookbehind_width(
                                 };
                                 fixed = fixed.and_then(|fixed| fixed.checked_add(term?));
                             }
-                            // Forward-lowered local/empty reads do not prove
-                            // their backward effects in a consuming mixed unit.
+                            ReferenceTarget::Empty | ReferenceTarget::Open => {}
+                            ReferenceTarget::Local(span)
+                                if span.start <= span.end && span.end <= ordinal => {}
+                            // Dependent right-hand reads still need a mixed
+                            // width proof; the fixed-unit proof handles those
+                            // only when outside inputs are absent.
                             _ => return None,
                         }
                     }
@@ -3541,6 +3556,187 @@ mod tests {
     }
 
     #[test]
+    fn mixed_empty_reference_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=((b)\3\1){2})c",
+            r"(a)(?<=(b\1\2){2})c",
+            r"(a)(?<=(\1(b)\3){2})c",
+            r"(a)(?<=(\1(\2)){2})b",
+            r"(ab)(?<=((b)\3\1){2})c",
+            r"(a)(?<=(\3b()\1){2})c",
+            r"(a)(?<=((b)\3\1){2}?)c",
+            r"(a)(?<=((b)\3\1){0})c",
+            r"(a)(?<!((b)\3\1){2}q)c",
+            r"(a)(?<=((b)\3\1\B){2})c",
+            r"()(?<=((())\3\1){2})b",
+            r"(?<=((a)\2\3){2})(b)",
+            r"(a(?<=((a)\3\1){2}))b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "babac", "ababc", "babbabc", "aab", "baxac", "bAbAc", "ab", "b", "aaaab",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn mixed_empty_reference_lookbehind_preserves_imports_internal_offsets_and_owner_guards() {
+        for (source, text, range, captures) in [
+            (
+                r"(a)(?<=((b)\3\1){2})c",
+                "babac",
+                3..5,
+                vec![Some(3..4), Some(0..2), Some(0..1)],
+            ),
+            (
+                r"(a)(?<=(b\1\2){2})c",
+                "babac",
+                3..5,
+                vec![Some(3..4), Some(0..2)],
+            ),
+            (
+                r"(a)(?<=(\1(a)\3){2})c",
+                "aaaac",
+                3..5,
+                vec![Some(3..4), Some(0..2), Some(1..2)],
+            ),
+            (
+                r"(a)(?<=(\1(\2)){2})b",
+                "aab",
+                1..3,
+                vec![Some(1..2), Some(0..1), Some(1..1)],
+            ),
+            (
+                r"(ab)(?<=((b)\3\1){2})c",
+                "babbabc",
+                4..7,
+                vec![Some(4..6), Some(0..3), Some(0..1)],
+            ),
+            (
+                r"(a)(?<=(\3b()\1){2})c",
+                "babac",
+                3..5,
+                vec![Some(3..4), Some(0..2), Some(1..1)],
+            ),
+            (
+                r"(a)(?<!((b)\3\1){2}q)c",
+                "babaac",
+                4..6,
+                vec![Some(4..5), None, None],
+            ),
+            (
+                r"()(?<=((())\3\1){2})b",
+                "b",
+                0..1,
+                vec![Some(0..0), Some(0..0), Some(0..0), Some(0..0)],
+            ),
+            (
+                r"(?<=((a)\2\3){2})(b)",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..1), Some(2..3)],
+            ),
+            (
+                r"(a(?<=((a)\3\1){2}))b",
+                "aab",
+                1..3,
+                vec![Some(1..2), Some(0..1), Some(0..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        assert!(
+            ordinary(r"(a)(?<=(\1(b)\3){2})c", false, false, false)
+                .find(&JsString::from("ababc"), 0, false)
+                .is_none()
+        );
+        let input = JsString::from_code_units(vec![0xdc00, 0xd800, 0xdc00, 0xd800, 0x63]);
+        let found = ordinary(r"([\uD800])(?<=(([\uDC00])\3\1){2})c", false, false, false)
+            .find(&input, 3, true)
+            .unwrap();
+        assert_eq!(found.range, 3..5);
+        assert_eq!(&*found.captures, &[Some(3..4), Some(0..2), Some(0..1)]);
+        for source in [
+            r"(a)(?<=((b)\3\1){1,2})c",
+            r"(a)(?<=(\1\3(b)){2})c",
+            r"(a)(?<=((b)\3\1){2}|b)c",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn mixed_empty_reference_lookbehind_deep_scopes_huge_empty_counts_negative_undo_and_work_are_flat()
+     {
+        let source =
+            "(a)(?<=(".to_owned() + &"(".repeat(100000) + "b" + &")".repeat(100000) + r"\3\1){2})c";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("babac"), 3, true).unwrap();
+        assert_eq!(found.range, 3..5);
+        assert_eq!(found.captures.len(), 100002);
+        assert_eq!(found.captures[0], Some(3..4));
+        assert_eq!(found.captures[1], Some(0..2));
+        assert!(found.captures[2..].iter().all(|r| *r == Some(0..1)));
+        drop(copy);
+        let negative = source.replace("(?<=", "(?<!").replace("{2})c", "{2}q)c");
+        let found = ordinary(&negative, false, false, false)
+            .find(&JsString::from("babaac"), 4, true)
+            .unwrap();
+        assert_eq!(found.captures[0], Some(4..5));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let source = format!(r"()(?<=((())\3\1){{{}}})b", "9".repeat(100));
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("b"), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        let matcher = ordinary(r"(a)(?<=((b)\3\1){50000})c", false, false, false);
+        let input = JsString::from(("ba".repeat(50000) + "c").as_str());
+        let found = matcher.find(&input, 99999, true).unwrap();
+        assert_eq!(found.captures[1], Some(0..2));
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 99999, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+    }
+
+    #[test]
     fn forward_target_lookbehind_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3802,7 +3998,7 @@ mod tests {
             r"(?<=(\2(a)){1,2})b",
             r"(?<=((\3a)(b)){1,2})c",
             r"(?<=(a\1){1,2})b",
-            r"(a)(?<=(b\1\2){2})c",
+            r"(a)(?<=(b\1\2){1,2})c",
             r"(?<=(a\1){2}|a)b",
         ] {
             assert!(
@@ -3944,7 +4140,7 @@ mod tests {
             r"(?<=(\2(a)){1,2})b",
             r"(?<=((a)\1){1,2})b",
             r"(?<=((a)\2){1,2})b",
-            r"(a)(?<=(\1(b)\3){2})c",
+            r"(a)(?<=(\1(b)\3){1,2})c",
             r"(?<=((a)\2){2}(?=(((a)\5){2})))b",
         ] {
             assert!(
@@ -4242,7 +4438,7 @@ mod tests {
         for source in [
             r"(a)(?<=(a\1){1,2})b",
             r"(?<=((a)\2){1,2})b",
-            r"(a)(?<=(\1(\2)){2})b",
+            r"(a)(?<=(\1(\2)){1,2})b",
             r"(a)(?<=(a\1){2}|a)b",
             r"(a)(?<=(a\1){2}(?<=\1))b",
             r"(a)(?<=(a\1){2}(?=\1))b",

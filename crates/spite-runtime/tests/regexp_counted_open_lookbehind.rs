@@ -126,7 +126,7 @@ fn consuming_forward_targets_variable_counts_mixed_outside_units_choices_and_uni
         r"/(?<=(\2(a)){1,2})b/.exec('aaaab')",
         r"/(?<=((\3a)(b)){1,2})c/.exec('ababc')",
         r"/(?<=(a\1){1,2})b/.exec('aab')",
-        r"/(a)(?<=(b\1\2){2})c/.exec('ababc')",
+        r"/(a)(?<=(b\1\2){1,2})c/.exec('ababc')",
         r"/(?<=(a\1){2}|a)b/.exec('aab')",
         r"/(?<=(a\1){2})b/u.exec('aab')",
         r"/(?<=(a\1){2})b/v.exec('aab')",
