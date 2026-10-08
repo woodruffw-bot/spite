@@ -150,10 +150,10 @@ fn explicit_counted_lookbehind_assertion_work_aborts_before_last_index_and_handl
 fn variable_counts_nested_lookahead_repeated_choices_empty_and_nested_counts_remain_unsupported() {
     for source in [
         r"/(?<=(?:a\B){1,2})b/.exec('aab')",
-        r"/(?<=(?:(?=a)){2})a/.exec('a')",
+        r"/(?<=(?:(?=a+)){2})a/.exec('a')",
         r"/(?<=(a\B|b\B){2})c/.exec('abc')",
         r"/(?<=((a\B){2}){2})c/.exec('aaaac')",
-        r"/(?<=((?=a)){2})a/.exec('a')",
+        r"/(?<=((?=a+)){2})a/.exec('a')",
         r"/(?<=(\b){2})a/u.exec('a')",
         r"/(?<=(\b){2})a/v.exec('a')",
     ] {

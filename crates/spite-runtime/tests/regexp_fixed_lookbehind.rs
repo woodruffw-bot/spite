@@ -137,7 +137,7 @@ fn capturing_alternative_repeated_nested_and_unicode_lookbehind_remain_unsupport
         r"/(?<=a|bb)c/.exec('ac')",
         r"/(?<=a+)b/.exec('ab')",
         r"/(?<=a{1,2})b/.exec('ab')",
-        r"/(?<=(?=a))a/.exec('a')",
+        r"/(?<=(?=a+))a/.exec('a')",
         r"/(?<=a)b/u.exec('ab')",
         r"/(?<=a)b/v.exec('ab')",
     ] {

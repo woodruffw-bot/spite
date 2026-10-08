@@ -139,7 +139,7 @@ fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_remai
         r"/(?<=(?<=(a+)))b/.exec('ab')",
         r"/(?<=(?<=a|bb))c/.exec('ac')",
         r"/(?<=a(?<=a+))b/.exec('ab')",
-        r"/(?<=a(?=a))b/.exec('ab')",
+        r"/(?<=a(?=a+))b/.exec('ab')",
         r"/(?<=(?<=\1))(a)/.exec('a')",
         r"/(?<=a(?<=a))b/u.exec('ab')",
         r"/(?<=a(?<=a))b/v.exec('ab')",

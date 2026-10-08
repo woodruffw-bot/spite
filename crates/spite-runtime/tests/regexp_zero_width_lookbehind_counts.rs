@@ -153,7 +153,7 @@ fn consuming_variable_counts_repeated_choices_references_nested_counts_and_looka
     for source in [
         r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(a?){1,2})b/.exec('ab')",
-        r"/(?<=((?=a)){1,2})a/.exec('a')",
+        r"/(?<=((?=a+)){1,2})a/.exec('a')",
         r"/(?<=(|a)+)a/.exec('a')",
         r"/(?<=(\2)+)a()/.exec('a')",
         r"/(?<=((a*)+))a/.exec('a')",

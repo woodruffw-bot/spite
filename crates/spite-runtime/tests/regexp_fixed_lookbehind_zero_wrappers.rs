@@ -154,7 +154,7 @@ fn variable_consuming_wrappers_capture_reads_lookahead_and_unicode_are_pending()
     for source in [
         r"/(?<=(|a){2})a/.exec('a')",
         r"/(?<=((a{0,2}){2}){2})a/.exec('a')",
-        r"/(?<=((?=a)){2})a/.exec('a')",
+        r"/(?<=((?=a+)){2})a/.exec('a')",
         r"/(?<=(((a)\3){0,2}){2})a/.exec('a')",
         r"/(?<=(|){2})a/u.exec('a')",
         r"/(?<=(|){2})a/v.exec('a')",

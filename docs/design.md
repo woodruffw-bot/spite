@@ -1810,6 +1810,29 @@ quota. Exact-zero standalone reference atoms retain their existing target-free
 width proof. Nonzero mixed choices, unproved native children and Unicode modes
 remain pending.
 
+
+Capture-free fixed lookahead can run inside ordinary lookbehind (22.2.2.8).
+Preparation records a forward width only when the lookahead owns no captures
+and the existing fixed-body proof accepts every complete branch. It summarizes
+an already proved child as zero parent width, checking the original root and
+owner/head/end positions and skipping the complete region once. Generic forward
+lookahead continues using its existing assertion machinery.
+
+The fixed executor starts a lookahead child at the current cursor and checks its
+complete forward endpoint against the actual input length. Its head retains the
+original source-order choices; its body uses full input/line and word-boundary
+context. A checked unavailable endpoint fails a positive assertion and succeeds
+a negative assertion. Explicit frames retain the parent cursor, checkpoint and
+choice base, commit the first successful positive body and restore negative or
+failed effects before resuming the parent. Nested lookahead/lookbehind and
+required zero-width wrappers share this flat traversal. Enclosing captures retain
+their exact ranges without making the child consume parent input.
+
+Deep assertion nesting, copies, collection and dropping use no native recursion.
+Default work and heap quotas stay unlimited. Capturing lookahead needs forward
+capture iteration semantics; variable-width and capture-dependent child bodies,
+other unproved native features and Unicode modes remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

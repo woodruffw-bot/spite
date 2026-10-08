@@ -118,6 +118,7 @@ enum Instruction {
         head: usize,
         end: usize,
         negative: bool,
+        fixed_width: Option<usize>,
     },
     LookaheadEnd(usize),
     Lookbehind {
@@ -1626,6 +1627,35 @@ impl Program {
         })
     }
 
+    fn fixed_lookahead_frame(
+        &self,
+        input: &[u16],
+        cursor: usize,
+        entry: usize,
+        state: &CaptureState,
+        choice_base: usize,
+    ) -> FixedLookbehindFrame {
+        let Instruction::Lookahead {
+            head,
+            negative,
+            fixed_width: Some(width),
+            ..
+        } = self.instructions[entry]
+        else {
+            unreachable!("fixed lookahead retains its proved width")
+        };
+        let end_position = cursor.checked_add(width).filter(|&end| end <= input.len());
+        FixedLookbehindFrame {
+            pc: head,
+            end: entry - 1,
+            cursor: end_position.map(|_| cursor),
+            end_position: end_position.unwrap_or(cursor),
+            checkpoint: state.changes.len(),
+            choice_base,
+            negative,
+        }
+    }
+
     // Fixed predicates and unrepeated captures use the same absolute ranges
     // in either direction. Counted character captures use their leftmost iteration.
     // Equal-width choices inspect fixed positions without internal capture reads.
@@ -1723,6 +1753,20 @@ impl Program {
                         charge,
                     )?;
                     current.pc += 1;
+                    charge(1)?;
+                    frames.push(current);
+                    current = child;
+                    continue;
+                }
+                Instruction::Lookahead { end, .. } => {
+                    let child = self.fixed_lookahead_frame(
+                        input,
+                        *position,
+                        current.pc,
+                        state,
+                        choices.len(),
+                    );
+                    current.pc = *end;
                     charge(1)?;
                     frames.push(current);
                     current = child;
@@ -2455,6 +2499,27 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
             continue;
         }
         if pc > entry + 1 {
+            if let PreparedInstruction::Ready(Instruction::Lookahead {
+                body,
+                head,
+                end,
+                fixed_width: Some(_),
+                ..
+            }) = &instructions[pc - 1]
+            {
+                if *body <= entry || *body >= pc - 1 || *head != pc || *end != pc + 1 {
+                    return None;
+                }
+                if !matches!(instructions.get(*body), Some(PreparedInstruction::Ready(Instruction::Jump(control))) if *control == pc - 1)
+                {
+                    return None;
+                }
+                // This capture-free child's complete body has already proved
+                // a fixed width. An assertion consumes no parent input.
+                tails.insert(*body, *tails.get(end)?);
+                next = *body;
+                continue;
+            }
             if let PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
                 body,
                 head,
@@ -2754,6 +2819,12 @@ fn prepare(
                     if quantifier(&source[cursor..]).is_some() {
                         return None;
                     }
+                    // Capture-free fixed bodies have identical predicates in
+                    // the ordinary and fixed executors (22.2.2.8). Counted
+                    // capture effects still require their forward semantics.
+                    let fixed_width = (capture_count == capture_start)
+                        .then(|| fixed_lookbehind_width(&mut instructions, entry))
+                        .flatten();
                     let control = instructions.len() + 1;
                     let original = std::mem::replace(
                         &mut instructions[entry],
@@ -2767,6 +2838,7 @@ fn prepare(
                         head: control + 1,
                         end: control + 2,
                         negative,
+                        fixed_width,
                     }));
                     instructions.push(match original {
                         PreparedInstruction::Ready(Instruction::Nop) => {
@@ -2972,6 +3044,162 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn fixed_lookahead_in_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=a(?=b))b",
+            r"(?<=a(?!c))b",
+            r"(?<=(?=ab)a)b",
+            r"(?<=(?!bb)a)b",
+            r"(?<=a(?=b{2}))b",
+            r"(?<=a(?=[bc]|d))b",
+            r"(?<=a(?=b|c))b",
+            r"(?<=a(?!b|c))d",
+            r"(?<=a(?=(?=b)b))b",
+            r"(?<=a(?=(?!c)b))b",
+            r"(?<=a(?=(?<=a)b))b",
+            r"(?<=a(?=(?<!c)b))b",
+            r"(?<=a(?=(?:b){2}))bb",
+            r"(?<=a(?=b{0}))b",
+            r"(?<=a(?=(?:b|c){0}))b",
+            r"(?<=a(?=$))",
+            r"(?<=a(?=^))b",
+            r"(?<=a(?=\b)) ",
+            r"(?<=a(?=\B))b",
+            r"(?<=a(?=.))b",
+            r"(?<=a(?=b.))b",
+            r"(?<=a(?!b.))b",
+            r"(?<=(?=ab)(a))b",
+            r"(?<=((?=b)){2})b",
+            r"(?<=((?!a)){2})b",
+            r"(?<=((?=b))*)b",
+            r"(?<=a(?=(?:(?=b)){2}b))b",
+            r"(?<=a(?=(?<=a(?=b))b))b",
+            r"(?<=µ(?=Μ))Μ",
+            r"(?<!a(?=b))b",
+            r"(?<!a(?!b))b",
+            r"(?<=a(?=b)|a(?!c))b",
+            r"(?:(?<=a(?=b))b|a)+c",
+            r"(?=(?<=a(?=b))b)b",
+            r"(?<=[\uD800](?=[\uDC00]))[\uDC00]",
+            r"(?<=((?=a)){1,2})a",
+            r"(?<=((?=a)){2})a",
+            r"(?<=((?=a)){2})c",
+            r"(?<=(?:(?=a)){2})a",
+            r"(?<=(?=a))a",
+            r"(?<=(a(?=a)))b",
+            r"(?<=a(?=a))b",
+            r"(?<=a{2}(?=a))b",
+            r"(?<=a|(?=a)b)c",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "abb", "abc", "ad", "ac", " abc", "a b", "a\nb",
+                    "a\r\n", "µµΜ", "abbbc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_lookahead_in_lookbehind_keeps_parent_ranges_full_input_and_negative_choices() {
+        for (source, text, range, captures) in [
+            (r"(?<=(?=ab)(a))b", "qab", 2..3, vec![Some(1..2)]),
+            (r"(?<=((?=b)){2})b", "qb", 1..2, vec![Some(1..1)]),
+            (r"(?<=((?=b))*)b", "qb", 1..2, vec![None]),
+            (r"(?<!a(?=b))b", "qb", 1..2, vec![]),
+            (r"(?<=a(?=b)|a(?!c))b", "qab", 2..3, vec![]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        assert!(
+            ordinary(r"(?<=a(?=b.))b", false, false, false)
+                .find(&JsString::from("ab"), 0, false)
+                .is_none()
+        );
+        assert_eq!(
+            ordinary(r"(?<=a(?!b.))b", false, false, false)
+                .find(&JsString::from("ab"), 0, false)
+                .unwrap()
+                .range,
+            1..2
+        );
+        let input = JsString::from_code_units(vec![0xd800, 0xdc00]);
+        assert_eq!(
+            ordinary(r"(?<=[\uD800](?=[\uDC00]))[\uDC00]", false, false, false)
+                .find(&input, 0, false)
+                .unwrap()
+                .range,
+            1..2
+        );
+        for source in [
+            r"(?<=a(?=(b)))b",
+            r"(?<=a(?=b+))b",
+            r"(?<=a(?=b|cc))b",
+            r"(?<=a(?!b+))b",
+            r"(?<=a+)b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn fixed_lookahead_in_lookbehind_nested_assertions_clone_and_drop_without_native_recursion() {
+        let source = "(?<=".to_owned() + &"(?=".repeat(100000) + "b" + &")".repeat(100000) + ")b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        assert_eq!(
+            copy.find(&JsString::from("qb"), 1, true).unwrap().range,
+            1..2
+        );
+        let source = "(?<=".to_owned() + &"(?!".repeat(100000) + "b" + &")".repeat(100000) + ")b";
+        assert_eq!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("qb"), 1, true)
+                .unwrap()
+                .range,
+            1..2
+        );
+        let matcher = ordinary(r"(?<=a(?=(?<=a(?=b))b))b", false, false, false);
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("a".repeat(10000).as_str()), 0, false, |n| {
+                    if n > 0 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
@@ -3727,7 +3955,7 @@ mod tests {
         for source in [
             r"(?<=(|a){2})a",
             r"(?<=((a{0,2}){2}){2})a",
-            r"(?<=((?=a)){2})a",
+            r"(?<=((?=a+)){2})a",
             r"(?<=(((a)\3){0,2}){2})a",
         ] {
             assert!(
@@ -4377,7 +4605,7 @@ mod tests {
         for source in [
             r"(?<=a{1,2})b",
             r"(?<=(a?){1,2})b",
-            r"(?<=((?=a)){1,2})a",
+            r"(?<=((?=a+)){1,2})a",
             r"(?<=(|a)+)a",
             r"(?<=(\2)+)a()",
             r"(?<=((a*)+))a",
@@ -4540,8 +4768,8 @@ mod tests {
             assert_eq!(&*found.captures, &*captures, "{source}");
         }
         for source in [
-            r"(?<=((?=a)){1,2})a",
-            r"(?<=((?=a)){2})a",
+            r"(?<=((?=a+)){1,2})a",
+            r"(?<=((?=a+)){2})a",
             r"(?<=(|a){2})a",
             r"(?<=(\2){2})a()",
             r"(?<=((a{0,2}){2}){2})a",
@@ -4695,10 +4923,10 @@ mod tests {
         }
         for source in [
             r"(?<=(?:a\B){1,2})b",
-            r"(?<=(?:(?=a)){2})a",
+            r"(?<=(?:(?=a+)){2})a",
             r"(?<=(a\B|b\B){2})c",
             r"(?<=((a\B){2}){2})c",
-            r"(?<=((?=a)){2})a",
+            r"(?<=((?=a+)){2})a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -4852,7 +5080,7 @@ mod tests {
             r"(?<=(a|bb))c",
             r"(?<=(a|b){2})c",
             r"(?<=(a|b)\1)c",
-            r"(?<=a|(?=a)b)c",
+            r"(?<=a|(?=a+)b)c",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -5012,7 +5240,7 @@ mod tests {
             r"(?<=(a(?=a)){2})c",
             r"(?<=((a){2}){2})c",
             r"(?<=(a\1){2})c",
-            r"(?<=((?=a)){2})c",
+            r"(?<=((?=a+)){2})c",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -5339,7 +5567,7 @@ mod tests {
             r"(?<=(a)+)b",
             r"(?<=(a|bb))c",
             r"(?<=(a)\1)b",
-            r"(?<=(a(?=a)))b",
+            r"(?<=(a(?=a+)))b",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -5488,7 +5716,7 @@ mod tests {
             r"(?<=a(?=(b)))b",
             r"(?<=(?<=a|bb))c",
             r"(?<=(?<=(a+)))b",
-            r"(?<=a(?=a))b",
+            r"(?<=a(?=a+))b",
             r"(?<=a(?<=a+))b",
         ] {
             assert!(
@@ -5640,7 +5868,7 @@ mod tests {
             r"(?<=a{1,2})b",
             r"(?<=a+)b",
             r"(?<=(?:ab){1,2})c",
-            r"(?<=(?:(?=a)){2})a",
+            r"(?<=(?:(?=a+)){2})a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -5814,7 +6042,7 @@ mod tests {
             r"(?<=a+)b",
             r"(?<=a{1,2})b",
             r"(?<=\1)(a)",
-            r"(?<=(?=a))a",
+            r"(?<=(?=a+))a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(

@@ -153,7 +153,7 @@ fn differing_widths_repeated_choices_internal_references_and_lookahead_remain_un
         r"/(?<=(a|bb))c/.exec('bbc')",
         r"/(?<=(a|b){2})c/.exec('abc')",
         r"/(?<=(a|b)\1)c/.exec('aac')",
-        r"/(?<=a|(?=a)b)c/.exec('bc')",
+        r"/(?<=a|(?=a+)b)c/.exec('bc')",
         r"/(?<=(a|b))c/u.exec('bc')",
         r"/(?<=(a|b))c/v.exec('bc')",
     ] {

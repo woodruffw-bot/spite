@@ -136,8 +136,8 @@ fn variable_counts_capture_effects_multiple_terms_and_nested_lookbehind_remain_u
         r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(a{1,2}))b/.exec('aab')",
         r"/(?<=(?:ab){1,2})c/.exec('ababc')",
-        r"/(?<=(?:(?=a)){2})a/.exec('a')",
-        r"/(?<=a{2}(?=a))b/.exec('aab')",
+        r"/(?<=(?:(?=a+)){2})a/.exec('a')",
+        r"/(?<=a{2}(?=a+))b/.exec('aab')",
         r"/(?<=a{2})b/u.exec('aab')",
         r"/(?<=a{2})b/v.exec('aab')",
     ] {
