@@ -7098,3 +7098,5 @@ test/built-ins/RegExp/S15.10.2.6_A6_T4.js	-	-	-
 test/built-ins/RegExp/lookBehind/negative.js	-	-	-
 test/built-ins/RegExp/lookBehind/simple-fixed-length.js	-	-	-
 test/built-ins/RegExp/lookBehind/word-boundary.js	-	-	-
+test/built-ins/RegExp/lookBehind/back-references.js	-	-	-
+test/built-ins/RegExp/lookBehind/sliced-strings.js	-	-	-

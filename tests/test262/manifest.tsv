@@ -7128,3 +7128,5 @@ script-pass	09a236b7b9c03ca42a5e7832a56b8612d80b4ba7230876509a9aa75bdbdae833	tes
 script-pass	515d89808ef97bcf21a81a2213b91e6dc72cc0fbacd5c73e8ada6dd75e226c59	test/built-ins/RegExp/lookBehind/negative.js
 script-pass	ab44db8347040d1ce1b7bfc6694d9267d23e7dd4643f5b37fc67a71faefc9345	test/built-ins/RegExp/lookBehind/simple-fixed-length.js
 script-pass	0439bc49e8d9a5a64f4b1c67a944d017f640ec9c394717c75412106b87cfbb01	test/built-ins/RegExp/lookBehind/word-boundary.js
+script-pass	0a1712d84751b13a9f26a64b14b226ff4cda98cba629bfcf744881b59cd57999	test/built-ins/RegExp/lookBehind/back-references.js
+script-pass	2210571595334b1a6d8eed7758b599df8e470fa05109bf62082e1560ce814027	test/built-ins/RegExp/lookBehind/sliced-strings.js
