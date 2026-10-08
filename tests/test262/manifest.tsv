@@ -7189,3 +7189,4 @@ script-pass	d30b7f48576ce7625425930ed33d24b4f2d115614961f86cd6fd690bf8bb0af3	tes
 script-pass	3f0ed67257726fcc777992bbb146eea2955939c945781fa6c1e2aa0d5676ef2c	test/built-ins/RegExp/S15.10.2.8_A4_T9.js
 script-pass	b59b6e750d4831d137a837d1164619ce20e6f5983d2eb91253ce54a6252683f8	test/built-ins/RegExp/S15.10.2.8_A5_T1.js
 script-pass	29c19906a7a066eff37751fcb0760cf8c438925b3b846abb41e36b450a532f21	test/built-ins/RegExp/S15.10.2.8_A5_T2.js
+script-pass	5e9d666ed542dc8c18b1242b88971b0d05d5049d792b8306eec079431e8f7634	test/built-ins/RegExp/S15.10.2.8_A3_T17.js
