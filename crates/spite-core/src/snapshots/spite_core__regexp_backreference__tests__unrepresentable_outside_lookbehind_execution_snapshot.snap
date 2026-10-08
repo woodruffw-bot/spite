@@ -1,0 +1,24 @@
+---
+source: crates/spite-core/src/regexp_backreference.rs
+expression: rows
+---
+"()(?<=(\\1)COUNT)b" input="b" Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(0..0), Some(0..0)] })
+"()(?<=(\\1)COUNT)b" input=" b" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), Some(1..1)] })
+"()(?<=(\\1)COUNT)b" input="ab" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), Some(1..1)] })
+"()(?<=(\\1)COUNT)b" input="xb" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), Some(1..1)] })
+"()()(?<=(\\1\\2\\b)COUNT)b" input="b" Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(0..0), Some(0..0), Some(0..0)] })
+"()()(?<=(\\1\\2\\b)COUNT)b" input=" b" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), Some(1..1), Some(1..1)] })
+"()()(?<=(\\1\\2\\b)COUNT)b" input="ab" None
+"()()(?<=(\\1\\2\\b)COUNT)b" input="xb" None
+"(a)(?<=(\\1a)COUNT)b" input="b" None
+"(a)(?<=(\\1a)COUNT)b" input=" b" None
+"(a)(?<=(\\1a)COUNT)b" input="ab" None
+"(a)(?<=(\\1a)COUNT)b" input="xb" None
+"(a)(?<!(\\1a)COUNT)b" input="b" None
+"(a)(?<!(\\1a)COUNT)b" input=" b" None
+"(a)(?<!(\\1a)COUNT)b" input="ab" Some(RegExpBackreferenceMatch { range: 0..2, captures: [Some(0..1), None] })
+"(a)(?<!(\\1a)COUNT)b" input="xb" None
+"()(?<!(\\1)COUNTq)b" input="b" Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(0..0), None] })
+"()(?<!(\\1)COUNTq)b" input=" b" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), None] })
+"()(?<!(\\1)COUNTq)b" input="ab" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), None] })
+"()(?<!(\\1)COUNTq)b" input="xb" Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(1..1), None] })

@@ -1924,7 +1924,8 @@ unproved variable counts, choices and dynamic child assertions remain unsupporte
 Exact-count linear lookbehind units can mix ordinary characters, classes and
 boundary predicates with stable outside numeric or named references of different
 lengths (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The existing fixed-unit proof runs
-first. A mixed unit then requires equal representable bounds and contains only
+first. A mixed unit then requires equal representable bounds or an unrepresentable
+required minimum, and contains only
 ordinary repeated terms or input targets outside the complete owner's capture
 declaration range; every slot of a named alias must be outside. Forward-lowered
 empty/local targets remain excluded from consuming mixed units. Internal reads,
@@ -1949,6 +1950,31 @@ The plan stays flat and uses no native recursion, new dependency or default
 quota. Unit-sized range/offset vectors are independent of the repetition count.
 Fixed backward parents and fixed lookahead still reject dynamic-width children.
 Unicode modes and other capture-dependent backward plans remain unsupported.
+
+
+Outside-reference lookbehind width plans preserve unrepresentable required
+minimums rather than rejecting their validated decimal syntax (22.2.2.3.1,
+22.2.2.8, 22.2.2.9.2). A missing native count denotes a mathematical minimum
+larger than usize::MAX. Such bounds can be exact, bounded or unbounded, greedy
+or lazy; validation still rejects a maximum below the minimum.
+
+The constant part of the complete width can likewise be unavailable after
+checked addition/multiplication. Resolve every outside range at entry. An empty
+range contributes zero even when its required count is unrepresentable; a
+nonempty range or consuming constant term makes that prefix unavailable. An
+unavailable positive assertion fails and a negative assertion succeeds without
+executing the body or exporting owned captures. All body operations and outside
+target ownership remain checked during preparation, even after width overflow.
+
+A wholly empty imported unit executes one required pass because its stable
+reads, boundaries and capture writes have identical effects on every required
+iteration. Optional empty iterations do not advance or change those final
+required effects. Scalar and mixed sequence execution share the existing exact
+capture offsets and scoped rollback. Nonempty consuming execution remains bounded
+by an available checked prefix and uses only representable counts. Ordinary
+variable counts with representable minimums, internal consuming reads, dynamic
+child assertions and Unicode modes remain pending. No count expansion, default
+quota, new dependency or native recursion is introduced.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

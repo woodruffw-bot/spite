@@ -158,7 +158,8 @@ enum Instruction {
 enum LookbehindWidth {
     Fixed(usize),
     OutsideReferences {
-        fixed: usize,
+        // None denotes a consuming width larger than any native input.
+        fixed: Option<usize>,
         references: Box<[OutsideReferenceWidth]>,
     },
 }
@@ -168,7 +169,8 @@ struct OutsideReferenceWidth {
     index: usize,
     named: bool,
     copies: usize,
-    count: usize,
+    // None denotes an unrepresentable required minimum, not an optional count.
+    count: Option<usize>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1622,7 +1624,7 @@ impl Program {
         let width = match width {
             LookbehindWidth::Fixed(width) => Some(*width),
             LookbehindWidth::OutsideReferences { fixed, references } => {
-                let mut width = Some(*fixed);
+                let mut width = *fixed;
                 for reference in references {
                     charge(1)?;
                     let range = if reference.named {
@@ -1634,7 +1636,13 @@ impl Program {
                         .as_ref()
                         .map_or(0, Range::len)
                         .checked_mul(reference.copies)
-                        .and_then(|width| width.checked_mul(reference.count));
+                        .and_then(|width| {
+                            if width == 0 {
+                                Some(0)
+                            } else {
+                                reference.count.and_then(|count| width.checked_mul(count))
+                            }
+                        });
                     width = width.and_then(|width| width.checked_add(term?));
                 }
                 width
@@ -1897,9 +1905,8 @@ impl Program {
                     copies,
                     ..
                 } => {
-                    debug_assert_eq!(min, max);
-                    let count = min.expect("outside reference counts are representable");
-                    if count == 0 {
+                    debug_assert!(min == max || min.is_none());
+                    if *min == Some(0) {
                         // Exactly zero iterations never read the target.
                         self.complete_reference_captures(current.pc, state, None, None, charge)?;
                         true
@@ -1913,7 +1920,11 @@ impl Program {
                         let base = *position;
                         // Required empty iterations have identical effects;
                         // summarize them without expanding the source count.
-                        let iterations = if width == 0 { 1 } else { count };
+                        let iterations = if width == 0 {
+                            1
+                        } else {
+                            min.expect("available consuming outside counts are representable")
+                        };
                         let mut accepted = true;
                         for _ in 0..iterations {
                             charge(1)?;
@@ -2910,7 +2921,7 @@ fn outside_reference_lookbehind_width(
     ) {
         return None;
     }
-    let mut fixed = 0usize;
+    let mut fixed = Some(0usize);
     let mut width_references = Vec::new();
     let mut counted_offsets = Vec::new();
     let outside = |index: usize, named: bool| {
@@ -2936,7 +2947,7 @@ fn outside_reference_lookbehind_width(
                     index: *index,
                     named: false,
                     copies: 1,
-                    count: 1,
+                    count: Some(1),
                 });
             }
             PreparedInstruction::Ready(Instruction::NamedReference(index)) => {
@@ -2947,17 +2958,17 @@ fn outside_reference_lookbehind_width(
                     index: *index,
                     named: true,
                     copies: 1,
-                    count: 1,
+                    count: Some(1),
                 });
             }
             PreparedInstruction::Ready(Instruction::QuantifiedReference {
                 index,
                 named,
-                bounds: (Some(min), Some(max), _),
+                bounds: (min, max, _),
                 copies,
                 ..
-            }) if min == max => {
-                if *min != 0 {
+            }) if min == max || min.is_none() => {
+                if *min != Some(0) {
                     if !outside(*index, *named)? {
                         return None;
                     }
@@ -2983,15 +2994,13 @@ fn outside_reference_lookbehind_width(
                 if let Some((width, offsets)) =
                     fixed_lookbehind_sequence_width(instructions, references, *bounds)
                 {
-                    fixed = fixed.checked_add(width)?;
+                    fixed = fixed.and_then(|fixed| fixed.checked_add(width));
                     if let Some(offsets) = offsets {
                         counted_offsets.push((pc, offsets));
                     }
                 } else {
-                    let (Some(min), Some(max), _) = *bounds else {
-                        return None;
-                    };
-                    if min != max {
+                    let (min, max, _) = *bounds;
+                    if min.is_some() && min != max {
                         return None;
                     }
                     for target in references {
@@ -3018,7 +3027,12 @@ fn outside_reference_lookbehind_width(
                                     PreparedInstruction::Ready(Instruction::RepeatedAssert(_)) => 0,
                                     _ => return None,
                                 };
-                                fixed = fixed.checked_add(width.checked_mul(min)?)?;
+                                let term = if width == 0 {
+                                    Some(0)
+                                } else {
+                                    min.and_then(|count| width.checked_mul(count))
+                                };
+                                fixed = fixed.and_then(|fixed| fixed.checked_add(term?));
                             }
                             // Forward-lowered local/empty reads do not prove
                             // their backward effects in a consuming mixed unit.
@@ -3030,7 +3044,7 @@ fn outside_reference_lookbehind_width(
             PreparedInstruction::Ready(Instruction::Character(_))
             | PreparedInstruction::Set {
                 repeated: false, ..
-            } => fixed = fixed.checked_add(1)?,
+            } => fixed = fixed.and_then(|fixed| fixed.checked_add(1)),
             PreparedInstruction::Ready(
                 Instruction::Nop
                 | Instruction::Open(_)
@@ -3459,6 +3473,127 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn unrepresentable_outside_lookbehind_counts_preserve_empty_effects_and_unavailable_prefixes() {
+        let huge = "9".repeat(100);
+        let upper = "1".to_owned() + &"0".repeat(101);
+        for bounds in [
+            format!("{{{huge}}}"),
+            format!("{{{huge}}}?"),
+            format!("{{{huge},}}"),
+            format!("{{{huge},}}?"),
+            format!("{{{huge},{upper}}}"),
+        ] {
+            for (pattern, input, range, captures) in [
+                (
+                    r"()(?<=(\1)COUNT)b",
+                    "qb",
+                    1..2,
+                    vec![Some(1..1), Some(1..1)],
+                ),
+                (
+                    r"()(?<=(\1)COUNTa)b",
+                    "ab",
+                    1..2,
+                    vec![Some(1..1), Some(0..0)],
+                ),
+                (
+                    r"()()(?<=(\1\2\b)COUNT)b",
+                    " b",
+                    1..2,
+                    vec![Some(1..1), Some(1..1), Some(1..1)],
+                ),
+                (r"(a(?<=\1COUNT))b", "ab", 0..2, vec![Some(0..1)]),
+                (r"(?<=\1COUNT)(a)", "qa", 1..2, vec![Some(1..2)]),
+                (r"()(?<!(\1)COUNTq)b", "xb", 1..2, vec![Some(1..1), None]),
+                (r"(a)(?<!(\1)COUNT)b", "ab", 0..2, vec![Some(0..1), None]),
+                (r"(a)(?<!(\1a)COUNT)b", "ab", 0..2, vec![Some(0..1), None]),
+                (r"(a)(?<!(ab)COUNT\1)b", "ab", 0..2, vec![Some(0..1), None]),
+            ] {
+                let source = pattern.replace("COUNT", &bounds);
+                let found = ordinary(&source, false, false, false)
+                    .find(&JsString::from(input), 0, false)
+                    .unwrap();
+                assert_eq!(found.range, range, "{source}");
+                assert_eq!(&*found.captures, &*captures, "{source}");
+            }
+            for pattern in [
+                r"(a)(?<=(\1)COUNT)b",
+                r"(a)(?<=(\1a)COUNT)b",
+                r"(a)(?<=(ab)COUNT\1)b",
+            ] {
+                let source = pattern.replace("COUNT", &bounds);
+                assert!(
+                    ordinary(&source, false, false, false)
+                        .find(&JsString::from("ab"), 0, false)
+                        .is_none(),
+                    "{source}"
+                );
+            }
+            let source = r"()(?<=(\1\B)COUNT)b".replace("COUNT", &bounds);
+            assert!(
+                ordinary(&source, false, false, false)
+                    .find(&JsString::from(" b"), 0, false)
+                    .is_none()
+            );
+        }
+    }
+
+    #[test]
+    fn unrepresentable_outside_lookbehind_execution_snapshot() {
+        let huge = "9".repeat(100);
+        let mut rows = String::new();
+        for pattern in [
+            r"()(?<=(\1)COUNT)b",
+            r"()()(?<=(\1\2\b)COUNT)b",
+            r"(a)(?<=(\1a)COUNT)b",
+            r"(a)(?<!(\1a)COUNT)b",
+            r"()(?<!(\1)COUNTq)b",
+        ] {
+            let source = pattern.replace("COUNT", &format!("{{{huge}}}"));
+            let matcher = ordinary(&source, false, false, false);
+            for text in ["b", " b", "ab", "xb"] {
+                writeln!(
+                    rows,
+                    "{pattern:?} input={text:?} {:?}",
+                    matcher.find(&JsString::from(text), 0, false)
+                )
+                .unwrap();
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unrepresentable_outside_lookbehind_deep_capture_effects_clones_and_negative_undo_stay_flat()
+    {
+        let huge = "9".repeat(10000);
+        let source = "()(?<=".to_owned()
+            + &"(".repeat(100000)
+            + r"\1"
+            + &")".repeat(100000)
+            + &format!("{{{huge}}})b");
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qb"), 1, true).unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), 100001);
+        assert!(found.captures.iter().all(|r| *r == Some(1..1)));
+        drop(copy);
+        let source = "()(?<!".to_owned()
+            + &"(".repeat(100000)
+            + r"\1"
+            + &")".repeat(100000)
+            + &format!("{{{huge}}}q)b");
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("xb"), 1, true)
+            .unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures[0], Some(1..1));
+        assert!(found.captures[1..].iter().all(Option::is_none));
     }
 
     #[test]
