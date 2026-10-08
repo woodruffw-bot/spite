@@ -1096,21 +1096,22 @@ RepeatMatcher's zero-progress rule. This optimization keeps huge finite empty
 reference bounds correct and avoids native loops or recursion. Typed named binding
 inventories must register every named escape outside classes.
 
-A quantified noncapturing group containing exactly one unquantified reference and
-any transparent noncapturing wrappers uses the same reference instruction and
-repetition frames. Compilation inspects its prepared body at the quantifier,
-accepts only that reference and no-op group boundaries, and retains the original
+A quantified noncapturing group containing one or more occurrences of the same
+unquantified reference and any transparent noncapturing wrappers uses the same
+reference instruction and repetition frames. Compilation inspects its prepared
+body at the quantifier, accepts only that target and no-op group boundaries,
+and retains the original
 capture ordinals and source. Empty noncapturing groups around the reference have
 no MatchState effects. Nested unquantified wrappers need no repeated body scans;
-100,000 wrappers remain iterative with linear storage. Multiple references,
+100,000 wrappers remain iterative with linear storage. Different references,
 consuming terms, alternatives, assertions and an already
 quantified reference prevent this simplification. Default quotas stay disabled;
 composite reference repetitions, quantified consuming atoms,
 lookaround/scoped modifiers and Unicode matching remain pending in this program.
 
-Capturing groups enclosing the sole reference also use this repetition
+Capturing groups enclosing the whole reference body also use this repetition
 instruction. Preparation checks balanced capturing boundaries before/after the
-reference, records their original slots, and replaces only those boundaries with
+body, records their original slots, and replaces only those boundaries with
 no-ops. Each selected nonempty repetition endpoint determines every enclosing
 slot's final-iteration range; zero iterations leave these slots undefined
 (RepeatMatcher, 22.2.2.3.1). The target is a completed external prefix capture or
@@ -1122,16 +1123,30 @@ Repetition frames save their checkpoint before writing wrapper captures. Failed
 continuations clear those writes before a retry installs the new final ranges,
 including their shared named bindings. Capture inventories and writes receive
 opt-in work charges. Deep enclosing groups remain iterative with linear storage.
-Empty sibling captures before and after the sole reference are also accepted.
+Empty sibling captures before and after the whole reference body are also accepted.
 Preparation assigns each capture a before/reference/after span rather than
 replaying its boundaries during every iteration. Its final range is the final
-iteration's beginning, whole reference span or ending, respectively. An internal
+iteration's beginning, whole body span or ending, respectively. An internal
 target before the reference is defined and empty; other internal targets are
 undefined until the reference finishes. Both match the empty string, so the same
 deterministic empty-target execution remains valid. Zero iterations leave all
 body captures undefined. Required empty iterations preserve all their empty final
 ranges even for huge finite minimums. Compact spans keep 100,000 empty siblings
-iterative with linear storage. Composite bodies and nested quantifiers remain
+iterative with linear storage.
+
+Identical references within a repeated body share one target descriptor and an
+exact multiplicity. Quantifier bounds continue to count whole bodies rather than
+individual reference occurrences (RepeatMatcher, 22.2.2.3.1). Consuming count
+limits divide remaining units by the original capture width and then multiplicity
+before calculating any stride. Zero iterations avoid stride multiplication;
+saved retry counts guarantee the stride and its selected endpoint fit the input.
+Comparisons validate every occurrence against the original range, and retries
+move by complete body lengths. Whole enclosing captures cover the final body,
+with empty before/after positions retained. Empty targets satisfy finite minimums
+without iterating over occurrences or required repetitions. Preparation needs no
+source expansion or multiplied quantifier bounds, including 100,000 occurrences.
+Different targets, captures spanning only part of a multi-reference body, middle
+empty captures, consuming terms, alternatives and nested quantifiers remain
 pending in this program.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
