@@ -373,6 +373,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve partial capture ranges in repeated reference bodies with stable external targets, exact final prefix offsets, forward/open local references and linear checks for completed local target effects.
 - [x] Execute references to completed captures inside repeated reference bodies using current-iteration relative ranges, checked chained widths, exact named aliases and flat whole-body retries.
 - [x] Execute characters, sets, class escapes and dot inside repeated reference bodies with shared pinned predicates, fixed unit widths, changing local capture values and whole-body greedy/lazy retries.
+- [x] Execute input/line and word assertions inside repeated reference bodies with complete input context, zero-width prefix offsets, required empty captures and optional zero-progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

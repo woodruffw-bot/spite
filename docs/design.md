@@ -1216,8 +1216,21 @@ from fitting short input, while a valid zero-count path leaves body slots
 undefined. Descriptor buffers, root lookup, predicate construction and actual
 comparisons receive opt-in charges. Deep capturing bodies remain iterative,
 including 100,000 partial enclosures, and 50,000 identical predicates share
-construction. Assertions inside repeated bodies, alternatives, nested quantifiers
-and Unicode matching remain pending.
+construction.
+Ordinary input/line and word assertions also retain flat owned instructions.
+They contribute zero prefix width and test the complete input at the current
+body position, using the original Multiline flag and ordinary word predicate.
+Every consuming iteration validates its assertions before final capture writes;
+lazy retries use the new iteration position and greedy retries select an already
+validated body. Assertions inside zero-width required bodies are validated once
+at their unchanged position before installing empty final captures, including
+huge finite minimums (RepeatMatcher, 22.2.2.3.1). Optional empty iterations stop
+without capture effects under the zero-progress rule, even when the assertion
+would fail. This preserves full-input sticky boundaries and defined-empty versus
+undefined result slots without replaying a mandatory count. Root lookups,
+assertion work and buffers receive opt-in charges. Captured empty assertion
+siblings remain iterative, including 100,000 groups. Alternatives, nested
+quantifiers, lookaround/scoped modifiers and Unicode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

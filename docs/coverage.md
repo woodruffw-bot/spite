@@ -2146,6 +2146,31 @@ Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Repeated reference bodies now retain flat ordinary input/line and word assertion
+instructions with zero prefix width and complete input context. Three added core
+regressions cover an inspected 4,320-record insta snapshot, full-input sticky word
+boundaries, Multiline/DotAll positions, whole-body retries, final local ranges,
+required versus optional empty effects, 100,000 captured assertions and huge
+finite empty minimums with constant iteration work. All nineteen earlier core
+reference snapshots remain byte-identical. Six runtime regressions cover an
+inspected 24-record result snapshot, named positions and indices aliases, sticky
+and multiline context, changing iteration values, global/sticky consumers,
+required/optional zero-progress result slots, empty advancement, copies and
+collection, 100,000 captured assertions and huge finite minimums under unlimited
+defaults, opted-in aborts and remaining gaps. Node agrees with all added core and
+runtime snapshot records, 465,408 numbered and 227,904 named fresh match/capture
+comparisons, and twelve runtime programs. Existing runtime reference snapshots
+are unchanged. One prior direct control now repeats a composite body; all 461
+direct gap programs and three eval host-gap programs remain unsupported.
+Alternatives in repeated bodies, nested quantifiers, lookaround/scoped modifiers
+and Unicode matching remain pending in this program. No fixtures or fixture
+credit are added; inventories, the pin, dependencies and unlimited defaults are
+unchanged.
+
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

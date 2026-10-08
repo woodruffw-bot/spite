@@ -145,7 +145,7 @@ fn explicit_repeated_character_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn repeated_assertions_choices_and_nested_quantifiers_remain_unsupported() {
     for source in [
-        r"/(a)(b)(\b\1\2)+/.test('abab')",
+        r"/(?:(a)(b)(\b\1\2)+){2}/.test('abab')",
         r"/(a)(b)((\1)|\2)+/.test('abab')",
         r"/(a)(b)(a+\1\2)+/.test('aabaab')",
         r"/(a)(b)((?=a)\1\2)+/.test('abab')",
