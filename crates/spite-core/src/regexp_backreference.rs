@@ -2579,6 +2579,62 @@ fn quantify_progressing_choice(
     Some(())
 }
 
+// Keep the same unit proof for fixed bodies and linear bodies importing outside
+// ranges. Local references are safe in either direction only in wholly empty
+// units. Consuming units require exact counts (22.2.2.3.1, 22.2.2.8).
+fn fixed_lookbehind_sequence_width(
+    instructions: &[PreparedInstruction],
+    references: &[ReferenceTarget],
+    (min, max, _): Bounds,
+) -> Option<(usize, Option<Box<[usize]>>)> {
+    let mut offsets = Vec::<usize>::with_capacity(references.len() + 1);
+    offsets.push(0);
+    let mut has_zero_width_term = false;
+    let mut has_reference = false;
+    for (ordinal, target) in references.iter().enumerate() {
+        let width = match *target {
+            ReferenceTarget::Term(index) => match instructions.get(index) {
+                Some(PreparedInstruction::Ready(Instruction::RepeatedAssert(_))) => {
+                    has_zero_width_term = true;
+                    0
+                }
+                Some(PreparedInstruction::Ready(Instruction::RepeatedCharacter(_)))
+                | Some(PreparedInstruction::Set { repeated: true, .. }) => 1,
+                _ => return None,
+            },
+            ReferenceTarget::Empty => {
+                has_reference = true;
+                has_zero_width_term = true;
+                0
+            }
+            ReferenceTarget::Local(span) if span.start <= span.end && span.end <= ordinal => {
+                has_reference = true;
+                has_zero_width_term = true;
+                0
+            }
+            _ => return None,
+        };
+        offsets.push(offsets.last()?.checked_add(width)?);
+    }
+    let width = *offsets.last()?;
+    if has_reference && width != 0 {
+        return None;
+    }
+    let complete_width = if width == 0 {
+        0
+    } else {
+        let count = min?;
+        if max != Some(count) {
+            return None;
+        }
+        count.checked_mul(width)?
+    };
+    Some((
+        complete_width,
+        has_zero_width_term.then(|| offsets.into_boxed_slice()),
+    ))
+}
+
 fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize) -> Option<usize> {
     let mut counted_offsets = Vec::<(usize, Box<[usize]>)>::new();
     let mut tails = HashMap::<usize, usize>::new();
@@ -2716,55 +2772,11 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 bounds: (min, max, _),
                 ..
             }) => {
-                let mut offsets = Vec::<usize>::with_capacity(references.len() + 1);
-                offsets.push(0);
-                let mut has_zero_width_term = false;
-                let mut has_reference = false;
-                for (ordinal, target) in references.iter().enumerate() {
-                    let width = match *target {
-                        ReferenceTarget::Term(index) => match instructions.get(index) {
-                            Some(PreparedInstruction::Ready(Instruction::RepeatedAssert(_))) => {
-                                has_zero_width_term = true;
-                                0
-                            }
-                            Some(PreparedInstruction::Ready(Instruction::RepeatedCharacter(_)))
-                            | Some(PreparedInstruction::Set { repeated: true, .. }) => 1,
-                            _ => return None,
-                        },
-                        ReferenceTarget::Empty => {
-                            has_reference = true;
-                            has_zero_width_term = true;
-                            0
-                        }
-                        ReferenceTarget::Local(span)
-                            if span.start <= span.end && span.end <= ordinal =>
-                        {
-                            has_reference = true;
-                            has_zero_width_term = true;
-                            0
-                        }
-                        _ => return None,
-                    };
-                    offsets.push(offsets.last()?.checked_add(width)?);
+                let (complete_width, offsets) =
+                    fixed_lookbehind_sequence_width(instructions, references, (*min, *max, false))?;
+                if let Some(offsets) = offsets {
+                    counted_offsets.push((pc, offsets));
                 }
-                let width = *offsets.last()?;
-                // Forward lowering of open/local references is also valid
-                // backward only when every same-body capture is empty.
-                if has_reference && width != 0 {
-                    return None;
-                }
-                if has_zero_width_term {
-                    counted_offsets.push((pc, offsets.into_boxed_slice()));
-                }
-                let complete_width = if width == 0 {
-                    0
-                } else {
-                    let count = (*min)?;
-                    if *max != Some(count) {
-                        return None;
-                    }
-                    count.checked_mul(width)?
-                };
                 tails.get(&(pc + 1))?.checked_add(complete_width)?
             }
             _ => return None,
@@ -2805,7 +2817,7 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
 // source order. Internal reads and variable/dependent children need a different
 // backward plan and remain unsupported (22.2.2.8, 22.2.2.9.2).
 fn outside_reference_lookbehind_width(
-    instructions: &[PreparedInstruction],
+    instructions: &mut [PreparedInstruction],
     entry: usize,
     captures: Range<usize>,
     named_groups: &[&[usize]],
@@ -2818,6 +2830,7 @@ fn outside_reference_lookbehind_width(
     }
     let mut fixed = 0usize;
     let mut references = Vec::new();
+    let mut counted_offsets = Vec::new();
     let outside = |index: usize, named: bool| {
         if named {
             Some(
@@ -2874,6 +2887,24 @@ fn outside_reference_lookbehind_width(
                     });
                 }
             }
+            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
+                bounds: (Some(0), Some(0), _),
+                ..
+            }) => {
+                // Maximum zero never observes any body term or target.
+            }
+            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
+                references,
+                bounds,
+                ..
+            }) => {
+                let (width, offsets) =
+                    fixed_lookbehind_sequence_width(instructions, references, *bounds)?;
+                fixed = fixed.checked_add(width)?;
+                if let Some(offsets) = offsets {
+                    counted_offsets.push((pc, offsets));
+                }
+            }
             PreparedInstruction::Ready(Instruction::Character(_))
             | PreparedInstruction::Set {
                 repeated: false, ..
@@ -2882,8 +2913,11 @@ fn outside_reference_lookbehind_width(
                 Instruction::Nop
                 | Instruction::Open(_)
                 | Instruction::Close(_)
-                | Instruction::Assert(_),
-            ) => {}
+                | Instruction::Assert(_)
+                | Instruction::RepeatedCharacter(_)
+                | Instruction::RepeatedAssert(_),
+            )
+            | PreparedInstruction::Set { repeated: true, .. } => {}
             PreparedInstruction::Ready(Instruction::Jump(owner)) => {
                 let end =
                     match instructions.get(*owner)? {
@@ -2915,6 +2949,16 @@ fn outside_reference_lookbehind_width(
     }
     if references.is_empty() {
         return None;
+    }
+    for (pc, offsets) in counted_offsets {
+        let PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
+            lookbehind_offsets,
+            ..
+        }) = &mut instructions[pc]
+        else {
+            unreachable!("fixed unit retains its prepared sequence");
+        };
+        *lookbehind_offsets = Some(offsets);
     }
     Some(LookbehindWidth::OutsideReferences {
         fixed,
@@ -3040,7 +3084,7 @@ fn prepare(
                             LookbehindWidth::Fixed(width)
                         } else {
                             outside_reference_lookbehind_width(
-                                &instructions,
+                                &mut instructions,
                                 entry,
                                 capture_start..capture_count,
                                 bindings.groups,
@@ -3293,6 +3337,182 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn fixed_units_outside_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=a{2}\1)b",
+            r"(a)(?<=[a]{2}\1)b",
+            r"(b)(?<=(ab){2}\1)c",
+            r"(b)(?<=\1(ab){2})c",
+            r"(a)(?<=a{2}(\1){2})b",
+            r"(a)(?<=(a){2}(\1){2})b",
+            r"(a)(?<=(a\B){2}\1)b",
+            r"(a)(?<=(^){2}\1)b",
+            r"(a)(?<=\1(\B){2})b",
+            r"(a)(?<=(\b){2}\1)b",
+            r"(a)(?<=(()\3){2}\1)b",
+            r"(a)(?<=(\1b){0}\1)b",
+            r"(a)(?<!(a){2}\1q)b",
+            r"(a)(?<!a{2}\1)b",
+            r"(a)(?<!a{2}\1q)b",
+            r"(?<=(a){2}\2)(a)",
+            r"(a(?<=a{2}\1))b",
+            r"()(?<=(a){2}\1)b",
+            r"()(?<=(\b){2}\1)b",
+            r"(a)(?<=(a){0}\1)b",
+            r"(a)(?<=(ab){0}\1)b",
+            r"(a)(?<=(a){2}?\1)b",
+            r"(a)(?<=.{2}\1)b",
+            r"(a)(?<=[^b]{2}\1)b",
+            r"(a)(?<=a{2}\1(?=b))b",
+            r"(a)(?<=(?<=a)a{2}\1)b",
+            r"(a)(?<=a{2}\1(?=(b)))b",
+            r"(?:(a|b)(?<=[ab]{2}\1))+c",
+            r"(µ)(?<=(µ){2}\1)Μ",
+            r"([\uD800])(?<=[\uD800]{2}\1)[\uDC00]",
+            r"(a)(?<=(a){30}\1)b",
+            r"(a)(?<!(a){30}\1)b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aaab", "abb", "abc", "ababab", "aaaabb", " abc", "a b",
+                    "a\nb", "a\r\n", "µµΜ", "abbbc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+    #[test]
+    fn fixed_units_outside_lookbehind_capture_offsets_empty_units_and_skipped_reads() {
+        for (source, text, range, captures) in [
+            (
+                r"(a)(?<=(a){2}(\1){2})b",
+                "aaaab",
+                3..5,
+                vec![Some(3..4), Some(0..1), Some(2..3)],
+            ),
+            (
+                r"(b)(?<=(ab){2}\1)c",
+                "ababbc",
+                4..6,
+                vec![Some(4..5), Some(0..2)],
+            ),
+            (
+                r"(b)(?<=\1(ab){2})c",
+                "bababc",
+                4..6,
+                vec![Some(4..5), Some(1..3)],
+            ),
+            (
+                r"(a)(?<=(a\B){2}\1)b",
+                "aaab",
+                2..4,
+                vec![Some(2..3), Some(0..1)],
+            ),
+            (
+                r"(a)(?<=\1(\B){2})b",
+                "qab",
+                1..3,
+                vec![Some(1..2), Some(2..2)],
+            ),
+            (
+                r"(a)(?<=(()\3){2}\1)b",
+                "qab",
+                1..3,
+                vec![Some(1..2), Some(1..1), Some(1..1)],
+            ),
+            (r"(a)(?<=(\1b){0}\1)b", "qab", 1..3, vec![Some(1..2), None]),
+            (r"(a)(?<!(a){2}\1q)b", "aaab", 2..4, vec![Some(2..3), None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(a)(?<=(a){1,2}\1)b",
+            r"(a)(?<=(a\1){2})b",
+            r"(a)(?<=a{2}\1|a)b",
+            r"(a)(?<=a{2}(?<=\1))b",
+            r"(a)(?<=a{2}(?=\1)\1)b",
+            r"(a)(?<=a{2}(\1){1,2})b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xd800, 0xd800, 0xdc00]);
+        let found = ordinary(r"([\uD800])(?<=[\uD800]{2}\1)[\uDC00]", false, false, false)
+            .find(&input, 2, true)
+            .unwrap();
+        assert_eq!(found.range, 2..4);
+        assert_eq!(&*found.captures, &[Some(2..3)]);
+    }
+    #[test]
+    fn fixed_units_outside_lookbehind_deep_captures_negative_restore_clones_and_work_are_flat() {
+        let source =
+            "(a)(?<=".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"{2}\1)b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("aaaab"), 3, true).unwrap();
+        assert_eq!(found.range, 3..5);
+        assert_eq!(found.captures.len(), 100001);
+        assert_eq!(found.captures[0], Some(3..4));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..2)));
+        drop(copy);
+        let source =
+            "(a)(?<!".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"{2}\1q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("aaaab"), 3, true)
+            .unwrap();
+        assert_eq!(found.range, 3..5);
+        assert_eq!(found.captures[0], Some(3..4));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let source = format!(r"(a)(?<=(){{{}}}\1)b", usize::MAX);
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("ab"), 0, true)
+            .unwrap();
+        assert_eq!(&*found.captures, &[Some(0..1), Some(0..0)]);
+        let matcher = ordinary(r"(a+)(?<=(b){0}\1)b", false, false, false);
+        let input = JsString::from(("a".repeat(50000) + "b").as_str());
+        let found = matcher.find(&input, 0, true).unwrap();
+        assert_eq!(found.range, 0..50001);
+        assert_eq!(&*found.captures, &[Some(0..50000), None]);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]

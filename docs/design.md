@@ -1863,7 +1863,7 @@ Already proved fixed lookahead/lookbehind and exact-zero skipped scopes can be
 summarized without rescanning their body. Fixed backward parents and fixed
 lookahead reject children with dynamic reference widths, preserving their
 capture-read-free ordering proof. The linear fallback also rejects such children,
-internal reads, choices, variable counts and counted character or mixed-reference
+internal reads, choices, unproved variable counts and mixed-reference consuming
 units. Generic forward execution
 retains its existing child assertion semantics.
 
@@ -1896,8 +1896,29 @@ assertions fail and negative assertions succeed without arithmetic overflow.
 This extends the width inventory without source-count expansion, per-match target
 allocation, native recursion, dependencies or default quotas. Fixed backward
 parents and fixed lookahead still reject dynamic reference-width children. Other
-dependent backward plans, variable counts, counted character/mixed-reference units
+dependent backward plans, unproved variable counts, mixed-reference consuming units
 and Unicode modes remain pending.
+
+
+Counted fixed character, class and boundary units compose with stable outside
+references in linear ordinary lookbehind (22.2.2.3.1, 22.2.2.8). Both fixed and
+outside-reference plans share the same unit-width proof. Consuming units require
+equal representable counts and add checked constant widths to the complete prefix.
+Wholly empty units retain the existing required/optional effects; same-body local
+references remain admissible only when every unit term is proved empty.
+
+Counted units own their repeated character/set/assertion instruction fields;
+ordinary body traversal skips those fields after accounting for their control.
+Zero-width terms retain source-relative prefix offsets for exact capture ranges.
+Only an accepted complete owner receives these offsets, and child assertion
+regions keep their own metadata. The existing matcher executes every boundary in
+full input context, retains the first backward iteration and restores negative or
+failed capture effects. No matcher instruction or execution path changes.
+
+The proof stays flat and does not expand counts, copy input, add dependencies or
+impose default quotas. Stable imported targets remain outside the complete owner.
+Consuming units mixing those reads with characters, internal nonempty reads,
+unproved variable counts, choices and dynamic child assertions remain unsupported.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

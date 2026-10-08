@@ -3493,6 +3493,56 @@ no test is omitted, moved to a schedule or restricted to a subset of platforms.
 Dependency and fixture policies also pass; the implementation and all 13680
 corpus variants were validated on both Rust versions before this workflow change.
 
+
+Linear ordinary lookbehind now composes counted fixed character, class, boundary
+and proven empty local-reference units with stable outside capture reads. The
+fixed and outside-reference width plans share one checked unit proof and retain
+the existing matcher. Counted consuming units add constant prefix widths; zero
+terms retain exact capture offsets. Backward iterations export their first ranges
+and negative failures restore completed effects without changing imported values.
+
+Three core regressions include an inspected 5760-row snapshot, before/after-import
+unit positions, mixed counted boundaries, first backward capture ranges, required
+empty local effects, skipped reads and insufficient prefixes. Deep cases exercise
+100000 counted scopes, clones/drop, completed negative rollback, required empty
+counts up to usize::MAX, a 50000-unit imported range and explicit work aborts.
+Six runtime regressions include an inspected 39-result snapshot, duplicate outside
+aliases, exact named/index identity, boundary captures, global/sticky consumers,
+empty advancement, callbacks, copies and collection. Defaults remain unlimited;
+opted-in aborts preserve lastIndex and bypass JavaScript handlers.
+
+All 5760 core rows, 39 runtime results and eleven complete runtime programs agree
+with Node. Another 1018880 ordinary and 315360 named-binding range comparisons
+cover all ordinary flags, complete input/start cross-products, sticky/search and
+lone surrogates. All 166 core regressions, 117 related runtime targets and
+denied-warning prototype Clippy pass. All 171 prior RegExp snapshots remain
+byte-identical; no obsolete control needs retargeting. All 228 complete core
+rejection candidates and 687 runtime gap programs retain Unsupported, including
+counted units that mix characters with imported reads. Eight ordered-coercion and
+four direct-eval programs preserve Unsupported and their ordered state.
+
+Whole original reviews remain ten Passed and 24 Unsupported variants for seventeen
+lookBehind originals and 192 Passed and 38 Unsupported for the separate 115-file
+named-groups/exec selection, without test, metadata, setup or limit failures.
+No additional whole original qualifies for vendoring. Inventory, pin, eleven
+helpers and dependencies remain unchanged: 7120 fixtures, 7101 reviewed sources,
+13680 variants, 12203 harness positives and 273 RegExp builtin positive sources.
+
+
+The first independent-suite CI run passes all nine jobs, including all 13680
+reviewed variants on every platform/toolchain pair. Its slowest job took 10m42s,
+compared with 16m07s in the preceding fixture run, about 34% less elapsed time.
+Both Windows corpus results finished before their workspace jobs. The parsed
+workflow inventory confirms identical commands and coverage; the improvement
+trades four additional hosted jobs for independent completion.
+See [the complete run](https://github.com/woodruffw-bot/spite/actions/runs/37801954890).
+Against the immediately preceding commit with identical implementation/test
+bytes, the slowest job fell from 16m55s to 10m42s (37% less).
+
+Stable and MSRV pass all 13,680 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
