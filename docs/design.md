@@ -1327,6 +1327,25 @@ without new execution instructions, contexts, source expansion or default
 quotas. Deep enclosing groups, long iteration runs and huge bounds remain
 iterative and fallible.
 
+Capture-free branch repetitions nest through proven child summaries and
+parent-linked iteration contexts (RepeatMatcher, 22.2.2.3.1). Each prepared loop
+retains its original body entry. A parent treats a previously proven child as
+one capture-free operation: required child iterations consume input, while
+optional children need a consuming continuation. Preparation reuses its Boolean
+progress buffer and skips child bodies. Remembering the latest prepared loop
+also avoids rescanning it as a deterministic reference wrapper. Deep nesting
+therefore retains flat storage and linear preparation over the prepared graph.
+
+Execution stores immutable iteration records in a flat vector. Each record
+retains its parent, loop instruction, count and input start. Entering a child
+creates a new record; completing an iteration creates an updated record.
+Exiting restores the parent. Retry frames save the current record index and
+vector checkpoint alongside the capture checkpoint. Restoring a frame truncates
+abandoned records without invalidating live frames or parent links. Buffers are
+cleared between candidate starts. Allocation work is charged through the existing
+fallible callback; defaults remain unlimited. Captures inside branch loops and
+possibly empty complete body paths remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -96,9 +96,9 @@ fn construction_and_search_aborts_remain_uncatchable_host_errors() {
 fn internal_assertions_choices_quantifiers_and_unicode_remain_explicit_gaps() {
     for source in [
         "/(?:(?:a+(^[a])+){2}){2}/.test('a')",
-        "/(?:(?:[a]+^b+){2}){2}/.test('ab')",
-        "/(?:(?:^[a]+[b]+|b$){2}){2}/.test('a')",
-        "/(?:(?:^[a]*[b]+$){2}){2}/.test('a')",
+        r"/((?:(?:[a]+^b+){2}){2}){2}/.test('ab')",
+        r"/((?:(?:^[a]+[b]+|b$){2}){2}){2}/.test('a')",
+        r"/((?:(?:^[a]*[b]+$){2}){2}){2}/.test('a')",
         "/^[a]$/u.test('a')",
         "/^[a]$/v.test('a')",
     ] {

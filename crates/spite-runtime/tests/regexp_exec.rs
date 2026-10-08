@@ -176,10 +176,10 @@ fn generic_match_search_replace_split_and_matchall_use_native_literal_execution(
 fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
     for (source, flags) in [
         ("(?:(?:a(a|bc)){2}){2}", ""),
-        ("(?:(?:a|[b]+[a]+){2}){2}", ""),
-        ("(?:(?:.a*b*){2}){2}", ""),
-        ("(?:(?:[a]a+b+){2}){2}", ""),
-        ("(?:(?:ab+c+){2}){2}", ""),
+        ("((?:(?:a|[b]+[a]+){2}){2}){2}", ""),
+        ("((?:(?:.a*b*){2}){2}){2}", ""),
+        ("((?:(?:[a]a+b+){2}){2}){2}", ""),
+        ("((?:(?:ab+c+){2}){2}){2}", ""),
         ("a", "u"),
         ("a", "v"),
     ] {

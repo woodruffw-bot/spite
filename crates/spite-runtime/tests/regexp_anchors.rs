@@ -76,11 +76,11 @@ fn copied_long_anchored_plans_survive_collection_without_restarting_searches() {
 fn internal_assertions_alternatives_and_unicode_modes_remain_explicit_gaps() {
     for source in [
         "/(?:(?:a+(^a)+){2}){2}/.test('a')",
-        "/(?:(?:^a*[b]+|b$){2}){2}/.test('a')",
-        "/(?:(?:^a*[b]+){2}){2}/.test('a')",
+        r"/((?:(?:^a*[b]+|b$){2}){2}){2}/.test('a')",
+        r"/((?:(?:^a*[b]+){2}){2}){2}/.test('a')",
         "/^a$/u.test('a')",
         "/^a$/v.test('a')",
-        r"/(?:(?:^a+^b+){2}){2}/.test('ab')",
+        r"/((?:(?:^a+^b+){2}){2}){2}/.test('ab')",
     ] {
         assert!(
             matches!(

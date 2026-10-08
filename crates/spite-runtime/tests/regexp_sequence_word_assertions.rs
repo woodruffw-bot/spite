@@ -128,9 +128,9 @@ fn optional_work_counts_assertions_in_fixed_prefixes_and_continuations() {
         .unwrap();
     assert_eq!(realm.eval("r.exec(s)===null"), Ok(Value::Boolean(true)));
     for source in [
-        r"/(?:(?:a+^b+){2}){2}/.test('ab')",
+        r"/((?:(?:a+^b+){2}){2}){2}/.test('ab')",
         r"/(a\B|c)+/.test('aa')",
-        r"/(?:(?:a\Bb+c+){2}){2}/.test('abc')",
+        r"/((?:(?:a\Bb+c+){2}){2}){2}/.test('abc')",
         r"/(?:a\B(?<n>b)(?:\k<n>)+){2}/.test('ab')",
         r"/a\Bb/u.test('ab')",
         r"/^((\b(ab|a)+\b))$/.test('ab')",

@@ -100,13 +100,13 @@ fn opted_in_construction_and_search_work_abort_outside_javascript() {
 #[test]
 fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps() {
     for source in [
-        "/(?:(?:a[a]+[a]+){2}){2}/.test('aa')",
+        r"/((?:(?:a[a]+[a]+){2}){2}){2}/.test('aa')",
         "/([a]b|c)*/.test('a')",
-        "/(?:(?:[a]*[b]+){2}){2}/.test('a')",
-        "/(?:(?:[a]+[b]+|b){2}){2}/.test('a')",
+        r"/((?:(?:[a]*[b]+){2}){2}){2}/.test('a')",
+        r"/((?:(?:[a]+[b]+|b){2}){2}){2}/.test('a')",
         "/[a]/u.test('a')",
         "/./v.test('a')",
-        r"/(?:(?:a+^b+){2}){2}/.test('ab')",
+        r"/((?:(?:a+^b+){2}){2}){2}/.test('ab')",
     ] {
         assert!(
             matches!(

@@ -125,9 +125,9 @@ fn optional_work_and_remaining_unsupported_assertion_forms_keep_host_ordering() 
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:(?:a+^b+){2}){2}/.test('ab')",
+        r"/((?:(?:a+^b+){2}){2}){2}/.test('ab')",
         r"/\b(ab|a)+\b/.test('ab')",
-        r"/(?:(?:\ba+b+\b){2}){2}/.test('ab')",
+        r"/((?:(?:\ba+b+\b){2}){2}){2}/.test('ab')",
         r"/(?:\b(?<n>a)\b(?:\k<n>)+){2}/.test('a')",
         r"/\ba\b/u.test('a')",
         r"/^((\b(ab|a)+\b))$/.test('ab')",

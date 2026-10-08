@@ -2346,6 +2346,34 @@ Stable and MSRV pass all 13,566 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Capture-free branch loops now nest using child progress summaries and flat
+parent-linked iteration records. Three core regressions cover an inspected
+4,680-record insta snapshot, child exits and retries before parent counts and
+capture closes, outside references, 100,000 nested quantified groups, linear
+preparation work and fallible matching. Six runtime regressions cover an inspected
+26-record result snapshot, named enclosing ranges and indices aliases, open and
+forward outside references, exclusive names, greedy/lazy inner and outer counts,
+raw UTF-16 and dotAll, global/sticky and String consumers, zero advancement,
+copies and collection, 100,000 nested branch loops and enclosing captures,
+50,000 iterations under unlimited defaults, huge bounds and opted-in aborts.
+Node agrees with all added snapshot records, 624,832 ordinary and 283,584
+named-binding fresh range comparisons and fifteen runtime programs. Checkpoint
+truncation of abandoned iteration records preserves all these results. All 86
+earlier core and 29 earlier runtime RegExp snapshots remain byte-identical.
+Fifty-nine admitted direct controls in 23 files now retain pending body capture
+effects; five ordered-coercion and two ordinary eval controls receive the same
+capture-effect wrapper. All 503 direct gap programs, eight ordered-coercion
+controls and four ordinary eval host-gap programs remain unsupported. The
+byte-verified 115-source whole-program review still reports 178 passes,
+52 unsupported variants and no failures, limits or setup errors. Body captures,
+possibly empty complete paths, lookaround, scoped modifiers and Unicode matching
+remain pending here. No fixture or fixture credit is added; the pin, inventories,
+dependencies and unlimited defaults remain unchanged.
+
+Stable and MSRV pass all 13,566 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
