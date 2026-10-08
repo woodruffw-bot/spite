@@ -159,8 +159,16 @@ enum LookbehindWidth {
     Fixed(usize),
     OutsideReferences {
         fixed: usize,
-        references: Box<[(usize, bool)]>,
+        references: Box<[OutsideReferenceWidth]>,
     },
+}
+
+#[derive(Debug)]
+struct OutsideReferenceWidth {
+    index: usize,
+    named: bool,
+    copies: usize,
+    count: usize,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1591,15 +1599,19 @@ impl Program {
             LookbehindWidth::Fixed(width) => Some(*width),
             LookbehindWidth::OutsideReferences { fixed, references } => {
                 let mut width = Some(*fixed);
-                for &(index, named) in references {
+                for reference in references {
                     charge(1)?;
-                    let range = if named {
-                        &state.named[index]
+                    let range = if reference.named {
+                        &state.named[reference.index]
                     } else {
-                        &state.captures[index]
+                        &state.captures[reference.index]
                     };
-                    width = width
-                        .and_then(|width| width.checked_add(range.as_ref().map_or(0, Range::len)));
+                    let term = range
+                        .as_ref()
+                        .map_or(0, Range::len)
+                        .checked_mul(reference.copies)
+                        .and_then(|width| width.checked_mul(reference.count));
+                    width = width.and_then(|width| width.checked_add(term?));
                 }
                 width
             }
@@ -1855,15 +1867,62 @@ impl Program {
                     }
                 }
                 Instruction::QuantifiedReference {
-                    bounds, captures, ..
+                    index,
+                    named,
+                    bounds: (min, max, _),
+                    copies,
+                    ..
                 } => {
-                    debug_assert_eq!((bounds.0, bounds.1), (Some(0), Some(0)));
-                    // Exactly zero iterations neither read the reference nor
-                    // run the body; only owned captures become undefined.
-                    for &(slot, _) in captures {
-                        self.write_capture(state, slot, None, charge)?;
+                    debug_assert_eq!(min, max);
+                    let count = min.expect("outside reference counts are representable");
+                    if count == 0 {
+                        // Exactly zero iterations never read the target.
+                        self.complete_reference_captures(current.pc, state, None, None, charge)?;
+                        true
+                    } else {
+                        let range = if *named {
+                            &state.named[*index]
+                        } else {
+                            &state.captures[*index]
+                        };
+                        let width = range.as_ref().map_or(0, Range::len) * *copies;
+                        let base = *position;
+                        // Required empty iterations have identical effects;
+                        // summarize them without expanding the source count.
+                        let iterations = if width == 0 { 1 } else { count };
+                        let mut accepted = true;
+                        for _ in 0..iterations {
+                            charge(1)?;
+                            if let Some(range) = range {
+                                if let Some(end) = self.compare_reference_copies(
+                                    input, *position, range, *copies, charge,
+                                )? {
+                                    *position = end;
+                                } else {
+                                    accepted = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if accepted {
+                            // RepeatMatcher retains the leftmost backward
+                            // iteration (22.2.2.3.1). Targets are outside the
+                            // complete assertion and stay unchanged.
+                            let capture_base = if current.rightmost_iteration {
+                                *position - width
+                            } else {
+                                base
+                            };
+                            self.complete_reference_captures(
+                                current.pc,
+                                state,
+                                Some(capture_base..capture_base + width),
+                                None,
+                                charge,
+                            )?;
+                        }
+                        accepted
                     }
-                    true
                 }
                 Instruction::QuantifiedReferenceSequence {
                     references,
@@ -2759,24 +2818,61 @@ fn outside_reference_lookbehind_width(
     }
     let mut fixed = 0usize;
     let mut references = Vec::new();
+    let outside = |index: usize, named: bool| {
+        if named {
+            Some(
+                !named_groups
+                    .get(index)?
+                    .iter()
+                    .any(|slot| captures.contains(slot)),
+            )
+        } else {
+            Some(!captures.contains(&index))
+        }
+    };
     let mut pc = entry + 1;
     while pc < instructions.len() {
         match &instructions[pc] {
             PreparedInstruction::Ready(Instruction::Reference(index)) => {
-                if captures.contains(index) {
+                if !outside(*index, false)? {
                     return None;
                 }
-                references.push((*index, false));
+                references.push(OutsideReferenceWidth {
+                    index: *index,
+                    named: false,
+                    copies: 1,
+                    count: 1,
+                });
             }
             PreparedInstruction::Ready(Instruction::NamedReference(index)) => {
-                if named_groups
-                    .get(*index)?
-                    .iter()
-                    .any(|slot| captures.contains(slot))
-                {
+                if !outside(*index, true)? {
                     return None;
                 }
-                references.push((*index, true));
+                references.push(OutsideReferenceWidth {
+                    index: *index,
+                    named: true,
+                    copies: 1,
+                    count: 1,
+                });
+            }
+            PreparedInstruction::Ready(Instruction::QuantifiedReference {
+                index,
+                named,
+                bounds: (Some(min), Some(max), _),
+                copies,
+                ..
+            }) if min == max => {
+                if *min != 0 {
+                    if !outside(*index, *named)? {
+                        return None;
+                    }
+                    references.push(OutsideReferenceWidth {
+                        index: *index,
+                        named: *named,
+                        copies: *copies,
+                        count: *min,
+                    });
+                }
             }
             PreparedInstruction::Ready(Instruction::Character(_))
             | PreparedInstruction::Set {
@@ -3200,6 +3296,188 @@ mod tests {
     }
 
     #[test]
+    fn counted_outside_reference_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=\1{2})b",
+            r"(a)(?<=\1{2}?)b",
+            r"(a)(?<=(\1){2})b",
+            r"(a)(?<=(\1\1){2})b",
+            r"(..)(?<=\1{3})",
+            r"(a)(?<=a\1{2})b",
+            r"(a)(?<=\1{2}a)b",
+            r"(a)(?<!\1{2})b",
+            r"(a)(?<!(\1){2}q)b",
+            r"(?<=\1{2})(a)",
+            r"(?<=(\2){2})a(a)",
+            r"(a(?<=\1{2}))b",
+            r"()(?<=(\1){2})b",
+            r"()(?<=\1{30})b",
+            r"(a)(?<=(\1){0}\1)b",
+            r"(a)(?<=(\1){1}\1)b",
+            r"(a)(?<=(\1\1){2}?)b",
+            r"(a)(?<=\1{2}\b)b",
+            r"(a)(?<=\1{2}\B)b",
+            r"(a)(?<=^\1{2})b",
+            r"(a)(?<=\1{2}(?=b))b",
+            r"(a)(?<=\1{2}(?=(b)))b",
+            r"(a)(?<=(?<=a)\1{2})b",
+            r"(a)(?<=\1{2}(?<=a))b",
+            r"(a)(?<=(a|b){0}\1{2})b",
+            r"(?:(a|b)(?<=\1{2}))+c",
+            r"(µ)(?<=\1{2})Μ",
+            r"([\uD800])(?<=\1{2})[\uDC00]",
+            r"(a)(?<=(\1\1){1})b",
+            r"(?=(a))(?<=\1{2})a",
+            r"(a)(?<=\1{30})b",
+            r"(a)(?<!\1{30})b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aaab", "abb", "abc", "ababab", "aaaabb", " abc", "a b",
+                    "a\nb", "a\r\n", "µµΜ", "abbbc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn counted_outside_reference_lookbehind_preserves_owned_ranges_open_forward_and_negative_slots()
+    {
+        for (source, text, range, captures) in [
+            (
+                r"(a)(?<=(\1){2})b",
+                "aaab",
+                2..4,
+                vec![Some(2..3), Some(1..2)],
+            ),
+            (
+                r"(a)(?<=(\1\1){2})b",
+                "aaaaab",
+                4..6,
+                vec![Some(4..5), Some(1..3)],
+            ),
+            (r"(?<=\1{2})(a)", "qa", 1..2, vec![Some(1..2)]),
+            (r"(?<=(\2){2})a()", "qa", 1..2, vec![Some(1..1), Some(2..2)]),
+            (r"(a(?<=\1{2}))b", "qab", 1..3, vec![Some(1..2)]),
+            (r"()(?<=(\1){2})b", "qb", 1..2, vec![Some(1..1), Some(1..1)]),
+            (r"(a)(?<!(\1){2}q)b", "aaab", 2..4, vec![Some(2..3), None]),
+            (r"(a)(?<=(\1){0}\1)b", "qab", 1..3, vec![Some(1..2), None]),
+            (
+                r"(a)(?<=\1{2}(?=(b)))b",
+                "aaab",
+                2..4,
+                vec![Some(2..3), Some(3..4)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(\1))a",
+            r"(a)(?<=(?<=\1))b",
+            r"(a)(?<=(?=\1)\1)b",
+            r"(a)(?<=\1|a)b",
+            r"(a)(?<=\1{1,2})b",
+            r"(a)(?<=\1+)b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xdc00]);
+        let found = ordinary(r"([\uD800])(?<=\1{1})[\uDC00]", false, false, false)
+            .find(&input, 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(&*found.captures, &[Some(0..1)]);
+    }
+
+    #[test]
+    fn counted_outside_reference_lookbehind_deep_owned_ranges_clones_completed_negative_rollback_and_work()
+     {
+        let source =
+            "(a)(?<=".to_owned() + &"(".repeat(100000) + r"\1\1" + &")".repeat(100000) + "{2})b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("aaaaab"), 4, true).unwrap();
+        assert_eq!(found.range, 4..6);
+        assert_eq!(found.captures.len(), 100001);
+        assert_eq!(found.captures[0], Some(4..5));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..3)));
+        drop(copy);
+        let source =
+            "(a)(?<!".to_owned() + &"(".repeat(100000) + r"\1\1" + &")".repeat(100000) + "{2}q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("aaaaab"), 4, true)
+            .unwrap();
+        assert_eq!(found.range, 4..6);
+        assert_eq!(found.captures[0], Some(4..5));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let matcher = ordinary(r"(a+)(?<=\1{1})b", false, false, false);
+        let input = JsString::from(("a".repeat(50000) + "b").as_str());
+        let found = matcher.find(&input, 0, true).unwrap();
+        assert_eq!(found.range, 0..50001);
+        assert_eq!(&*found.captures, &[Some(0..50000)]);
+        // Finite input cannot supply an overflowing nonempty prefix. Required
+        // empty iterations retain one empty effect without count expansion.
+        let count = usize::MAX;
+        let source = format!(r"(ab)(?<=\1{{{count}}})c");
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("abc"), 0, true)
+                .is_none()
+        );
+        let source = format!(r"(ab)(?<!\1{{{count}}})c");
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("abc"), 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..3);
+        assert_eq!(&*found.captures, &[Some(0..2)]);
+        let source = format!(r"()(?<=(\1){{{count}}})b");
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("qb"), 1, true)
+            .unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(&*found.captures, &[Some(1..1), Some(1..1)]);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+    }
+
+    #[test]
     fn outside_reference_lookbehind_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3290,7 +3568,7 @@ mod tests {
             r"(a)(?<=(?<=\1))b",
             r"(a)(?<=(?=\1)\1)b",
             r"(a)(?<=\1|a)b",
-            r"(a)(?<=\1{2})b",
+            r"(a)(?<=\1{1,2})b",
             r"(a)(?<=\1+)b",
         ] {
             assert!(
@@ -5224,7 +5502,7 @@ mod tests {
             r"(?<=((?=a+)){1,2})a",
             r"(?<=((?=a+)){2})a",
             r"(?<=(|a){2})a",
-            r"(?<=(\2){2})a()",
+            r"(?<=(\2){1,2})a()",
             r"(?<=((a{0,2}){2}){2})a",
         ] {
             assert!(

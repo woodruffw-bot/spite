@@ -406,6 +406,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute capture-free fixed lookahead inside ordinary lookbehind with full input context, nested assertion frames, source-order choices and scoped negative outcomes.
 - [x] Export fixed lookahead captures inside ordinary lookbehind with forward rightmost iteration ranges, nested backward leftmost ranges, named aliases and scoped rollback.
 - [x] Resolve stable outside capture references in linear ordinary lookbehind bodies with checked UTF-16 prefix widths, preserved imported ranges, undefined open/forward targets and scoped negative effects.
+- [x] Execute representable exact counts of stable outside references inside linear ordinary lookbehind with checked complete widths, leftmost repeated captures, required empty effects and scoped negative rollback.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

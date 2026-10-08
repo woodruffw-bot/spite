@@ -1863,7 +1863,8 @@ Already proved fixed lookahead/lookbehind and exact-zero skipped scopes can be
 summarized without rescanning their body. Fixed backward parents and fixed
 lookahead reject children with dynamic reference widths, preserving their
 capture-read-free ordering proof. The linear fallback also rejects such children,
-internal reads, choices and counted/variable units. Generic forward execution
+internal reads, choices, variable counts and counted character or mixed-reference
+units. Generic forward execution
 retains its existing child assertion semantics.
 
 The width list and execution frames are flat, do not expand input or source and
@@ -1872,6 +1873,31 @@ fail positive assertions and succeed for negative assertions. Deep owned slots,
 clones and completed negative rollback use no native recursion. Default host
 quotas remain unlimited; other reference-dependent backward plans and Unicode
 modes remain pending.
+
+
+Exact-count repetitions of a single stable outside reference also use this linear
+lookbehind plan (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The existing flat reference
+wrapper retains its source-order copies and owned capture spans. Preparation
+requires equal representable minimum/maximum counts and checks the target against
+the complete owner's numeric or named capture inventory. A zero count skips all
+target reads. Every nonzero count contributes target length times source copies
+times count to the checked complete prefix width; greedy and lazy exact counts
+have the same deterministic behavior.
+
+Comparison uses the unchanged outside ranges and existing Canonicalize operation.
+Consuming units run only within their proved available prefix. Required empty
+iterations have identical effects and execute one pass, including counts up to
+usize::MAX; skipped units leave their owned slots undefined. Successful backward
+repetitions export the first, leftmost unit's capture spans. Completed or partial
+negative/failed bodies use the existing checkpoint rollback and leave imported
+values intact. Overflowing nonempty widths cannot match finite input, so positive
+assertions fail and negative assertions succeed without arithmetic overflow.
+
+This extends the width inventory without source-count expansion, per-match target
+allocation, native recursion, dependencies or default quotas. Fixed backward
+parents and fixed lookahead still reject dynamic reference-width children. Other
+dependent backward plans, variable counts, counted character/mixed-reference units
+and Unicode modes remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
