@@ -1073,7 +1073,7 @@ contains no heap-object edges and survives copying and collection. Optional work
 charges frame buffers, executed instructions, branch attempts, capture trail
 writes/resets, assertions and actual comparisons; aborts occur before lastIndex
 mutation and remain outside language handlers. Default work and heap quotas stay
-disabled. Capturing or composite reference-containing repetitions, other consuming
+disabled. Composite reference-containing repetitions, other consuming
 quantifiers, lookaround/scoped modifiers and Unicode matching remain pending.
 
 Reference atoms accept greedy/lazy `*`, `+`, `?` and bounded quantifiers
@@ -1102,11 +1102,28 @@ repetition frames. Compilation inspects its prepared body at the quantifier,
 accepts only that reference and no-op group boundaries, and retains the original
 capture ordinals and source. Empty noncapturing groups around the reference have
 no MatchState effects. Nested unquantified wrappers need no repeated body scans;
-100,000 wrappers remain iterative with linear storage. Capturing boundaries,
-multiple references, consuming terms, alternatives, assertions and an already
+100,000 wrappers remain iterative with linear storage. Multiple references,
+consuming terms, alternatives, assertions and an already
 quantified reference prevent this simplification. Default quotas stay disabled;
-capturing/composite reference repetitions, quantified consuming atoms,
+composite reference repetitions, quantified consuming atoms,
 lookaround/scoped modifiers and Unicode matching remain pending in this program.
+
+Capturing groups enclosing the sole reference also use this repetition
+instruction. Preparation checks balanced capturing boundaries before/after the
+reference, records their original slots, and replaces only those boundaries with
+no-ops. Each selected nonempty repetition endpoint determines every enclosing
+slot's final-iteration range; zero iterations leave these slots undefined
+(RepeatMatcher, 22.2.2.3.1). The target is a completed external prefix capture or
+an undefined capture within the repeated body: the latter remains undefined when
+RepeatMatcher clears its captures before each iteration. Required empty
+iterations therefore leave empty final captures even for huge finite minimums;
+optional empty iterations leave them undefined under the zero-progress rule.
+Repetition frames save their checkpoint before writing wrapper captures. Failed
+continuations clear those writes before a retry installs the new final ranges,
+including their shared named bindings. Capture inventories and writes receive
+opt-in work charges. Deep enclosing groups remain iterative with linear storage.
+Composite bodies, sibling captures around the reference and nested quantifiers
+remain pending in this program.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
