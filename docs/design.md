@@ -1411,6 +1411,27 @@ may extend beyond the empty outer capture. The shared undo trail restores these
 ranges and named aliases on outer retries. Nested wrappers, copies and dropping
 remain flat and host limits remain opt-in.
 
+
+Zero-width lookahead repetition bodies also admit nested and sequential choices
+when every complete path is zero-width (RepeatMatcher, 22.2.2.3.1). A backwards
+Boolean proof checks all original forward edges. Ordinary assertions and capture
+instructions inherit their continuation; every choice branch must prove zero
+width. Lookahead and previously proven zero-width child repetitions summarize
+their bodies. Consuming terms and outside references remain rejected. Preparation
+reuses the proof buffer and skips child bodies, keeping nested wrappers linear.
+
+A moved original entry choice lives at the wrapper tail, preserving branch
+positions and exit jumps. Required iterations still collapse to one execution:
+clearing internal captures makes each iteration independent at the same input
+position, so only the final iteration's path can affect the outer continuation.
+The ordinary choice frames retain source order and restore capture starts, ranges
+and named aliases when that continuation fails. Positive lookahead remains
+atomic inside each branch; retrying an outer choice never reopens it. Optional
+zero-progress iterations still leave all owned slots undefined. Parent consuming
+loops treat the whole child as zero-width and retain their per-iteration clearing.
+All preparation, execution, rollback, cloning and dropping remain flat, with
+fallible opt-in work accounting.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

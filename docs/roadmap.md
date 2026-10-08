@@ -384,6 +384,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute captures inside progressing repeated branches and nested loops with per-iteration clearing, restored starts/ranges/named aliases and exact final-iteration captures.
 - [x] Execute ordinary positive and negative lookahead with atomic nested choices, zero-width input positions, retained positive captures, restored negative captures and flat assertion/repetition contexts.
 - [x] Execute transparent zero-width lookahead repetition wrappers with retained required captures, undefined skipped optional slots, huge bounds and flat nested preparation.
+- [x] Execute source-order alternatives inside proven zero-width lookahead repetition bodies with retained required captures, skipped optional slots, restored named aliases and flat child summaries.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

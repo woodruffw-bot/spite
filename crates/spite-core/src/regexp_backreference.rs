@@ -1662,69 +1662,99 @@ fn quantify_reference_wrapper(
     Some(())
 }
 
-// Accept only transparent zero-width wrappers containing a prepared lookahead.
-// Peek bodies may consume input, but their outer operation never advances it.
-// Choices and consuming terms outside assertions remain outside this increment.
+// Prove that every complete body path is zero-width. Prepared lookahead and
+// zero-width child repetitions summarize their bodies without examining input.
 fn quantify_zero_width_lookahead(
     instructions: &mut Vec<PreparedInstruction>,
     body: Range<usize>,
     bounds: Bounds,
     captures: Range<usize>,
+    zero_width: &mut Vec<bool>,
 ) -> Option<()> {
     let open = match &instructions[body.start] {
         PreparedInstruction::Ready(Instruction::Open(slot)) => Some(*slot),
-        PreparedInstruction::Ready(Instruction::Nop) => None,
+        PreparedInstruction::Ready(Instruction::Nop | Instruction::Choice(_)) => None,
         _ => return None,
     };
-    let mut pc = body.start;
+    zero_width.resize(instructions.len() + 1, false);
+    zero_width[body.end] = true;
+    let mut next = body.end;
     let mut found = false;
-    while pc < body.end {
-        match &instructions[pc] {
+    while next > body.start {
+        let pc = next - 1;
+        if pc > body.start {
+            if let PreparedInstruction::Ready(
+                Instruction::Lookahead {
+                    body: child,
+                    head,
+                    end,
+                    ..
+                }
+                | Instruction::RepeatZeroWidth {
+                    body: child,
+                    head,
+                    end,
+                    ..
+                },
+            ) = &instructions[pc - 1]
+            {
+                if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
+                    return None;
+                }
+                found = true;
+                zero_width[*child] = zero_width[*end];
+                next = *child;
+                continue;
+            }
+        }
+        next = pc;
+        zero_width[pc] = match &instructions[pc] {
             PreparedInstruction::Ready(
                 Instruction::Nop
                 | Instruction::Open(_)
                 | Instruction::Close(_)
                 | Instruction::Assert(_),
-            ) => pc += 1,
+            ) => zero_width[pc + 1],
             PreparedInstruction::Ready(Instruction::Jump(target)) => {
-                if *target <= pc || *target >= body.end {
+                if *target <= pc || *target > body.end {
                     return None;
                 }
-                let PreparedInstruction::Ready(instruction) = &instructions[*target] else {
-                    return None;
-                };
-                let (Instruction::Lookahead {
-                    body: child, end, ..
-                }
-                | Instruction::RepeatZeroWidth {
-                    body: child, end, ..
-                }) = instruction
-                else {
-                    return None;
-                };
-                if *child != pc || *end <= *target || *end > body.end {
+                zero_width[*target]
+            }
+            PreparedInstruction::Ready(Instruction::Choice(branches)) => {
+                if branches.is_empty()
+                    || branches
+                        .iter()
+                        .any(|&target| target <= pc || target > body.end)
+                {
                     return None;
                 }
-                found = true;
-                pc = *end;
+                branches.iter().all(|&target| zero_width[target])
             }
             _ => return None,
-        }
+        };
     }
-    if !found {
+    if !found || !zero_width[body.start] {
         return None;
     }
     let entry = instructions.len() + 1;
-    instructions[body.start] = PreparedInstruction::Ready(Instruction::Jump(entry));
-    instructions.push(PreparedInstruction::Ready(Instruction::Jump(entry + 1)));
+    let original = std::mem::replace(
+        &mut instructions[body.start],
+        PreparedInstruction::Ready(Instruction::Jump(entry)),
+    );
+    instructions.push(PreparedInstruction::Ready(Instruction::Jump(entry + 2)));
     instructions.push(PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
         captures,
         open,
         body: body.start,
-        head: body.start + 1,
-        end: entry + 1,
+        head: entry + 1,
+        end: entry + 2,
         required: bounds.0 != Some(0),
     }));
+    instructions.push(match original {
+        PreparedInstruction::Ready(Instruction::Choice(_)) => original,
+        _ => PreparedInstruction::Ready(Instruction::Jump(body.start + 1)),
+    });
     Some(())
 }
 
@@ -1748,24 +1778,21 @@ fn quantify_progressing_choice(
     let mut next = body.end;
     while next > body.start {
         let pc = next - 1;
-        if let PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
-            body: child, end, ..
-        }) = &instructions[pc]
-        {
-            if *end != pc + 1 || *child < body.start || *child >= pc {
-                return None;
-            }
-            progresses[*child] = progresses[*end];
-            next = *child;
-            continue;
-        }
         if pc > body.start {
-            if let PreparedInstruction::Ready(Instruction::Lookahead {
-                body: child,
-                head,
-                end,
-                ..
-            }) = &instructions[pc - 1]
+            if let PreparedInstruction::Ready(
+                Instruction::Lookahead {
+                    body: child,
+                    head,
+                    end,
+                    ..
+                }
+                | Instruction::RepeatZeroWidth {
+                    body: child,
+                    head,
+                    end,
+                    ..
+                },
+            ) = &instructions[pc - 1]
             {
                 if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
                     return None;
@@ -2016,10 +2043,11 @@ fn prepare(
                             start..end,
                             bounds,
                             capture_start..capture_count,
+                            &mut progresses,
                         )
                         .is_some()
                     {
-                        last_complex_group = Some(instructions.len() - 1);
+                        last_complex_group = Some(instructions.len() - 2);
                     } else if last_complex_group.is_some_and(|pc| pc >= start)
                         || quantify_reference_wrapper(
                             &mut instructions,
@@ -6482,6 +6510,116 @@ mod tests {
             );
             assert_eq!(work, 0);
         }
+    }
+
+    #[test]
+    fn zero_width_lookahead_branch_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?:(?=(a))|()){2}\1\2",
+            r"(?:(?=(a))|())*\1\2",
+            r"(?:(?=(a))|()){2,4}?\1\2",
+            r"((?=(a))|()){2}\1\2\3",
+            r"((?=(a))|()){0,2}\1\2\3",
+            r"(?:(?=(a))|(?=(b))){2}\1\2",
+            r"(?:(?=(a|ab))|(?=(ab))){2}\1b$",
+            r"(?:(?=(ab|a))|(?=(a))){2}\1b$",
+            r"(?:(?=(a))|(?=(ab))){2}\1\2b$",
+            r"(?:(?!(a)b)|(?=(a))){2}\1\2a",
+            r"(?:(?!(a)b)|(?!(b)a)){2}a",
+            r"(?:(?=(a))|^){2}\1",
+            r"(?:(?=(a))|$){2}\1",
+            r"(?:(\b)(?=(a))|()){2}a",
+            r"(?:(?=(a))()|(?=(b))()){2}\1\2\3\4",
+            r"(?:(?=(a))|(?!(b))){2}a",
+            r"(?:(?!(a))|(?=(b))){2}b",
+            r"(?:(?:(?=(a))|()){2}){3}\1",
+            r"(?:(?:(?=(a))|())?){2}a",
+            r"(?:(?:(?=(a))|()){2}a|b)+c",
+            r"(?:(?:(?=(a))|())?a|b)+c",
+            r"(?:(?=(\uD800))|()){2}\1",
+            r"(?:(?=(^a))|()){2}\1",
+            r"(?:(?=(a|b)+)|()){2}\1",
+            r"(?:(?=(a))|(?=(b))){0}c",
+            r"(?:(?=(a))|(?=(b))){1}a|b",
+            r"(?:(?=)|()){2}a",
+            r"(?:(?!)|()){2}a",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, false, false),
+                (false, true, true),
+            ] {
+                let matcher =
+                    RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                        &JsString::from(source),
+                        ignore_case,
+                        multiline,
+                        dot_all,
+                        RegExpBackreferenceNamedBindings::default(),
+                        |_| Ok::<_, ()>(()),
+                    )
+                    .unwrap()
+                    .unwrap();
+                for text in [
+                    "", "a", "b", "ab", "abb", "aab", "aba", "baabac", "acbc", "abc", "AA", "q\na",
+                    "a\n", "\u{d7ff}", "😀",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true), (2, false)] {
+                        let result = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {result:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn zero_width_branch_retries_restore_captures_before_the_outer_continuation() {
+        let source = JsString::from(r"(?:(?=(a))|(?=(ab))){2}\1\2b$");
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("abb"), 0, true).unwrap();
+        assert_eq!(found.range, 0..3);
+        assert_eq!(&*found.captures, &[None, Some(0..2)]);
+        let source = JsString::from(r"((?=(a))|()){2}\1\2\3");
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("b"), 0, true).unwrap();
+        assert_eq!(found.range, 0..0);
+        assert_eq!(&*found.captures, &[Some(0..0), None, Some(0..0)]);
+    }
+
+    #[test]
+    fn nested_zero_width_branch_proofs_and_huge_counts_keep_flat_execution() {
+        let source = JsString::from(
+            format!(
+                "{}(?:(?=(a))|()){}\\1",
+                "(?:".repeat(100000),
+                "){2}".repeat(100000)
+            )
+            .as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let clone = matcher.clone();
+        drop(matcher);
+        assert_eq!(
+            clone.find(&JsString::from("a"), 0, true).unwrap().captures[0],
+            Some(0..1)
+        );
+        assert_eq!(
+            clone
+                .find_with_work(&JsString::from("a"), 0, true, |_| Err::<(), _>(
+                    "explicit work"
+                ))
+                .unwrap_err(),
+            "explicit work"
+        );
+        let source = JsString::from(format!("(?:(?=(a))|()){{{}}}\\1", "9".repeat(10000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("a"), 0, true).unwrap();
+        assert_eq!(found.range, 0..1);
+        assert_eq!(&*found.captures, &[Some(0..1), None]);
     }
 
     #[test]
