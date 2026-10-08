@@ -38,7 +38,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
 /// Top-level and arbitrarily nested alternatives and quantified reference atoms
-/// are accepted, including capturing and transparent noncapturing reference wrappers. Other
+/// are accepted, including capturing and transparent noncapturing reference wrappers with empty
+/// sibling captures. Other
 /// quantifiers return `None`. At least one numbered or registered named reference is required;
 /// plain literals retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
@@ -72,8 +73,15 @@ enum Instruction {
         index: usize,
         named: bool,
         bounds: Bounds,
-        captures: Box<[usize]>,
+        captures: Box<[(usize, ReferenceCaptureSpan)]>,
     },
+}
+
+#[derive(Clone, Copy, Debug)]
+enum ReferenceCaptureSpan {
+    Before,
+    Reference,
+    After,
 }
 
 enum PreparedInstruction {
@@ -598,7 +606,12 @@ impl Program {
             unreachable!("reference repetition owns its capture inventory")
         };
         if let Some(range) = range {
-            for &slot in captures {
+            for &(slot, span) in captures {
+                let range = match span {
+                    ReferenceCaptureSpan::Before => range.start..range.start,
+                    ReferenceCaptureSpan::Reference => range.clone(),
+                    ReferenceCaptureSpan::After => range.end..range.end,
+                };
                 charge(1)?;
                 state.captures[slot] = Some(range.clone());
                 state.touched.push(slot);
@@ -832,14 +845,22 @@ fn quantify_reference_wrapper(
     {
         match instruction {
             PreparedInstruction::Ready(Instruction::Nop) => {}
-            PreparedInstruction::Ready(Instruction::Open(slot)) if reference.is_none() => {
-                captures.push(*slot);
-                opened.push(*slot);
+            PreparedInstruction::Ready(Instruction::Open(slot)) => {
+                opened.push((*slot, reference.is_none()));
             }
-            PreparedInstruction::Ready(Instruction::Close(slot)) if reference.is_some() => {
-                if opened.pop() != Some(*slot) {
+            PreparedInstruction::Ready(Instruction::Close(slot)) => {
+                let (open, before) = opened.pop()?;
+                if open != *slot {
                     return None;
                 }
+                let span = if reference.is_none() {
+                    ReferenceCaptureSpan::Before
+                } else if before {
+                    ReferenceCaptureSpan::Reference
+                } else {
+                    ReferenceCaptureSpan::After
+                };
+                captures.push((*slot, span));
             }
             PreparedInstruction::Ready(Instruction::Reference(index)) => {
                 if reference.replace((position, *index, false)).is_some() {
@@ -1199,6 +1220,168 @@ mod tests {
     }
 
     #[test]
+    fn empty_capture_quantified_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(()\1)*",
+            r"(a)(()\1)*?",
+            r"(a)(\1())+",
+            r"(a)(\1())+?",
+            r"(a)(()\1())?",
+            r"(a)(()\1())??",
+            r"(ab)(()(\1)()){2,3}",
+            r"(ab)(()(\1)()){1,3}?",
+            r"(a)(()\1())*ab",
+            r"(a)(()\1())*?ab",
+            r"((a)(()\2())+)\1",
+            r"((a)(()\2())+?)\1",
+            r"(a|ab)(()\1())+b",
+            r"(?:(a)|(ab))(()\1())*(\2())+",
+            r"(a)(b)(()\1())*(\2())*",
+            r"(a)(b)(()\1())*?(\2())*?",
+            r"(()\4())+(a)",
+            r"(()\2())+a\1",
+            r"()(()\1()){2,3}",
+            r"(a)(()\1()){999999999999999999999999999999}",
+            r"(a)(\1()){0,999999999999999999999999999999}?b",
+            r"^([µ])(()\1())+$",
+            r"(a)(()\1())+\2",
+            r"(.)(()\1()){1,2}a|()(()\5())+",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "a",
+                    "aa",
+                    "aaaaaa",
+                    "ababab",
+                    "abababab",
+                    "aab",
+                    "aaaab",
+                    "ababb",
+                    "aaabbb",
+                    "AaAa",
+                    "µΜµ",
+                    "\n\n",
+                    " aaa ",
+                    "\u{2028}aa\u{2029}",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn empty_sibling_captures_track_the_final_iteration_and_zero_counts() {
+        for (source, input, range, captures) in [
+            (
+                r"(a)(()\1())+\2",
+                "aaaa",
+                0..4,
+                vec![Some(0..1), Some(2..3), Some(2..2), Some(3..3)],
+            ),
+            (r"()(()\1())*", "", 0..0, vec![Some(0..0), None, None, None]),
+            (
+                r"()(()\1())+",
+                "",
+                0..0,
+                vec![Some(0..0), Some(0..0), Some(0..0), Some(0..0)],
+            ),
+            (
+                r"(()\2())+a\1",
+                "a",
+                0..1,
+                vec![Some(0..0), Some(0..0), Some(0..0)],
+            ),
+            (
+                r"((\1)())+",
+                "",
+                0..0,
+                vec![Some(0..0), Some(0..0), Some(0..0)],
+            ),
+        ] {
+            let matcher =
+                RegExpBackreferenceMatcher::compile(&JsString::from(source), false).unwrap();
+            let found = matcher.find(&JsString::from(input), 0, true).unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+    }
+
+    #[test]
+    fn many_empty_siblings_and_huge_required_minimums_keep_compact_capture_spans() {
+        let source = JsString::from(
+            format!("(a)({}\\1{})+", "()".repeat(50000), "()".repeat(50000)).as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("aaaa"), 0, true).unwrap();
+        assert_eq!(found.range, 0..4);
+        assert_eq!(found.captures.len(), 100002);
+        assert_eq!(found.captures[1], Some(3..4));
+        assert!(found.captures[2..50002].iter().all(|r| *r == Some(3..3)));
+        assert!(found.captures[50002..].iter().all(|r| *r == Some(4..4)));
+        let source = JsString::from(format!("()(()\\1()){{{}}}", "9".repeat(10000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from(""), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        assert!(work < 150, "empty work {work}");
+        assert!(matches!(
+            matcher.find_with_work(&JsString::from(""), 0, true, |_| Err::<(), _>("work")),
+            Err("work")
+        ));
+        for source in [
+            r"(a)(()a\1())+",
+            r"(a)(()\1\1())+",
+            r"(a)(()\1|b())+",
+            r"(a)(()\1*())+",
+            r"(a)(()\1(?=a))+",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert_eq!(work, 0, "{source}");
+        }
+    }
+    #[test]
     fn captured_quantified_reference_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -1325,8 +1508,8 @@ mod tests {
             r"(a)(a\1)+",
             r"(a)(\1|b)+",
             r"(a)(\1*)+",
-            r"(a)(()\1)+",
-            r"(a)(\1())+",
+            r"(a)(()a\1)+",
+            r"(a)(\1a())+",
             r"(a)(\1(?=a))+",
         ] {
             let mut work = 0;

@@ -1122,8 +1122,17 @@ Repetition frames save their checkpoint before writing wrapper captures. Failed
 continuations clear those writes before a retry installs the new final ranges,
 including their shared named bindings. Capture inventories and writes receive
 opt-in work charges. Deep enclosing groups remain iterative with linear storage.
-Composite bodies, sibling captures around the reference and nested quantifiers
-remain pending in this program.
+Empty sibling captures before and after the sole reference are also accepted.
+Preparation assigns each capture a before/reference/after span rather than
+replaying its boundaries during every iteration. Its final range is the final
+iteration's beginning, whole reference span or ending, respectively. An internal
+target before the reference is defined and empty; other internal targets are
+undefined until the reference finishes. Both match the empty string, so the same
+deterministic empty-target execution remains valid. Zero iterations leave all
+body captures undefined. Required empty iterations preserve all their empty final
+ranges even for huge finite minimums. Compact spans keep 100,000 empty siblings
+iterative with linear storage. Composite bodies and nested quantifiers remain
+pending in this program.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

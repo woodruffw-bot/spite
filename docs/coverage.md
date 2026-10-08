@@ -1950,6 +1950,28 @@ Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Empty capturing siblings before and after a repeated reference now retain their
+exact final-iteration positions. Three added core regressions cover an inspected
+4,320-record insta snapshot, retry positions, whole enclosing ranges, defined-empty
+internal targets, zero-iteration undefined slots, 100,000 sibling captures,
+huge finite empty minimums with constant iteration work and opted-in failures.
+All eleven earlier core reference snapshots remain byte-identical. Six runtime
+regressions cover an inspected 24-record result snapshot, named ranges and
+indices aliases, surrogate positions, global/sticky consumers, empty advancement,
+copying and collection, 100,000 empty siblings and huge finite empty minimums under
+unlimited defaults, explicit search aborts and remaining gaps. Node agrees with
+all added core and runtime snapshot records, 378,240 numbered and 184,320 named
+fresh match/capture comparisons, and ten runtime programs. Existing runtime
+reference snapshots are unchanged. All 413 audited direct gap programs and the
+three eval host-gap programs remain unsupported. Composite bodies, nested
+consuming quantifiers, lookaround/scoped modifiers and Unicode matching remain
+pending in this program. No fixtures or fixture credit are added; inventories,
+the pin, dependencies and unlimited defaults are unchanged.
+
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
