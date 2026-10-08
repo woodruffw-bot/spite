@@ -1,11 +1,39 @@
 # Test262 regression fixtures
 
-These 7120 unmodified test fixtures and eleven harness files come from
+These 7179 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Atom and lookahead whole-program fixture review
+
+Fifty-nine unchanged complete originals from the S15.10.2.8 cohort add 118
+normal/strict harness-positive variants at the existing pin. The complete review
+covers all sixty originals: five positive-lookahead programs, eleven negative-
+lookahead programs, 33 capture/group programs, nine dot programs and two ordinary
+case-matching programs. Preserved checks exercise lookahead capture commitment
+and negative rollback, nested and repeated captures, numeric backreferences,
+replacement substitutions, optional unmatched groups, dot and ignoreCase. Two
+constructor programs retain all 200 nested capture or noncapture scopes.
+
+The remaining A3_T17 original requires an unproved nested repeated capture body
+and stays Unsupported in both modes, with no fixture or passing credit. All 120
+complete variants pass Node; stable and MSRV pass the selected 118 without failures
+or host limits. Git blob identities and manifest SHA-256 digests verify every
+selected source byte. All metadata, Sputnik copyright notices and the BSD license
+are preserved. The existing pin, eleven helpers, dependencies, negative reviews
+and unlimited defaults stay unchanged.
+
+The active corpus has 7179 fixtures, eleven helpers, 7160 reviewed Script sources
+and 13798 variants: 12321 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 332 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 13798-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Outside-reference lookbehind whole-program fixture review
 
