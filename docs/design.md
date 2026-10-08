@@ -1905,7 +1905,9 @@ references in linear ordinary lookbehind (22.2.2.3.1, 22.2.2.8). Both fixed and
 outside-reference plans share the same unit-width proof. Consuming units require
 equal representable counts and add checked constant widths to the complete prefix.
 Wholly empty units retain the existing required/optional effects; same-body local
-references remain admissible only when every unit term is proved empty.
+references whose completed spans lie to the left of the read are also
+admissible in exact-count consuming backward units. Forward consuming local
+reads retain their existing forward plan.
 
 Counted units own their repeated character/set/assertion instruction fields;
 ordinary body traversal skips those fields after accounting for their control.
@@ -1975,6 +1977,33 @@ by an available checked prefix and uses only representable counts. Ordinary
 variable counts with representable minimums, internal consuming reads, dynamic
 child assertions and Unicode modes remain pending. No count expansion, default
 quota, new dependency or native recursion is introduced.
+
+
+Exact-count fixed lookbehind units can contain references to completed same-unit
+capture spans lying to the left of the read (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
+Forward preparation retains those targets as Local spans with end <= the read's
+term ordinal. Backward execution visits the read before that target has matched,
+and RepeatMatcher clears the unit's owned captures for each iteration. Thus the
+read is undefined and consumes zero, including after an earlier iteration.
+
+The shared fixed-unit proof now records these zero-width terms among ordinary
+characters, sets and boundaries, requires equal representable counts for consuming
+units, and stores checked source-relative prefix offsets. Existing fixed sequence
+execution compares only consuming terms and predicates, and exports the first
+backward unit's exact ranges. Bare outside references can accompany proved units
+through the unchanged complete-owner width inventory. Negative/failed assertions
+retain existing checkpoint rollback and imported values.
+
+Width preparation receives the assertion's matching direction. A forward
+lookahead cannot use the backward Local proof: its completed target is already
+available, and its normal matching retains the reference width. Forward fixed
+assertions therefore keep their previous rejection boundary for consuming local
+reads, while nested backward assertions keep their own direction. Forward-lowered
+Empty targets have lost the distinction between open and forward targets and
+remain excluded from consuming units. Units mixing outside Input and Local reads,
+unproved variable counts, choices and Unicode modes remain pending. This extends
+preparation; matching operations, quotas, dependencies and native-stack behavior
+are unchanged.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

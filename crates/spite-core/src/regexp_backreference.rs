@@ -2047,9 +2047,11 @@ impl Program {
                                         charge,
                                     )?,
                                 ReferenceTarget::Empty | ReferenceTarget::Local(_) => {
-                                    // The complete unit is proved zero-width. Its
-                                    // same-body references are empty in either
-                                    // direction, including open/forward targets.
+                                    // Empty units have empty reads in either direction.
+                                    // In consuming backward units, proved closed
+                                    // local targets lie to the left and have not
+                                    // matched in this cleared iteration. Forward
+                                    // consuming local reads retain their own plan.
                                     charge(1)?;
                                     true
                                 }
@@ -2673,17 +2675,22 @@ fn quantify_progressing_choice(
 }
 
 // Keep the same unit proof for fixed bodies and linear bodies importing outside
-// ranges. Local references are safe in either direction only in wholly empty
-// units. Consuming units require exact counts (22.2.2.3.1, 22.2.2.8).
+// ranges. A closed local span to the left of its read has not matched yet in
+// a backward iteration, whose owned captures are cleared first. Open/forward
+// reads lose their target identity during forward lowering and remain accepted
+// only in wholly empty units. Consuming units require exact counts
+// (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
 fn fixed_lookbehind_sequence_width(
     instructions: &[PreparedInstruction],
     references: &[ReferenceTarget],
     (min, max, _): Bounds,
+    backward: bool,
 ) -> Option<(usize, Option<Box<[usize]>>)> {
     let mut offsets = Vec::<usize>::with_capacity(references.len() + 1);
     offsets.push(0);
     let mut has_zero_width_term = false;
-    let mut has_reference = false;
+    let mut has_empty = false;
+    let mut has_local = false;
     for (ordinal, target) in references.iter().enumerate() {
         let width = match *target {
             ReferenceTarget::Term(index) => match instructions.get(index) {
@@ -2696,12 +2703,12 @@ fn fixed_lookbehind_sequence_width(
                 _ => return None,
             },
             ReferenceTarget::Empty => {
-                has_reference = true;
+                has_empty = true;
                 has_zero_width_term = true;
                 0
             }
             ReferenceTarget::Local(span) if span.start <= span.end && span.end <= ordinal => {
-                has_reference = true;
+                has_local = true;
                 has_zero_width_term = true;
                 0
             }
@@ -2710,7 +2717,7 @@ fn fixed_lookbehind_sequence_width(
         offsets.push(offsets.last()?.checked_add(width)?);
     }
     let width = *offsets.last()?;
-    if has_reference && width != 0 {
+    if width != 0 && (has_empty || (has_local && !backward)) {
         return None;
     }
     let complete_width = if width == 0 {
@@ -2728,7 +2735,11 @@ fn fixed_lookbehind_sequence_width(
     ))
 }
 
-fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize) -> Option<usize> {
+fn fixed_lookbehind_width(
+    instructions: &mut [PreparedInstruction],
+    entry: usize,
+    backward: bool,
+) -> Option<usize> {
     let mut counted_offsets = Vec::<(usize, Box<[usize]>)>::new();
     let mut tails = HashMap::<usize, usize>::new();
     let mut zero_wrappers = HashMap::<usize, (usize, usize)>::new();
@@ -2865,8 +2876,12 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 bounds: (min, max, _),
                 ..
             }) => {
-                let (complete_width, offsets) =
-                    fixed_lookbehind_sequence_width(instructions, references, (*min, *max, false))?;
+                let (complete_width, offsets) = fixed_lookbehind_sequence_width(
+                    instructions,
+                    references,
+                    (*min, *max, false),
+                    backward,
+                )?;
                 if let Some(offsets) = offsets {
                     counted_offsets.push((pc, offsets));
                 }
@@ -2992,7 +3007,7 @@ fn outside_reference_lookbehind_width(
                 ..
             }) => {
                 if let Some((width, offsets)) =
-                    fixed_lookbehind_sequence_width(instructions, references, *bounds)
+                    fixed_lookbehind_sequence_width(instructions, references, *bounds, true)
                 {
                     fixed = fixed.and_then(|fixed| fixed.checked_add(width));
                     if let Some(offsets) = offsets {
@@ -3215,17 +3230,18 @@ fn prepare(
                     // Equal-width branches have fixed input positions and no
                     // internal capture reads. Counted captures retain their
                     // leftmost backward iteration (Assertion, 22.2.2.8).
-                    let width =
-                        if let Some(width) = fixed_lookbehind_width(&mut instructions, entry) {
-                            LookbehindWidth::Fixed(width)
-                        } else {
-                            outside_reference_lookbehind_width(
-                                &mut instructions,
-                                entry,
-                                capture_start..capture_count,
-                                bindings.groups,
-                            )?
-                        };
+                    let width = if let Some(width) =
+                        fixed_lookbehind_width(&mut instructions, entry, true)
+                    {
+                        LookbehindWidth::Fixed(width)
+                    } else {
+                        outside_reference_lookbehind_width(
+                            &mut instructions,
+                            entry,
+                            capture_start..capture_count,
+                            bindings.groups,
+                        )?
+                    };
                     let original = std::mem::replace(
                         &mut instructions[entry],
                         PreparedInstruction::Ready(Instruction::Nop),
@@ -3253,7 +3269,7 @@ fn prepare(
                     }
                     // The fixed proof excludes capture-dependent continuations.
                     // Lookahead frames retain forward capture effects (22.2.2.8).
-                    let fixed_width = fixed_lookbehind_width(&mut instructions, entry);
+                    let fixed_width = fixed_lookbehind_width(&mut instructions, entry, false);
                     let control = instructions.len() + 1;
                     let original = std::mem::replace(
                         &mut instructions[entry],
@@ -3473,6 +3489,152 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn lookbehind_local_future_reads_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=((a)\2){2})b",
+            r"(?<=((a)\2){2}?)b",
+            r"(?<=((ab)\2){2})c",
+            r"(?<=((a)(b)\2\3){2})c",
+            r"(?<=((a)\2\2){2})b",
+            r"(?<=(([ab])\2){2})c",
+            r"(?<=((.)\2){2})b",
+            r"(?<=((a)\2\B){2})b",
+            r"(?<=((a)\2){0})b",
+            r"(?<!((a)\2){2}q)b",
+            r"(?<=((a)\2){2}(?=(b)))b",
+            r"(b)(?<=((a)\3){2}\1)c",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in ["", "ab", "aab", "aaaab", "ababc", "aaxb", "aAb", "a\nb"] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn lookbehind_local_future_reads_keep_backward_ranges_and_forward_assertion_direction() {
+        for (source, text, range, captures) in [
+            (
+                r"(?<=((a)\2){2})b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (
+                r"(?<=((ab)\2){2})c",
+                "ababc",
+                4..5,
+                vec![Some(0..2), Some(0..2)],
+            ),
+            (
+                r"(?<=((a)(b)\2\3){2})c",
+                "ababc",
+                4..5,
+                vec![Some(0..2), Some(0..1), Some(1..2)],
+            ),
+            (r"(?<!((a)\2){2}q)b", "aaxb", 3..4, vec![None, None]),
+            (
+                r"(?<=((a)\2){2}(?=(b)))b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..1), Some(2..3)],
+            ),
+            (
+                r"(?=(((a)\3){2}))a",
+                "aaaab",
+                0..1,
+                vec![Some(0..4), Some(2..4), Some(2..3)],
+            ),
+            (
+                r"(b)(?<=((a)\3){2}\1)c",
+                "aabc",
+                2..4,
+                vec![Some(2..3), Some(0..1), Some(0..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(\2(a)){2})b",
+            r"(?<=((a)\1){2})b",
+            r"(?<=((a)\2){1,2})b",
+            r"(a)(?<=(\1(b)\3){2})c",
+            r"(?<=((a)\2){2}(?=(((a)\5){2})))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xd800, 0xdc00]);
+        let found = ordinary(r"(?<=(([\uD800])\2){2})[\uDC00]", false, false, false)
+            .find(&input, 2, true)
+            .unwrap();
+        assert_eq!(found.range, 2..3);
+        assert_eq!(&*found.captures, &[Some(0..1), Some(0..1)]);
+    }
+
+    #[test]
+    fn lookbehind_local_future_reads_deep_owned_scopes_clone_drop_completed_negative_undo_and_work_stay_flat()
+     {
+        let source =
+            "(?<=(".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"\2){2})b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("aab"), 2, true).unwrap();
+        assert_eq!(found.range, 2..3);
+        assert_eq!(found.captures.len(), 100001);
+        assert!(found.captures.iter().all(|r| *r == Some(0..1)));
+        drop(copy);
+        let source =
+            "(?<!(".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"\2){2}q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("aaxb"), 3, true)
+            .unwrap();
+        assert_eq!(found.range, 3..4);
+        assert!(found.captures.iter().all(Option::is_none));
+        let matcher = ordinary(r"(?<=((a)\2){100000})b", false, false, false);
+        let input = JsString::from(("a".repeat(100000) + "b").as_str());
+        let found = matcher.find(&input, 100000, true).unwrap();
+        assert_eq!(&*found.captures, &[Some(0..1), Some(0..1)]);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 100000, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
@@ -3712,7 +3874,7 @@ mod tests {
         assert_eq!(&*found.captures, &[Some(4..5)]);
         for source in [
             r"(a)(?<=(a\1){1,2})b",
-            r"(?<=((a)\2){2})b",
+            r"(?<=((a)\2){1,2})b",
             r"(a)(?<=(\1(\2)){2})b",
             r"(a)(?<=(a\1){2}|a)b",
             r"(a)(?<=(a\1){2}(?<=\1))b",
@@ -5205,7 +5367,7 @@ mod tests {
             assert_eq!(&*found.captures, &*captures, "{source}");
         }
         for source in [
-            r"(?<=((a)\2){2})b",
+            r"(?<=((a)\2){1,2})b",
             r"(?<=((\2)a){2})b",
             r"(?<=(((a)\3){0,2}){2})a",
             r"(?<=(\2)+)a()",

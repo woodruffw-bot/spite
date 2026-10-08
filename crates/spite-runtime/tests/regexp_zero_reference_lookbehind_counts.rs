@@ -165,7 +165,7 @@ fn explicit_empty_lookbehind_reference_work_aborts_before_last_index_and_handler
 #[test]
 fn consuming_reference_units_outside_reads_lookahead_and_unicode_are_pending() {
     for source in [
-        r"/(?<=((a)\2){2})b/.exec('aab')",
+        r"/(?<=((a)\2){1,2})b/.exec('aab')",
         r"/(?<=((\2)a){2})b/.exec('aab')",
         r"/(?<=(((a)\3){0,2}){2})a/.exec('a')",
         r"/(?<=(\2)+)a()/.exec('a')",
