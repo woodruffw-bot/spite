@@ -1109,7 +1109,7 @@ quantified reference prevent this simplification. Default quotas stay disabled;
 composite reference repetitions, quantified consuming atoms,
 lookaround/scoped modifiers and Unicode matching remain pending in this program.
 
-Capturing groups enclosing the whole reference body also use this repetition
+For a shared target, capturing groups enclosing the whole reference body use this repetition
 instruction. Preparation checks balanced capturing boundaries before/after the
 body, records their original slots, and replaces only those boundaries with
 no-ops. Each selected nonempty repetition endpoint determines every enclosing
@@ -1123,7 +1123,8 @@ Repetition frames save their checkpoint before writing wrapper captures. Failed
 continuations clear those writes before a retry installs the new final ranges,
 including their shared named bindings. Capture inventories and writes receive
 opt-in work charges. Deep enclosing groups remain iterative with linear storage.
-Empty sibling captures before and after the whole reference body are also accepted.
+For a shared target, empty sibling captures before and after the whole reference
+body are also accepted.
 Preparation assigns each capture a before/reference/after span rather than
 replaying its boundaries during every iteration. Its final range is the final
 iteration's beginning, whole body span or ending, respectively. An internal
@@ -1145,9 +1146,24 @@ move by complete body lengths. Whole enclosing captures cover the final body,
 with empty before/after positions retained. Empty targets satisfy finite minimums
 without iterating over occurrences or required repetitions. Preparation needs no
 source expansion or multiplied quantifier bounds, including 100,000 occurrences.
-Different targets, captures spanning only part of a multi-reference body, middle
-empty captures, consuming terms, alternatives and nested quantifiers remain
-pending in this program.
+Captures spanning only part of a multi-reference body, middle empty captures,
+consuming terms, alternatives and nested quantifiers remain pending in this
+program.
+
+Capture-free repeated groups may also contain different numbered/named targets.
+Preparation retains an ordered descriptor inventory in one sequence instruction,
+with no source expansion. Entry freezes the completed original input ranges;
+undefined/empty targets consume nothing. Checked addition computes the whole
+iteration width. Overflow makes consuming iterations impossible while preserving
+the valid zero-count path; a wholly empty sequence satisfies finite required
+minimums directly (RepeatMatcher, 22.2.2.3.1). Count limits use remaining units
+before any endpoint arithmetic. Greedy matching validates whole sequences; lazy
+matching validates the minimum and retries one whole sequence at a time. Frozen
+ranges remain valid through failed-continuation capture resets. Buffers, target
+lookups, instruction/frame work and actual comparisons receive opt-in charges.
+Any number of targets and sequences fit flat storage, including 100,000 reference
+occurrences, and numbered/named descriptors may alias one original capture.
+Repeated bodies with capture effects and different targets remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
