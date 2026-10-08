@@ -53,7 +53,7 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Transparent zero-width lookahead wrappers execute required repetitions once
 /// and skip optional zero-progress iterations with undefined capture slots.
 /// Fixed positive and negative lookbehind preserve full input
-/// context for character terms, their exact counts, boundary assertions and
+/// context for character sequences, their exact counts, boundary assertions and
 /// transparent groups, unrepeated captures and nested fixed lookbehind.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
@@ -1577,19 +1577,21 @@ impl Program {
                     bounds: (Some(count), _, _),
                     ..
                 } => {
-                    let ReferenceTarget::Term(index) = references[0] else {
-                        unreachable!("fixed lookbehind retains its repeated character term")
-                    };
                     let mut accepted = true;
-                    for _ in 0..*count {
-                        if !self.compare_fixed_lookbehind_term(
-                            input,
-                            position,
-                            &self.instructions[index],
-                            charge,
-                        )? {
-                            accepted = false;
-                            break;
+                    'iterations: for _ in 0..*count {
+                        for target in references {
+                            let ReferenceTarget::Term(index) = *target else {
+                                unreachable!("fixed lookbehind retains character terms")
+                            };
+                            if !self.compare_fixed_lookbehind_term(
+                                input,
+                                position,
+                                &self.instructions[index],
+                                charge,
+                            )? {
+                                accepted = false;
+                                break 'iterations;
+                            }
                         }
                     }
                     accepted
@@ -2267,19 +2269,21 @@ fn prepare(
                                     bounds: (Some(min), Some(max), _),
                                     captures,
                                 },
-                            ) if min == max && captures.is_empty() && references.len() == 1 => {
-                                let ReferenceTarget::Term(index) = references[0] else {
-                                    return None;
-                                };
-                                if !matches!(
-                                    instructions.get(index),
-                                    Some(PreparedInstruction::Ready(
-                                        Instruction::RepeatedCharacter(_)
-                                    )) | Some(PreparedInstruction::Set { repeated: true, .. })
-                                ) {
-                                    return None;
+                            ) if min == max && captures.is_empty() && !references.is_empty() => {
+                                for target in references {
+                                    let ReferenceTarget::Term(index) = *target else {
+                                        return None;
+                                    };
+                                    if !matches!(
+                                        instructions.get(index),
+                                        Some(PreparedInstruction::Ready(
+                                            Instruction::RepeatedCharacter(_)
+                                        )) | Some(PreparedInstruction::Set { repeated: true, .. })
+                                    ) {
+                                        return None;
+                                    }
                                 }
-                                width = width.checked_add(*min)?;
+                                width = width.checked_add(min.checked_mul(references.len())?)?;
                             }
                             _ => return None,
                         }
@@ -2506,6 +2510,181 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn fixed_lookbehind_sequence_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(?:ab){2})c",
+            r"(?<!(?:ab){2})c",
+            r"(?<=(?:ab){0})c",
+            r"(?<!(?:ab){0})c",
+            r"(?<=(?:ab){2,2})c",
+            r"(?<=(?:ab){2}?)c",
+            r"(?<=((?:ab){2}))c",
+            r"(?<=((?:ab){2}))\1",
+            r"(?<!((?:ab){2})q)c",
+            r"(?<=((?:[a-c]\d){2}))c",
+            r"(?<=(?:a.){2})b",
+            r"(?<=(?:µΜ){2})a",
+            r"(?<=^(?:ab){2})c",
+            r"(?<=(?:ab){2}\b)c",
+            r"(?<=(?:ab){2}\B)c",
+            r"(?<=a(?:ba){2})b",
+            r"(?<=(?:ab){2}(?<=ab))c",
+            r"(?<=(?:ab){2}(?<!ba))c",
+            r"(?<=((?:ab){2})(?<!(ba)))c",
+            r"(?:(?<=(?:ab){2})c|d)+e",
+            r"((?<=(?:ab){2})){2}c\1",
+            r"((?<=(?:ab){2}))*c\1",
+            r"(?=(a(?:ba){2}(?<=((?:ba){2}))))\1\2",
+            r"(?<=(?:a(?:b)){2})c",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "",
+                    "a",
+                    "c",
+                    "abc",
+                    "ababc",
+                    "ababa",
+                    "ababb",
+                    "ababcdde",
+                    "ababqc",
+                    "a1a2c",
+                    "µΜµΜa",
+                    "\nababc",
+                    "a\na\nb",
+                    "ababc ababc",
+                    "ababab",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_lookbehind_sequences_preserve_order_boundaries_and_unrepeated_captures() {
+        for (source, text, range, captures) in [
+            (r"(?<=((?:ab){2}))c", "ababc", 4..5, vec![Some(0..4)]),
+            (r"(?<=((?:ab){2}))\1", "abababab", 4..8, vec![Some(0..4)]),
+            (r"(?<!((?:ab){2})q)c", "ababrc", 5..6, vec![None]),
+            (
+                r"(?<=((?:ab){2})(?<!(ba)))c",
+                "ababc",
+                4..5,
+                vec![Some(0..4), None],
+            ),
+            (r"(?<=^(?:ab){2})c", "\nababc", 5..6, vec![]),
+            (r"(?<=((?:ab){0}))c", "c", 0..1, vec![Some(0..0)]),
+        ] {
+            let found = ordinary(source, false, true, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(?:ab){1,2})c",
+            r"(?<=(ab){2})c",
+            r"(?<=(?:a\b){2})c",
+            r"(?<=(?:a(?<=a)){2})c",
+            r"(a)(?<=(?:\1b){2})c",
+            r"(?<=(?:(?:ab){2}){2})c",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_fixed_lookbehind_sequences_large_counts_overflow_and_work_stay_compact() {
+        let source =
+            "(?<=".to_owned() + &"(?:".repeat(100000) + "(?:ab){2}" + &")".repeat(100000) + ")c";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        assert_eq!(
+            copy.find(&JsString::from("ababc"), 4, true).unwrap().range,
+            4..5
+        );
+        let source = format!("(?<=(?:ab){{{}}})c", usize::MAX / 2);
+        let matcher = ordinary(&source, false, false, false);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("abc"), 2, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .is_none()
+        );
+        assert!(work < 100);
+        let source = format!("(?<=(?:ab){{{}}})c", usize::MAX / 2 + 1);
+        assert!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &JsString::from(source.as_str()),
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Ok::<_, ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+        let source = "(?<=((?:ab){0}))c";
+        assert_eq!(
+            ordinary(source, false, false, false)
+                .find(&JsString::from("c"), 0, true)
+                .unwrap()
+                .captures[0],
+            Some(0..0)
+        );
+        let matcher = ordinary(r"(?<=(?:ab){1000})c", false, false, false);
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(
+                    &JsString::from(("ab".repeat(1000) + "c").as_str()),
+                    2000,
+                    true,
+                    |n| {
+                        work += n;
+                        if work > 1000 {
+                            Err("explicit sequence work")
+                        } else {
+                            Ok(())
+                        }
+                    }
+                )
+                .unwrap_err(),
+            "explicit sequence work"
+        );
     }
 
     #[test]
@@ -2897,7 +3076,7 @@ mod tests {
             r"(?<=(a{1,2}))b",
             r"(?<=a{1,2})b",
             r"(?<=a+)b",
-            r"(?<=(?:ab){2})c",
+            r"(?<=(?:ab){1,2})c",
             r"(?<=(?:^){2})a",
         ] {
             assert!(

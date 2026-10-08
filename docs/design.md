@@ -1478,8 +1478,9 @@ share one comparison helper, preserving existing IgnoreCase and DotAll behavior.
 Input/line/word assertions still use the whole input, and outer captures, cursor,
 negative inversion and repetition summaries retain their existing semantics.
 Counts whose complete fixed width cannot be represented, variable counts and
-repeated multiple-term or assertion bodies remain pending. The subsequent
-extensions admit nested fixed lookbehind and unrepeated captures. Host quotas
+repeated assertion bodies remain pending. The subsequent
+extensions admit nested fixed lookbehind, unrepeated captures and counted
+character sequences. Host quotas
 remain opt-in; defaults are unlimited.
 
 Nested fixed capture-free lookbehind retains the same ordinary character/count
@@ -1538,6 +1539,26 @@ Flat preparation, assertion frames and capture undo support deep groups without
 Rust recursion. Actual capture writes and restoration charge fallible opt-in
 work; default quotas remain unlimited. Other lookbehind bodies and Unicode-mode
 matching remain pending.
+
+
+Exact-count capture-free ordinary character sequences also use compact fixed
+lookbehind plans (22.2.2.3.1, 22.2.2.8). Preparation requires a nonempty sequence
+of one-unit character/class predicates, no body captures or references, and equal
+representable minimum/maximum counts. It checks complete width multiplication
+and addition without expanding source or terms. Transparent group structure is
+retained; capture enclosures outside the repeated sequence remain unrepeated and
+keep their proved full-input endpoints.
+
+Execution compares each retained sequence in source order for the exact count.
+Every predicate sees the same absolute input unit under backward Assertion
+semantics because the body has no capture, reference, assertion or choice effects.
+A mismatch fails immediately. Zero counts inspect no terms, and too-short input
+prefixes fail before iteration even for a platform-maximum representable width.
+Iteration allocates no count-dependent state and charges each actual comparison.
+Nested fixed assertion frames, negative capture rollback, boundary context and
+parent progress/zero-width summaries retain their existing behavior. Variable
+counts, repeated captures/assertions, nested counted sequences and internal
+references/choices remain pending. Defaults remain unlimited.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
