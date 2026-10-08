@@ -1145,8 +1145,8 @@ move by complete body lengths. Whole enclosing captures cover the final body,
 with empty before/after positions retained. Empty targets satisfy finite minimums
 without iterating over occurrences or required repetitions. Preparation needs no
 source expansion or multiplied quantifier bounds, including 100,000 occurrences.
-Nonempty captures spanning only part of a multi-reference body, consuming terms,
-alternatives and nested quantifiers remain pending in this program.
+Other consuming terms, alternatives and nested quantifiers remain pending in
+this program.
 
 Repeated groups may also contain different numbered/named targets.
 Preparation retains an ordered descriptor inventory in one sequence instruction,
@@ -1181,8 +1181,23 @@ iterations leave them undefined. Internal empty targets consume nothing whether
 already closed or still undefined after RepeatMatcher clears body slots. Final
 positions and named aliases are restored after whole-body retries without replaying
 capture boundaries per iteration. Buffers and writes receive opt-in work charges;
-100,000 empty captures between references remain iterative. Nonempty partial-body
-captures, other consuming terms, alternatives and nested quantifiers remain pending.
+100,000 empty captures between references remain iterative.
+Partial capture ranges use the same checked prefix widths and original reference
+ordinals. Each capture records a start/end pair; final writes add those offsets
+to the selected last iteration, including ranges that are empty because an
+external target did not participate. References following the complete repetition
+then read those final original input ranges. An iterative preparation pass maps
+numbered/named body slots to their closing ordinals. A syntactically nonempty
+capture referenced after it closes requires a changing local target, so this
+program returns unsupported before work charges. Forward and still-open local
+references remain undefined each iteration after RepeatMatcher clears body slots;
+syntactically empty local captures consume nothing. Thus accepted reference
+widths remain constant, frozen external ranges remain correct, and whole-body
+retries restore partial ranges and named aliases with the same checkpoints.
+Global slot/name lookup is prepared once, while each body is scanned linearly.
+Deep partial enclosures remain iterative with flat storage, including 100,000
+captures. Completed nonempty local targets, other consuming terms, alternatives
+and nested quantifiers remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
