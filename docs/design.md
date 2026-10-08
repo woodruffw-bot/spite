@@ -1742,6 +1742,27 @@ wrapper nesting remain flat under copying, execution and dropping. Default work
 and heap quotas stay unlimited. Unproved outside/local dependencies, counted
 wrappers inside lookbehind and Unicode-mode matching remain pending.
 
+
+Fixed ordinary lookbehind also accepts nested zero-width repetition wrappers
+(22.2.2.3.1, 22.2.2.8). Its backward width proof records each repetition root,
+validates the actual body once and requires every complete branch to preserve the
+suffix width. Nested fixed lookbehind remains summarized. Lookahead, internal
+references, mixed empty/consuming alternatives and unproved variable consuming
+counts reject this proof. The scan uses a flat map of pending roots and does not
+expand bounds or revisit completed child regions.
+
+Required wrappers execute one zero-width body through explicit fixed-body frames;
+their predicates and final capture effects are identical at every iteration.
+Optional wrappers clear their owned capture slots and skip the body, following
+RepeatMatcher's empty-progress check. Each required frame records its checkpoint
+before resetting/opening captures, scopes its branch choices and restores failed
+effects before resuming its parent. Selecting its first successful body is valid
+in this subset because preparation excludes capture-dependent continuations
+inside lookbehind. The enclosing assertion remains atomic for outside references.
+Nested lookbehind can export pre-match ranges while wrapper captures stay at the
+local cursor. Huge required counts, deep captures, nested wrappers, clones and
+dropping use flat storage; default host quotas remain unlimited.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

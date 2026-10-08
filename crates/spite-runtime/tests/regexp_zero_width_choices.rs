@@ -154,7 +154,7 @@ fn mixed_empty_consuming_choices_internal_references_counted_behind_and_unicode_
     for source in [
         r"/(?:a|())+b/.exec('ab')",
         r"/(?:(\1)|()){2}a()/.exec('a')",
-        r"/(?<=(()|()){2})a/.exec('a')",
+        r"/(?<=((a)|()){2})a/.exec('a')",
         r"/(?:(?:a|())+)*b/.exec('ab')",
         r"/(?:()|()){2}a/u.exec('a')",
         r"/(?:()|()){2}a/v.exec('a')",

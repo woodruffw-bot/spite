@@ -46,6 +46,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Repeated choices accept nested/sequential capturing branches when every
 /// complete body path consumes a unit, with flat source-order iteration retries.
 /// Deterministic inner quantifiers compose with these body paths.
+/// Fixed lookbehind also accepts proven nested zero-width repetitions with
+/// required empty capture effects and skipped optional slots.
 /// Branch loops nest through flat parent-linked contexts. Body captures reset
 /// per iteration, and retries restore previous starts, ranges and named aliases.
 /// Positive and negative lookahead use flat atomic assertion contexts. Positive
@@ -1572,6 +1574,37 @@ impl Program {
         })
     }
 
+    fn fixed_zero_width_frame<E>(
+        &self,
+        cursor: usize,
+        entry: usize,
+        state: &mut CaptureState,
+        choice_base: usize,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<FixedLookbehindFrame, E> {
+        let Instruction::RepeatZeroWidth {
+            head,
+            end,
+            required,
+            ..
+        } = self.instructions[entry]
+        else {
+            unreachable!("zero-width repetition retains its control instruction")
+        };
+        debug_assert!(required);
+        let checkpoint = state.changes.len();
+        self.enter_choice_body(state, entry, cursor, charge)?;
+        Ok(FixedLookbehindFrame {
+            pc: head,
+            end,
+            cursor: Some(cursor),
+            end_position: cursor,
+            checkpoint,
+            choice_base,
+            negative: false,
+        })
+    }
+
     // Fixed predicates and unrepeated captures use the same absolute ranges
     // in either direction. Counted character captures use their leftmost iteration.
     // Equal-width choices inspect fixed positions without internal capture reads.
@@ -1608,8 +1641,9 @@ impl Program {
                     debug_assert_eq!(position, current.end_position);
                 }
                 let accepted = current.cursor.is_some() != current.negative;
-                // Assertion results are atomic: outer continuations cannot
-                // reopen an accepted body's branch alternatives (22.2.2.8).
+                // Assertions are atomic (22.2.2.8). A zero-width repetition's
+                // first success also suffices here: preparation excludes all
+                // capture-dependent continuations inside fixed lookbehind.
                 charge(choices.len() - current.choice_base)?;
                 choices.truncate(current.choice_base);
                 // Positive success retains exact fixed ranges. All negative
@@ -1664,6 +1698,34 @@ impl Program {
                     charge(1)?;
                     frames.push(current);
                     current = child;
+                    continue;
+                }
+                Instruction::RepeatZeroWidth {
+                    captures,
+                    end,
+                    required,
+                    ..
+                } => {
+                    if *required {
+                        let child = self.fixed_zero_width_frame(
+                            *position,
+                            current.pc,
+                            state,
+                            choices.len(),
+                            charge,
+                        )?;
+                        current.pc = *end;
+                        charge(1)?;
+                        frames.push(current);
+                        current = child;
+                    } else {
+                        // RepeatMatcher rejects optional empty iterations
+                        // before exporting their captures (22.2.2.3.1).
+                        for slot in captures.clone() {
+                            self.write_capture(state, slot, None, charge)?;
+                        }
+                        current.pc = *end;
+                    }
                     continue;
                 }
                 Instruction::Character(_) | Instruction::Set(_) => {
@@ -2278,11 +2340,62 @@ fn quantify_progressing_choice(
 fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize) -> Option<usize> {
     let mut counted_offsets = Vec::<(usize, Box<[usize]>)>::new();
     let mut tails = HashMap::<usize, usize>::new();
+    let mut zero_wrappers = HashMap::<usize, (usize, usize)>::new();
     tails.insert(instructions.len(), 0);
     let mut next = instructions.len();
     while next > entry + 1 {
         let pc = next - 1;
         next = pc;
+        if let Some((head, end)) = zero_wrappers.remove(&pc) {
+            let PreparedInstruction::Ready(Instruction::Jump(control)) = &instructions[pc] else {
+                return None;
+            };
+            if control.checked_add(1) != Some(head) {
+                return None;
+            }
+            let suffix = *tails.get(&end)?;
+            let accepted = match &instructions[head] {
+                PreparedInstruction::Ready(Instruction::Choice(alternatives)) => {
+                    !alternatives.is_empty()
+                        && alternatives
+                            .iter()
+                            .all(|target| tails.get(target) == Some(&suffix))
+                }
+                PreparedInstruction::Ready(Instruction::Jump(target)) => {
+                    *target == pc + 1 && tails.get(target) == Some(&suffix)
+                }
+                _ => false,
+            };
+            if !accepted {
+                return None;
+            }
+            tails.insert(pc, suffix);
+            continue;
+        }
+        if pc > entry + 1 {
+            if let PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
+                body,
+                head,
+                end,
+                ..
+            }) = &instructions[pc - 1]
+            {
+                if *body <= entry || *body >= pc - 1 || *head != pc || *end != pc + 1 {
+                    return None;
+                }
+                let suffix = *tails.get(end)?;
+                if zero_wrappers.insert(*body, (*head, *end)).is_some() {
+                    return None;
+                }
+                // Validate the actual body once before accepting its root.
+                // Its control/head use zero width; unsupported body operations
+                // and any nonzero complete branch still reject the owner.
+                tails.insert(pc, suffix);
+                tails.insert(pc - 1, suffix);
+                next = pc - 1;
+                continue;
+            }
+        }
         let width = match &instructions[pc] {
             PreparedInstruction::Ready(Instruction::Jump(target)) => *tails.get(target)?,
             PreparedInstruction::Ready(Instruction::Choice(alternatives)) => {
@@ -2355,6 +2468,9 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
             _ => return None,
         };
         tails.insert(pc, width);
+    }
+    if !zero_wrappers.is_empty() {
+        return None;
     }
     let width = match &instructions[entry] {
         PreparedInstruction::Ready(Instruction::Nop) => tails.get(&(entry + 1)).copied(),
@@ -2732,6 +2848,162 @@ mod tests {
     }
 
     #[test]
+    fn fixed_lookbehind_zero_wrapper_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(()|()){2})a",
+            r"(?<=(|)+)a",
+            r"(?<=(|){2})a",
+            r"(?<=(|){0,2})a",
+            r"(?<=(|)+?)a",
+            r"(?<=(|)*?)a",
+            r"(?<=((){2}){2})a",
+            r"(?<=((){0,2}){2})a",
+            r"(?<=((){2})*)a",
+            r"(?<=(()+)+)a",
+            r"(?<=(()*)+)a",
+            r"(?<=(()+)*)a",
+            r"(?<=((^|$){2}){2})a",
+            r"(?<=((\b|\B){2}){2})a",
+            r"(?<=((^){0,2}){2})a",
+            r"(?<=((^){1,2}){2})a",
+            r"(?<=((a){0}){2})b",
+            r"(?<=(([a-z]){0}){2})b",
+            r"(?<=((.){0}){2})b",
+            r"(?<=(?:(()^)|()){2})a",
+            r"(?<=(?:(()$)|()){2})a",
+            r"(?<=(?:((){2}){2}|()){2})a",
+            r"(?<=(?:((){0}){2}|()){2})a",
+            r"(?<=(((){2})?){2})a",
+            r"(?<!((|){2}){2}q)a",
+            r"(?<!((^|$){2}){2})a",
+            r"(?<=((|){2}){2}a)b",
+            r"(?<=a((|){2}){2})b",
+            r"(?<=((^|$){2}){2}a)b",
+            r"(?<=a((\b|\B){2}){2})b",
+            r"(?<=((?<=a)){2})b",
+            r"(?<=((?<=(a))){2})b",
+            r"(?<=((?<=(a))){0,2})b",
+            r"(?<=((|){2}){2})a\1\2",
+            r"((?<=((|){2}){2})){2}a",
+            r"(?:(?<=((|){2}){2})a|b)+c",
+            r"(?<=((a){0}){2}µ)Μ",
+            r"(?<=((|){2}){2}[\uD800])b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_lookbehind_zero_wrappers_keep_required_optional_and_failed_branch_ranges() {
+        for (source, text, captures) in [
+            (r"(?<=(|){2})a", "qa", vec![Some(1..1)]),
+            (r"(?<=(|){0,2})a", "qa", vec![None]),
+            (r"(?<=((){0,2}){2})a", "qa", vec![Some(1..1), None]),
+            (r"(?<=((){2})*)a", "qa", vec![None, None]),
+            (r"(?<=(?:(()^)|()){2})a", "qa", vec![None, None, Some(1..1)]),
+            (r"(?<!((|){2}){2}q)a", "xa", vec![None, None]),
+            (r"(?<=((^|$){2}){2}a)b", "ab", vec![Some(0..0), Some(0..0)]),
+            (r"(?<=((?<=(a))){2})b", "ab", vec![Some(1..1), Some(0..1)]),
+            (r"(?<=((?<=(a))){0,2})b", "ab", vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 1, true)
+                .unwrap();
+            assert_eq!(found.range, 1..2, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(|a){2})a",
+            r"(?<=((a{0,2}){2}){2})a",
+            r"(?<=((?=a)){2})a",
+            r"(?<=((()\3){2}){2})a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn fixed_lookbehind_zero_wrapper_large_counts_deep_captures_undo_and_frames_are_flat() {
+        let huge = "184467440737095516160000000000000000000";
+        let body = "(?:".to_owned() + &"(".repeat(100000) + &")".repeat(100000) + "|)";
+        let source = format!("(?<={body}{{{huge},}})a");
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qa"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|r| r == &Some(1..1)));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("qa"), 1, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit fixed-wrapper work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit fixed-wrapper work"
+        );
+        let negative = ordinary(&format!("(?<!{body}{{2}}q)a"), false, false, false);
+        let found = negative.find(&JsString::from("xa"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(Option::is_none));
+        let source =
+            "(?<=".to_owned() + &"(?:".repeat(10000) + "(|){2}" + &"){2}".repeat(10000) + ")a";
+        assert_eq!(
+            &*ordinary(&source, false, false, false)
+                .find(&JsString::from("a"), 0, true)
+                .unwrap()
+                .captures,
+            &[Some(0..0)]
+        );
+        let matcher = ordinary(&format!("(?<=(|){{{huge},}})a"), false, false, false);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("a"), 0, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .is_some()
+        );
+        assert!(work < 100);
+    }
+
+    #[test]
     fn nested_zero_reference_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -2987,7 +3259,7 @@ mod tests {
             r"(([a-z]){0,2}){2}b",
             r"((\1){1,2}){2}a()",
             r"(((a)\3){0,2}){2}a",
-            r"(?<=((){2}){2})a",
+            r"(?<=((a{0,2}){2}){2})a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -3163,7 +3435,7 @@ mod tests {
         for source in [
             r"(?:a|())+b",
             r"(?:(\1)|()){2}a()",
-            r"(?<=(()|()){2})a",
+            r"(?<=((a)|()){2})a",
             r"(?:(?:a|())+)*b",
         ] {
             assert!(
@@ -3312,9 +3584,9 @@ mod tests {
             r"(?<=a{1,2})b",
             r"(?<=(a?){1,2})b",
             r"(?<=((?=a)){1,2})a",
-            r"(?<=(|)+)a",
+            r"(?<=(|a)+)a",
             r"(?<=(\1)+)a()",
-            r"(?<=(()*)+)a",
+            r"(?<=((a*)+))a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -3476,9 +3748,9 @@ mod tests {
         for source in [
             r"(?<=((?=a)){1,2})a",
             r"(?<=((?=a)){2})a",
-            r"(?<=(|){2})a",
+            r"(?<=(|a){2})a",
             r"(?<=(\1){2})a()",
-            r"(?<=((){2}){2})a",
+            r"(?<=((a{0,2}){2}){2})a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(

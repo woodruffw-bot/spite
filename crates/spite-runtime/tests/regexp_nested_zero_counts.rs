@@ -159,7 +159,7 @@ fn consuming_nested_counts_nonzero_internal_references_behind_wrappers_and_unico
         r"/((a){0,2}){2}b/.exec('aab')",
         r"/((\1){1,2}){2}a()/.exec('a')",
         r"/(((a)\3){0,2}){2}a/.exec('a')",
-        r"/(?<=((){2}){2})a/.exec('a')",
+        r"/(?<=((a{0,2}){2}){2})a/.exec('a')",
         r"/((){2}){2}a/u.exec('a')",
         r"/((){2}){2}a/v.exec('a')",
     ] {
