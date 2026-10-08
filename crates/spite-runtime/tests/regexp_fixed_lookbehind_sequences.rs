@@ -146,7 +146,7 @@ fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupp
         r"/(?<=(ab){1,2})c/.exec('ababc')",
         r"/(?<=(?:a(?=a)){2})c/.exec('ababc')",
         r"/(?<=(?:a(?<=a)){2})c/.exec('ababc')",
-        r"/(a)(?<=(?:\1b){2})c/.exec('ababc')",
+        r"/(a)(?<=(?:\1b){1,2})c/.exec('ababc')",
         r"/(?<=(?:(?:ab){2}){2})c/.exec('ababababc')",
         r"/(?<=(?:ab){2})c/u.exec('ababc')",
         r"/(?<=(?:ab){2})c/v.exec('ababc')",

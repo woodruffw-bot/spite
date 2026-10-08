@@ -200,6 +200,11 @@ enum PreparedInstruction {
     },
 }
 
+struct ResolvedReferenceSequence {
+    ranges: Vec<ReferenceRange>,
+    offsets: Vec<usize>,
+}
+
 #[derive(Clone, Copy)]
 enum GroupAssertion {
     Lookahead(bool),
@@ -1275,49 +1280,13 @@ impl Program {
                 bounds: (min, max, greedy),
                 ..
             } => {
-                charge(references.len())?;
-                charge(references.len() + 1)?;
-                let mut offsets = Vec::with_capacity(references.len() + 1);
-                offsets.push(0usize);
-                let mut captures = Vec::with_capacity(references.len());
-                for &target in references {
-                    charge(1)?;
-                    let range = match target {
-                        ReferenceTarget::Input { index, named } => {
-                            let range = if named {
-                                &state.named[index]
-                            } else {
-                                &state.captures[index]
-                            };
-                            range
-                                .as_ref()
-                                .filter(|r| !r.is_empty())
-                                .cloned()
-                                .map(ReferenceRange::Input)
-                        }
-                        ReferenceTarget::Local(span) => {
-                            charge(2)?;
-                            let range = offsets[span.start]..offsets[span.end];
-                            (!range.is_empty()).then_some(ReferenceRange::Local(range))
-                        }
-                        ReferenceTarget::Empty => None,
-                        ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
-                    };
-                    let length = range.as_ref().map_or(0, |range| match range {
-                        ReferenceRange::Input(range) | ReferenceRange::Local(range) => range.len(),
-                        ReferenceRange::Term(position) => usize::from(!matches!(
-                            self.instructions[*position],
-                            Instruction::RepeatedAssert(_)
-                        )),
-                    });
-                    let Some(width) = offsets.last().unwrap().checked_add(length) else {
-                        return Ok((*min == Some(0)).then_some(pc + 1));
-                    };
-                    offsets.push(width);
-                    if let Some(range) = range {
-                        captures.push(range);
-                    }
-                }
+                let Some(ResolvedReferenceSequence {
+                    ranges: captures,
+                    offsets,
+                }) = self.resolve_reference_sequence(references, state, charge)?
+                else {
+                    return Ok((*min == Some(0)).then_some(pc + 1));
+                };
                 let width = *offsets.last().unwrap();
                 if width == 0 {
                     // Required empty iterations share one assertion position;
@@ -1481,6 +1450,61 @@ impl Program {
         }
         Ok(Some(pc + 1))
     }
+    fn resolve_reference_sequence<E>(
+        &self,
+        references: &[ReferenceTarget],
+        state: &CaptureState,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<ResolvedReferenceSequence>, E> {
+        charge(references.len())?;
+        charge(references.len() + 1)?;
+        let mut offsets = Vec::with_capacity(references.len() + 1);
+        offsets.push(0usize);
+        let mut captures = Vec::with_capacity(references.len());
+        for &target in references {
+            charge(1)?;
+            let range = match target {
+                ReferenceTarget::Input { index, named } => {
+                    let range = if named {
+                        &state.named[index]
+                    } else {
+                        &state.captures[index]
+                    };
+                    range
+                        .as_ref()
+                        .filter(|r| !r.is_empty())
+                        .cloned()
+                        .map(ReferenceRange::Input)
+                }
+                ReferenceTarget::Local(span) => {
+                    charge(2)?;
+                    let range = offsets[span.start]..offsets[span.end];
+                    (!range.is_empty()).then_some(ReferenceRange::Local(range))
+                }
+                ReferenceTarget::Empty => None,
+                ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
+            };
+            let length = range.as_ref().map_or(0, |range| match range {
+                ReferenceRange::Input(range) | ReferenceRange::Local(range) => range.len(),
+                ReferenceRange::Term(position) => usize::from(!matches!(
+                    self.instructions[*position],
+                    Instruction::RepeatedAssert(_)
+                )),
+            });
+            let Some(width) = offsets.last().unwrap().checked_add(length) else {
+                return Ok(None);
+            };
+            offsets.push(width);
+            if let Some(range) = range {
+                captures.push(range);
+            }
+        }
+        Ok(Some(ResolvedReferenceSequence {
+            ranges: captures,
+            offsets,
+        }))
+    }
+
     fn compare_reference_sequence<E>(
         &self,
         input: &[u16],
@@ -1930,6 +1954,64 @@ impl Program {
                     captures,
                     lookbehind_offsets,
                 } => {
+                    if *min != Some(0)
+                        && references
+                            .iter()
+                            .any(|target| matches!(target, ReferenceTarget::Input { .. }))
+                    {
+                        // The complete owner's proof excludes internal reads
+                        // and variable counts. Outside ranges are immutable;
+                        // source-order comparison of each proved unit is valid
+                        // backward too (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
+                        let Some(resolved) =
+                            self.resolve_reference_sequence(references, state, charge)?
+                        else {
+                            current.cursor = None;
+                            continue;
+                        };
+                        let width = *resolved.offsets.last().unwrap();
+                        let base = *position;
+                        let iterations = if width == 0 {
+                            1
+                        } else {
+                            min.expect("consuming outside counts are representable")
+                        };
+                        let mut accepted = true;
+                        for _ in 0..iterations {
+                            charge(1)?;
+                            if let Some(end) = self.compare_reference_sequence(
+                                input,
+                                *position,
+                                &resolved.ranges,
+                                charge,
+                            )? {
+                                *position = end;
+                            } else {
+                                accepted = false;
+                                break;
+                            }
+                        }
+                        if accepted {
+                            let capture_base = if current.rightmost_iteration {
+                                *position - width
+                            } else {
+                                base
+                            };
+                            self.complete_reference_captures(
+                                current.pc,
+                                state,
+                                Some(capture_base..capture_base + width),
+                                Some(&resolved.offsets),
+                                charge,
+                            )?;
+                        }
+                        if !accepted {
+                            current.cursor = None;
+                        } else {
+                            current.pc += 1;
+                        }
+                        continue;
+                    }
                     let base = *position;
                     let width = lookbehind_offsets
                         .as_ref()
@@ -2829,7 +2911,7 @@ fn outside_reference_lookbehind_width(
         return None;
     }
     let mut fixed = 0usize;
-    let mut references = Vec::new();
+    let mut width_references = Vec::new();
     let mut counted_offsets = Vec::new();
     let outside = |index: usize, named: bool| {
         if named {
@@ -2850,7 +2932,7 @@ fn outside_reference_lookbehind_width(
                 if !outside(*index, false)? {
                     return None;
                 }
-                references.push(OutsideReferenceWidth {
+                width_references.push(OutsideReferenceWidth {
                     index: *index,
                     named: false,
                     copies: 1,
@@ -2861,7 +2943,7 @@ fn outside_reference_lookbehind_width(
                 if !outside(*index, true)? {
                     return None;
                 }
-                references.push(OutsideReferenceWidth {
+                width_references.push(OutsideReferenceWidth {
                     index: *index,
                     named: true,
                     copies: 1,
@@ -2879,7 +2961,7 @@ fn outside_reference_lookbehind_width(
                     if !outside(*index, *named)? {
                         return None;
                     }
-                    references.push(OutsideReferenceWidth {
+                    width_references.push(OutsideReferenceWidth {
                         index: *index,
                         named: *named,
                         copies: *copies,
@@ -2898,11 +2980,51 @@ fn outside_reference_lookbehind_width(
                 bounds,
                 ..
             }) => {
-                let (width, offsets) =
-                    fixed_lookbehind_sequence_width(instructions, references, *bounds)?;
-                fixed = fixed.checked_add(width)?;
-                if let Some(offsets) = offsets {
-                    counted_offsets.push((pc, offsets));
+                if let Some((width, offsets)) =
+                    fixed_lookbehind_sequence_width(instructions, references, *bounds)
+                {
+                    fixed = fixed.checked_add(width)?;
+                    if let Some(offsets) = offsets {
+                        counted_offsets.push((pc, offsets));
+                    }
+                } else {
+                    let (Some(min), Some(max), _) = *bounds else {
+                        return None;
+                    };
+                    if min != max {
+                        return None;
+                    }
+                    for target in references {
+                        match *target {
+                            ReferenceTarget::Input { index, named } => {
+                                if !outside(index, named)? {
+                                    return None;
+                                }
+                                // Width terms stay flat even when targets or
+                                // unit lengths differ. Resolve them at entry.
+                                width_references.push(OutsideReferenceWidth {
+                                    index,
+                                    named,
+                                    copies: 1,
+                                    count: min,
+                                });
+                            }
+                            ReferenceTarget::Term(index) => {
+                                let width = match instructions.get(index)? {
+                                    PreparedInstruction::Ready(Instruction::RepeatedCharacter(
+                                        _,
+                                    ))
+                                    | PreparedInstruction::Set { repeated: true, .. } => 1usize,
+                                    PreparedInstruction::Ready(Instruction::RepeatedAssert(_)) => 0,
+                                    _ => return None,
+                                };
+                                fixed = fixed.checked_add(width.checked_mul(min)?)?;
+                            }
+                            // Forward-lowered local/empty reads do not prove
+                            // their backward effects in a consuming mixed unit.
+                            _ => return None,
+                        }
+                    }
                 }
             }
             PreparedInstruction::Ready(Instruction::Character(_))
@@ -2947,7 +3069,7 @@ fn outside_reference_lookbehind_width(
         }
         pc += 1;
     }
-    if references.is_empty() {
+    if width_references.is_empty() {
         return None;
     }
     for (pc, offsets) in counted_offsets {
@@ -2962,7 +3084,7 @@ fn outside_reference_lookbehind_width(
     }
     Some(LookbehindWidth::OutsideReferences {
         fixed,
-        references: references.into_boxed_slice(),
+        references: width_references.into_boxed_slice(),
     })
 }
 
@@ -3340,6 +3462,209 @@ mod tests {
     }
 
     #[test]
+    fn mixed_outside_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=(a\1){2})b",
+            r"(a)(?<=(\1a){2})b",
+            r"(a)(?<=(\1a){2}?)b",
+            r"(a)(?<=(a\1){1})b",
+            r"(a)(b)(?<=(\1\2){2})c",
+            r"(a)(bb)(?<=(\1\2){2})c",
+            r"(a)(b)(?<=(\2\1){2})c",
+            r"(a)(b)(?<=(\1\2a){2})c",
+            r"(?=(a))(?<=(\1b){2})a",
+            r"(?=(ab))(?<=(\1b){2})a",
+            r"(a)(?<=(\1\B){2})b",
+            r"()(?<=(\1\b){2})b",
+            r"()()(?<=(\1\2){2})b",
+            r"()(?<=(\1\B){2})b",
+            r"(a)(?<=(\1[ab]){2})b",
+            r"(a)(?<=(.\1){2})b",
+            r"(a)(?<=(\1.){2})b",
+            r"(a)(?<=(^\1){2})b",
+            r"(a)(?<=(\1$){2})b",
+            r"(a)(?<!(\1a){2}q)b",
+            r"(b)(?<!(\1a){2}q)c",
+            r"(a)(?<!(a\1){2})b",
+            r"(?<=(\2a){2})(a)",
+            r"(a(?<=(\1a){2}))b",
+            r"(?=(a))(?<=(\1[ab]\1){2})a",
+            r"(a)(?<=(a\1){2}(?=b))b",
+            r"(a)(?<=(?<=a)(a\1){2})b",
+            r"(a)(?<=(a\1){2}(?=(b)))b",
+            r"(?:(a|b)(?<=(.\1){2}))+c",
+            r"(µ)(?<=(.\1){2})Μ",
+            r"([\uD800])(?<=([\uD800]\1){2})[\uDC00]",
+            r"()()(?<=(\1\2\b){30})b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aaab", "abb", "abc", "ababab", "aaaabb", " abc", "a b",
+                    "a\nb", "a\r\n", "µµΜ", "abbbc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+    #[test]
+    fn mixed_outside_lookbehind_different_widths_first_ranges_future_imports_and_empty_effects() {
+        for (source, text, range, captures) in [
+            (
+                r"(a)(?<=(a\1){2})b",
+                "aaaaab",
+                4..6,
+                vec![Some(4..5), Some(1..3)],
+            ),
+            (
+                r"(a)(b)(?<=(\1\2){2})c",
+                "abababc",
+                4..7,
+                vec![Some(4..5), Some(5..6), Some(2..4)],
+            ),
+            (
+                r"(a)(bb)(?<=(\1\2){2})c",
+                "abbabbabbc",
+                6..10,
+                vec![Some(6..7), Some(7..9), Some(3..6)],
+            ),
+            (
+                r"(?=(a))(?<=(\1b){2})a",
+                "ababa",
+                4..5,
+                vec![Some(4..5), Some(0..2)],
+            ),
+            (
+                r"(b)(?<!(\1a){2}q)c",
+                "bababc",
+                4..6,
+                vec![Some(4..5), None],
+            ),
+            (
+                r"()()(?<=(\1\2\b){30})b",
+                " b",
+                1..2,
+                vec![Some(1..1), Some(1..1), Some(1..1)],
+            ),
+            (
+                r"(?<=(\2a){2})(a)",
+                "aaa",
+                2..3,
+                vec![Some(0..1), Some(2..3)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let found = ordinary(r"(?=(a))(?<=(?:\1b){2})a", false, false, false)
+            .find(&JsString::from("ababa"), 0, false)
+            .unwrap();
+        assert_eq!(found.range, 4..5);
+        assert_eq!(&*found.captures, &[Some(4..5)]);
+        for source in [
+            r"(a)(?<=(a\1){1,2})b",
+            r"(?<=((a)\2){2})b",
+            r"(a)(?<=(\1(\2)){2})b",
+            r"(a)(?<=(a\1){2}|a)b",
+            r"(a)(?<=(a\1){2}(?<=\1))b",
+            r"(a)(?<=(a\1){2}(?=\1))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xd800, 0xd800, 0xd800, 0xd800, 0xdc00]);
+        let found = ordinary(
+            r"([\uD800])(?<=([\uD800]\1){2})[\uDC00]",
+            false,
+            false,
+            false,
+        )
+        .find(&input, 4, true)
+        .unwrap();
+        assert_eq!(found.range, 4..6);
+        assert_eq!(&*found.captures, &[Some(4..5), Some(1..3)]);
+    }
+    #[test]
+    fn mixed_outside_lookbehind_deep_scopes_negative_restore_large_ranges_and_counts_are_flat() {
+        let source =
+            "(b)(?<=".to_owned() + &"(".repeat(100000) + r"a\1" + &")".repeat(100000) + "{2})c";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qababc"), 4, true).unwrap();
+        assert_eq!(found.range, 4..6);
+        assert_eq!(found.captures.len(), 100001);
+        assert_eq!(found.captures[0], Some(4..5));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..3)));
+        drop(copy);
+        let source =
+            "(b)(?<!".to_owned() + &"(".repeat(100000) + r"\1a" + &")".repeat(100000) + "{2}q)c";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("bababc"), 4, true)
+            .unwrap();
+        assert_eq!(found.range, 4..6);
+        assert_eq!(found.captures[0], Some(4..5));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let source = format!(r"()()(?<=(\1\2\b){{{}}})b", usize::MAX);
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("b"), 0, true)
+            .unwrap();
+        assert_eq!(&*found.captures, &[Some(0..0), Some(0..0), Some(0..0)]);
+        let source = format!(r"(a)(?<=(\1a){{{}}})b", usize::MAX);
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("ab"), 0, true)
+                .is_none()
+        );
+        let source = format!(r"(a)(?<!(\1a){{{}}})b", usize::MAX);
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("ab"), 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(&*found.captures, &[Some(0..1), None]);
+        let matcher = ordinary(r"(?=(a+))(?<=(\1b){2})a", false, false, false);
+        let a = "a".repeat(50000);
+        let input = JsString::from((a.clone() + "b" + &a + "b" + &a).as_str());
+        let found = matcher.find(&input, 100002, true).unwrap();
+        assert_eq!(found.range, 100002..100003);
+        assert_eq!(&*found.captures, &[Some(100002..150002), Some(0..50001)]);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 100002, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+    }
+
+    #[test]
     fn fixed_units_outside_lookbehind_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3446,7 +3771,7 @@ mod tests {
         }
         for source in [
             r"(a)(?<=(a){1,2}\1)b",
-            r"(a)(?<=(a\1){2})b",
+            r"(a)(?<=(a\1){1,2})b",
             r"(a)(?<=a{2}\1|a)b",
             r"(a)(?<=a{2}(?<=\1))b",
             r"(a)(?<=a{2}(?=\1)\1)b",
@@ -6343,7 +6668,7 @@ mod tests {
             r"(?<=(ab){1,2})c",
             r"(?<=(?:a(?=a)){2})c",
             r"(?<=(?:a(?<=a)){2})c",
-            r"(a)(?<=(?:\1b){2})c",
+            r"(a)(?<=(?:\1b){1,2})c",
             r"(?<=(?:(?:ab){2}){2})c",
         ] {
             assert!(

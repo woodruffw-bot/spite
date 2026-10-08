@@ -1863,7 +1863,7 @@ Already proved fixed lookahead/lookbehind and exact-zero skipped scopes can be
 summarized without rescanning their body. Fixed backward parents and fixed
 lookahead reject children with dynamic reference widths, preserving their
 capture-read-free ordering proof. The linear fallback also rejects such children,
-internal reads, choices, unproved variable counts and mixed-reference consuming
+internal reads, choices, unproved variable counts and unproved internal-reference
 units. Generic forward execution
 retains its existing child assertion semantics.
 
@@ -1896,7 +1896,7 @@ assertions fail and negative assertions succeed without arithmetic overflow.
 This extends the width inventory without source-count expansion, per-match target
 allocation, native recursion, dependencies or default quotas. Fixed backward
 parents and fixed lookahead still reject dynamic reference-width children. Other
-dependent backward plans, unproved variable counts, mixed-reference consuming units
+dependent backward plans, unproved variable counts, unproved internal-reference units
 and Unicode modes remain pending.
 
 
@@ -1917,8 +1917,38 @@ failed capture effects. No matcher instruction or execution path changes.
 
 The proof stays flat and does not expand counts, copy input, add dependencies or
 impose default quotas. Stable imported targets remain outside the complete owner.
-Consuming units mixing those reads with characters, internal nonempty reads,
+Consuming units with unproved internal reads,
 unproved variable counts, choices and dynamic child assertions remain unsupported.
+
+
+Exact-count linear lookbehind units can mix ordinary characters, classes and
+boundary predicates with stable outside numeric or named references of different
+lengths (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The existing fixed-unit proof runs
+first. A mixed unit then requires equal representable bounds and contains only
+ordinary repeated terms or input targets outside the complete owner's capture
+declaration range; every slot of a named alias must be outside. Forward-lowered
+empty/local targets remain excluded from consuming mixed units. Internal reads,
+unproved variable counts, choices and dynamic child assertions remain pending.
+
+Entry width adds checked constant term widths times count and a flat outside
+width term for each reference occurrence. Different target lengths, source-order
+copies, future ranges imported from prior lookahead and undefined open/forward
+targets retain their existing values. A proved available complete prefix bounds
+every consuming iteration; overflowing or insufficient widths fail positives
+and succeed for negatives without running an unavailable body.
+
+The existing forward sequence range/offset resolution is shared as a pure helper,
+with identical charge, allocation and forward matching behavior. Each mixed unit
+resolves its unchanged outside ranges and source-relative capture offsets once,
+then compares exact iterations through the existing Canonicalize and full-context
+boundary operations. Required empty units execute one pass without count
+expansion. Success exports the first backward unit's offsets; partial/completed
+negative failures restore checkpoints and leave imported ranges intact.
+
+The plan stays flat and uses no native recursion, new dependency or default
+quota. Unit-sized range/offset vectors are independent of the repetition count.
+Fixed backward parents and fixed lookahead still reject dynamic-width children.
+Unicode modes and other capture-dependent backward plans remain unsupported.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
