@@ -1346,6 +1346,26 @@ cleared between candidate starts. Allocation work is charged through the existin
 fallible callback; defaults remain unlimited. Captures inside branch loops and
 possibly empty complete body paths remain pending.
 
+Captures compose inside progressing repeated branches and nested loops
+(RepeatMatcher, 22.2.2.3.1). Group frames record the first source-order capture
+slot. Each loop owns the contiguous range through its closing capture count,
+including nested loops and aggregate quantifiers. This avoids copied inventories
+or rescanning proven child bodies. Open/close instructions preserve the minimum
+progress proof; references remain potentially empty. Possibly empty complete
+body paths are rejected before accepted host work is charged.
+
+Entering each body clears its capture range and named aliases. A captured root
+entry retains its open effect in loop metadata, while the original body positions
+remain stable. The capture trail records previous starts, completed ranges and
+named values, including clearing effects; unchanged values need no undo record.
+Retries restore these changes in reverse order to their checkpoint, alongside
+parent-linked iteration contexts. Thus unselected captures become undefined on
+the next iteration, while reducing a count restores the previous iteration's
+final ranges. Ordinary and aggregate closes use the same range writer, including
+zero-count aggregate clears. Open and forward references observe cleared current
+iteration targets. All execution and rollback remain iterative, with fallible
+work accounting and unlimited defaults.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

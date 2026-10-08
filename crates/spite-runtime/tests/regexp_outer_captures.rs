@@ -128,14 +128,14 @@ fn optional_host_aborts_and_unsupported_bodies_remain_separate() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/(a+b)*/.test('ab')",
-        "/(?:(?:(a+[b]+)){2}){2}/.test('ab')",
-        "/(?:(?:a(a|bc)){2}){2}/.test('ab')",
-        "/((a|bc)+)/.test('ab')",
+        r"/(?:(?:(a+b)*)|)*/.test('ab')",
+        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|)*/.test('ab')",
+        r"/(?:(?:(?:(?:a(a|bc)){2}){2})|)*/.test('ab')",
+        r"/(?:(?:((a|bc)+))|)*/.test('ab')",
         "/(a+b)/u.test('ab')",
-        "/(?:((?<x>a))(?:\\k<x>)+){2}/.test('a')",
-        r"/(?:(\1a)+){2}/.test('a')",
-        r"/(?:((a)\1)+){2}/.test('aa')",
+        r"/(?:(?:(?:((?<x>a))(?:\k<x>)+){2})|)*/.test('a')",
+        r"/(?:(?:(?:(\1a)+){2})|)*/.test('a')",
+        r"/(?:(?:(?:((a)\1)+){2})|)*/.test('aa')",
     ] {
         assert!(
             matches!(

@@ -128,9 +128,9 @@ fn explicit_reference_free_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn repeated_choices_nested_quantifiers_atoms_and_lookaround_remain_unsupported() {
     for source in [
-        r"/(a|b)+\1/.test('aabb')",
-        r"/((a)+)+\1/.test('aaaa')",
-        r"/(?:(a+)\1){2}/.test('aaaa')",
+        r"/(?:(?:(a|b)+\1)|)*/.test('aabb')",
+        r"/(?:(?:((a)+)+\1)|)*/.test('aaaa')",
+        r"/(?:(?:(?:(a+)\1){2})|)*/.test('aaaa')",
         r"/((?=a)a)+\1/.test('aaaa')",
         r"/((?i:a))+\1/.test('aaaa')",
         r"/(a)+\1/u.test('aaaa')",

@@ -124,9 +124,9 @@ fn explicit_sequence_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn capture_effects_and_other_sequence_bodies_remain_unsupported() {
     for source in [
-        r"/(?:(a)(b)(\1\2)+){2}/.test('abab')",
-        r"/(?:(a)(b)(?:()\1\2)+){2}/.test('abab')",
-        r"/(?:(a)(b)(?:a\1\2)+){2}/.test('abab')",
+        r"/(?:(?:(?:(a)(b)(\1\2)+){2})|)*/.test('abab')",
+        r"/(?:(?:(?:(a)(b)(?:()\1\2)+){2})|)*/.test('abab')",
+        r"/(?:(?:(?:(a)(b)(?:a\1\2)+){2})|)*/.test('abab')",
         r"/(a)(b)(?:\1|\2)+/.test('abab')",
         r"/(a)(b)(?:\1+\2)+/.test('abab')",
         r"/(a)(b)(?:\1\2)+/u.test('abab')",

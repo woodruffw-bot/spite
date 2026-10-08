@@ -129,12 +129,12 @@ fn optional_host_work_aborts_and_remaining_variable_group_features_are_unsupport
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:(?:a+b(ab)+c){2}){2}/.test('ababc')",
-        r"/x(ab|a)+c/.test('xabc')",
-        r"/(?:(?:x(ab)+(c)+){2}){2}/.test('xabc')",
-        r"/(?:x(?<n>ab)+c\k<n>){2}/.test('xabc')",
-        r"/(?:x(ab)+\1){2}/.test('xabab')",
-        r"/x((ab|a)+)c/.test('xabc')",
+        r"/(?:(?:(?:(?:a+b(ab)+c){2}){2})|)*/.test('ababc')",
+        r"/(?:(?:x(ab|a)+c)|)*/.test('xabc')",
+        r"/(?:(?:(?:(?:x(ab)+(c)+){2}){2})|)*/.test('xabc')",
+        r"/(?:(?:(?:x(?<n>ab)+c\k<n>){2})|)*/.test('xabc')",
+        r"/(?:(?:(?:x(ab)+\1){2})|)*/.test('xabab')",
+        r"/(?:(?:x((ab|a)+)c)|)*/.test('xabc')",
         r"/x(ab)+c/u.test('xabc')",
     ] {
         assert!(

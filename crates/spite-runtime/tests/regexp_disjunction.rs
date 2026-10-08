@@ -84,10 +84,10 @@ fn copies_many_flat_alternatives_and_original_plans_survive_collection() {
 #[test]
 fn unsupported_alternatives_captures_nested_choices_and_unicode_remain_host_gaps() {
     for source in [
-        r"/((?:(?:a|[b]+[a]+){2}){2}){2}/.test('a')",
-        r"/((?:(?:a|b*[a]+){2}){2}){2}/.test('a')",
-        "/(?:(?:a(a|bc)){2}){2}/.test('a')",
-        r"/((?:(?:(?:a|bc)|c){2}){2}){2}/.test('a')",
+        r"/(?:(?:((?:(?:a|[b]+[a]+){2}){2}){2})|)*/.test('a')",
+        r"/(?:(?:((?:(?:a|b*[a]+){2}){2}){2})|)*/.test('a')",
+        r"/(?:(?:(?:(?:a(a|bc)){2}){2})|)*/.test('a')",
+        r"/(?:(?:((?:(?:(?:a|bc)|c){2}){2}){2})|)*/.test('a')",
         "/a|b/u.test('a')",
         "/a|b/v.test('a')",
     ] {

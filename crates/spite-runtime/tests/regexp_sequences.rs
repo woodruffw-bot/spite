@@ -130,12 +130,12 @@ fn opted_in_sticky_work_covers_one_candidate_instead_of_all_candidate_starts() {
 #[test]
 fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gaps() {
     for source in [
-        r"/((?:(?:[a]+[b]+){2}){2}){2}/.test('a')",
-        r"/((?:(?:[a]+[b]+|b){2}){2}){2}/.test('a')",
-        r"/((?:(?:^[a]+[b]+){2}){2}){2}/.test('a')",
-        r"/((?:(?:[a]b+[b]+$){2}){2}){2}/.test('ab')",
-        r"/(?:([a])(?:\1)+){2}/.test('aa')",
-        "/(?:(?<x>[a])(?:\\k<x>)+){2}/.test('a')",
+        r"/(?:(?:((?:(?:[a]+[b]+){2}){2}){2})|)*/.test('a')",
+        r"/(?:(?:((?:(?:[a]+[b]+|b){2}){2}){2})|)*/.test('a')",
+        r"/(?:(?:((?:(?:^[a]+[b]+){2}){2}){2})|)*/.test('a')",
+        r"/(?:(?:((?:(?:[a]b+[b]+$){2}){2}){2})|)*/.test('ab')",
+        r"/(?:(?:(?:([a])(?:\1)+){2})|)*/.test('aa')",
+        r"/(?:(?:(?:(?<x>[a])(?:\k<x>)+){2})|)*/.test('a')",
         "/(?i:[a])/.test('a')",
         "/[a]b/u.test('ab')",
         "/[a]b/v.test('ab')",

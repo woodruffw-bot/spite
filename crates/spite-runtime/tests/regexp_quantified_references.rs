@@ -131,9 +131,9 @@ fn explicit_quantified_reference_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn repeated_reference_bodies_other_quantified_atoms_and_unicode_remain_unsupported() {
     for source in [
-        r"/(?:(?:(a)\1){2}){2}/.test('aaaa')",
-        r"/(?:(a)(?:\1)+){2}/.test('aa')",
-        r"/(?:(a)+\1){2}/.test('aa')",
+        r"/(?:(?:(?:(?:(a)\1){2}){2})|)*/.test('aaaa')",
+        r"/(?:(?:(?:(a)(?:\1)+){2})|)*/.test('aa')",
+        r"/(?:(?:(?:(a)+\1){2})|)*/.test('aa')",
         r"/(?=(a))\1+/.test('aa')",
         r"/(?<x>a)\k<x>+/u.test('aa')",
     ] {

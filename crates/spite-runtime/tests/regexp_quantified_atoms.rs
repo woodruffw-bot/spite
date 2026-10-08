@@ -113,14 +113,14 @@ fn opted_in_constructor_and_sticky_search_aborts_remain_host_failures() {
 #[test]
 fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps() {
     for source in [
-        "/(ab|c)+/.test('a')",
-        r"/((?:(?:ab|c)+){2}){2}/.test('a')",
-        r"/((?:(?:a+[b]+){2}){2}){2}/.test('ab')",
-        r"/((?:(?:a+[b]+|b){2}){2}){2}/.test('b')",
-        r"/((?:(?:^a+[b]+$){2}){2}){2}/.test('a')",
+        r"/(?:(?:(ab|c)+)|)*/.test('a')",
+        r"/(?:(?:((?:(?:ab|c)+){2}){2})|)*/.test('a')",
+        r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|)*/.test('ab')",
+        r"/(?:(?:((?:(?:a+[b]+|b){2}){2}){2})|)*/.test('b')",
+        r"/(?:(?:((?:(?:^a+[b]+$){2}){2}){2})|)*/.test('a')",
         "/a+/u.test('a')",
         "/[a]+/v.test('a')",
-        r"/(?:(a)(?:\1)+){2}/.test('a')",
+        r"/(?:(?:(?:(a)(?:\1)+){2})|)*/.test('a')",
     ] {
         assert!(
             matches!(

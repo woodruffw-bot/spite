@@ -43,10 +43,11 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Character atoms can also be quantified. Repeated groups may supply captures
 /// to references outside their body. Body references use
 /// completed current-iteration captures; forward and open targets remain empty.
-/// Capture-free repeated choices accept nested/sequential branches when every
+/// Repeated choices accept nested/sequential capturing branches when every
 /// complete body path consumes a unit, with flat source-order iteration retries.
-/// Deterministic capture-free inner quantifiers compose with these body paths.
-/// Capture-free branch loops also nest through flat parent-linked contexts.
+/// Deterministic inner quantifiers compose with these body paths.
+/// Branch loops nest through flat parent-linked contexts. Body captures reset
+/// per iteration, and retries restore previous starts, ranges and named aliases.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -71,6 +72,8 @@ enum Instruction {
     Choice(Box<[usize]>),
     Jump(usize),
     RepeatChoice {
+        captures: Range<usize>,
+        open: Option<usize>,
         body: usize,
         head: usize,
         end: usize,
@@ -133,17 +136,23 @@ enum PreparedInstruction {
 
 struct GroupFrame {
     capture: Option<usize>,
+    capture_start: usize,
     entry: usize,
     alternatives: Vec<usize>,
     exits: Vec<usize>,
 }
 
 impl GroupFrame {
-    fn open(capture: Option<usize>, instructions: &mut Vec<PreparedInstruction>) -> Self {
+    fn open(
+        capture: Option<usize>,
+        capture_start: usize,
+        instructions: &mut Vec<PreparedInstruction>,
+    ) -> Self {
         let entry = instructions.len();
         instructions.push(PreparedInstruction::Ready(Instruction::Nop));
         Self {
             capture,
+            capture_start,
             entry,
             alternatives: Vec::new(),
             exits: Vec::new(),
@@ -235,6 +244,7 @@ impl ChoiceFrame {
                 let context =
                     state.iterations[state.iteration.expect("choice repetition context restored")];
                 if enter {
+                    program.enter_choice_body(state, self.instruction, context.start, charge)?;
                     Ok(Some((head, context.start)))
                 } else {
                     state.iteration = context.parent;
@@ -673,9 +683,9 @@ impl RegExpBackreferenceMatcher {
     /// Charges capture resets, executed instructions and actual unit comparisons.
     ///
     /// Capture buffers are reused across source-order branches at each ordered
-    /// candidate start. Inner alternatives retain completed prefix captures and
-    /// clear only captures completed by the failed body or continuation. Common
-    /// terms are retained for each reachable prefix; inactive captures stay undefined.
+    /// candidate start. Retries restore prior starts, completed capture ranges
+    /// and named owners. Common terms are retained for each reachable prefix;
+    /// inactive captures stay undefined.
     /// An open or forward capture has no completed range and its reference matches
     /// the empty string, as required by BackreferenceMatcher (22.2.2.9.2). Ignore-case
     /// comparison canonicalizes both input units with the ordinary ASCII boundary.
@@ -700,7 +710,7 @@ impl RegExpBackreferenceMatcher {
             captures: vec![None; self.0.capture_count],
             starts: vec![0; self.0.capture_count],
             named: vec![None; self.0.named_count],
-            touched: Vec::with_capacity(self.0.capture_count),
+            changes: Vec::with_capacity(self.0.capture_count),
             iteration: None,
             iterations: Vec::new(),
         };
@@ -709,7 +719,7 @@ impl RegExpBackreferenceMatcher {
         let end = if sticky { start } else { input.len() };
         'candidate: for candidate in start..=end {
             charge(1)?;
-            self.0.clear_captures(&mut state, 0, &mut charge)?;
+            self.0.restore_captures(&mut state, 0, &mut charge)?;
             frames.clear();
             let mut cursor = candidate;
             let mut pc = 0;
@@ -735,7 +745,7 @@ impl RegExpBackreferenceMatcher {
                     };
                     charge(1)?;
                     self.0
-                        .clear_captures(&mut state, frame.checkpoint, &mut charge)?;
+                        .restore_captures(&mut state, frame.checkpoint, &mut charge)?;
                     state.iterations.truncate(frame.iteration_checkpoint);
                     state.iteration = frame.iteration;
                     if let Some((next, end)) =
@@ -753,11 +763,23 @@ impl RegExpBackreferenceMatcher {
     }
 }
 
+enum CaptureUndo {
+    Start {
+        slot: usize,
+        previous: usize,
+    },
+    Capture {
+        slot: usize,
+        previous: Option<Range<usize>>,
+        named: Option<Range<usize>>,
+    },
+}
+
 struct CaptureState {
     captures: Vec<Option<Range<usize>>>,
     starts: Vec<usize>,
     named: Vec<Option<Range<usize>>>,
-    touched: Vec<usize>,
+    changes: Vec<CaptureUndo>,
     iteration: Option<usize>,
     // Immutable parent-linked records; retry checkpoints reclaim abandoned paths.
     iterations: Vec<ChoiceIteration>,
@@ -799,7 +821,7 @@ impl Program {
             charge(1)?;
             frames.push(ChoiceFrame {
                 instruction: context.instruction,
-                checkpoint: state.touched.len(),
+                checkpoint: state.changes.len(),
                 iteration_checkpoint: state.iterations.len(),
                 alternative: PendingAlternative::RepeatChoice {
                     enter: Some(!enter),
@@ -808,6 +830,7 @@ impl Program {
             });
         }
         if enter {
+            self.enter_choice_body(state, context.instruction, cursor, charge)?;
             Ok(Some(head))
         } else {
             state.iteration = context.parent;
@@ -815,22 +838,93 @@ impl Program {
         }
     }
 
-    fn clear_captures<E>(
+    fn enter_choice_body<E>(
+        &self,
+        state: &mut CaptureState,
+        pc: usize,
+        cursor: usize,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        let Instruction::RepeatChoice { captures, open, .. } = &self.instructions[pc] else {
+            unreachable!("repetition owns its capture range")
+        };
+        for slot in captures.clone() {
+            self.write_capture(state, slot, None, charge)?;
+        }
+        if let Some(slot) = *open {
+            self.open_capture(state, slot, cursor, charge)?;
+        }
+        Ok(())
+    }
+
+    fn restore_captures<E>(
         &self,
         state: &mut CaptureState,
         checkpoint: usize,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<(), E> {
-        charge(state.touched.len() - checkpoint)?;
+        charge(state.changes.len() - checkpoint)?;
         if !self.capture_names.is_empty() {
-            charge(state.touched.len() - checkpoint)?;
+            charge(state.changes.len() - checkpoint)?;
         }
-        for slot in state.touched.drain(checkpoint..) {
-            state.captures[slot] = None;
-            if let Some(Some(group)) = self.capture_names.get(slot) {
-                state.named[*group] = None;
+        while state.changes.len() > checkpoint {
+            match state.changes.pop().unwrap() {
+                CaptureUndo::Start { slot, previous } => state.starts[slot] = previous,
+                CaptureUndo::Capture {
+                    slot,
+                    previous,
+                    named,
+                } => {
+                    state.captures[slot] = previous;
+                    if let Some(Some(group)) = self.capture_names.get(slot) {
+                        state.named[*group] = named;
+                    }
+                }
             }
         }
+        Ok(())
+    }
+
+    fn open_capture<E>(
+        &self,
+        state: &mut CaptureState,
+        slot: usize,
+        cursor: usize,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        charge(1)?;
+        if state.starts[slot] != cursor {
+            state.changes.push(CaptureUndo::Start {
+                slot,
+                previous: state.starts[slot],
+            });
+            state.starts[slot] = cursor;
+        }
+        Ok(())
+    }
+
+    fn write_capture<E>(
+        &self,
+        state: &mut CaptureState,
+        slot: usize,
+        range: Option<Range<usize>>,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        charge(1)?;
+        let group = self.capture_names.get(slot).copied().flatten();
+        if !self.capture_names.is_empty() {
+            charge(2)?;
+        }
+        if state.captures[slot] == range && group.is_none_or(|group| state.named[group] == range) {
+            return Ok(());
+        }
+        let previous = std::mem::replace(&mut state.captures[slot], range.clone());
+        let named = group.and_then(|group| std::mem::replace(&mut state.named[group], range));
+        state.changes.push(CaptureUndo::Capture {
+            slot,
+            previous,
+            named,
+        });
         Ok(())
     }
 
@@ -862,15 +956,11 @@ impl Program {
                     }
                 };
                 let range = range.start + offset(span.start)..range.start + offset(span.end);
-                charge(1)?;
-                state.captures[slot] = Some(range.clone());
-                state.touched.push(slot);
-                if !self.capture_names.is_empty() {
-                    charge(2)?;
-                    if let Some(group) = self.capture_names[slot] {
-                        state.named[group] = Some(range.clone());
-                    }
-                }
+                self.write_capture(state, slot, Some(range), charge)?;
+            }
+        } else {
+            for &(slot, _) in captures {
+                self.write_capture(state, slot, None, charge)?;
             }
         }
         Ok(())
@@ -901,7 +991,7 @@ impl Program {
                         next: 1,
                         prefix_end: *cursor,
                     },
-                    checkpoint: state.touched.len(),
+                    checkpoint: state.changes.len(),
                     iteration_checkpoint: state.iterations.len(),
                     iteration: state.iteration,
                 });
@@ -960,18 +1050,10 @@ impl Program {
                     return Ok(None);
                 }
             }
-            Instruction::Open(index) => state.starts[*index] = *cursor,
+            Instruction::Open(index) => self.open_capture(state, *index, *cursor, charge)?,
             Instruction::Close(index) => {
-                charge(1)?;
                 let range = state.starts[*index]..*cursor;
-                state.captures[*index] = Some(range.clone());
-                state.touched.push(*index);
-                if !self.capture_names.is_empty() {
-                    charge(2)?;
-                    if let Some(group) = self.capture_names[*index] {
-                        state.named[group] = Some(range);
-                    }
-                }
+                self.write_capture(state, *index, Some(range), charge)?;
             }
             Instruction::Reference(index) | Instruction::NamedReference(index) => {
                 let range = if matches!(instruction, Instruction::Reference(_)) {
@@ -1084,7 +1166,7 @@ impl Program {
                 } else {
                     (count < limit).then(|| count + 1)
                 };
-                let checkpoint = state.touched.len();
+                let checkpoint = state.changes.len();
                 self.complete_reference_captures(
                     pc,
                     state,
@@ -1166,7 +1248,7 @@ impl Program {
                 } else {
                     (count < limit).then(|| count + 1)
                 };
-                let checkpoint = state.touched.len();
+                let checkpoint = state.changes.len();
                 self.complete_reference_captures(
                     pc,
                     state,
@@ -1467,15 +1549,15 @@ fn quantify_progressing_choice(
     instructions: &mut Vec<PreparedInstruction>,
     body: Range<usize>,
     bounds: Bounds,
+    captures: Range<usize>,
     progresses: &mut Vec<bool>,
 ) -> Option<()> {
-    if !matches!(
-        instructions[body.start],
-        PreparedInstruction::Ready(Instruction::Nop | Instruction::Choice(_))
-    ) {
-        return None;
-    }
-    // Treat an already proven child loop as one capture-free operation. Its
+    let open = match &instructions[body.start] {
+        PreparedInstruction::Ready(Instruction::Open(slot)) => Some(*slot),
+        PreparedInstruction::Ready(Instruction::Nop | Instruction::Choice(_)) => None,
+        _ => return None,
+    };
+    // Treat an already proven child loop as one operation. Its
     // required iterations consume input; optional iterations use the suffix.
     // Reuse preparation storage instead of rescanning or clearing child bodies.
     progresses.resize(instructions.len() + 1, false);
@@ -1489,6 +1571,7 @@ fn quantify_progressing_choice(
                 head,
                 end,
                 bounds: (min, _, _),
+                ..
             }) = &instructions[pc - 1]
             {
                 if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
@@ -1500,63 +1583,64 @@ fn quantify_progressing_choice(
             }
         }
         next = pc;
-        progresses[pc] =
-            match &instructions[pc] {
-                PreparedInstruction::Ready(Instruction::Character(_))
-                | PreparedInstruction::Set {
-                    repeated: false, ..
-                } => true,
-                PreparedInstruction::Ready(
-                    Instruction::Nop
-                    | Instruction::Assert(_)
-                    | Instruction::Reference(_)
-                    | Instruction::NamedReference(_)
-                    | Instruction::RepeatedCharacter(_)
-                    | Instruction::RepeatedSet(_)
-                    | Instruction::RepeatedAssert(_),
-                )
-                | PreparedInstruction::Set { repeated: true, .. } => progresses[pc + 1],
-                PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
-                    references,
-                    bounds: (min, _, _),
-                    captures,
-                }) if captures.is_empty() => {
-                    // Only required consuming terms establish progress. Outside
-                    // references and assertions can match without consuming input.
-                    let consuming = references.iter().any(|target| {
-                        let ReferenceTarget::Term(position) = target else {
-                            return false;
-                        };
-                        matches!(
-                            instructions.get(*position),
-                            Some(PreparedInstruction::Ready(Instruction::RepeatedCharacter(
-                                _
-                            ))) | Some(PreparedInstruction::Set { repeated: true, .. })
-                        )
-                    });
-                    (*min != Some(0) && consuming) || progresses[pc + 1]
+        progresses[pc] = match &instructions[pc] {
+            PreparedInstruction::Ready(Instruction::Character(_))
+            | PreparedInstruction::Set {
+                repeated: false, ..
+            } => true,
+            PreparedInstruction::Ready(
+                Instruction::Nop
+                | Instruction::Assert(_)
+                | Instruction::Reference(_)
+                | Instruction::NamedReference(_)
+                | Instruction::Open(_)
+                | Instruction::Close(_)
+                | Instruction::RepeatedCharacter(_)
+                | Instruction::RepeatedSet(_)
+                | Instruction::RepeatedAssert(_),
+            )
+            | PreparedInstruction::Set { repeated: true, .. } => progresses[pc + 1],
+            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
+                references,
+                bounds: (min, _, _),
+                ..
+            }) => {
+                // Only required consuming terms establish progress. Outside
+                // references and assertions can match without consuming input.
+                let consuming = references.iter().any(|target| {
+                    let ReferenceTarget::Term(position) = target else {
+                        return false;
+                    };
+                    matches!(
+                        instructions.get(*position),
+                        Some(PreparedInstruction::Ready(Instruction::RepeatedCharacter(
+                            _
+                        ))) | Some(PreparedInstruction::Set { repeated: true, .. })
+                    )
+                });
+                (*min != Some(0) && consuming) || progresses[pc + 1]
+            }
+            PreparedInstruction::Ready(Instruction::QuantifiedReference { .. }) => {
+                progresses[pc + 1]
+            }
+            PreparedInstruction::Ready(Instruction::Jump(target)) => {
+                if *target <= pc || *target > body.end {
+                    return None;
                 }
-                PreparedInstruction::Ready(Instruction::QuantifiedReference {
-                    captures, ..
-                }) if captures.is_empty() => progresses[pc + 1],
-                PreparedInstruction::Ready(Instruction::Jump(target)) => {
-                    if *target <= pc || *target > body.end {
-                        return None;
-                    }
-                    progresses[*target]
+                progresses[*target]
+            }
+            PreparedInstruction::Ready(Instruction::Choice(branches)) => {
+                if branches.is_empty()
+                    || branches
+                        .iter()
+                        .any(|&target| target <= pc || target > body.end)
+                {
+                    return None;
                 }
-                PreparedInstruction::Ready(Instruction::Choice(branches)) => {
-                    if branches.is_empty()
-                        || branches
-                            .iter()
-                            .any(|&target| target <= pc || target > body.end)
-                    {
-                        return None;
-                    }
-                    branches.iter().all(|&target| progresses[target])
-                }
-                _ => return None,
-            };
+                branches.iter().all(|&target| progresses[target])
+            }
+            _ => return None,
+        };
     }
     if !progresses[body.start] {
         return None;
@@ -1576,6 +1660,8 @@ fn quantify_progressing_choice(
         entry,
     )));
     instructions.push(PreparedInstruction::Ready(Instruction::RepeatChoice {
+        captures,
+        open,
         body: body.start,
         head: entry + 1,
         end: entry + 2,
@@ -1622,7 +1708,7 @@ fn prepare(
     let mut progresses = Vec::new();
     let mut last_choice_repeat = None;
     let mut groups = Vec::<GroupFrame>::new();
-    let mut current = GroupFrame::open(None, &mut instructions);
+    let mut current = GroupFrame::open(None, 0, &mut instructions);
     let mut scopes = Vec::new();
     let mut capture_count = 0usize;
     let mut references = 0usize;
@@ -1668,13 +1754,14 @@ fn prepare(
                 scopes.push(ScopeStep::Open);
                 groups.push(std::mem::replace(
                     &mut current,
-                    GroupFrame::open(group, &mut instructions),
+                    GroupFrame::open(group, group.unwrap_or(capture_count), &mut instructions),
                 ));
             }
             0x29 => {
                 let parent = groups.pop()?;
                 let group = std::mem::replace(&mut current, parent);
                 let entry = group.entry;
+                let capture_start = group.capture_start;
                 let capture = group.finish(&mut instructions);
                 scopes.push(ScopeStep::Close);
                 if let Some(index) = capture {
@@ -1696,6 +1783,7 @@ fn prepare(
                             &mut instructions,
                             start..end,
                             bounds,
+                            capture_start..capture_count,
                             &mut progresses,
                         )?;
                         last_choice_repeat = Some(instructions.len() - 2);
@@ -1859,6 +1947,143 @@ mod tests {
     }
 
     #[test]
+    fn repeated_branch_capture_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a|ab)+b",
+            r"(ab|a)+b",
+            r"(a|ab)+?b",
+            r"(ab|a)+?b",
+            r"((a)|(b))+c",
+            r"((a)|(b))+?c",
+            r"(?:(a)|b)+c",
+            r"(?:(a)|b)*c",
+            r"(a|b){2,3}c",
+            r"(a|b){2,3}?c",
+            r"((a)+b|c)+d",
+            r"((a)+?b|c)+?d",
+            r"(a)(?:(b)\1|c)+\2",
+            r"(a)(?:(b)\1|c)+?\2",
+            r"((a|ab)+)+b",
+            r"((a|ab)+?)+?b",
+            r"(a|(b))+(c)\2",
+            r"(a|\1b)+c",
+            r"((\2a)|b)+c",
+            r"((^a)|(b$))+",
+            r"([ab]|c)+d",
+            r"(.|a)+b",
+            r"((a|b){2,3})+c",
+            r"((a|b)*)c|a",
+            r"((a|b)+){999999999999999999999999999999}",
+            r"(?:(a)|b)+c|(d)\1",
+            r"(?:(a)(b)((\1)\4\2)+){2}",
+            r"(?:(a)(b)(\1(\2)\4)+){2}",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "abb", "abbc", "abab", "ababc", "bbc", "aaba", "abbaa",
+                    "abcc", "\n\n", " b ", "µΜ",
+                ] {
+                    let text = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={text:?} start={start} sticky={sticky} {:?}",matcher.find(&text,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn repeated_branch_capture_resets_and_undo_restore_last_iteration_slots() {
+        for (source, text, range, captures) in [
+            (r"(a|ab)+b", "abb", 0..2, vec![Some(0..1)]),
+            (r"(ab|a)+b", "abb", 0..3, vec![Some(0..2)]),
+            (
+                r"((a)|(b))+c",
+                "abc",
+                0..3,
+                vec![Some(1..2), None, Some(1..2)],
+            ),
+            (
+                r"(a|(b))+(c)\2",
+                "abac",
+                0..4,
+                vec![Some(2..3), None, Some(3..4)],
+            ),
+            (r"((a|ab)+)+b", "abb", 0..2, vec![Some(0..1), Some(0..1)]),
+            (r"(?:(a)|b)+c", "abc", 0..3, vec![None]),
+            (r"(a|\1b)+c", "abac", 0..4, vec![Some(2..3)]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, true)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+    }
+
+    #[test]
+    fn repeated_branch_capture_inventories_keep_deep_ranges_compact_and_fallible() {
+        let source = "(".repeat(100000) + "a|b" + &")".repeat(100000) + "+";
+        let source = JsString::from(source.as_str());
+        let mut work = 0;
+        let matcher = RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+            &source,
+            false,
+            false,
+            false,
+            RegExpBackreferenceNamedBindings::default(),
+            |n| {
+                work += n;
+                Ok::<_, ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert!(work < source.len() * 18 + 131072, "work {work}");
+        let found = matcher.find(&JsString::from("ab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..2);
+        assert!(found.captures.iter().all(|r| *r == Some(1..2)));
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("ab"), 0, true, |_| Err::<(), _>("work"))
+                .is_err()
+        );
+        let source = "(".repeat(1000) + "(?:a|b)" + &")+".repeat(1000);
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("a"), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..1)));
+        for source in [r"(a|)+", r"((a|b)*)+", r"((?=a)a|b)+"] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert_eq!(work, 0, "{source}");
+        }
+    }
+
+    #[test]
     fn nested_choice_loop_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -1956,7 +2181,7 @@ mod tests {
         );
         for source in [
             r"(?:(?:a|b)*)+",
-            r"(?:(?:(a)|b)+c|d)+",
+            r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
             r"(?:(?:\1|b)+c|d)+(a)",
             r"(?:(?=a)a|b)+",
         ] {
@@ -2050,7 +2275,7 @@ mod tests {
     }
 
     #[test]
-    fn deterministic_inner_quantifiers_keep_preparation_flat_and_reject_capture_effects() {
+    fn deterministic_inner_quantifiers_keep_preparation_flat_and_reject_empty_paths() {
         let source = "(?:".repeat(100000) + "(?:a+b|c)" + &")".repeat(100000) + "+";
         assert_eq!(
             ordinary(&source, false, false, false)
@@ -2091,8 +2316,8 @@ mod tests {
         );
         for source in [
             r"(?:a*b*)+",
-            r"(?:(a+)b|c)+",
-            r"(?:(?:(a)|b)+c|d)+",
+            r"(?:(?:(?:(a+)b|c)+)|)*",
+            r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
             r"(?:\1*|b)+(a)",
         ] {
             let mut work = 0;
@@ -2225,8 +2450,8 @@ mod tests {
         for source in [
             r"(?:(?:a|))*",
             r"(?:(?:a|)(?:b|))+",
-            r"(?:(a|)b)+",
-            r"(?:(?:a|)(b+))+",
+            r"(?:(?:(?:(a|)b)+)|)*",
+            r"(?:(?:(?:(?:a|)(b+))+)|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -2358,8 +2583,8 @@ mod tests {
         for source in [
             r"(?:ab|)+",
             r"(?:\1|b)+(a)",
-            r"((a)|(b))+",
-            r"(?:(?:(ab)|c)+){2}",
+            r"(?:(?:((a)|(b))+)|)*",
+            r"(?:(?:(?:(?:(ab)|c)+){2})|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -2485,7 +2710,12 @@ mod tests {
             )
             .is_err()
         );
-        for source in [r"(a|b)+", r"(a+)+", r"(?=a)a", r"(?i:a)"] {
+        for source in [
+            r"(?:(?:(a|b)+)|)*",
+            r"(?:(?:(a+)+)|)*",
+            r"(?=a)a",
+            r"(?i:a)",
+        ] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -2603,7 +2833,7 @@ mod tests {
     }
 
     #[test]
-    fn invalid_named_binding_metadata_returns_none_before_charging() {
+    fn invalid_named_bindings_and_empty_repeated_bodies_return_none_before_charging() {
         for (text, slots, escape, group) in [
             (r"(a)\k<x>", vec![0], 3..8, 1),
             (r"(a)\k<x>", vec![1], 3..8, 0),
@@ -2613,7 +2843,7 @@ mod tests {
             (r"(a)\k<x>", vec![0], 3..9, 0),
             (r"(a)\k<x>", vec![0], 2..7, 0),
             (r"(a)[\k<x>]", vec![0], 4..9, 0),
-            (r"(?:(a)(?:\k<x>)+){2}", vec![0], 9..14, 0),
+            (r"(?:(a)(?:\k<x>)+|){2}", vec![0], 9..14, 0),
         ] {
             let references = [RegExpBackreferenceNamedReference { escape, group }];
             let groups = [slots.as_slice()];
@@ -2819,7 +3049,12 @@ mod tests {
             matcher.find_with_work(&JsString::from(""), 0, true, |_| Err::<(), _>("work")),
             Err("work")
         ));
-        for source in [r"((a+)+)\1", r"(a|b)+\1", r"((?=a)a+)\1", r"((?i:a)+)\1"] {
+        for source in [
+            r"(?:(?:((a+)+)\1)|)*",
+            r"(?:(?:(a|b)+\1)|)*",
+            r"((?=a)a+)\1",
+            r"((?i:a)+)\1",
+        ] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_with_work(
@@ -2979,7 +3214,12 @@ mod tests {
             matcher.find_with_work(&JsString::from("q"), 0, true, |_| Err::<(), _>("work")),
             Err("work")
         ));
-        for source in [r"(a|b)+\1", r"((a)+)+\1", r"(?:(a+)\1){2}", r"((?=a)a)+\1"] {
+        for source in [
+            r"(?:(?:(a|b)+\1)|)*",
+            r"(?:(?:((a)+)+\1)|)*",
+            r"(?:(?:(?:(a+)\1){2})|)*",
+            r"((?=a)a)+\1",
+        ] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_with_work(
@@ -3398,9 +3638,9 @@ mod tests {
         }
         for source in [
             r"(a)(b)((\1)|\2)+",
-            r"(a)(b)(a\1+\2)+",
+            r"(?:(?:(a)(b)(a\1+\2)+)|)*",
             r"(a)(b)((?=a)\1\2)+",
-            r"(?:(a)(b)(\b\1\2)+){2}",
+            r"(?:(?:(?:(a)(b)(\b\1\2)+){2})|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -3589,7 +3829,7 @@ mod tests {
             }
         }
         for source in [
-            r"(?:(a)(b)(a(\1)\4\2)+){2}",
+            r"(?:(?:(?:(a)(b)(a(\1)\4\2)+){2})|)*",
             r"(a)(b)((\1)|\2)+",
             r"(a)(b)((\1)+\4\2)+",
         ] {
@@ -3782,10 +4022,10 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(a)(b)((\1)\4\2)+){2}",
-            r"(?:(a)((\1)\3)+){2}",
-            r"(?:(a)(b)(\1(\2)\4)+){2}",
-            r"(?:(a)(b)(a(\1)\2)+){2}",
+            r"(?:(?:(?:(a)(b)((\1)\4\2)+){2})|)*",
+            r"(?:(?:(?:(a)((\1)\3)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(\1(\2)\4)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(a(\1)\2)+){2})|)*",
             r"(a)(b)((\1)|\2)+",
             r"(a)(b)((\1)+\2)+",
         ] {
@@ -3806,8 +4046,8 @@ mod tests {
             assert_eq!(work, 0, "{source}");
         }
         for (source, slots) in [
-            (r"(?:(a)(b)((\1)\k<x>\2)+){2}", &[3][..]),
-            (r"(?:(a)(b)(\1(\2)\k<x>)+){2}", &[3][..]),
+            (r"(?:(?:(?:(a)(b)((\1)\k<x>\2)+){2})|)*", &[3][..]),
+            (r"(?:(?:(?:(a)(b)(\1(\2)\k<x>)+){2})|)*", &[3][..]),
         ] {
             let source = JsString::from(source);
             let refs = named_escapes(&source);
@@ -3992,8 +4232,8 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(a)(b)((\1)\2)+){2}",
-            r"(?:(a)(b)(a\1()\2)+){2}",
+            r"(?:(?:(?:(a)(b)((\1)\2)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(a\1()\2)+){2})|)*",
             r"(a)(b)(\1|()\2)+",
             r"(a)(b)(\1+()\2)+",
         ] {
@@ -4158,9 +4398,9 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(a)(b)((\1)\2)+){2}",
-            r"(?:(a)(b)(a\1()\2)+){2}",
-            r"(?:(a)(b)(a\1\2)+){2}",
+            r"(?:(?:(?:(a)(b)((\1)\2)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(a\1()\2)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(a\1\2)+){2})|)*",
             r"(a)(b)(\1|\2)+",
             r"(a)(b)(\1+\2)+",
         ] {
@@ -4312,9 +4552,9 @@ mod tests {
         assert!(found.captures.iter().all(|r| *r == Some(0..0)));
         assert!(work < 150, "empty work {work}");
         for source in [
-            r"(?:(a)(b)(\1\2)+){2}",
-            r"(?:(a)(b)(?:()\1\2)+){2}",
-            r"(?:(a)(b)(?:a\1\2)+){2}",
+            r"(?:(?:(?:(a)(b)(\1\2)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(?:()\1\2)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(?:a\1\2)+){2})|)*",
             r"(a)(b)(?:\1|\2)+",
             r"(a)(b)(?:\1+\2)+",
             r"(a)(?:\1\2)+",
@@ -4480,12 +4720,12 @@ mod tests {
         assert!(found.captures.iter().all(|r| *r == Some(0..0)));
         assert!(work < 150, "empty work {work}");
         for source in [
-            r"(?:(a)(b)(?:\1\2)+){2}",
-            r"(?:(a)(?:a\1\1)+){2}",
+            r"(?:(?:(?:(a)(b)(?:\1\2)+){2})|)*",
+            r"(?:(?:(?:(a)(?:a\1\1)+){2})|)*",
             r"(a)(?:\1|\1)+",
             r"(a)(?:\1+\1)+",
-            r"(?:(a)(?:a\1()\1)+){2}",
-            r"(?:(a)(?:(\1)\1)+){2}",
+            r"(?:(?:(?:(a)(?:a\1()\1)+){2})|)*",
+            r"(?:(?:(?:(a)(?:(\1)\1)+){2})|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -4643,8 +4883,8 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(a)(()a\1())+){2}",
-            r"(?:(a)(()a\1\1())+){2}",
+            r"(?:(?:(?:(a)(()a\1())+){2})|)*",
+            r"(?:(?:(?:(a)(()a\1\1())+){2})|)*",
             r"(a)(()\1|b())+",
             r"(a)(()\1*())+",
             r"(a)(()\1(?=a))+",
@@ -4789,12 +5029,12 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(a)(a\1\1)+){2}",
-            r"(?:(a)(a\1)+){2}",
+            r"(?:(?:(?:(a)(a\1\1)+){2})|)*",
+            r"(?:(?:(?:(a)(a\1)+){2})|)*",
             r"(a)(\1|b)+",
             r"(a)(\1*)+",
-            r"(?:(a)(()a\1)+){2}",
-            r"(?:(a)(\1a())+){2}",
+            r"(?:(?:(?:(a)(()a\1)+){2})|)*",
+            r"(?:(?:(?:(a)(\1a())+){2})|)*",
             r"(a)(\1(?=a))+",
         ] {
             let mut work = 0;
@@ -4925,13 +5165,13 @@ mod tests {
         assert_eq!(found.range, 0..0);
         assert_eq!(&*found.captures, &[Some(0..0)]);
         for source in [
-            r"(?:(a)(a\1)+){2}",
-            r"(?:(a)(?:a\1\1)+){2}",
-            r"(?:(a)(?:a\1)+){2}",
+            r"(?:(?:(?:(a)(a\1)+){2})|)*",
+            r"(?:(?:(?:(a)(?:a\1\1)+){2})|)*",
+            r"(?:(?:(?:(a)(?:a\1)+){2})|)*",
             r"(a)(?:\1|b)+",
             r"(a)(?:\1*)+",
             r"(a)(?:\1(?=a))+",
-            r"(?:(a)(?:a(\1))+){2}",
+            r"(?:(?:(?:(a)(?:a(\1))+){2})|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -5101,9 +5341,9 @@ mod tests {
         );
         assert_eq!(work, 0);
         for source in [
-            r"(?:(?:(a)\1){2}){2}",
-            r"(?:(a)(?:\1)+){2}",
-            r"(?:(a)+\1){2}",
+            r"(?:(?:(?:(?:(a)\1){2}){2})|)*",
+            r"(?:(?:(?:(a)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(a)+\1){2})|)*",
             r"(?=(a))\1+",
             r"(a)\2+",
         ] {
@@ -5414,10 +5654,10 @@ mod tests {
             "host"
         );
         for source in [
-            r"(?:(?:(a|b)|c)(?:\1)+){2}",
-            r"(?:(?:a|(b|c))(?:\1)+){2}",
-            r"(?:((a|b)(c|d)|e)(?:\1)+){2}",
-            r"(?:(a|b)(c|d)(?:\1)+){2}",
+            r"(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(?:a|(b|c))(?:\1)+){2})|)*",
+            r"(?:(?:(?:((a|b)(c|d)|e)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(a|b)(c|d)(?:\1)+){2})|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -5972,9 +6212,9 @@ mod tests {
             100000
         );
         for text in [
-            r"(?:(\w)(?:\1)+){2}",
-            r"(?:^([ab])(?:\1)+){2}",
-            r"(?:([ab]|c)(?:\1)+){2}",
+            r"(?:(?:(?:(\w)(?:\1)+){2})|)*",
+            r"(?:(?:(?:^([ab])(?:\1)+){2})|)*",
+            r"(?:(?:(?:([ab]|c)(?:\1)+){2})|)*",
         ] {
             let mut work = 0;
             assert!(
@@ -6102,11 +6342,11 @@ mod tests {
         let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
         assert!(matcher.find(&JsString::from("aa"), 0, false).is_none());
         for source in [
-            r"(?:(a)(?:\1)+){2}",
-            r"(?:(a|b)(?:\1)+){2}",
+            r"(?:(?:(?:(a)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(a|b)(?:\1)+){2})|)*",
             r"(?<x>a)\k<x>",
-            r"(?:([ab])(?:\1)+){2}",
-            r"(?:^(a)(?:\1)+){2}",
+            r"(?:(?:(?:([ab])(?:\1)+){2})|)*",
+            r"(?:(?:(?:^(a)(?:\1)+){2})|)*",
             r"(a)\2",
             "(a)",
         ] {

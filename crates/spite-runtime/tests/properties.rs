@@ -211,8 +211,8 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         number(&format!("let o = {{}}; o.{name} = 3; o.{name}"), 3.0);
     }
     for source in [
-        "'abc'.match('(?:(?:x(x|yz)){2}){2}')",
-        "'abc'.matchAll('(?:(?:x(x|yz)){2}){2}').next()",
+        r"'abc'.match('(?:(?:(?:(?:x(x|yz)){2}){2})|)*')",
+        r"'abc'.matchAll('(?:(?:(?:(?:x(x|yz)){2}){2})|)*').next()",
     ] {
         assert!(
             matches!(

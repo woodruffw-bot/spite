@@ -122,15 +122,15 @@ fn optional_host_work_covers_full_sticky_runs_and_remaining_group_features_stay_
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^(a[b]|c)+$/.test('ab')",
-        r"/(a[b]|a)+c/.test('abc')",
-        r"/c(a[b]|c)+/.test('cab')",
-        r"/(ab|cd)+/.test('ab')",
-        r"/(a\bb|c)+/.test('ab')",
-        r"/(a[b]$|c)+/.test('ab')",
-        r"/(?:(?:(a[b])+(cd)+){2}){2}/.test('abcd')",
-        r"/(?:(?<n>a[b])+\k<n>){2}/.test('ab')",
-        r"/(?:(a[b])(?:\1)+){2}/.test('abab')",
+        r"/(?:(?:^(a[b]|c)+$)|)*/.test('ab')",
+        r"/(?:(?:(a[b]|a)+c)|)*/.test('abc')",
+        r"/(?:(?:c(a[b]|c)+)|)*/.test('cab')",
+        r"/(?:(?:(ab|cd)+)|)*/.test('ab')",
+        r"/(?:(?:(a\bb|c)+)|)*/.test('ab')",
+        r"/(?:(?:(a[b]$|c)+)|)*/.test('ab')",
+        r"/(?:(?:(?:(?:(a[b])+(cd)+){2}){2})|)*/.test('abcd')",
+        r"/(?:(?:(?:(?<n>a[b])+\k<n>){2})|)*/.test('ab')",
+        r"/(?:(?:(?:(a[b])(?:\1)+){2})|)*/.test('abab')",
         r"/(a[b])+/u.test('ab')",
         r"/(|a)*/.test('')",
     ] {

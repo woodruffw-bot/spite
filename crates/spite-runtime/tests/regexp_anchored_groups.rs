@@ -121,14 +121,14 @@ fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/(?:(?:^(a+[b]+)$){2}){2}/.test('ab')",
-        "/^(a+b)*$/.test('ab')",
-        "/(?:(?:^a(a+b+)$){2}){2}/.test('aab')",
-        "/(?:(?:^(a|bc)$){2}){2}/.test('a')",
-        "/(?:^(?<n>a)$(?:\\k<n>)+){2}/.test('a')",
-        "/(?:(?:^((^a+b+))$){2}){2}/.test('ab')",
+        r"/(?:(?:(?:(?:^(a+[b]+)$){2}){2})|)*/.test('ab')",
+        r"/(?:(?:^(a+b)*$)|)*/.test('ab')",
+        r"/(?:(?:(?:(?:^a(a+b+)$){2}){2})|)*/.test('aab')",
+        r"/(?:(?:(?:(?:^(a|bc)$){2}){2})|)*/.test('a')",
+        r"/(?:(?:(?:^(?<n>a)$(?:\k<n>)+){2})|)*/.test('a')",
+        r"/(?:(?:(?:(?:^((^a+b+))$){2}){2})|)*/.test('ab')",
         "/^(a+b)$/u.test('ab')",
-        r"/(?:^((a)(?:\1)+)$){2}/.test('aa')",
+        r"/(?:(?:(?:^((a)(?:\1)+)$){2})|)*/.test('aa')",
     ] {
         assert!(
             matches!(

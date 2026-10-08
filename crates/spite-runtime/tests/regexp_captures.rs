@@ -82,11 +82,11 @@ fn many_flat_captures_and_plans_survive_collection_without_default_count_quota()
 #[test]
 fn named_quantified_and_backreference_patterns_remain_unsupported() {
     for source in [
-        "/(?:(?<x>a)(?:\\k<x>)+){2}/.test('a')",
-        "/(ab|c)*/.test('a')",
-        "/(?:(?:a(a|bc)){2}){2}/.test('a')",
-        "/([a]b|c)*/.test('a')",
-        r"/(?:(a)(?:\1)+){2}/.test('aa')",
+        r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|)*/.test('a')",
+        r"/(?:(?:(ab|c)*)|)*/.test('a')",
+        r"/(?:(?:(?:(?:a(a|bc)){2}){2})|)*/.test('a')",
+        r"/(?:(?:([a]b|c)*)|)*/.test('a')",
+        r"/(?:(?:(?:(a)(?:\1)+){2})|)*/.test('aa')",
         "/(a)/u.test('a')",
     ] {
         assert!(

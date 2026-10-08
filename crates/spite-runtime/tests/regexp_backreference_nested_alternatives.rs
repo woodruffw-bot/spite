@@ -124,9 +124,9 @@ fn explicit_nested_choice_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn quantified_reference_bodies_and_lookaround_remain_unsupported() {
     for source in [
-        r"/(?:(?:(a|b)|c)(?:\1)+){2}/.test('aa')",
-        r"/(?:(?:a|(b|c))(?:\1)+){2}/.test('bb')",
-        r"/(?:((a|b)(c|d)|e)(?:\1)+){2}/.test('acac')",
+        r"/(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|)*/.test('aa')",
+        r"/(?:(?:(?:(?:a|(b|c))(?:\1)+){2})|)*/.test('bb')",
+        r"/(?:(?:(?:((a|b)(c|d)|e)(?:\1)+){2})|)*/.test('acac')",
         r"/(?:(?:(?<x>a)|(?<x>b))|(?<x>c))\k<x>/u.test('cc')",
         r"/(?=(a|b))\1/.test('aa')",
     ] {
