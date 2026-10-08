@@ -1229,8 +1229,20 @@ without capture effects under the zero-progress rule, even when the assertion
 would fail. This preserves full-input sticky boundaries and defined-empty versus
 undefined result slots without replaying a mandatory count. Root lookups,
 assertion work and buffers receive opt-in charges. Captured empty assertion
-siblings remain iterative, including 100,000 groups. Alternatives, nested
-quantifiers, lookaround/scoped modifiers and Unicode matching remain pending.
+siblings remain iterative, including 100,000 groups.
+Deterministic repetition groups need not contain a reference themselves when the
+complete Pattern contains references elsewhere. Their original group entry owns
+the flat sequence instruction, including an empty body; actual unit/assertion
+instructions remain separate owned terms. The same checked widths and final
+capture spans supply outside references after the selected body count. Greedy
+and lazy retries clear later writes before reinstating final ranges, including
+mutually exclusive named slots. Empty required groups define empty final captures,
+while optional empty groups retain undefined slots under the zero-progress rule
+(RepeatMatcher, 22.2.2.3.1). Pure empty bodies satisfy huge finite minimums directly.
+Patterns without any reference retain their existing matchers. Deep capturing
+repetition groups remain iterative, including 100,000 enclosures. Alternatives,
+nested quantifiers, character-atom quantifiers in reference programs,
+lookaround/scoped modifiers and Unicode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

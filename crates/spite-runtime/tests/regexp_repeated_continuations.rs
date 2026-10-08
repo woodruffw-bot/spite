@@ -122,8 +122,8 @@ fn optional_full_suffix_work_aborts_and_other_group_compositions_stay_unsupporte
         r"/(ab)+(a)+/.test('aba')",
         r"/(ab)+a+/.test('aba')",
         r"/((ab|a)+)c/.test('abc')",
-        r"/(?<n>ab)+c\k<n>/.test('abc')",
-        r"/(ab)+\1/.test('abab')",
+        r"/(?:(?<n>ab)+c\k<n>){2}/.test('abc')",
+        r"/(?:(ab)+\1){2}/.test('abab')",
         r"/(ab)+c/u.test('abc')",
     ] {
         assert!(

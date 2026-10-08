@@ -133,7 +133,7 @@ fn repeated_reference_bodies_other_quantified_atoms_and_unicode_remain_unsupport
     for source in [
         r"/(?:(?:(a)\1){2}){2}/.test('aaaa')",
         r"/(?:(a)(?:\1)+){2}/.test('aa')",
-        r"/(a)+\1/.test('aa')",
+        r"/(?:(a)+\1){2}/.test('aa')",
         r"/(?=(a))\1+/.test('aa')",
         r"/(?<x>a)\k<x>+/u.test('aa')",
     ] {

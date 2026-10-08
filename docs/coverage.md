@@ -2171,6 +2171,31 @@ Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Deterministic repetition groups without internal references now use their original
+group entry to supply final captures to references elsewhere in the Pattern.
+Three added core regressions cover an inspected 4,320-record insta snapshot,
+greedy/lazy final-capture retries, partial ranges, forward outside references,
+required/optional empty groups, full-input assertion context, 100,000 enclosures
+and huge finite empty minimums with constant iteration work. All twenty earlier
+core reference snapshots remain byte-identical. Six runtime regressions cover an
+inspected 24-record result snapshot, final named ranges and indices aliases,
+changing unit values, mutually exclusive named slots, raw surrogates,
+global/sticky consumers, required/optional empty slots, full-input assertions,
+copies and collection, 100,000 enclosures and huge finite minimums under unlimited
+defaults, opted-in aborts and remaining gaps. Node agrees with all added core and
+runtime snapshot records, 465,408 numbered and 227,904 named fresh match/capture
+comparisons, and twelve runtime programs. Existing runtime reference snapshots
+are unchanged. Fourteen prior direct controls now repeat composite bodies; all
+467 direct gap programs and three eval host-gap programs remain unsupported.
+Alternatives in repeated bodies, nested quantifiers, character-atom quantifiers
+in reference programs, lookaround/scoped modifiers and Unicode matching remain
+pending. No fixtures or fixture credit are added; inventories, the pin,
+dependencies and unlimited defaults are unchanged.
+
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

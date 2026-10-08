@@ -120,7 +120,7 @@ fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_sta
         r"/(|b)*a/.test('a')",
         r"/a(|b)+/.test('a')",
         r"/(^|$)+/.test('a')",
-        r"/(?<n>)+\k<n>/.test('')",
+        r"/(?:(?<n>)+\k<n>){2}/.test('')",
         r"/(?:()(?:\1)+){2}/.test('')",
         r"/(a*)*/.test('a')",
         r"/()+/u.test('')",
