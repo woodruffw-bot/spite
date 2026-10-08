@@ -119,7 +119,7 @@ fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
 #[test]
 fn consuming_forward_open_reads_variable_counts_mixed_outside_units_and_unicode_remain_pending() {
     for source in [
-        r"/(?<=(\2(a)){2})b/.exec('aaaab')",
+        r"/(?<=(\2(a)){1,2})b/.exec('aaaab')",
         r"/(?<=((a)\1){1,2})b/.exec('aab')",
         r"/(?<=((a)\2){1,2})b/.exec('aab')",
         r"/(a)(?<=(\1(b)\3){2})c/.exec('ababc')",

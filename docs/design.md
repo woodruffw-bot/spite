@@ -1999,8 +1999,8 @@ lookahead cannot use the backward Local proof: its completed target is already
 available, and its normal matching retains the reference width. Forward fixed
 assertions therefore keep their previous rejection boundary for consuming local
 reads, while nested backward assertions keep their own direction. Forward-lowered
-Empty targets represent unproved forward targets and remain excluded from
-consuming units. Enclosing Open targets are tracked separately and retain their
+Empty targets represent empty right-hand spans; nonempty right-hand targets
+retain their spans for the fixed backward width proof. Enclosing Open targets are tracked separately and retain their
 undefined value in either matching direction. Units mixing outside Input and Local reads,
 unproved variable counts, choices and Unicode modes remain pending. This extends
 preparation; matching operations, quotas, dependencies and native-stack behavior
@@ -2022,11 +2022,38 @@ or rightmost forward iteration. Fixed lookahead units can therefore use the Open
 proof independently of their enclosing backward assertion's direction. Negative
 failures retain scoped rollback and imported ranges.
 
-Forward targets without an enclosing span remain excluded from consuming units;
-units mixing outside Input reads with Open/Local reads, unproved variable counts,
+Right-hand targets retain their spans for fixed backward matching;
+units mixing outside Input reads with Open/Local/Future reads, unproved variable counts,
 choices and Unicode modes remain pending. Exact-zero bodies keep their existing
 skip path. No new matching algorithm, count expansion, default quota, dependency
 or native recursion is introduced.
+
+
+Right-hand same-unit references retain a Future capture span during preparation
+(22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). Backward matching has already completed that
+target, whereas forward matching has not reached it. The ordinary forward range
+resolver preserves its former undefined behavior, charges and capture effects.
+Known empty future spans remain Empty and consume zero in either direction.
+
+The shared fixed-unit proof scans terms from right to left. A Future reference's
+width is the checked suffix difference for its target span. Dependencies always
+point to later terms, so a flat suffix inventory also handles nested references
+without recursion or source expansion. Conversion to source-order prefix offsets
+retains exact capture positions. Consuming units still require equal representable
+counts; wholly empty units retain their required and optional effects.
+
+Fixed backward execution compares each Future read with its proved right-hand
+input range in the current iteration. Existing character/class/assertion checks
+validate that range and its dependencies before the assertion succeeds. Captures
+retain the leftmost backward iteration; fixed forward assertions skip still
+undefined Future reads and retain their rightmost capture effects. Negative and
+failed assertions use the existing scoped checkpoint rollback.
+
+Outside bare references can accompany these proved fixed units. Mixing outside
+reads into the same dependent unit, variable consuming counts, capture-dependent
+child assertions, unproved choices and Unicode modes remain pending. Checked
+width overflow does not establish a fixed proof. There is no default quota,
+dependency addition, repeated-source expansion or native recursion.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
