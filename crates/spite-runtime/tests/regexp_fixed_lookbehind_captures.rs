@@ -143,7 +143,7 @@ fn explicit_fixed_lookbehind_capture_work_aborts_before_last_index_and_handlers(
 fn repeated_captures_choices_inner_references_lookahead_and_unicode_remain_unsupported() {
     for source in [
         r"/(?<=(a)+)b/.exec('ab')",
-        r"/(?<=(a|b))c/.exec('ac')",
+        r"/(?<=(a|bb))c/.exec('ac')",
         r"/(?<=(a)\1)b/.exec('aab')",
         r"/(?<=(a(?=a)))b/.exec('ab')",
         r"/(?<=(a))b/u.exec('ab')",

@@ -134,7 +134,7 @@ fn explicit_fixed_lookbehind_work_aborts_before_last_index_and_handlers() {
 fn capturing_alternative_repeated_nested_and_unicode_lookbehind_remain_unsupported() {
     for source in [
         r"/(?<=(a+))b/.exec('ab')",
-        r"/(?<=a|b)c/.exec('ac')",
+        r"/(?<=a|bb)c/.exec('ac')",
         r"/(?<=a+)b/.exec('ab')",
         r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(?=a))a/.exec('a')",

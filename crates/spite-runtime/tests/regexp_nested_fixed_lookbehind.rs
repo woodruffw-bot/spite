@@ -137,7 +137,7 @@ fn explicit_nested_fixed_lookbehind_work_aborts_before_last_index_and_handlers()
 fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_remain_unsupported() {
     for source in [
         r"/(?<=(?<=(a+)))b/.exec('ab')",
-        r"/(?<=(?<=a|b))c/.exec('ac')",
+        r"/(?<=(?<=a|bb))c/.exec('ac')",
         r"/(?<=a(?<=a+))b/.exec('ab')",
         r"/(?<=a(?=a))b/.exec('ab')",
         r"/(?<=(?<=\1))(a)/.exec('a')",

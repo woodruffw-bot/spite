@@ -1516,8 +1516,8 @@ pending.
 
 Unrepeated captures inside fixed ordinary lookbehind share the existing capture
 trail (22.2.2.8). Preparation accepts capture open/close operations as zero-width
-while retaining the exact character/count proof. Internal references, choices,
-variable widths and nested lookahead remain excluded. Exact-count repeated
+while retaining the exact character/count proof. Internal references, variable widths and nested lookahead remain excluded.
+Equal-width choices are described below. Exact-count repeated
 character captures are described below.
 Each unrepeated capture therefore has the same absolute endpoints under forward
 and backward body evaluation. Exact-count character terms may occur inside an
@@ -1586,6 +1586,37 @@ indices and consumers unchanged. Comparison and capture work remains fallible
 and opt-in. Deep capture inventories, copies, collection and dropping stay flat;
 default quotas remain unlimited. Variable counts, branch/assertion/reference
 bodies, empty-only repeated bodies and nested counted sequences remain pending.
+
+
+Equal-width alternatives inside fixed ordinary lookbehind retain source order
+(Disjunction, 22.2.2.4; Assertion, 22.2.2.8). Preparation computes sparse backward
+suffix widths across the flat branch graph. Forward branch exits read their
+already-proved destination width; every alternative at a choice must have the
+same complete suffix width. Nested fixed assertion owners contribute zero and
+skip their complete regions, keeping preparation linear through deep nesting.
+Character/count widths remain checked, and internal references, variable counts,
+differing-width choices and nested lookahead remain excluded.
+
+The assertion owner retains its root branch inventory when its original entry
+becomes a jump. Execution uses flat pending branch records containing the branch
+instruction, next alternative, local input cursor and capture checkpoint. A
+failed branch restores completed partial captures, starts and named aliases
+before trying the next alternative. Each nested assertion frame records its
+branch-stack base so its retries and discard affect only that frame; parent
+branch continuations remain available. Source-order alternatives inspect fixed
+absolute positions without internal capture reads, and counted character
+captures retain their existing leftmost iteration ranges.
+
+A successful body discards its remaining branches before returning its assertion
+result. Outside continuation failure therefore cannot reopen an accepted positive
+lookbehind. Negative assertions invert the whole body result and restore all
+owned captures; nested failures propagate through the existing polarity and
+checkpoint rules. Empty same-width branches and boundary-only choices preserve
+zero-width positions. Parent progress and required/optional wrapper summaries
+remain unchanged. Actual branch selection, retries, discard and capture undo
+charge fallible opt-in work. Preparation, execution, copies and dropping remain
+flat; default quotas remain unlimited. Repeating a choice inside lookbehind and
+other unproved body forms remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
