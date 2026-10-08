@@ -379,6 +379,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute ordinary no-reference nested/sequential choices and multiple quantified units through the flat fallback with complete original captures, restored named slots and specialized matcher dispatch.
 - [x] Execute capture-free repeated alternatives that always consume input with variable-width source-order branches, flat iteration retries, exact greedy/lazy counts and complete outside captures.
 - [x] Execute nested/sequential capture-free choices inside repetition when every complete body path consumes input, including empty inner alternatives with shared mandatory terms and restored iteration contexts.
+- [x] Execute deterministic capture-free inner quantifiers inside progressing repeated bodies with required consuming terms, shared mandatory suffixes and restored inner/outer retry counts.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

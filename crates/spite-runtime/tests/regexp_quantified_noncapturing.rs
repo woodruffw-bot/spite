@@ -51,7 +51,7 @@ fn deeply_nested_plans_and_copies_survive_collection_with_unlimited_defaults() {
 #[test]
 fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
     for source in [
-        "/(?:(?:a)+)+/.test('a')",
+        "/(?:(?:a|b)+)+/.test('a')",
         "/(?:a*)?/.test('a')",
         "/(?:(?:a[b]|c)+){2}/.test('ab')",
         "/(?:(?:a|bc)+){2}/.test('a')",

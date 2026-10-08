@@ -1309,6 +1309,24 @@ counts and later parent closes before retries. Deep noncapturing wrappers and
 wide shared paths remain iterative, including 100,000 wrappers and 10,000
 branches. Default quotas remain disabled.
 
+Deterministic capture-free quantifiers compose inside progressing repeated
+bodies (RepeatMatcher, 22.2.2.3.1). Aggregate reference/term instructions with
+empty capture inventories retain their existing count retries. A required
+aggregate containing a character or prepared set establishes progress; optional
+aggregates, assertions and outside references rely on a consuming continuation.
+Owned character/set/assertion terms are skipped by ordinary traversal and do
+not independently establish progress. The backwards proof still checks all
+instructions and rejects capture effects, nested branch repetition and possibly
+empty complete body paths before charging accepted work.
+
+Body captures remain read-only, so inner count frames safely retain the outer
+iteration context. Retrying an inner aggregate restores that context before
+continuing the body; finishing the whole body increments only the outer count.
+Existing checkpoints undo later enclosing closes. This extends preparation
+without new execution instructions, contexts, source expansion or default
+quotas. Deep enclosing groups, long iteration runs and huge bounds remain
+iterative and fallible.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
