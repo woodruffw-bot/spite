@@ -132,7 +132,7 @@ fn mixed_progress_unknown_references_lookbehind_and_unicode_remain_unsupported()
     for source in [
         r"/(?:(?=(a))|b)+/.exec('a')",
         r"/(?:(?=(a))\1|b)+/.exec('a')",
-        r"/(?<=a)b/.exec('ab')",
+        r"/(?<=(a))b/.exec('ab')",
         r"/(?:(?=(a))|()){2}\1/u.exec('a')",
         r"/(?:(?=(a))|()){2}\1/v.exec('a')",
     ] {

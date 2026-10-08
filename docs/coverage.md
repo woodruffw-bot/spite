@@ -2545,6 +2545,41 @@ Stable and MSRV pass all 13,670 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+Fixed capture-free ordinary positive and negative lookbehind now execute character
+terms, word/input/line assertions and transparent noncapturing groups with proved
+UTF-16 widths. Full-input boundary context and flags are preserved; the outer
+cursor and capture state are unchanged. Parent repetition proofs summarize the
+whole body as zero-width. Captures, alternatives, repetition, references, nested
+assertions inside lookbehind and Unicode-mode matching remain pending and receive
+no passing credit.
+
+Three new core regressions include an inspected 5040-row match/capture snapshot,
+full-context boundaries, outside capture ranges, 100000 transparent groups, long
+fixed bodies, clone/drop behavior and fallible actual search/construction work.
+Six new runtime tests include an inspected 28-result snapshot, named aliases and
+outer choice rollback, zero-progress captures, lookahead composition, consumers,
+global/sticky state, long parent loops, copies and collection. Explicit work-limit
+aborts preserve lastIndex and bypass handlers; defaults remain unlimited.
+
+All 5040 core rows, 28 runtime results and ten complete runtime programs agree
+with Node. Another 738304 ordinary and 441456 named-binding range comparisons
+cover all ordinary flag combinations, every candidate start, sticky/search modes,
+short input cross-products and lone surrogates. Seven obsolete core controls and
+sixteen obsolete runtime programs in fourteen files now use valid pending
+capturing-lookbehind cases. All 117 earlier RegExp snapshots remain byte-identical.
+All 100 core backreference tests and 95 related runtime target groups pass.
+All 532 direct gap programs, eight ordered-coercion programs and four direct-eval
+programs retain their Unsupported boundary and conversion/marker state.
+All 17 unchanged whole originals in the pinned lookBehind directory were also
+reviewed, preserving source, metadata and copyright notices. Node passes all 34
+normal/strict variants; this increment reports all 34 as Unsupported because each
+original still needs an additional body feature. No fixture credit is added.
+The pinned fixture inventory and all dependencies are unchanged.
+
+Stable and MSRV pass all 13,670 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

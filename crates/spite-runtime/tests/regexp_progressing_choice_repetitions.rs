@@ -138,7 +138,7 @@ fn empty_capturing_and_nested_repeated_choices_remain_unsupported() {
         r"/(?:(?:((ab)|(a))+)|)*/.test('ab')",
         r"/(?:(?:((?:(?:ab|c)+){2}){2})|)*/.test('abcabc')",
         r"/(?:\1|b)+(a)/.test('ba')",
-        r"/(?:(?<=a)a|b)+/.test('a')",
+        r"/(?:(?<=(a))a|b)+/.test('a')",
         r"/(?:ab|c)+/u.test('ab')",
     ] {
         assert!(

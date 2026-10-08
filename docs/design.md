@@ -1386,8 +1386,8 @@ Nested contexts and retry depths remain flat. This preserves atomic positive
 assertions and prevents an outer continuation from reconsidering their captures.
 The same capture undo trail restores starts, ranges and named aliases. Deep
 positive and negative nesting, cloning and dropping remain iterative; host work
-is fallible and limits remain opt-in. Lookbehind, scoped modifiers, Unicode-mode
-matching and possibly empty complete repetition paths remain pending here.
+is fallible and limits remain opt-in. Other lookbehind bodies, scoped modifiers,
+Unicode-mode matching and possibly empty consuming repetition paths remain pending.
 
 
 Transparent repetition wrappers containing lookahead use a proven zero-width body
@@ -1431,6 +1431,34 @@ zero-progress iterations still leave all owned slots undefined. Parent consuming
 loops treat the whole child as zero-width and retain their per-iteration clearing.
 All preparation, execution, rollback, cloning and dropping remain flat, with
 fallible opt-in work accounting.
+
+Fixed capture-free ordinary positive and negative lookbehind use a separate flat
+control instruction (Assertion, 22.2.2.8). Preparation accepts character terms,
+ordinary word/input/line assertions and transparent noncapturing groups. It proves
+an exact UTF-16 width and rejects captures, alternatives, quantifiers, references
+and nested assertions inside the body. The original body entry jumps to its
+control; original surrounding captures, choices and continuation positions stay
+unchanged. Preparation records this control as a complex group, preventing a
+wrapper from treating its examined characters as forward consumption.
+
+For a candidate input position, the body has exactly one possible start. If the
+available prefix is shorter than the proved width, positive lookbehind fails and
+negative lookbehind succeeds. Otherwise the immutable flat body is evaluated from
+that start with the full input and existing IgnoreCase, Multiline and DotAll
+predicates. In this subset, the same fixed character positions and boundary
+positions are checked by backward Assertion evaluation; there are no capture or
+branch effects whose order could differ. Assertions retain their full input
+context rather than seeing a sliced prefix. The outer cursor and capture state
+are unchanged, and negative lookbehind inverts the result.
+
+Parent progress and zero-width proofs summarize the complete lookbehind body as
+one zero-width operation. Required transparent assertion repetitions therefore
+retain the existing finite collapse, optional zero-progress iterations keep
+undefined slots, and consuming parent loops use only their forward terms to
+establish progress. Execution charges the actual fixed body operations and unit
+comparisons; native stack usage stays flat through deep transparent groups,
+cloning and dropping. Limits remain opt-in, with unlimited defaults. Other
+lookbehind bodies and Unicode-mode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

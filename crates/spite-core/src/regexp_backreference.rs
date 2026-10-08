@@ -52,6 +52,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// success retains captures; negative assertions restore the input state.
 /// Transparent zero-width lookahead wrappers execute required repetitions once
 /// and skip optional zero-progress iterations with undefined capture slots.
+/// Fixed capture-free positive and negative lookbehind preserve full input
+/// context for character terms, boundary assertions and transparent groups.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -99,6 +101,11 @@ enum Instruction {
         negative: bool,
     },
     LookaheadEnd(usize),
+    Lookbehind {
+        body: usize,
+        width: usize,
+        negative: bool,
+    },
     Character(u16),
     Set(RegExpCharacterMatcher),
     // A sequence repetition owns these terms; ordinary traversal skips them.
@@ -153,8 +160,14 @@ enum PreparedInstruction {
     },
 }
 
+#[derive(Clone, Copy)]
+enum GroupAssertion {
+    Lookahead(bool),
+    Lookbehind(bool),
+}
+
 struct GroupFrame {
-    assertion: Option<bool>,
+    assertion: Option<GroupAssertion>,
     capture: Option<usize>,
     capture_start: usize,
     entry: usize,
@@ -1093,6 +1106,51 @@ impl Program {
                 }
                 return Ok(Some(end));
             }
+            Instruction::Lookbehind {
+                body,
+                width,
+                negative,
+            } => {
+                let mut matched = false;
+                if let Some(mut position) = cursor.checked_sub(*width) {
+                    matched = true;
+                    for term in &self.instructions[body + 1..pc] {
+                        charge(1)?;
+                        let accepted = match term {
+                            Instruction::Nop => true,
+                            Instruction::Character(expected) => {
+                                charge(1)?;
+                                let accepted = input.get(position).is_some_and(|&unit| {
+                                    canonicalize(unit, self.ignore_case) == *expected
+                                });
+                                position += 1;
+                                accepted
+                            }
+                            Instruction::Set(matcher) => {
+                                charge(1)?;
+                                let accepted = input
+                                    .get(position)
+                                    .is_some_and(|&unit| matcher.matches(unit));
+                                position += 1;
+                                accepted
+                            }
+                            Instruction::Assert(assertion) => {
+                                charge(2)?;
+                                assertion.accepts(input, position, self.multiline)
+                            }
+                            _ => unreachable!("lookbehind retains its fixed capture-free body"),
+                        };
+                        if !accepted {
+                            matched = false;
+                            break;
+                        }
+                    }
+                    debug_assert!(!matched || position == *cursor);
+                }
+                if matched == *negative {
+                    return Ok(None);
+                }
+            }
             Instruction::RepeatZeroWidth {
                 captures,
                 head,
@@ -1663,8 +1721,8 @@ fn quantify_reference_wrapper(
 }
 
 // Prove that every complete body path is zero-width. Prepared lookahead and
-// zero-width child repetitions summarize their bodies without examining input.
-fn quantify_zero_width_lookahead(
+// zero-width child repetitions and fixed lookbehind summarize their bodies.
+fn quantify_zero_width_assertion_wrapper(
     instructions: &mut Vec<PreparedInstruction>,
     body: Range<usize>,
     bounds: Bounds,
@@ -1682,6 +1740,17 @@ fn quantify_zero_width_lookahead(
     let mut found = false;
     while next > body.start {
         let pc = next - 1;
+        if let PreparedInstruction::Ready(Instruction::Lookbehind { body: child, .. }) =
+            &instructions[pc]
+        {
+            if *child < body.start || *child >= pc {
+                return None;
+            }
+            zero_width[*child] = zero_width[pc + 1];
+            found = true;
+            next = *child;
+            continue;
+        }
         if pc > body.start {
             if let PreparedInstruction::Ready(
                 Instruction::Lookahead {
@@ -1778,6 +1847,17 @@ fn quantify_progressing_choice(
     let mut next = body.end;
     while next > body.start {
         let pc = next - 1;
+        if let PreparedInstruction::Ready(Instruction::Lookbehind { body: child, .. }) =
+            &instructions[pc]
+        {
+            if *child < body.start || *child >= pc {
+                return None;
+            }
+            progresses[*child] = progresses[pc + 1];
+
+            next = *child;
+            continue;
+        }
         if pc > body.start {
             if let PreparedInstruction::Ready(
                 Instruction::Lookahead {
@@ -1978,8 +2058,17 @@ fn prepare(
                 let group = if source.get(cursor) == Some(&0x3f) {
                     assertion = match source.get(cursor + 1)? {
                         0x3a => None,
-                        0x3d => Some(false),
-                        0x21 => Some(true),
+                        0x3d => Some(GroupAssertion::Lookahead(false)),
+                        0x21 => Some(GroupAssertion::Lookahead(true)),
+                        0x3c => {
+                            let negative = match source.get(cursor + 2)? {
+                                0x3d => false,
+                                0x21 => true,
+                                _ => return None,
+                            };
+                            cursor += 1;
+                            Some(GroupAssertion::Lookbehind(negative))
+                        }
                         _ => return None,
                     };
                     cursor += 2;
@@ -2008,7 +2097,43 @@ fn prepare(
                 if let Some(index) = capture {
                     instructions.push(PreparedInstruction::Ready(Instruction::Close(index)));
                 }
-                if let Some(negative) = assertion {
+                if let Some(GroupAssertion::Lookbehind(negative)) = assertion {
+                    if quantifier(&source[cursor..]).is_some() {
+                        return None;
+                    }
+                    // A capture-free, straight-line fixed-width body has one
+                    // possible start. Evaluating it forward from that start
+                    // preserves the backward Assertion semantics (22.2.2.8).
+                    let mut width = 0usize;
+                    if !matches!(
+                        instructions[entry],
+                        PreparedInstruction::Ready(Instruction::Nop)
+                    ) {
+                        return None;
+                    }
+                    for instruction in &instructions[entry + 1..] {
+                        match instruction {
+                            PreparedInstruction::Ready(Instruction::Character(_))
+                            | PreparedInstruction::Set {
+                                repeated: false, ..
+                            } => {
+                                width = width.checked_add(1)?;
+                            }
+                            PreparedInstruction::Ready(
+                                Instruction::Nop | Instruction::Assert(_),
+                            ) => {}
+                            _ => return None,
+                        }
+                    }
+                    let control = instructions.len();
+                    instructions[entry] = PreparedInstruction::Ready(Instruction::Jump(control));
+                    instructions.push(PreparedInstruction::Ready(Instruction::Lookbehind {
+                        body: entry,
+                        width,
+                        negative,
+                    }));
+                    last_complex_group = Some(control);
+                } else if let Some(GroupAssertion::Lookahead(negative)) = assertion {
                     // Quantified lookahead is Annex B syntax, not core grammar.
                     if quantifier(&source[cursor..]).is_some() {
                         return None;
@@ -2038,7 +2163,7 @@ fn prepare(
                     let end = instructions.len();
                     let start = if capture.is_some() { entry - 1 } else { entry };
                     if last_complex_group.is_some_and(|pc| pc >= start)
-                        && quantify_zero_width_lookahead(
+                        && quantify_zero_width_assertion_wrapper(
                             &mut instructions,
                             start..end,
                             bounds,
@@ -2225,6 +2350,185 @@ mod tests {
     }
 
     #[test]
+    fn fixed_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=a)b",
+            r"(?<!a)b",
+            r"(?<=ab)c",
+            r"(?<!ab)c",
+            r"(?<=)a",
+            r"(?<!)a",
+            r"(?<=^a)b",
+            r"(?<!^a)b",
+            r"(?<=a$)",
+            r"(?<!a$)",
+            r"(?<=\ba)b",
+            r"(?<=a\b)b",
+            r"(?<=\Ba)b",
+            r"(?<=a\B)b",
+            r"(?<=[a-c])b",
+            r"(?<=[^a])b",
+            r"(?<=.)b",
+            r"(?<=[\s\S])b",
+            r"(?<=µ)Μ",
+            r"(?<=\w)a",
+            r"(?<=a(?:b))c",
+            r"a(?<=a)b",
+            r"(?<=a)(b)\1",
+            r"(a)(?<=a)\1",
+            r"(?:(?<=a)b|c)+d",
+            r"(?:(?<=a)|(?<!b)){2}b",
+            r"((?<=a)){2}b\1",
+            r"(?:(?<=a))*b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "",
+                    "a",
+                    "b",
+                    "ab",
+                    "abb",
+                    "abc",
+                    "qabc",
+                    "ababd",
+                    "\nab",
+                    "a\nb",
+                    "ab\n",
+                    " b ",
+                    "µΜ",
+                    "\u{2028}b",
+                    "\r\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_lookbehind_preserves_input_context_and_outside_capture_ranges() {
+        for (source, text, range, captures) in [
+            (r"(?<=a)(b)\1", "abb", 1..3, vec![Some(1..2)]),
+            (r"(a)(?<=a)\1", "aa", 0..2, vec![Some(0..1)]),
+            (r"((?<=a)){2}b\1", "ab", 1..2, vec![Some(1..1)]),
+            (r"(?:(?<=a)b|c)+d", "abcd", 1..4, vec![]),
+            (r"(?<=a\B)b", "ab", 1..2, vec![]),
+            (r"(?<=\ba)b", " ab", 2..3, vec![]),
+            (r"(?<=a$)", "a", 1..1, vec![]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        assert!(
+            ordinary(r"(?<=a\b)b", false, false, false)
+                .find(&JsString::from("ab"), 0, false)
+                .is_none()
+        );
+        assert!(
+            ordinary(r"(?<=^a)b", false, false, false)
+                .find(&JsString::from("qab"), 0, false)
+                .is_none()
+        );
+        assert_eq!(
+            ordinary(r"(?<=^a)b", false, true, false)
+                .find(&JsString::from("q\nab"), 0, false)
+                .unwrap()
+                .range,
+            3..4
+        );
+        for source in [
+            r"(?<=(a))b",
+            r"(?<=a|b)c",
+            r"(?<=a+)b",
+            r"(?<=a{1})b",
+            r"(?<=\1)(a)",
+            r"(?<=(?=a))a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn fixed_lookbehind_flat_wrappers_long_prefixes_and_actual_search_work_are_fallible() {
+        let source = format!(
+            "(?<={}{})b",
+            "(?:".repeat(100000),
+            "a".to_owned() + &")".repeat(100000)
+        );
+        let matcher = ordinary(&source, false, false, false);
+        assert_eq!(
+            matcher.find(&JsString::from("ab"), 0, false).unwrap().range,
+            1..2
+        );
+        let copy = matcher.clone();
+        drop(matcher);
+        assert_eq!(
+            copy.find(&JsString::from("ab"), 1, true).unwrap().range,
+            1..2
+        );
+        let source = "(?<=".to_owned() + &"a".repeat(10000) + ")b";
+        let matcher = ordinary(&source, false, false, false);
+        let text = JsString::from(("a".repeat(10000) + "b").as_str());
+        assert_eq!(
+            matcher.find(&text, 10000, true).unwrap().range,
+            10000..10001
+        );
+        let mut work = 0usize;
+        assert_eq!(
+            matcher
+                .find_with_work(&text, 10000, true, |n| {
+                    work += n;
+                    if work > 1000 {
+                        Err("explicit search work")
+                    } else {
+                        Ok(())
+                    }
+                })
+                .unwrap_err(),
+            "explicit search work"
+        );
+        let source = JsString::from(source.as_str());
+        assert_eq!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &source,
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Err("explicit construction work"),
+            )
+            .unwrap_err(),
+            "explicit construction work"
+        );
+    }
+
+    #[test]
     fn repeated_branch_capture_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -2339,7 +2643,7 @@ mod tests {
             .find(&JsString::from("a"), 0, true)
             .unwrap();
         assert!(found.captures.iter().all(|r| *r == Some(0..1)));
-        for source in [r"(a|)+", r"((a|b)*)+", r"((?<=a)a|b)+"] {
+        for source in [r"(a|)+", r"((a|b)*)+", r"((?<=(a))a|b)+"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -2461,7 +2765,7 @@ mod tests {
             r"(?:(?:a|b)*)+",
             r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
             r"(?:(?:\1|b)+c|d)+(a)",
-            r"(?:(?<=a)a|b)+",
+            r"(?:(?<=(a))a|b)+",
         ] {
             let mut work = 0;
             assert!(
@@ -2991,7 +3295,7 @@ mod tests {
         for source in [
             r"(?:(?:(a|b)+)|)*",
             r"(?:(?:(a+)+)|)*",
-            r"(?<=a)a",
+            r"(?<=(a))a",
             r"(?i:a)",
         ] {
             let mut work = 0;
@@ -3330,7 +3634,7 @@ mod tests {
         for source in [
             r"(?:(?:((a+)+)\1)|)*",
             r"(?:(?:(a|b)+\1)|)*",
-            r"((?<=a)a+)\1",
+            r"((?<=(a))a+)\1",
             r"((?i:a)+)\1",
         ] {
             let mut work = 0;
@@ -3496,7 +3800,7 @@ mod tests {
             r"(?:(?:(a|b)+\1)|)*",
             r"(?:(?:((a)+)+\1)|)*",
             r"(?:(?:(?:(a+)\1){2})|)*",
-            r"((?<=a)a)+\1",
+            r"((?<=(a))a)+\1",
         ] {
             let mut work = 0;
             assert!(
@@ -6901,9 +7205,9 @@ mod tests {
         for text in [
             r"(?=a)+",
             r"(?!a)?",
-            r"(?:(?<=a))*",
+            r"(?:(?<=(a)))*",
             r"(?:(?=(a))|b)+",
-            r"(?<=a)b",
+            r"(?<=(a))b",
             r"(?i:a)",
         ] {
             let mut charged = 0;

@@ -143,7 +143,7 @@ fn possibly_empty_bodies_inner_captures_and_nested_branch_loops_remain_unsupport
         r"/(?:(?:(?:(a+)b|c)+)|)*/.test('aab')",
         r"/(?:(?:((?:(?:a|b)+c|d)+){2})|)*/.test('abc')",
         r"/(?:\1*|b)+(a)/.test('ba')",
-        r"/(?:(?<=a)a+|b)+/.test('a')",
+        r"/(?:(?<=(a))a+|b)+/.test('a')",
         r"/(?:a+b|c)+/u.test('aab')",
     ] {
         assert!(
