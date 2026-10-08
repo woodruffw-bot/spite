@@ -394,6 +394,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute equal-width source-order alternatives inside fixed ordinary lookbehind with restored partial captures, scoped branch checkpoints and atomic nested assertion results.
 - [x] Execute exact-count ordinary boundary predicates inside fixed lookbehind with UTF-16 capture offsets, full input context and compact required zero-width iterations.
 - [x] Execute exact-count empty bodies inside fixed ordinary lookbehind with local empty capture boundaries, undefined zero-count slots and compact required iterations.
+- [x] Execute variable-count zero-width bodies inside ordinary lookbehind with skipped optional capture effects, required boundary predicates and compact unrepresentable counts.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

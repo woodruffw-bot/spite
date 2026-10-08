@@ -1665,6 +1665,26 @@ dropping remain flat. Actual capture work is fallible and opt-in, with unlimited
 defaults. Variable counts, repeated choices, internal references, nested counted
 sequences and lookaround inside a counted body remain pending.
 
+
+Variable counts of pure zero-width bodies in ordinary lookbehind use the same
+fixed-position plan (22.2.2.3.1, 22.2.2.8). After validating every term, the width
+proof accepts any bounds only when the complete iteration width is zero. Empty
+groups and ordinary boundary predicates cannot read captures or change input.
+Consuming sequences still require equal, representable minimum/maximum counts
+and checked total widths.
+
+RepeatMatcher rejects optional zero-progress iterations. A zero minimum therefore
+skips predicates and leaves repeated captures undefined, even for a greedy count.
+A positive minimum evaluates the body once and retains its empty ranges at the
+local boundary; repeated predicates and final capture effects are identical at
+that position. A minimum exceeding usize remains required rather than becoming
+unbounded or zero. Greedy/lazy, bounded/unbounded and oversized bounds need no
+expanded source, per-count allocation or count-dependent traversal. The existing
+source-order choices, atomic assertion results and negative rollback remain intact.
+Explicit host work quotas are fallible and opt-in; defaults stay unlimited.
+Variable consuming bodies, internal references, repeated choices, nested counted
+sequences and lookaround inside a counted body remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

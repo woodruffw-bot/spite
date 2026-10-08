@@ -148,7 +148,7 @@ fn explicit_empty_count_lookbehind_work_aborts_before_last_index_and_handlers() 
 #[test]
 fn variable_counts_nested_lookaround_repeated_choices_references_and_counts_remain_unsupported() {
     for source in [
-        r"/(?<=(){1,2})a/.exec('a')",
+        r"/(?<=((?=a)){1,2})a/.exec('a')",
         r"/(?<=((?=a)){2})a/.exec('a')",
         r"/(?<=(|){2})a/.exec('a')",
         r"/(?<=(\1){2})a()/.exec('a')",
