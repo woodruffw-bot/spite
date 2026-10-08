@@ -137,7 +137,7 @@ fn partial_nonempty_captures_and_other_reference_bodies_remain_unsupported() {
     for source in [
         r"/(?:(a)(b)((\1)\2)+){2}/.test('abab')",
         r"/(?:(a)(b)(\1(\2))+){2}/.test('abab')",
-        r"/(a)(b)(a\1()\2)+/.test('abab')",
+        r"/(?:(a)(b)(a\1()\2)+){2}/.test('abab')",
         r"/(a)(b)(\1|()\2)+/.test('abab')",
         r"/(a)(b)(\1+()\2)+/.test('abab')",
         r"/(a)(b)(\1()\2)+/u.test('abab')",

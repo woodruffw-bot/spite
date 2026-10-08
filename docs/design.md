@@ -1201,7 +1201,23 @@ empty iterations validate their constant empty effects directly even for huge
 finite minimums; optional zero counts retain undefined slots. Flat descriptor and
 range buffers keep 100,000 local references iterative without copied literals.
 Global slot/name lookup is prepared once, while each body is scanned linearly.
-Other consuming terms, alternatives and nested quantifiers remain pending.
+Repeated reference bodies also accept ordinary character units, character sets,
+class escapes and dot. Their descriptor retains a flat root instruction index;
+ordinary traversal skips those owned instructions while each body comparison
+executes them in source order. Predicates share the same pinned immutable cache
+as outside terms, retaining IgnoreCase and DotAll without source expansion.
+One-unit terms contribute exactly one prefix unit, so body capture spans and
+completed local targets use the same checked geometry. Actual input values may
+change between iterations when a set or dot accepts different units; relative
+ranges preserve those values for later references and final capture writes.
+Comparisons validate every body, and whole-body retry checkpoints restore the
+chosen final ranges. A consuming unit prevents a huge positive finite minimum
+from fitting short input, while a valid zero-count path leaves body slots
+undefined. Descriptor buffers, root lookup, predicate construction and actual
+comparisons receive opt-in charges. Deep capturing bodies remain iterative,
+including 100,000 partial enclosures, and 50,000 identical predicates share
+construction. Assertions inside repeated bodies, alternatives, nested quantifiers
+and Unicode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

@@ -134,8 +134,8 @@ fn optional_host_aborts_and_unsupported_bodies_remain_separate() {
         "/((a|bc)+)/.test('ab')",
         "/(a+b)/u.test('ab')",
         "/(?:((?<x>a))(?:\\k<x>)+){2}/.test('a')",
-        r"/(\1a)+/.test('a')",
-        r"/((a)\1)+/.test('aa')",
+        r"/(?:(\1a)+){2}/.test('a')",
+        r"/(?:((a)\1)+){2}/.test('aa')",
     ] {
         assert!(
             matches!(

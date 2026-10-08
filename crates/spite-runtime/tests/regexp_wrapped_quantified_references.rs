@@ -128,7 +128,7 @@ fn captured_or_composite_reference_repetitions_remain_unsupported() {
     for source in [
         r"/(?:(a)(\1)+){2}/.test('aa')",
         r"/(?:(a)(?:\1\1)+){2}/.test('aaa')",
-        r"/(a)(?:a\1)+/.test('aaa')",
+        r"/(?:(a)(?:a\1)+){2}/.test('aaa')",
         r"/(a)(?:\1|b)+/.test('aa')",
         r"/(a)(?:\1*)+/.test('aa')",
         r"/(?<x>a)(?:\k<x>)+/u.test('aa')",
