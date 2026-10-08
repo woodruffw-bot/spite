@@ -1291,6 +1291,24 @@ consumers. All frames and preparation remain iterative; default quotas stay
 disabled. Body captures, empty alternatives, inner choices and nested repetition
 still need broader repeat semantics.
 
+Whole-body progress is checked across nested and sequential capture-free choices
+(RepeatMatcher, 22.2.2.3.1). The unquantified body forms an acyclic forward graph.
+A backwards Boolean pass marks consuming units, follows checked forward jumps,
+requires every choice target to progress, and carries common suffix progress
+through assertions, references and no-op group entries. Thus an empty inner
+alternative is accepted when a shared mandatory term still consumes input.
+Captures, nested repetition instructions and possibly empty complete body paths
+are rejected before accepted host work is charged. The proof is linear in body
+instructions and choice edges, with flat temporary storage.
+
+A neutral original group entry uses a tail jump to its next instruction; an
+entry choice retains the prior tail-choice layout. Original branch positions
+stay stable. Existing iteration contexts and retry frames select nested and
+sequential source-order choices without another execution engine, restoring
+counts and later parent closes before retries. Deep noncapturing wrappers and
+wide shared paths remain iterative, including 100,000 wrappers and 10,000
+branches. Default quotas remain disabled.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

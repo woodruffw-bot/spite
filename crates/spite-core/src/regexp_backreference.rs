@@ -43,8 +43,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Character atoms can also be quantified. Repeated groups may supply captures
 /// to references outside their body. Body references use
 /// completed current-iteration captures; forward and open targets remain empty.
-/// Capture-free repeated choices accept variable-width branches when each branch
-/// contains a consuming unit, with flat source-order iteration retries.
+/// Capture-free repeated choices accept nested/sequential branches when every
+/// complete body path consumes a unit, with flat source-order iteration retries.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -1445,34 +1445,56 @@ fn quantify_progressing_choice(
     body: Range<usize>,
     bounds: Bounds,
 ) -> Option<()> {
-    let PreparedInstruction::Ready(Instruction::Choice(branches)) = &instructions[body.start]
-    else {
+    if !matches!(
+        instructions[body.start],
+        PreparedInstruction::Ready(Instruction::Nop | Instruction::Choice(_))
+    ) {
         return None;
-    };
-    // Each branch is capture-free and always consumes at least one unit.
-    // References may be empty, so they cannot establish forward progress.
-    for (ordinal, &start) in branches.iter().enumerate() {
-        let end = branches.get(ordinal + 1).map_or(body.end, |next| next - 1);
-        let mut consuming = false;
-        for instruction in &instructions[start..end] {
-            match instruction {
-                PreparedInstruction::Ready(Instruction::Character(_))
-                | PreparedInstruction::Set {
-                    repeated: false, ..
-                } => consuming = true,
-                PreparedInstruction::Ready(
-                    Instruction::Nop
-                    | Instruction::Assert(_)
-                    | Instruction::Reference(_)
-                    | Instruction::NamedReference(_),
-                ) => {}
-                _ => return None,
-            }
-        }
-        if !consuming {
-            return None;
-        }
     }
+    // The body is an acyclic forward graph. Propagate its minimum progress
+    // backwards, including common terms after possibly empty inner choices.
+    let mut progresses = vec![false; body.len() + 1];
+    for pc in body.clone().rev() {
+        let offset = pc - body.start;
+        progresses[offset] = match &instructions[pc] {
+            PreparedInstruction::Ready(Instruction::Character(_))
+            | PreparedInstruction::Set {
+                repeated: false, ..
+            } => true,
+            PreparedInstruction::Ready(
+                Instruction::Nop
+                | Instruction::Assert(_)
+                | Instruction::Reference(_)
+                | Instruction::NamedReference(_),
+            ) => progresses[offset + 1],
+            PreparedInstruction::Ready(Instruction::Jump(target)) => {
+                if *target <= pc || *target > body.end {
+                    return None;
+                }
+                progresses[*target - body.start]
+            }
+            PreparedInstruction::Ready(Instruction::Choice(branches)) => {
+                if branches.is_empty()
+                    || branches
+                        .iter()
+                        .any(|&target| target <= pc || target > body.end)
+                {
+                    return None;
+                }
+                branches
+                    .iter()
+                    .all(|&target| progresses[target - body.start])
+            }
+            _ => return None,
+        };
+    }
+    if !progresses[0] {
+        return None;
+    }
+    let original_is_choice = matches!(
+        instructions[body.start],
+        PreparedInstruction::Ready(Instruction::Choice(_))
+    );
     // Move the entry choice to the tail without moving any original branch
     // instruction or invalidating enclosing groups' original indices.
     let entry = instructions.len() + 1;
@@ -1488,7 +1510,11 @@ fn quantify_progressing_choice(
         end: entry + 2,
         bounds,
     }));
-    instructions.push(original);
+    instructions.push(if original_is_choice {
+        original
+    } else {
+        PreparedInstruction::Ready(Instruction::Jump(body.start + 1))
+    });
     Some(())
 }
 
@@ -1750,6 +1776,138 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn nested_progressing_choice_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?:(?:a|ab)b)+c",
+            r"(?:(?:ab|a)b)+c",
+            r"(?:(?:a|ab)b)+?c",
+            r"(?:(?:a|)b)+c",
+            r"(?:(?:a|)b)*c",
+            r"(?:(?:a|)b)*?c",
+            r"(?:a(?:b|c)|d)+e",
+            r"(?:a(?:b|c)|d)+?e",
+            r"(?:(?:a|)(?:b|c))+d",
+            r"(?:(?:a|)(?:b|c))+?d",
+            r"((?:(?:a|)b)+)c",
+            r"((?:(?:a|)b)+?)c",
+            r"(a)(?:(?:\1|)b)+\1",
+            r"(a)(?:(?:\1|)b)+?\1",
+            r"(a)(?:b(?:\1|))*\1",
+            r"(a)(?:b(?:\1|))*?\1",
+            r"(?:(?:[ab]|)a|b)+c",
+            r"(?:(?:.|)b)+c",
+            r"(?:(?:^|a)b)+",
+            r"(?:(?:\b|a)b)+",
+            r"(?:(?:a|)b){2,3}c",
+            r"(?:(?:a|)b){2,3}?c",
+            r"(?:(?:a|)b){999999999999999999999999999999}",
+            r"(?:(?:a|)b)*c|a",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "abb", "abbc", "abab", "ababc", "bbc", "aaba", "abbaa",
+                    "abcc", "\n\n", " b ", "µΜ",
+                ] {
+                    let text = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows, "{source:?} i={ignore_case} m={multiline} s={dot_all} input={text:?} start={start} sticky={sticky} {:?}", matcher.find(&text, start, sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nested_body_retries_restore_iteration_counts_and_common_prefix_ranges() {
+        for (source, text, range, captures) in [
+            (r"((?:(?:a|)b)+)c", "abbc", 0..4, vec![Some(0..3)]),
+            (r"((?:(?:a|)b)+?)c", "abbc", 0..4, vec![Some(0..3)]),
+            (r"(?:(?:a|ab)b)+c", "abbc", 0..4, vec![]),
+            (r"(?:(?:a|)(?:b|c))+d", "abcd", 0..4, vec![]),
+            (r"(a)(?:(?:\1|)b)+\1", "aaba", 0..4, vec![Some(0..1)]),
+            (r"(?:(?:a|)b)*c|a", "a", 0..1, vec![]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, true)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+    }
+
+    #[test]
+    fn whole_body_progress_checks_keep_deep_shared_paths_linear_and_fallible() {
+        let source = "(?:".repeat(100000) + "(?:a|)b" + &")".repeat(100000) + "+";
+        let matcher = ordinary(&source, false, false, false);
+        assert_eq!(
+            matcher.find(&JsString::from("abb"), 0, true).unwrap().range,
+            0..3
+        );
+        let source = "(?:".to_owned()
+            + &std::iter::repeat_n("(?:a|)b", 10000)
+                .collect::<Vec<_>>()
+                .join("|")
+            + ")+";
+        let mut work = 0;
+        let source = JsString::from(source.as_str());
+        let matcher = RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+            &source,
+            false,
+            false,
+            false,
+            RegExpBackreferenceNamedBindings::default(),
+            |n| {
+                work += n;
+                Ok::<_, ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert!(work < source.len() * 18 + 131072, "work {work}");
+        assert_eq!(
+            matcher.find(&JsString::from("b"), 0, true).unwrap().range,
+            0..1
+        );
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("b"), 0, true, |_| Err::<(), _>("work"))
+                .is_err()
+        );
+        for source in [
+            r"(?:(?:a|))*",
+            r"(?:(?:a|)(?:b|))+",
+            r"(?:(a|)b)+",
+            r"(?:(?:a|)b+)+",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    },
+                )
+                .unwrap()
+                .is_none()
+            );
+            assert_eq!(work, 0, "{source}");
+        }
     }
 
     #[test]
