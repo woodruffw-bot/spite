@@ -66,6 +66,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// unit and every capture are proved empty in either direction.
 /// Exact-zero native reference counts skip all reads and retain undefined owned
 /// captures even when their unexecuted unit could consume input.
+/// Exact-zero prepared progressing choices also compose with fixed lookbehind
+/// and enclosing pure-zero repetitions without entering a branch.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -1704,6 +1706,19 @@ impl Program {
                     current = child;
                     continue;
                 }
+                Instruction::RepeatChoice {
+                    captures,
+                    end,
+                    bounds,
+                    ..
+                } => {
+                    debug_assert_eq!((bounds.0, bounds.1), (Some(0), Some(0)));
+                    for slot in captures.clone() {
+                        self.write_capture(state, slot, None, charge)?;
+                    }
+                    current.pc = *end;
+                    continue;
+                }
                 Instruction::RepeatZeroWidth {
                     captures,
                     end,
@@ -2092,6 +2107,27 @@ fn quantify_zero_width_assertion_wrapper(
             continue;
         }
         if pc > body.start {
+            if let PreparedInstruction::Ready(Instruction::RepeatChoice {
+                body: child,
+                head,
+                end,
+                bounds: (Some(0), Some(0), _),
+                ..
+            }) = &instructions[pc - 1]
+            {
+                if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
+                    return None;
+                }
+                if !matches!(instructions.get(*child), Some(PreparedInstruction::Ready(Instruction::Jump(control))) if *control == pc - 1)
+                {
+                    return None;
+                }
+                // An exact-zero child never enters its progressing body.
+                found = true;
+                zero_width[*child] = zero_width[*end];
+                next = *child;
+                continue;
+            }
             if let PreparedInstruction::Ready(
                 Instruction::Lookahead {
                     body: child,
@@ -2399,6 +2435,27 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
             continue;
         }
         if pc > entry + 1 {
+            if let PreparedInstruction::Ready(Instruction::RepeatChoice {
+                body,
+                head,
+                end,
+                bounds: (Some(0), Some(0), _),
+                ..
+            }) = &instructions[pc - 1]
+            {
+                if *body <= entry || *body >= pc - 1 || *head != pc || *end != pc + 1 {
+                    return None;
+                }
+                if !matches!(instructions.get(*body), Some(PreparedInstruction::Ready(Instruction::Jump(control))) if *control == pc - 1)
+                {
+                    return None;
+                }
+                // RepeatMatcher cannot observe any skipped body's widths,
+                // assertions or reference reads (22.2.2.3.1).
+                tails.insert(*body, *tails.get(end)?);
+                next = *body;
+                continue;
+            }
             if let PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
                 body,
                 head,
@@ -2906,6 +2963,174 @@ mod tests {
     }
 
     #[test]
+    fn zero_count_lookbehind_choice_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(a|aa){0})b",
+            r"(?<=(a|aa){0}?)b",
+            r"(?<=((a)|(bb)){0})c",
+            r"(?<=(a|bb|ccc){0})b",
+            r"(?<=(a|aa){0}q)b",
+            r"(?<=q(a|aa){0})b",
+            r"(?<!((a|aa){0}){2}q)b",
+            r"(?<!(a|aa){0})b",
+            r"(?<=((a|aa){0}))b",
+            r"(?<=((a|aa){0}){2})b",
+            r"(?<=((a|aa){0}){0,2})b",
+            r"(?<=((a|aa){0})+)b",
+            r"(?<=((a|aa){0})*)b",
+            r"(?<=((a|aa){0}){2}q)b",
+            r"(?<=(a|aa){0}q|r)b",
+            r"(?<=(a|aa){0}q(?<=q))b",
+            r"(?<=((a)\2|b){0})c",
+            r"(?<=(a*?b|cc){0})b",
+            r"(?<=((?=a)a|b){0})c",
+            r"(?<=((?<=(a))a|b){0})c",
+            r"(?<=(a|aa){0})b\1",
+            r"(?<=((a|aa){0}){2})b\1\2",
+            r"(?<=((a|aa){0}){2}µ)Μ",
+            r"(?<=(a|aa){0}[\uD800])b",
+            r"(?<=(a|aa){0})",
+            r"(?:(?<=((a|aa){0}){2})b|a)+c",
+            r"(?=(?<=(a|aa){0})b)b",
+            r"((?<=((a|aa){0}){2})){2}b",
+            r"((a|aa){0}){2}b",
+            r"((a|aa){0})*b",
+            r"(?:(a|aa){0}){2}b",
+            r"(a)(?<=(a\1|bb){0})b\1",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn zero_count_choices_keep_skipped_children_enclosing_empty_ranges_and_backward_prefixes() {
+        for (source, text, captures) in [
+            (r"(?<=(a|aa){0})b", "qb", vec![None]),
+            (r"(?<=((a|aa){0}))b", "qb", vec![Some(1..1), None]),
+            (r"(?<=((a|aa){0}){2})b", "qb", vec![Some(1..1), None]),
+            (r"(?<=((a|aa){0})*)b", "qb", vec![None, None]),
+            (r"(?<=((a|aa){0}){2}q)b", "qb", vec![Some(0..0), None]),
+            (r"(?<!((a|aa){0}){2}q)b", "xb", vec![None, None]),
+            (r"((a|aa){0}){2}b", "qb", vec![Some(1..1), None]),
+            (r"((a|aa){0})*b", "qb", vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 1, true)
+                .unwrap();
+            assert_eq!(found.range, 1..2, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let found = ordinary(r"(a)(?<=(a\1|bb){0})b\1", false, false, false)
+            .find(&JsString::from("aba"), 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..3);
+        assert_eq!(&*found.captures, &[Some(0..1), None]);
+        for source in [
+            r"(?<=(a|aa){1})b",
+            r"(?<=(a|aa){0,1})b",
+            r"(?<=(|a){0})b",
+            r"(?<=((?=a)\1){0})b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn zero_count_choices_deep_skipped_and_completed_captures_zero_bounds_clones_and_undo_are_flat()
+    {
+        let skipped = "(?:".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + "|bb)";
+        let matcher = ordinary(&format!("(?<={skipped}{{0}})c"), false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qc"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(Option::is_none));
+        let completed =
+            "(?:".to_owned() + &"(".repeat(100000) + "(?:a|bb){0}" + &")".repeat(100000) + ")";
+        let found = ordinary(&format!("(?<={completed}{{2}})b"), false, false, false)
+            .find(&JsString::from("qb"), 1, true)
+            .unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|r| r == &Some(1..1)));
+        let found = ordinary(&format!("(?<!{completed}{{2}}q)b"), false, false, false)
+            .find(&JsString::from("xb"), 1, true)
+            .unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(Option::is_none));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("qc"), 1, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit skipped-choice work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit skipped-choice work"
+        );
+        let matcher = ordinary(
+            &format!("(?<=(a|aa){{{}}})b", "0".repeat(10000)),
+            false,
+            false,
+            false,
+        );
+        let mut work = 0;
+        assert_eq!(
+            &*matcher
+                .find_with_work(&JsString::from("qb"), 1, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .unwrap()
+                .captures,
+            &[None]
+        );
+        assert!(work < 100);
+        let source =
+            "(?<=".to_owned() + &"(?:".repeat(10000) + "(a|aa){0}" + &"){2}".repeat(10000) + ")b";
+        assert_eq!(
+            &*ordinary(&source, false, false, false)
+                .find(&JsString::from("b"), 0, true)
+                .unwrap()
+                .captures,
+            &[None]
+        );
+    }
+
+    #[test]
     fn zero_count_lookbehind_reference_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -2993,7 +3218,7 @@ mod tests {
             r"(?<=((a)\2){0,1})b",
             r"(?<=((\2)a){1})b",
             r"(?<=(\2){0,2})b()",
-            r"(?<=(a|aa){0})b",
+            r"(?<=(|a){0})b",
             r"(?<=((?=a)\1){0})b",
         ] {
             assert!(

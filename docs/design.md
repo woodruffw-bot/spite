@@ -1805,6 +1805,25 @@ without source expansion, additional allocation or default host quotas. Optional
 counts that can run consuming reference units, outside reads at nonzero counts,
 unproved choices/lookahead and Unicode-mode matching remain pending.
 
+
+Exact-zero prepared progressing alternatives compose with zero-width repetitions
+and fixed ordinary lookbehind (22.2.2.3.1). Both preparation proofs summarize a
+child choice only when its minimum and maximum are exactly zero, its body/head/end
+positions are valid and its original root jumps to the owning control. The body
+cannot be observed, so its unequal widths, assertions and reference reads need
+no fixed-width proof. Each scan skips that complete child region once.
+
+The fixed matcher clears only the skipped owner's capture range and jumps to its
+end without opening a capture, entering a branch or comparing input. The existing
+forward executor already handles this zero-count choice; its enclosing pure-zero
+wrapper can now retain required empty ranges or skip optional effects. Assertion
+checkpoints preserve completed enclosing captures and restore negative/trailing
+predicate failures. Deep nesting, skipped/completed captures, clones, collection
+and dropping remain flat, with no new instruction, allocation or default quota.
+Pattern validation and native body preparation still apply. Nonzero/variable
+choices in lookbehind, unproved mixed empty/consuming choices, other unsupported
+bodies and Unicode modes remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
