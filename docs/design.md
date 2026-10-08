@@ -1994,15 +1994,14 @@ backward unit's exact ranges. Bare outside references can accompany proved units
 through the unchanged complete-owner width inventory. Negative/failed assertions
 retain existing checkpoint rollback and imported values.
 
-Width preparation receives the assertion's matching direction. A forward
-lookahead cannot use the backward Local proof: its completed target is already
-available, and its normal matching retains the reference width. Forward fixed
-assertions therefore keep their previous rejection boundary for consuming local
-reads, while nested backward assertions keep their own direction. Forward-lowered
+Width preparation receives the assertion's matching direction. Forward fixed
+units retain the checked consumed width of completed Local spans, while backward
+units read those still-unmatched targets as undefined. Nested assertions keep
+their own matching direction. Forward-lowered
 Empty targets represent empty right-hand spans; nonempty right-hand targets
 retain their spans for the fixed backward width proof. Enclosing Open targets are tracked separately and retain their
-undefined value in either matching direction. Units mixing outside Input and Local reads,
-unproved variable counts, choices and Unicode modes remain pending. This extends
+undefined value in either matching direction. Unproved variable counts, choices,
+capture-dependent child assertions and Unicode modes remain pending. This extends
 preparation; matching operations, quotas, dependencies and native-stack behavior
 are unchanged.
 
@@ -2107,6 +2106,30 @@ Variable consuming counts, unproved choices, capture-dependent child assertions
 and Unicode modes remain pending. Resolution uses flat vectors and charges their
 allocation and traversal. There is no default quota, new dependency, native
 recursion or repeated-source expansion.
+
+
+Fixed forward lookahead units can reference completed same-unit Local spans
+(22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The shared fixed-unit proof scans in the
+assertion's matching direction. Forward matching builds prefix widths and reads
+Local spans already completed to the left; backward matching builds suffix widths
+and reads Future spans already completed to the right. Dependencies always point
+to previously proved terms in that direction. The opposite direction remains
+undefined, as do enclosing Open spans and known-empty targets.
+
+Checked differences retain nested reference widths; source-order offsets identify
+actual current-unit capture ranges. Forward fixed execution compares each Local
+read with its completed left-hand range, while backward Local reads still consume
+zero. Existing predicates validate the terms, repetitions export their rightmost
+forward or leftmost backward unit, and enclosing capture spans retain their exact
+positions. A failed negative assertion restores completed owned effects through
+the existing checkpoint.
+
+Consuming units require equal representable counts and checked complete widths.
+All-zero required units retain one effect pass, even with unrepresentable counts;
+exact-zero units remain skipped. Outside-child capture-dependent lookahead widths,
+bare unproved capture reads, variable consuming counts, unproved choices and
+Unicode modes remain pending. This extends the shared proof and comparator
+without new dependencies, default quotas, source expansion or native recursion.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

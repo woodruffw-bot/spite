@@ -123,7 +123,7 @@ fn consuming_forward_open_reads_variable_counts_mixed_outside_units_and_unicode_
         r"/(?<=((a)\1){1,2})b/.exec('aab')",
         r"/(?<=((a)\2){1,2})b/.exec('aab')",
         r"/(a)(?<=(\1(b)\3){1,2})c/.exec('ababc')",
-        r"/(?<=((a)\2){2}(?=(((a)\5){2})))b/.exec('aaaab')",
+        r"/(?<=((a)\2){2}(?=(((a)\5){1,2})))b/.exec('aaaab')",
         r"/(?<=((a)\2){2})b/u.exec('aab')",
         r"/(?<=((a)\2){2})b/v.exec('aab')",
     ] {
