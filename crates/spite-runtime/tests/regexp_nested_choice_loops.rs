@@ -150,7 +150,7 @@ fn possibly_empty_paths_body_captures_lookaround_and_unicode_remain_unsupported(
         r"/(?:(?:(?:(a+)b|c)+)|)*/.test('aab')",
         r"/(?:(?:(?:(?:(a)|b)+c|d)+)|)*/.test('abc')",
         r"/(?:\1*|b)+(a)/.test('ba')",
-        r"/(?:(?=a)a+|b)+/.test('a')",
+        r"/(?:(?<=a)a+|b)+/.test('a')",
         r"/(?:(?:a|aa)+b|c)+/u.test('aab')",
     ] {
         assert!(

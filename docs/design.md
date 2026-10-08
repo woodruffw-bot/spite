@@ -1366,6 +1366,29 @@ zero-count aggregate clears. Open and forward references observe cleared current
 iteration targets. All execution and rollback remain iterative, with fallible
 work accounting and unlimited defaults.
 
+
+Positive and negative ordinary lookahead compose with choices, captures,
+references and proven progressing repetitions (Assertion, 22.2.2.8). The original
+assertion entry jumps to a flat control instruction. Its body ends at an explicit
+assertion terminal; original branch positions and exit targets remain stable.
+Preparation remembers complex group controls so deterministic wrapper checks do
+not rescan nested assertion bodies. A parent repetition skips a proven assertion
+body and uses only its continuation to establish consumption: examining input
+never proves progress. Quantified lookahead remains outside the core grammar.
+
+Assertion contexts retain the input position, capture checkpoint, enclosing choice
+count, iteration record and iteration checkpoint. Body success discards its retry
+frames and restores the input/iteration position. Positive success keeps captures,
+including ranges extending beyond the whole match; negative success restores
+captures and fails. Exhausted body choices unwind before outer choices: negative
+failure succeeds with the original captures, while positive failure propagates.
+Nested contexts and retry depths remain flat. This preserves atomic positive
+assertions and prevents an outer continuation from reconsidering their captures.
+The same capture undo trail restores starts, ranges and named aliases. Deep
+positive and negative nesting, cloning and dropping remain iterative; host work
+is fallible and limits remain opt-in. Lookbehind, scoped modifiers, Unicode-mode
+matching and possibly empty complete repetition paths remain pending here.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

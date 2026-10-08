@@ -48,6 +48,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Deterministic inner quantifiers compose with these body paths.
 /// Branch loops nest through flat parent-linked contexts. Body captures reset
 /// per iteration, and retries restore previous starts, ranges and named aliases.
+/// Positive and negative lookahead use flat atomic assertion contexts. Positive
+/// success retains captures; negative assertions restore the input state.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -80,6 +82,13 @@ enum Instruction {
         bounds: Bounds,
     },
     RepeatChoiceEnd(usize),
+    Lookahead {
+        body: usize,
+        head: usize,
+        end: usize,
+        negative: bool,
+    },
+    LookaheadEnd(usize),
     Character(u16),
     Set(RegExpCharacterMatcher),
     // A sequence repetition owns these terms; ordinary traversal skips them.
@@ -135,6 +144,7 @@ enum PreparedInstruction {
 }
 
 struct GroupFrame {
+    assertion: Option<bool>,
     capture: Option<usize>,
     capture_start: usize,
     entry: usize,
@@ -151,6 +161,7 @@ impl GroupFrame {
         let entry = instructions.len();
         instructions.push(PreparedInstruction::Ready(Instruction::Nop));
         Self {
+            assertion: None,
             capture,
             capture_start,
             entry,
@@ -181,6 +192,7 @@ impl GroupFrame {
 }
 
 struct ChoiceFrame {
+    assertion_depth: usize,
     instruction: usize,
     checkpoint: usize,
     iteration_checkpoint: usize,
@@ -194,6 +206,16 @@ struct ChoiceIteration {
     instruction: usize,
     count: usize,
     start: usize,
+}
+
+#[derive(Clone, Copy)]
+struct AssertionContext {
+    instruction: usize,
+    cursor: usize,
+    checkpoint: usize,
+    frames: usize,
+    iteration: Option<usize>,
+    iteration_checkpoint: usize,
 }
 
 enum PendingAlternative {
@@ -713,6 +735,7 @@ impl RegExpBackreferenceMatcher {
             changes: Vec::with_capacity(self.0.capture_count),
             iteration: None,
             iterations: Vec::new(),
+            assertions: Vec::new(),
         };
         charge(self.0.frame_capacity)?;
         let mut frames = Vec::<ChoiceFrame>::with_capacity(self.0.frame_capacity);
@@ -725,6 +748,7 @@ impl RegExpBackreferenceMatcher {
             let mut pc = 0;
             state.iteration = None;
             state.iterations.clear();
+            state.assertions.clear();
             loop {
                 if pc == self.0.instructions.len() {
                     return Ok(Some(RegExpBackreferenceMatch {
@@ -740,6 +764,28 @@ impl RegExpBackreferenceMatcher {
                     continue;
                 }
                 loop {
+                    // ECMA-262 22.2.2.8: exhausted assertion alternatives unwind
+                    // before trying any choice made outside the assertion.
+                    if let Some(context) = state.assertions.last().copied() {
+                        if context.frames == frames.len() {
+                            state.assertions.pop();
+                            self.0
+                                .restore_captures(&mut state, context.checkpoint, &mut charge)?;
+                            state.iterations.truncate(context.iteration_checkpoint);
+                            state.iteration = context.iteration;
+                            cursor = context.cursor;
+                            let Instruction::Lookahead { end, negative, .. } =
+                                self.0.instructions[context.instruction]
+                            else {
+                                unreachable!("assertion retains its entry")
+                            };
+                            if negative {
+                                pc = end;
+                                break;
+                            }
+                            continue;
+                        }
+                    }
                     let Some(frame) = frames.last_mut() else {
                         continue 'candidate;
                     };
@@ -748,6 +794,8 @@ impl RegExpBackreferenceMatcher {
                         .restore_captures(&mut state, frame.checkpoint, &mut charge)?;
                     state.iterations.truncate(frame.iteration_checkpoint);
                     state.iteration = frame.iteration;
+                    debug_assert!(state.assertions.len() >= frame.assertion_depth);
+                    state.assertions.truncate(frame.assertion_depth);
                     if let Some((next, end)) =
                         frame.retry(&self.0, input, &mut state, &mut charge)?
                     {
@@ -783,6 +831,7 @@ struct CaptureState {
     iteration: Option<usize>,
     // Immutable parent-linked records; retry checkpoints reclaim abandoned paths.
     iterations: Vec<ChoiceIteration>,
+    assertions: Vec<AssertionContext>,
 }
 
 impl Program {
@@ -820,6 +869,7 @@ impl Program {
         if can_enter && can_exit {
             charge(1)?;
             frames.push(ChoiceFrame {
+                assertion_depth: state.assertions.len(),
                 instruction: context.instruction,
                 checkpoint: state.changes.len(),
                 iteration_checkpoint: state.iterations.len(),
@@ -986,6 +1036,7 @@ impl Program {
             Instruction::Choice(alternatives) => {
                 charge(1)?;
                 frames.push(ChoiceFrame {
+                    assertion_depth: state.assertions.len(),
                     instruction: pc,
                     alternative: PendingAlternative::Choice {
                         next: 1,
@@ -996,6 +1047,39 @@ impl Program {
                     iteration: state.iteration,
                 });
                 return Ok(Some(alternatives[0]));
+            }
+            Instruction::Lookahead { head, .. } => {
+                charge(1)?;
+                state.assertions.push(AssertionContext {
+                    instruction: pc,
+                    cursor: *cursor,
+                    checkpoint: state.changes.len(),
+                    frames: frames.len(),
+                    iteration: state.iteration,
+                    iteration_checkpoint: state.iterations.len(),
+                });
+                return Ok(Some(*head));
+            }
+            Instruction::LookaheadEnd(entry) => {
+                let context = state
+                    .assertions
+                    .pop()
+                    .expect("assertion body retains its entry");
+                debug_assert_eq!(context.instruction, *entry);
+                let Instruction::Lookahead { end, negative, .. } = self.instructions[*entry] else {
+                    unreachable!("assertion retains its entry")
+                };
+                // Lookahead commits its first successful path. Outer failure
+                // cannot reconsider assertion captures (22.2.2.8).
+                frames.truncate(context.frames);
+                state.iterations.truncate(context.iteration_checkpoint);
+                state.iteration = context.iteration;
+                *cursor = context.cursor;
+                if negative {
+                    self.restore_captures(state, context.checkpoint, charge)?;
+                    return Ok(None);
+                }
+                return Ok(Some(end));
             }
             Instruction::RepeatChoice { .. } => {
                 charge(1)?;
@@ -1177,6 +1261,7 @@ impl Program {
                 if next.is_some() {
                     charge(1)?;
                     frames.push(ChoiceFrame {
+                        assertion_depth: state.assertions.len(),
                         instruction: pc,
                         checkpoint,
                         iteration_checkpoint: state.iterations.len(),
@@ -1259,6 +1344,7 @@ impl Program {
                 if next.is_some() {
                     charge(1)?;
                     frames.push(ChoiceFrame {
+                        assertion_depth: state.assertions.len(),
                         instruction: pc,
                         checkpoint,
                         iteration_checkpoint: state.iterations.len(),
@@ -1566,6 +1652,21 @@ fn quantify_progressing_choice(
     while next > body.start {
         let pc = next - 1;
         if pc > body.start {
+            if let PreparedInstruction::Ready(Instruction::Lookahead {
+                body: child,
+                head,
+                end,
+                ..
+            }) = &instructions[pc - 1]
+            {
+                if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
+                    return None;
+                }
+                // Examining input does not establish progress for a repetition.
+                progresses[*child] = progresses[*end];
+                next = *child;
+                continue;
+            }
             if let PreparedInstruction::Ready(Instruction::RepeatChoice {
                 body: child,
                 head,
@@ -1706,7 +1807,7 @@ fn prepare(
     let mut named_references = bindings.references.iter().peekable();
     let mut instructions = Vec::new();
     let mut progresses = Vec::new();
-    let mut last_choice_repeat = None;
+    let mut last_complex_group = None;
     let mut groups = Vec::<GroupFrame>::new();
     let mut current = GroupFrame::open(None, 0, &mut instructions);
     let mut scopes = Vec::new();
@@ -1738,10 +1839,14 @@ fn prepare(
         cursor += 1;
         match unit {
             0x28 => {
+                let mut assertion = None;
                 let group = if source.get(cursor) == Some(&0x3f) {
-                    if source.get(cursor..cursor + 2)? != [0x3f, 0x3a] {
-                        return None;
-                    }
+                    assertion = match source.get(cursor + 1)? {
+                        0x3a => None,
+                        0x3d => Some(false),
+                        0x21 => Some(true),
+                        _ => return None,
+                    };
                     cursor += 2;
                     None
                 } else {
@@ -1752,14 +1857,15 @@ fn prepare(
                     Some(index)
                 };
                 scopes.push(ScopeStep::Open);
-                groups.push(std::mem::replace(
-                    &mut current,
-                    GroupFrame::open(group, group.unwrap_or(capture_count), &mut instructions),
-                ));
+                let mut child =
+                    GroupFrame::open(group, group.unwrap_or(capture_count), &mut instructions);
+                child.assertion = assertion;
+                groups.push(std::mem::replace(&mut current, child));
             }
             0x29 => {
                 let parent = groups.pop()?;
                 let group = std::mem::replace(&mut current, parent);
+                let assertion = group.assertion;
                 let entry = group.entry;
                 let capture_start = group.capture_start;
                 let capture = group.finish(&mut instructions);
@@ -1767,10 +1873,36 @@ fn prepare(
                 if let Some(index) = capture {
                     instructions.push(PreparedInstruction::Ready(Instruction::Close(index)));
                 }
-                if let Some((bounds, consumed)) = quantifier(&source[cursor..]) {
+                if let Some(negative) = assertion {
+                    // Quantified lookahead is Annex B syntax, not core grammar.
+                    if quantifier(&source[cursor..]).is_some() {
+                        return None;
+                    }
+                    let control = instructions.len() + 1;
+                    let original = std::mem::replace(
+                        &mut instructions[entry],
+                        PreparedInstruction::Ready(Instruction::Jump(control)),
+                    );
+                    instructions.push(PreparedInstruction::Ready(Instruction::LookaheadEnd(
+                        control,
+                    )));
+                    instructions.push(PreparedInstruction::Ready(Instruction::Lookahead {
+                        body: entry,
+                        head: control + 1,
+                        end: control + 2,
+                        negative,
+                    }));
+                    instructions.push(match original {
+                        PreparedInstruction::Ready(Instruction::Nop) => {
+                            PreparedInstruction::Ready(Instruction::Jump(entry + 1))
+                        }
+                        choice => choice,
+                    });
+                    last_complex_group = Some(control);
+                } else if let Some((bounds, consumed)) = quantifier(&source[cursor..]) {
                     let end = instructions.len();
                     let start = if capture.is_some() { entry - 1 } else { entry };
-                    if last_choice_repeat.is_some_and(|pc| pc >= start)
+                    if last_complex_group.is_some_and(|pc| pc >= start)
                         || quantify_reference_wrapper(
                             &mut instructions,
                             start..end,
@@ -1786,7 +1918,7 @@ fn prepare(
                             capture_start..capture_count,
                             &mut progresses,
                         )?;
-                        last_choice_repeat = Some(instructions.len() - 2);
+                        last_complex_group = Some(instructions.len() - 2);
                     }
                     cursor += consumed;
                 }
@@ -2061,7 +2193,7 @@ mod tests {
             .find(&JsString::from("a"), 0, true)
             .unwrap();
         assert!(found.captures.iter().all(|r| *r == Some(0..1)));
-        for source in [r"(a|)+", r"((a|b)*)+", r"((?=a)a|b)+"] {
+        for source in [r"(a|)+", r"((a|b)*)+", r"((?<=a)a|b)+"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -2183,7 +2315,7 @@ mod tests {
             r"(?:(?:a|b)*)+",
             r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
             r"(?:(?:\1|b)+c|d)+(a)",
-            r"(?:(?=a)a|b)+",
+            r"(?:(?<=a)a|b)+",
         ] {
             let mut work = 0;
             assert!(
@@ -2713,7 +2845,7 @@ mod tests {
         for source in [
             r"(?:(?:(a|b)+)|)*",
             r"(?:(?:(a+)+)|)*",
-            r"(?=a)a",
+            r"(?<=a)a",
             r"(?i:a)",
         ] {
             let mut work = 0;
@@ -3052,7 +3184,7 @@ mod tests {
         for source in [
             r"(?:(?:((a+)+)\1)|)*",
             r"(?:(?:(a|b)+\1)|)*",
-            r"((?=a)a+)\1",
+            r"((?<=a)a+)\1",
             r"((?i:a)+)\1",
         ] {
             let mut work = 0;
@@ -3218,7 +3350,7 @@ mod tests {
             r"(?:(?:(a|b)+\1)|)*",
             r"(?:(?:((a)+)+\1)|)*",
             r"(?:(?:(?:(a+)\1){2})|)*",
-            r"((?=a)a)+\1",
+            r"((?<=a)a)+\1",
         ] {
             let mut work = 0;
             assert!(
@@ -5344,7 +5476,7 @@ mod tests {
             r"(?:(?:(?:(?:(a)\1){2}){2})|)*",
             r"(?:(?:(?:(a)(?:\1)+){2})|)*",
             r"(?:(?:(?:(a)+\1){2})|)*",
-            r"(?=(a))\1+",
+            r"(?<=(a))\1+",
             r"(a)\2+",
         ] {
             let mut work = 0;
@@ -6231,6 +6363,173 @@ mod tests {
                 .is_none()
             );
             assert_eq!(work, 0);
+        }
+    }
+
+    #[test]
+    fn lookahead_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?=a)a",
+            r"(?!a)b",
+            r"a(?=(b))",
+            r"(?=(a|ab))\1b",
+            r"(?=(ab|a))\1b",
+            r"(?=(a+))a*b\1",
+            r"(?!(a)b)\1a",
+            r"(?=(?=(a|b))\1)\1",
+            r"(?!(?!a))a",
+            r"(a)(?=\1)\1",
+            r"(?=(a|b)+)\1",
+            r"(?:(?=(a|b))\1c)+",
+            r"(?:(?=(a|b))a|b)+c",
+            r"(?:(?!(a)b)a|b)+c",
+            r"(?=(a*))\1",
+            r"(?!(a+))b",
+            r"(?=(^a))\1",
+            r"(?=(.$))a",
+            r"(?=(\uD800))\1",
+            r"((?=(a))a)|b",
+            r"(?=(a|ab)+b)\1",
+            r"(?=)(?!)|a",
+            r"(?!(?=(a))\1b)a",
+            r"(?=(?!(a)b)a)a",
+            r"(?=(a))\1?b",
+            r"(a|b)(?=\1$)\1",
+            r"(?=(a))(?!b)\1",
+            r"(?:(?=(a))a)+b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, false, false),
+                (false, true, true),
+            ] {
+                let matcher =
+                    RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                        &JsString::from(source),
+                        ignore_case,
+                        multiline,
+                        dot_all,
+                        RegExpBackreferenceNamedBindings::default(),
+                        |_| Ok::<_, ()>(()),
+                    )
+                    .unwrap()
+                    .unwrap();
+                for text in [
+                    "", "a", "b", "ab", "abb", "aab", "aba", "baabac", "acbc", "abc", "AA", "q\na",
+                    "a\n", "\u{d7ff}", "😀",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true), (2, false)] {
+                        let result = matcher.find(&input, start, sticky);
+                        writeln!(rows, "{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {result:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn lookahead_commits_captures_and_unwinds_negative_and_nested_paths() {
+        fn find(source: &str, text: &str) -> Option<RegExpBackreferenceMatch> {
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &JsString::from(source),
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Ok::<_, ()>(()),
+            )
+            .unwrap()
+            .unwrap()
+            .find(&JsString::from(text), 0, true)
+        }
+        let x = find(r"a(?=(b))", "ab").unwrap();
+        assert_eq!(x.range, 0..1);
+        assert_eq!(&*x.captures, &[Some(1..2)]);
+        assert!(find(r"(?=(a|ab))\1b$", "abb").is_none());
+        assert_eq!(
+            find(r"(?=(ab|a))\1b$", "abb").unwrap().captures[0],
+            Some(0..2)
+        );
+        assert_eq!(find(r"(?!(a)b)\1a", "a").unwrap().captures[0], None);
+        assert_eq!(find(r"(?=(?!(a)b)a)a", "a").unwrap().captures[0], None);
+        assert_eq!(
+            find(r"(?:(?=(a|b))a|b)+c", "abc").unwrap().captures[0],
+            None
+        );
+        assert_eq!(
+            find(r"(?:(?=(a|b))\1c)+", "acbc").unwrap().captures[0],
+            Some(2..3)
+        );
+        assert_eq!(find(r"(?!(?=(a))\1b)a", "a").unwrap().captures[0], None);
+    }
+
+    #[test]
+    fn deeply_nested_lookahead_is_flat_and_progress_and_limits_remain_explicit() {
+        let source = JsString::from(
+            format!("{}(a){}\\1", "(?=".repeat(100000), ")".repeat(100000)).as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let clone = matcher.clone();
+        drop(matcher);
+        let found = clone.find(&JsString::from("a"), 0, true).unwrap();
+        assert_eq!(found.range, 0..1);
+        assert_eq!(found.captures[0], Some(0..1));
+        assert_eq!(
+            clone
+                .find_with_work(&JsString::from("a"), 0, true, |_| Err::<(), _>(
+                    "explicit work"
+                ))
+                .unwrap_err(),
+            "explicit work"
+        );
+        for depth in [100000, 100001] {
+            let source =
+                JsString::from(format!("{}b{}", "(?!".repeat(depth), ")".repeat(depth)).as_str());
+            let matcher =
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &source,
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                matcher.find(&JsString::from("a"), 0, true).is_some(),
+                depth % 2 == 1
+            );
+        }
+        for text in [
+            r"(?=a)+",
+            r"(?!a)?",
+            r"(?:(?=a))*",
+            r"(?:(?=(a))|b)+",
+            r"(?<=a)b",
+            r"(?i:a)",
+        ] {
+            let mut charged = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(text),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |n| {
+                        charged += n;
+                        Ok::<_, ()>(())
+                    },
+                )
+                .unwrap()
+                .is_none(),
+                "{text}"
+            );
+            assert_eq!(charged, 0);
         }
     }
 

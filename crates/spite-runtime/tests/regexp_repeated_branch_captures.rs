@@ -145,7 +145,7 @@ fn empty_complete_paths_lookaround_and_unicode_remain_distinct_from_match_failur
     for source in [
         r"/(a|)+/.test('ab')",
         r"/((a|b)*)+/.test('ab')",
-        r"/((?=a)a|b)+/.test('a')",
+        r"/((?<=a)a|b)+/.test('a')",
         r"/(a|b)+/u.test('ab')",
         r"/(a|b)+/v.test('ab')",
         r"/((?:a|b)?)+/.test('ab')",

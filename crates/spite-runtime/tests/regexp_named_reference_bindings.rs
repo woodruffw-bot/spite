@@ -130,7 +130,7 @@ fn wider_named_binding_compositions_keep_unsupported_outcomes() {
         r"/(?:(?:(?:(?:(?<x>a)|(?<x>b))(?:\k<x>)+){2})|)*/.test('bb')",
         r"/(?:(?:(?:(?<x>a)\k<x>|(?<x>b)(?:\k<x>)+){2})|)*/.test('bb')",
         r"/(?<x>a)\k<x>|(?<x>b)\k<x>/u.test('bb')",
-        r"/(?=(?<x>a))\k<x>/.test('a')",
+        r"/(?<=(?<x>a))\k<x>/.test('a')",
     ] {
         assert!(
             matches!(

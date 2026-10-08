@@ -131,7 +131,7 @@ fn general_repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported
         r"/(?:(?:(ab|a)+)|)*/.test('abaa')",
         r"/(?:(?:(a+)+)|)*/.test('aaaa')",
         r"/(?:(?:(?:(a+)(b*)){2})|)*/.test('aabb')",
-        r"/(?=a)a/.test('a')",
+        r"/(?<=a)a/.test('a')",
         r"/(?i:a)/.test('a')",
         r"/(a+)(b*)/u.test('ab')",
     ] {

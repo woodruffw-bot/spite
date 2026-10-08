@@ -131,7 +131,7 @@ fn nested_quantifiers_repeated_choices_and_lookaround_remain_unsupported() {
         r"/(?:(?:(a|b)+\1)|)*/.test('aabb')",
         r"/(?:(?:((a)+)+\1)|)*/.test('aaaa')",
         r"/(?:(?:(?:(a+)\1){2})|)*/.test('aaaaaaaa')",
-        r"/((?=a)a)+\1/.test('aaaa')",
+        r"/((?<=a)a)+\1/.test('aaaa')",
         r"/((?i:a))+\1/.test('aaaa')",
         r"/(a+)\1/u.test('aaaa')",
     ] {

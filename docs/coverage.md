@@ -2426,6 +2426,32 @@ Stable and MSRV pass all 13,580 unchanged pinned-corpus variants and the complet
 workspace target and documentation checks. Formatting, denied-warning Clippy,
 dependency policy, fixture inventories and all offline data checks pass.
 
+
+Ordinary positive and negative lookahead now execute with atomic nested choices
+and flat assertion contexts (22.2.2.8). Positive success retains numbered/named
+captures while restoring the input position; negative assertions restore captures
+on either outcome. Failed assertion bodies unwind before outer alternatives.
+Assertions compose inside progressing repeated branches without treating examined
+input as consumed input. Lookbehind, scoped modifiers, Unicode-mode execution and
+possibly empty complete repetition bodies remain outside this increment.
+
+Three core regressions include an inspected 5040-record insta snapshot and
+100,000 positive / 100,001 negative nested assertions. Six runtime regressions
+include an inspected 26-result snapshot, capture ranges beyond the whole match,
+atomic branch choices, negative undefined slots, duplicate named aliases, indices,
+matchAll/replace/search/split, zero-width global/sticky state, copies and collection.
+Long repeated searches use unlimited defaults; an explicitly opted-in work limit
+aborts before lastIndex writes or JavaScript handlers. Independent Node checks
+agree on 738,304 ordinary and 467,424 named range comparisons, all snapshot rows
+and eleven complete runtime programs. Six core and fifteen runtime rejection
+controls now use valid pending lookbehind patterns. Earlier positive snapshots
+remain unchanged. This commit adds no fixture credit and changes no pin,
+inventory, dependency or default quota.
+
+Stable and MSRV pass all 13,580 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

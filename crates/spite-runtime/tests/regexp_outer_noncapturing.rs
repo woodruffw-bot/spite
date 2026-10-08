@@ -125,7 +125,7 @@ fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
         r"/(?:(?:((?:(?:(?:a|bc)+)){2}){2})|)*/.test('a')",
         r"/(?:(?:(?:(?:(?:(a+[b]+))){2}){2})|)*/.test('ab')",
         r"/(?:(?:((?:(?:(?:a+[b]+)){2}){2}){2})|)*/.test('ab')",
-        "/(?:a(?=b))/.test('ab')",
+        r"/(?:a(?<=b))/.test('ab')",
         "/(?:a+b)/u.test('ab')",
         r"/(?:(?:(?:(?:a+(?<x>b))\k<x>){2})|)*/.test('ab')",
     ] {

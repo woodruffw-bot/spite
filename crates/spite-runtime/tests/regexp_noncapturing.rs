@@ -50,7 +50,7 @@ fn other_group_productions_and_quantified_groups_remain_unsupported() {
         "/(?:(?:ab|c)*){2}/.test('a')",
         r"/(?:(?:((?:(?:a[b]|c){1}){2}){2})|)*/.test('a')",
         "/(?i:a)/.test('a')",
-        "/(?=a)/.test('a')",
+        r"/(?<=a)/.test('a')",
         r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|)*/.test('a')",
         "/(?:a)/u.test('a')",
         "/(?:a)/v.test('a')",
