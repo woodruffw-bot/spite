@@ -128,9 +128,9 @@ fn explicit_ordinary_fallback_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn general_repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported() {
     for source in [
-        r"/(?:(?:(ab|a)+)|)*/.test('abaa')",
-        r"/(?:(?:(a+)+)|)*/.test('aaaa')",
-        r"/(?:(?:(?:(a+)(b*)){2})|)*/.test('aabb')",
+        r"/(?:(?:(ab|a)+)|){2,3}/.test('abaa')",
+        r"/(?:(?:(a+)+)|){2,3}/.test('aaaa')",
+        r"/(?:(?:(?:(a+)(b*)){2})|){2,3}/.test('aabb')",
         r"/(?<=(a+))a/.test('a')",
         r"/(?i:a)/.test('a')",
         r"/(a+)(b*)/u.test('ab')",

@@ -124,9 +124,9 @@ fn explicit_inner_choice_search_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn additional_inner_choices_and_repeated_reference_bodies_keep_unsupported_outcomes() {
     for source in [
-        r"/(?:(?:(?:(a|b)(c|d)(?:\1)+){2})|)*/.test('aca')",
-        r"/(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|)*/.test('aa')",
-        r"/(?:(?:(?:(?:(?<x>a)|(?<x>b))(?:\k<x>)+){2})|)*/.test('bb')",
+        r"/(?:(?:(?:(a|b)(c|d)(?:\1)+){2})|){2,3}/.test('aca')",
+        r"/(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|){2,3}/.test('aa')",
+        r"/(?:(?:(?:(?:(?<x>a)|(?<x>b))(?:\k<x>)+){2})|){2,3}/.test('bb')",
         r"/(?:(?<x>a)|(?<x>b))\k<x>/u.test('bb')",
     ] {
         assert!(

@@ -119,12 +119,12 @@ fn opted_in_construction_and_sticky_search_aborts_stay_host_failures() {
 #[test]
 fn captures_sets_multiple_quantifiers_assertions_and_choices_remain_explicit_gaps() {
     for source in [
-        r"/(?:(?:(?:(?:a+([b]+)){2}){2})|)*/.test('ab')",
-        r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|)*/.test('ab')",
-        r"/(?:(?:((?:(?:a+b+){2}){2}){2})|)*/.test('ab')",
-        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|)*/.test('ab')",
-        r"/(?:(?:((?:(?:^a+b[c]+$){2}){2}){2})|)*/.test('ab')",
-        r"/(?:(?:((?:(?:a+[b]+|b){2}){2}){2})|)*/.test('b')",
+        r"/(?:(?:(?:(?:a+([b]+)){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:((?:(?:a+b+){2}){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:((?:(?:^a+b[c]+$){2}){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:((?:(?:a+[b]+|b){2}){2}){2})|){2,3}/.test('b')",
         "/a+b/u.test('ab')",
     ] {
         assert!(

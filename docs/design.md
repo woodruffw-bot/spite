@@ -1351,8 +1351,9 @@ Captures compose inside progressing repeated branches and nested loops
 slot. Each loop owns the contiguous range through its closing capture count,
 including nested loops and aggregate quantifiers. This avoids copied inventories
 or rescanning proven child bodies. Open/close instructions preserve the minimum
-progress proof; references remain potentially empty. Possibly empty complete
-body paths are rejected before accepted host work is charged.
+progress proof; references remain potentially empty. Nullable complete body
+paths use the zero/one-minimum execution described below; larger required nullable
+counts still need an additional proof.
 
 Entering each body clears its capture range and named aliases. A captured root
 entry retains its open effect in loop metadata, while the original body positions
@@ -2130,6 +2131,33 @@ exact-zero units remain skipped. Outside-child capture-dependent lookahead width
 bare unproved capture reads, variable consuming counts, unproved choices and
 Unicode modes remain pending. This extends the shared proof and comparator
 without new dependencies, default quotas, source expansion or native recursion.
+
+
+Ordinary nullable repeated bodies use RepeatMatcher's optional-progress check
+(22.2.2.3.1). A prepared native loop retains whether every complete body path
+consumes input. Proven consuming loops keep arbitrary required counts and the
+existing remaining-input check. Nullable native loops accept zero/one minimums;
+they may execute one required empty iteration, while every later accepted
+iteration must consume input. Existing fixed and pure-zero plans retain their
+previous count behavior. Larger required nullable native counts still need a
+separate effect/progress proof; variable backward bodies and Unicode matching
+remain pending.
+
+The end instruction rejects an empty optional attempt before incrementing its
+count. Existing flat frames can retry the body's remaining branches or inner
+counts and restore the attempt's capture starts, completed ranges, named aliases
+and parent iteration record. Greedy/lazy count decisions retain source order;
+failed empty attempts preserve the previous accepted iteration's effects. A
+required initial empty iteration exports its own ranges, and existing positive
+and negative assertion contexts retain their atomic commitment and rollback.
+
+Parent width proofs summarize prepared child loops once. A required child proves
+progress only when its body is itself proved consuming; nullable or optional
+children use the continuation's proof. This avoids assuming a nullable required
+child consumes input and keeps preparation and nesting flat. Count increments
+remain bounded by the entry's checked maximum and actual accepted consumption.
+The change uses the existing checkpoint mechanism, with no new dependencies,
+default resource quotas, source expansion or native recursion.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

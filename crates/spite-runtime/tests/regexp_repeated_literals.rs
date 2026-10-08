@@ -127,18 +127,18 @@ fn optional_host_work_covers_sticky_repetitions_and_remaining_groups_are_unsuppo
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:(?:^(ab|a)+$)|)*/.test('ab')",
-        r"/(?:(?:(ab|a)+c)|)*/.test('abc')",
-        r"/(?:(?:c(ab|a)+)|)*/.test('cab')",
-        r"/(?:(?:(a[bc]|d)+)|)*/.test('ab')",
-        r"/(?:(?:(ab|cd)+)|)*/.test('ab')",
-        r"/(?:(?:(a\bb|c)+)|)*/.test('ab')",
-        r"/(?:(?:(ab$|c)+)|)*/.test('ab')",
-        r"/(?:(?:(?:(?:(ab)+(cd)+){2}){2})|)*/.test('abcd')",
-        r"/(?:(?:(?:(?<n>ab)+\k<n>){2})|)*/.test('ab')",
-        r"/(?:(?:(?:(ab)(?:\1)+){2})|)*/.test('abab')",
+        r"/(?:(?:^(ab|a)+$)|){2,3}/.test('ab')",
+        r"/(?:(?:(ab|a)+c)|){2,3}/.test('abc')",
+        r"/(?:(?:c(ab|a)+)|){2,3}/.test('cab')",
+        r"/(?:(?:(a[bc]|d)+)|){2,3}/.test('ab')",
+        r"/(?:(?:(ab|cd)+)|){2,3}/.test('ab')",
+        r"/(?:(?:(a\bb|c)+)|){2,3}/.test('ab')",
+        r"/(?:(?:(ab$|c)+)|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(?:(ab)+(cd)+){2}){2})|){2,3}/.test('abcd')",
+        r"/(?:(?:(?:(?<n>ab)+\k<n>){2})|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(ab)(?:\1)+){2})|){2,3}/.test('abab')",
         r"/(ab)+/u.test('ab')",
-        r"/(|a)*/.test('')",
+        r"/(|a){2,3}/.test('')",
     ] {
         assert!(
             matches!(

@@ -128,11 +128,11 @@ fn explicit_empty_sibling_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn composite_reference_bodies_remain_unsupported_and_plain_failures_return_null() {
     for source in [
-        r"/(?:(?:(?:(a)(()\1\1())+){2})|)*/.test('aa')",
-        r"/(?:(?:(?:(a)(()a\1())+){2})|)*/.test('aa')",
-        r"/(a)(()\1|b())+/.test('aa')",
-        r"/(a)(()\1*())+/.test('aa')",
-        r"/(a)(()\1(?=a))+/.test('aa')",
+        r"/(?:(?:(?:(a)(()\1\1())+){2})|){2,3}/.test('aa')",
+        r"/(?:(?:(?:(a)(()a\1())+){2})|){2,3}/.test('aa')",
+        r"/(a)(()\1|b()){2,3}/.test('aa')",
+        r"/(a)(()\1*()){2,3}/.test('aa')",
+        r"/(a)(()\1(?=a)){2,3}/.test('aa')",
         r"/(a)(()\1())+/u.test('aa')",
     ] {
         assert!(

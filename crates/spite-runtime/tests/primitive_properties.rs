@@ -186,9 +186,9 @@ fn logical_assignment_can_skip_a_forbidden_primitive_write() {
 #[test]
 fn unavailable_regexp_operations_are_distinct_from_absent_and_annex_b_properties() {
     for source in [
-        r"'s'.matchAll('(?:(?:(?:(?:x(x|yz)){2}){2})|)*').next()",
-        r"'s'.search('(?:(?:(?:(?:x(x|yz)){2}){2})|)*')",
-        r"'s'.match('(?:(?:(?:(?:x(x|yz)){2}){2})|)*')",
+        r"'s'.matchAll('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}').next()",
+        r"'s'.search('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}')",
+        r"'s'.match('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}')",
     ] {
         assert!(
             matches!(

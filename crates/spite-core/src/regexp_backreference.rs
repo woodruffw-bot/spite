@@ -43,8 +43,10 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Character atoms can also be quantified. Repeated groups may supply captures
 /// to references outside their body. Body references use
 /// completed current-iteration captures; forward and open targets remain empty.
-/// Repeated choices accept nested/sequential capturing branches when every
-/// complete body path consumes a unit, with flat source-order iteration retries.
+/// Repeated choices accept nested/sequential capturing branches with flat
+/// source-order iteration retries. Proven progressing bodies retain arbitrary
+/// required counts. Nullable bodies accept zero/one minimums; optional empty
+/// iterations fail before exporting captures and retry their remaining paths.
 /// Deterministic inner quantifiers compose with these body paths.
 /// Fixed lookbehind also accepts proven nested zero-width repetitions with
 /// required empty capture effects and skipped optional slots.
@@ -62,8 +64,10 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Optional zero-progress iterations leave repeated captures undefined.
 /// Zero-width sequence counts and proven empty local references nest through
 /// the same flat wrapper plan.
-/// Counted lookbehind accepts same-body references when its complete repeated
-/// unit and every capture are proved empty in either direction.
+/// Exact backward units retain completed right-hand capture widths and immutable
+/// outside imports; left-hand and open references remain undefined. Fixed forward
+/// lookahead units retain their completed left-hand capture widths. Each proof
+/// follows the assertion's own matching direction without expanding references.
 /// Exact-zero native reference counts skip all reads and retain undefined owned
 /// captures even when their unexecuted unit could consume input.
 /// Exact-zero prepared progressing choices also compose with fixed lookbehind
@@ -103,6 +107,7 @@ enum Instruction {
         head: usize,
         end: usize,
         bounds: Bounds,
+        progresses: bool,
     },
     RepeatChoiceEnd(usize),
     RepeatZeroWidth {
@@ -947,6 +952,7 @@ impl Program {
             head,
             end,
             bounds: (min, max, greedy),
+            progresses,
             ..
         } = self.instructions[context.instruction]
         else {
@@ -955,7 +961,7 @@ impl Program {
         let Some(min) = min else {
             return Ok(None);
         };
-        if min.saturating_sub(context.count) > input.len() - cursor {
+        if progresses && min.saturating_sub(context.count) > input.len() - cursor {
             return Ok(None);
         }
         let can_exit = context.count >= min;
@@ -1227,9 +1233,22 @@ impl Program {
                 let mut context =
                     state.iterations[state.iteration.expect("choice body retains its repetition")];
                 debug_assert_eq!(context.instruction, *entry);
-                debug_assert!(*cursor > context.start);
-                // Each accepted body consumes at least one unit. Its count
-                // cannot exceed the input length or overflow usize.
+                let Instruction::RepeatChoice {
+                    bounds: (min, _, _),
+                    ..
+                } = self.instructions[*entry]
+                else {
+                    unreachable!("choice body retains its repetition entry")
+                };
+                // RepeatMatcher rejects an empty optional iteration before its
+                // captures can escape (22.2.2.3.1). The existing retry frames
+                // restore the attempt and can try a consuming sibling path.
+                if *cursor == context.start && context.count >= min.unwrap() {
+                    return Ok(None);
+                }
+                // A nullable native body requires at most one initial iteration;
+                // later accepted iterations consume input. The entry already
+                // checked count < max <= usize::MAX before attempting this body.
                 context.count += 1;
                 context.start = *cursor;
                 charge(1)?;
@@ -2664,7 +2683,7 @@ fn discard_skipped_regions(instructions: &mut [PreparedInstruction]) -> Option<(
     Some(())
 }
 
-fn quantify_progressing_choice(
+fn quantify_native_choice(
     instructions: &mut Vec<PreparedInstruction>,
     body: Range<usize>,
     bounds: Bounds,
@@ -2676,8 +2695,9 @@ fn quantify_progressing_choice(
         PreparedInstruction::Ready(Instruction::Nop | Instruction::Choice(_)) => None,
         _ => return None,
     };
-    // Treat an already proven child loop as one operation. Its
-    // required iterations consume input; optional iterations use the suffix.
+    // Treat a prepared child loop as one operation. Required iterations
+    // establish progress only for a proved consuming body; nullable or optional
+    // child loops use the suffix's proof.
     // Reuse preparation storage instead of rescanning or clearing child bodies.
     progresses.resize(instructions.len() + 1, false);
     progresses[body.end] = false;
@@ -2726,13 +2746,14 @@ fn quantify_progressing_choice(
                 head,
                 end,
                 bounds: (min, _, _),
+                progresses: child_progresses,
                 ..
             }) = &instructions[pc - 1]
             {
                 if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
                     return None;
                 }
-                progresses[*child] = *min != Some(0) || progresses[*end];
+                progresses[*child] = (*child_progresses && *min != Some(0)) || progresses[*end];
                 next = *child;
                 continue;
             }
@@ -2797,7 +2818,10 @@ fn quantify_progressing_choice(
             _ => return None,
         };
     }
-    if !progresses[body.start] {
+    let body_progresses = progresses[body.start];
+    // Required nullable counts beyond one need a separate effect/width proof.
+    // Zero/one minimums keep all later accepted iterations consuming input.
+    if !body_progresses && !matches!(bounds.0, Some(0 | 1)) {
         return None;
     }
     let original_is_choice = matches!(
@@ -2821,6 +2845,7 @@ fn quantify_progressing_choice(
         head: entry + 1,
         end: entry + 2,
         bounds,
+        progresses: body_progresses,
     }));
     instructions.push(if original_is_choice {
         original
@@ -3501,7 +3526,7 @@ fn prepare(
                         )
                         .is_none()
                     {
-                        quantify_progressing_choice(
+                        quantify_native_choice(
                             &mut instructions,
                             start..end,
                             bounds,
@@ -3666,6 +3691,232 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn nullable_choice_loops_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(?:a|)*",
+            "(a|)*",
+            "(a|)+",
+            "(a|)*?b",
+            "(a|)+?b",
+            "(a|){0,3}b",
+            "(a|){1,3}b",
+            "(a?|b)*c",
+            "((a?)|b)*c",
+            "((a)|)*\\2",
+            "(a)((\\1?)|b)*c",
+            "((a?)*|b)+c",
+            "((a|)*)+b",
+            "((a|)*b?)+c",
+            "((a|b?)*)+c",
+            "(?=((a|)*))\\1b",
+            "(?!((a|)*c))(a|)*b",
+            "(?:(?=(a?))a?|b)*c",
+            "(?:(\\1)|a)*c",
+            "((.*\\n?)*?)c",
+            "([a-z]|)*",
+            "(.|)*",
+            "([\\uD800]|)*",
+            "(?:(^)|a)*b",
+            "(?:(\\b)|a)*b",
+            "((a|)*b)+c",
+            "((a|)+b?)*c",
+            "((a|){0,3})+c",
+            "(?:(\\2)|a)*()b",
+            "(?<=((a|a*){1}){0})b",
+            "(?:a|())+b",
+            "(?:(?:a|())+)*b",
+            "((a|b)*)+",
+            "(?:(?:a|b)*)+",
+            "(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
+            "(?:(?:\\1|b)+c|d)+(a)",
+            "(?:a*b*)+",
+            "(?:(?:(?:(a+)b|c)+)|)*",
+            "(?:\\1*|b)+(a)",
+            "(?:(?:a|))*",
+            "(?:(?:a|)(?:b|))+",
+            "(?:(?:(?:(a|)b)+)|)*",
+            "(?:(?:(?:(?:a|)(b+))+)|)*",
+            "(?:ab|)+",
+            "(?:\\1|b)+(a)",
+            "(?:(?:((a)|(b))+)|)*",
+            "(?:(?:(?:(?:(ab)|c)+){2})|)*",
+            "(?:(?:(a|b)+)|)*",
+            "(?:(?:(a+)+)|)*",
+            "(?:(?:((a+)+)\\1)|)*",
+            "(?:(?:(a|b)+\\1)|)*",
+            "(?:(?:((a)+)+\\1)|)*",
+            "(?:(?:(?:(a+)\\1){2})|)*",
+            "(a)(b)((?=a)\\1\\2)+",
+            "(a)(b)(^\\1|\\2)+",
+            "(a)(b)(^\\1+\\2)+",
+            "(a)(b)((\\1)|\\2)+",
+            "(?:(?:(a)(b)(a\\1+\\2)+)|)*",
+            "(?:(?:(?:(a)(b)(\\b\\1\\2)+){2})|)*",
+            "(?:(?:(?:(a)(b)(a(\\1)\\4\\2)+){2})|)*",
+            "(a)(b)((\\1)+\\4\\2)+",
+            "(?:(?:(?:(a)(b)((\\1)\\4\\2)+){2})|)*",
+            "(?:(?:(?:(a)((\\1)\\3)+){2})|)*",
+            "(?:(?:(?:(a)(b)(\\1(\\2)\\4)+){2})|)*",
+            "(?:(?:(?:(a)(b)(a(\\1)\\2)+){2})|)*",
+            "(a)(b)((\\1)+\\2)+",
+            "(?:(?:(?:(a)(b)((\\1)\\2)+){2})|)*",
+            "(?:(?:(?:(a)(b)(a\\1()\\2)+){2})|)*",
+            "(a)(b)(\\1|()\\2)+",
+            "(a)(b)(\\1+()\\2)+",
+            "(?:(?:(?:(a)(b)(a\\1\\2)+){2})|)*",
+            "(a)(b)(\\1|\\2)+",
+            "(a)(b)(\\1+\\2)+",
+            "(?:(?:(?:(a)(b)(\\1\\2)+){2})|)*",
+            "(?:(?:(?:(a)(b)(?:()\\1\\2)+){2})|)*",
+            "(?:(?:(?:(a)(b)(?:a\\1\\2)+){2})|)*",
+            "(a)(b)(?:\\1|\\2)+",
+            "(a)(b)(?:\\1+\\2)+",
+            "(?:(?:(?:(a)(b)(?:\\1\\2)+){2})|)*",
+            "(?:(?:(?:(a)(?:a\\1\\1)+){2})|)*",
+            "(a)(?:\\1|\\1)+",
+            "(a)(?:\\1+\\1)+",
+            "(?:(?:(?:(a)(?:a\\1()\\1)+){2})|)*",
+            "(?:(?:(?:(a)(?:(\\1)\\1)+){2})|)*",
+            "(?:(?:(?:(a)(()a\\1())+){2})|)*",
+            "(?:(?:(?:(a)(()a\\1\\1())+){2})|)*",
+            "(a)(()\\1|b())+",
+            "(a)(()\\1*())+",
+            "(a)(()\\1(?=a))+",
+            "(?:(?:(?:(a)(a\\1\\1)+){2})|)*",
+            "(?:(?:(?:(a)(a\\1)+){2})|)*",
+            "(a)(\\1|b)+",
+            "(a)(\\1*)+",
+            "(?:(?:(?:(a)(()a\\1)+){2})|)*",
+            "(?:(?:(?:(a)(\\1a())+){2})|)*",
+            "(a)(\\1(?=a))+",
+            "(?:(?:(?:(a)(?:a\\1)+){2})|)*",
+            "(a)(?:\\1|b)+",
+            "(a)(?:\\1*)+",
+            "(a)(?:\\1(?=a))+",
+            "(?:(?:(?:(a)(?:a(\\1))+){2})|)*",
+            "(?:(?:(?:(?:(a)\\1){2}){2})|)*",
+            "(?:(?:(?:(a)(?:\\1)+){2})|)*",
+            "(?:(?:(?:(a)+\\1){2})|)*",
+            "(?:(?:(?:(?:(a|b)|c)(?:\\1)+){2})|)*",
+            "(?:(?:(?:(?:a|(b|c))(?:\\1)+){2})|)*",
+            "(?:(?:(?:((a|b)(c|d)|e)(?:\\1)+){2})|)*",
+            "(?:(?:(?:(a|b)(c|d)(?:\\1)+){2})|)*",
+            "(?:(?:(?:(\\w)(?:\\1)+){2})|)*",
+            "(?:(?:(?:^([ab])(?:\\1)+){2})|)*",
+            "(?:(?:(?:([ab]|c)(?:\\1)+){2})|)*",
+            "(?:(?=(a))|b)+",
+            "(?:(?:(?:(a|b)(?:\\1)+){2})|)*",
+            "(?:(?:(?:([ab])(?:\\1)+){2})|)*",
+            "(?:(?:(?:^(a)(?:\\1)+){2})|)*",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in ["", "a", "b", "c", "aa", "aab", "bbc", "abc", "Aaab", "a\nc"] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nullable_choice_loops_retry_empty_paths_and_restore_completed_iteration_captures() {
+        for (source, text, range, captures) in [
+            (r"(a|)*", "aa", 0..2, vec![Some(1..2)]),
+            (r"(a|)*", "", 0..0, vec![None]),
+            (r"(a|)+", "", 0..0, vec![Some(0..0)]),
+            (r"((a?)|b)*c", "bbc", 0..3, vec![Some(1..2), None]),
+            (r"((a)|)*\2", "aaa", 0..3, vec![Some(1..2), Some(1..2)]),
+            (r"((a?)*|b)+c", "bbc", 0..3, vec![Some(1..2), None]),
+            (r"(?=((a|)*))\1b", "aab", 0..3, vec![Some(0..2), Some(1..2)]),
+            (
+                r"(?!((a|)*c))(a|)*b",
+                "aab",
+                0..3,
+                vec![None, None, Some(1..2)],
+            ),
+            (r"(?:(\1)|a)*c", "aac", 0..3, vec![None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xd800, 0xdc00]);
+        let found = ordinary(r"([\uD800]|)*", false, false, false)
+            .find(&input, 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(&*found.captures, &[Some(1..2)]);
+        for source in [r"(a|){2}", r"((a?)|b){2,3}", r"(?<=(a|)+)b"] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn nullable_choice_loops_deep_slots_clones_negative_undo_and_explicit_work_stay_flat() {
+        let body = "(".repeat(100000) + "a|" + &")".repeat(100000);
+        let matcher = ordinary(&(body.clone() + "*"), false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("a"), 0, true).unwrap();
+        assert_eq!(found.range, 0..1);
+        assert!(found.captures.iter().all(|r| *r == Some(0..1)));
+        assert!(
+            copy.find(&JsString::from(""), 0, true)
+                .unwrap()
+                .captures
+                .iter()
+                .all(Option::is_none)
+        );
+        drop(copy);
+        let found = ordinary(&(body.clone() + "+"), false, false, false)
+            .find(&JsString::from(""), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        let found = ordinary(&("(?!".to_owned() + &body + "*q)a"), false, false, false)
+            .find(&JsString::from("a"), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
+        let matcher = ordinary(r"((a?)|b)*c", false, false, false);
+        let input = JsString::from(("b".repeat(50000) + "c").as_str());
+        let found = matcher.find(&input, 0, true).unwrap();
+        assert_eq!(found.range, 0..50001);
+        assert_eq!(&*found.captures, &[Some(49999..50000), None]);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
@@ -5939,7 +6190,7 @@ mod tests {
         for source in [
             r"(?<=(|a){1})b",
             r"(?<=((?=a)\1){1})b",
-            r"(?<=((a|a*){1}){0})b",
+            r"(?<=((a|a*){2,3}){0})b",
             r"(?<=a+)b",
         ] {
             assert!(
@@ -7108,10 +7359,10 @@ mod tests {
                 .is_none()
         );
         for source in [
-            r"(?:a|())+b",
+            r"(?:a|()){2,3}b",
             r"(?:(\1)|()){2}a()",
             r"(?<=((a)|()){2})a",
-            r"(?:(?:a|())+)*b",
+            r"(?:(?:a|()){2,3})*b",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -8886,7 +9137,7 @@ mod tests {
             .find(&JsString::from("a"), 0, true)
             .unwrap();
         assert!(found.captures.iter().all(|r| *r == Some(0..1)));
-        for source in [r"(a|)+", r"((a|b)*)+", r"((?<=(a+))a|b)+"] {
+        for source in [r"(a|){2,3}", r"((a|b)*){2,3}", r"((?<=(a+))a|b)+"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -9005,9 +9256,9 @@ mod tests {
                 .is_err()
         );
         for source in [
-            r"(?:(?:a|b)*)+",
-            r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
-            r"(?:(?:\1|b)+c|d)+(a)",
+            r"(?:(?:a|b)*){2,3}",
+            r"(?:(?:(?:(?:(a)|b)+c|d)+)|){2,3}",
+            r"(?:(?:\1|b){2,3}c|d)+(a)",
             r"(?:(?<=(a+))a|b)+",
         ] {
             let mut work = 0;
@@ -9140,10 +9391,10 @@ mod tests {
                 .is_err()
         );
         for source in [
-            r"(?:a*b*)+",
-            r"(?:(?:(?:(a+)b|c)+)|)*",
-            r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
-            r"(?:\1*|b)+(a)",
+            r"(?:a*b*){2,3}",
+            r"(?:(?:(?:(a+)b|c)+)|){2,3}",
+            r"(?:(?:(?:(?:(a)|b)+c|d)+)|){2,3}",
+            r"(?:\1*|b){2,3}(a)",
         ] {
             let mut work = 0;
             assert!(
@@ -9273,10 +9524,10 @@ mod tests {
                 .is_err()
         );
         for source in [
-            r"(?:(?:a|))*",
-            r"(?:(?:a|)(?:b|))+",
-            r"(?:(?:(?:(a|)b)+)|)*",
-            r"(?:(?:(?:(?:a|)(b+))+)|)*",
+            r"(?:(?:a|)){2,3}",
+            r"(?:(?:a|)(?:b|)){2,3}",
+            r"(?:(?:(?:(a|)b)+)|){2,3}",
+            r"(?:(?:(?:(?:a|)(b+))+)|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -9406,10 +9657,10 @@ mod tests {
             0..0
         );
         for source in [
-            r"(?:ab|)+",
-            r"(?:\1|b)+(a)",
-            r"(?:(?:((a)|(b))+)|)*",
-            r"(?:(?:(?:(?:(ab)|c)+){2})|)*",
+            r"(?:ab|){2,3}",
+            r"(?:\1|b){2,3}(a)",
+            r"(?:(?:((a)|(b))+)|){2,3}",
+            r"(?:(?:(?:(?:(ab)|c)+){2})|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -9536,8 +9787,8 @@ mod tests {
             .is_err()
         );
         for source in [
-            r"(?:(?:(a|b)+)|)*",
-            r"(?:(?:(a+)+)|)*",
+            r"(?:(?:(a|b)+)|){2,3}",
+            r"(?:(?:(a+)+)|){2,3}",
             r"(?<=(a+))a",
             r"(?i:a)",
         ] {
@@ -9875,8 +10126,8 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:((a+)+)\1)|)*",
-            r"(?:(?:(a|b)+\1)|)*",
+            r"(?:(?:((a+)+)\1)|){2,3}",
+            r"(?:(?:(a|b)+\1)|){2,3}",
             r"((?<=(a+))a+)\1",
             r"((?i:a)+)\1",
         ] {
@@ -10040,9 +10291,9 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:(a|b)+\1)|)*",
-            r"(?:(?:((a)+)+\1)|)*",
-            r"(?:(?:(?:(a+)\1){2})|)*",
+            r"(?:(?:(a|b)+\1)|){2,3}",
+            r"(?:(?:((a)+)+\1)|){2,3}",
+            r"(?:(?:(?:(a+)\1){2})|){2,3}",
             r"((?<=(a+))a)+\1",
         ] {
             let mut work = 0;
@@ -10256,10 +10507,10 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(a)(b)((?=a)\1\2)+",
+            r"(a)(b)((?=a)\1\2){2,3}",
             r"(a)(b)((?i:\1)\2)+",
-            r"(a)(b)(^\1|\2)+",
-            r"(a)(b)(^\1+\2)+",
+            r"(a)(b)(^\1|\2){2,3}",
+            r"(a)(b)(^\1+\2){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -10462,10 +10713,10 @@ mod tests {
             }
         }
         for source in [
-            r"(a)(b)((\1)|\2)+",
-            r"(?:(?:(a)(b)(a\1+\2)+)|)*",
-            r"(a)(b)((?=a)\1\2)+",
-            r"(?:(?:(?:(a)(b)(\b\1\2)+){2})|)*",
+            r"(a)(b)((\1)|\2){2,3}",
+            r"(?:(?:(a)(b)(a\1+\2)+)|){2,3}",
+            r"(a)(b)((?=a)\1\2){2,3}",
+            r"(?:(?:(?:(a)(b)(\b\1\2)+){2})|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -10654,9 +10905,9 @@ mod tests {
             }
         }
         for source in [
-            r"(?:(?:(?:(a)(b)(a(\1)\4\2)+){2})|)*",
-            r"(a)(b)((\1)|\2)+",
-            r"(a)(b)((\1)+\4\2)+",
+            r"(?:(?:(?:(a)(b)(a(\1)\4\2)+){2})|){2,3}",
+            r"(a)(b)((\1)|\2){2,3}",
+            r"(a)(b)((\1)+\4\2){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -10847,12 +11098,12 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:(?:(a)(b)((\1)\4\2)+){2})|)*",
-            r"(?:(?:(?:(a)((\1)\3)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(\1(\2)\4)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(a(\1)\2)+){2})|)*",
-            r"(a)(b)((\1)|\2)+",
-            r"(a)(b)((\1)+\2)+",
+            r"(?:(?:(?:(a)(b)((\1)\4\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)((\1)\3)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(\1(\2)\4)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(a(\1)\2)+){2})|){2,3}",
+            r"(a)(b)((\1)|\2){2,3}",
+            r"(a)(b)((\1)+\2){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -10871,8 +11122,8 @@ mod tests {
             assert_eq!(work, 0, "{source}");
         }
         for (source, slots) in [
-            (r"(?:(?:(?:(a)(b)((\1)\k<x>\2)+){2})|)*", &[3][..]),
-            (r"(?:(?:(?:(a)(b)(\1(\2)\k<x>)+){2})|)*", &[3][..]),
+            (r"(?:(?:(?:(a)(b)((\1)\k<x>\2)+){2})|){2,3}", &[3][..]),
+            (r"(?:(?:(?:(a)(b)(\1(\2)\k<x>)+){2})|){2,3}", &[3][..]),
         ] {
             let source = JsString::from(source);
             let refs = named_escapes(&source);
@@ -11057,10 +11308,10 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:(?:(a)(b)((\1)\2)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(a\1()\2)+){2})|)*",
-            r"(a)(b)(\1|()\2)+",
-            r"(a)(b)(\1+()\2)+",
+            r"(?:(?:(?:(a)(b)((\1)\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(a\1()\2)+){2})|){2,3}",
+            r"(a)(b)(\1|()\2){2,3}",
+            r"(a)(b)(\1+()\2){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -11223,11 +11474,11 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:(?:(a)(b)((\1)\2)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(a\1()\2)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(a\1\2)+){2})|)*",
-            r"(a)(b)(\1|\2)+",
-            r"(a)(b)(\1+\2)+",
+            r"(?:(?:(?:(a)(b)((\1)\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(a\1()\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(a\1\2)+){2})|){2,3}",
+            r"(a)(b)(\1|\2){2,3}",
+            r"(a)(b)(\1+\2){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -11377,11 +11628,11 @@ mod tests {
         assert!(found.captures.iter().all(|r| *r == Some(0..0)));
         assert!(work < 150, "empty work {work}");
         for source in [
-            r"(?:(?:(?:(a)(b)(\1\2)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(?:()\1\2)+){2})|)*",
-            r"(?:(?:(?:(a)(b)(?:a\1\2)+){2})|)*",
-            r"(a)(b)(?:\1|\2)+",
-            r"(a)(b)(?:\1+\2)+",
+            r"(?:(?:(?:(a)(b)(\1\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(?:()\1\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(b)(?:a\1\2)+){2})|){2,3}",
+            r"(a)(b)(?:\1|\2){2,3}",
+            r"(a)(b)(?:\1+\2){2,3}",
             r"(a)(?:\1\2)+",
         ] {
             let mut work = 0;
@@ -11545,12 +11796,12 @@ mod tests {
         assert!(found.captures.iter().all(|r| *r == Some(0..0)));
         assert!(work < 150, "empty work {work}");
         for source in [
-            r"(?:(?:(?:(a)(b)(?:\1\2)+){2})|)*",
-            r"(?:(?:(?:(a)(?:a\1\1)+){2})|)*",
-            r"(a)(?:\1|\1)+",
-            r"(a)(?:\1+\1)+",
-            r"(?:(?:(?:(a)(?:a\1()\1)+){2})|)*",
-            r"(?:(?:(?:(a)(?:(\1)\1)+){2})|)*",
+            r"(?:(?:(?:(a)(b)(?:\1\2)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(?:a\1\1)+){2})|){2,3}",
+            r"(a)(?:\1|\1){2,3}",
+            r"(a)(?:\1+\1){2,3}",
+            r"(?:(?:(?:(a)(?:a\1()\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(?:(\1)\1)+){2})|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -11708,11 +11959,11 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:(?:(a)(()a\1())+){2})|)*",
-            r"(?:(?:(?:(a)(()a\1\1())+){2})|)*",
-            r"(a)(()\1|b())+",
-            r"(a)(()\1*())+",
-            r"(a)(()\1(?=a))+",
+            r"(?:(?:(?:(a)(()a\1())+){2})|){2,3}",
+            r"(?:(?:(?:(a)(()a\1\1())+){2})|){2,3}",
+            r"(a)(()\1|b()){2,3}",
+            r"(a)(()\1*()){2,3}",
+            r"(a)(()\1(?=a)){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -11854,13 +12105,13 @@ mod tests {
             Err("work")
         ));
         for source in [
-            r"(?:(?:(?:(a)(a\1\1)+){2})|)*",
-            r"(?:(?:(?:(a)(a\1)+){2})|)*",
-            r"(a)(\1|b)+",
-            r"(a)(\1*)+",
-            r"(?:(?:(?:(a)(()a\1)+){2})|)*",
-            r"(?:(?:(?:(a)(\1a())+){2})|)*",
-            r"(a)(\1(?=a))+",
+            r"(?:(?:(?:(a)(a\1\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(a\1)+){2})|){2,3}",
+            r"(a)(\1|b){2,3}",
+            r"(a)(\1*){2,3}",
+            r"(?:(?:(?:(a)(()a\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(\1a())+){2})|){2,3}",
+            r"(a)(\1(?=a)){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -11990,13 +12241,13 @@ mod tests {
         assert_eq!(found.range, 0..0);
         assert_eq!(&*found.captures, &[Some(0..0)]);
         for source in [
-            r"(?:(?:(?:(a)(a\1)+){2})|)*",
-            r"(?:(?:(?:(a)(?:a\1\1)+){2})|)*",
-            r"(?:(?:(?:(a)(?:a\1)+){2})|)*",
-            r"(a)(?:\1|b)+",
-            r"(a)(?:\1*)+",
-            r"(a)(?:\1(?=a))+",
-            r"(?:(?:(?:(a)(?:a(\1))+){2})|)*",
+            r"(?:(?:(?:(a)(a\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(?:a\1\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a)(?:a\1)+){2})|){2,3}",
+            r"(a)(?:\1|b){2,3}",
+            r"(a)(?:\1*){2,3}",
+            r"(a)(?:\1(?=a)){2,3}",
+            r"(?:(?:(?:(a)(?:a(\1))+){2})|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -12166,9 +12417,9 @@ mod tests {
         );
         assert_eq!(work, 0);
         for source in [
-            r"(?:(?:(?:(?:(a)\1){2}){2})|)*",
-            r"(?:(?:(?:(a)(?:\1)+){2})|)*",
-            r"(?:(?:(?:(a)+\1){2})|)*",
+            r"(?:(?:(?:(?:(a)\1){2}){2})|){2,3}",
+            r"(?:(?:(?:(a)(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a)+\1){2})|){2,3}",
             r"(?<=(a+))\1+",
             r"(a)\2+",
         ] {
@@ -12479,10 +12730,10 @@ mod tests {
             "host"
         );
         for source in [
-            r"(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|)*",
-            r"(?:(?:(?:(?:a|(b|c))(?:\1)+){2})|)*",
-            r"(?:(?:(?:((a|b)(c|d)|e)(?:\1)+){2})|)*",
-            r"(?:(?:(?:(a|b)(c|d)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:(?:a|(b|c))(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:((a|b)(c|d)|e)(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a|b)(c|d)(?:\1)+){2})|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -13037,9 +13288,9 @@ mod tests {
             100000
         );
         for text in [
-            r"(?:(?:(?:(\w)(?:\1)+){2})|)*",
-            r"(?:(?:(?:^([ab])(?:\1)+){2})|)*",
-            r"(?:(?:(?:([ab]|c)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(\w)(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:^([ab])(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:([ab]|c)(?:\1)+){2})|){2,3}",
         ] {
             let mut work = 0;
             assert!(
@@ -13449,7 +13700,7 @@ mod tests {
             r"(?=a)+",
             r"(?!a)?",
             r"(?:(?<=(a+)))*",
-            r"(?:(?=(a))|b)+",
+            r"(?:(?=(a))|b){2,3}",
             r"(?<=(a+))b",
             r"(?i:a)",
         ] {
@@ -13582,11 +13833,11 @@ mod tests {
         let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
         assert!(matcher.find(&JsString::from("aa"), 0, false).is_none());
         for source in [
-            r"(?:(?:(?:(a)(?:\1)+){2})|)*",
-            r"(?:(?:(?:(a|b)(?:\1)+){2})|)*",
+            r"(?:(?:(?:(a)(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:(a|b)(?:\1)+){2})|){2,3}",
             r"(?<x>a)\k<x>",
-            r"(?:(?:(?:([ab])(?:\1)+){2})|)*",
-            r"(?:(?:(?:^(a)(?:\1)+){2})|)*",
+            r"(?:(?:(?:([ab])(?:\1)+){2})|){2,3}",
+            r"(?:(?:(?:^(a)(?:\1)+){2})|){2,3}",
             r"(a)\2",
             "(a)",
         ] {

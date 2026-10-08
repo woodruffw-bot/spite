@@ -152,10 +152,10 @@ fn explicit_pure_zero_choice_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn mixed_empty_consuming_choices_internal_references_counted_behind_and_unicode_are_pending() {
     for source in [
-        r"/(?:a|())+b/.exec('ab')",
+        r"/(?:a|()){2,3}b/.exec('ab')",
         r"/(?:(\1)|()){2}a()/.exec('a')",
         r"/(?<=((a)|()){2})a/.exec('a')",
-        r"/(?:(?:a|())+)*b/.exec('ab')",
+        r"/(?:(?:a|()){2,3})*b/.exec('ab')",
         r"/(?:()|()){2}a/u.exec('a')",
         r"/(?:()|()){2}a/v.exec('a')",
     ] {

@@ -142,10 +142,10 @@ fn explicit_repeated_assertion_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported() {
     for source in [
-        r"/(a)(b)(^\1|\2)+/.test('abab')",
-        r"/(?:(?:(a)(b)(a+\1\2)+)|)*/.test('aabaab')",
-        r"/(a)(b)(^\1+\2)+/.test('abab')",
-        r"/(a)(b)((?=a)\1\2)+/.test('abab')",
+        r"/(a)(b)(^\1|\2){2,3}/.test('abab')",
+        r"/(?:(?:(a)(b)(a+\1\2)+)|){2,3}/.test('aabaab')",
+        r"/(a)(b)(^\1+\2){2,3}/.test('abab')",
+        r"/(a)(b)((?=a)\1\2){2,3}/.test('abab')",
         r"/(a)(b)((?i:\1)\2)+/.test('abab')",
         r"/(a)(b)(\b\1\2)+/u.test('aabaab')",
     ] {

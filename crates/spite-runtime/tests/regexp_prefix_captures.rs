@@ -130,10 +130,10 @@ fn optional_work_abort_and_remaining_nonliteral_prefixes_stay_host_failures() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:(?:(?:(?:([a])b+c+){2}){2})|)*/.test('ab')",
-        r"/(?:(?:(?:(?:(a|bc)c+){2}){2})|)*/.test('ac')",
-        r"/(?:(?:(?:(?:(a)b+c+){2}){2})|)*/.test('abc')",
-        r"/(?:(?:(?:(?:(a)b+[c]+){2}){2})|)*/.test('abc')",
+        r"/(?:(?:(?:(?:([a])b+c+){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(?:(a|bc)c+){2}){2})|){2,3}/.test('ac')",
+        r"/(?:(?:(?:(?:(a)b+c+){2}){2})|){2,3}/.test('abc')",
+        r"/(?:(?:(?:(?:(a)b+[c]+){2}){2})|){2,3}/.test('abc')",
         "/(a)b+/u.test('ab')",
     ] {
         assert!(

@@ -3883,6 +3883,48 @@ Stable and MSRV pass all 13,798 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Native ordinary nullable loops now preserve RepeatMatcher's zero-progress
+semantics for zero/one minimums. An optional empty attempt fails before count
+completion; existing retries restore owned ranges and aliases, select consuming
+siblings or inner counts, and preserve the last accepted iteration. Required
+initial empty effects, greedy/lazy ordering, nested loops, outside/current reads,
+atomic assertions, intrinsic consumers and eval completion remain ordered.
+
+Three core tests and eight runtime tests cover exact result/index snapshots,
+named index identity, empty versus undefined slots, nested count/branch retries,
+surrogates, global/sticky state, empty advancement, callbacks, ordered conversions,
+language completion, copies, collection, 100000 owned scopes, 50000 accepted units
+and opted-in work aborts. All 193 tests in the core backreference module, 127 related runtime targets and
+prototype denied-warning Clippy pass. All 189 prior RegExp snapshots remain
+byte-identical.
+
+The inspected 13800-row core snapshot, twenty runtime results and 405 complete
+previously unsupported runtime programs agree with Node. Twenty-two complete runtime
+programs also agree, including five original ordered-conversion cases. Another 3838240 ordinary and 100736 named-binding comparisons
+include all 97 newly supported quoted core controls and two dynamic named cases.
+The original 405 runtime programs remain permanently covered by a separate
+result snapshot. Their rejection controls now require larger nullable minimums,
+preserving each complete program's capture layout. Two dynamic named core cases,
+six ordered controls, three eval controls and one lazy iterator control retain their original slots and
+effects with larger required minima, alongside new original positive coverage.
+All 260 quoted core controls and 738 complete runtime gap programs preserve
+Unsupported; eight ordered-coercion and four direct-eval probes retain ordered
+host failures and state.
+
+Whole lookBehind review remains ten Passed and 24 Unsupported variants without
+failures or limits. The complete sixty-original Atom/lookahead review now passes
+all 120 variants; the newly supported A3_T17 original remains unvendored in this
+implementation commit. The separate 115-file named-groups/exec review remains 192 Passed and 38
+Unsupported variants without failures or limits.
+The active pin, eleven helpers and dependencies stay unchanged: 7179 fixtures,
+7160 reviewed sources, 13798 variants, 12321 harness positives and 332 RegExp
+builtin positive sources. Defaults remain unlimited.
+
+Stable and MSRV pass all 13,798 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

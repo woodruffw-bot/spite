@@ -37,7 +37,7 @@ fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_ho
     let mut realm = Realm::default();
     realm.eval("var marker=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2})|)*/g.test(0);');}catch{marker=2;}finally{marker=3;}"),
+        realm.eval("try{eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2})|){2,3}/g.test(0);');}catch{marker=2;}finally{marker=3;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
@@ -64,8 +64,8 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
     }
     for pattern in [
         "(?:(?:ab|c)*){2}",
-        "(?:(?:((?:(?:[a-z]a+b+){2}){2}){2})|)*",
-        "(?:(?:(?:(?<a>a)|(?<a>b)(?:\\\\k<a>)+){2})|)*",
+        "(?:(?:((?:(?:[a-z]a+b+){2}){2}){2})|){2,3}",
+        "(?:(?:(?:(?<a>a)|(?<a>b)(?:\\\\k<a>)+){2})|){2,3}",
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();

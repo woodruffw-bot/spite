@@ -155,7 +155,7 @@ fn syntax_validation_and_unlowered_children_nonzero_choices_and_unicode_stay_sep
     for source in [
         r"/(?<=(|a){1})b/.exec('b')",
         r"/(?<=((?=a)\1){1})b/.exec('b')",
-        r"/(?<=((a|a*){1}){0})b/.exec('b')",
+        r"/(?<=((a|a*){2,3}){0})b/.exec('b')",
         r"/(?<=a+)b/.exec('ab')",
         r"/(?<=(|a){0})b/u.exec('b')",
         r"/(?<=(|a){0})b/v.exec('b')",

@@ -125,10 +125,10 @@ fn optional_search_budget_covers_all_prefix_atoms_and_keeps_unsupported_host_err
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
-        r"/(?:(?:(?:(?:([ab])c+d+){2}){2})|)*/.test('acd')",
-        r"/(?:(?:([ab]c|d)+)|)*/.test('ac')",
-        r"/(?:(?:(?:(?:([ab])c+[d]+){2}){2})|)*/.test('acd')",
-        r"/(?:(?:(?:(?:([^ab]|cd)d+){2}){2})|)*/.test('ad')",
+        r"/(?:(?:(?:(?:([ab])c+d+){2}){2})|){2,3}/.test('acd')",
+        r"/(?:(?:([ab]c|d)+)|){2,3}/.test('ac')",
+        r"/(?:(?:(?:(?:([ab])c+[d]+){2}){2})|){2,3}/.test('acd')",
+        r"/(?:(?:(?:(?:([^ab]|cd)d+){2}){2})|){2,3}/.test('ad')",
         "/([ab])c+/u.test('ac')",
     ] {
         assert!(

@@ -130,8 +130,8 @@ fn explicit_zero_width_branch_search_work_aborts_before_last_index_and_handlers(
 #[test]
 fn mixed_progress_unknown_references_lookbehind_and_unicode_remain_unsupported() {
     for source in [
-        r"/(?:(?=(a))|b)+/.exec('a')",
-        r"/(?:(?=(a))\1|b)+/.exec('a')",
+        r"/(?:(?=(a))|b){2,3}/.exec('a')",
+        r"/(?:(?=(a))\1|b){2,3}/.exec('a')",
         r"/(?<=(a+))b/.exec('ab')",
         r"/(?:(?=(a))|()){2}\1/u.exec('a')",
         r"/(?:(?=(a))|()){2}\1/v.exec('a')",

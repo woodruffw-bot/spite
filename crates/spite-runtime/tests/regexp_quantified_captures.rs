@@ -124,11 +124,11 @@ fn opted_in_host_aborts_precede_capture_results_and_bypass_handlers() {
 #[test]
 fn unsupported_group_bodies_and_captured_suffixes_remain_host_failures() {
     for source in [
-        r"/(?:(?:(a[b]|c)+)|)*/.test('ab')",
-        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|)*/.test('ab')",
-        r"/(?:(?:(?:(?:a+([b]+)){2}){2})|)*/.test('ab')",
-        r"/(?:(?:(?:(?<x>a)+\k<x>){2})|)*/.test('a')",
-        r"/(?:(?:(a+)+)|)*/.test('a')",
+        r"/(?:(?:(a[b]|c)+)|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(?:a+([b]+)){2}){2})|){2,3}/.test('ab')",
+        r"/(?:(?:(?:(?<x>a)+\k<x>){2})|){2,3}/.test('a')",
+        r"/(?:(?:(a+)+)|){2,3}/.test('a')",
         "/(a)+/u.test('a')",
     ] {
         assert!(

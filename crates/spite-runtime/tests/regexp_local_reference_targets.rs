@@ -145,10 +145,10 @@ fn explicit_local_reference_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn other_consuming_terms_choices_and_nested_repetition_remain_unsupported() {
     for source in [
-        r"/(?:(?:(?:(a)(b)(a(\1)\4\2)+){2})|)*/.test('aabaab')",
-        r"/(a)(b)((\1)|\2)+/.test('abab')",
-        r"/(a)(b)((\1)+\4\2)+/.test('aabaab')",
-        r"/(a)(b)((?=a)\1\2)+/.test('abab')",
+        r"/(?:(?:(?:(a)(b)(a(\1)\4\2)+){2})|){2,3}/.test('aabaab')",
+        r"/(a)(b)((\1)|\2){2,3}/.test('abab')",
+        r"/(a)(b)((\1)+\4\2){2,3}/.test('aabaab')",
+        r"/(a)(b)((?=a)\1\2){2,3}/.test('abab')",
         r"/(a)(b)((?i:\1)\2)+/.test('abab')",
         r"/(a)(b)((\1)\4\2)+/u.test('aabaab')",
     ] {

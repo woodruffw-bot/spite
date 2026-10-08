@@ -134,10 +134,10 @@ fn explicit_nested_choice_iteration_work_aborts_before_last_index_and_handlers()
 #[test]
 fn empty_capturing_and_nested_repeated_bodies_remain_unsupported() {
     for source in [
-        r"/(?:ab|)+/.test('ab')",
-        r"/(?:(?:((ab)|(a))+)|)*/.test('ab')",
-        r"/(?:(?:((?:(?:(?:a|)b|c)+){2}){2})|)*/.test('abcabc')",
-        r"/(?:\1|b)+(a)/.test('ba')",
+        r"/(?:ab|){2,3}/.test('ab')",
+        r"/(?:(?:((ab)|(a))+)|){2,3}/.test('ab')",
+        r"/(?:(?:((?:(?:(?:a|)b|c)+){2}){2})|){2,3}/.test('abcabc')",
+        r"/(?:\1|b){2,3}(a)/.test('ba')",
         r"/(?:(?<=(a+))a|b)+/.test('a')",
         r"/(?:(?:a|)b|c)+/u.test('ab')",
     ] {

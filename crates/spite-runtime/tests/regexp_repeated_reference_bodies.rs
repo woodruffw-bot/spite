@@ -124,11 +124,11 @@ fn explicit_reference_body_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn other_reference_bodies_remain_unsupported_and_plain_failures_return_null() {
     for source in [
-        r"/(?:(?:(?:(a)(b)(?:\1\2)+){2})|)*/.test('abab')",
-        r"/(?:(?:(?:(a)(?:a\1\1)+){2})|)*/.test('aaa')",
-        r"/(a)(?:\1|\1)+/.test('aaa')",
-        r"/(a)(?:\1+\1)+/.test('aaa')",
-        r"/(?:(?:(?:(a)(?:\1()\1)+){2})|)*/.test('aaa')",
+        r"/(?:(?:(?:(a)(b)(?:\1\2)+){2})|){2,3}/.test('abab')",
+        r"/(?:(?:(?:(a)(?:a\1\1)+){2})|){2,3}/.test('aaa')",
+        r"/(a)(?:\1|\1){2,3}/.test('aaa')",
+        r"/(a)(?:\1+\1){2,3}/.test('aaa')",
+        r"/(?:(?:(?:(a)(?:\1()\1)+){2})|){2,3}/.test('aaa')",
         r"/(a)(?:\1\1)+/u.test('aaa')",
     ] {
         assert!(

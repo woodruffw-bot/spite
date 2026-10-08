@@ -132,7 +132,7 @@ fn lookbehind_unicode_and_possibly_empty_repetitions_keep_their_unsupported_boun
         "/(?=a)a/u.exec('a')",
         "/(?=a)a/v.exec('a')",
         "/(?:(?<=(a+)))*/.exec('a')",
-        "/(?:(?=(a))|b)+/.exec('a')",
+        "/(?:(?=(a))|b){2,3}/.exec('a')",
     ] {
         assert!(
             matches!(

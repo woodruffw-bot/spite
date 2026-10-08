@@ -189,7 +189,7 @@ fn matchall_creation_is_lazy_and_custom_exec_observes_the_new_native_matcher() {
     );
     let mut realm = Realm::default();
     realm
-        .eval("let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|)*'),flag=0")
+        .eval("let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}'),flag=0")
         .unwrap();
     assert!(matches!(
         realm.eval("try{it.next();}catch{flag=1;}finally{flag=2;}"),

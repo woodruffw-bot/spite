@@ -146,10 +146,10 @@ fn opted_in_nested_loop_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn possibly_empty_paths_body_captures_lookaround_and_unicode_remain_unsupported() {
     for source in [
-        r"/(?:a*b*)+/.test('ab')",
-        r"/(?:(?:(?:(a+)b|c)+)|)*/.test('aab')",
-        r"/(?:(?:(?:(?:(a)|b)+c|d)+)|)*/.test('abc')",
-        r"/(?:\1*|b)+(a)/.test('ba')",
+        r"/(?:a*b*){2,3}/.test('ab')",
+        r"/(?:(?:(?:(a+)b|c)+)|){2,3}/.test('aab')",
+        r"/(?:(?:(?:(?:(a)|b)+c|d)+)|){2,3}/.test('abc')",
+        r"/(?:\1*|b){2,3}(a)/.test('ba')",
         r"/(?:(?<=(a+))a+|b)+/.test('a')",
         r"/(?:(?:a|aa)+b|c)+/u.test('aab')",
     ] {
