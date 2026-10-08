@@ -1,9 +1,36 @@
 # Test262 regression fixtures
 
-These 7063 unmodified test fixtures and eleven harness files come from
+These 7070 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Repeated RegExp branch capture fixture review
+
+Seven further unchanged whole originals add fourteen normal/strict harness-positive
+variants at the existing pin. Three named-group programs check duplicate-name
+exec/match/test behavior, references within repeated branches and final undefined
+aliases after another iteration. Four exec programs check ordered coercion,
+variable-width source-order capture selection, nested optional quantifiers and
+cleared final slots, plus duplicate-name property order and indices groups.
+Every original assertion, copyright notice and metadata field is preserved.
+
+Git blob identities and manifest SHA-256 digests verify all seven files. Their
+existing compareArray.js dependency and all eleven helpers remain byte-identical.
+The pin, negative expectations, dependencies and unlimited defaults are unchanged.
+Named-group execution now includes 21 of 36 whole originals, with 15 exclusions;
+exec includes 75 of 79, with four exclusions. Remaining originals need lookaround
+or Unicode-mode matching and receive no passing credit.
+
+The current inventory is 7070 fixtures, eleven unchanged helpers and 7051 reviewed
+Script sources. Its 13580 variants comprise 12103 harness positives, 1469 parse
+negatives, four raw positives and four runtime negatives. RegExp builtin execution
+includes 223 whole positive programs, separately from the 337 grammar fixtures.
+
+Stable and MSRV pass all fourteen selected variants and the complete 13580-variant
+corpus, workspace targets and documentation checks under unlimited defaults.
+Formatting, denied-warning Clippy, dependency policy and all offline data checks
+also pass. Node executes every original in both Script modes.
 
 ## Ordinary RegExp fallback fixture review
 
@@ -1808,7 +1835,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13566 variants from 7044 reviewed sources: the eleven
+The `spite-test262` command runs 13580 variants from 7051 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1837,14 +1864,14 @@ parse-negative), and 48 private element parse-negative files, and 56 private-fie
 execution files, and 128 private method/accessor execution files, and 83 WeakSet
 files, and 337 RegExp literal boundary, flag, core Pattern, class-range, named
 capture, and Unicode property files (nineteen positives and 318 parse negatives),
-plus 216 RegExp builtin positives for escape, construction, slots, native exec,
+plus 223 RegExp builtin positives for escape, construction, slots, native exec,
 named result groups and generic matching operations.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-12089 positives using the upstream harness, 1469 reviewed parse-negative variants,
+12103 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

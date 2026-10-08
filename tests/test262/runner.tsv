@@ -7043,3 +7043,10 @@ test/built-ins/RegExp/prototype/exec/S15.10.6.2_A4_T8.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A4_T9.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T1.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T3.js	-	-	-
+test/built-ins/RegExp/named-groups/duplicate-names-exec.js	-	-	-
+test/built-ins/RegExp/named-groups/duplicate-names-match.js	-	-	-
+test/built-ins/RegExp/named-groups/duplicate-names-test.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T5.js	-	-	-
+test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T6.js	-	-	-
+test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js	-	-	-
+test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js	-	-	-

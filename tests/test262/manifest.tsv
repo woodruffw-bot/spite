@@ -7073,3 +7073,10 @@ script-pass	7f08a6901ba3e6a9afd01a7cd2cdbafd73ccac169fd83b1227ee0fbfb02cd631	tes
 script-pass	7b834bd5a333e97cc778bb3be20a7e553798bdb8a523ed71ee33657b2a137236	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A4_T9.js
 script-pass	d1d799a5bb71798d40d3cb218b09175368d4ee776bc1f96b7b9a45a4c0200a17	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T1.js
 script-pass	6cedfc70f0ae9f7247176cc5b88af1967ef62491c3f5c60e2472e91d5876e2cc	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A5_T3.js
+script-pass	c02a89c619d75530f239f574e8c2a0098c4b9e2189ec7567723abc32f0d8d207	test/built-ins/RegExp/named-groups/duplicate-names-exec.js
+script-pass	314fec534132346d135a9b7ef07b10a48118ffc3bc0ff501d811855d38a4de40	test/built-ins/RegExp/named-groups/duplicate-names-match.js
+script-pass	4ad68724f5edd183e73b0209fa226d2799fb2489a57d69bd6b4e94aeb1c95734	test/built-ins/RegExp/named-groups/duplicate-names-test.js
+script-pass	27fe5b547753f266be5d51b55c40e33c8d6cb8bf5ac5d2ea87725bea7dd990c5	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T5.js
+script-pass	4ebbcc5a7d5a474caabf0474dc57719e2078ed7e089a991c697a8366f66159d6	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T6.js
+script-pass	9c7819d1426cad73c7d826dd4ca5524ea2109908041ebecf517f093e968af23f	test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js
+script-pass	53bbf9cb7eca0f81d4d4ad853a8f5ddddbc536b5125a0c901edde8bd6cf41717	test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js

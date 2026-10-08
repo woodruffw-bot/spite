@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13566 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13580 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1654,12 +1654,12 @@ Stable and MSRV pass all 13,530 corpus variants, workspace targets and
 documentation tests. Formatting, denied-warning Clippy, dependency/fixture
 policy and every pinned offline generator check pass.
 
-The current inventory is 7063 fixtures, eleven unchanged harness files and 7044
-reviewed Script sources. Its 13566 variants are 12089 harness positives, 1469
+The current inventory is 7070 fixtures, eleven unchanged harness files and 7051
+reviewed Script sources. Its 13580 variants are 12103 harness positives, 1469
 parse negatives, four raw positives and four runtime negatives. RegExp builtin
-coverage is 216 positive whole programs in the builtin area, separate from 337 grammar
-fixtures. The exec selection is 71 of 79 whole originals, with eight exclusions;
-the named-group selection is 18 of 36, with eighteen exclusions.
+coverage is 223 positive whole programs, separate from 337 grammar fixtures.
+The exec selection is 75 of 79 originals, with four Unicode-mode exclusions;
+the named-group selection is 21 of 36, with fifteen lookaround/Unicode exclusions.
 No pin, prior negative expectation, dependency or unlimited runtime default changes.
 
 Stable and minimum-supported Rust pass all 30 added variants and all 13,526
@@ -2403,6 +2403,28 @@ unchanged.
 Stable and MSRV pass all 13,566 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+Seven further unchanged Test262 originals add fourteen normal/strict harness
+positives for repeated branch captures. Three named-group programs check complete
+duplicate-name exec/match/test behavior, repeated references and cleared final
+aliases. Four exec originals cover ordered subject coercion, variable-width
+source-order capture selection, nested optional quantifiers and undefined final
+slots, duplicate-name property order and matching indices groups. Their complete
+source, assertions, metadata and copyright notices are unchanged. Re-fetched
+pinned sources, Git blob identities and manifest SHA-256 digests verify all seven
+files; the same eleven helpers are byte-identical. Stable and MSRV pass all
+fourteen selected variants with unlimited defaults, and Node passes both modes
+of every original. Named execution includes 21 of 36 complete originals; exec
+includes 75 of 79. Nineteen remaining whole programs need lookaround or Unicode
+matching and receive no passing credit. The corpus contains 7070 fixtures,
+eleven helpers, 7051 reviewed sources and 13580 variants: 12103 harness positives,
+1469 parse negatives, four raw positives and four runtime negatives. Native
+RegExp builtin coverage is 223 whole positive programs plus 337 grammar fixtures.
+The pin, prior expectations, dependencies and unlimited defaults are unchanged.
+
+Stable and MSRV pass all 13,580 unchanged pinned-corpus variants and the complete
+workspace target and documentation checks. Formatting, denied-warning Clippy,
+dependency policy, fixture inventories and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
