@@ -151,7 +151,7 @@ fn variable_choice_reference_assertion_empty_and_nested_count_bodies_remain_unsu
     for source in [
         r"/(?<=(a){1,2})b/.exec('aab')",
         r"/(?<=(a|b){2})c/.exec('abc')",
-        r"/(?<=(a\b){2})c/.exec('abc')",
+        r"/(?<=(a(?=a)){2})c/.exec('abc')",
         r"/(?<=((a){2}){2})c/.exec('aaaac')",
         r"/(?<=(a\1){2})c/.exec('aac')",
         r"/(?<=(){2})c/.exec('c')",

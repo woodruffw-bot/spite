@@ -1478,7 +1478,7 @@ share one comparison helper, preserving existing IgnoreCase and DotAll behavior.
 Input/line/word assertions still use the whole input, and outer captures, cursor,
 negative inversion and repetition summaries retain their existing semantics.
 Counts whose complete fixed width cannot be represented, variable counts and
-repeated assertion bodies remain pending. The subsequent
+repeated boundary assertion bodies are described below. The subsequent
 extensions admit nested fixed lookbehind, unrepeated captures and counted
 character sequences. Host quotas
 remain opt-in; defaults are unlimited.
@@ -1558,7 +1558,7 @@ prefixes fail before iteration even for a platform-maximum representable width.
 Iteration allocates no count-dependent state and charges each actual comparison.
 Nested fixed assertion frames, negative capture rollback, boundary context and
 parent progress/zero-width summaries retain their existing behavior. Variable
-counts, repeated assertions, nested counted sequences and internal
+counts, repeated lookaround, nested counted sequences and internal
 references/choices remain pending. Defaults remain unlimited.
 
 
@@ -1584,7 +1584,7 @@ outer retries and consuming parent loops retain their normal capture clearing.
 Positive ranges before the whole match's start feed outside references, result
 indices and consumers unchanged. Comparison and capture work remains fallible
 and opt-in. Deep capture inventories, copies, collection and dropping stay flat;
-default quotas remain unlimited. Variable counts, branch/assertion/reference
+default quotas remain unlimited. Variable counts, branch/lookaround/reference
 bodies, empty-only repeated bodies and nested counted sequences remain pending.
 
 
@@ -1617,6 +1617,35 @@ remain unchanged. Actual branch selection, retries, discard and capture undo
 charge fallible opt-in work. Preparation, execution, copies and dropping remain
 flat; default quotas remain unlimited. Repeating a choice inside lookbehind and
 other unproved body forms remain pending.
+
+
+Exact-count ordinary boundary predicates now compose with character terms in
+fixed lookbehind (RepeatMatcher, 22.2.2.3.1; Assertion, 22.2.2.8). Preparation
+assigns input/line/word predicates width zero and character/class predicates
+width one, then checks complete counted widths. For bodies containing zero-width
+terms it stores immutable prefix offsets from term ordinals to UTF-16 input
+positions. Capture spans use those offsets, preserving partial and empty ranges
+rather than mistaking an assertion ordinal for a consumed input unit. Accepted
+owners receive metadata once; summarized nested children retain their own plans.
+The ordinary forward matcher retains its existing runtime offset calculation.
+
+Execution evaluates each boundary against the full input, original Multiline
+flag and exact local position without consuming a unit. Character comparisons
+retain their existing flags. Pure boundary bodies have no capture reads, choices
+or moving positions: a required exact count therefore executes their predicates
+once and writes the identical final capture effects. A zero count executes no
+predicates and leaves repeated slots undefined. Huge representable required
+counts remain compact. Mixed consuming bodies execute their actual term/count
+comparisons; repeated captures retain their leftmost backward input iteration.
+
+Root alternatives, nested assertions, atomic results, negative rollback and
+required/optional parent wrappers share their existing checkpoints and width
+summaries. Captures and named aliases use original absolute input coordinates,
+including empty ranges before the whole match's start. Work charges actual
+predicates and capture operations; default quotas remain unlimited. Metadata and
+execution allocate no count-dependent state. Nested lookaround inside a counted
+body, variable counts, repeated choices, internal references, empty-only repeated
+bodies and nested counted sequences remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

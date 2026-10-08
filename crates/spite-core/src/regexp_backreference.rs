@@ -55,7 +55,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Fixed positive and negative lookbehind preserve full input
 /// context for character sequences, their exact counts, boundary assertions and
 /// transparent groups, captures, equal-width alternatives and nested fixed lookbehind.
-/// Counted character captures retain their leftmost backward iteration.
+/// Counted predicate captures retain their leftmost backward iteration; required
+/// pure boundary counts share one position and need no expanded iterations.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -124,6 +125,8 @@ enum Instruction {
         references: Box<[ReferenceTarget]>,
         bounds: Bounds,
         captures: Box<[(usize, ReferenceCaptureSpan)]>,
+        // Only fixed lookbehind with zero-width terms needs stored unit offsets.
+        lookbehind_offsets: Option<Box<[usize]>>,
     },
     QuantifiedReference {
         index: usize,
@@ -1630,7 +1633,8 @@ impl Program {
             let accepted = match term {
                 Instruction::Nop
                 | Instruction::RepeatedCharacter(_)
-                | Instruction::RepeatedSet(_) => true,
+                | Instruction::RepeatedSet(_)
+                | Instruction::RepeatedAssert(_) => true,
                 Instruction::Jump(target) => {
                     current.pc = *target;
                     continue;
@@ -1666,10 +1670,17 @@ impl Program {
                     references,
                     bounds: (Some(count), _, _),
                     captures,
+                    lookbehind_offsets,
                 } => {
                     let base = *position;
+                    let width = lookbehind_offsets
+                        .as_ref()
+                        .map_or(references.len(), |offsets| *offsets.last().unwrap());
+                    // Required zero-width iterations see identical predicates
+                    // and have no capture reads. Their final effects need one pass.
+                    let iterations = if width == 0 { (*count).min(1) } else { *count };
                     let mut accepted = true;
-                    'iterations: for _ in 0..*count {
+                    'iterations: for _ in 0..iterations {
                         for target in references {
                             let ReferenceTarget::Term(index) = *target else {
                                 unreachable!("fixed lookbehind retains character terms")
@@ -1687,10 +1698,16 @@ impl Program {
                     }
                     if accepted {
                         // Backward repetitions finish with the leftmost iteration
-                        // (22.2.2.3.1, 22.2.2.8). Fixed character-only bodies have
-                        // no capture reads; retain that iteration's exact ranges.
+                        // (22.2.2.3.1, 22.2.2.8). Fixed predicates have no capture
+                        // reads; retain that iteration's exact ranges.
                         for &(slot, span) in captures {
-                            let range = (*count != 0).then(|| base + span.start..base + span.end);
+                            let offset = |index| {
+                                lookbehind_offsets
+                                    .as_ref()
+                                    .map_or(index, |offsets| offsets[index])
+                            };
+                            let range = (*count != 0)
+                                .then(|| base + offset(span.start)..base + offset(span.end));
                             self.write_capture(state, slot, range, charge)?;
                         }
                     }
@@ -1717,8 +1734,8 @@ impl Program {
         }
     }
 
-    // Only one-unit terms are admitted here. Exact repetition width is proved
-    // during preparation, so every checked position stays within the prefix.
+    // Character terms consume one unit; boundary predicates consume none.
+    // Preparation proves every counted term position in the complete prefix.
     fn compare_fixed_lookbehind_term<E>(
         &self,
         input: &[u16],
@@ -1727,6 +1744,10 @@ impl Program {
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<bool, E> {
         charge(1)?;
+        if let Instruction::RepeatedAssert(assertion) = term {
+            charge(2)?;
+            return Ok(assertion.accepts(input, *position, self.multiline));
+        }
         let Some(&unit) = input.get(*position) else {
             return Ok(false);
         };
@@ -1915,6 +1936,7 @@ fn quantify_reference_wrapper(
                 references: targets.into_boxed_slice(),
                 bounds,
                 captures: captures.into_boxed_slice(),
+                lookbehind_offsets: None,
             });
         return Some(());
     }
@@ -2213,7 +2235,8 @@ fn quantify_progressing_choice(
     Some(())
 }
 
-fn fixed_lookbehind_width(instructions: &[PreparedInstruction], entry: usize) -> Option<usize> {
+fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize) -> Option<usize> {
+    let mut counted_offsets = Vec::<(usize, Box<[usize]>)>::new();
     let mut tails = HashMap::<usize, usize>::new();
     tails.insert(instructions.len(), 0);
     let mut next = instructions.len();
@@ -2247,7 +2270,8 @@ fn fixed_lookbehind_width(instructions: &[PreparedInstruction], entry: usize) ->
                 | Instruction::Open(_)
                 | Instruction::Close(_)
                 | Instruction::Assert(_)
-                | Instruction::RepeatedCharacter(_),
+                | Instruction::RepeatedCharacter(_)
+                | Instruction::RepeatedAssert(_),
             )
             | PreparedInstruction::Set { repeated: true, .. } => *tails.get(&(pc + 1))?,
             PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
@@ -2255,28 +2279,35 @@ fn fixed_lookbehind_width(instructions: &[PreparedInstruction], entry: usize) ->
                 bounds: (Some(min), Some(max), _),
                 ..
             }) if min == max && !references.is_empty() => {
+                let mut offsets = Vec::<usize>::with_capacity(references.len() + 1);
+                offsets.push(0);
+                let mut has_assertion = false;
                 for target in references {
                     let ReferenceTarget::Term(index) = *target else {
                         return None;
                     };
-                    if !matches!(
-                        instructions.get(index),
-                        Some(PreparedInstruction::Ready(Instruction::RepeatedCharacter(
-                            _
-                        ))) | Some(PreparedInstruction::Set { repeated: true, .. })
-                    ) {
-                        return None;
-                    }
+                    let width = match instructions.get(index) {
+                        Some(PreparedInstruction::Ready(Instruction::RepeatedAssert(_))) => {
+                            has_assertion = true;
+                            0
+                        }
+                        Some(PreparedInstruction::Ready(Instruction::RepeatedCharacter(_)))
+                        | Some(PreparedInstruction::Set { repeated: true, .. }) => 1,
+                        _ => return None,
+                    };
+                    offsets.push(offsets.last()?.checked_add(width)?);
                 }
-                tails
-                    .get(&(pc + 1))?
-                    .checked_add(min.checked_mul(references.len())?)?
+                let width = *offsets.last()?;
+                if has_assertion {
+                    counted_offsets.push((pc, offsets.into_boxed_slice()));
+                }
+                tails.get(&(pc + 1))?.checked_add(min.checked_mul(width)?)?
             }
             _ => return None,
         };
         tails.insert(pc, width);
     }
-    match &instructions[entry] {
+    let width = match &instructions[entry] {
         PreparedInstruction::Ready(Instruction::Nop) => tails.get(&(entry + 1)).copied(),
         PreparedInstruction::Ready(Instruction::Choice(alternatives)) => {
             let first = *tails.get(alternatives.first()?)?;
@@ -2286,7 +2317,20 @@ fn fixed_lookbehind_width(instructions: &[PreparedInstruction], entry: usize) ->
                 .then_some(first)
         }
         _ => None,
+    }?;
+    // Only accepted owner bodies receive metadata. Summarized child regions
+    // are skipped, so term-relative spans are translated exactly once.
+    for (pc, offsets) in counted_offsets {
+        let PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
+            lookbehind_offsets,
+            ..
+        }) = &mut instructions[pc]
+        else {
+            unreachable!("counted fixed body retains its sequence instruction")
+        };
+        *lookbehind_offsets = Some(offsets);
     }
+    Some(width)
 }
 
 fn prepare(
@@ -2402,7 +2446,7 @@ fn prepare(
                     // Equal-width branches have fixed input positions and no
                     // internal capture reads. Counted captures retain their
                     // leftmost backward iteration (Assertion, 22.2.2.8).
-                    let width = fixed_lookbehind_width(&instructions, entry)?;
+                    let width = fixed_lookbehind_width(&mut instructions, entry)?;
                     let original = std::mem::replace(
                         &mut instructions[entry],
                         PreparedInstruction::Ready(Instruction::Nop),
@@ -2637,6 +2681,162 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn fixed_lookbehind_assertion_count_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(?:^){2})a",
+            r"(?<!(?:^){2})a",
+            r"(?<=(^){2})a",
+            r"(?<=(^){0})a",
+            r"(?<=((^){0}))a",
+            r"(?<=(?:\b){2})a",
+            r"(?<=(?:\B){2})a",
+            r"(?<=(\b){2})a",
+            r"(?<=(?:$){2})",
+            r"(?<=($){2})",
+            r"(?<=(a\B){2})b",
+            r"(?<=((a)\B()){2})b",
+            r"(?<=((\b)a(\B)){1})b",
+            r"(?<!((a)\B){2}q)c",
+            r"(?<=(?:^a){1})b",
+            r"(?<=(?:\ba\B){1})b",
+            r"(?<=(?:a\B){0})b",
+            r"(?<=((?:a\B){0}))b",
+            r"(?<=((^)){2}|((\b)){2})a",
+            r"(?<=a(?<=(?:\b){2}))b",
+            r"(?:(?<=(a\B){2})b|c)+d",
+            r"((?<=(\b){2})){2}a\1\2",
+            r"((?<=(\b){2}))*a\1\2",
+            r"(?<=(µ\B){2})Μ",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn counted_lookbehind_assertions_use_zero_width_offsets_full_context_and_rollback() {
+        for (source, text, range, captures) in [
+            (r"(?<=(^){2})a", "a", 0..1, vec![Some(0..0)]),
+            (r"(?<=((^){0}))a", "qa", 1..2, vec![Some(1..1), None]),
+            (r"(?<=(a\B){2})b", "aab", 2..3, vec![Some(0..1)]),
+            (
+                r"(?<=((a)\B()){2})b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..1), Some(1..1)],
+            ),
+            (
+                r"(?<=((\b)a(\B)){1})b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(0..0), Some(1..1)],
+            ),
+            (r"(?<!((a)\B){2}q)c", "aaarc", 4..5, vec![None, None]),
+            (
+                r"(?<=((^)){2}|((\b)){2})a",
+                " a",
+                1..2,
+                vec![None, None, Some(1..1), Some(1..1)],
+            ),
+            (r"(?<=(^){2})a", "\na", 1..2, vec![Some(1..1)]),
+            (r"(?<=($){2})", "a", 1..1, vec![Some(1..1)]),
+        ] {
+            let found = ordinary(source, false, true, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(?:a\B){1,2})b",
+            r"(?<=(?:(?=a)){2})a",
+            r"(?<=(a\B|b\B){2})c",
+            r"(?<=((a\B){2}){2})c",
+            r"(?<=(){2})a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_counted_lookbehind_assertion_captures_huge_counts_and_work_are_flat() {
+        let source = "(?<=".to_owned()
+            + &"(".repeat(100000)
+            + "^"
+            + &")".repeat(100000)
+            + &format!("{{{}}})a", usize::MAX);
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("a"), 0, true).unwrap();
+        assert_eq!(found.range, 0..1);
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|r| r == &Some(0..0)));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("a"), 0, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit assertion capture work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit assertion capture work"
+        );
+        let source = format!("(?<=(?:^){{{}}})a", usize::MAX);
+        let matcher = ordinary(&source, false, false, false);
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("a"), 0, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .unwrap()
+                .range,
+            0..1
+        );
+        assert!(work < 100);
+        let source = "(?<!".to_owned() + &"(".repeat(100000) + "^" + &")".repeat(100000) + "{2}q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("ab"), 1, true)
+            .unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
     }
 
     #[test]
@@ -2883,7 +3083,7 @@ mod tests {
         for source in [
             r"(?<=(a){1,2})b",
             r"(?<=(a|b){2})c",
-            r"(?<=(a\b){2})c",
+            r"(?<=(a(?=a)){2})c",
             r"(?<=((a){2}){2})c",
             r"(?<=(a\1){2})c",
             r"(?<=(){2})c",
@@ -3036,7 +3236,7 @@ mod tests {
         for source in [
             r"(?<=(?:ab){1,2})c",
             r"(?<=(ab){1,2})c",
-            r"(?<=(?:a\b){2})c",
+            r"(?<=(?:a(?=a)){2})c",
             r"(?<=(?:a(?<=a)){2})c",
             r"(a)(?<=(?:\1b){2})c",
             r"(?<=(?:(?:ab){2}){2})c",
@@ -3514,7 +3714,7 @@ mod tests {
             r"(?<=a{1,2})b",
             r"(?<=a+)b",
             r"(?<=(?:ab){1,2})c",
-            r"(?<=(?:^){2})a",
+            r"(?<=(?:(?=a)){2})a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
