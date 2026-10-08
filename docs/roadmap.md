@@ -375,6 +375,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute characters, sets, class escapes and dot inside repeated reference bodies with shared pinned predicates, fixed unit widths, changing local capture values and whole-body greedy/lazy retries.
 - [x] Execute input/line and word assertions inside repeated reference bodies with complete input context, zero-width prefix offsets, required empty captures and optional zero-progress semantics.
 - [x] Execute deterministic repetition groups that feed references outside their body with final unit/partial captures, empty required versus optional slots and restored mutually exclusive named bindings.
+- [x] Execute quantified character, set, class-escape and dot atoms in reference programs with whole-prefix captures, greedy/lazy retries, zero-count empty captures and stable parent ranges.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -1240,9 +1240,21 @@ mutually exclusive named slots. Empty required groups define empty final capture
 while optional empty groups retain undefined slots under the zero-progress rule
 (RepeatMatcher, 22.2.2.3.1). Pure empty bodies satisfy huge finite minimums directly.
 Patterns without any reference retain their existing matchers. Deep capturing
-repetition groups remain iterative, including 100,000 enclosures. Alternatives,
-nested quantifiers, character-atom quantifiers in reference programs,
-lookaround/scoped modifiers and Unicode matching remain pending.
+repetition groups remain iterative, including 100,000 enclosures.
+
+Quantified character, set, class-escape and dot atoms in reference programs use
+the same flat sequence instruction (RepeatMatcher, 22.2.2.3.1). A separate entry
+precedes the owned unit, preserving earlier branch/group indices and shared
+pinned predicates. Parent capture opens/closes remain ordinary instructions, so
+`(a+)` records its entire selected prefix while `(a)+` records the final body
+iteration. Retry checkpoints undo later closes before selecting another atom
+count; multiple sequential quantified units preserve their parent ranges. A
+zero-count atom still reaches its enclosing close and defines an empty capture.
+Checked consuming bounds reject impossible huge minimums without replaying them;
+huge maximums retain the available input bound. All storage and construction are
+iterative, including 100,000 enclosing captures, and host quotas stay opt-in.
+Alternatives in repeated bodies, nested quantifiers, lookaround/scoped modifiers
+and Unicode matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

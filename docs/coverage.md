@@ -2196,6 +2196,29 @@ Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Quantified character, set, class-escape and dot atoms now feed whole capture
+prefixes to later numbered/named references. Three added core regressions cover
+an inspected 4,320-record insta snapshot, greedy/lazy parent-close restoration,
+sequential atom counts, defined-empty zero counts, forward references, full-input
+assertions, 100,000 enclosing captures, shared predicates and huge consuming
+bounds. All twenty-one earlier core reference snapshots remain byte-identical.
+Six runtime regressions cover an inspected 24-record result snapshot, complete
+named prefixes and indices aliases, sequential parent ranges, mutually exclusive
+named slots, raw surrogates and dotAll, global/sticky consumers, empty advancement,
+copies and collection, 100,000 enclosures and huge bounds under unlimited defaults,
+opted-in aborts and remaining gaps. Node agrees with all added core and runtime
+snapshot records, 498,048 numbered and 244,224 named fresh match/capture comparisons,
+and twelve runtime programs. All 75 previous core and 24 previous runtime reference
+snapshots are unchanged. Eight prior direct controls now repeat composite bodies;
+all 473 direct gap programs and three eval host-gap programs remain unsupported.
+Alternatives in repeated bodies, nested quantifiers, lookaround/scoped modifiers
+and Unicode matching remain pending. No fixtures or fixture credit are added;
+inventories, the pin, dependencies and unlimited defaults are unchanged.
+
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
