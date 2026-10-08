@@ -1186,18 +1186,22 @@ Partial capture ranges use the same checked prefix widths and original reference
 ordinals. Each capture records a start/end pair; final writes add those offsets
 to the selected last iteration, including ranges that are empty because an
 external target did not participate. References following the complete repetition
-then read those final original input ranges. An iterative preparation pass maps
-numbered/named body slots to their closing ordinals. A syntactically nonempty
-capture referenced after it closes requires a changing local target, so this
-program returns unsupported before work charges. Forward and still-open local
-references remain undefined each iteration after RepeatMatcher clears body slots;
-syntactically empty local captures consume nothing. Thus accepted reference
-widths remain constant, frozen external ranges remain correct, and whole-body
-retries restore partial ranges and named aliases with the same checkpoints.
+then read those final original input ranges. Preparation maps numbered/named body slots to their original spans once.
+An open or forward target is explicitly empty after RepeatMatcher clears body
+slots. A completed body target uses its current iteration's relative start/end
+range; external targets retain frozen absolute input ranges. Prefix widths are
+computed in source order, so completed local spans only read earlier offsets.
+Checked addition handles chained local widths without expansion. Overflow or a
+width larger than remaining input prevents a consuming body while preserving a
+valid zero-count path. Count limits bound the whole body before any relative
+range is added to its current iteration's input base. Greedy matching validates
+whole bodies; lazy retries use a fresh iteration base for every local target.
+Capture checkpoints then install final partial ranges and named aliases. Required
+empty iterations validate their constant empty effects directly even for huge
+finite minimums; optional zero counts retain undefined slots. Flat descriptor and
+range buffers keep 100,000 local references iterative without copied literals.
 Global slot/name lookup is prepared once, while each body is scanned linearly.
-Deep partial enclosures remain iterative with flat storage, including 100,000
-captures. Completed nonempty local targets, other consuming terms, alternatives
-and nested quantifiers remain pending.
+Other consuming terms, alternatives and nested quantifiers remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
