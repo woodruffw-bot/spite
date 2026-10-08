@@ -40,7 +40,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Top-level and arbitrarily nested alternatives, quantified reference atoms and
 /// groups repeating the same reference are accepted, including whole capturing
 /// enclosures and empty siblings before/after the body. Different reference
-/// sequences are accepted in capture-free groups. Other quantifiers return
+/// sequences accept whole enclosures and empty before/after siblings as well.
+/// Other quantifiers return
 /// `None`. At least one numbered or registered named reference is required;
 /// plain literals retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
@@ -73,6 +74,7 @@ enum Instruction {
     QuantifiedReferenceSequence {
         references: Box<[(usize, bool)]>,
         bounds: Bounds,
+        captures: Box<[(usize, ReferenceCaptureSpan)]>,
     },
     QuantifiedReference {
         index: usize,
@@ -257,6 +259,12 @@ impl ChoiceFrame {
                 } else {
                     (count < *limit).then(|| count + 1)
                 };
+                program.complete_reference_captures(
+                    self.instruction,
+                    state,
+                    (count > 0).then(|| end - *width..end),
+                    charge,
+                )?;
                 Ok(Some((self.instruction + 1, end)))
             }
         }
@@ -484,10 +492,12 @@ impl RegExpBackreferenceMatcher {
         for instruction in &prepared {
             if let PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
                 references,
+                captures,
                 ..
             }) = instruction
             {
                 charge(references.len())?;
+                charge(captures.len())?;
             }
         }
         charge(source.len())?;
@@ -663,8 +673,10 @@ impl Program {
         range: Option<Range<usize>>,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<(), E> {
-        let Instruction::QuantifiedReference { captures, .. } = &self.instructions[pc] else {
-            unreachable!("reference repetition owns its capture inventory")
+        let captures = match &self.instructions[pc] {
+            Instruction::QuantifiedReference { captures, .. }
+            | Instruction::QuantifiedReferenceSequence { captures, .. } => captures,
+            _ => unreachable!("reference repetition owns its capture inventory"),
         };
         if let Some(range) = range {
             for &(slot, span) in captures {
@@ -768,6 +780,7 @@ impl Program {
             Instruction::QuantifiedReferenceSequence {
                 references,
                 bounds: (min, max, greedy),
+                ..
             } => {
                 charge(references.len())?;
                 let mut captures = Vec::with_capacity(references.len());
@@ -789,6 +802,12 @@ impl Program {
                     return Ok((*min == Some(0)).then_some(pc + 1));
                 };
                 if width == 0 {
+                    self.complete_reference_captures(
+                        pc,
+                        state,
+                        (*min != Some(0)).then_some(*cursor..*cursor),
+                        charge,
+                    )?;
                     return Ok(Some(pc + 1));
                 }
                 let Some(min) = *min else {
@@ -821,11 +840,18 @@ impl Program {
                 } else {
                     (count < limit).then(|| count + 1)
                 };
+                let checkpoint = state.touched.len();
+                self.complete_reference_captures(
+                    pc,
+                    state,
+                    (count > 0).then(|| *cursor - width..*cursor),
+                    charge,
+                )?;
                 if next.is_some() {
                     charge(1)?;
                     frames.push(ChoiceFrame {
                         instruction: pc,
-                        checkpoint: state.touched.len(),
+                        checkpoint,
                         alternative: PendingAlternative::SequenceRepetition {
                             next,
                             limit: if *greedy { min } else { limit },
@@ -1045,27 +1071,6 @@ fn quantify_reference_wrapper(
         return None;
     }
     let (position, index, named) = reference?;
-    if targets.iter().any(|target| *target != (index, named)) {
-        if !captures.is_empty() {
-            return None;
-        }
-        for instruction in &mut instructions[body] {
-            if matches!(
-                instruction,
-                PreparedInstruction::Ready(
-                    Instruction::Reference(_) | Instruction::NamedReference(_)
-                )
-            ) {
-                *instruction = PreparedInstruction::Ready(Instruction::Nop);
-            }
-        }
-        instructions[position] =
-            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
-                references: targets.into_boxed_slice(),
-                bounds,
-            });
-        return Some(());
-    }
     let captures: Option<Vec<_>> = captures
         .into_iter()
         .map(|(slot, start, end)| {
@@ -1082,6 +1087,28 @@ fn quantify_reference_wrapper(
         })
         .collect();
     let captures = captures?;
+    if targets.iter().any(|target| *target != (index, named)) {
+        for instruction in &mut instructions[body] {
+            if matches!(
+                instruction,
+                PreparedInstruction::Ready(
+                    Instruction::Reference(_)
+                        | Instruction::NamedReference(_)
+                        | Instruction::Open(_)
+                        | Instruction::Close(_)
+                )
+            ) {
+                *instruction = PreparedInstruction::Ready(Instruction::Nop);
+            }
+        }
+        instructions[position] =
+            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
+                references: targets.into_boxed_slice(),
+                bounds,
+                captures: captures.into_boxed_slice(),
+            });
+        return Some(());
+    }
     for instruction in &mut instructions[body] {
         if matches!(
             instruction,
@@ -1432,6 +1459,172 @@ mod tests {
     }
 
     #[test]
+    fn captured_reference_sequence_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(b)(\1\2)*",
+            r"(a)(b)(\1\2)*?",
+            r"(a)(b)(\1\2)+",
+            r"(a)(b)(\1\2)+?",
+            r"(a)(b)(\1\2)?",
+            r"(a)(b)(\1\2)??",
+            r"(a)(bb)(\2\1){1,3}",
+            r"(a)(bb)(\2\1){1,3}?",
+            r"(a)(b)(()\1\2())*ab",
+            r"(a)(b)(()\1\2())*?ab",
+            r"((a)(b)(\2\3)+)\1",
+            r"((a)(b)(\2\3)+?)\1",
+            r"(?:(a)|(b))(\1\2)+c",
+            r"(?:(a)|(b))(\2\1)+c",
+            r"(a)(b)(\1\2)*(\2\1)*",
+            r"(a)(b)(\1\2)*?(\2\1)*?",
+            r"(\2\3)+(a)(b)",
+            r"((\1\3)+a)(b)",
+            r"()()(\1\2){2,3}",
+            r"(a)(b)(\1\2){999999999999999999999999999999}",
+            r"(a)(b)(\1\2){0,999999999999999999999999999999}?c",
+            r"^([µ])(a)(()\1\2())+$",
+            r"\b(\w)(\w)(\1\2)+\b",
+            r"(.)(a)(\1\2){1,2}b|()()(\4\5)+",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "ab",
+                    "abab",
+                    "ababab",
+                    "abb",
+                    "abbabba",
+                    "abbaabb",
+                    "abababc",
+                    "abbbbbba",
+                    "aabb",
+                    "aAbB",
+                    "µaΜAµa",
+                    "\n\n",
+                    " ababab ",
+                    "\u{2028}ab\u{2029}",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn captured_sequence_retries_restore_final_ranges_and_empty_siblings() {
+        for (source, input, range, captures) in [
+            (
+                r"(a)(b)(()\1\2())*ab$",
+                "ababab",
+                0..6,
+                vec![Some(0..1), Some(1..2), Some(2..4), Some(2..2), Some(4..4)],
+            ),
+            (
+                r"((a)(b)(\2\3)+?)\1",
+                "abababab",
+                0..8,
+                vec![Some(0..4), Some(0..1), Some(1..2), Some(2..4)],
+            ),
+            (
+                r"(?:(a)|(b))(\1\2)+c",
+                "bbc",
+                0..3,
+                vec![None, Some(0..1), Some(1..2)],
+            ),
+            (r"()()(\1\2)*", "", 0..0, vec![Some(0..0), Some(0..0), None]),
+            (
+                r"()()(\1\2)+",
+                "",
+                0..0,
+                vec![Some(0..0), Some(0..0), Some(0..0)],
+            ),
+            (
+                r"(\2\3)+(a)(b)",
+                "ab",
+                0..2,
+                vec![Some(0..0), Some(0..1), Some(1..2)],
+            ),
+        ] {
+            let matcher =
+                RegExpBackreferenceMatcher::compile(&JsString::from(source), false).unwrap();
+            let found = matcher.find(&JsString::from(input), 0, true).unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+    }
+
+    #[test]
+    fn deep_captured_sequences_keep_iterative_ranges_and_huge_empty_minimums_finite() {
+        let source = JsString::from(
+            format!("(a)(b){}\\1\\2{}+", "(".repeat(100000), ")".repeat(100000)).as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("ababab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..6);
+        assert_eq!(found.captures.len(), 100002);
+        assert!(found.captures[2..].iter().all(|r| *r == Some(4..6)));
+        let source = JsString::from(format!("()()(()\\1\\2()){{{}}}", "9".repeat(10000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from(""), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        assert!(work < 200, "empty work {work}");
+        assert!(matches!(
+            matcher.find_with_work(&JsString::from(""), 0, true, |_| Err::<(), _>("work")),
+            Err("work")
+        ));
+        for source in [
+            r"(a)(b)((\1)\2)+",
+            r"(a)(b)(\1()\2)+",
+            r"(a)(b)(a\1\2)+",
+            r"(a)(b)(\1|\2)+",
+            r"(a)(b)(\1+\2)+",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert_eq!(work, 0, "{source}");
+        }
+    }
+    #[test]
     fn reference_sequence_body_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -1562,8 +1755,8 @@ mod tests {
         assert!(found.captures.iter().all(|r| *r == Some(0..0)));
         assert!(work < 150, "empty work {work}");
         for source in [
-            r"(a)(b)(\1\2)+",
-            r"(a)(b)(?:()\1\2)+",
+            r"(?:(a)(b)(\1\2)+){2}",
+            r"(?:(a)(b)(?:()\1\2)+){2}",
             r"(a)(b)(?:a\1\2)+",
             r"(a)(b)(?:\1|\2)+",
             r"(a)(b)(?:\1+\2)+",

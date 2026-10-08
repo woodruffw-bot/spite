@@ -2020,6 +2020,30 @@ Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Repeated mixed-target reference sequences now preserve whole enclosing captures
+and empty before/after positions. Three added core regressions cover an inspected
+4,320-record insta snapshot, whole-step greedy/lazy retries, restored final ranges
+and empty positions, undefined zero counts, inactive/forward/self targets,
+100,000 enclosing captures and huge finite empty minimums with constant iteration
+work. All fourteen earlier core reference snapshots remain byte-identical. Six
+runtime regressions cover an inspected 24-record result snapshot, final named
+ranges and indices aliases, mixed numbered/named targets, raw surrogates,
+global/sticky consumers, empty advancement, copies and collection, 100,000
+enclosures and huge finite empty minimums under unlimited defaults, explicit
+search aborts and remaining gaps. Node agrees with every added core and runtime
+snapshot record, 378,240 numbered and 184,320 named fresh match/capture comparisons,
+and ten runtime programs. Existing runtime reference snapshots are unchanged.
+Two prior direct controls now repeat a composite body; all 431 direct gap programs
+and three eval host-gap programs remain unsupported. Partial-body/middle-empty
+captures, other consuming terms, alternatives in repeated bodies, nested
+quantifiers, lookaround/scoped modifiers and Unicode matching remain pending in
+this program. No fixtures or fixture credit are added; inventories, the pin,
+dependencies and unlimited defaults are unchanged.
+
+Stable and MSRV pass all 13,530 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
