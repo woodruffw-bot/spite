@@ -50,6 +50,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// per iteration, and retries restore previous starts, ranges and named aliases.
 /// Positive and negative lookahead use flat atomic assertion contexts. Positive
 /// success retains captures; negative assertions restore the input state.
+/// Transparent zero-width lookahead wrappers execute required repetitions once
+/// and skip optional zero-progress iterations with undefined capture slots.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -82,6 +84,14 @@ enum Instruction {
         bounds: Bounds,
     },
     RepeatChoiceEnd(usize),
+    RepeatZeroWidth {
+        captures: Range<usize>,
+        open: Option<usize>,
+        body: usize,
+        head: usize,
+        end: usize,
+        required: bool,
+    },
     Lookahead {
         body: usize,
         head: usize,
@@ -895,7 +905,9 @@ impl Program {
         cursor: usize,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<(), E> {
-        let Instruction::RepeatChoice { captures, open, .. } = &self.instructions[pc] else {
+        let (Instruction::RepeatChoice { captures, open, .. }
+        | Instruction::RepeatZeroWidth { captures, open, .. }) = &self.instructions[pc]
+        else {
             unreachable!("repetition owns its capture range")
         };
         for slot in captures.clone() {
@@ -1080,6 +1092,25 @@ impl Program {
                     return Ok(None);
                 }
                 return Ok(Some(end));
+            }
+            Instruction::RepeatZeroWidth {
+                captures,
+                head,
+                end,
+                required,
+                ..
+            } => {
+                // RepeatMatcher (22.2.2.3.1) rejects optional zero-progress
+                // iterations. Required identical zero-width iterations collapse
+                // to one body execution with the same final capture state.
+                if *required {
+                    self.enter_choice_body(state, pc, *cursor, charge)?;
+                    return Ok(Some(*head));
+                }
+                for slot in captures.clone() {
+                    self.write_capture(state, slot, None, charge)?;
+                }
+                return Ok(Some(*end));
             }
             Instruction::RepeatChoice { .. } => {
                 charge(1)?;
@@ -1631,6 +1662,72 @@ fn quantify_reference_wrapper(
     Some(())
 }
 
+// Accept only transparent zero-width wrappers containing a prepared lookahead.
+// Peek bodies may consume input, but their outer operation never advances it.
+// Choices and consuming terms outside assertions remain outside this increment.
+fn quantify_zero_width_lookahead(
+    instructions: &mut Vec<PreparedInstruction>,
+    body: Range<usize>,
+    bounds: Bounds,
+    captures: Range<usize>,
+) -> Option<()> {
+    let open = match &instructions[body.start] {
+        PreparedInstruction::Ready(Instruction::Open(slot)) => Some(*slot),
+        PreparedInstruction::Ready(Instruction::Nop) => None,
+        _ => return None,
+    };
+    let mut pc = body.start;
+    let mut found = false;
+    while pc < body.end {
+        match &instructions[pc] {
+            PreparedInstruction::Ready(
+                Instruction::Nop
+                | Instruction::Open(_)
+                | Instruction::Close(_)
+                | Instruction::Assert(_),
+            ) => pc += 1,
+            PreparedInstruction::Ready(Instruction::Jump(target)) => {
+                if *target <= pc || *target >= body.end {
+                    return None;
+                }
+                let PreparedInstruction::Ready(instruction) = &instructions[*target] else {
+                    return None;
+                };
+                let (Instruction::Lookahead {
+                    body: child, end, ..
+                }
+                | Instruction::RepeatZeroWidth {
+                    body: child, end, ..
+                }) = instruction
+                else {
+                    return None;
+                };
+                if *child != pc || *end <= *target || *end > body.end {
+                    return None;
+                }
+                found = true;
+                pc = *end;
+            }
+            _ => return None,
+        }
+    }
+    if !found {
+        return None;
+    }
+    let entry = instructions.len() + 1;
+    instructions[body.start] = PreparedInstruction::Ready(Instruction::Jump(entry));
+    instructions.push(PreparedInstruction::Ready(Instruction::Jump(entry + 1)));
+    instructions.push(PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
+        captures,
+        open,
+        body: body.start,
+        head: body.start + 1,
+        end: entry + 1,
+        required: bounds.0 != Some(0),
+    }));
+    Some(())
+}
+
 fn quantify_progressing_choice(
     instructions: &mut Vec<PreparedInstruction>,
     body: Range<usize>,
@@ -1651,6 +1748,17 @@ fn quantify_progressing_choice(
     let mut next = body.end;
     while next > body.start {
         let pc = next - 1;
+        if let PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
+            body: child, end, ..
+        }) = &instructions[pc]
+        {
+            if *end != pc + 1 || *child < body.start || *child >= pc {
+                return None;
+            }
+            progresses[*child] = progresses[*end];
+            next = *child;
+            continue;
+        }
         if pc > body.start {
             if let PreparedInstruction::Ready(Instruction::Lookahead {
                 body: child,
@@ -1903,6 +2011,16 @@ fn prepare(
                     let end = instructions.len();
                     let start = if capture.is_some() { entry - 1 } else { entry };
                     if last_complex_group.is_some_and(|pc| pc >= start)
+                        && quantify_zero_width_lookahead(
+                            &mut instructions,
+                            start..end,
+                            bounds,
+                            capture_start..capture_count,
+                        )
+                        .is_some()
+                    {
+                        last_complex_group = Some(instructions.len() - 1);
+                    } else if last_complex_group.is_some_and(|pc| pc >= start)
                         || quantify_reference_wrapper(
                             &mut instructions,
                             start..end,
@@ -6367,6 +6485,144 @@ mod tests {
     }
 
     #[test]
+    fn zero_width_lookahead_repetition_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?:(?=(abc)))a",
+            r"(?:(?=(abc)))?a",
+            r"(?:(?=(abc))){1,1}a",
+            r"(?:(?=(abc))){0,1}a",
+            r"((?=(a))){2}\1\2",
+            r"((?=(a))){0,2}b",
+            r"(?:(?!(a)b)){2}\1a",
+            r"(?:(?!(a)b))*\1a",
+            r"(?:(?=(a))){2,4}?a",
+            r"(?:(?=(a))){4}a",
+            r"(?:(?=(a))){0}a",
+            r"(?:(?=(a))){1}a|b",
+            r"(?:(?=(a|ab))){2}\1b$",
+            r"(?:(?=(ab|a))){2}\1b$",
+            r"(?:(?=(a+))){2}a*b\1",
+            r"(?:(?=(a))^){2}a",
+            r"(?:(\b)(?=(a))()){2}a",
+            r"(?:(?:(?=(a))){2}){3}\1",
+            r"(?:(?:(?=(a)))?){2}a",
+            r"(?:(?:(?=(a))){2}a|b)+c",
+            r"(?:(?:(?=(a)))?a|b)+c",
+            r"(?:(?=(\uD800))){2}\1",
+            r"(?:(?=(^a))){2}\1",
+            r"(?:(?=(a|b)+)){2}\1",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, false, false),
+                (false, true, true),
+            ] {
+                let matcher =
+                    RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                        &JsString::from(source),
+                        ignore_case,
+                        multiline,
+                        dot_all,
+                        RegExpBackreferenceNamedBindings::default(),
+                        |_| Ok::<_, ()>(()),
+                    )
+                    .unwrap()
+                    .unwrap();
+                for text in [
+                    "", "a", "b", "ab", "abb", "aab", "aba", "baabac", "acbc", "abc", "AA", "q\na",
+                    "a\n", "\u{d7ff}", "😀",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true), (2, false)] {
+                        let result = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {result:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn required_zero_width_lookahead_keeps_captures_while_optional_iterations_skip() {
+        for (source, capture) in [
+            (r"(?:(?=(abc)))?a", None),
+            (r"(?:(?=(abc))){0,1}a", None),
+            (r"(?:(?=(abc))){1,1}a", Some(0..3)),
+            (r"(?:(?=(abc))){2,4}?a", Some(0..3)),
+        ] {
+            let matcher =
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+            let found = matcher.find(&JsString::from("abc"), 0, true).unwrap();
+            assert_eq!(found.range, 0..1);
+            assert_eq!(found.captures[0], capture);
+        }
+    }
+
+    #[test]
+    fn nested_zero_width_lookahead_counts_remain_flat_huge_and_fallible() {
+        let source = JsString::from(
+            format!(
+                "{}(?=(a)){}\\1",
+                "(?:".repeat(100000),
+                "){2}".repeat(100000)
+            )
+            .as_str(),
+        );
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let clone = matcher.clone();
+        drop(matcher);
+        assert_eq!(
+            clone.find(&JsString::from("a"), 0, true).unwrap().captures[0],
+            Some(0..1)
+        );
+        let huge = "9".repeat(10000);
+        for (bounds, capture) in [
+            (format!("{{{huge}}}"), Some(0..1)),
+            (format!("{{0,{huge}}}"), None),
+            (format!("{{1,{huge}}}?"), Some(0..1)),
+        ] {
+            let source = JsString::from(format!("(?:(?=(a))){bounds}a").as_str());
+            let matcher =
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &source,
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                matcher
+                    .find(&JsString::from("a"), 0, true)
+                    .unwrap()
+                    .captures[0],
+                capture
+            );
+        }
+        assert_eq!(
+            clone
+                .find_with_work(&JsString::from("a"), 0, true, |_| Err::<(), _>(
+                    "explicit work"
+                ))
+                .unwrap_err(),
+            "explicit work"
+        );
+    }
+
+    #[test]
     fn lookahead_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -6507,7 +6763,7 @@ mod tests {
         for text in [
             r"(?=a)+",
             r"(?!a)?",
-            r"(?:(?=a))*",
+            r"(?:(?<=a))*",
             r"(?:(?=(a))|b)+",
             r"(?<=a)b",
             r"(?i:a)",

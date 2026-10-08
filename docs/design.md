@@ -1389,6 +1389,28 @@ positive and negative nesting, cloning and dropping remain iterative; host work
 is fallible and limits remain opt-in. Lookbehind, scoped modifiers, Unicode-mode
 matching and possibly empty complete repetition paths remain pending here.
 
+
+Transparent repetition wrappers containing lookahead use a proven zero-width body
+(RepeatMatcher, 22.2.2.3.1). Preparation follows ordinary neutral/capture/assertion
+instructions and skips validated lookahead or previously proven zero-width child
+bodies. Choices, references and consuming terms outside these assertions remain
+outside this increment. Each wrapper retains its original body entry and capture
+range. The backwards progress proof treats this child as zero-width, so only a
+consuming parent continuation can establish iteration progress.
+
+If the minimum is zero, optional zero-progress iterations are rejected and their
+capture slots stay undefined. For a positive minimum, entering the body clears
+its capture range and restores its root open effect. The first successful body
+execution has the same input position, prefix state and final captures as every
+required repetition: internal captures are reset between iterations, assertions
+are atomic and no consuming operation or outside choice is accepted. Required
+iterations therefore collapse to one body execution, including counts larger
+than platform capacity. The terminal returns directly to the original
+continuation; no count frame or recursive execution is needed. Inner captures
+may extend beyond the empty outer capture. The shared undo trail restores these
+ranges and named aliases on outer retries. Nested wrappers, copies and dropping
+remain flat and host limits remain opt-in.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
