@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13674 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 13676 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -1654,10 +1654,10 @@ Stable and MSRV pass all 13,530 corpus variants, workspace targets and
 documentation tests. Formatting, denied-warning Clippy, dependency/fixture
 policy and every pinned offline generator check pass.
 
-The current inventory is 7117 fixtures, eleven unchanged harness files and 7098
-reviewed Script sources. Its 13674 variants are 12197 harness positives, 1469
+The current inventory is 7118 fixtures, eleven unchanged harness files and 7099
+reviewed Script sources. Its 13676 variants are 12199 harness positives, 1469
 parse negatives, four raw positives and four runtime negatives. RegExp builtin
-coverage is 270 positive whole programs, separate from 337 grammar fixtures.
+coverage is 271 positive whole programs, separate from 337 grammar fixtures.
 The exec selection is 75 of 79 originals, with four Unicode-mode exclusions;
 the named-group selection is 21 of 36, with fifteen lookbehind/Unicode exclusions.
 No pin, prior negative expectation, dependency or unlimited runtime default changes.
@@ -2674,6 +2674,27 @@ and unlimited defaults remain unchanged in this implementation increment.
 Stable and MSRV pass all 13,674 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+The unchanged complete pinned lookBehind/word-boundary.js original now adds two
+normal/strict harness-positive variants. All four assertions are retained:
+word/non-word boundary matches, composed nested lookbehind and an exact null
+outcome. Source, metadata, specification quotation and V8 copyright notice are
+preserved; Git blob identity and manifest SHA-256 digest verify the entire original.
+Stable, MSRV and Node pass both complete variants under unlimited defaults.
+The existing compareArray.js include and all eleven helpers are unchanged.
+
+All seventeen whole lookBehind originals were reviewed without isolating cases.
+The current selection is three of seventeen; fourteen exclusions still need
+captures, variable counts, alternatives, references or other nested assertions
+and receive no passing credit. The active corpus has 7118 fixtures and 7099
+reviewed Script sources, yielding 13676 variants: 12199 harness positives, 1469
+parse negatives, four raw positives and four runtime negatives. RegExp builtin
+coverage contains 271 whole positive programs, separately from 337 grammar
+fixtures. The pin, dependencies and existing negative expectations are unchanged.
+
+Stable and MSRV pass all 13,676 unchanged pinned-corpus variants and the
+complete workspace target and documentation checks. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
