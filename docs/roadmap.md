@@ -390,6 +390,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute nested fixed capture-free ordinary lookbehind with flat assertion frames, summarized child widths, exact nested boundary positions and positive/negative propagation.
 - [x] Execute unrepeated captures inside fixed ordinary lookbehind with pre-match input ranges, retained positive captures and checkpointed nested negative/failed-body restoration.
 - [x] Execute exact-count capture-free character sequences inside fixed ordinary lookbehind with checked complete widths, compact iteration and retained surrounding capture ranges.
+- [x] Execute exact-count capturing character sequences inside fixed ordinary lookbehind with leftmost backward-iteration ranges, undefined zero-count slots and checkpointed named aliases.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

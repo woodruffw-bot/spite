@@ -1517,10 +1517,11 @@ pending.
 Unrepeated captures inside fixed ordinary lookbehind share the existing capture
 trail (22.2.2.8). Preparation accepts capture open/close operations as zero-width
 while retaining the exact character/count proof. Internal references, choices,
-variable widths, repeated capturing groups and nested lookahead remain excluded.
+variable widths and nested lookahead remain excluded. Exact-count repeated
+character captures are described below.
 Each unrepeated capture therefore has the same absolute endpoints under forward
 and backward body evaluation. Exact-count character terms may occur inside an
-unrepeated capture; repeating that capture itself is a separate pending case.
+unrepeated capture; exact-count capturing sequences are described below.
 
 Fixed assertion frames retain a capture checkpoint in addition to their local
 input position. Open/close operations record full-input starts and ranges, which
@@ -1557,8 +1558,34 @@ prefixes fail before iteration even for a platform-maximum representable width.
 Iteration allocates no count-dependent state and charges each actual comparison.
 Nested fixed assertion frames, negative capture rollback, boundary context and
 parent progress/zero-width summaries retain their existing behavior. Variable
-counts, repeated captures/assertions, nested counted sequences and internal
+counts, repeated assertions, nested counted sequences and internal
 references/choices remain pending. Defaults remain unlimited.
+
+
+Exact-count capturing character sequences retain the same fixed-width plan
+(RepeatMatcher, 22.2.2.3.1; Assertion, 22.2.2.8). Their bodies contain only one-unit
+character/class predicates and transparent group structure, with no internal
+capture reads, alternatives, assertions or nested counts. Preparation retains
+original capture slots and term-relative spans; checked complete widths still
+bound every comparison. Capture enclosures outside the repeated sequence remain
+unrepeated and retain their complete ranges.
+
+Backward repetition finishes with the leftmost input iteration. After a successful
+exact-count comparison, execution records each repeated slot's span relative to
+that first forward input iteration. It does not use the forward matcher's final
+iteration. Empty partial captures retain their leftmost boundary, while a zero
+count writes undefined slots rather than manufacturing an iteration. The body
+has no capture reads, so only the final observable ranges need to be written;
+no capture-start mutation or per-count capture state is required.
+
+Capture writes use the existing trail and named binding inventory. Negative
+assertions and failed surrounding bodies restore them to their frame checkpoint;
+outer retries and consuming parent loops retain their normal capture clearing.
+Positive ranges before the whole match's start feed outside references, result
+indices and consumers unchanged. Comparison and capture work remains fallible
+and opt-in. Deep capture inventories, copies, collection and dropping stay flat;
+default quotas remain unlimited. Variable counts, branch/assertion/reference
+bodies, empty-only repeated bodies and nested counted sequences remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

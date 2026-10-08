@@ -143,7 +143,7 @@ fn explicit_sequence_lookbehind_work_aborts_before_last_index_and_handlers() {
 fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupported() {
     for source in [
         r"/(?<=(?:ab){1,2})c/.exec('ababc')",
-        r"/(?<=(ab){2})c/.exec('ababc')",
+        r"/(?<=(ab){1,2})c/.exec('ababc')",
         r"/(?<=(?:a\b){2})c/.exec('ababc')",
         r"/(?<=(?:a(?<=a)){2})c/.exec('ababc')",
         r"/(a)(?<=(?:\1b){2})c/.exec('ababc')",
