@@ -1841,6 +1841,38 @@ work and heap quotas stay unlimited. Capture-dependent child continuations,
 unproved variable-width bodies, other unsupported native features and Unicode
 modes remain pending.
 
+
+Linear ordinary lookbehind can read stable outside numeric and named capture
+references (22.2.2.8, 22.2.2.9.2). Preparation first attempts the existing fixed
+proof, then a separate linear plan containing only ordinary character/set and
+boundary operations, unrepeated captures and outside references. A numeric target
+must lie outside the complete owner's capture declaration range; every slot of
+a named alias group must also lie outside it. Original branch/name inventories
+and final reference bounds validation remain intact.
+
+The plan retains a constant width and a flat list of outside targets. At assertion
+entry it adds their current UTF-16 range lengths with checked arithmetic; undefined
+or empty targets contribute zero. Checked subtraction finds the complete available
+prefix. No target can change while the owner executes, so source-order comparison
+of that prefix is equivalent to backward reference comparison. The existing
+canonicalizer, input context and capture checkpoints preserve ignoreCase,
+boundaries, owned pre-match ranges, negative restoration and imported values.
+Open or forward targets outside the assertion read their current undefined value.
+
+Already proved fixed lookahead/lookbehind and exact-zero skipped scopes can be
+summarized without rescanning their body. Fixed backward parents and fixed
+lookahead reject children with dynamic reference widths, preserving their
+capture-read-free ordering proof. The linear fallback also rejects such children,
+internal reads, choices and counted/variable units. Generic forward execution
+retains its existing child assertion semantics.
+
+The width list and execution frames are flat, do not expand input or source and
+need no per-match target allocation. Checked unavailable or overflowing widths
+fail positive assertions and succeed for negative assertions. Deep owned slots,
+clones and completed negative rollback use no native recursion. Default host
+quotas remain unlimited; other reference-dependent backward plans and Unicode
+modes remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

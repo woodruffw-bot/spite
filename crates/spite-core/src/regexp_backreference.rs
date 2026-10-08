@@ -123,7 +123,7 @@ enum Instruction {
     LookaheadEnd(usize),
     Lookbehind {
         body: usize,
-        width: usize,
+        width: LookbehindWidth,
         negative: bool,
         alternatives: Box<[usize]>,
     },
@@ -151,6 +151,15 @@ enum Instruction {
         bounds: Bounds,
         copies: usize,
         captures: Box<[(usize, ReferenceCaptureSpan)]>,
+    },
+}
+
+#[derive(Debug)]
+enum LookbehindWidth {
+    Fixed(usize),
+    OutsideReferences {
+        fixed: usize,
+        references: Box<[(usize, bool)]>,
     },
 }
 
@@ -1571,14 +1580,31 @@ impl Program {
     ) -> Result<FixedLookbehindFrame, E> {
         let Instruction::Lookbehind {
             body,
-            width,
+            ref width,
             negative,
             ref alternatives,
         } = self.instructions[entry]
         else {
             unreachable!("lookbehind retains its control instruction")
         };
-        let position = cursor.checked_sub(width);
+        let width = match width {
+            LookbehindWidth::Fixed(width) => Some(*width),
+            LookbehindWidth::OutsideReferences { fixed, references } => {
+                let mut width = Some(*fixed);
+                for &(index, named) in references {
+                    charge(1)?;
+                    let range = if named {
+                        &state.named[index]
+                    } else {
+                        &state.captures[index]
+                    };
+                    width = width
+                        .and_then(|width| width.checked_add(range.as_ref().map_or(0, Range::len)));
+                }
+                width
+            }
+        };
+        let position = width.and_then(|width| cursor.checked_sub(width));
         let choice_base = choices.len();
         let mut pc = body + 1;
         if !alternatives.is_empty() {
@@ -1808,6 +1834,25 @@ impl Program {
                 }
                 Instruction::Character(_) | Instruction::Set(_) => {
                     self.compare_fixed_lookbehind_term(input, position, term, charge)?
+                }
+                Instruction::Reference(index) | Instruction::NamedReference(index) => {
+                    let range = if matches!(term, Instruction::Reference(_)) {
+                        &state.captures[*index]
+                    } else {
+                        &state.named[*index]
+                    };
+                    if let Some(range) = range {
+                        if let Some(end) =
+                            self.compare_reference(input, *position, range, charge)?
+                        {
+                            *position = end;
+                            true
+                        } else {
+                            false
+                        }
+                    } else {
+                        true
+                    }
                 }
                 Instruction::QuantifiedReference {
                     bounds, captures, ..
@@ -2565,7 +2610,11 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 first
             }
             PreparedInstruction::Ready(
-                Instruction::Lookbehind { body: child, .. }
+                Instruction::Lookbehind {
+                    body: child,
+                    width: LookbehindWidth::Fixed(_),
+                    ..
+                }
                 | Instruction::SkipGroup { body: child, .. },
             ) => {
                 if *child <= entry || *child >= pc {
@@ -2692,6 +2741,91 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
     Some(width)
 }
 
+// A linear body's outside targets cannot change while it executes. Resolve its
+// width from those original ranges at entry, then compare the same prefix in
+// source order. Internal reads and variable/dependent children need a different
+// backward plan and remain unsupported (22.2.2.8, 22.2.2.9.2).
+fn outside_reference_lookbehind_width(
+    instructions: &[PreparedInstruction],
+    entry: usize,
+    captures: Range<usize>,
+    named_groups: &[&[usize]],
+) -> Option<LookbehindWidth> {
+    if !matches!(
+        instructions.get(entry),
+        Some(PreparedInstruction::Ready(Instruction::Nop))
+    ) {
+        return None;
+    }
+    let mut fixed = 0usize;
+    let mut references = Vec::new();
+    let mut pc = entry + 1;
+    while pc < instructions.len() {
+        match &instructions[pc] {
+            PreparedInstruction::Ready(Instruction::Reference(index)) => {
+                if captures.contains(index) {
+                    return None;
+                }
+                references.push((*index, false));
+            }
+            PreparedInstruction::Ready(Instruction::NamedReference(index)) => {
+                if named_groups
+                    .get(*index)?
+                    .iter()
+                    .any(|slot| captures.contains(slot))
+                {
+                    return None;
+                }
+                references.push((*index, true));
+            }
+            PreparedInstruction::Ready(Instruction::Character(_))
+            | PreparedInstruction::Set {
+                repeated: false, ..
+            } => fixed = fixed.checked_add(1)?,
+            PreparedInstruction::Ready(
+                Instruction::Nop
+                | Instruction::Open(_)
+                | Instruction::Close(_)
+                | Instruction::Assert(_),
+            ) => {}
+            PreparedInstruction::Ready(Instruction::Jump(owner)) => {
+                let end =
+                    match instructions.get(*owner)? {
+                        PreparedInstruction::Ready(Instruction::Lookbehind {
+                            body,
+                            width: LookbehindWidth::Fixed(_),
+                            ..
+                        }) if *body == pc => owner.checked_add(1)?,
+                        PreparedInstruction::Ready(Instruction::Lookahead {
+                            body,
+                            end,
+                            fixed_width: Some(_),
+                            ..
+                        }) if *body == pc => *end,
+                        PreparedInstruction::Ready(Instruction::SkipGroup {
+                            body, end, ..
+                        }) if *body == pc => *end,
+                        _ => return None,
+                    };
+                if end <= pc || end > instructions.len() {
+                    return None;
+                }
+                pc = end;
+                continue;
+            }
+            _ => return None,
+        }
+        pc += 1;
+    }
+    if references.is_empty() {
+        return None;
+    }
+    Some(LookbehindWidth::OutsideReferences {
+        fixed,
+        references: references.into_boxed_slice(),
+    })
+}
+
 fn prepare(
     source: &[u16],
     ignore_case: bool,
@@ -2805,7 +2939,17 @@ fn prepare(
                     // Equal-width branches have fixed input positions and no
                     // internal capture reads. Counted captures retain their
                     // leftmost backward iteration (Assertion, 22.2.2.8).
-                    let width = fixed_lookbehind_width(&mut instructions, entry)?;
+                    let width =
+                        if let Some(width) = fixed_lookbehind_width(&mut instructions, entry) {
+                            LookbehindWidth::Fixed(width)
+                        } else {
+                            outside_reference_lookbehind_width(
+                                &instructions,
+                                entry,
+                                capture_start..capture_count,
+                                bindings.groups,
+                            )?
+                        };
                     let original = std::mem::replace(
                         &mut instructions[entry],
                         PreparedInstruction::Ready(Instruction::Nop),
@@ -3053,6 +3197,160 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn outside_reference_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=\1)b",
+            r"(.)(?<=(\1\1))",
+            r"(..)(?<=\1\1\1)",
+            r"(a)(?<=a\1)b",
+            r"(a)(?<=\1a)b",
+            r"(a)(?<!\1)b",
+            r"(a)(?<!b\1)b",
+            r"(?<=\1)(a)",
+            r"(?<=\1)a(a)",
+            r"(a(?<=\1))b",
+            r"()(?<=(\1))b",
+            r"()(?<=\1)b",
+            r"(?=(a))(?<=\1)a",
+            r"(?=(a))(?<=(\1))a",
+            r"(?=(a))(?<!\1)a",
+            r"(a)(?<=\1\b)b",
+            r"(a)(?<=\1\B)b",
+            r"(a)(?<=^\1)b",
+            r"(a)(?<=(?:\1))b",
+            r"(a)(?<=(\1))b",
+            r"(a)(?<=(\1\1))b",
+            r"(a)(?<=\1(?=b))b",
+            r"(a)(?<=\1(?=(b)))b",
+            r"(a)(?<=(?<=a)\1)b",
+            r"(a)(?<=\1(?<=a))b",
+            r"(a)(?<=(a|b){0}\1)b",
+            r"(a)(?<=(?:(?=q)\1){0}\1)b",
+            r"(?:(a|b)(?<=\1))+c",
+            r"(µ)(?<=\1)Μ",
+            r"([\uD800])(?<=\1)[\uDC00]",
+            r"(a)(?<!(\1)q)b",
+            r"(?<=(?:\1){0})(a)",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aaab", "abb", "abc", "ababab", "aaaabb", " abc", "a b",
+                    "a\nb", "a\r\n", "µµΜ", "abbbc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn outside_reference_lookbehind_preserves_owned_ranges_open_forward_and_negative_slots() {
+        for (source, text, range, captures) in [
+            (r"(a)(?<=\1)b", "qab", 1..3, vec![Some(1..2)]),
+            (r"(.)(?<=(\1\1))", "abb", 2..3, vec![Some(2..3), Some(1..3)]),
+            (
+                r"(a)(?<=(\1\1))b",
+                "aaab",
+                2..4,
+                vec![Some(2..3), Some(1..3)],
+            ),
+            (r"(?<=\1)(a)", "qa", 1..2, vec![Some(1..2)]),
+            (r"(a(?<=\1))b", "qab", 1..3, vec![Some(1..2)]),
+            (r"()(?<=(\1))b", "qb", 1..2, vec![Some(1..1), Some(1..1)]),
+            (r"(a)(?<!(\1)q)b", "aaab", 2..4, vec![Some(2..3), None]),
+            (
+                r"(a)(?<=\1(?=(b)))b",
+                "qab",
+                1..3,
+                vec![Some(1..2), Some(2..3)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(\1))a",
+            r"(a)(?<=(?<=\1))b",
+            r"(a)(?<=(?=\1)\1)b",
+            r"(a)(?<=\1|a)b",
+            r"(a)(?<=\1{2})b",
+            r"(a)(?<=\1+)b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xdc00]);
+        let found = ordinary(r"([\uD800])(?<=\1)[\uDC00]", false, false, false)
+            .find(&input, 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(&*found.captures, &[Some(0..1)]);
+    }
+
+    #[test]
+    fn outside_reference_lookbehind_deep_owned_ranges_clones_completed_negative_rollback_and_work()
+    {
+        let source =
+            "(a)(?<=".to_owned() + &"(".repeat(100000) + r"\1\1" + &")".repeat(100000) + ")b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("aaab"), 2, true).unwrap();
+        assert_eq!(found.range, 2..4);
+        assert_eq!(found.captures.len(), 100001);
+        assert_eq!(found.captures[0], Some(2..3));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..3)));
+        drop(copy);
+        let source =
+            "(a)(?<!".to_owned() + &"(".repeat(100000) + r"\1\1" + &")".repeat(100000) + "q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("aaab"), 2, true)
+            .unwrap();
+        assert_eq!(found.range, 2..4);
+        assert_eq!(found.captures[0], Some(2..3));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let matcher = ordinary(r"(a+)(?<=\1)b", false, false, false);
+        let input = JsString::from(("a".repeat(50000) + "b").as_str());
+        let found = matcher.find(&input, 0, true).unwrap();
+        assert_eq!(found.range, 0..50001);
+        assert_eq!(&*found.captures, &[Some(0..50000)]);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
@@ -6196,7 +6494,7 @@ mod tests {
             r"(?<=a|bb)c",
             r"(?<=a+)b",
             r"(?<=a{1,2})b",
-            r"(?<=\1)(a)",
+            r"(?<=(\1))a",
             r"(?<=(?=a+))a",
         ] {
             assert!(
