@@ -38,12 +38,10 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// and noncapturing groups are accepted, including empty, nested and forward
 /// references, ordinary character sets, dot and word/input/line assertions.
 /// Top-level and arbitrarily nested alternatives, quantified reference atoms and
-/// groups repeating the same reference are accepted, including whole capturing
-/// enclosures and empty siblings before/after the body. Different reference
-/// sequences accept whole enclosures and empty before/after siblings as well.
-/// Other quantifiers return
-/// `None`. At least one numbered or registered named reference is required;
-/// plain literals retain their existing linear-search matcher.
+/// groups repeating one or more references are accepted, including whole
+/// capturing enclosures and empty captures anywhere between the references.
+/// Other quantifiers return `None`. At least one numbered or registered named
+/// reference is required; plain literals retain their existing linear-search matcher.
 /// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
 pub struct RegExpBackreferenceMatcher(Arc<Program>);
@@ -90,6 +88,7 @@ enum ReferenceCaptureSpan {
     Before,
     Reference,
     After,
+    Middle(usize),
 }
 
 enum PreparedInstruction {
@@ -156,6 +155,7 @@ enum PendingAlternative {
         limit: usize,
         base: usize,
         captures: Box<[Range<usize>]>,
+        offsets: Box<[usize]>,
         width: usize,
         greedy: bool,
     },
@@ -209,6 +209,7 @@ impl ChoiceFrame {
                         self.instruction,
                         state,
                         (count > 0).then(|| end - width..end),
+                        None,
                         charge,
                     )?;
                     Ok(Some((self.instruction + 1, end)))
@@ -226,6 +227,7 @@ impl ChoiceFrame {
                         self.instruction,
                         state,
                         (count > 0).then(|| end - width..end),
+                        None,
                         charge,
                     )?;
                     Ok(Some((self.instruction + 1, end)))
@@ -236,6 +238,7 @@ impl ChoiceFrame {
                 limit,
                 base,
                 captures,
+                offsets,
                 width,
                 greedy,
             } => {
@@ -263,6 +266,7 @@ impl ChoiceFrame {
                     self.instruction,
                     state,
                     (count > 0).then(|| end - *width..end),
+                    Some(offsets),
                     charge,
                 )?;
                 Ok(Some((self.instruction + 1, end)))
@@ -671,6 +675,7 @@ impl Program {
         pc: usize,
         state: &mut CaptureState,
         range: Option<Range<usize>>,
+        offsets: Option<&[usize]>,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<(), E> {
         let captures = match &self.instructions[pc] {
@@ -684,6 +689,20 @@ impl Program {
                     ReferenceCaptureSpan::Before => range.start..range.start,
                     ReferenceCaptureSpan::Reference => range.clone(),
                     ReferenceCaptureSpan::After => range.end..range.end,
+                    ReferenceCaptureSpan::Middle(index) => {
+                        let offset = if let Some(offsets) = offsets {
+                            offsets[index]
+                        } else {
+                            let Instruction::QuantifiedReference { copies, .. } =
+                                &self.instructions[pc]
+                            else {
+                                unreachable!("mixed targets provide prefix offsets")
+                            };
+                            range.len() / *copies * index
+                        };
+                        let point = range.start + offset;
+                        point..point
+                    }
                 };
                 charge(1)?;
                 state.captures[slot] = Some(range.clone());
@@ -783,6 +802,9 @@ impl Program {
                 ..
             } => {
                 charge(references.len())?;
+                charge(references.len() + 1)?;
+                let mut offsets = Vec::with_capacity(references.len() + 1);
+                offsets.push(0usize);
                 let mut captures = Vec::with_capacity(references.len());
                 for &(index, named) in references {
                     charge(1)?;
@@ -791,21 +813,22 @@ impl Program {
                     } else {
                         &state.captures[index]
                     };
+                    let length = range.as_ref().map_or(0, Range::len);
+                    let Some(width) = offsets.last().unwrap().checked_add(length) else {
+                        return Ok((*min == Some(0)).then_some(pc + 1));
+                    };
+                    offsets.push(width);
                     if let Some(range) = range.as_ref().filter(|r| !r.is_empty()) {
                         captures.push(range.clone());
                     }
                 }
-                let Some(width) = captures
-                    .iter()
-                    .try_fold(0usize, |n, r| n.checked_add(r.len()))
-                else {
-                    return Ok((*min == Some(0)).then_some(pc + 1));
-                };
+                let width = *offsets.last().unwrap();
                 if width == 0 {
                     self.complete_reference_captures(
                         pc,
                         state,
                         (*min != Some(0)).then_some(*cursor..*cursor),
+                        Some(&offsets),
                         charge,
                     )?;
                     return Ok(Some(pc + 1));
@@ -845,6 +868,7 @@ impl Program {
                     pc,
                     state,
                     (count > 0).then(|| *cursor - width..*cursor),
+                    Some(&offsets),
                     charge,
                 )?;
                 if next.is_some() {
@@ -857,6 +881,7 @@ impl Program {
                             limit: if *greedy { min } else { limit },
                             base,
                             captures: captures.into_boxed_slice(),
+                            offsets: offsets.into_boxed_slice(),
                             width,
                             greedy: *greedy,
                         },
@@ -883,6 +908,7 @@ impl Program {
                         pc,
                         state,
                         (*min != Some(0)).then_some(*cursor..*cursor),
+                        None,
                         charge,
                     )?;
                     return Ok(Some(pc + 1));
@@ -922,6 +948,7 @@ impl Program {
                     pc,
                     state,
                     (count > 0).then(|| *cursor - capture.len() * *copies..*cursor),
+                    None,
                     charge,
                 )?;
                 if next.is_some() {
@@ -1080,6 +1107,8 @@ fn quantify_reference_wrapper(
                 ReferenceCaptureSpan::Reference
             } else if start == copies && end == copies {
                 ReferenceCaptureSpan::After
+            } else if start == end {
+                ReferenceCaptureSpan::Middle(start)
             } else {
                 return None;
             };
@@ -1459,6 +1488,186 @@ mod tests {
     }
 
     #[test]
+    fn middle_empty_capture_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(\1()\1)*",
+            r"(a)(\1()\1)*?",
+            r"(a)(b)(\1()\2)+",
+            r"(a)(b)(\1()\2)+?",
+            r"(a)(b)(\1()\2)?",
+            r"(a)(b)(\1()\2)??",
+            r"(a)(bb)(\2()\1){1,3}",
+            r"(a)(bb)(\2()\1){1,3}?",
+            r"(a)(b)(()\1()\2())*ab",
+            r"(a)(b)(()\1()\2())*?ab",
+            r"((a)(b)(\2()\3)+)\1",
+            r"((a)(b)(\2()\3)+?)\1",
+            r"(?:(a)|(b))(\1()\2)+c",
+            r"(?:(a)|(b))(\2()\1)+c",
+            r"(a)(b)(\1()\4\2)*(\2()\1)*",
+            r"(a)(b)(\1()\4\2)*?(\2()\1)*?",
+            r"(\3()\4)+(a)(b)",
+            r"((\1()\4)+a)(b)",
+            r"()()(\1()\2){2,3}",
+            r"(a)(b)(\1()\2){999999999999999999999999999999}",
+            r"(a)(b)(\1()\2){0,999999999999999999999999999999}?c",
+            r"^([µ])(a)(()\1()\2())+$",
+            r"\b(\w)(\w)(\1()\2)+\b",
+            r"(.)(a)(\1()\2){1,2}b|()()(\5()\6)+",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (false, true, true),
+            ] {
+                let body = JsString::from(source);
+                let matcher = RegExpBackreferenceMatcher::compile_with_assertions_and_work(
+                    &body,
+                    ignore_case,
+                    multiline,
+                    dot_all,
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                for text in [
+                    "",
+                    "ab",
+                    "abab",
+                    "ababab",
+                    "abb",
+                    "abbabba",
+                    "abbaabb",
+                    "abababc",
+                    "abbbbbba",
+                    "aabb",
+                    "aAbB",
+                    "µaΜAµa",
+                    "\n\n",
+                    " ababab ",
+                    "\u{2028}ab\u{2029}",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        let found = matcher.find(&input, start, sticky);
+                        writeln!(rows,"{body:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {found:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn middle_empty_positions_follow_original_reference_widths_on_retries() {
+        for (source, input, captures) in [
+            (
+                r"(a)(b)(()\1()\2())*ab$",
+                "ababab",
+                vec![
+                    Some(0..1),
+                    Some(1..2),
+                    Some(2..4),
+                    Some(2..2),
+                    Some(3..3),
+                    Some(4..4),
+                ],
+            ),
+            (
+                r"(a)(bb)(\2()\1)+$",
+                "abbbbabba",
+                vec![Some(0..1), Some(1..3), Some(6..9), Some(8..8)],
+            ),
+            (
+                r"(a)(\1()\1)+$",
+                "aaaaa",
+                vec![Some(0..1), Some(3..5), Some(4..4)],
+            ),
+            (
+                r"(?:(a)|(b))(\1()\2)+c",
+                "bbc",
+                vec![None, Some(0..1), Some(1..2), Some(1..1)],
+            ),
+            (
+                r"(?:(a)|(b))(\2()\1)+c",
+                "bbc",
+                vec![None, Some(0..1), Some(1..2), Some(2..2)],
+            ),
+            (
+                r"(a)(b)(\1()\4\2)+",
+                "ababab",
+                vec![Some(0..1), Some(1..2), Some(4..6), Some(5..5)],
+            ),
+            (
+                r"()()(\1()\2)*",
+                "",
+                vec![Some(0..0), Some(0..0), None, None],
+            ),
+            (
+                r"()()(\1()\2)+",
+                "",
+                vec![Some(0..0), Some(0..0), Some(0..0), Some(0..0)],
+            ),
+        ] {
+            let matcher =
+                RegExpBackreferenceMatcher::compile(&JsString::from(source), false).unwrap();
+            let found = matcher.find(&JsString::from(input), 0, true).unwrap();
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+    }
+
+    #[test]
+    fn many_middle_empty_captures_and_finite_empty_minimums_remain_iterative() {
+        let source = JsString::from(format!("(a)(b)(\\1{}\\2)+", "()".repeat(100000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let found = matcher.find(&JsString::from("ababab"), 0, true).unwrap();
+        assert_eq!(found.range, 0..6);
+        assert_eq!(found.captures.len(), 100003);
+        assert_eq!(found.captures[2], Some(4..6));
+        assert!(found.captures[3..].iter().all(|r| *r == Some(5..5)));
+        let source = JsString::from(format!("()()(\\1()\\2){{{}}}", "9".repeat(10000)).as_str());
+        let matcher = RegExpBackreferenceMatcher::compile(&source, false).unwrap();
+        let mut work = 0;
+        let found = matcher
+            .find_with_work(&JsString::from(""), 0, true, |n| {
+                work += n;
+                Ok::<_, ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        assert!(work < 200, "empty work {work}");
+        assert!(matches!(
+            matcher.find_with_work(&JsString::from(""), 0, true, |_| Err::<(), _>("work")),
+            Err("work")
+        ));
+        for source in [
+            r"(a)(b)((\1)\2)+",
+            r"(a)(b)(a\1()\2)+",
+            r"(a)(b)(\1|()\2)+",
+            r"(a)(b)(\1+()\2)+",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_with_work(
+                    &JsString::from(source),
+                    false,
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    }
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert_eq!(work, 0, "{source}");
+        }
+    }
+
+    #[test]
     fn captured_reference_sequence_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -1602,7 +1811,7 @@ mod tests {
         ));
         for source in [
             r"(a)(b)((\1)\2)+",
-            r"(a)(b)(\1()\2)+",
+            r"(a)(b)(a\1()\2)+",
             r"(a)(b)(a\1\2)+",
             r"(a)(b)(\1|\2)+",
             r"(a)(b)(\1+\2)+",
@@ -1927,7 +2136,7 @@ mod tests {
             r"(a)(?:a\1\1)+",
             r"(a)(?:\1|\1)+",
             r"(a)(?:\1+\1)+",
-            r"(a)(?:\1()\1)+",
+            r"(a)(?:a\1()\1)+",
             r"(a)(?:(\1)\1)+",
         ] {
             let mut work = 0;

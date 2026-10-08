@@ -369,6 +369,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute repeated groups of identical numbered/named references with compact multiplicity, exact whole-body counts, complete enclosing captures and whole-iteration greedy/lazy retries.
 - [x] Execute capture-free repeated sequences of different numbered/named references with frozen original targets, exact summed widths, flat whole-sequence retries and mixed reference aliases.
 - [x] Preserve whole enclosing and before/after empty captures in repeated mixed-target reference sequences with final-iteration ranges, zero-count undefined slots and capture checkpoints before retries.
+- [x] Preserve empty captures between repeated reference terms with checked original-order prefix offsets, exact final positions for inactive/empty targets and restored numbered/named slots on retries.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

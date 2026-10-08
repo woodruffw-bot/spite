@@ -1145,9 +1145,8 @@ move by complete body lengths. Whole enclosing captures cover the final body,
 with empty before/after positions retained. Empty targets satisfy finite minimums
 without iterating over occurrences or required repetitions. Preparation needs no
 source expansion or multiplied quantifier bounds, including 100,000 occurrences.
-Captures spanning only part of a multi-reference body, middle empty captures,
-consuming terms, alternatives and nested quantifiers remain pending in this
-program.
+Nonempty captures spanning only part of a multi-reference body, consuming terms,
+alternatives and nested quantifiers remain pending in this program.
 
 Repeated groups may also contain different numbered/named targets.
 Preparation retains an ordered descriptor inventory in one sequence instruction,
@@ -1171,8 +1170,19 @@ before selected body ranges are written. Failed continuations clear those writes
 then a whole-sequence retry installs new final-iteration ranges and named aliases.
 Zero iterations leave every body slot undefined; required empty iterations leave
 empty final slots even for huge finite minimums. Deep enclosures remain iterative,
-including 100,000 capturing wrappers. Partial-body/middle-empty captures, other
-consuming terms, alternatives and nested quantifiers remain pending.
+including 100,000 capturing wrappers.
+Empty captures between references retain their original reference ordinal.
+Checked prefix widths include every target, including undefined and empty ranges,
+so a final empty capture lands after exactly its preceding references. Identical
+references derive the prefix from their shared width and multiplicity; mixed
+sequences retain a flat prefix-offset buffer with their retry frame. Required
+empty iterations place all empty captures at the starting position, while zero
+iterations leave them undefined. Internal empty targets consume nothing whether
+already closed or still undefined after RepeatMatcher clears body slots. Final
+positions and named aliases are restored after whole-body retries without replaying
+capture boundaries per iteration. Buffers and writes receive opt-in work charges;
+100,000 empty captures between references remain iterative. Nonempty partial-body
+captures, other consuming terms, alternatives and nested quantifiers remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

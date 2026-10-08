@@ -128,7 +128,7 @@ fn other_reference_bodies_remain_unsupported_and_plain_failures_return_null() {
         r"/(a)(?:a\1\1)+/.test('aaa')",
         r"/(a)(?:\1|\1)+/.test('aaa')",
         r"/(a)(?:\1+\1)+/.test('aaa')",
-        r"/(a)(?:\1()\1)+/.test('aaa')",
+        r"/(?:(a)(?:\1()\1)+){2}/.test('aaa')",
         r"/(a)(?:\1\1)+/u.test('aaa')",
     ] {
         assert!(
