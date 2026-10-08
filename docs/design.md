@@ -1460,6 +1460,27 @@ comparisons; native stack usage stays flat through deep transparent groups,
 cloning and dropping. Limits remain opt-in, with unlimited defaults. Other
 lookbehind bodies and Unicode-mode matching remain pending.
 
+Capture-free fixed lookbehind additionally admits exact repetition counts of one
+ordinary character or class term (22.2.2.3.1, 22.2.2.8). Preparation retains the
+existing quantified term instruction and verifies equal representable minimum
+and maximum, one consuming term, and no body captures or references. Checked
+width addition accounts for its complete count; the stored character or class
+unit is owned by that repetition and contributes no second width. Zero counts
+contribute zero width. Greedy/lazy spelling cannot change an exact-count result.
+Transparent noncapturing wrappers around a single unit share the same plan.
+
+Execution compares that retained term against each position in the proved input
+prefix. It charges each actual unit comparison and retains no expanded source,
+repeated term vector or count-dependent allocation. Too-short prefixes fail
+before count iteration; even a platform-maximum count remains compact and finite
+for representable inputs. Ordinary characters, classes and their counted terms
+share one comparison helper, preserving existing IgnoreCase and DotAll behavior.
+Input/line/word assertions still use the whole input, and outer captures, cursor,
+negative inversion and repetition summaries retain their existing semantics.
+Counts whose complete fixed width cannot be represented, variable counts,
+repeated multiple-term or assertion bodies, captures and nested assertions inside
+lookbehind remain pending. Host quotas remain opt-in; defaults are unlimited.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

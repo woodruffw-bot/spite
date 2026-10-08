@@ -2580,6 +2580,41 @@ Stable and MSRV pass all 13,670 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Fixed capture-free lookbehind now accepts exact counts of one ordinary character
+or class term, including zero counts, equal bounded minima/maxima, lazy spelling
+and transparent single-unit groups. Checked widths prove the unique prefix start;
+retained units are compared without source expansion or count-sized allocation.
+Variable counts, repeated multiple-term/assertion bodies, captures, references,
+nested assertions and Unicode-mode matching remain pending.
+
+Three further core regressions include an inspected 5040-row snapshot, zero-count
+boundary positions, exact outer captures, 100000 transparent groups, compact
+10000-unit and platform-maximum counts, clone/drop behavior and fallible actual
+construction/search work. Six runtime regressions include an inspected 28-result
+snapshot, named aliases and outer rollback, zero-progress captures, lookahead
+composition, generic consumers, global/sticky advancement, long parent loops,
+copies and collection. Explicit work aborts preserve lastIndex and bypass handlers.
+
+All 5040 core rows, 28 runtime results and ten complete runtime programs agree
+with Node. Another 738304 ordinary and 441456 named-binding range comparisons
+cover all ordinary flags, every candidate start, sticky/search modes, short input
+cross-products and lone surrogates. All 103 core backreference tests and 96 related
+runtime target groups pass. All 119 earlier RegExp snapshots remain byte-identical.
+One obsolete core control and one runtime control now use variable-count
+lookbehind. All 539 direct gaps, eight ordered-coercion programs and four
+direct-eval programs preserve Unsupported and conversion/marker state.
+
+The unchanged whole-program review of all 17 pinned lookBehind originals now
+passes four normal/strict variants: every assertion in simple-fixed-length.js and
+negative.js. Thirty variants remain Unsupported; there are no test, metadata,
+setup or limit failures. Node passes all 34 complete originals. No fixture is
+added in this implementation increment, and the pin, dependencies and unlimited
+defaults remain unchanged.
+
+Stable and MSRV pass all 13,670 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
