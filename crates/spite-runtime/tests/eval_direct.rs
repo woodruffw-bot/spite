@@ -63,7 +63,7 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
         ));
     }
     for pattern in [
-        "(?:ab|c)*",
+        "(?:(?:ab|c)*){2}",
         "(?:(?:[a-z]a+b+){2}){2}",
         "(?:(?<a>a)|(?<a>b)(?:\\\\k<a>)+){2}",
     ] {

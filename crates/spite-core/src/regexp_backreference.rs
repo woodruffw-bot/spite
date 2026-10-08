@@ -43,6 +43,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Character atoms can also be quantified. Repeated groups may supply captures
 /// to references outside their body. Body references use
 /// completed current-iteration captures; forward and open targets remain empty.
+/// Capture-free repeated choices accept variable-width branches when each branch
+/// contains a consuming unit, with flat source-order iteration retries.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -66,6 +68,12 @@ enum Instruction {
     Nop,
     Choice(Box<[usize]>),
     Jump(usize),
+    RepeatChoice {
+        head: usize,
+        end: usize,
+        bounds: Bounds,
+    },
+    RepeatChoiceEnd(usize),
     Character(u16),
     Set(RegExpCharacterMatcher),
     // A sequence repetition owns these terms; ordinary traversal skips them.
@@ -164,9 +172,20 @@ struct ChoiceFrame {
     instruction: usize,
     checkpoint: usize,
     alternative: PendingAlternative,
+    iteration: Option<ChoiceIteration>,
+}
+
+#[derive(Clone, Copy)]
+struct ChoiceIteration {
+    instruction: usize,
+    count: usize,
+    start: usize,
 }
 
 enum PendingAlternative {
+    RepeatChoice {
+        enter: Option<bool>,
+    },
     Choice {
         next: usize,
         prefix_end: usize,
@@ -199,6 +218,23 @@ impl ChoiceFrame {
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<(usize, usize)>, E> {
         match &mut self.alternative {
+            PendingAlternative::RepeatChoice { enter } => {
+                let Some(enter) = enter.take() else {
+                    return Ok(None);
+                };
+                let Instruction::RepeatChoice { head, end, .. } =
+                    program.instructions[self.instruction]
+                else {
+                    unreachable!("choice repetition frame retains its entry")
+                };
+                let context = state.iteration.expect("choice repetition context restored");
+                if enter {
+                    Ok(Some((head, context.start)))
+                } else {
+                    state.iteration = None;
+                    Ok(Some((end, context.start)))
+                }
+            }
             PendingAlternative::Choice { next, prefix_end } => {
                 let Instruction::Choice(alternatives) = &program.instructions[self.instruction]
                 else {
@@ -530,6 +566,7 @@ impl RegExpBackreferenceMatcher {
                     PreparedInstruction::Ready(
                         Instruction::QuantifiedReference { .. }
                             | Instruction::QuantifiedReferenceSequence { .. }
+                            | Instruction::RepeatChoice { .. }
                     )
                 )
             })
@@ -658,6 +695,7 @@ impl RegExpBackreferenceMatcher {
             starts: vec![0; self.0.capture_count],
             named: vec![None; self.0.named_count],
             touched: Vec::with_capacity(self.0.capture_count),
+            iteration: None,
         };
         charge(self.0.frame_capacity)?;
         let mut frames = Vec::<ChoiceFrame>::with_capacity(self.0.frame_capacity);
@@ -668,6 +706,7 @@ impl RegExpBackreferenceMatcher {
             frames.clear();
             let mut cursor = candidate;
             let mut pc = 0;
+            state.iteration = None;
             loop {
                 if pc == self.0.instructions.len() {
                     return Ok(Some(RegExpBackreferenceMatch {
@@ -689,6 +728,7 @@ impl RegExpBackreferenceMatcher {
                     charge(1)?;
                     self.0
                         .clear_captures(&mut state, frame.checkpoint, &mut charge)?;
+                    state.iteration = frame.iteration;
                     if let Some((next, end)) =
                         frame.retry(&self.0, input, &mut state, &mut charge)?
                     {
@@ -709,9 +749,58 @@ struct CaptureState {
     starts: Vec<usize>,
     named: Vec<Option<Range<usize>>>,
     touched: Vec<usize>,
+    iteration: Option<ChoiceIteration>,
 }
 
 impl Program {
+    fn choose_repeat<E>(
+        &self,
+        input: &[u16],
+        cursor: usize,
+        state: &mut CaptureState,
+        frames: &mut Vec<ChoiceFrame>,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<usize>, E> {
+        let context = state.iteration.expect("choice repetition initialized");
+        let Instruction::RepeatChoice {
+            head,
+            end,
+            bounds: (min, max, greedy),
+        } = self.instructions[context.instruction]
+        else {
+            unreachable!("choice repetition retains its entry")
+        };
+        let Some(min) = min else {
+            return Ok(None);
+        };
+        if min.saturating_sub(context.count) > input.len() - cursor {
+            return Ok(None);
+        }
+        let can_exit = context.count >= min;
+        let can_enter = context.count < max.unwrap_or(usize::MAX);
+        if !can_exit && !can_enter {
+            return Ok(None);
+        }
+        let enter = can_enter && (greedy || !can_exit);
+        if can_enter && can_exit {
+            charge(1)?;
+            frames.push(ChoiceFrame {
+                instruction: context.instruction,
+                checkpoint: state.touched.len(),
+                alternative: PendingAlternative::RepeatChoice {
+                    enter: Some(!enter),
+                },
+                iteration: Some(context),
+            });
+        }
+        if enter {
+            Ok(Some(head))
+        } else {
+            state.iteration = None;
+            Ok(Some(end))
+        }
+    }
+
     fn clear_captures<E>(
         &self,
         state: &mut CaptureState,
@@ -799,8 +888,30 @@ impl Program {
                         prefix_end: *cursor,
                     },
                     checkpoint: state.touched.len(),
+                    iteration: state.iteration,
                 });
                 return Ok(Some(alternatives[0]));
+            }
+            Instruction::RepeatChoice { .. } => {
+                state.iteration = Some(ChoiceIteration {
+                    instruction: pc,
+                    count: 0,
+                    start: *cursor,
+                });
+                return self.choose_repeat(input, *cursor, state, frames, charge);
+            }
+            Instruction::RepeatChoiceEnd(entry) => {
+                let context = state
+                    .iteration
+                    .as_mut()
+                    .expect("choice body retains its repetition");
+                debug_assert_eq!(context.instruction, *entry);
+                debug_assert!(*cursor > context.start);
+                // Each accepted body consumes at least one unit. Its count
+                // cannot exceed the input length or overflow usize.
+                context.count += 1;
+                context.start = *cursor;
+                return self.choose_repeat(input, *cursor, state, frames, charge);
             }
             Instruction::Character(expected) => {
                 let Some(&unit) = input.get(*cursor) else {
@@ -965,6 +1076,7 @@ impl Program {
                     frames.push(ChoiceFrame {
                         instruction: pc,
                         checkpoint,
+                        iteration: state.iteration,
                         alternative: PendingAlternative::SequenceRepetition {
                             next,
                             limit: if *greedy { min } else { limit },
@@ -1045,6 +1157,7 @@ impl Program {
                     frames.push(ChoiceFrame {
                         instruction: pc,
                         checkpoint,
+                        iteration: state.iteration,
                         alternative: PendingAlternative::Repetition {
                             next,
                             limit: if *greedy { min } else { limit },
@@ -1327,6 +1440,58 @@ fn quantify_reference_wrapper(
     Some(())
 }
 
+fn quantify_progressing_choice(
+    instructions: &mut Vec<PreparedInstruction>,
+    body: Range<usize>,
+    bounds: Bounds,
+) -> Option<()> {
+    let PreparedInstruction::Ready(Instruction::Choice(branches)) = &instructions[body.start]
+    else {
+        return None;
+    };
+    // Each branch is capture-free and always consumes at least one unit.
+    // References may be empty, so they cannot establish forward progress.
+    for (ordinal, &start) in branches.iter().enumerate() {
+        let end = branches.get(ordinal + 1).map_or(body.end, |next| next - 1);
+        let mut consuming = false;
+        for instruction in &instructions[start..end] {
+            match instruction {
+                PreparedInstruction::Ready(Instruction::Character(_))
+                | PreparedInstruction::Set {
+                    repeated: false, ..
+                } => consuming = true,
+                PreparedInstruction::Ready(
+                    Instruction::Nop
+                    | Instruction::Assert(_)
+                    | Instruction::Reference(_)
+                    | Instruction::NamedReference(_),
+                ) => {}
+                _ => return None,
+            }
+        }
+        if !consuming {
+            return None;
+        }
+    }
+    // Move the entry choice to the tail without moving any original branch
+    // instruction or invalidating enclosing groups' original indices.
+    let entry = instructions.len() + 1;
+    let original = std::mem::replace(
+        &mut instructions[body.start],
+        PreparedInstruction::Ready(Instruction::Jump(entry)),
+    );
+    instructions.push(PreparedInstruction::Ready(Instruction::RepeatChoiceEnd(
+        entry,
+    )));
+    instructions.push(PreparedInstruction::Ready(Instruction::RepeatChoice {
+        head: entry + 1,
+        end: entry + 2,
+        bounds,
+    }));
+    instructions.push(original);
+    Some(())
+}
+
 fn prepare(
     source: &[u16],
     ignore_case: bool,
@@ -1419,12 +1584,16 @@ fn prepare(
                 if let Some((bounds, consumed)) = quantifier(&source[cursor..]) {
                     let end = instructions.len();
                     let start = if capture.is_some() { entry - 1 } else { entry };
-                    quantify_reference_wrapper(
+                    if quantify_reference_wrapper(
                         &mut instructions,
                         start..end,
                         bounds,
                         &named_slots,
-                    )?;
+                    )
+                    .is_none()
+                    {
+                        quantify_progressing_choice(&mut instructions, start..end, bounds)?;
+                    }
                     cursor += consumed;
                 }
             }
@@ -1581,6 +1750,139 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn progressing_choice_repetition_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?:ab|a)+b",
+            r"(?:a|ab)+b",
+            r"(?:ab|a)+?b",
+            r"(?:ab|a)*b",
+            r"(?:ab|a)*?b",
+            r"(?:ab|c){2,3}d",
+            r"(?:ab|c){2,3}?d",
+            r"(?:ab|c)?d",
+            r"(?:ab|c)??d",
+            r"((?:ab|c)+)d",
+            r"((?:ab|c)+?)d",
+            r"(a)(?:\1b|b)+\1",
+            r"(a)(?:\1b|b)+?\1",
+            r"(a)(?:b\1|b)*\1",
+            r"(a)(?:b\1|b)*?\1",
+            r"(?:(?:ab|c)+)",
+            r"(?:ab|c)+(?:bc|a)+d",
+            r"(?:ab|c)+?(?:bc|a)+?d",
+            r"(?:[ab]a|b)+c",
+            r"(?:.b|a)+c",
+            r"(?:^a|b$)+",
+            r"(?:\ba|b\B)+",
+            r"(?:ab|c){999999999999999999999999999999}",
+            r"(?:ab|c)*d|a",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "abb", "abab", "aaab", "ababd", "abccd", "ababc", "abbd",
+                    "bccd", "\n\n", " a ", "µΜ",
+                ] {
+                    let text = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows, "{source:?} i={ignore_case} m={multiline} s={dot_all} input={text:?} start={start} sticky={sticky} {:?}", matcher.find(&text, start, sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn choice_iteration_retries_keep_source_order_counts_and_outer_captures() {
+        for (source, text, range, captures) in [
+            (r"(?:ab|a)+b", "ab", 0..2, vec![]),
+            (r"(?:ab|a)+b", "abb", 0..3, vec![]),
+            (r"(?:a|ab)+b", "abb", 0..2, vec![]),
+            (r"(?:ab|a)+?b", "ababb", 0..5, vec![]),
+            (r"((?:ab|c)+)d", "abccd", 0..5, vec![Some(0..4)]),
+            (r"(a)(?:\1b|b)+\1", "aaba", 0..4, vec![Some(0..1)]),
+            (r"(?:ab|c)*d|a", "a", 0..1, vec![]),
+            (r"(?:ab|c)+(?:ab|c)+", "abc", 0..3, vec![]),
+            (r"((?:\1a|b)+)\1", "abab", 0..4, vec![Some(0..2)]),
+            (
+                r"(a)(?:\2b|a)+(\1)",
+                "abbaa",
+                0..5,
+                vec![Some(0..1), Some(4..5)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, true)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+    }
+
+    #[test]
+    fn progressing_choice_counts_and_enclosures_remain_flat_and_opt_in() {
+        let source = "(".repeat(100000) + "(?:ab|c)+" + &")".repeat(100000);
+        let matcher = ordinary(&source, false, false, false);
+        let found = matcher.find(&JsString::from("abc"), 0, true).unwrap();
+        assert_eq!(found.range, 0..3);
+        assert!(found.captures.iter().all(|r| *r == Some(0..3)));
+        let matcher = ordinary(r"(?:ab|a)+b", false, false, false);
+        let input = JsString::from(("a".repeat(50000) + "b").as_str());
+        assert_eq!(matcher.find(&input, 0, true).unwrap().range, 0..50001);
+        assert!(
+            matcher
+                .find_with_work(&input, 0, false, |_| Err::<(), _>("work"))
+                .is_err()
+        );
+        let n = "9".repeat(10000);
+        let source = format!("(?:ab|c){{{n}}}");
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("abc"), 0, true)
+                .is_none()
+        );
+        let source = format!("(?:ab|c){{0,{n}}}");
+        assert_eq!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("q"), 0, true)
+                .unwrap()
+                .range,
+            0..0
+        );
+        for source in [
+            r"(?:ab|)+",
+            r"(?:\1|b)+(a)",
+            r"((a)|(b))+",
+            r"(?:(?:ab|c)+){2}",
+        ] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    },
+                )
+                .unwrap()
+                .is_none()
+            );
+            assert_eq!(work, 0, "{source}");
+        }
     }
 
     #[test]

@@ -1270,6 +1270,27 @@ including inactive duplicate-name slots and greedy/lazy parent captures. Default
 quotas remain disabled. General repeated choices, nested quantifiers, lookaround,
 scoped modifiers and Unicode matching still require implementation.
 
+Capture-free repeated alternatives are accepted when every source-order branch
+contains a consuming character, set, class escape or dot (RepeatMatcher,
+22.2.2.3.1). Assertions and outside references may accompany those units, but
+cannot establish progress themselves; open and forward targets remain empty.
+Admission checks the complete body before charging accepted work and rejects
+body captures, inner choices, nested quantifiers and possibly empty branches.
+
+The original entry choice moves to a tail entry; original branch instructions and
+jumps retain their indices. A repeat-end instruction connects each successful
+body to its next count decision. Counts are bounded by actual consumed input,
+so huge required consuming bounds reject without replaying them. Each existing
+flat retry frame saves its optional iteration context. Greedy/lazy continue and
+exit alternatives are consumed once, and restoring an earlier body choice also
+restores that iteration's count and input position. Capture checkpoints undo
+later enclosing closes before selecting another branch/count. Sequential loops
+restore their contexts independently, with no nested body loops admitted. The
+same program supplies full outside captures, named aliases and intrinsic
+consumers. All frames and preparation remain iterative; default quotas stay
+disabled. Body captures, empty alternatives, inner choices and nested repetition
+still need broader repeat semantics.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

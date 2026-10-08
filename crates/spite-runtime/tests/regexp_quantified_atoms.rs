@@ -114,7 +114,7 @@ fn opted_in_constructor_and_sticky_search_aborts_remain_host_failures() {
 fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps() {
     for source in [
         "/(ab|c)+/.test('a')",
-        "/(?:ab|c)+/.test('a')",
+        "/(?:(?:ab|c)+){2}/.test('a')",
         "/(?:(?:a+[b]+){2}){2}/.test('ab')",
         "/(?:(?:a+[b]+|b){2}){2}/.test('b')",
         "/(?:(?:^a+[b]+$){2}){2}/.test('a')",

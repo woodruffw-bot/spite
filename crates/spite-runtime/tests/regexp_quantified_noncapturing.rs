@@ -53,9 +53,9 @@ fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
     for source in [
         "/(?:(?:a)+)+/.test('a')",
         "/(?:a*)?/.test('a')",
-        "/(?:a[b]|c)+/.test('ab')",
-        "/(?:a|bc)+/.test('a')",
-        "/((?:ab|c)+)/.test('a')",
+        "/(?:(?:a[b]|c)+){2}/.test('ab')",
+        "/(?:(?:a|bc)+){2}/.test('a')",
+        "/(?:((?:ab|c)+)){2}/.test('a')",
         "/(?:(?<x>a)+\\k<x>){2}/.test('a')",
         "/(?:a)+/u.test('a')",
     ] {
