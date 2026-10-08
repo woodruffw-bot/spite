@@ -54,7 +54,7 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// and skip optional zero-progress iterations with undefined capture slots.
 /// Fixed capture-free positive and negative lookbehind preserve full input
 /// context for character terms, their exact counts, boundary assertions and
-/// transparent groups.
+/// transparent groups and nested fixed lookbehind.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -213,6 +213,14 @@ impl GroupFrame {
         }
         self.capture
     }
+}
+
+struct FixedLookbehindFrame {
+    pc: usize,
+    end: usize,
+    cursor: Option<usize>,
+    end_position: usize,
+    negative: bool,
 }
 
 struct ChoiceFrame {
@@ -1107,65 +1115,8 @@ impl Program {
                 }
                 return Ok(Some(end));
             }
-            Instruction::Lookbehind {
-                body,
-                width,
-                negative,
-            } => {
-                let mut matched = false;
-                if let Some(mut position) = cursor.checked_sub(*width) {
-                    matched = true;
-                    for term in &self.instructions[body + 1..pc] {
-                        charge(1)?;
-                        let accepted = match term {
-                            Instruction::Nop
-                            | Instruction::RepeatedCharacter(_)
-                            | Instruction::RepeatedSet(_) => true,
-                            Instruction::Character(_) | Instruction::Set(_) => self
-                                .compare_fixed_lookbehind_term(
-                                    input,
-                                    &mut position,
-                                    term,
-                                    charge,
-                                )?,
-                            Instruction::QuantifiedReferenceSequence {
-                                references,
-                                bounds: (Some(count), _, _),
-                                ..
-                            } => {
-                                let ReferenceTarget::Term(index) = references[0] else {
-                                    unreachable!(
-                                        "fixed lookbehind retains its repeated character term"
-                                    )
-                                };
-                                let mut accepted = true;
-                                for _ in 0..*count {
-                                    if !self.compare_fixed_lookbehind_term(
-                                        input,
-                                        &mut position,
-                                        &self.instructions[index],
-                                        charge,
-                                    )? {
-                                        accepted = false;
-                                        break;
-                                    }
-                                }
-                                accepted
-                            }
-                            Instruction::Assert(assertion) => {
-                                charge(2)?;
-                                assertion.accepts(input, position, self.multiline)
-                            }
-                            _ => unreachable!("lookbehind retains its fixed capture-free body"),
-                        };
-                        if !accepted {
-                            matched = false;
-                            break;
-                        }
-                    }
-                    debug_assert!(!matched || position == *cursor);
-                }
-                if matched == *negative {
+            Instruction::Lookbehind { .. } => {
+                if !self.accepts_fixed_lookbehind(input, *cursor, pc, charge)? {
                     return Ok(None);
                 }
             }
@@ -1534,6 +1485,111 @@ impl Program {
             start = end;
         }
         Ok(Some(start))
+    }
+
+    fn fixed_lookbehind_frame(&self, cursor: usize, entry: usize) -> FixedLookbehindFrame {
+        let Instruction::Lookbehind {
+            body,
+            width,
+            negative,
+        } = self.instructions[entry]
+        else {
+            unreachable!("lookbehind retains its control instruction")
+        };
+        FixedLookbehindFrame {
+            pc: body + 1,
+            end: entry,
+            cursor: cursor.checked_sub(width),
+            end_position: cursor,
+            negative,
+        }
+    }
+
+    // Captures, references and choices are excluded from these fixed bodies.
+    // Their predicates check the same absolute positions in either direction.
+    fn accepts_fixed_lookbehind<E>(
+        &self,
+        input: &[u16],
+        cursor: usize,
+        entry: usize,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        let mut frames = Vec::<FixedLookbehindFrame>::new();
+        let mut current = self.fixed_lookbehind_frame(cursor, entry);
+        loop {
+            if current.cursor.is_none() || current.pc == current.end {
+                charge(1)?;
+                if let Some(position) = current.cursor {
+                    debug_assert_eq!(position, current.end_position);
+                }
+                let accepted = current.cursor.is_some() != current.negative;
+                let Some(mut parent) = frames.pop() else {
+                    return Ok(accepted);
+                };
+                if !accepted {
+                    parent.cursor = None;
+                }
+                current = parent;
+                continue;
+            }
+            charge(1)?;
+            let position = current
+                .cursor
+                .as_mut()
+                .expect("fixed body has an available prefix");
+            let term = &self.instructions[current.pc];
+            let accepted = match term {
+                Instruction::Nop
+                | Instruction::RepeatedCharacter(_)
+                | Instruction::RepeatedSet(_) => true,
+                Instruction::Jump(target) => {
+                    current.pc = *target;
+                    continue;
+                }
+                Instruction::Lookbehind { .. } => {
+                    let child = self.fixed_lookbehind_frame(*position, current.pc);
+                    current.pc += 1;
+                    charge(1)?;
+                    frames.push(current);
+                    current = child;
+                    continue;
+                }
+                Instruction::Character(_) | Instruction::Set(_) => {
+                    self.compare_fixed_lookbehind_term(input, position, term, charge)?
+                }
+                Instruction::QuantifiedReferenceSequence {
+                    references,
+                    bounds: (Some(count), _, _),
+                    ..
+                } => {
+                    let ReferenceTarget::Term(index) = references[0] else {
+                        unreachable!("fixed lookbehind retains its repeated character term")
+                    };
+                    let mut accepted = true;
+                    for _ in 0..*count {
+                        if !self.compare_fixed_lookbehind_term(
+                            input,
+                            position,
+                            &self.instructions[index],
+                            charge,
+                        )? {
+                            accepted = false;
+                            break;
+                        }
+                    }
+                    accepted
+                }
+                Instruction::Assert(assertion) => {
+                    charge(2)?;
+                    assertion.accepts(input, *position, self.multiline)
+                }
+                _ => unreachable!("lookbehind retains its fixed capture-free body"),
+            };
+            if !accepted {
+                current.cursor = None;
+            }
+            current.pc += 1;
+        }
     }
 
     // Only one-unit terms are admitted here. Exact repetition width is proved
@@ -2152,8 +2208,22 @@ fn prepare(
                     ) {
                         return None;
                     }
-                    for instruction in &instructions[entry + 1..] {
-                        match instruction {
+                    // Summarize completed child lookbehind instead of rescanning
+                    // its body. Deep nested fixed assertions remain linear.
+                    let mut next = instructions.len();
+                    while next > entry + 1 {
+                        let pc = next - 1;
+                        next = pc;
+                        match &instructions[pc] {
+                            PreparedInstruction::Ready(Instruction::Lookbehind {
+                                body: child,
+                                ..
+                            }) => {
+                                if *child <= entry || *child >= pc {
+                                    return None;
+                                }
+                                next = *child;
+                            }
                             PreparedInstruction::Ready(Instruction::Character(_))
                             | PreparedInstruction::Set {
                                 repeated: false, ..
@@ -2411,6 +2481,160 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn nested_fixed_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(?<=a))b",
+            r"(?<!(?<=a))b",
+            r"(?<=(?<!a))b",
+            r"(?<!(?<!a))b",
+            r"(?<=a(?<=a))b",
+            r"(?<=a(?<!a))b",
+            r"(?<!a(?<=a))b",
+            r"(?<=a(?<=b))c",
+            r"(?<=(?<=a)b)c",
+            r"(?<=a(?<=a)b)c",
+            r"(?<=a(?<!b)b)c",
+            r"(?<=a(?<=a{1})b{1})c",
+            r"(?<=a{2}(?<=a{2}))b",
+            r"(?<=a{2}(?<!a{2}))b",
+            r"(?<=(?<=^a)b)c",
+            r"(?<=(?<=\ba)b)c",
+            r"(?<=c(?<=\w))\w{3}",
+            r"(?<=\B)(?<=c(?<=\w))\w{3}",
+            r"(?<=.(?<=.))b",
+            r"(?<=µ(?<=µ))Μ",
+            r"(?<=a(?<=(?<=a)))b",
+            r"(?<=a(?<!(?<!a)))b",
+            r"(?<=a(?<=a$))",
+            r"(?<=^a(?<=a))b",
+            r"(?<=a(?<=a))(b)\1",
+            r"(a)(?<=a(?<=a))\1",
+            r"(?:(?<=a(?<=a))b|c)+d",
+            r"(?:(?<=a(?<=a))|(?<!b)){2}b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "qb", "abb", "abc", "qabc", "abccd", "aab", "\nab", "ab\n",
+                    "ab cdef", "µΜ", "\nb",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nested_fixed_lookbehind_negation_and_child_positions_keep_whole_input_context() {
+        for (source, text, range, captures) in [
+            (r"(?<=(?<=a))b", "ab", 1..2, vec![]),
+            (r"(?<!(?<=a))b", "qb", 1..2, vec![]),
+            (r"(?<=(?<!a))b", "qb", 1..2, vec![]),
+            (r"(?<!(?<!a))b", "ab", 1..2, vec![]),
+            (r"(?<=(?<=a)b)c", "abc", 2..3, vec![]),
+            (r"(?<=a(?<=a)b)c", "abc", 2..3, vec![]),
+            (r"(?<=a(?<!b)b)c", "abc", 2..3, vec![]),
+            (r"(?<=\B)(?<=c(?<=\w))\w{3}", "ab cdef", 4..7, vec![]),
+            (r"(?<=a(?<=a))(b)\1", "abb", 1..3, vec![Some(1..2)]),
+            (r"((?<=a(?<=a))){2}b\1", "ab", 1..2, vec![Some(1..1)]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        assert!(
+            ordinary(r"(?<=a(?<!a))b", false, false, false)
+                .find(&JsString::from("ab"), 0, false)
+                .is_none()
+        );
+        assert_eq!(
+            ordinary(r"(?<=(?<=^a)b)c", false, true, false)
+                .find(&JsString::from("q\nabc"), 0, false)
+                .unwrap()
+                .range,
+            4..5
+        );
+        for source in [
+            r"(?<=a(?=(b)))b",
+            r"(?<=(?<=a|b))c",
+            r"(?<=(?<=(a)))b",
+            r"(?<=a(?=a))b",
+            r"(?<=a(?<=a+))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_nested_fixed_lookbehind_proofs_execution_clones_and_work_stay_flat() {
+        let source = "(?<=".repeat(100000) + "a" + &")".repeat(100000) + "b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        assert_eq!(
+            copy.find(&JsString::from("ab"), 1, true).unwrap().range,
+            1..2
+        );
+        let source = "(?<!".repeat(100001) + "a" + &")".repeat(100001) + "b";
+        let matcher = ordinary(&source, false, false, false);
+        assert!(matcher.find(&JsString::from("ab"), 1, true).is_none());
+        assert_eq!(
+            matcher.find(&JsString::from("qb"), 1, true).unwrap().range,
+            1..2
+        );
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("qb"), 1, true, |n| {
+                    work += n;
+                    if work > 1000 {
+                        Err("explicit nested assertion work")
+                    } else {
+                        Ok(())
+                    }
+                })
+                .unwrap_err(),
+            "explicit nested assertion work"
+        );
+        assert_eq!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &JsString::from(source.as_str()),
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Err("explicit construction work"),
+            )
+            .unwrap_err(),
+            "explicit construction work"
+        );
     }
 
     #[test]

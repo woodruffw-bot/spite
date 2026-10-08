@@ -1481,6 +1481,35 @@ Counts whose complete fixed width cannot be represented, variable counts,
 repeated multiple-term or assertion bodies, captures and nested assertions inside
 lookbehind remain pending. Host quotas remain opt-in; defaults are unlimited.
 
+Nested fixed capture-free lookbehind retains the same ordinary character/count
+and boundary predicates (Assertion, 22.2.2.8). The width proof now walks the flat
+body backwards and summarizes each completed lookbehind child as zero-width,
+skipping its complete instruction region. Original child entries jump to their
+owners. Deep nesting therefore needs no repeated scan of descendant bodies;
+each child keeps its independently proved fixed width and polarity. Other nested
+assertions, captures, references, alternatives and variable counts remain pending.
+
+Execution uses explicit fixed-assertion frames containing the body instruction,
+terminal, local cursor, expected end position and polarity. A child starts from
+the parent's exact local position and retains a saved parent continuation. Its
+success resumes that parent without moving the parent cursor; failure propagates
+through the parent's polarity. Unavailable prefixes and failed body predicates
+share the same Boolean propagation. The outer matcher cursor and all outside
+captures remain unchanged. Debug checks verify each successful fixed body's
+expected endpoint. No Rust recursion is used for nested assertion execution.
+
+Capture-free fixed bodies check identical absolute character and boundary
+positions in forward or backward evaluation. Nested assertions only contribute
+Boolean predicates at those positions, so their source evaluation order adds no
+capture or choice effects. Every child sees the complete input and original
+flags, preserving line and word boundaries. Parent progress/zero-width summaries,
+required/optional wrapper rules and outer source-order retries remain intact.
+Actual body instructions, child frame pushes/pops and unit comparisons are
+charged; limits remain opt-in and defaults unlimited. Preparation, execution,
+cloning, collection and dropping remain flat through deep positive/negative
+nesting. Unicode-mode matching and the other lookbehind body features remain
+pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
