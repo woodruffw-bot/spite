@@ -1,9 +1,33 @@
 # Test262 regression fixtures
 
-These 7070 unmodified test fixtures and eleven harness files come from
+These 7071 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+
+## Zero-width lookahead repetition fixture review
+
+One unchanged whole original, lookahead-quantifier-match-groups.js, adds two
+normal/strict harness-positive variants at the existing pin. All four original
+assertions check required captures versus undefined optional captures through
+String.match: unquantified, ?, {1,1} and {0,1} lookahead wrappers. Its source,
+metadata, specification quotation and copyright notice are preserved.
+
+The pinned Git blob identity and manifest SHA-256 digest verify exact bytes.
+The existing compareArray.js dependency and all eleven helpers remain unchanged.
+Stable, MSRV and Node pass both complete Script variants with unlimited defaults.
+The pin, earlier negative expectations and dependencies are unchanged.
+
+The active inventory is 7071 fixtures, eleven helpers and 7052 reviewed Script
+sources. Its 13582 variants comprise 12105 harness positives, 1469 parse negatives,
+four raw positives and four runtime negatives. RegExp builtin execution now
+contains 224 whole positive programs, separately from 337 grammar fixtures.
+This focused original adds no whole-directory coverage claim.
+
+Stable and MSRV pass the complete 13582-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Repeated RegExp branch capture fixture review
 
@@ -1835,7 +1859,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13580 variants from 7051 reviewed sources: the eleven
+The `spite-test262` command runs 13582 variants from 7052 reviewed sources: the eleven
 raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
 eleven arrow parse-negative files in their prescribed Script modes, and fourteen
 new.target parse-negative files in both Script modes, plus nine positive function
@@ -1864,14 +1888,14 @@ parse-negative), and 48 private element parse-negative files, and 56 private-fie
 execution files, and 128 private method/accessor execution files, and 83 WeakSet
 files, and 337 RegExp literal boundary, flag, core Pattern, class-range, named
 capture, and Unicode property files (nineteen positives and 318 parse negatives),
-plus 223 RegExp builtin positives for escape, construction, slots, native exec,
+plus 224 RegExp builtin positives for escape, construction, slots, native exec,
 named result groups and generic matching operations.
 The method/accessor files
 cover computed key conversion and exceptions, numeric/string/escaped names,
 reserved method names, and closure scope. Eight Object entries/values files use
 accessor literals to test live enumeration changes and abrupt reads.
 That means four raw positives,
-12103 positives using the upstream harness, 1469 reviewed parse-negative variants,
+12105 positives using the upstream harness, 1469 reviewed parse-negative variants,
 and four runtime-negative variants.
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer

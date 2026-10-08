@@ -7050,3 +7050,4 @@ test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T5.js	-	-	-
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T6.js	-	-	-
 test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js	-	-	-
 test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js	-	-	-
+test/built-ins/RegExp/lookahead-quantifier-match-groups.js	-	-	-

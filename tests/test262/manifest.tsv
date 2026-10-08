@@ -7080,3 +7080,4 @@ script-pass	27fe5b547753f266be5d51b55c40e33c8d6cb8bf5ac5d2ea87725bea7dd990c5	tes
 script-pass	4ebbcc5a7d5a474caabf0474dc57719e2078ed7e089a991c697a8366f66159d6	test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T6.js
 script-pass	9c7819d1426cad73c7d826dd4ca5524ea2109908041ebecf517f093e968af23f	test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js
 script-pass	53bbf9cb7eca0f81d4d4ad853a8f5ddddbc536b5125a0c901edde8bd6cf41717	test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js
+script-pass	544f4598b8543682811ec9203079ca4e4fccac30184c155cad9011f950aab177	test/built-ins/RegExp/lookahead-quantifier-match-groups.js
