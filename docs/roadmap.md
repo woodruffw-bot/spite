@@ -397,6 +397,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute variable-count zero-width bodies inside ordinary lookbehind with skipped optional capture effects, required boundary predicates and compact unrepresentable counts.
 - [x] Execute repeated pure empty and boundary alternatives with source-order retries, restored partial captures, skipped optional effects and compact required counts.
 - [x] Compose proven zero-width sequence repetitions with required enclosing ranges, undefined optional child slots and exact-zero consuming child counts.
+- [x] Compose repeated zero-width local, open and forward references through validated preceding-term spans with preserved empty and undefined capture ranges.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

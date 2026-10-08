@@ -1724,6 +1724,24 @@ recursion. Default work and heap quotas remain unlimited. Nonzero consuming or
 unproved reference children, counted wrappers inside lookbehind and Unicode-mode
 matching remain outside this proof.
 
+
+Nested zero-width sequence repetitions also accept proven empty references
+(22.2.2.3.1, 22.2.2.9.2). Open/forward same-body captures are already lowered to an
+empty target. Completed local spans must have ordered endpoints and end no later
+than the current reference ordinal. Every preceding term has already been proved
+zero-width, so a local span can contain earlier references or assertions and still
+be empty. Outside capture reads and consuming terms reject this proof, except for
+the existing exact-zero count case. The proof visits terms once and needs no new
+state, allocation or runtime instruction.
+
+The existing sequence executor preserves required empty captures, skipped optional
+slots, partial ranges and named aliases. Wrapper checkpoints retain negative and
+failed-arm restoration. References do not expand source or depend on the count;
+oversized required bounds keep their mathematical meaning. Deep captures and
+wrapper nesting remain flat under copying, execution and dropping. Default work
+and heap quotas stay unlimited. Unproved outside/local dependencies, counted
+wrappers inside lookbehind and Unicode-mode matching remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
