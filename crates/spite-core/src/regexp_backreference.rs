@@ -91,6 +91,11 @@ enum Instruction {
     Nop,
     Choice(Box<[usize]>),
     Jump(usize),
+    SkipGroup {
+        captures: Range<usize>,
+        body: usize,
+        end: usize,
+    },
     RepeatChoice {
         captures: Range<usize>,
         open: Option<usize>,
@@ -614,7 +619,7 @@ impl RegExpBackreferenceMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let PreparedProgram {
-            instructions: prepared,
+            instructions: mut prepared,
             capture_count,
             scopes,
             references: _,
@@ -650,6 +655,10 @@ impl RegExpBackreferenceMatcher {
         charge(binding_work)?;
         charge(capture_names.len())?;
         charge(bindings.groups.len())?;
+        charge(prepared.len())?;
+        if discard_skipped_regions(&mut prepared).is_none() {
+            return Ok(None);
+        }
         let choice_count = prepared
             .iter()
             .filter(|i| matches!(i, PreparedInstruction::Ready(Instruction::Choice(_))))
@@ -1093,6 +1102,12 @@ impl Program {
             | Instruction::RepeatedSet(_)
             | Instruction::RepeatedAssert(_) => {}
             Instruction::Jump(target) => return Ok(Some(*target)),
+            Instruction::SkipGroup { captures, end, .. } => {
+                for slot in captures.clone() {
+                    self.write_capture(state, slot, None, charge)?;
+                }
+                return Ok(Some(*end));
+            }
             Instruction::Choice(alternatives) => {
                 charge(1)?;
                 frames.push(ChoiceFrame {
@@ -1682,6 +1697,13 @@ impl Program {
                     current.pc = *target;
                     continue;
                 }
+                Instruction::SkipGroup { captures, end, .. } => {
+                    for slot in captures.clone() {
+                        self.write_capture(state, slot, None, charge)?;
+                    }
+                    current.pc = *end;
+                    continue;
+                }
                 Instruction::Choice(_) => {
                     current.pc = self.choose_fixed_lookbehind(
                         current.pc,
@@ -1704,19 +1726,6 @@ impl Program {
                     charge(1)?;
                     frames.push(current);
                     current = child;
-                    continue;
-                }
-                Instruction::RepeatChoice {
-                    captures,
-                    end,
-                    bounds,
-                    ..
-                } => {
-                    debug_assert_eq!((bounds.0, bounds.1), (Some(0), Some(0)));
-                    for slot in captures.clone() {
-                        self.write_capture(state, slot, None, charge)?;
-                    }
-                    current.pc = *end;
                     continue;
                 }
                 Instruction::RepeatZeroWidth {
@@ -2095,8 +2104,10 @@ fn quantify_zero_width_assertion_wrapper(
     let mut found = false;
     while next > body.start {
         let pc = next - 1;
-        if let PreparedInstruction::Ready(Instruction::Lookbehind { body: child, .. }) =
-            &instructions[pc]
+        if let PreparedInstruction::Ready(
+            Instruction::Lookbehind { body: child, .. }
+            | Instruction::SkipGroup { body: child, .. },
+        ) = &instructions[pc]
         {
             if *child < body.start || *child >= pc {
                 return None;
@@ -2107,27 +2118,6 @@ fn quantify_zero_width_assertion_wrapper(
             continue;
         }
         if pc > body.start {
-            if let PreparedInstruction::Ready(Instruction::RepeatChoice {
-                body: child,
-                head,
-                end,
-                bounds: (Some(0), Some(0), _),
-                ..
-            }) = &instructions[pc - 1]
-            {
-                if *head != pc || *end != pc + 1 || *child < body.start || *child >= pc - 1 {
-                    return None;
-                }
-                if !matches!(instructions.get(*child), Some(PreparedInstruction::Ready(Instruction::Jump(control))) if *control == pc - 1)
-                {
-                    return None;
-                }
-                // An exact-zero child never enters its progressing body.
-                found = true;
-                zero_width[*child] = zero_width[*end];
-                next = *child;
-                continue;
-            }
             if let PreparedInstruction::Ready(
                 Instruction::Lookahead {
                     body: child,
@@ -2235,6 +2225,34 @@ fn quantify_zero_width_assertion_wrapper(
     Some(())
 }
 
+// The source regions are disjoint or nested. Visit an outer skipped owner first
+// and bypass its descendants, so every discarded instruction is visited once.
+fn discard_skipped_regions(instructions: &mut [PreparedInstruction]) -> Option<()> {
+    let mut next = instructions.len();
+    while next > 0 {
+        let pc = next - 1;
+        next = pc;
+        let PreparedInstruction::Ready(Instruction::SkipGroup { body, end, .. }) =
+            &instructions[pc]
+        else {
+            continue;
+        };
+        let body = *body;
+        if body >= pc || *end != pc + 1 {
+            return None;
+        }
+        if !matches!(instructions.get(body), Some(PreparedInstruction::Ready(Instruction::Jump(control))) if *control == pc)
+        {
+            return None;
+        }
+        for instruction in &mut instructions[body + 1..pc] {
+            *instruction = PreparedInstruction::Ready(Instruction::Nop);
+        }
+        next = body;
+    }
+    Some(())
+}
+
 fn quantify_progressing_choice(
     instructions: &mut Vec<PreparedInstruction>,
     body: Range<usize>,
@@ -2255,8 +2273,10 @@ fn quantify_progressing_choice(
     let mut next = body.end;
     while next > body.start {
         let pc = next - 1;
-        if let PreparedInstruction::Ready(Instruction::Lookbehind { body: child, .. }) =
-            &instructions[pc]
+        if let PreparedInstruction::Ready(
+            Instruction::Lookbehind { body: child, .. }
+            | Instruction::SkipGroup { body: child, .. },
+        ) = &instructions[pc]
         {
             if *child < body.start || *child >= pc {
                 return None;
@@ -2435,27 +2455,6 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
             continue;
         }
         if pc > entry + 1 {
-            if let PreparedInstruction::Ready(Instruction::RepeatChoice {
-                body,
-                head,
-                end,
-                bounds: (Some(0), Some(0), _),
-                ..
-            }) = &instructions[pc - 1]
-            {
-                if *body <= entry || *body >= pc - 1 || *head != pc || *end != pc + 1 {
-                    return None;
-                }
-                if !matches!(instructions.get(*body), Some(PreparedInstruction::Ready(Instruction::Jump(control))) if *control == pc - 1)
-                {
-                    return None;
-                }
-                // RepeatMatcher cannot observe any skipped body's widths,
-                // assertions or reference reads (22.2.2.3.1).
-                tails.insert(*body, *tails.get(end)?);
-                next = *body;
-                continue;
-            }
             if let PreparedInstruction::Ready(Instruction::RepeatZeroWidth {
                 body,
                 head,
@@ -2488,7 +2487,10 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 }
                 first
             }
-            PreparedInstruction::Ready(Instruction::Lookbehind { body: child, .. }) => {
+            PreparedInstruction::Ready(
+                Instruction::Lookbehind { body: child, .. }
+                | Instruction::SkipGroup { body: child, .. },
+            ) => {
                 if *child <= entry || *child >= pc {
                     return None;
                 }
@@ -2776,7 +2778,17 @@ fn prepare(
                 } else if let Some((bounds, consumed)) = quantifier(&source[cursor..]) {
                     let end = instructions.len();
                     let start = if capture.is_some() { entry - 1 } else { entry };
-                    if quantify_zero_width_assertion_wrapper(
+                    if bounds.0 == Some(0) && bounds.1 == Some(0) {
+                        // RepeatMatcher's maximum-zero case cannot run any
+                        // already lowered native body (22.2.2.3.1).
+                        instructions[start] = PreparedInstruction::Ready(Instruction::Jump(end));
+                        instructions.push(PreparedInstruction::Ready(Instruction::SkipGroup {
+                            captures: capture_start..capture_count,
+                            body: start,
+                            end: end + 1,
+                        }));
+                        last_complex_group = Some(end);
+                    } else if quantify_zero_width_assertion_wrapper(
                         &mut instructions,
                         start..end,
                         bounds,
@@ -2963,6 +2975,175 @@ mod tests {
     }
 
     #[test]
+    fn zero_count_native_scope_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(|a){0})b",
+            r"(?<=(a|){0}?)b",
+            r"(?<=((?=a)\1){0})b",
+            r"(?<=((?!(a))\2){0})b",
+            r"(?<=((?=a)(\2)){0})b",
+            r"(?<=((?=a)|b){0})c",
+            r"(?<=((a|){0}){2})b",
+            r"(?<=((a|){0})*)b",
+            r"(?<=((a|){0}){2}q)b",
+            r"(a)(?<=((?=a)\1){0})b\1",
+            r"(?<=((?=a)|()){0})b",
+            r"((?=a)\1){0}b",
+            r"(?:(a|){0}){2}b",
+            r"(?:(a|){0})*b",
+            r"(?<=((?=a)\1){0}q)b",
+            r"(?<=q((?=a)\1){0})b",
+            r"(?<!((?=a)\1){0}q)b",
+            r"(?<!((?=a)\1){0})b",
+            r"(?<=((?=a)\1){0}|())b",
+            r"(?<=([abc]|){0})b",
+            r"(?<=((^|a)\1){0})b",
+            r"(?<=((\b|a)\1){0})b",
+            r"(?<=((a|){0}){2}µ)Μ",
+            r"(?<=((?=a)\1){0}[\uD800])b",
+            r"(?<=((?=a)\1){0})",
+            r"(?:(?<=((a|){0}){2})b|a)+c",
+            r"(?=(?<=((?=a)\1){0})b)b",
+            r"((?<=((a|){0}){2})){2}b",
+            r"((a|){0}){2}b",
+            r"((a|){0})*b",
+            r"(?<=(?:(a|){0}){0})b",
+            r"(a)(?<=(\1|){0})b\1",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn zero_count_native_scopes_clear_only_owned_slots_and_keep_enclosing_and_prefix_ranges() {
+        for (source, text, captures) in [
+            (r"(?<=(|a){0})b", "qb", vec![None]),
+            (r"(?<=((?=a)\1){0})b", "qb", vec![None]),
+            (r"(?<=((?!(a))\2){0})b", "qb", vec![None, None]),
+            (r"(?<=((a|){0}){2})b", "qb", vec![Some(1..1), None]),
+            (r"(?<=((a|){0})*)b", "qb", vec![None, None]),
+            (r"(?<=((a|){0}){2}q)b", "qb", vec![Some(0..0), None]),
+            (r"(?<!((?=a)\1){0}q)b", "xb", vec![None]),
+            (r"((a|){0}){2}b", "qb", vec![Some(1..1), None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 1, true)
+                .unwrap();
+            assert_eq!(found.range, 1..2, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let found = ordinary(r"(a)(?<=((?=a)\1){0})b\1", false, false, false)
+            .find(&JsString::from("aba"), 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..3);
+        assert_eq!(&*found.captures, &[Some(0..1), None]);
+        for source in [
+            r"(?<=(|a){1})b",
+            r"(?<=((?=a)\1){1})b",
+            r"(?<=((a|a*){1}){0})b",
+            r"(?<=a+)b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn nested_zero_scopes_discard_unreachable_regions_once_and_keep_deep_captures_clones_flat() {
+        let source =
+            "(?<=".to_owned() + &"(".repeat(100000) + "(?=a)|b" + &"){0}".repeat(100000) + ")c";
+        let mut work = 0;
+        let matcher = RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+            &JsString::from(source.as_str()),
+            false,
+            false,
+            false,
+            RegExpBackreferenceNamedBindings::default(),
+            |n| {
+                work += n;
+                Ok::<_, ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert!(work < source.len() * 100);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qc"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(Option::is_none));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("qc"), 1, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit zero-scope work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit zero-scope work"
+        );
+        let source = "(?:".repeat(10000) + "(?=a)|b" + &"){0}".repeat(10000) + "c";
+        let matcher = ordinary(&source, false, false, false);
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("qc"), 1, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .unwrap()
+                .range,
+            1..2
+        );
+        assert!(work < 100);
+        let source = "(?<=".to_owned()
+            + &"(?:".repeat(10000)
+            + "((?=a)\\1){0}"
+            + &"){2}".repeat(10000)
+            + ")b";
+        assert_eq!(
+            &*ordinary(&source, false, false, false)
+                .find(&JsString::from("b"), 0, true)
+                .unwrap()
+                .captures,
+            &[None]
+        );
+    }
+
+    #[test]
     fn zero_count_lookbehind_choice_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3046,8 +3227,8 @@ mod tests {
         for source in [
             r"(?<=(a|aa){1})b",
             r"(?<=(a|aa){0,1})b",
-            r"(?<=(|a){0})b",
-            r"(?<=((?=a)\1){0})b",
+            r"(?<=(|a){1})b",
+            r"(?<=((?=a)\1){1})b",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -3218,8 +3399,8 @@ mod tests {
             r"(?<=((a)\2){0,1})b",
             r"(?<=((\2)a){1})b",
             r"(?<=(\2){0,2})b()",
-            r"(?<=(|a){0})b",
-            r"(?<=((?=a)\1){0})b",
+            r"(?<=(|a){1})b",
+            r"(?<=((?=a)\1){1})b",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(

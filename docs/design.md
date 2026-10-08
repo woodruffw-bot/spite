@@ -1785,44 +1785,30 @@ unlimited. Unicode modes, consuming reference units, outside reads and lookahead
 inside lookbehind remain pending.
 
 
-Fixed ordinary lookbehind also admits already lowered native reference bodies
-with an exact zero repetition count (22.2.2.3.1). RepeatMatcher's maximum-zero
-case cannot observe the body or any local/outside reference. Its width proof
-therefore assigns zero width before inspecting reference targets or constructing
-unit offsets. Complete Pattern validation and normal native preparation still
-precede this proof; it does not admit every unproved body merely because its count
-is zero.
+Exact-zero native group repetitions use one shared skip instruction
+(22.2.2.3.1). After validating the full Pattern and lowering each native child,
+preparation handles an exact minimum and maximum of zero before requiring body
+progress, zero width or reference-target proofs. This admits mixed empty/consuming
+choices and lookahead/reference combinations whose body will never execute.
+Unlowered child bodies still report Unsupported. Capture and name inventories
+retain every original slot, including duplicate names on exclusive branches.
 
-Single-target reference counts clear only their owned capture slots and perform
-no comparison. Sequence reference counts already execute zero passes and write
-undefined owned captures. Neither path clears a referenced outside capture or
-reads a nonempty target. Boundaries and characters following the skipped body
-retain their actual fixed positions, named aliases retain the active original
-slot, and enclosing required zero-width wrappers keep their own empty ranges.
-Existing assertion checkpoints preserve branch/negative restoration. Deep
-skipped slots, zero-padded bounds, nesting, copying and dropping remain flat,
-without source expansion, additional allocation or default host quotas. Optional
-counts that can run consuming reference units, outside reads at nonzero counts,
-unproved choices/lookahead and Unicode-mode matching remain pending.
+Forward matching and fixed ordinary lookbehind clear only the skipped owner's
+capture range and jump to its end. They never open a skipped capture, enter a
+branch, read a reference or compare input. Outside capture values survive, while
+required enclosing zero-width wrappers retain their own empty ranges. Parent
+progress and zero-width proofs summarize each completed skipped region once;
+fixed lookbehind similarly assigns it zero width. Existing checkpoints preserve
+branch retries, completed enclosing captures and negative assertion rollback.
 
-
-Exact-zero prepared progressing alternatives compose with zero-width repetitions
-and fixed ordinary lookbehind (22.2.2.3.1). Both preparation proofs summarize a
-child choice only when its minimum and maximum are exactly zero, its body/head/end
-positions are valid and its original root jumps to the owning control. The body
-cannot be observed, so its unequal widths, assertions and reference reads need
-no fixed-width proof. Each scan skips that complete child region once.
-
-The fixed matcher clears only the skipped owner's capture range and jumps to its
-end without opening a capture, entering a branch or comparing input. The existing
-forward executor already handles this zero-count choice; its enclosing pure-zero
-wrapper can now retain required empty ranges or skip optional effects. Assertion
-checkpoints preserve completed enclosing captures and restore negative/trailing
-predicate failures. Deep nesting, skipped/completed captures, clones, collection
-and dropping remain flat, with no new instruction, allocation or default quota.
-Pattern validation and native body preparation still apply. Nonzero/variable
-choices in lookbehind, unproved mixed empty/consuming choices, other unsupported
-bodies and Unicode modes remain pending.
+A final reverse pass discards unused body instructions before allocating choice
+frames or compiling character sets. It visits outer skipped owners before their
+descendants and bypasses the cleared region, so disjoint and nested bodies cost
+one pass without changing instruction indices. Preparation, matching, copying and
+dropping remain flat under deep nesting, with no count expansion or default host
+quota. Exact-zero standalone reference atoms retain their existing target-free
+width proof. Nonzero mixed choices, unproved native children and Unicode modes
+remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

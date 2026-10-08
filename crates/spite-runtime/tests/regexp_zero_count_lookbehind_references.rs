@@ -153,8 +153,8 @@ fn nonzero_consuming_references_outside_optional_reads_unproved_choices_and_unic
         r"/(?<=((a)\2){0,1})b/.exec('aab')",
         r"/(?<=((\2)a){1})b/.exec('ab')",
         r"/(?<=(\2){0,2})b()/.exec('b')",
-        r"/(?<=(|a){0})b/.exec('b')",
-        r"/(?<=((?=a)\1){0})b/.exec('b')",
+        r"/(?<=(|a){1})b/.exec('b')",
+        r"/(?<=((?=a)\1){1})b/.exec('b')",
         r"/(?<=((a)\2){0})b/u.exec('b')",
         r"/(?<=((a)\2){0})b/v.exec('b')",
     ] {

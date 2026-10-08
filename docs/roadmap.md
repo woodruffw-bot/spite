@@ -402,6 +402,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute repeated proven empty local, open and forward references inside ordinary lookbehind with exact backward capture positions and skipped optional effects.
 - [x] Skip exact-zero native reference bodies inside fixed ordinary lookbehind without reading their local/outside targets, while leaving owned captures undefined.
 - [x] Skip exact-zero prepared progressing alternatives inside ordinary lookbehind and enclosing zero-width repetitions, preserving undefined children and enclosing empty ranges.
+- [x] Lower exact-zero native group scopes before body proofs, preserving original capture/name inventories and skipping mixed choices or assertion/reference bodies through one shared instruction.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

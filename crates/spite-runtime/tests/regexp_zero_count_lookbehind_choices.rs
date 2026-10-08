@@ -154,8 +154,8 @@ fn nonzero_unequal_choices_mixed_empty_paths_unproved_bodies_and_unicode_are_pen
     for source in [
         r"/(?<=(a|aa){1})b/.exec('ab')",
         r"/(?<=(a|aa){0,1})b/.exec('ab')",
-        r"/(?<=(|a){0})b/.exec('b')",
-        r"/(?<=((?=a)\1){0})b/.exec('b')",
+        r"/(?<=(|a){1})b/.exec('b')",
+        r"/(?<=((?=a)\1){1})b/.exec('b')",
         r"/(?<=(a|aa){0})b/u.exec('b')",
         r"/(?<=(a|aa){0})b/v.exec('b')",
     ] {
