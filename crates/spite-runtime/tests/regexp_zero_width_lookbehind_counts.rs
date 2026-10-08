@@ -155,7 +155,7 @@ fn consuming_variable_counts_repeated_choices_references_nested_counts_and_looka
         r"/(?<=(a?){1,2})b/.exec('ab')",
         r"/(?<=((?=a)){1,2})a/.exec('a')",
         r"/(?<=(|a)+)a/.exec('a')",
-        r"/(?<=(\1)+)a()/.exec('a')",
+        r"/(?<=(\2)+)a()/.exec('a')",
         r"/(?<=((a*)+))a/.exec('a')",
         r"/(?<=()+)a/u.exec('a')",
         r"/(?<=()+)a/v.exec('a')",

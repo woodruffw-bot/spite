@@ -173,7 +173,7 @@ fn outside_references_unproved_local_spans_consuming_children_behind_and_unicode
         r"/((\1){1,2}){2}a()/.exec('a')",
         r"/(((a)(\3)\4){0,2}){2}a/.exec('a')",
         r"/(((a)\3){0,2}){2}a/.exec('a')",
-        r"/(?<=((()\3){2}){2})a/.exec('a')",
+        r"/(?<=(((a)\3){0,2}){2})a/.exec('a')",
         r"/((()\3){2}){2}a/u.exec('a')",
         r"/((()\3){2}){2}a/v.exec('a')",
     ] {

@@ -151,7 +151,7 @@ fn variable_counts_nested_lookaround_repeated_choices_references_and_counts_rema
         r"/(?<=((?=a)){1,2})a/.exec('a')",
         r"/(?<=((?=a)){2})a/.exec('a')",
         r"/(?<=(|a){2})a/.exec('a')",
-        r"/(?<=(\1){2})a()/.exec('a')",
+        r"/(?<=(\2){2})a()/.exec('a')",
         r"/(?<=((a{0,2}){2}){2})a/.exec('a')",
         r"/(?<=(){2})a/u.exec('a')",
         r"/(?<=(){2})a/v.exec('a')",

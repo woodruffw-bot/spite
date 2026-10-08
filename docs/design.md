@@ -1763,6 +1763,27 @@ Nested lookbehind can export pre-match ranges while wrapper captures stay at the
 local cursor. Huge required counts, deep captures, nested wrappers, clones and
 dropping use flat storage; default host quotas remain unlimited.
 
+
+Repeated ordinary lookbehind accepts proven empty same-body references
+(22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The fixed-width proof permits lowered empty
+targets and completed local spans with ordered endpoints ending no later than
+their reference ordinal, but only when the entire repeated unit has zero width.
+Every same-body capture is then empty in either matching direction. Outside reads
+and any combination of a reference with consuming terms reject this proof; the
+forward lowering of open/forward references is insufficient for nonempty
+backward units.
+
+Character/assertion terms retain their existing comparison. Proved empty/local
+targets need no capture read and add no input movement. Their term offsets are
+zero and preserve empty ranges at the actual lookbehind cursor, including
+captures around earlier references and boundaries. Required zero-width counts
+execute one pass; optional counts skip effects with undefined slots. Existing
+flat wrapper/assertion frames preserve nested ranges, source-order choices and
+completed negative restoration. No new instruction or runtime allocation is
+needed, source and huge bounds are not expanded, and default host quotas remain
+unlimited. Unicode modes, consuming reference units, outside reads and lookahead
+inside lookbehind remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
