@@ -17,12 +17,14 @@ env:
 
 jobs:
   test:
-    name: Test (${{ matrix.os }}, ${{ matrix.toolchain }})
+    name: Test ${{ matrix.suite }} (${{ matrix.os }}, ${{ matrix.toolchain }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         toolchain: [stable, '1.85.0']
+        # Keep the full corpus independent of workspace compilation and tests.
+        suite: [workspace, test262]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -36,17 +38,20 @@ jobs:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: rustup toolchain install "$TOOLCHAIN" --profile minimal
       - name: Run unit and integration tests
+        if: matrix.suite == 'workspace'
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
-        # The complete corpus test runs once below, in an optimized profile.
+        # The complete corpus runs once in the independent optimized-profile job.
         run: cargo +"$TOOLCHAIN" test --workspace --all-targets --locked -- --skip pinned_corpus_runs_all_reviewed_variants
       - name: Run documentation tests
+        if: matrix.suite == 'workspace'
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: cargo +"$TOOLCHAIN" test --workspace --doc --locked
       - name: Run reviewed Test262 corpus
+        if: matrix.suite == 'test262'
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}

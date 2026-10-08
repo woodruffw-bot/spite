@@ -3476,6 +3476,23 @@ Stable and MSRV pass all 13,680 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+CI now schedules the workspace and reviewed Test262 suites as independent jobs
+for every existing Linux/Windows and stable/Rust-1.85 pair. The original commands
+remain identical: all workspace targets except the separately executed full
+corpus, all documentation tests, and exactly one complete optimized-profile
+corpus run per pair. Debug safety coverage, fixture counts, unlimited defaults,
+quality/data checks, pinned actions, permissions and independent main-SHA runs
+are unchanged. A parsed-workflow inventory verifies all four platform/toolchain
+pairs retain each command exactly once across eight suite jobs plus quality.
+
+The preceding full Windows Rust-1.85 job took 16m07s, including 10m20s for unit
+and integration tests and then 5m21s for the reviewed corpus. Independent runners
+remove that serial dependency. They use four additional hosted jobs per commit;
+no test is omitted, moved to a schedule or restricted to a subset of platforms.
+Dependency and fixture policies also pass; the implementation and all 13680
+corpus variants were validated on both Rust versions before this workflow change.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
