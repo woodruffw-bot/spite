@@ -1685,6 +1685,25 @@ Explicit host work quotas are fallible and opt-in; defaults stay unlimited.
 Variable consuming bodies, internal references, repeated choices, nested counted
 sequences and lookaround inside a counted body remain pending.
 
+
+Repeated pure empty and boundary alternatives use the existing zero-width wrapper
+executor (22.2.2.3.1, 22.2.2.8). Preparation considers the zero-width proof for every
+quantified group, admitting choices only when every complete source-order branch
+is zero-width. Linear reference-free bodies retain their compact sequence plan.
+Child assertion/repetition summaries and checked forward jumps preserve flat
+preparation without rewriting original capture or branch indices.
+
+Required identical zero-width iterations execute one body with its final capture
+state; optional zero-progress iterations are skipped and leave slots undefined.
+The existing branch checkpoints restore starts, ranges and named aliases before
+retrying a failed arm. Pure boundary alternatives use full input context, including
+multiline boundaries. Enclosing wrappers, parent consuming loops and ordinary
+assertions retain their prior behavior. Huge bounds and deeply nested captures
+require no source/count expansion or native recursion. Work remains fallible and
+opt-in with unlimited defaults. Mixed empty/consuming repetitions, internal
+references, counted choices inside lookbehind and Unicode-mode matching remain
+outside this proof.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

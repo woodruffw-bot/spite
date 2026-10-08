@@ -50,7 +50,7 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// per iteration, and retries restore previous starts, ranges and named aliases.
 /// Positive and negative lookahead use flat atomic assertion contexts. Positive
 /// success retains captures; negative assertions restore the input state.
-/// Transparent zero-width lookahead wrappers execute required repetitions once
+/// Transparent zero-width assertion and alternative bodies execute required repetitions once
 /// and skip optional zero-progress iterations with undefined capture slots.
 /// Fixed positive and negative lookbehind preserve full input
 /// context for character sequences, their exact counts, boundary assertions and
@@ -2048,6 +2048,7 @@ fn quantify_zero_width_assertion_wrapper(
                 {
                     return None;
                 }
+                found = true;
                 branches.iter().all(|&target| zero_width[target])
             }
             _ => return None,
@@ -2511,15 +2512,14 @@ fn prepare(
                 } else if let Some((bounds, consumed)) = quantifier(&source[cursor..]) {
                     let end = instructions.len();
                     let start = if capture.is_some() { entry - 1 } else { entry };
-                    if last_complex_group.is_some_and(|pc| pc >= start)
-                        && quantify_zero_width_assertion_wrapper(
-                            &mut instructions,
-                            start..end,
-                            bounds,
-                            capture_start..capture_count,
-                            &mut progresses,
-                        )
-                        .is_some()
+                    if quantify_zero_width_assertion_wrapper(
+                        &mut instructions,
+                        start..end,
+                        bounds,
+                        capture_start..capture_count,
+                        &mut progresses,
+                    )
+                    .is_some()
                     {
                         last_complex_group = Some(instructions.len() - 2);
                     } else if last_complex_group.is_some_and(|pc| pc >= start)
@@ -2696,6 +2696,166 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn pure_zero_width_choice_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(|){2}a",
+            r"(|){0}a",
+            r"(?:|){2}a",
+            r"(?:|)+",
+            r"(()|()){2}a",
+            r"(()|())*a",
+            r"(()|())+?a",
+            r"(^|$){2}a",
+            r"(^|$)?a",
+            r"(^|$){1,3}?a",
+            r"(\b|\B)+a",
+            r"(($)|(^)){2}a",
+            r"((^)|()){2}a",
+            r"(?:(^)|(\b)){2}a",
+            r"(?:(^)(\B)|(\b)){2}a",
+            r"((())|(())){2}a",
+            r"(?:(^)|($)){2}a\1\2",
+            r"(?:(^)|()){1,4}?a",
+            r"(?:()|()){2}a\1\2",
+            r"(?:()|())*a\1\2",
+            r"(?:(?:()|()){2}){3}a",
+            r"(?:(?:()|())?){2}a",
+            r"(?:(?:()|()){2}a|b)+c",
+            r"(?:(?:()|())?a|b)+c",
+            r"(?<=(a))(?:()|()){2}b",
+            r"(?:(?<=a)|^){2}b",
+            r"(?!(?:()|()){2}q)a",
+            r"(?=(?:()|()){2}a)a",
+            r"(?:()|()){2}µΜ",
+            r"((?:|){2})a",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn pure_zero_width_choices_restore_failed_arms_and_skip_optional_slots() {
+        for (source, text, range, captures) in [
+            (
+                r"(()|()){2}a",
+                "qa",
+                1..2,
+                vec![Some(1..1), Some(1..1), None],
+            ),
+            (r"(()|())*a", "qa", 1..2, vec![None, None, None]),
+            (r"(^|$)?a", "qa", 1..2, vec![None]),
+            (
+                r"(($)|(^)){2}a",
+                "a",
+                0..1,
+                vec![Some(0..0), None, Some(0..0)],
+            ),
+            (
+                r"(?:(^)(\B)|(\b)){2}a",
+                "a",
+                0..1,
+                vec![None, None, Some(0..0)],
+            ),
+            (r"(?!(?:()|()){2}q)a", "a", 0..1, vec![None, None]),
+            (r"(?:(?:()|())?){2}a", "qa", 1..2, vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        assert!(
+            ordinary(r"(^|$)+a", false, false, false)
+                .find(&JsString::from("qa"), 0, false)
+                .is_none()
+        );
+        for source in [
+            r"(?:a|())+b",
+            r"(?:(\1)|()){2}a()",
+            r"(?<=(()|()){2})a",
+            r"(?:(?:a|())+)*b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn pure_zero_width_choice_large_bounds_nested_slots_copies_and_work_are_flat() {
+        let huge = "184467440737095516160000000000000000000";
+        let source = "(?:".to_owned()
+            + &"(".repeat(100000)
+            + &")".repeat(100000)
+            + &format!("|()){{{huge},}}a");
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qa"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100001);
+        assert!(found.captures[..100000].iter().all(|r| r == &Some(1..1)));
+        assert_eq!(found.captures[100000], None);
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("qa"), 1, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit zero-choice work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit zero-choice work"
+        );
+        for count in [format!("{{{huge}}}"), format!("{{{huge},}}?"), "+".into()] {
+            let matcher = ordinary(&format!("(?:^|$){count}a"), false, false, false);
+            let mut work = 0;
+            assert_eq!(
+                matcher
+                    .find_with_work(&JsString::from("a"), 0, true, |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    })
+                    .unwrap()
+                    .unwrap()
+                    .range,
+                0..1
+            );
+            assert!(work < 100);
+        }
     }
 
     #[test]
