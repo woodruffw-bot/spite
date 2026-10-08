@@ -128,7 +128,7 @@ fn unsupported_backreferences_modes_and_conditionally_captured_local_choices_rem
     for source in [
         r"/(?:(?<x>a)(?:\k<x>)+){2}/.test('aa')",
         r"/(?:(?<x>a)(?:\1)+){2}/.test('aa')",
-        r"/x(?:(?<n>a)|(?<n>b))y/.test('xay')",
+        r"/(?:(?:x(?:(?<n>a)|(?<n>b))y){2}){2}/.test('xay')",
         r"/(?<x>a)/u.test('a')",
     ] {
         assert!(

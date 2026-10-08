@@ -121,12 +121,12 @@ fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/^(a+[b]+)$/.test('ab')",
+        "/(?:(?:^(a+[b]+)$){2}){2}/.test('ab')",
         "/^(a+b)*$/.test('ab')",
-        "/^a(a+b+)$/.test('aab')",
-        "/^(a|bc)$/.test('a')",
+        "/(?:(?:^a(a+b+)$){2}){2}/.test('aab')",
+        "/(?:(?:^(a|bc)$){2}){2}/.test('a')",
         "/(?:^(?<n>a)$(?:\\k<n>)+){2}/.test('a')",
-        "/^((^a+b+))$/.test('ab')",
+        "/(?:(?:^((^a+b+))$){2}){2}/.test('ab')",
         "/^(a+b)$/u.test('ab')",
         r"/(?:^((a)(?:\1)+)$){2}/.test('aa')",
     ] {

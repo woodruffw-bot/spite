@@ -1256,6 +1256,20 @@ iterative, including 100,000 enclosing captures, and host quotas stay opt-in.
 Alternatives in repeated bodies, nested quantifiers, lookaround/scoped modifiers
 and Unicode matching remain pending.
 
+The flat ordinary matcher also compiles supported Patterns without references
+(22.2.2.4, 22.2.2.3.1). Its reference-specific constructors still reject a body
+without an actual reference, including decimal-looking class escapes. A shared
+prepared-program compiler validates named slot inventories and exclusive names
+before charging accepted work. Runtime construction tries the existing specialized
+matchers first, then compiles this fallback from the complete name-stripped source.
+Captures peeled for specialized plans are restored by resetting the enclosure
+prefix before installing the fallback; every match agrees with the original
+CapturingGroupsCount. Ordinary nested/sequential alternatives and multiple
+quantified character units use the existing flat frames and dynamic ranges,
+including inactive duplicate-name slots and greedy/lazy parent captures. Default
+quotas remain disabled. General repeated choices, nested quantifiers, lookaround,
+scoped modifiers and Unicode matching still require implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

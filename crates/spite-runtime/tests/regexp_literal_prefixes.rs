@@ -128,13 +128,13 @@ fn optional_work_abort_and_complete_unsupported_prefixes_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/([a])b+c+/.test('ab')",
-        "/(?:[a])b+c+/.test('ab')",
-        "/a.b+c+/.test('axb')",
-        "/a[b]c+d+/.test('abc')",
-        "/ab+c+/.test('abc')",
-        "/ab+(c|de)/.test('abc')",
-        "/ab+[c]+/.test('abc')",
+        "/(?:(?:([a])b+c+){2}){2}/.test('ab')",
+        "/(?:(?:(?:[a])b+c+){2}){2}/.test('ab')",
+        "/(?:(?:a.b+c+){2}){2}/.test('axb')",
+        "/(?:(?:a[b]c+d+){2}){2}/.test('abc')",
+        "/(?:(?:ab+c+){2}){2}/.test('abc')",
+        "/(?:(?:ab+(c|de)){2}){2}/.test('abc')",
+        "/(?:(?:ab+[c]+){2}){2}/.test('abc')",
         "/ab+/u.test('ab')",
     ] {
         assert!(

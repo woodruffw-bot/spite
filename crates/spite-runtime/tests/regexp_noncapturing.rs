@@ -46,7 +46,7 @@ fn generic_consumers_advance_empty_group_matches_and_use_grouped_literals() {
 #[test]
 fn other_group_productions_and_quantified_groups_remain_unsupported() {
     for source in [
-        "/a(?:a|bc)/.test('a')",
+        "/(?:(?:a(?:a|bc)){2}){2}/.test('a')",
         "/(?:ab|c)*/.test('a')",
         "/(?:a[b]|c){1}/.test('a')",
         "/(?i:a)/.test('a')",

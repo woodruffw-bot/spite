@@ -40,10 +40,12 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// Top-level and arbitrarily nested alternatives, quantified reference atoms and
 /// groups repeating references, one-unit character terms and ordinary assertions
 /// are accepted, with whole capturing enclosures, empty captures and partial ranges.
-/// Repeated groups may also supply captures to references outside their body. Body references use
+/// Character atoms can also be quantified. Repeated groups may supply captures
+/// to references outside their body. Body references use
 /// completed current-iteration captures; forward and open targets remain empty.
 /// Other quantifiers return `None`. At least one numbered or registered named
-/// reference is required; plain literals retain their existing linear-search matcher.
+/// reference is required by the reference-specific constructors. The ordinary
+/// fallback constructor also accepts bodies without references.
 /// References are never expanded into source or compiled literal strings.
 #[derive(Clone, Debug)]
 pub struct RegExpBackreferenceMatcher(Arc<Program>);
@@ -363,6 +365,7 @@ struct PreparedProgram {
     instructions: Vec<PreparedInstruction>,
     capture_count: usize,
     scopes: Vec<ScopeStep>,
+    references: usize,
 }
 
 /// Absolute UTF-16 endpoints from one successful execution.
@@ -432,7 +435,7 @@ impl RegExpBackreferenceMatcher {
         multiline: bool,
         dot_all: bool,
         bindings: RegExpBackreferenceNamedBindings<'_>,
-        mut charge: impl FnMut(usize) -> Result<(), E>,
+        charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         if bindings.references.is_empty()
             && !source
@@ -445,10 +448,44 @@ impl RegExpBackreferenceMatcher {
         let Some(plan) = prepare(source.code_units(), ignore_case, dot_all, bindings) else {
             return Ok(None);
         };
+        if plan.references == 0 {
+            return Ok(None);
+        }
+        Self::compile_prepared(source, ignore_case, multiline, bindings, plan, charge)
+    }
+
+    /// Compiles the supported ordinary Pattern subset, including no-reference bodies.
+    ///
+    /// This fallback retains the complete original capture layout and the same
+    /// validated named bindings. Unsupported syntax is rejected before work is
+    /// charged; specialized literal/sequence matchers can still run first.
+    pub fn compile_ordinary_with_named_bindings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        bindings: RegExpBackreferenceNamedBindings<'_>,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some(plan) = prepare(source.code_units(), ignore_case, dot_all, bindings) else {
+            return Ok(None);
+        };
+        Self::compile_prepared(source, ignore_case, multiline, bindings, plan, charge)
+    }
+
+    fn compile_prepared<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        bindings: RegExpBackreferenceNamedBindings<'_>,
+        plan: PreparedProgram,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
         let PreparedProgram {
             instructions: prepared,
             capture_count,
             scopes,
+            references: _,
         } = plan;
         let mut capture_names = if bindings.groups.is_empty() {
             Vec::new()
@@ -1485,7 +1522,7 @@ fn prepare(
             }
         }
     }
-    if !groups.is_empty() || references == 0 || named_references.peek().is_some() {
+    if !groups.is_empty() || named_references.peek().is_some() {
         return None;
     }
     if instructions.iter().any(|instruction| {
@@ -1501,6 +1538,7 @@ fn prepare(
         instructions,
         capture_count,
         scopes,
+        references,
     })
 }
 
@@ -1525,6 +1563,192 @@ mod tests {
                 }
             })
             .collect()
+    }
+
+    fn ordinary(
+        source: &str,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+    ) -> RegExpBackreferenceMatcher {
+        RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+            &JsString::from(source),
+            ignore_case,
+            multiline,
+            dot_all,
+            RegExpBackreferenceNamedBindings::default(),
+            |_| Ok::<_, ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn ordinary_fallback_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"((1)|(12))((3)|(23))",
+            r"(a|ab)b",
+            r"(ab|a)b",
+            r"((a|ab)(b|))",
+            r"(a|)(b|a)",
+            r"(?:ab|cd)\d?",
+            r"(?:(a)|(b))(c|)",
+            r"(a+)(b+)",
+            r"(a+?)(b+?)",
+            r"([ab]*)c",
+            r"([ab]*?)c",
+            r"((a+)(b*))",
+            r"(?:(a*)b(c*))",
+            r"^(a|ab)b$",
+            r"\b(a+)\b",
+            r"(.+)(.)",
+            r"(.+?)(.)",
+            r"(a?)",
+            r"([ab]?)",
+            r"()?",
+            r"()+",
+            r"(){2,3}",
+            r"(a){1,3}",
+            r"([ab]{0,999999999999999999999999999999})",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "abb", "aabb", "aaaaa", "aaabbbb", "123", "cd2", "aacc",
+                    "\n\n", " a ", "\u{D7FF}", "µΜ",
+                ] {
+                    let text = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows, "{source:?} i={ignore_case} m={multiline} s={dot_all} input={text:?} start={start} sticky={sticky} {:?}", matcher.find(&text, start, sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn ordinary_choices_preserve_source_order_inactive_slots_and_whole_prefixes() {
+        for (source, text, range, captures) in [
+            (
+                r"((1)|(12))((3)|(23))",
+                "123",
+                0..3,
+                vec![Some(0..1), Some(0..1), None, Some(1..3), None, Some(1..3)],
+            ),
+            (r"(a|ab)b", "abb", 0..2, vec![Some(0..1)]),
+            (r"(ab|a)b", "abb", 0..3, vec![Some(0..2)]),
+            (
+                r"((a|ab)(b|))",
+                "ab",
+                0..2,
+                vec![Some(0..2), Some(0..1), Some(1..2)],
+            ),
+            (r"(a+)(b+)", "aaabbbb", 0..7, vec![Some(0..3), Some(3..7)]),
+            (r"(a+?)(b+?)", "aaabbbb", 0..4, vec![Some(0..3), Some(3..4)]),
+            (r"(a?)", "q", 0..0, vec![Some(0..0)]),
+            (r"()?", "q", 0..0, vec![None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, true)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        // Existing constructors retain their reference-only contract, including
+        // decimal-looking escapes within character classes.
+        for source in ["a", "(a+)", r"[\1]"] {
+            assert!(RegExpBackreferenceMatcher::compile(&JsString::from(source), false).is_none());
+        }
+    }
+
+    #[test]
+    fn ordinary_fallback_keeps_deep_captures_flat_and_rejects_gaps_before_work() {
+        let source = "(".repeat(100000) + "a+" + &")".repeat(100000);
+        let matcher = ordinary(&source, false, false, false);
+        let found = matcher.find(&JsString::from("aaa"), 0, true).unwrap();
+        assert_eq!(found.range, 0..3);
+        assert!(found.captures.iter().all(|r| *r == Some(0..3)));
+        let source = JsString::from(source.as_str());
+        assert!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &source,
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Err::<(), _>("work"),
+            )
+            .is_err()
+        );
+        for source in [r"(a|b)+", r"(a+)+", r"(?=a)a", r"(?i:a)"] {
+            let mut work = 0;
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |n| {
+                        work += n;
+                        Ok::<_, ()>(())
+                    },
+                )
+                .unwrap()
+                .is_none()
+            );
+            assert_eq!(work, 0, "{source}");
+        }
+        let source = JsString::from("(a)|(b)");
+        let groups = [&[0usize, 1][..]];
+        let matcher = RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+            &source,
+            false,
+            false,
+            false,
+            RegExpBackreferenceNamedBindings {
+                groups: &groups,
+                references: &[],
+            },
+            |_| Ok::<_, ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            &*matcher
+                .find(&JsString::from("b"), 0, true)
+                .unwrap()
+                .captures,
+            &[None, Some(0..1)]
+        );
+        let source = JsString::from("(a)(b)");
+        let mut work = 0;
+        assert!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &source,
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings {
+                    groups: &groups,
+                    references: &[]
+                },
+                |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                },
+            )
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(work, 0);
     }
 
     #[test]

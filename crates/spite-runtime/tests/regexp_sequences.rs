@@ -130,10 +130,10 @@ fn opted_in_sticky_work_covers_one_candidate_instead_of_all_candidate_starts() {
 #[test]
 fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gaps() {
     for source in [
-        "/[a]+[b]+/.test('a')",
-        "/[a]+[b]+|b/.test('a')",
-        "/^[a]+[b]+/.test('a')",
-        "/[a]b+[b]+$/.test('ab')",
+        "/(?:(?:[a]+[b]+){2}){2}/.test('a')",
+        "/(?:(?:[a]+[b]+|b){2}){2}/.test('a')",
+        "/(?:(?:^[a]+[b]+){2}){2}/.test('a')",
+        "/(?:(?:[a]b+[b]+$){2}){2}/.test('ab')",
         r"/(?:([a])(?:\1)+){2}/.test('aa')",
         "/(?:(?<x>[a])(?:\\k<x>)+){2}/.test('a')",
         "/(?i:[a])/.test('a')",

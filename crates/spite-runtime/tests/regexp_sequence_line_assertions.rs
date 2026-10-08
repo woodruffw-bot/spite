@@ -125,10 +125,10 @@ fn optional_work_and_variable_assertion_gaps_remain_distinct_from_exceptions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/a+($)b+/m.test('ab')",
-        r"/a^b+c+/m.test('abc')",
+        r"/(?:(?:a+($)b+){2}){2}/m.test('ab')",
+        r"/(?:(?:a^b+c+){2}){2}/m.test('abc')",
         r"/(a$|b)+/m.test('a')",
-        r"/(a|bc)^/m.test('a')",
+        r"/(?:(?:(a|bc)^){2}){2}/m.test('a')",
         r"/(?:(?<n>a)^(?:\k<n>)+){2}/.test('a')",
         r"/(^a)/u.test('a')",
     ] {

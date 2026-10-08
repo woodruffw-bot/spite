@@ -398,6 +398,32 @@ impl Realm {
                 }
             }
         };
+        let matcher = if matcher.is_none() && !unicode {
+            let ordinary = self.object_work(span, |_, budget| {
+                budget.charge(named_groups.len())?;
+                let groups: Vec<&[usize]> = named_groups
+                    .iter()
+                    .map(|group| group.slots.as_slice())
+                    .collect();
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    flags.code_units().contains(&u16::from(b's')),
+                    spite_core::RegExpBackreferenceNamedBindings {
+                        groups: &groups,
+                        references: &named_references,
+                    },
+                    |work| budget.charge(work),
+                )
+            })?;
+            // The fallback compiles the complete original layout, including
+            // captures peeled only for the specialized matchers above.
+            enclosing_captures = 0;
+            ordinary.map(RegExpMatcherBody::Backreferences)
+        } else {
+            matcher
+        };
         let matcher = matcher.map(|body| RegExpMatcher::new(body, enclosing_captures));
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the

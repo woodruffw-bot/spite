@@ -119,8 +119,8 @@ fn optional_full_suffix_work_aborts_and_other_group_compositions_stay_unsupporte
     for source in [
         r"/x(ab|a)+c/.test('xababc')",
         r"/(ab|a)+c/.test('abc')",
-        r"/(ab)+(a)+/.test('aba')",
-        r"/(ab)+a+/.test('aba')",
+        r"/(?:(?:(ab)+(a)+){2}){2}/.test('aba')",
+        r"/(?:(?:(ab)+a+){2}){2}/.test('aba')",
         r"/((ab|a)+)c/.test('abc')",
         r"/(?:(?<n>ab)+c\k<n>){2}/.test('abc')",
         r"/(?:(ab)+\1){2}/.test('abab')",

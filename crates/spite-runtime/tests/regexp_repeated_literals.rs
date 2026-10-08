@@ -134,7 +134,7 @@ fn optional_host_work_covers_sticky_repetitions_and_remaining_groups_are_unsuppo
         r"/(ab|cd)+/.test('ab')",
         r"/(a\bb|c)+/.test('ab')",
         r"/(ab$|c)+/.test('ab')",
-        r"/(ab)+(cd)+/.test('abcd')",
+        r"/(?:(?:(ab)+(cd)+){2}){2}/.test('abcd')",
         r"/(?:(?<n>ab)+\k<n>){2}/.test('ab')",
         r"/(?:(ab)(?:\1)+){2}/.test('abab')",
         r"/(ab)+/u.test('ab')",

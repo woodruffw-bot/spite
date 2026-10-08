@@ -115,9 +115,9 @@ fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps
     for source in [
         "/(ab|c)+/.test('a')",
         "/(?:ab|c)+/.test('a')",
-        "/a+[b]+/.test('ab')",
-        "/a+[b]+|b/.test('b')",
-        "/^a+[b]+$/.test('a')",
+        "/(?:(?:a+[b]+){2}){2}/.test('ab')",
+        "/(?:(?:a+[b]+|b){2}){2}/.test('b')",
+        "/(?:(?:^a+[b]+$){2}){2}/.test('a')",
         "/a+/u.test('a')",
         "/[a]+/v.test('a')",
         r"/(?:(a)(?:\1)+){2}/.test('a')",

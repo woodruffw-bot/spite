@@ -125,8 +125,8 @@ fn opted_in_host_aborts_precede_capture_results_and_bypass_handlers() {
 fn unsupported_group_bodies_and_captured_suffixes_remain_host_failures() {
     for source in [
         "/(a[b]|c)+/.test('ab')",
-        "/(a+[b]+)/.test('ab')",
-        "/a+([b]+)/.test('ab')",
+        "/(?:(?:(a+[b]+)){2}){2}/.test('ab')",
+        "/(?:(?:a+([b]+)){2}){2}/.test('ab')",
         "/(?:(?<x>a)+\\k<x>){2}/.test('a')",
         "/(a+)+/.test('a')",
         "/(a)+/u.test('a')",

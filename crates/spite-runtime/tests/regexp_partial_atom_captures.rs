@@ -138,8 +138,8 @@ fn optional_work_aborts_and_remaining_variable_features_are_unsupported() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(a+)(b)+/.test('ab')",
-        r"/(a+b+)c/.test('abc')",
+        r"/(?:(?:(a+)(b)+){2}){2}/.test('ab')",
+        r"/(?:(?:(a+b+)c){2}){2}/.test('abc')",
         r"/((a|bc)+)c/.test('abc')",
         r"/(?:(?<n>a+)b\k<n>){2}/.test('ab')",
         r"/(?:(a+)\1){2}/.test('aa')",

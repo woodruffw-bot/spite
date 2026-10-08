@@ -120,7 +120,7 @@ fn optional_host_work_aborts_and_remaining_group_compositions_stay_distinct() {
         r"/^(ab|a)+b$/.test('abb')",
         r"/^b(ab|a)+$/.test('bab')",
         r"/^(ab|a)+$/.test('ab')",
-        r"/^(ab)+(a)+$/.test('aba')",
+        r"/(?:(?:^(ab)+(a)+$){2}){2}/.test('aba')",
         r"/(?:^(?<n>ab)+$\k<n>){2}/.test('ab')",
         r"/(?:^(ab)(?:\1)+$){2}/.test('abab')",
         r"/^(ab)+$/u.test('ab')",

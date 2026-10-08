@@ -121,10 +121,10 @@ fn optional_work_abort_and_complete_unsupported_bodies_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        "/(a|bc)|x/.test('a')",
+        "/(?:(?:(a|bc)|x){2}){2}/.test('a')",
         "/(a+b)*|x/.test('ab')",
-        "/a(a+b+)|x/.test('aab')",
-        "/(a+[b]+)|x/.test('ab')",
+        "/(?:(?:a(a+b+)|x){2}){2}/.test('aab')",
+        "/(?:(?:(a+[b]+)|x){2}){2}/.test('ab')",
         "/(a+b)|x/u.test('ab')",
         "/(?:(?<n>a)|x(?:\\k<n>)+){2}/.test('a')",
         r"/(?:((a)(?:\1)+)|x){2}/.test('aa')",

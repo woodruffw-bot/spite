@@ -131,7 +131,7 @@ fn optional_host_failures_and_remaining_variable_group_features_are_distinct() {
     );
     for source in [
         r"/((ab|a)+)c/.test('abc')",
-        r"/((ab)+)(c)+/.test('abc')",
+        r"/(?:(?:((ab)+)(c)+){2}){2}/.test('abc')",
         r"/((a*)+)b/.test('ab')",
         r"/(?:(?<n>(ab)+)c\k<n>){2}/.test('abc')",
         r"/(?:((ab)+)\1){2}/.test('abab')",

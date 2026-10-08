@@ -107,10 +107,10 @@ fn opted_in_constructor_and_sticky_search_aborts_remain_host_failures() {
 #[test]
 fn nested_choices_quantified_captures_and_unsupported_branches_reject_the_whole_plan() {
     for source in [
-        "/a+[b]+|a/.test('a')",
+        "/(?:(?:a+[b]+|a){2}){2}/.test('a')",
         "/(ab|c)+|b/.test('b')",
-        "/a(a+|b)/.test('a')",
-        "/a|^b+[a]+/.test('a')",
+        "/(?:(?:a(a+|b)){2}){2}/.test('a')",
+        "/(?:(?:a|^b+[a]+){2}){2}/.test('a')",
         "/a+|b/u.test('a')",
         r"/(?:(a)\1|b+){2}/.test('b')",
     ] {

@@ -210,7 +210,10 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         number(&format!("({{__proto__: {{ {name}: 7 }} }}).{name}"), 7.0);
         number(&format!("let o = {{}}; o.{name} = 3; o.{name}"), 3.0);
     }
-    for source in ["'abc'.match('x(x|yz)')", "'abc'.matchAll('x(x|yz)').next()"] {
+    for source in [
+        "'abc'.match('(?:(?:x(x|yz)){2}){2}')",
+        "'abc'.matchAll('(?:(?:x(x|yz)){2}){2}').next()",
+    ] {
         assert!(
             matches!(
                 Realm::default().eval(source),

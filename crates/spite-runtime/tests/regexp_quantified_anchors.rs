@@ -131,10 +131,10 @@ fn opted_in_constructor_and_sticky_branch_work_failures_bypass_js_handlers() {
 #[test]
 fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
     for source in [
-        "/^a+[b]+$/.test('ab')",
+        "/(?:(?:^a+[b]+$){2}){2}/.test('ab')",
         "/^(ab|a)+$/.test('a')",
-        "/^a+b+$/.test('ab')",
-        "/^(?:a+[b]+)$/.test('ab')",
+        "/(?:(?:^a+b+$){2}){2}/.test('ab')",
+        "/(?:(?:^(?:a+[b]+)$){2}){2}/.test('ab')",
         "/^a+$/u.test('a')",
     ] {
         assert!(
@@ -149,7 +149,7 @@ fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
     realm.eval("let flag=0").unwrap();
     assert!(matches!(
         realm.eval(
-            "try{/^a+[b]+$/.exec({toString(){flag=1;return 'ab'}})}catch{flag=2}finally{flag=3}"
+            "try{/(?:(?:^a+[b]+$){2}){2}/.exec({toString(){flag=1;return 'ab'}})}catch{flag=2}finally{flag=3}"
         ),
         Err(Error::Unsupported { .. })
     ));
