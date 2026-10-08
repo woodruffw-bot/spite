@@ -161,6 +161,7 @@ enum LookbehindWidth {
         // None denotes a consuming width larger than any native input.
         fixed: Option<usize>,
         references: Box<[OutsideReferenceWidth]>,
+        units: Box<[(usize, Option<usize>)]>,
     },
 }
 
@@ -1463,6 +1464,9 @@ impl Program {
         backward: bool,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<ResolvedReferenceSequence>, E> {
+        if backward {
+            return self.resolve_backward_reference_sequence(references, state, charge);
+        }
         charge(references.len())?;
         charge(references.len() + 1)?;
         let mut offsets = Vec::with_capacity(references.len() + 1);
@@ -1485,14 +1489,8 @@ impl Program {
                 }
                 ReferenceTarget::Local(span) => {
                     charge(2)?;
-                    if backward {
-                        // Its owned target lies to the left and has not matched
-                        // in this cleared backward iteration (22.2.2.3.1).
-                        None
-                    } else {
-                        let range = offsets[span.start]..offsets[span.end];
-                        (!range.is_empty()).then_some(ReferenceRange::Local(range))
-                    }
+                    let range = offsets[span.start]..offsets[span.end];
+                    (!range.is_empty()).then_some(ReferenceRange::Local(range))
                 }
                 ReferenceTarget::Empty | ReferenceTarget::Open | ReferenceTarget::Future(_) => None,
                 ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
@@ -1516,6 +1514,78 @@ impl Program {
             ranges: captures,
             offsets,
         }))
+    }
+
+    // All same-unit dependencies point to terms lying strictly to the right.
+    // Resolve their suffix widths first, then retain source-order unit ranges
+    // for the existing comparator (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
+    fn resolve_backward_reference_sequence<E>(
+        &self,
+        references: &[ReferenceTarget],
+        state: &CaptureState,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<ResolvedReferenceSequence>, E> {
+        charge(references.len())?;
+        charge(references.len() + 1)?;
+        let mut offsets = vec![0usize; references.len() + 1];
+        let mut ranges = Vec::with_capacity(references.len());
+        for (ordinal, target) in references.iter().enumerate().rev() {
+            charge(1)?;
+            let range = match *target {
+                ReferenceTarget::Input { index, named } => {
+                    let range = if named {
+                        &state.named[index]
+                    } else {
+                        &state.captures[index]
+                    };
+                    range
+                        .as_ref()
+                        .filter(|r| !r.is_empty())
+                        .cloned()
+                        .map(ReferenceRange::Input)
+                }
+                ReferenceTarget::Future(span) => {
+                    charge(2)?;
+                    // Local ranges temporarily use distances from the unit end.
+                    let range = offsets[span.end]..offsets[span.start];
+                    (!range.is_empty()).then_some(ReferenceRange::Local(range))
+                }
+                ReferenceTarget::Local(_) => {
+                    charge(2)?;
+                    None
+                }
+                ReferenceTarget::Empty | ReferenceTarget::Open => None,
+                ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
+            };
+            let length = range.as_ref().map_or(0, |range| match range {
+                ReferenceRange::Input(range) | ReferenceRange::Local(range) => range.len(),
+                ReferenceRange::Term(position) => usize::from(!matches!(
+                    self.instructions[*position],
+                    Instruction::RepeatedAssert(_)
+                )),
+            });
+            let Some(width) = offsets[ordinal + 1].checked_add(length) else {
+                return Ok(None);
+            };
+            offsets[ordinal] = width;
+            if let Some(range) = range {
+                ranges.push(range);
+            }
+        }
+        let width = offsets[0];
+        charge(ranges.len())?;
+        ranges.reverse();
+        for range in &mut ranges {
+            charge(1)?;
+            if let ReferenceRange::Local(range) = range {
+                *range = width - range.end..width - range.start;
+            }
+        }
+        for offset in &mut offsets {
+            charge(1)?;
+            *offset = width - *offset;
+        }
+        Ok(Some(ResolvedReferenceSequence { ranges, offsets }))
     }
 
     fn compare_reference_sequence<E>(
@@ -1634,7 +1704,11 @@ impl Program {
         };
         let width = match width {
             LookbehindWidth::Fixed(width) => Some(*width),
-            LookbehindWidth::OutsideReferences { fixed, references } => {
+            LookbehindWidth::OutsideReferences {
+                fixed,
+                references,
+                units,
+            } => {
                 let mut width = *fixed;
                 for reference in references {
                     charge(1)?;
@@ -1654,6 +1728,25 @@ impl Program {
                                 reference.count.and_then(|count| width.checked_mul(count))
                             }
                         });
+                    width = width.and_then(|width| width.checked_add(term?));
+                }
+                for &(pc, count) in units {
+                    charge(1)?;
+                    let Instruction::QuantifiedReferenceSequence { references, .. } =
+                        &self.instructions[pc]
+                    else {
+                        unreachable!("outside unit retains its prepared sequence");
+                    };
+                    let resolved =
+                        self.resolve_backward_reference_sequence(references, state, charge)?;
+                    let term = resolved.and_then(|resolved| {
+                        let width = *resolved.offsets.last().unwrap();
+                        if width == 0 {
+                            Some(0)
+                        } else {
+                            count.and_then(|count| width.checked_mul(count))
+                        }
+                    });
                     width = width.and_then(|width| width.checked_add(term?));
                 }
                 width
@@ -1981,9 +2074,9 @@ impl Program {
                             .iter()
                             .any(|target| matches!(target, ReferenceTarget::Input { .. }))
                     {
-                        // The complete owner's proof permits only immutable
-                        // outside ranges and proved empty internal reads.
-                        // Source-order comparison of each proved unit is valid
+                        // The complete owner's proof permits immutable outside
+                        // ranges and acyclic same-unit references. Resolved
+                        // source-order comparison of each proved unit is valid
                         // backward too (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
                         let Some(resolved) = self.resolve_reference_sequence(
                             references,
@@ -2998,6 +3091,7 @@ fn outside_reference_lookbehind_width(
     }
     let mut fixed = Some(0usize);
     let mut width_references = Vec::new();
+    let mut width_units = Vec::new();
     let mut counted_offsets = Vec::new();
     let outside = |index: usize, named: bool| {
         if named {
@@ -3084,40 +3178,32 @@ fn outside_reference_lookbehind_width(
                                 if !outside(index, named)? {
                                     return None;
                                 }
-                                // Width terms stay flat even when targets or
-                                // unit lengths differ. Resolve them at entry.
-                                width_references.push(OutsideReferenceWidth {
-                                    index,
-                                    named,
-                                    copies: 1,
-                                    count: min,
-                                });
                             }
                             ReferenceTarget::Term(index) => {
-                                let width = match instructions.get(index)? {
-                                    PreparedInstruction::Ready(Instruction::RepeatedCharacter(
-                                        _,
-                                    ))
-                                    | PreparedInstruction::Set { repeated: true, .. } => 1usize,
-                                    PreparedInstruction::Ready(Instruction::RepeatedAssert(_)) => 0,
-                                    _ => return None,
-                                };
-                                let term = if width == 0 {
-                                    Some(0)
-                                } else {
-                                    min.and_then(|count| width.checked_mul(count))
-                                };
-                                fixed = fixed.and_then(|fixed| fixed.checked_add(term?));
+                                if !matches!(
+                                    instructions.get(index)?,
+                                    PreparedInstruction::Ready(
+                                        Instruction::RepeatedCharacter(_)
+                                            | Instruction::RepeatedAssert(_)
+                                    ) | PreparedInstruction::Set { repeated: true, .. }
+                                ) {
+                                    return None;
+                                }
                             }
                             ReferenceTarget::Empty | ReferenceTarget::Open => {}
                             ReferenceTarget::Local(span)
                                 if span.start <= span.end && span.end <= ordinal => {}
-                            // Dependent right-hand reads still need a mixed
-                            // width proof; the fixed-unit proof handles those
-                            // only when outside inputs are absent.
+                            ReferenceTarget::Future(span)
+                                if span.start > ordinal
+                                    && span.start <= span.end
+                                    && span.end <= references.len() => {}
                             _ => return None,
                         }
                     }
+                    // Retain one flat unit descriptor. Its right-hand widths may
+                    // depend on imported lengths, so resolve the complete unit at
+                    // assertion entry instead of expanding width coefficients.
+                    width_units.push((pc, min));
                 }
             }
             PreparedInstruction::Ready(Instruction::Character(_))
@@ -3162,7 +3248,7 @@ fn outside_reference_lookbehind_width(
         }
         pc += 1;
     }
-    if width_references.is_empty() {
+    if width_references.is_empty() && width_units.is_empty() {
         return None;
     }
     for (pc, offsets) in counted_offsets {
@@ -3178,6 +3264,7 @@ fn outside_reference_lookbehind_width(
     Some(LookbehindWidth::OutsideReferences {
         fixed,
         references: width_references.into_boxed_slice(),
+        units: width_units.into_boxed_slice(),
     })
 }
 
@@ -3556,6 +3643,226 @@ mod tests {
     }
 
     #[test]
+    fn dependent_outside_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=(\3(b)\1){2})c",
+            r"(a)(?<=(\3(b)\1){2}?)c",
+            r"(ab)(?<=(\3(\1)){2})c",
+            r"(a+)(?<=(\3(\1)){2})b",
+            r"(a)(?<=(\3(\4(b))\1){2})c",
+            r"(a)(?<=(\3(b)\1\3){2})c",
+            r"(a)(?<=(\1\3(b)){2})c",
+            r"(a)(?<!(\3(b)\1){2}q)c",
+            r"(a)(?<=(\3(\1)){0})b",
+            r"()(?<=(\3(\1)){2})b",
+            r"(?<=(\2(\3)\3){2})(a)",
+            r"(a(?<=(\3(\1)){2}))b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "",
+                    "bbabbac",
+                    "ababababc",
+                    "aaaab",
+                    "aaaaaaaab",
+                    "bbbbabbbbac",
+                    "bbabbaac",
+                    "bBAbbAc",
+                    "aab",
+                    "b",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn dependent_outside_lookbehind_resolves_current_imports_nested_right_ranges_and_rollback() {
+        for (source, text, range, captures) in [
+            (
+                r"(a)(?<=(\3(b)\1){2})c",
+                "bbabbac",
+                5..7,
+                vec![Some(5..6), Some(0..3), Some(1..2)],
+            ),
+            (
+                r"(ab)(?<=(\3(\1)){2})c",
+                "ababababc",
+                6..9,
+                vec![Some(6..8), Some(0..4), Some(2..4)],
+            ),
+            (
+                r"(a+)(?<=(\3(\1)){2})b",
+                "aaaaaaaab",
+                6..9,
+                vec![Some(6..8), Some(0..4), Some(2..4)],
+            ),
+            (
+                r"(a)(?<=(\3(\4(b))\1){2})c",
+                "bbbbabbbbac",
+                9..11,
+                vec![Some(9..10), Some(0..5), Some(2..4), Some(3..4)],
+            ),
+            (
+                r"(a)(?<=(\3(b)\1\3){2})c",
+                "bbabbac",
+                5..7,
+                vec![Some(5..6), Some(0..3), Some(1..2)],
+            ),
+            (
+                r"(a)(?<!(\3(b)\1){2}q)c",
+                "bbabbaac",
+                6..8,
+                vec![Some(6..7), None, None],
+            ),
+            (
+                r"()(?<=(\3(\1)){2})b",
+                "b",
+                0..1,
+                vec![Some(0..0), Some(0..0), Some(0..0)],
+            ),
+            (
+                r"(a(?<=(\3(\1)){2}))b",
+                "ab",
+                0..2,
+                vec![Some(0..1), Some(1..1), Some(1..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        assert!(
+            ordinary(r"(a)(?<=(\1\3(b)){2})c", false, false, false)
+                .find(&JsString::from("ababc"), 0, false)
+                .is_none()
+        );
+        let input =
+            JsString::from_code_units(vec![0xdc00, 0xdc00, 0xd800, 0xdc00, 0xdc00, 0xd800, 0x63]);
+        let found = ordinary(r"([\uD800])(?<=(\3([\uDC00])\1){2})c", false, false, false)
+            .find(&input, 5, true)
+            .unwrap();
+        assert_eq!(&*found.captures, &[Some(5..6), Some(0..3), Some(1..2)]);
+        let source = format!("(?<=(?:ab){{{}}})c", usize::MAX / 2 + 1);
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("abc"), 2, true)
+                .is_none()
+        );
+        let source = source.replace("(?<=", "(?<!");
+        assert_eq!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("abc"), 2, true)
+                .unwrap()
+                .range,
+            2..3
+        );
+        for source in [
+            r"(a)(?<=(\3(b)\1){1,2})c",
+            r"(a)(?<=(\3(b)\1){2}|b)c",
+            r"(a)(?<=(\3(b)\1){2}(?<=\3))c",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn dependent_outside_lookbehind_deep_scopes_zero_dependencies_overflow_clones_and_work_stay_flat()
+     {
+        let source = "(a)(?<=(\\3".to_owned()
+            + &"(".repeat(100000)
+            + "b"
+            + &")".repeat(100000)
+            + r"\1){2})c";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("bbabbac"), 5, true).unwrap();
+        assert_eq!(found.captures.len(), 100002);
+        assert_eq!(found.captures[0], Some(5..6));
+        assert_eq!(found.captures[1], Some(0..3));
+        assert!(found.captures[2..].iter().all(|r| *r == Some(1..2)));
+        drop(copy);
+        let source = source.replace("(?<=", "(?<!").replace("{2})c", "{2}q)c");
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("bbabbaac"), 6, true)
+            .unwrap();
+        assert_eq!(found.captures[0], Some(6..7));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let chain = (0..10000)
+            .map(|i| format!("\\{}(", i + 3))
+            .collect::<String>();
+        let body = "(?<=(".to_owned() + &chain + r"\1" + &")".repeat(10000) + "){1})b";
+        let found = ordinary(&("()".to_owned() + &body), false, false, false)
+            .find(&JsString::from("b"), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        assert!(
+            ordinary(&("(a)".to_owned() + &body), false, false, false)
+                .find(&JsString::from("ab"), 0, true)
+                .is_none()
+        );
+        let found = ordinary(
+            &("(a)".to_owned() + &body.replace("(?<=", "(?<!")),
+            false,
+            false,
+            false,
+        )
+        .find(&JsString::from("ab"), 0, true)
+        .unwrap();
+        assert_eq!(found.captures[0], Some(0..1));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let source = format!(r"()(?<=(\3(\1)){{{}}})b", "9".repeat(100));
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("b"), 0, true)
+                .unwrap()
+                .captures
+                .iter()
+                .all(|r| *r == Some(0..0))
+        );
+        let matcher = ordinary(r"(a)(?<=(\3(b)\1){50000})c", false, false, false);
+        let input = JsString::from(("bba".repeat(50000) + "c").as_str());
+        let found = matcher.find(&input, 149999, true).unwrap();
+        assert_eq!(found.captures[1], Some(0..3));
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 149999, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+    }
+
+    #[test]
     fn mixed_empty_reference_lookbehind_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3676,7 +3983,7 @@ mod tests {
         assert_eq!(&*found.captures, &[Some(3..4), Some(0..2), Some(0..1)]);
         for source in [
             r"(a)(?<=((b)\3\1){1,2})c",
-            r"(a)(?<=(\1\3(b)){2})c",
+            r"(a)(?<=(\1\3(b)){1,2})c",
             r"(a)(?<=((b)\3\1){2}|b)c",
         ] {
             assert!(
@@ -3854,7 +4161,7 @@ mod tests {
         assert_eq!(&*found.captures, &[Some(0..2), Some(1..2)]);
         for source in [
             r"(?<=(\2(a)){1,2})b",
-            r"(a)(?<=(\1\3(b)){2})c",
+            r"(a)(?<=(\1\3(b)){1,2})c",
             r"(?<=(\2(a)){2}|a)b",
             r"(?<=(\2(a)){2}(?<=\2))b",
         ] {
@@ -7571,7 +7878,11 @@ mod tests {
                 .is_none()
         );
         assert!(work < 100);
-        let source = format!("(?<=(?:ab){{{}}})c", usize::MAX / 2 + 1);
+        let source = format!(
+            "(?<=(?:ab){{{},{}}})c",
+            usize::MAX / 2 + 1,
+            usize::MAX / 2 + 2
+        );
         assert!(
             RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
                 &JsString::from(source.as_str()),

@@ -414,6 +414,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve enclosing same-unit references as undefined in exact ordinary lookbehind and fixed lookahead units, keeping backward leftmost and forward rightmost capture ranges.
 - [x] Resolve right-hand same-unit capture references in exact ordinary lookbehind repetitions with checked dependent widths, backward leftmost ranges and forward undefined reads.
 - [x] Compose stable outside captures with proved empty same-unit local, open and empty future reads in exact ordinary lookbehind repetitions, retaining imported ranges and precise owned effects.
+- [x] Resolve exact ordinary lookbehind units whose right-hand capture-reference widths depend on stable outside captures, with checked unavailable widths and precise nested backward ranges.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -2023,7 +2023,7 @@ proof independently of their enclosing backward assertion's direction. Negative
 failures retain scoped rollback and imported ranges.
 
 Right-hand targets retain their spans for fixed backward matching;
-units mixing outside Input reads with dependent Future reads, unproved variable counts,
+unproved variable counts,
 choices and Unicode modes remain pending. Exact-zero bodies keep their existing
 skip path. No new matching algorithm, count expansion, default quota, dependency
 or native recursion is introduced.
@@ -2049,8 +2049,7 @@ retain the leftmost backward iteration; fixed forward assertions skip still
 undefined Future reads and retain their rightmost capture effects. Negative and
 failed assertions use the existing scoped checkpoint rollback.
 
-Outside bare references can accompany these proved fixed units. Mixing outside
-reads into the same unit with dependent Future reads, variable consuming counts, capture-dependent
+Outside bare references can accompany these proved fixed units. Unproved variable consuming counts, capture-dependent
 child assertions, unproved choices and Unicode modes remain pending. Checked
 width overflow does not establish a fixed proof. There is no default quota,
 dependency addition, repeated-source expansion or native recursion.
@@ -2074,10 +2073,40 @@ after completed negative failures without overwriting imported captures.
 
 Consuming mixed units still require exact representable counts. Unrepresentable
 required minima retain one pass only for wholly empty resolved units; nonempty
-widths cannot fit a finite input. Dependent nonempty Future reads mixed with Input,
-unproved variable counts, choices and Unicode modes remain pending. This shares
+widths cannot fit a finite input. Unproved variable counts, choices, dependent child assertions and Unicode modes
+remain pending. This shares
 the existing resolver and matcher with no source expansion, recursion, dependency
 addition or default resource quota.
+
+
+Exact ordinary lookbehind units may contain both stable outside Input references
+and same-unit Future dependencies (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). Preparation
+retains one flat instruction/count descriptor per dynamic unit after validating
+every outside target and named alias against the complete assertion owner. Terms
+retain their character/class/boundary proof, Local reads remain empty backward,
+and Future spans must lie strictly to the right inside the same unit.
+
+At assertion entry, backward resolution scans the unit from right to left. It
+reads immutable outside lengths, uses checked suffix differences for dependent
+right-hand capture spans, then translates local ranges and capture offsets into
+source order. Dependencies are acyclic in that direction. The same resolver feeds
+the existing unit comparator; captured right-hand text is checked against actual
+current-unit input ranges, with every ordinary predicate still evaluated. Forward
+resolution preserves its previous ranges, charges and undefined future reads.
+
+The width inventory scales each resolved unit once by its required count. Checked
+overflow denotes an unavailable consuming prefix; no unit expansion or dependency
+coefficient expansion is necessary. This also represents mathematical overflow in
+otherwise proved fixed character sequences. All-zero dependencies remain zero
+even through long chains and unrepresentable required counts, retaining one
+required effect pass. Exact-zero bodies retain their skip path. Repeated captures
+keep their first backward unit; completed failures restore owned captures while
+preserving imports.
+
+Variable consuming counts, unproved choices, capture-dependent child assertions
+and Unicode modes remain pending. Resolution uses flat vectors and charges their
+allocation and traversal. There is no default quota, new dependency, native
+recursion or repeated-source expansion.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

@@ -124,7 +124,7 @@ fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
 fn variable_counts_mixed_outside_units_choices_dependent_children_and_unicode_remain_pending() {
     for source in [
         r"/(?<=(\2(a)){1,2})b/.exec('aaaab')",
-        r"/(a)(?<=(\1\3(b)){2})c/.exec('ababc')",
+        r"/(a)(?<=(\1\3(b)){1,2})c/.exec('ababc')",
         r"/(?<=(\2(a)){2}|a)b/.exec('aaaab')",
         r"/(?<=(\2(a)){2}(?<=\2))b/.exec('aaaab')",
         r"/(?<=(\2(a)){2})b/u.exec('aaaab')",

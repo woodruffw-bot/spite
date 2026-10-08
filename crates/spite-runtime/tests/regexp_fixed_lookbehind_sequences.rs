@@ -160,8 +160,9 @@ fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupp
         );
     }
     let source = format!(
-        "new RegExp('(?<=(?:ab){{{}}})c').exec('ababc')",
-        usize::MAX / 2 + 1
+        "new RegExp('(?<=(?:ab){{{},{}}})c').exec('ababc')",
+        usize::MAX / 2 + 1,
+        usize::MAX / 2 + 2
     );
     assert!(matches!(
         Realm::default().eval(&source),
