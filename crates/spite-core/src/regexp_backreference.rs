@@ -52,9 +52,9 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// success retains captures; negative assertions restore the input state.
 /// Transparent zero-width lookahead wrappers execute required repetitions once
 /// and skip optional zero-progress iterations with undefined capture slots.
-/// Fixed capture-free positive and negative lookbehind preserve full input
+/// Fixed positive and negative lookbehind preserve full input
 /// context for character terms, their exact counts, boundary assertions and
-/// transparent groups and nested fixed lookbehind.
+/// transparent groups, unrepeated captures and nested fixed lookbehind.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -220,6 +220,7 @@ struct FixedLookbehindFrame {
     end: usize,
     cursor: Option<usize>,
     end_position: usize,
+    checkpoint: usize,
     negative: bool,
 }
 
@@ -1116,7 +1117,7 @@ impl Program {
                 return Ok(Some(end));
             }
             Instruction::Lookbehind { .. } => {
-                if !self.accepts_fixed_lookbehind(input, *cursor, pc, charge)? {
+                if !self.accepts_fixed_lookbehind(input, *cursor, pc, state, charge)? {
                     return Ok(None);
                 }
             }
@@ -1487,7 +1488,12 @@ impl Program {
         Ok(Some(start))
     }
 
-    fn fixed_lookbehind_frame(&self, cursor: usize, entry: usize) -> FixedLookbehindFrame {
+    fn fixed_lookbehind_frame(
+        &self,
+        cursor: usize,
+        entry: usize,
+        checkpoint: usize,
+    ) -> FixedLookbehindFrame {
         let Instruction::Lookbehind {
             body,
             width,
@@ -1501,21 +1507,23 @@ impl Program {
             end: entry,
             cursor: cursor.checked_sub(width),
             end_position: cursor,
+            checkpoint,
             negative,
         }
     }
 
-    // Captures, references and choices are excluded from these fixed bodies.
-    // Their predicates check the same absolute positions in either direction.
+    // Fixed predicates and unrepeated captures use the same absolute ranges
+    // in either direction. References, choices and repeated captures are excluded.
     fn accepts_fixed_lookbehind<E>(
         &self,
         input: &[u16],
         cursor: usize,
         entry: usize,
+        state: &mut CaptureState,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<bool, E> {
         let mut frames = Vec::<FixedLookbehindFrame>::new();
-        let mut current = self.fixed_lookbehind_frame(cursor, entry);
+        let mut current = self.fixed_lookbehind_frame(cursor, entry, state.changes.len());
         loop {
             if current.cursor.is_none() || current.pc == current.end {
                 charge(1)?;
@@ -1523,6 +1531,12 @@ impl Program {
                     debug_assert_eq!(position, current.end_position);
                 }
                 let accepted = current.cursor.is_some() != current.negative;
+                // Positive success retains exact fixed ranges. All negative
+                // outcomes and failed positive bodies restore their checkpoint
+                // before resuming an outer assertion or choice (22.2.2.8).
+                if current.negative || !accepted {
+                    self.restore_captures(state, current.checkpoint, charge)?;
+                }
                 let Some(mut parent) = frames.pop() else {
                     return Ok(accepted);
                 };
@@ -1547,7 +1561,8 @@ impl Program {
                     continue;
                 }
                 Instruction::Lookbehind { .. } => {
-                    let child = self.fixed_lookbehind_frame(*position, current.pc);
+                    let child =
+                        self.fixed_lookbehind_frame(*position, current.pc, state.changes.len());
                     current.pc += 1;
                     charge(1)?;
                     frames.push(current);
@@ -1583,7 +1598,15 @@ impl Program {
                     charge(2)?;
                     assertion.accepts(input, *position, self.multiline)
                 }
-                _ => unreachable!("lookbehind retains its fixed capture-free body"),
+                Instruction::Open(slot) => {
+                    self.open_capture(state, *slot, *position, charge)?;
+                    true
+                }
+                Instruction::Close(slot) => {
+                    self.write_capture(state, *slot, Some(state.starts[*slot]..*position), charge)?;
+                    true
+                }
+                _ => unreachable!("lookbehind retains its fixed body"),
             };
             if !accepted {
                 current.cursor = None;
@@ -2198,9 +2221,9 @@ fn prepare(
                     if quantifier(&source[cursor..]).is_some() {
                         return None;
                     }
-                    // A capture-free, straight-line fixed-width body has one
-                    // possible start. Evaluating it forward from that start
-                    // preserves the backward Assertion semantics (22.2.2.8).
+                    // A fixed body without references, choices or repeated captures
+                    // has one possible start and the same capture endpoints in
+                    // either direction (backward Assertion semantics, 22.2.2.8).
                     let mut width = 0usize;
                     if !matches!(
                         instructions[entry],
@@ -2232,6 +2255,8 @@ fn prepare(
                             }
                             PreparedInstruction::Ready(
                                 Instruction::Nop
+                                | Instruction::Open(_)
+                                | Instruction::Close(_)
                                 | Instruction::Assert(_)
                                 | Instruction::RepeatedCharacter(_),
                             )
@@ -2484,6 +2509,154 @@ mod tests {
     }
 
     #[test]
+    fn fixed_lookbehind_capture_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(a))b",
+            r"(?<!(a))b",
+            r"(?<=(a))\1",
+            r"(?<=(ab))c",
+            r"(?<=((a)b))c",
+            r"(?<=(a(b)))c",
+            r"(?<=(a{2}))b",
+            r"(?<=([a-c]{2}))d",
+            r"(?<=()a)b",
+            r"(?<=a())b",
+            r"(?<=(\b)a)b",
+            r"(?<=(^a))b",
+            r"(?<=a(?<=(a)))b",
+            r"(?<=((?<=a)b))c",
+            r"(?<=a(?<!(b)))b",
+            r"(?<!((a)b))c",
+            r"(?<=(a)(?<!(b)))b",
+            r"(?<=((a)(?<!(b))))b",
+            r"(a)(?<=(a))\1\2",
+            r"(?<=(a))(b)\1\2",
+            r"(?:(?<=(a))b|c)+d",
+            r"(?:(?<=(a))b|(?<=(b))a)+c",
+            r"(?:(?<=(a))|()){2}b\1\2",
+            r"((?<=(a))){2}b\1\2",
+            r"((?<=(a)))*b\1\2",
+            r"(?=(a(?<=(a))b))\1\2",
+            r"(?<=(µ))Μ",
+            r"(?<=([^\n]))b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "qb", "abb", "abc", "abab", "abccd", "aab", "aba", "\nab",
+                    "ab\n", "µΜ", "aaa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_lookbehind_captures_keep_before_match_ranges_and_restore_negative_children() {
+        for (source, text, range, captures) in [
+            (r"(?<=(a))b", "ab", 1..2, vec![Some(0..1)]),
+            (r"(?<=(a))\1", "aa", 1..2, vec![Some(0..1)]),
+            (r"(?<=((a)b))c", "abc", 2..3, vec![Some(0..2), Some(0..1)]),
+            (r"(?<=(a(b)))c", "abc", 2..3, vec![Some(0..2), Some(1..2)]),
+            (r"(?<=a(?<=(a)))b", "ab", 1..2, vec![Some(0..1)]),
+            (r"(?<=a(?<!(b)))b", "ab", 1..2, vec![None]),
+            (r"(?<=(a)(?<!(b)))b", "ab", 1..2, vec![Some(0..1), None]),
+            (r"(?<!((a)b))c", "aac", 2..3, vec![None, None]),
+            (
+                r"(?<=(aa)(?<!((a)b)))c",
+                "aac",
+                2..3,
+                vec![Some(0..2), None, None],
+            ),
+            (r"(?:(?<=(a))b|c)+d", "abcd", 1..4, vec![None]),
+            (
+                r"((?<=(a))){2}b\1\2",
+                "aba",
+                1..3,
+                vec![Some(1..1), Some(0..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(a)+)b",
+            r"(?<=(a|b))c",
+            r"(?<=(a)\1)b",
+            r"(?<=(a(?=a)))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_fixed_lookbehind_capture_ranges_checkpoints_clones_and_work_are_flat() {
+        let source = "(?<=".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + ")b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("ab"), 1, true).unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|v| v == &Some(0..1)));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("ab"), 1, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit capture work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit capture work"
+        );
+        let source = "(?<!".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + "b)c";
+        let matcher = ordinary(&source, false, false, false);
+        let found = matcher.find(&JsString::from("aac"), 2, true).unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
+        assert_eq!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &JsString::from(source.as_str()),
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Err("explicit construction work"),
+            )
+            .unwrap_err(),
+            "explicit construction work"
+        );
+    }
+
+    #[test]
     fn nested_fixed_lookbehind_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -2572,7 +2745,7 @@ mod tests {
         for source in [
             r"(?<=a(?=(b)))b",
             r"(?<=(?<=a|b))c",
-            r"(?<=(?<=(a)))b",
+            r"(?<=(?<=(a+)))b",
             r"(?<=a(?=a))b",
             r"(?<=a(?<=a+))b",
         ] {
@@ -2721,7 +2894,7 @@ mod tests {
             4..5
         );
         for source in [
-            r"(?<=(a{2}))b",
+            r"(?<=(a{1,2}))b",
             r"(?<=a{1,2})b",
             r"(?<=a+)b",
             r"(?<=(?:ab){2})c",
@@ -2894,7 +3067,7 @@ mod tests {
             3..4
         );
         for source in [
-            r"(?<=(a))b",
+            r"(?<=(a+))b",
             r"(?<=a|b)c",
             r"(?<=a+)b",
             r"(?<=a{1,2})b",
@@ -3086,7 +3259,7 @@ mod tests {
             .find(&JsString::from("a"), 0, true)
             .unwrap();
         assert!(found.captures.iter().all(|r| *r == Some(0..1)));
-        for source in [r"(a|)+", r"((a|b)*)+", r"((?<=(a))a|b)+"] {
+        for source in [r"(a|)+", r"((a|b)*)+", r"((?<=(a+))a|b)+"] {
             let mut work = 0;
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -3208,7 +3381,7 @@ mod tests {
             r"(?:(?:a|b)*)+",
             r"(?:(?:(?:(?:(a)|b)+c|d)+)|)*",
             r"(?:(?:\1|b)+c|d)+(a)",
-            r"(?:(?<=(a))a|b)+",
+            r"(?:(?<=(a+))a|b)+",
         ] {
             let mut work = 0;
             assert!(
@@ -3738,7 +3911,7 @@ mod tests {
         for source in [
             r"(?:(?:(a|b)+)|)*",
             r"(?:(?:(a+)+)|)*",
-            r"(?<=(a))a",
+            r"(?<=(a+))a",
             r"(?i:a)",
         ] {
             let mut work = 0;
@@ -4077,7 +4250,7 @@ mod tests {
         for source in [
             r"(?:(?:((a+)+)\1)|)*",
             r"(?:(?:(a|b)+\1)|)*",
-            r"((?<=(a))a+)\1",
+            r"((?<=(a+))a+)\1",
             r"((?i:a)+)\1",
         ] {
             let mut work = 0;
@@ -4243,7 +4416,7 @@ mod tests {
             r"(?:(?:(a|b)+\1)|)*",
             r"(?:(?:((a)+)+\1)|)*",
             r"(?:(?:(?:(a+)\1){2})|)*",
-            r"((?<=(a))a)+\1",
+            r"((?<=(a+))a)+\1",
         ] {
             let mut work = 0;
             assert!(
@@ -6369,7 +6542,7 @@ mod tests {
             r"(?:(?:(?:(?:(a)\1){2}){2})|)*",
             r"(?:(?:(?:(a)(?:\1)+){2})|)*",
             r"(?:(?:(?:(a)+\1){2})|)*",
-            r"(?<=(a))\1+",
+            r"(?<=(a+))\1+",
             r"(a)\2+",
         ] {
             let mut work = 0;
@@ -7648,9 +7821,9 @@ mod tests {
         for text in [
             r"(?=a)+",
             r"(?!a)?",
-            r"(?:(?<=(a)))*",
+            r"(?:(?<=(a+)))*",
             r"(?:(?=(a))|b)+",
-            r"(?<=(a))b",
+            r"(?<=(a+))b",
             r"(?i:a)",
         ] {
             let mut charged = 0;

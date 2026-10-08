@@ -128,7 +128,7 @@ fn pending_reference_compositions_keep_unsupported_outcomes() {
     for source in [
         r"/(?:(?:(?:^([ab])(?:\1)+$){2})|)*/.test('aa')",
         r"/(?:(?:(?:^(a|b)(?:\1)+$){2})|)*/.test('aa')",
-        r"/(?<=(a))\1/.test('a')",
+        r"/(?<=(a+))\1/.test('a')",
         r"/\b(?<x>a)\k<x>\b/u.test('aa')",
     ] {
         assert!(

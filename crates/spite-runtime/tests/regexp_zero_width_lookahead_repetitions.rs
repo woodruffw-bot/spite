@@ -133,7 +133,7 @@ fn possibly_empty_choices_consuming_mixed_references_and_lookbehind_remain_unsup
     for source in [
         r"/(?:(?=(a))|b)+/.exec('a')",
         r"/(?:(?=(a))\1|b)+/.exec('a')",
-        r"/(?<=(a))b/.exec('ab')",
+        r"/(?<=(a+))b/.exec('ab')",
         r"/(?:(?=(a))){2}\1/u.exec('a')",
         r"/(?:(?=(a))){2}\1/v.exec('a')",
     ] {

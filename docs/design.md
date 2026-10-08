@@ -1477,9 +1477,10 @@ for representable inputs. Ordinary characters, classes and their counted terms
 share one comparison helper, preserving existing IgnoreCase and DotAll behavior.
 Input/line/word assertions still use the whole input, and outer captures, cursor,
 negative inversion and repetition summaries retain their existing semantics.
-Counts whose complete fixed width cannot be represented, variable counts,
-repeated multiple-term or assertion bodies, captures and nested assertions inside
-lookbehind remain pending. Host quotas remain opt-in; defaults are unlimited.
+Counts whose complete fixed width cannot be represented, variable counts and
+repeated multiple-term or assertion bodies remain pending. The subsequent
+extensions admit nested fixed lookbehind and unrepeated captures. Host quotas
+remain opt-in; defaults are unlimited.
 
 Nested fixed capture-free lookbehind retains the same ordinary character/count
 and boundary predicates (Assertion, 22.2.2.8). The width proof now walks the flat
@@ -1487,7 +1488,8 @@ body backwards and summarizes each completed lookbehind child as zero-width,
 skipping its complete instruction region. Original child entries jump to their
 owners. Deep nesting therefore needs no repeated scan of descendant bodies;
 each child keeps its independently proved fixed width and polarity. Other nested
-assertions, captures, references, alternatives and variable counts remain pending.
+assertions, references, alternatives and variable counts remain pending;
+unrepeated captures are described below.
 
 Execution uses explicit fixed-assertion frames containing the body instruction,
 terminal, local cursor, expected end position and polarity. A child starts from
@@ -1509,6 +1511,33 @@ charged; limits remain opt-in and defaults unlimited. Preparation, execution,
 cloning, collection and dropping remain flat through deep positive/negative
 nesting. Unicode-mode matching and the other lookbehind body features remain
 pending.
+
+
+Unrepeated captures inside fixed ordinary lookbehind share the existing capture
+trail (22.2.2.8). Preparation accepts capture open/close operations as zero-width
+while retaining the exact character/count proof. Internal references, choices,
+variable widths, repeated capturing groups and nested lookahead remain excluded.
+Each unrepeated capture therefore has the same absolute endpoints under forward
+and backward body evaluation. Exact-count character terms may occur inside an
+unrepeated capture; repeating that capture itself is a separate pending case.
+
+Fixed assertion frames retain a capture checkpoint in addition to their local
+input position. Open/close operations record full-input starts and ranges, which
+can precede the whole match's start. Positive success retains these captures.
+Every negative outcome and every failed positive body restores starts, ranges
+and named aliases before returning to its parent or outer continuation. Nested
+checkpoints preserve captures established before the child, including a negative
+child that completes captures before a later predicate fails. Outside references
+read successful positive ranges through the existing binding inventory; result
+construction and indices retain the original absolute input coordinates.
+
+Parent progress and zero-width proofs still summarize the complete assertion
+owner. Consuming iterations clear their capture inventory, required zero-width
+wrappers retain captures and skipped optional iterations leave them undefined.
+Flat preparation, assertion frames and capture undo support deep groups without
+Rust recursion. Actual capture writes and restoration charge fallible opt-in
+work; default quotas remain unlimited. Other lookbehind bodies and Unicode-mode
+matching remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

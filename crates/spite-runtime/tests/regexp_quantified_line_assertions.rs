@@ -126,7 +126,7 @@ fn optional_work_counts_full_sticky_suffixes_and_unsupported_repeated_atoms() {
         r"/(?:(?:(?:(?:a+($)b+){2}){2})|)*/.test('ab')",
         r"/(?:(?:(a$|b)+)|)*/m.test('a')",
         r"/(?:(?:(a^|b)+)|)*/m.test('a')",
-        r"/a+(?<=(b))/.test('ab')",
+        r"/a+(?<=(b+))/.test('ab')",
         r"/(?:(?:(?:a+(?<n>b)\k<n>){2})|)*/.test('ab')",
         r"/a+($)/u.test('a')",
     ] {

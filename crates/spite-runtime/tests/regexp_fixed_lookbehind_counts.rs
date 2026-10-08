@@ -134,7 +134,7 @@ fn explicit_fixed_count_lookbehind_unit_work_aborts_before_last_index_and_handle
 fn variable_counts_capture_effects_multiple_terms_and_nested_lookbehind_remain_unsupported() {
     for source in [
         r"/(?<=a{1,2})b/.exec('ab')",
-        r"/(?<=(a{2}))b/.exec('aab')",
+        r"/(?<=(a{1,2}))b/.exec('aab')",
         r"/(?<=(?:ab){2})c/.exec('ababc')",
         r"/(?<=(?:^){2})a/.exec('a')",
         r"/(?<=a{2}(?=a))b/.exec('aab')",
