@@ -184,6 +184,8 @@ enum ReferenceTarget {
     Input { index: usize, named: bool },
     Local(ReferenceCaptureSpan),
     Empty,
+    // The target encloses this read and is unclosed in either direction.
+    Open,
     Term(usize),
 }
 
@@ -1483,7 +1485,7 @@ impl Program {
                     let range = offsets[span.start]..offsets[span.end];
                     (!range.is_empty()).then_some(ReferenceRange::Local(range))
                 }
-                ReferenceTarget::Empty => None,
+                ReferenceTarget::Empty | ReferenceTarget::Open => None,
                 ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
             };
             let length = range.as_ref().map_or(0, |range| match range {
@@ -2046,7 +2048,9 @@ impl Program {
                                         &self.instructions[index],
                                         charge,
                                     )?,
-                                ReferenceTarget::Empty | ReferenceTarget::Local(_) => {
+                                ReferenceTarget::Empty
+                                | ReferenceTarget::Open
+                                | ReferenceTarget::Local(_) => {
                                     // Empty units have empty reads in either direction.
                                     // In consuming backward units, proved closed
                                     // local targets lie to the left and have not
@@ -2260,6 +2264,8 @@ fn quantify_reference_wrapper(
                 if let Some(&span) = local.get(&(index, named)) {
                     if span.end <= ordinal {
                         ReferenceTarget::Local(span)
+                    } else if span.start <= ordinal {
+                        ReferenceTarget::Open
                     } else {
                         ReferenceTarget::Empty
                     }
@@ -2419,7 +2425,7 @@ fn quantify_zero_width_assertion_wrapper(
                         .iter()
                         .enumerate()
                         .any(|(ordinal, target)| match target {
-                            ReferenceTarget::Empty => false,
+                            ReferenceTarget::Empty | ReferenceTarget::Open => false,
                             // Local spans contain only completed preceding terms.
                             ReferenceTarget::Local(span) => {
                                 span.start > span.end || span.end > ordinal
@@ -2676,9 +2682,10 @@ fn quantify_progressing_choice(
 
 // Keep the same unit proof for fixed bodies and linear bodies importing outside
 // ranges. A closed local span to the left of its read has not matched yet in
-// a backward iteration, whose owned captures are cleared first. Open/forward
-// reads lose their target identity during forward lowering and remain accepted
-// only in wholly empty units. Consuming units require exact counts
+// a backward iteration, whose owned captures are cleared first. Enclosing
+// open reads are undefined in either direction. Forward reads still lose their
+// target identity during lowering and remain accepted only in wholly empty
+// units. Consuming units require exact counts
 // (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2).
 fn fixed_lookbehind_sequence_width(
     instructions: &[PreparedInstruction],
@@ -2704,6 +2711,10 @@ fn fixed_lookbehind_sequence_width(
             },
             ReferenceTarget::Empty => {
                 has_empty = true;
+                has_zero_width_term = true;
+                0
+            }
+            ReferenceTarget::Open => {
                 has_zero_width_term = true;
                 0
             }
@@ -3492,6 +3503,150 @@ mod tests {
     }
 
     #[test]
+    fn counted_open_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(a\1){2})b",
+            r"(?<=((a)\1){2})b",
+            r"(?<=((a)\2\1){2})b",
+            r"(?<=((\2)a){2})b",
+            r"(?<=(a\1){2}?)b",
+            r"(?<=([ab]\1){2})c",
+            r"(?<=(a\1){0})b",
+            r"(?<!(a\1){2}q)b",
+            r"(?<=((a)\1){2}(?=(b\3){2}))b",
+            r"(?=(a\1){2})a",
+            r"(b)(?<=(a\2){2}\1)c",
+            r"(?<=((a)\1\B){2})b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in ["", "ab", "aab", "aaaab", "abc", "aaxb", "aAb", "aabbb"] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn counted_open_lookbehind_keeps_unclosed_reads_empty_and_both_assertion_directions_exact() {
+        for (source, text, range, captures) in [
+            (r"(?<=(a\1){2})b", "aab", 2..3, vec![Some(0..1)]),
+            (
+                r"(?<=((a)\1){2})b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (
+                r"(?<=((a)\2\1){2})b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (
+                r"(?<=((\2)a){2})b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(0..0)],
+            ),
+            (r"(?<!(a\1){2}q)b", "aaxb", 3..4, vec![None]),
+            (
+                r"(?<=((a)\1){2}(?=(b\3){2}))b",
+                "aabbb",
+                2..3,
+                vec![Some(0..1), Some(0..1), Some(3..4)],
+            ),
+            (r"(?=(a\1){2})a", "aa", 0..1, vec![Some(1..2)]),
+            (
+                r"(b)(?<=(a\2){2}\1)c",
+                "aabc",
+                2..4,
+                vec![Some(2..3), Some(0..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let input = JsString::from_code_units(vec![0xd800, 0xd800, 0xdc00]);
+        let found = ordinary(r"(?<=([\uD800]\1){2})[\uDC00]", false, false, false)
+            .find(&input, 2, true)
+            .unwrap();
+        assert_eq!(found.range, 2..3);
+        assert_eq!(&*found.captures, &[Some(0..1)]);
+        for source in [
+            r"(?<=(\2(a)){2})b",
+            r"(?<=((\3a)(b)){2})c",
+            r"(?<=(a\1){1,2})b",
+            r"(a)(?<=(b\1\2){2})c",
+            r"(?<=(a\1){2}|a)b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn counted_open_lookbehind_deep_owned_scopes_copies_drop_negative_undo_and_large_counts_stay_flat()
+     {
+        let source =
+            "(?<=(".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"\1){2})b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("aab"), 2, true).unwrap();
+        assert_eq!(found.range, 2..3);
+        assert_eq!(found.captures.len(), 100001);
+        assert!(found.captures.iter().all(|r| *r == Some(0..1)));
+        drop(copy);
+        let source =
+            "(?<!(".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"\1){2}q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("aaxb"), 3, true)
+            .unwrap();
+        assert_eq!(found.range, 3..4);
+        assert!(found.captures.iter().all(Option::is_none));
+        let matcher = ordinary(r"(?<=(a\1){100000})b", false, false, false);
+        let input = JsString::from(("a".repeat(100000) + "b").as_str());
+        assert_eq!(
+            &*matcher.find(&input, 100000, true).unwrap().captures,
+            &[Some(0..1)]
+        );
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 100000, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+    }
+
+    #[test]
     fn lookbehind_local_future_reads_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3575,7 +3730,7 @@ mod tests {
         }
         for source in [
             r"(?<=(\2(a)){2})b",
-            r"(?<=((a)\1){2})b",
+            r"(?<=((a)\1){1,2})b",
             r"(?<=((a)\2){1,2})b",
             r"(a)(?<=(\1(b)\3){2})c",
             r"(?<=((a)\2){2}(?=(((a)\5){2})))b",
@@ -5198,7 +5353,7 @@ mod tests {
         );
         for source in [
             r"(?<=((a)\2){0,1})b",
-            r"(?<=((\2)a){1})b",
+            r"(?<=((\2)a){1,2})b",
             r"(?<=(\2){0,2})b()",
             r"(?<=(|a){1})b",
             r"(?<=((?=a)\1){1})b",
@@ -5368,7 +5523,7 @@ mod tests {
         }
         for source in [
             r"(?<=((a)\2){1,2})b",
-            r"(?<=((\2)a){2})b",
+            r"(?<=((\2)a){1,2})b",
             r"(?<=(((a)\3){0,2}){2})a",
             r"(?<=(\2)+)a()",
             r"(?<=((?=a)\1){2})a",
@@ -6812,7 +6967,7 @@ mod tests {
             r"(?<=(a|b){2})c",
             r"(?<=(a(?=a)){2})c",
             r"(?<=((a){2}){2})c",
-            r"(?<=(a\1){2})c",
+            r"(?<=(a\1){1,2})c",
             r"(?<=((?=a+)){2})c",
         ] {
             assert!(

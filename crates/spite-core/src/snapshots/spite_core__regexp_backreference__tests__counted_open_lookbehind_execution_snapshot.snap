@@ -1,0 +1,1156 @@
+---
+source: crates/spite-core/src/regexp_backreference.rs
+expression: rows
+---
+"(?<=(a\\1){2})b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2})b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2})b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2})b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2})b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2})b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2})b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2})b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\2\\1){2})b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..2)] })
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..2)] })
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..2)] })
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..2)] })
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..0)] })
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((\\2)a){2})b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3)] })
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){2}?)b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aaaab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aabbb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aaaab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aAb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aabbb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aaaab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aabbb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aaaab" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1)] })
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aAb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aabbb" start=0 sticky=false None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=([ab]\\1){2})c" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=(a\\1){0})b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=(a\\1){0})b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=(a\\1){0})b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=(a\\1){0})b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<=(a\\1){0})b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=(a\\1){0})b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="ab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="ab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="abc" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="abc" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 3..4, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [None] })
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<!(a\\1){2}q)b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aaaab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1), Some(3..4)] })
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aaaab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aAb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1), Some(3..4)] })
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aaaab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1), Some(3..4)] })
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aaaab" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aAb" start=0 sticky=false None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1), Some(3..4)] })
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1){2}(?=(b\\3){2}))b" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=false input="" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aaaab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aaaab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(2..3)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aaxb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aabbb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="" start=0 sticky=false None
+"(?=(a\\1){2})a" i=true m=true s=false input="" start=0 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?=(a\\1){2})a" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aaaab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aaaab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(2..3)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?=(a\\1){2})a" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aaxb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aAb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aabbb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=true input="" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aaaab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aaaab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(2..3)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aaxb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?=(a\\1){2})a" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aabbb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="" start=0 sticky=false None
+"(?=(a\\1){2})a" i=true m=false s=true input="" start=0 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?=(a\\1){2})a" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aaaab" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aaaab" start=1 sticky=true Some(RegExpBackreferenceMatch { range: 1..2, captures: [Some(2..3)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?=(a\\1){2})a" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="aaxb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aaxb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aAb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?=(a\\1){2})a" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aabbb" start=0 sticky=true Some(RegExpBackreferenceMatch { range: 0..1, captures: [Some(1..2)] })
+"(?=(a\\1){2})a" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="ab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="ab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="ab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aaaab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="abc" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="abc" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="abc" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aabbb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="ab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="ab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="ab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aaaab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="abc" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="abc" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="abc" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aAb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aabbb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="ab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="ab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="ab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aaaab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="abc" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="abc" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="abc" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aabbb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="ab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="ab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="ab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aaaab" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="abc" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="abc" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="abc" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aAb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aabbb" start=0 sticky=false None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(b)(?<=(a\\2){2}\\1)c" i=true m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aAb" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="ab" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="ab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="ab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="abc" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="abc" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="abc" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aAb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aAb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=true s=false input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aAb" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=false m=false s=true input="aabbb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="ab" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="ab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="ab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aaaab" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 4..5, captures: [Some(2..3), Some(2..3)] })
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aaaab" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aaaab" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="abc" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="abc" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="abc" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aaxb" start=0 sticky=false None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aaxb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aaxb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aAb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aAb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aAb" start=1 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aabbb" start=0 sticky=false Some(RegExpBackreferenceMatch { range: 2..3, captures: [Some(0..1), Some(0..1)] })
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aabbb" start=0 sticky=true None
+"(?<=((a)\\1\\B){2})b" i=true m=false s=true input="aabbb" start=1 sticky=true None

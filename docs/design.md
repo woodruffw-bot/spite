@@ -1999,11 +1999,34 @@ lookahead cannot use the backward Local proof: its completed target is already
 available, and its normal matching retains the reference width. Forward fixed
 assertions therefore keep their previous rejection boundary for consuming local
 reads, while nested backward assertions keep their own direction. Forward-lowered
-Empty targets have lost the distinction between open and forward targets and
-remain excluded from consuming units. Units mixing outside Input and Local reads,
+Empty targets represent unproved forward targets and remain excluded from
+consuming units. Enclosing Open targets are tracked separately and retain their
+undefined value in either matching direction. Units mixing outside Input and Local reads,
 unproved variable counts, choices and Unicode modes remain pending. This extends
 preparation; matching operations, quotas, dependencies and native-stack behavior
 are unchanged.
+
+
+Reference-unit preparation now distinguishes a target enclosing its own read from
+a target lying wholly to the right (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). A retained
+capture span with start <= read ordinal < end is Open. Its group has not closed
+in either matching direction, so it reads undefined even among consuming terms.
+The existing forward range resolver treats Open exactly as its former Empty
+classification; forward matching, charges and capture ranges are unchanged.
+
+The shared fixed-unit proof admits Open as zero-width in exact consuming units
+alongside ordinary characters, classes, boundaries and proved backward Local
+reads. Checked prefix offsets preserve nested empty/enclosing ranges. Existing
+fixed matching executes the same required terms and exports the first backward
+or rightmost forward iteration. Fixed lookahead units can therefore use the Open
+proof independently of their enclosing backward assertion's direction. Negative
+failures retain scoped rollback and imported ranges.
+
+Forward targets without an enclosing span remain excluded from consuming units;
+units mixing outside Input reads with Open/Local reads, unproved variable counts,
+choices and Unicode modes remain pending. Exact-zero bodies keep their existing
+skip path. No new matching algorithm, count expansion, default quota, dependency
+or native recursion is introduced.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
