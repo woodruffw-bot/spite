@@ -400,6 +400,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compose repeated zero-width local, open and forward references through validated preceding-term spans with preserved empty and undefined capture ranges.
 - [x] Execute nested zero-width repetitions and empty/boundary alternatives inside fixed ordinary lookbehind with required capture effects, skipped optional slots and scoped rollback.
 - [x] Execute repeated proven empty local, open and forward references inside ordinary lookbehind with exact backward capture positions and skipped optional effects.
+- [x] Skip exact-zero native reference bodies inside fixed ordinary lookbehind without reading their local/outside targets, while leaving owned captures undefined.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -1784,6 +1784,27 @@ needed, source and huge bounds are not expanded, and default host quotas remain
 unlimited. Unicode modes, consuming reference units, outside reads and lookahead
 inside lookbehind remain pending.
 
+
+Fixed ordinary lookbehind also admits already lowered native reference bodies
+with an exact zero repetition count (22.2.2.3.1). RepeatMatcher's maximum-zero
+case cannot observe the body or any local/outside reference. Its width proof
+therefore assigns zero width before inspecting reference targets or constructing
+unit offsets. Complete Pattern validation and normal native preparation still
+precede this proof; it does not admit every unproved body merely because its count
+is zero.
+
+Single-target reference counts clear only their owned capture slots and perform
+no comparison. Sequence reference counts already execute zero passes and write
+undefined owned captures. Neither path clears a referenced outside capture or
+reads a nonempty target. Boundaries and characters following the skipped body
+retain their actual fixed positions, named aliases retain the active original
+slot, and enclosing required zero-width wrappers keep their own empty ranges.
+Existing assertion checkpoints preserve branch/negative restoration. Deep
+skipped slots, zero-padded bounds, nesting, copying and dropping remain flat,
+without source expansion, additional allocation or default host quotas. Optional
+counts that can run consuming reference units, outside reads at nonzero counts,
+unproved choices/lookahead and Unicode-mode matching remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

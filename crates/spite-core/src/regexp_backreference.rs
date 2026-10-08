@@ -64,6 +64,8 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// the same flat wrapper plan.
 /// Counted lookbehind accepts same-body references when its complete repeated
 /// unit and every capture are proved empty in either direction.
+/// Exact-zero native reference counts skip all reads and retain undefined owned
+/// captures even when their unexecuted unit could consume input.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -1733,6 +1735,17 @@ impl Program {
                 Instruction::Character(_) | Instruction::Set(_) => {
                     self.compare_fixed_lookbehind_term(input, position, term, charge)?
                 }
+                Instruction::QuantifiedReference {
+                    bounds, captures, ..
+                } => {
+                    debug_assert_eq!((bounds.0, bounds.1), (Some(0), Some(0)));
+                    // Exactly zero iterations neither read the reference nor
+                    // run the body; only owned captures become undefined.
+                    for &(slot, _) in captures {
+                        self.write_capture(state, slot, None, charge)?;
+                    }
+                    true
+                }
                 Instruction::QuantifiedReferenceSequence {
                     references,
                     bounds: (min, _, _),
@@ -2440,6 +2453,20 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 | Instruction::RepeatedAssert(_),
             )
             | PreparedInstruction::Set { repeated: true, .. } => *tails.get(&(pc + 1))?,
+            PreparedInstruction::Ready(
+                Instruction::QuantifiedReference {
+                    bounds: (Some(0), Some(0), _),
+                    ..
+                }
+                | Instruction::QuantifiedReferenceSequence {
+                    bounds: (Some(0), Some(0), _),
+                    ..
+                },
+            ) => {
+                // RepeatMatcher with maximum zero cannot observe its body or
+                // any local/outside reference (22.2.2.3.1).
+                *tails.get(&(pc + 1))?
+            }
             PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {
                 references,
                 bounds: (min, max, _),
@@ -2876,6 +2903,162 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn zero_count_lookbehind_reference_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=((a)\2){0})b",
+            r"(?<=((\2)a){0})b",
+            r"(?<=((ab)\2){0})b",
+            r"(?<=((a)(\2)\3){0})b",
+            r"(?<=((a)\2){0}q)b",
+            r"(?<=q((a)\2){0})b",
+            r"(?<!((a)\2){0})b",
+            r"(?<!((a)\2){0}q)b",
+            r"(a)(?<=(?:\1){0})b",
+            r"(a)(?<=(\1){0})b\1",
+            r"(?<=(\2){0})b()",
+            r"(?<=\1{0})b()",
+            r"(?<=((a)\2){0}µ)Μ",
+            r"(?<=((.)\2){0})b",
+            r"(?<=(([a-z])\2){0})b",
+            r"(?<=((^a)\2){0})b",
+            r"(?<=((\ba)\2){0})b",
+            r"(?<=((()\3)a){0})b",
+            r"(?<=((a)\2){0}?|())b",
+            r"(?<=((a)\2){0}|())b\1\2\3",
+            r"(?<=((a)\2){0})",
+            r"(?<=((a)\2){0}[\uD800])b",
+            r"(?<=(\2\2){0})b()",
+            r"(a)(?<=((\1)){0})b\1",
+            r"(?<=((a)\2){0})b\1\2",
+            r"(?:(?<=((a)\2){0})b|a)+c",
+            r"(?<=((()\3){0}){2})b",
+            r"(?<=((a)\2){0}q|r)b",
+            r"(?<=((a)\2){0}q(?<=q))b",
+            r"(?=(?<=((a)\2){0})b)b",
+            r"((?<=((a)\3){0})){2}b",
+            r"(?:(?<=((a)\2){0})b|a)+c\1\2",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn zero_count_lookbehind_references_skip_consuming_units_without_clearing_outside_captures() {
+        for (source, text, captures) in [
+            (r"(?<=((a)\2){0})b", "qb", vec![None, None]),
+            (r"(?<=((a)(\2)\3){0})b", "qb", vec![None, None, None]),
+            (r"(?<=((a)\2){0}q)b", "qb", vec![None, None]),
+            (r"(?<=q((a)\2){0})b", "qb", vec![None, None]),
+            (r"(?<!((a)\2){0}q)b", "xb", vec![None, None]),
+            (r"(?<=((()\3){0}){2})b", "qb", vec![Some(1..1), None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 1, true)
+                .unwrap();
+            assert_eq!(found.range, 1..2, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let found = ordinary(r"(a)(?<=((\1)){0})b\1", false, false, false)
+            .find(&JsString::from("aba"), 0, true)
+            .unwrap();
+        assert_eq!(found.range, 0..3);
+        assert_eq!(&*found.captures, &[Some(0..1), None, None]);
+        assert!(
+            ordinary(r"(?<!((a)\2){0})b", false, false, false)
+                .find(&JsString::from("b"), 0, true)
+                .is_none()
+        );
+        for source in [
+            r"(?<=((a)\2){0,1})b",
+            r"(?<=((\2)a){1})b",
+            r"(?<=(\2){0,2})b()",
+            r"(?<=(a|aa){0})b",
+            r"(?<=((?=a)\1){0})b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn zero_count_lookbehind_references_deep_skipped_slots_long_zero_bounds_and_clones_are_flat() {
+        let body = "(?:".to_owned() + &"(".repeat(100000) + "a" + &")".repeat(100000) + r"\100000)";
+        let source = format!("(?<={body}{{0}})b");
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qb"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(Option::is_none));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("qb"), 1, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit skipped-reference work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit skipped-reference work"
+        );
+        let source = format!(r"(?<=((a)\2){{{}}})b", "0".repeat(10000));
+        let matcher = ordinary(&source, false, false, false);
+        let mut work = 0;
+        assert_eq!(
+            &*matcher
+                .find_with_work(&JsString::from("qb"), 1, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .unwrap()
+                .captures,
+            &[None, None]
+        );
+        assert!(work < 100);
+        let source =
+            "(?<=".to_owned() + &"(?:".repeat(10000) + r"((a)\2){0}" + &"){2}".repeat(10000) + ")b";
+        assert_eq!(
+            &*ordinary(&source, false, false, false)
+                .find(&JsString::from("b"), 0, true)
+                .unwrap()
+                .captures,
+            &[None, None]
+        );
     }
 
     #[test]
