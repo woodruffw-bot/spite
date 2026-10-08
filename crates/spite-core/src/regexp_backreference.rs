@@ -56,7 +56,7 @@ pub struct RegExpBackreferenceNamedBindings<'a> {
 /// context for character sequences, their exact counts, boundary assertions and
 /// transparent groups, captures, equal-width alternatives and nested fixed lookbehind.
 /// Counted predicate captures retain their leftmost backward iteration; required
-/// pure boundary counts share one position and need no expanded iterations.
+/// pure boundary and empty counts share one position without expanded iterations.
 /// Other quantifiers return `None`. At least one numbered or registered named
 /// reference is required by the reference-specific constructors. The ordinary
 /// fallback constructor also accepts bodies without references.
@@ -2278,7 +2278,7 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 references,
                 bounds: (Some(min), Some(max), _),
                 ..
-            }) if min == max && !references.is_empty() => {
+            }) if min == max => {
                 let mut offsets = Vec::<usize>::with_capacity(references.len() + 1);
                 offsets.push(0);
                 let mut has_assertion = false;
@@ -2684,6 +2684,156 @@ mod tests {
     }
 
     #[test]
+    fn fixed_lookbehind_empty_count_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(){2})a",
+            r"(?<!(){2})a",
+            r"(?<=(){0})a",
+            r"(?<!(){0})a",
+            r"(?<=(()){2})a",
+            r"(?<=(()()){2})a",
+            r"(?<=((?:){2}))a",
+            r"(?<=(?:){2})a",
+            r"(?<=(?:){0})a",
+            r"(?<=(){2}a)b",
+            r"(?<=a(){2})b",
+            r"(?<=(((){2})a))b",
+            r"(?<=(((){0})a))b",
+            r"(?<!(){2}q)b",
+            r"(?<=(a)((){2}))b",
+            r"(?<=(){2}|())a",
+            r"(?<=(){0}|())a",
+            r"(?<=(?:(){2})(?<=a))b",
+            r"(?<=(?:(){2})(?<!b))a",
+            r"(?<=(){2})a\1",
+            r"(?:(?<=(){2})a|b)+c",
+            r"((?<=(){2})){2}a\1\2",
+            r"((?<=(){2}))*a\1\2",
+            r"(?<=((?:){2}µ))Μ",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "aab", "ba", " abc", "aaarc", "aabcd", "\nab", "aa\nb",
+                    "a\r\n", "µµΜ", " a", "qa",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_empty_count_lookbehind_captures_use_their_local_boundary_and_zero_count_slots() {
+        for (source, text, range, captures) in [
+            (r"(?<=(){2})a", "qa", 1..2, vec![Some(1..1)]),
+            (r"(?<=(){0})a", "qa", 1..2, vec![None]),
+            (r"(?<=(()){2})a", "a", 0..1, vec![Some(0..0), Some(0..0)]),
+            (r"(?<=(){2}a)b", "ab", 1..2, vec![Some(0..0)]),
+            (r"(?<=a(){2})b", "ab", 1..2, vec![Some(1..1)]),
+            (
+                r"(?<=(((){2})a))b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(0..0), Some(0..0)],
+            ),
+            (
+                r"(?<=(((){0})a))b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(0..0), None],
+            ),
+            (r"(?<!(){2}q)b", "ab", 1..2, vec![None]),
+            (r"(?<=(){2}|())a", "a", 0..1, vec![Some(0..0), None]),
+            (r"(?<=(){0}|())a", "a", 0..1, vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(){1,2})a",
+            r"(?<=((?=a)){2})a",
+            r"(?<=(|){2})a",
+            r"(?<=(\1){2})a()",
+            r"(?<=((){2}){2})a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_fixed_empty_count_capture_slots_huge_counts_clones_and_work_stay_flat() {
+        let source = "(?<=".to_owned()
+            + &"(".repeat(100000)
+            + &")".repeat(100000)
+            + &format!("{{{}}})a", usize::MAX);
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("a"), 0, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|r| r == &Some(0..0)));
+        let mut work = 0;
+        assert_eq!(
+            copy.find_with_work(&JsString::from("a"), 0, true, |n| {
+                work += n;
+                if work > 1000 {
+                    Err("explicit empty capture work")
+                } else {
+                    Ok(())
+                }
+            })
+            .unwrap_err(),
+            "explicit empty capture work"
+        );
+        let source = format!("(?<=(?:){{{}}})a", usize::MAX);
+        let matcher = ordinary(&source, false, false, false);
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("a"), 0, true, |n| {
+                    work += n;
+                    Ok::<_, ()>(())
+                })
+                .unwrap()
+                .unwrap()
+                .range,
+            0..1
+        );
+        assert!(work < 100);
+        let source = "(?<!".to_owned() + &"(".repeat(100000) + &")".repeat(100000) + "{2}q)b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("ab"), 1, true)
+            .unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
+    }
+
+    #[test]
     fn fixed_lookbehind_assertion_count_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -2772,7 +2922,7 @@ mod tests {
             r"(?<=(?:(?=a)){2})a",
             r"(?<=(a\B|b\B){2})c",
             r"(?<=((a\B){2}){2})c",
-            r"(?<=(){2})a",
+            r"(?<=((?=a)){2})a",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
@@ -3086,7 +3236,7 @@ mod tests {
             r"(?<=(a(?=a)){2})c",
             r"(?<=((a){2}){2})c",
             r"(?<=(a\1){2})c",
-            r"(?<=(){2})c",
+            r"(?<=((?=a)){2})c",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(

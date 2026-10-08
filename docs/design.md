@@ -1644,8 +1644,26 @@ summaries. Captures and named aliases use original absolute input coordinates,
 including empty ranges before the whole match's start. Work charges actual
 predicates and capture operations; default quotas remain unlimited. Metadata and
 execution allocate no count-dependent state. Nested lookaround inside a counted
-body, variable counts, repeated choices, internal references, empty-only repeated
-bodies and nested counted sequences remain pending.
+body, variable counts, repeated choices, internal references and nested counted
+sequences remain pending; empty-only repeated bodies are described below.
+
+
+Exact-count empty bodies inside ordinary lookbehind share the existing zero-width
+count execution (22.2.2.3.1, 22.2.2.8). The fixed-width proof accepts an empty term
+inventory when the minimum and maximum are equal and representable. Transparent
+and nested empty captures retain original slots with zero term-relative spans.
+A required count records their empty ranges once at the body's local absolute
+input boundary; a zero count leaves repeated slots undefined. Surrounding
+unrepeated captures still record their complete body range.
+
+An empty sequence may precede or follow consuming terms, so its capture boundary
+can differ from the whole match's start. It moves no input and allocates no
+count-dependent state. Negative/failed-body restoration, root alternative
+atomicity, named aliases, outside empty references and parent wrapper summaries
+retain their existing behavior. Deep capture inventories, copies, collection and
+dropping remain flat. Actual capture work is fallible and opt-in, with unlimited
+defaults. Variable counts, repeated choices, internal references, nested counted
+sequences and lookaround inside a counted body remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

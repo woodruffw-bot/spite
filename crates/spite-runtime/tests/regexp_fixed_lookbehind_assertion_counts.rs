@@ -153,7 +153,7 @@ fn variable_counts_nested_lookahead_repeated_choices_empty_and_nested_counts_rem
         r"/(?<=(?:(?=a)){2})a/.exec('a')",
         r"/(?<=(a\B|b\B){2})c/.exec('abc')",
         r"/(?<=((a\B){2}){2})c/.exec('aaaac')",
-        r"/(?<=(){2})a/.exec('a')",
+        r"/(?<=((?=a)){2})a/.exec('a')",
         r"/(?<=(\b){2})a/u.exec('a')",
         r"/(?<=(\b){2})a/v.exec('a')",
     ] {
