@@ -1704,6 +1704,26 @@ opt-in with unlimited defaults. Mixed empty/consuming repetitions, internal
 references, counted choices inside lookbehind and Unicode-mode matching remain
 outside this proof.
 
+
+Zero-width sequence repetitions compose through the existing flat wrapper proof
+(22.2.2.3.1, 22.2.2.8). A counted child sequence is zero-width when its exact count
+is zero, or when every term is an ordinary boundary predicate and there are no
+capture reads. An empty term inventory also proves zero width. Repeated character,
+set and assertion terms are inert during ordinary traversal; their sequence owner
+determines the complete matching effect. Any other nonzero consuming/reference
+sequence rejects this proof. Child wrapper summaries retain the existing linear
+preparation without rescanning nested bodies or expanding counts.
+
+Required parent wrappers retain their own empty capture ranges even when an
+optional child leaves its slots undefined. Exact-zero children skip all terms and
+their capture effects; required predicates preserve full input context. Huge
+required bounds execute the same final zero-width effects once. Existing branch
+checkpoints, named aliases, surrounding assertions and parent consuming loops
+retain their semantics. Deep wrapper traversal, copies and dropping use no native
+recursion. Default work and heap quotas remain unlimited. Nonzero consuming or
+unproved reference children, counted wrappers inside lookbehind and Unicode-mode
+matching remain outside this proof.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
