@@ -245,6 +245,7 @@ struct FixedLookbehindFrame {
     checkpoint: usize,
     choice_base: usize,
     negative: bool,
+    rightmost_iteration: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -1593,6 +1594,7 @@ impl Program {
             checkpoint: state.changes.len(),
             choice_base,
             negative,
+            rightmost_iteration: false,
         })
     }
 
@@ -1602,6 +1604,7 @@ impl Program {
         entry: usize,
         state: &mut CaptureState,
         choice_base: usize,
+        rightmost_iteration: bool,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<FixedLookbehindFrame, E> {
         let Instruction::RepeatZeroWidth {
@@ -1624,6 +1627,7 @@ impl Program {
             checkpoint,
             choice_base,
             negative: false,
+            rightmost_iteration,
         })
     }
 
@@ -1653,6 +1657,7 @@ impl Program {
             checkpoint: state.changes.len(),
             choice_base,
             negative,
+            rightmost_iteration: true,
         }
     }
 
@@ -1784,6 +1789,7 @@ impl Program {
                             current.pc,
                             state,
                             choices.len(),
+                            current.rightmost_iteration,
                             charge,
                         )?;
                         current.pc = *end;
@@ -1861,17 +1867,23 @@ impl Program {
                         }
                     }
                     if accepted {
-                        // Backward repetitions finish with the leftmost iteration
-                        // (22.2.2.3.1, 22.2.2.8). Fixed predicates have no capture
-                        // reads; retain that iteration's exact ranges.
+                        // Backward repetitions retain the leftmost iteration;
+                        // lookahead uses forward, rightmost capture effects
+                        // (22.2.2.3.1, 22.2.2.8). Fixed bodies have no capture reads.
+                        let capture_base = if current.rightmost_iteration && required {
+                            *position - width
+                        } else {
+                            base
+                        };
                         for &(slot, span) in captures {
                             let offset = |index| {
                                 lookbehind_offsets
                                     .as_ref()
                                     .map_or(index, |offsets| offsets[index])
                             };
-                            let range = required
-                                .then(|| base + offset(span.start)..base + offset(span.end));
+                            let range = required.then(|| {
+                                capture_base + offset(span.start)..capture_base + offset(span.end)
+                            });
                             self.write_capture(state, slot, range, charge)?;
                         }
                     }
@@ -2514,7 +2526,7 @@ fn fixed_lookbehind_width(instructions: &mut [PreparedInstruction], entry: usize
                 {
                     return None;
                 }
-                // This capture-free child's complete body has already proved
+                // This child's complete body has already proved
                 // a fixed width. An assertion consumes no parent input.
                 tails.insert(*body, *tails.get(end)?);
                 next = *body;
@@ -2819,12 +2831,9 @@ fn prepare(
                     if quantifier(&source[cursor..]).is_some() {
                         return None;
                     }
-                    // Capture-free fixed bodies have identical predicates in
-                    // the ordinary and fixed executors (22.2.2.8). Counted
-                    // capture effects still require their forward semantics.
-                    let fixed_width = (capture_count == capture_start)
-                        .then(|| fixed_lookbehind_width(&mut instructions, entry))
-                        .flatten();
+                    // The fixed proof excludes capture-dependent continuations.
+                    // Lookahead frames retain forward capture effects (22.2.2.8).
+                    let fixed_width = fixed_lookbehind_width(&mut instructions, entry);
                     let control = instructions.len() + 1;
                     let original = std::mem::replace(
                         &mut instructions[entry],
@@ -3047,6 +3056,152 @@ mod tests {
     }
 
     #[test]
+    fn fixed_lookahead_capture_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=a(?=(b)))b",
+            r"(?<=a(?=(b){2}))b",
+            r"(?<=a(?=((b)){2}))b",
+            r"(?<=a(?=(b){0}))b",
+            r"(?<=a(?=((b){0}){2}))b",
+            r"(?<=a(?=((b){0})*))b",
+            r"(?<=a(?=(b|c)))b",
+            r"(?<=a(?=(b)|(c)))b",
+            r"(?<=a(?=(b.)|(bc)))b",
+            r"(?<=a(?!((b){2})))b",
+            r"(?<!(?=(b))q)c",
+            r"(?<=(?=(a))(a))b",
+            r"(?<=a(?=(?=(b))b))b",
+            r"(?<=a(?=(?!(c))b))b",
+            r"(?<=a(?=(?<=(a))b))b",
+            r"(?<=a(?=(?<!((c)))b))b",
+            r"(?<=a(?=(b{2})))b",
+            r"(?<=a(?=((b)b){2}))b",
+            r"(?<=a(?=(b()){2}))b",
+            r"(?<=a(?=(()b){2}))b",
+            r"(?<=a(?=(\b){2}b))b",
+            r"(?<=a(?=((?=b)){2}b))b",
+            r"(?<=((?=(b))){2})b",
+            r"(?<=((?=(b)))*)b",
+            r"(?<=a(?=(b)))b\1",
+            r"(?<=a(?=(b){2}))b\1",
+            r"(?<=a(?=(b))|a(?=(c)))b",
+            r"(?<!a(?=(b)))b",
+            r"(?<=µ(?=(Μ){2}))Μ",
+            r"(?<=[\uD800](?=([\uDC00]){2}))[\uDC00]",
+            r"(?:(?<=a(?=(b)))b|a)+c",
+            r"(?=(?<=a(?=(b)))b)b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "b", "ab", "abb", "abbbb", "abc", "ad", "ac", " abc", "a b", "a\nb",
+                    "a\r\n", "µµΜΜ", "abbbc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn fixed_lookahead_captures_export_forward_rightmost_and_nested_backward_leftmost_ranges() {
+        for (source, text, range, captures) in [
+            (r"(?<=a(?=(b){2}))b", "qabb", 2..3, vec![Some(3..4)]),
+            (
+                r"(?<=a(?=((b)b){2}))b",
+                "qabbbb",
+                2..3,
+                vec![Some(4..6), Some(4..5)],
+            ),
+            (r"(?<=a(?=(?<=(a){2})b))b", "qaab", 3..4, vec![Some(1..2)]),
+            (
+                r"(?<=((?=(b))){2})b",
+                "qb",
+                1..2,
+                vec![Some(1..1), Some(1..2)],
+            ),
+            (r"(?<=((?=(b)))*)b", "qb", 1..2, vec![None, None]),
+            (r"(?<!(?=(b))q)c", "qbc", 2..3, vec![None]),
+            (r"(?<=(b){2})c", "qbbc", 3..4, vec![Some(1..2)]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=a(?=(b+)))b",
+            r"(?<=a(?=(b)\1))b",
+            r"(?<=a(?=(b|cc)))b",
+            r"(?<=a(?=(b){1,2}))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn fixed_lookahead_captures_complete_deep_slots_and_restore_negative_failures_with_flat_clones()
+    {
+        let source = "(?<=(?=".to_owned() + &"(".repeat(100000) + "b" + &")".repeat(100000) + "))b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("qb"), 1, true).unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|r| *r == Some(1..2)));
+        drop(copy);
+        let source =
+            "(?<!(?=".to_owned() + &"(".repeat(100000) + "b" + &")".repeat(100000) + ")q)c";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("bc"), 1, true)
+            .unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(Option::is_none));
+        let source = "(?<=".to_owned() + &"(?=(".repeat(10000) + "b" + &"))".repeat(10000) + ")b";
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("qb"), 1, true)
+            .unwrap();
+        assert_eq!(found.captures.len(), 10000);
+        assert!(found.captures[..9999].iter().all(|r| *r == Some(1..1)));
+        assert_eq!(found.captures[9999], Some(1..2));
+        let matcher = ordinary(r"(?<=a(?=(b){2}))b", false, false, false);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("a".repeat(10000).as_str()), 0, false, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+    }
+
+    #[test]
     fn fixed_lookahead_in_lookbehind_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -3152,7 +3307,7 @@ mod tests {
             1..2
         );
         for source in [
-            r"(?<=a(?=(b)))b",
+            r"(?<=a(?=(b+)))b",
             r"(?<=a(?=b+))b",
             r"(?<=a(?=b|cc))b",
             r"(?<=a(?!b+))b",
@@ -5713,7 +5868,7 @@ mod tests {
             4..5
         );
         for source in [
-            r"(?<=a(?=(b)))b",
+            r"(?<=a(?=(b+)))b",
             r"(?<=(?<=a|bb))c",
             r"(?<=(?<=(a+)))b",
             r"(?<=a(?=a+))b",

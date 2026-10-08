@@ -1811,27 +1811,35 @@ width proof. Nonzero mixed choices, unproved native children and Unicode modes
 remain pending.
 
 
-Capture-free fixed lookahead can run inside ordinary lookbehind (22.2.2.8).
-Preparation records a forward width only when the lookahead owns no captures
-and the existing fixed-body proof accepts every complete branch. It summarizes
-an already proved child as zero parent width, checking the original root and
-owner/head/end positions and skipping the complete region once. Generic forward
-lookahead continues using its existing assertion machinery.
+Fixed lookahead can run inside ordinary lookbehind (22.2.2.8). Preparation records
+a forward width when the existing fixed-body proof accepts every complete branch,
+including captures. It summarizes an already proved child as zero parent width,
+checking the original root and owner/head/end positions and skipping the complete
+region once. The proof excludes capture-dependent continuations and unproved
+variable-width bodies. Generic forward lookahead retains its existing machinery.
 
 The fixed executor starts a lookahead child at the current cursor and checks its
 complete forward endpoint against the actual input length. Its head retains the
 original source-order choices; its body uses full input/line and word-boundary
-context. A checked unavailable endpoint fails a positive assertion and succeeds
-a negative assertion. Explicit frames retain the parent cursor, checkpoint and
+context. An unavailable endpoint fails a positive assertion and succeeds a
+negative assertion. Explicit frames retain the parent cursor, checkpoint and
 choice base, commit the first successful positive body and restore negative or
-failed effects before resuming the parent. Nested lookahead/lookbehind and
-required zero-width wrappers share this flat traversal. Enclosing captures retain
-their exact ranges without making the child consume parent input.
+failed effects before resuming the parent. Captures may precede or extend beyond
+the enclosing match; named groups and indices retain their original slots.
 
-Deep assertion nesting, copies, collection and dropping use no native recursion.
-Default work and heap quotas stay unlimited. Capturing lookahead needs forward
-capture iteration semantics; variable-width and capture-dependent child bodies,
-other unproved native features and Unicode modes remain pending.
+Each fixed frame selects the repetition capture iteration required by its
+assertion direction (22.2.2.3.1). Lookbehind keeps the first, leftmost iteration;
+lookahead keeps the last, rightmost iteration. A completed forward consuming count
+uses the final cursor minus the proved unit width as its capture base. Required
+zero-width wrappers inherit that choice, while a nested assertion starts its own
+direction. Empty counts leave owned slots undefined. Checked endpoints and proved
+unit offsets preserve exact partial ranges without expanding source or counts.
+
+Nested lookahead/lookbehind, completed negative rollback, deep captures, copying,
+collection and dropping share flat traversal without native recursion. Default
+work and heap quotas stay unlimited. Capture-dependent child continuations,
+unproved variable-width bodies, other unsupported native features and Unicode
+modes remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
