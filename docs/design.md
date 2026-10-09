@@ -2429,6 +2429,18 @@ plan. Variable and optional consuming child counts remain unproved. Storage
 follows declared capture boundaries rather than repetition counts. This adds no
 instruction, runtime matcher, recursive traversal, dependency or default quota.
 
+
+Unicode literal matching (22.2.2) admits a nonempty case-sensitive `u` literal
+whose compiled units all lie outside the surrogate range. Each consumed character
+therefore occupies exactly one UTF-16 unit. An occurrence cannot begin or end
+inside a surrogate pair, even when the input contains pairs or lone surrogates.
+Existing immutable literal programs, KMP searches and flat capture ranges preserve
+Unicode matching positions without materializing code-point arrays. Validated
+named-capture normalization retains original source and complete capture metadata.
+Empty Unicode literals, ignore-case Unicode matching, `v`, surrogate literals,
+braced escapes and nonliteral syntax remain outside this proof. Construction and
+execution preserve opted-in work accounting; default resource quotas stay absent.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

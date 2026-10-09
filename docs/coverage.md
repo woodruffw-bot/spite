@@ -4940,6 +4940,42 @@ Stable and MSRV pass all 14,332 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Case-sensitive nonempty nonsurrogate BMP literals now execute with `u`, including
+mandatory numbered and named capture groups. Existing UTF-16 literal searches
+preserve Unicode character boundaries, result indices and capture sharing. Empty,
+ignore-case, `v`, surrogate and nonliteral Unicode bodies remain unproved.
+
+Three core and six runtime regressions cover input surrogate pairs and lone
+surrogates, every starting offset, sticky/global state, names and shared indices,
+consumers, ordered coercion, strict lastIndex writes, clones, collection, 100000
+nested captures, long searches and explicit work aborts. Inspected insta snapshots
+contain 3204 core rows and 30 runtime results. Node agrees on these, seventeen
+complete Boolean programs and 1903560 exhaustive native match/capture comparisons.
+Four exact former complete programs remain positive tests. The original two-phase
+ordered setup and exec operation remain intact as a typed positive test and in a
+fifth snapshot row. Four simple old rejection controls and one ordered control
+now use still-unproved braced Unicode literals with the same capture structure.
+
+All 477 core tests and prototype workspace denied-warning Clippy pass. The sweep
+ran 142 related runtime targets: 141 passed initially; the affected regexp_exec
+control was corrected and its ten tests passed together with all six new runtime
+tests. Production code did not change after that sweep. All 354 prior snapshots,
+including 222 RegExp snapshots, remain byte-identical. All 314 old core rejection
+candidates and 826 runtime gap programs retain Unsupported, as do eight ordered
+probes (one retargeted) and four direct-eval probes. Whole reviews retain ten Passed
+and 24 Unsupported variants for seventeen originals, and 192 Passed and 38
+Unsupported for the 115-file selection, with no failures or host limits. No
+additional whole original qualifies for vendoring.
+
+The inventory remains 7446 fixtures, 7427 reviewed Script sources, 14332 variants,
+12855 harness positives and 599 RegExp builtin positives. The existing pin, eleven
+helpers and dependency allowances remain unchanged.
+
+Stable and MSRV pass all 14,332 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

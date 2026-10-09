@@ -1,14 +1,15 @@
-//! Literal-only ordinary-mode Pattern compilation and UTF-16 matching (22.2.2).
+//! Literal Pattern compilation and UTF-16 matching (22.2.2).
 
 use crate::{JsString, is_identifier_part, regexp_canonicalize_character};
 use std::{ops::Range, sync::Arc};
 
-/// An immutable literal-only matcher for a validated non-Unicode Pattern.
+/// An immutable literal matcher for an ordinary Pattern or a proved Unicode subset.
 ///
 /// Compilation accepts literal characters and their escapes, with ordinary
 /// capturing and noncapturing groups containing the same subset. Other syntax
-/// returns `None`, distinct from a failed match. The input must already have passed Pattern validation
-/// without `u` or `v`. Match ranges use UTF-16 code-unit offsets, not byte spans.
+/// returns `None`, distinct from a failed match. `compile` requires ordinary
+/// Pattern validation; `compile_bmp_unicode` requires Unicode validation.
+/// Match ranges use UTF-16 code-unit offsets, not byte spans.
 /// Compilation and search are linear in Pattern and input length respectively.
 #[derive(Clone, Debug)]
 pub struct RegExpLiteralMatcher(Arc<Program>);
@@ -28,6 +29,27 @@ impl RegExpLiteralMatcher {
 
     pub(crate) fn matched_units(&self) -> &[u16] {
         &self.0.units
+    }
+
+    /// Compiles a validated `u` Pattern containing a nonempty BMP literal body.
+    ///
+    /// This case-sensitive subset excludes surrogate code units and may contain
+    /// capturing and noncapturing groups.
+    /// Every consumed character has one code unit and every successful endpoint
+    /// is a code-point boundary. A scan through a surrogate pair cannot create
+    /// an BMP occurrence; an initial offset inside a pair cannot match when
+    /// sticky. Other Unicode bodies, empty bodies and ignore-case matching need
+    /// separate proofs (22.2.2.2, 22.2.7.2). The caller must validate the Pattern
+    /// in Unicode mode first. Storage and matching retain the ordinary flat plan.
+    pub fn compile_bmp_unicode(source: &JsString) -> Option<Self> {
+        let matcher = Self::compile(source, false)?;
+        (!matcher.0.units.is_empty()
+            && matcher
+                .0
+                .units
+                .iter()
+                .all(|&unit| !(0xd800..=0xdfff).contains(&unit)))
+        .then_some(matcher)
     }
 
     /// Compiles the literal-only subset, returning `None` for other syntax.
@@ -265,6 +287,123 @@ fn hex_escape(source: &[u16], index: &mut usize, count: usize) -> Option<u16> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn unicode_bmp_literal_ranges_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "a",
+            "ab",
+            "aba",
+            "a()",
+            "(a)b",
+            "((a)(?:b))(c)",
+            r"\0",
+            r"\x7f",
+            r"\u0061\x62",
+            r"\cA",
+            r"\(a\)",
+            "()(ab)()",
+            "é",
+            "(σ())",
+            "K",
+            r"\u00e9",
+            r"\u2028",
+            "(?:(µ))",
+        ] {
+            let source = JsString::from(source);
+            let matcher = RegExpLiteralMatcher::compile_bmp_unicode(&source).unwrap();
+            for input in [
+                vec![],
+                vec![0x61],
+                vec![0x61, 0x62],
+                vec![0x61, 0x62, 0x61],
+                vec![0x61, 0x62, 0x63],
+                vec![0xd83d, 0xde00, 0x61, 0x62],
+                vec![0x61, 0xd83d, 0xde00, 0x62],
+                vec![0xd800, 0x61, 0xdc00, 0x62],
+                vec![0xdc00, 0x61, 0xd800, 0x62],
+                vec![0xd800, 0xd800, 0xdc00, 0xdc00],
+                vec![0x41, 0x61, 0x62, 0x61, 0x62],
+                vec![0x00, 0x7f, 0x01, 0x61],
+                vec![0x28, 0x61, 0x29],
+                vec![0x212a, 0x6b, 0x17f, 0x73],
+                vec![0xd83d, 0xde00, 0xe9, 0x3c3, 0x212a, 0xb5, 0x2028],
+                vec![0xd800, 0xe9, 0xdc00, 0x3a3, 0xb5],
+            ] {
+                let input = JsString::from_code_units(input);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        let ranges = matcher.find(&input, start, sticky).map(|range| {
+                            let mut result = vec![[range.start, range.end]];
+                            result.extend(matcher.capture_ranges().iter().map(|capture| {
+                                [range.start + capture.start, range.start + capture.end]
+                            }));
+                            result
+                        });
+                        writeln!(rows, "{source:?} input={input:?} start={start} sticky={sticky} ranges={ranges:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_bmp_boundary_ranges_and_surrogate_empty_bodies_are_separate() {
+        let input =
+            JsString::from_code_units(vec![0xd83d, 0xde00, 0x61, 0x62, 0xd800, 0x61, 0xdc00]);
+        let matcher =
+            RegExpLiteralMatcher::compile_bmp_unicode(&JsString::from("()(a())b")).unwrap();
+        assert_eq!(matcher.find(&input, 1, false), Some(2..4));
+        assert_eq!(matcher.find(&input, 1, true), None);
+        assert_eq!(matcher.find(&input, 2, true), Some(2..4));
+        assert_eq!(matcher.capture_ranges(), &[0..0, 0..1, 1..1]);
+        assert_eq!(matcher.find(&input, 4, false), None);
+        for source in [
+            "",
+            "()",
+            "(?:)",
+            r"\uD800",
+            r"\uD83D\uDE00",
+            r"\u{61}",
+            ".",
+            "[a]",
+            "a?",
+            "a|b",
+            "^a",
+            r"(a)\1",
+        ] {
+            assert!(
+                RegExpLiteralMatcher::compile_bmp_unicode(&JsString::from(source)).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn unicode_bmp_deep_capture_programs_clones_and_search_stay_flat() {
+        let depth = 100_000;
+        let source = format!("{}a{}", "(".repeat(depth), ")".repeat(depth));
+        let matcher =
+            RegExpLiteralMatcher::compile_bmp_unicode(&JsString::from(source.as_str())).unwrap();
+        assert_eq!(matcher.capture_ranges().len(), depth);
+        assert!(
+            matcher
+                .capture_ranges()
+                .iter()
+                .all(|range| *range == (0..1))
+        );
+        let copy = matcher.clone();
+        drop(matcher);
+        let mut units = vec![0xd83d, 0xde00];
+        units.extend(std::iter::repeat_n(0x62, 100_000));
+        units.push(0x61);
+        assert_eq!(
+            copy.find(&JsString::from_code_units(units), 1, false),
+            Some(100_002..100_003)
+        );
+    }
 
     #[test]
     fn literal_compilation_and_search_snapshot() {

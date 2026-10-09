@@ -180,7 +180,7 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         ("(?:(?:((?:(?:.a*b*){2}){2}){2})|){2,3}", ""),
         ("(?:(?:((?:(?:[a]a+b+){2}){2}){2})|){2,3}", ""),
         ("(?:(?:((?:(?:ab+c+){2}){2}){2})|){2,3}", ""),
-        ("a", "u"),
+        (r"\\u{61}", "u"),
         ("a", "v"),
     ] {
         let mut realm = Realm::default();

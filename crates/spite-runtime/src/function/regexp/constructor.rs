@@ -251,7 +251,24 @@ impl Realm {
         let matcher = if let Some(matcher) = references {
             Some(RegExpMatcherBody::Backreferences(matcher))
         } else if unicode {
-            None
+            // A nonempty case-sensitive BMP literal without surrogates cannot begin or end
+            // inside a surrogate pair. Its code-unit search and capture ranges
+            // therefore implement the Unicode code-point match exactly
+            // (22.2.2.2, 22.2.7.2). Empty, surrogate-containing, ignore-case and v bodies
+            // retain the existing unsupported boundary.
+            if flags.code_units().contains(&u16::from(b'u'))
+                && !flags.code_units().contains(&u16::from(b'i'))
+            {
+                self.object_work(span, |_, budget| {
+                    budget.charge(capture_source.len())?;
+                    budget.charge(capture_source.len())?;
+                    budget.charge(capture_source.len())?;
+                    Ok(RegExpLiteralMatcher::compile_bmp_unicode(&capture_source)
+                        .map(RegExpMatcherBody::Literal))
+                })?
+            } else {
+                None
+            }
         } else {
             let matching_source = if capture_source.code_units().first() == Some(&0x28) {
                 let (body, captures) = self.object_work(span, |_, budget| {
