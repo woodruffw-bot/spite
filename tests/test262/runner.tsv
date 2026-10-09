@@ -7455,3 +7455,31 @@ test/built-ins/RegExp/prototype/unicodeSets/this-val-regexp-prototype.js	-	-	-
 test/built-ins/RegExp/prototype/unicodeSets/this-val-regexp.js	-	-	-
 test/built-ins/RegExp/unicode_character_class_backspace_escape.js	-	-	-
 test/built-ins/RegExp/unicode_identity_escape.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-01.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-02.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-03.js	503	509	unterminated regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-04.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-05.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-06.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-07.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-08.js	503	509	unescaped regular expression Unicode class syntax character
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-09.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-10.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-11.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-12.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-13.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-14.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-15.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-16.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-17.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-18.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-19.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-20.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-21.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-22.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-23.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-24.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-25.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-26.js	503	510	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-27.js	503	511	reserved double punctuation in regular expression Unicode class
+test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-28.js	503	511	reserved double punctuation in regular expression Unicode class
