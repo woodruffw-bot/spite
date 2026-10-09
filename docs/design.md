@@ -2318,6 +2318,23 @@ unproved owner dependencies remain unsupported. Required empty units preserve
 capture effects once, while optional empty units retain their existing stop and
 rollback rules. No matcher, dependency, recursion or default quota is added.
 
+
+Group compilation caches the actual matching direction separately from enclosing
+complete-owner limits (22.2.2.8). Ordinary children inherit direction; lookbehind
+sets backward and lookahead resets forward, including inside another lookbehind.
+The flat group stack retains this bit without walking ancestors or adding runtime
+state. Assertion-unit preparation separately requires a real reference, so pure
+ordinary groups retain their original lowering and required empty effects.
+
+Effect-free counted references to owned captures that have not participated in
+this direction are proved undefined and therefore empty for every count. Backward
+units may erase Local reads, forward units Future reads; Open/empty and owned-zero
+proofs remain valid in either direction. Exact consuming multiplicities and checked
+widths retain their previous behavior. Outside reads stay visible to complete-owner
+and declared-reference validation. Variable consuming widths remain unsupported.
+There is no count-sized expansion, new matcher, dependency, recursion or default
+quota. Existing capture rollback, negative assertions and result offsets are reused.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

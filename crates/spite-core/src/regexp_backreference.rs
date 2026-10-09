@@ -229,6 +229,9 @@ enum GroupAssertion {
 
 struct GroupFrame {
     assertion: Option<GroupAssertion>,
+    // Actual matching direction, inherited by ordinary groups and reset by
+    // each assertion (22.2.2.8). Keep this separate from complete-owner limits.
+    backward: bool,
     capture: Option<usize>,
     capture_start: usize,
     // Earliest enclosing backward owner's first slot. Dynamic forward child
@@ -244,12 +247,14 @@ impl GroupFrame {
         capture: Option<usize>,
         capture_start: usize,
         lookbehind_input_limit: Option<usize>,
+        backward: bool,
         instructions: &mut Vec<PreparedInstruction>,
     ) -> Self {
         let entry = instructions.len();
         instructions.push(PreparedInstruction::Ready(Instruction::Nop));
         Self {
             assertion: None,
+            backward,
             capture,
             capture_start,
             lookbehind_input_limit,
@@ -2414,7 +2419,8 @@ fn quantify_reference_wrapper(
     instructions: &mut [PreparedInstruction],
     body: Range<usize>,
     bounds: Bounds,
-    assertion_direction: Option<bool>,
+    backward: bool,
+    require_reference: bool,
     named_slots: &HashMap<usize, usize>,
 ) -> Option<()> {
     let mut reference = None;
@@ -2497,7 +2503,7 @@ fn quantify_reference_wrapper(
     }
     // A count-one assertion plan must retain its control entry and needs an
     // actual reference. Failed preparation has not changed any instruction.
-    if assertion_direction.is_some() && reference.is_none() {
+    if require_reference && reference.is_none() {
         return None;
     }
     let position = reference.map_or(body.start, |(position, _, _)| position);
@@ -2537,18 +2543,18 @@ fn quantify_reference_wrapper(
             }
         })
         .collect();
-    // With no known assertion direction, only Open/empty spans and an owned
-    // zero maximum are empty in both directions. Other exact terms retain their
-    // declared target for the eventual forward/backward unit proof.
+    // Owned reads before their capture in the actual matching direction are
+    // undefined for every repetition. Empty spans and owned zero maxima have
+    // the same proof in both directions. Keep outside reads visible.
     {
         for (ordinal, max, exact_copies) in counted_targets {
             let empty = match targets[ordinal] {
                 ReferenceTarget::Empty | ReferenceTarget::Open => true,
                 ReferenceTarget::Local(span, _) => {
-                    assertion_direction == Some(true) || span.start == span.end || max == Some(0)
+                    backward || span.start == span.end || max == Some(0)
                 }
                 ReferenceTarget::Future(span, _) => {
-                    assertion_direction == Some(false) || span.start == span.end || max == Some(0)
+                    !backward || span.start == span.end || max == Some(0)
                 }
                 // Keep unproved outside targets and their validation visible.
                 // Only declared same-body spans receive the empty proof.
@@ -3496,7 +3502,7 @@ fn prepare(
     let mut progresses = Vec::new();
     let mut last_complex_group = None;
     let mut groups = Vec::<GroupFrame>::new();
-    let mut current = GroupFrame::open(None, 0, None, &mut instructions);
+    let mut current = GroupFrame::open(None, 0, None, false, &mut instructions);
     let mut scopes = Vec::new();
     let mut capture_count = 0usize;
     let mut references = 0usize;
@@ -3557,6 +3563,11 @@ fn prepare(
                     group,
                     group.unwrap_or(capture_count),
                     current.lookbehind_input_limit,
+                    match assertion {
+                        Some(GroupAssertion::Lookbehind(_)) => true,
+                        Some(GroupAssertion::Lookahead(_)) => false,
+                        None => current.backward,
+                    },
                     &mut instructions,
                 );
                 child.assertion = assertion;
@@ -3573,6 +3584,7 @@ fn prepare(
                 let parent = groups.pop()?;
                 let group = std::mem::replace(&mut current, parent);
                 let assertion = group.assertion;
+                let backward = group.backward;
                 let entry = group.entry;
                 let capture_start = group.capture_start;
                 let lookbehind_input_limit = group.lookbehind_input_limit;
@@ -3591,7 +3603,8 @@ fn prepare(
                         &mut instructions,
                         entry..end,
                         (Some(1), Some(1), true),
-                        Some(matches!(assertion, Some(GroupAssertion::Lookbehind(_)))),
+                        backward,
+                        true,
                         &named_slots,
                     );
                 }
@@ -3713,7 +3726,8 @@ fn prepare(
                             &mut instructions,
                             start..end,
                             bounds,
-                            None,
+                            backward,
+                            false,
                             &named_slots,
                         )
                         .is_none()
@@ -3823,7 +3837,8 @@ fn prepare(
                     &mut instructions,
                     start..end,
                     bounds,
-                    None,
+                    current.backward,
+                    false,
                     &named_slots,
                 )?;
                 cursor += consumed;
@@ -3889,6 +3904,146 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn unit_matching_direction_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(\2+(b))+",
+            r"(\2{2,3}(b)){2}",
+            r"(\2{2,3}(b)){2}?",
+            r"(?<=((b)\2+){2})c",
+            r"(?<=((b)\2{2,3}){2})c",
+            r"(?<=a(?=(\2+(b)){2}))b",
+            r"(?=(?<=((b)\2+){2})c)c",
+            r"(?!(\2+(b)){2})c",
+            r"(?<!((b)\2+){2})c",
+            r"(?:()){2}",
+            r"(?:a){2}",
+            r"(\1+b)+",
+            r"((b)\2{2})+",
+            r"(a)(\1{2}b)+",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n", "abbb", "abbbb", "abbbbb", "bbbbc", "bbbbbbbc", "aaaab", "aaabc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unit_direction_resets_forward_children_and_preserves_owned_ranges_and_pending_widths() {
+        for (source, text, range, captures) in [
+            (r"(\2+(b))+", "bbb", 0..3, vec![Some(2..3), Some(2..3)]),
+            (
+                r"(\2{2,3}(b)){2}",
+                "bbb",
+                0..2,
+                vec![Some(1..2), Some(1..2)],
+            ),
+            (
+                r"(?<=((b)\2+){2})c",
+                "bbc",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (
+                r"(?<=a(?=(\2+(b)){2}))b",
+                "abb",
+                1..2,
+                vec![Some(2..3), Some(2..3)],
+            ),
+            (
+                r"(?=(?<=((b)\2+){2})c)c",
+                "bbc",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (r"(?!(\2+(b)){2})c", "c", 0..1, vec![None, None]),
+            (r"(?<!((b)\2+){2})c", "c", 0..1, vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=a(?=((b)\2+){2}))b",
+            r"(?<=a(?=((b)\2{2,3}){2}))b",
+            r"(?<=((\3{2,3})(b)){2})c",
+            r"(?:(a|)(?:\1)+){2}",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+    #[test]
+    fn unit_direction_deep_scopes_clones_huge_undefined_counts_and_work_stay_flat() {
+        let n = 100000;
+        let source = format!(r"(\2+{}b{})+", "(".repeat(n), ")".repeat(n));
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("bbb"), 0, true).unwrap();
+        assert_eq!(found.range, 0..3);
+        assert_eq!(found.captures.len(), n + 1);
+        assert!(found.captures.iter().all(|r| *r == Some(2..3)));
+        let count = "9".repeat(100);
+        for source in [
+            format!(r"(\2{{{count}}}(b)){{2}}"),
+            format!(r"(?<=((b)\2{{{count}}}){{2}})c"),
+        ] {
+            let found = ordinary(&source, false, false, false)
+                .find(&JsString::from("bbc"), 0, false)
+                .unwrap();
+            assert_eq!(
+                found.captures[0],
+                Some(if source.starts_with("(?<=") {
+                    0..1
+                } else {
+                    1..2
+                })
+            );
+        }
+        let matcher = ordinary(r"(\2+(b))+", false, false, false);
+        let input = JsString::from("b".repeat(30000).as_str());
+        assert_eq!(matcher.find(&input, 0, true).unwrap().range, 0..30000);
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
