@@ -253,14 +253,12 @@ impl Realm {
         } else if unicode {
             // The approved empty-body behavior normalizes an initial
             // offset inside a surrogate pair. Nonempty nonsurrogate BMP bodies
-            // retain their separate case-sensitive u proof (22.2.7.2).
+            // retain their separate case-sensitive u/v proof (22.2.7.2).
             self.object_work(span, |_, budget| {
                 budget.charge(capture_source.len())?;
                 budget.charge(capture_source.len())?;
                 budget.charge(capture_source.len())?;
-                let literal = if flags.code_units().contains(&u16::from(b'u'))
-                    && !flags.code_units().contains(&u16::from(b'i'))
-                {
+                let literal = if !flags.code_units().contains(&u16::from(b'i')) {
                     RegExpLiteralMatcher::compile_bmp_unicode(&capture_source)
                         .map(RegExpMatcherBody::Literal)
                 } else {

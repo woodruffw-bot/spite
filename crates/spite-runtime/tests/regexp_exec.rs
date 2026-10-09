@@ -181,7 +181,7 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         ("(?:(?:((?:(?:[a]a+b+){2}){2}){2})|){2,3}", ""),
         ("(?:(?:((?:(?:ab+c+){2}){2}){2})|){2,3}", ""),
         (r"\\u{61}", "u"),
-        ("a", "v"),
+        (r"\\u{61}", "v"),
     ] {
         let mut realm = Realm::default();
         realm.eval(&format!("let r=new RegExp('{source}','{flags}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0;}}}};")).unwrap();

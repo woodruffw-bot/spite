@@ -31,13 +31,13 @@ impl RegExpLiteralMatcher {
         &self.0.units
     }
 
-    /// Compiles a validated `u` Pattern containing a nonempty BMP literal body.
+    /// Compiles a validated `u` or `v` Pattern with a nonempty BMP literal body.
     ///
     /// This case-sensitive subset excludes surrogate code units and may contain
     /// capturing and noncapturing groups.
     /// Every consumed character has one code unit and every successful endpoint
     /// is a code-point boundary. A scan through a surrogate pair cannot create
-    /// an BMP occurrence; an initial offset inside a pair cannot match when
+    /// a BMP occurrence; an initial offset inside a pair cannot match when
     /// sticky. Other Unicode bodies, empty bodies and ignore-case matching need
     /// separate proofs (22.2.2.2, 22.2.7.2). The caller must validate the Pattern
     /// in Unicode mode first. Storage and matching retain the ordinary flat plan.

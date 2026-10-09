@@ -53,7 +53,7 @@ fn other_group_productions_and_quantified_groups_remain_unsupported() {
         r"/(?<=(a+))/.test('a')",
         r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('a')",
         "/(?:\\u{61})/u.test('a')",
-        "/(?:a)/v.test('a')",
+        "/(?:\\u{61})/v.test('a')",
     ] {
         assert!(
             matches!(

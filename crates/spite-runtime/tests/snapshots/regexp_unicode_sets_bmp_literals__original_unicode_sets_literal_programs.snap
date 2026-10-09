@@ -1,0 +1,9 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_sets_bmp_literals.rs
+expression: rows
+---
+"/(a)/v.test('a')" "true"
+"/a/v.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+"/(?<x>a)/v.test('a')" "true"
+"/(?:a)/v.test('a')" "true"
+"let r=new RegExp('a','v'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({matches:[...a],index:a.index,input:a.input,trace:t,indexKind:typeof r.lastIndex})" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"

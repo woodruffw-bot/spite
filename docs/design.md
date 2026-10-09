@@ -2467,6 +2467,18 @@ Construction still validates the complete Pattern and preserves original source
 and named-capture metadata. Nonliteral empty bodies, Unicode backreferences,
 nonempty ignore-case bodies and other unproved Unicode syntax remain Unsupported.
 
+
+Validated UnicodeSets (`v`) Patterns now use the same nonempty case-sensitive
+nonsurrogate BMP literal proof as `u` Patterns (22.2.2, 22.2.7.2). UnicodeSets
+changes class syntax and class-set semantics; admitted literal characters and
+mandatory capture groups consume the same Unicode code points. Full Pattern
+validation precedes the unchanged flat literal compiler. Every consumed code
+point has one UTF-16 unit, so successful starts, ends and captures cannot split a
+surrogate pair. No Unicode class operations, string properties, case folding,
+surrogate literals or braced escapes acquire a matching plan. Empty Unicode bodies
+retain their separate approved boundary resolution. This adds no core matching
+operation, allocation strategy, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

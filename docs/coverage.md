@@ -4944,7 +4944,7 @@ Clippy, dependency/fixture policy and all offline data checks pass.
 Case-sensitive nonempty nonsurrogate BMP literals now execute with `u`, including
 mandatory numbered and named capture groups. Existing UTF-16 literal searches
 preserve Unicode character boundaries, result indices and capture sharing.
-Nonempty ignore-case, `v`, surrogate and nonliteral Unicode bodies remain unproved.
+Nonempty ignore-case, surrogate and nonliteral Unicode bodies remain unproved.
 
 Three core and six runtime regressions cover input surrogate pairs and lone
 surrogates, every starting offset, sticky/global state, names and shared indices,
@@ -5003,6 +5003,45 @@ four direct-eval probes retain Unsupported. Whole reviews retain ten Passed and
 24 Unsupported variants for seventeen originals, and 192 Passed and 38 Unsupported
 for the 115-file selection, without failures or host limits. No additional whole
 original qualifies for vendoring.
+
+The inventory remains 7446 fixtures, 7427 reviewed Script sources, 14332 variants,
+12855 harness positives and 599 RegExp builtin positives. The existing pin, eleven
+helpers and dependency allowances remain unchanged.
+
+Stable and MSRV pass all 14,332 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
+
+Case-sensitive nonempty nonsurrogate BMP literals and mandatory captures now match
+in `v` mode through the existing literal program and UTF-16 range proof. Complete
+UnicodeSets validation precedes compilation; class sets, string properties,
+nonempty ignore-case bodies, surrogate literals and nonliteral syntax retain their
+unproved matching boundary. The previous empty-body resolution remains limited
+to its documented case. No core matching behavior, dependency or default quota is
+changed.
+
+Six runtime regressions cover numeric/named captures and shared indices, flags,
+constructor clones and flag overrides, surrogate-pair and lone-surrogate input,
+all relevant offsets, consumers and species, ordered coercions, strict lastIndex
+writes, 100000 nested capture scopes, collection, long searches and explicit work
+aborts. Node agrees with all 3204 existing core snapshot rows evaluated in `v`
+mode, 30 inspected new runtime rows, eighteen complete Boolean programs and
+1903560 exhaustive native match/capture comparisons. A second inspected gold
+contains two exact former complete programs, two capture probes and the preserved
+original ordered setup and exec operation. Three simple old rejection controls
+and one ordered control now use still-unproved braced UnicodeSets literals with
+the same capture structure.
+
+All 144 related runtime targets and prototype workspace denied-warning Clippy
+pass. All 358 prior snapshots remain byte-identical. The 314 core rejection
+candidates, 826 old runtime gap programs and eight additional new runtime probes
+retain Unsupported. Eight ordered-coercion probes (one retargeted) and four
+direct-eval probes preserve their Unsupported results and state. Whole reviews
+remain ten Passed and 24 Unsupported variants for seventeen originals, and 192
+Passed and 38 Unsupported for the 115-file selection, with no failures or host
+limits. Separate complete Unicode-validation fixture reviews are recorded in
+the corpus documentation when vendored.
 
 The inventory remains 7446 fixtures, 7427 reviewed Script sources, 14332 variants,
 12855 harness positives and 599 RegExp builtin positives. The existing pin, eleven
