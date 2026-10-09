@@ -422,6 +422,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute proved bare local, open and future capture references in linear ordinary assertions, retaining direction-specific widths, exact capture ranges and scoped rollback.
 - [x] Execute counted same-body capture references proved undefined or empty in ordinary assertions, preserving required captures, direction-specific reads and optional-empty stopping.
 - [x] Execute effect-free capture references counted exactly once in linear ordinary assertions, retaining consuming local/future widths and complete-owner import checks.
+- [x] Execute proved representable exact counts of effect-free capture references in linear ordinary assertions with flat multiplicities, checked dependent widths and original capture offsets.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

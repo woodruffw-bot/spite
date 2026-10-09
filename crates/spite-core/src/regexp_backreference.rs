@@ -187,19 +187,23 @@ struct ReferenceCaptureSpan {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ReferenceTarget {
-    Input { index: usize, named: bool },
-    Local(ReferenceCaptureSpan),
+    Input {
+        index: usize,
+        named: bool,
+        copies: usize,
+    },
+    Local(ReferenceCaptureSpan, usize),
     Empty,
     // The target lies to the right of this read within the same unit.
-    Future(ReferenceCaptureSpan),
+    Future(ReferenceCaptureSpan, usize),
     // The target encloses this read and is unclosed in either direction.
     Open,
     Term(usize),
 }
 
 enum ReferenceRange {
-    Input(Range<usize>),
-    Local(Range<usize>),
+    Input(Range<usize>, usize),
+    Local(Range<usize>, usize),
     Term(usize),
 }
 
@@ -1499,7 +1503,11 @@ impl Program {
         for &target in references {
             charge(1)?;
             let range = match target {
-                ReferenceTarget::Input { index, named } => {
+                ReferenceTarget::Input {
+                    index,
+                    named,
+                    copies: target_copies,
+                } => {
                     let range = if named {
                         &state.named[index]
                     } else {
@@ -1509,23 +1517,30 @@ impl Program {
                         .as_ref()
                         .filter(|r| !r.is_empty())
                         .cloned()
-                        .map(ReferenceRange::Input)
+                        .map(|range| ReferenceRange::Input(range, target_copies))
                 }
-                ReferenceTarget::Local(span) => {
+                ReferenceTarget::Local(span, target_copies) => {
                     charge(2)?;
                     let range = offsets[span.start]..offsets[span.end];
-                    (!range.is_empty()).then_some(ReferenceRange::Local(range))
+                    (!range.is_empty()).then_some(ReferenceRange::Local(range, target_copies))
                 }
-                ReferenceTarget::Empty | ReferenceTarget::Open | ReferenceTarget::Future(_) => None,
+                ReferenceTarget::Empty | ReferenceTarget::Open | ReferenceTarget::Future(_, _) => {
+                    None
+                }
                 ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
             };
-            let length = range.as_ref().map_or(0, |range| match range {
-                ReferenceRange::Input(range) | ReferenceRange::Local(range) => range.len(),
-                ReferenceRange::Term(position) => usize::from(!matches!(
+            let length = range.as_ref().map_or(Some(0), |range| match range {
+                ReferenceRange::Input(range, copies) | ReferenceRange::Local(range, copies) => {
+                    range.len().checked_mul(*copies)
+                }
+                ReferenceRange::Term(position) => Some(usize::from(!matches!(
                     self.instructions[*position],
                     Instruction::RepeatedAssert(_)
-                )),
+                ))),
             });
+            let Some(length) = length else {
+                return Ok(None);
+            };
             let Some(width) = offsets.last().unwrap().checked_add(length) else {
                 return Ok(None);
             };
@@ -1556,7 +1571,11 @@ impl Program {
         for (ordinal, target) in references.iter().enumerate().rev() {
             charge(1)?;
             let range = match *target {
-                ReferenceTarget::Input { index, named } => {
+                ReferenceTarget::Input {
+                    index,
+                    named,
+                    copies: target_copies,
+                } => {
                     let range = if named {
                         &state.named[index]
                     } else {
@@ -1566,28 +1585,33 @@ impl Program {
                         .as_ref()
                         .filter(|r| !r.is_empty())
                         .cloned()
-                        .map(ReferenceRange::Input)
+                        .map(|range| ReferenceRange::Input(range, target_copies))
                 }
-                ReferenceTarget::Future(span) => {
+                ReferenceTarget::Future(span, target_copies) => {
                     charge(2)?;
                     // Local ranges temporarily use distances from the unit end.
                     let range = offsets[span.end]..offsets[span.start];
-                    (!range.is_empty()).then_some(ReferenceRange::Local(range))
+                    (!range.is_empty()).then_some(ReferenceRange::Local(range, target_copies))
                 }
-                ReferenceTarget::Local(_) => {
+                ReferenceTarget::Local(_, _) => {
                     charge(2)?;
                     None
                 }
                 ReferenceTarget::Empty | ReferenceTarget::Open => None,
                 ReferenceTarget::Term(position) => Some(ReferenceRange::Term(position)),
             };
-            let length = range.as_ref().map_or(0, |range| match range {
-                ReferenceRange::Input(range) | ReferenceRange::Local(range) => range.len(),
-                ReferenceRange::Term(position) => usize::from(!matches!(
+            let length = range.as_ref().map_or(Some(0), |range| match range {
+                ReferenceRange::Input(range, copies) | ReferenceRange::Local(range, copies) => {
+                    range.len().checked_mul(*copies)
+                }
+                ReferenceRange::Term(position) => Some(usize::from(!matches!(
                     self.instructions[*position],
                     Instruction::RepeatedAssert(_)
-                )),
+                ))),
             });
+            let Some(length) = length else {
+                return Ok(None);
+            };
             let Some(width) = offsets[ordinal + 1].checked_add(length) else {
                 return Ok(None);
             };
@@ -1601,7 +1625,7 @@ impl Program {
         ranges.reverse();
         for range in &mut ranges {
             charge(1)?;
-            if let ReferenceRange::Local(range) = range {
+            if let ReferenceRange::Local(range, _) = range {
                 *range = width - range.end..width - range.start;
             }
         }
@@ -1622,10 +1646,12 @@ impl Program {
         let base = start;
         for capture in captures {
             charge(1)?;
-            let range = match capture {
-                ReferenceRange::Input(range) => range.clone(),
+            let (range, copies) = match capture {
+                ReferenceRange::Input(range, copies) => (range.clone(), *copies),
                 // Count limits bound the complete body before any comparison.
-                ReferenceRange::Local(range) => base + range.start..base + range.end,
+                ReferenceRange::Local(range, copies) => {
+                    (base + range.start..base + range.end, *copies)
+                }
                 ReferenceRange::Term(position) => {
                     charge(1)?;
                     if let Instruction::RepeatedAssert(assertion) = &self.instructions[*position] {
@@ -1652,7 +1678,8 @@ impl Program {
                     continue;
                 }
             };
-            let Some(end) = self.compare_reference(input, start, &range, charge)? else {
+            let Some(end) = self.compare_reference_copies(input, start, &range, copies, charge)?
+            else {
                 return Ok(None);
             };
             start = end;
@@ -1668,6 +1695,10 @@ impl Program {
         copies: usize,
         charge: &mut impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<usize>, E> {
+        if capture.is_empty() {
+            charge(1)?;
+            return Ok(Some(start));
+        }
         for _ in 0..copies {
             charge(1)?;
             let Some(end) = self.compare_reference(input, start, capture, charge)? else {
@@ -2198,7 +2229,7 @@ impl Program {
                                     charge(1)?;
                                     true
                                 }
-                                ReferenceTarget::Local(span) => {
+                                ReferenceTarget::Local(span, target_copies) => {
                                     charge(1)?;
                                     if current.rightmost_iteration {
                                         let offsets = lookbehind_offsets
@@ -2206,9 +2237,13 @@ impl Program {
                                             .expect("local reads retain unit offsets");
                                         let range = iteration_start + offsets[span.start]
                                             ..iteration_start + offsets[span.end];
-                                        if let Some(end) = self
-                                            .compare_reference(input, *position, &range, charge)?
-                                        {
+                                        if let Some(end) = self.compare_reference_copies(
+                                            input,
+                                            *position,
+                                            &range,
+                                            target_copies,
+                                            charge,
+                                        )? {
                                             *position = end;
                                             true
                                         } else {
@@ -2220,7 +2255,7 @@ impl Program {
                                         true
                                     }
                                 }
-                                ReferenceTarget::Future(span) => {
+                                ReferenceTarget::Future(span, target_copies) => {
                                     charge(1)?;
                                     if current.rightmost_iteration {
                                         // The target is still unmatched in a forward assertion.
@@ -2231,9 +2266,13 @@ impl Program {
                                             .expect("future reads retain unit offsets");
                                         let range = iteration_start + offsets[span.start]
                                             ..iteration_start + offsets[span.end];
-                                        if let Some(end) = self
-                                            .compare_reference(input, *position, &range, charge)?
-                                        {
+                                        if let Some(end) = self.compare_reference_copies(
+                                            input,
+                                            *position,
+                                            &range,
+                                            target_copies,
+                                            charge,
+                                        )? {
                                             *position = end;
                                             true
                                         } else {
@@ -2407,11 +2446,13 @@ fn quantify_reference_wrapper(
             PreparedInstruction::Ready(Instruction::Reference(index)) => ReferenceTarget::Input {
                 index: *index,
                 named: false,
+                copies: 1,
             },
             PreparedInstruction::Ready(Instruction::NamedReference(index)) => {
                 ReferenceTarget::Input {
                     index: *index,
                     named: true,
+                    copies: 1,
                 }
             }
             PreparedInstruction::Ready(Instruction::QuantifiedReference {
@@ -2425,11 +2466,16 @@ fn quantify_reference_wrapper(
                 counted_targets.push((
                     copies,
                     *max,
-                    *min == Some(1) && *max == Some(1) && *atom_copies == 1,
+                    if min == max {
+                        min.and_then(|n| n.checked_mul(*atom_copies))
+                    } else {
+                        None
+                    },
                 ));
                 ReferenceTarget::Input {
                     index: *index,
                     named: *named,
+                    copies: 1,
                 }
             }
             PreparedInstruction::Ready(Instruction::Character(_) | Instruction::Assert(_))
@@ -2438,7 +2484,7 @@ fn quantify_reference_wrapper(
             } => ReferenceTarget::Term(position),
             _ => return None,
         };
-        if let ReferenceTarget::Input { index, named } = target {
+        if let ReferenceTarget::Input { index, named, .. } = target {
             if reference.is_none() {
                 reference = Some((position, index, named));
             }
@@ -2467,16 +2513,21 @@ fn quantify_reference_wrapper(
         .into_iter()
         .enumerate()
         .map(|(ordinal, target)| {
-            if let ReferenceTarget::Input { index, named } = target {
+            if let ReferenceTarget::Input {
+                index,
+                named,
+                copies: target_copies,
+            } = target
+            {
                 if let Some(&span) = local.get(&(index, named)) {
                     if span.end <= ordinal {
-                        ReferenceTarget::Local(span)
+                        ReferenceTarget::Local(span, target_copies)
                     } else if span.start <= ordinal {
                         ReferenceTarget::Open
                     } else if span.start == span.end {
                         ReferenceTarget::Empty
                     } else {
-                        ReferenceTarget::Future(span)
+                        ReferenceTarget::Future(span, target_copies)
                     }
                 } else {
                     target
@@ -2487,13 +2538,13 @@ fn quantify_reference_wrapper(
         })
         .collect();
     if let Some(backward) = assertion_direction {
-        for (ordinal, max, exactly_once) in counted_targets {
+        for (ordinal, max, exact_copies) in counted_targets {
             let empty = match targets[ordinal] {
                 ReferenceTarget::Empty | ReferenceTarget::Open => true,
-                ReferenceTarget::Local(span) => {
+                ReferenceTarget::Local(span, _) => {
                     backward || span.start == span.end || max == Some(0)
                 }
-                ReferenceTarget::Future(span) => {
+                ReferenceTarget::Future(span, _) => {
                     !backward || span.start == span.end || max == Some(0)
                 }
                 // Keep unproved outside targets and their validation visible.
@@ -2501,13 +2552,19 @@ fn quantify_reference_wrapper(
                 _ => false,
             };
             if !empty {
-                // An effect-free reference atom executed exactly once is the
-                // bare read. Preserve its declared target and let the existing
-                // direction/complete-owner proof validate its consuming width.
-                if exactly_once {
-                    continue;
+                let exact_copies = exact_copies?;
+                if exact_copies == 0 {
+                    return None;
                 }
-                return None;
+                // Keep a flat declared target and scalar multiplicity. Existing
+                // direction/complete-owner proofs validate its consuming width.
+                match &mut targets[ordinal] {
+                    ReferenceTarget::Input { copies, .. }
+                    | ReferenceTarget::Local(_, copies)
+                    | ReferenceTarget::Future(_, copies) => *copies = exact_copies,
+                    _ => return None,
+                }
+                continue;
             }
             // A reference atom has no capture effects. Every finite required
             // repetition of undefined/empty preserves the same MatchState;
@@ -2520,9 +2577,14 @@ fn quantify_reference_wrapper(
         .map(|(slot, start, end)| (slot, ReferenceCaptureSpan { start, end }))
         .collect();
     let single = reference.filter(|&(_, index, named)| {
-        targets
-            .iter()
-            .all(|target| *target == (ReferenceTarget::Input { index, named }))
+        targets.iter().all(|target| {
+            *target
+                == (ReferenceTarget::Input {
+                    index,
+                    named,
+                    copies: 1,
+                })
+        })
     });
     if single.is_none() {
         for instruction in &mut instructions[body] {
@@ -2666,13 +2728,13 @@ fn quantify_zero_width_assertion_wrapper(
                         .enumerate()
                         .any(|(ordinal, target)| match target {
                             ReferenceTarget::Empty | ReferenceTarget::Open => false,
-                            ReferenceTarget::Future(span) => {
+                            ReferenceTarget::Future(span, _) => {
                                 span.start <= ordinal
                                     || span.start > span.end
                                     || span.end > references.len()
                             }
                             // Local spans contain only completed preceding terms.
-                            ReferenceTarget::Local(span) => {
+                            ReferenceTarget::Local(span, _) => {
                                 span.start > span.end || span.end > ordinal
                             }
                             ReferenceTarget::Term(index) => !matches!(
@@ -2965,22 +3027,28 @@ fn fixed_lookbehind_sequence_width(
                 needs_offsets = true;
                 0
             }
-            ReferenceTarget::Local(span) if span.start <= span.end && span.end <= ordinal => {
+            ReferenceTarget::Local(span, target_copies)
+                if span.start <= span.end && span.end <= ordinal =>
+            {
                 needs_offsets = true;
                 if backward {
                     0
                 } else {
-                    offsets[span.end].checked_sub(offsets[span.start])?
+                    offsets[span.end]
+                        .checked_sub(offsets[span.start])?
+                        .checked_mul(target_copies)?
                 }
             }
-            ReferenceTarget::Future(span)
+            ReferenceTarget::Future(span, target_copies)
                 if span.start > ordinal
                     && span.start <= span.end
                     && span.end <= references.len() =>
             {
                 needs_offsets = true;
                 if backward {
-                    offsets[span.start].checked_sub(offsets[span.end])?
+                    offsets[span.start]
+                        .checked_sub(offsets[span.end])?
+                        .checked_mul(target_copies)?
                 } else {
                     0
                 }
@@ -3298,7 +3366,7 @@ fn outside_reference_assertion_width(
                     }
                     for (ordinal, target) in references.iter().enumerate() {
                         match *target {
-                            ReferenceTarget::Input { index, named } => {
+                            ReferenceTarget::Input { index, named, .. } => {
                                 if !outside(index, named)? {
                                     return None;
                                 }
@@ -3315,9 +3383,9 @@ fn outside_reference_assertion_width(
                                 }
                             }
                             ReferenceTarget::Empty | ReferenceTarget::Open => {}
-                            ReferenceTarget::Local(span)
+                            ReferenceTarget::Local(span, _)
                                 if span.start <= span.end && span.end <= ordinal => {}
-                            ReferenceTarget::Future(span)
+                            ReferenceTarget::Future(span, _)
                                 if span.start > ordinal
                                     && span.start <= span.end
                                     && span.end <= references.len() => {}
@@ -3764,7 +3832,7 @@ fn prepare(
     }
     if instructions.iter().any(|instruction| {
         match instruction {
-            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {references,..}) => references.iter().any(|target| matches!(target, ReferenceTarget::Input {index,named:false} if *index>=capture_count)),
+            PreparedInstruction::Ready(Instruction::QuantifiedReferenceSequence {references,..}) => references.iter().any(|target| matches!(target, ReferenceTarget::Input {index,named:false,..} if *index>=capture_count)),
             _ => matches!(instruction, PreparedInstruction::Ready(Instruction::Reference(index) | Instruction::QuantifiedReference { index, named: false, .. }) if *index >= capture_count),
         }
     }) {
@@ -3818,6 +3886,188 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn exact_reference_assertions_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=a(?=(b)\1{2}))b",
+            r"(?<=a(?=(b)\1{2}?))b",
+            r"(?<=a(?=(b)(\1{2})\2{2}))b",
+            r"(?<=(\2{2})(b))c",
+            r"(?<=(\2{2}?)(b))c",
+            r"(?<=(\2{2})(\3{2})(b))c",
+            r"(a)(?<=a(?=(b)\2{2}\1{2}))b",
+            r"(a)(?<=(\3{2})(\1{2}))c",
+            r"(ab)(?<=b(?=(\1{2})\2{2}))a",
+            r"(?<=(\1{2}))a",
+            r"(?<=(a)\1{2})b",
+            r"(?<=a(?!((b)\2{2})q))b",
+            r"(?<!(\2{2})(b))c|c",
+            r"(a)(?<=\1{2}\1{2})b",
+            r"(a)(?<=\1\1{2})b",
+            r"(a)(?<=a(?=\1{2}\1{2}))a",
+            r"(?<=a(?=(b)(?:\1\1){2}))b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n", "abbb", "abbbb", "abbbbb", "bbbbc", "bbbbbbbc", "aaaab", "aaabc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn exact_reference_atoms_preserve_scaled_offsets_mixed_imports_and_pending_counts() {
+        for (source, text, range, captures) in [
+            (r"(?<=a(?=(b)\1{2}))b", "abbb", 1..2, vec![Some(1..2)]),
+            (r"(?<=a(?=(b)\1{2}?))b", "abbb", 1..2, vec![Some(1..2)]),
+            (
+                r"(?<=(\2{2})(b))c",
+                "bbbc",
+                3..4,
+                vec![Some(0..2), Some(2..3)],
+            ),
+            (
+                r"(?<=(\2{2})(\3{2})(b))c",
+                "bbbbbbbc",
+                7..8,
+                vec![Some(0..4), Some(4..6), Some(6..7)],
+            ),
+            (
+                r"(?<=a(?=(b)(\1{2})\2{2}))b",
+                "abbbbbbb",
+                1..2,
+                vec![Some(1..2), Some(2..4)],
+            ),
+            (r"(a)(?<=\1{2}\1{2})b", "aaaab", 3..5, vec![Some(3..4)]),
+            (r"(a)(?<=\1\1{2})b", "aaab", 2..4, vec![Some(2..3)]),
+            (
+                r"(?<=a(?=(b)(?:\1\1){2}))b",
+                "abbbbb",
+                1..2,
+                vec![Some(1..2)],
+            ),
+            (r"(?<!(\2{2})(b))c|c", "bbbc", 3..4, vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=a(?=(b)\1{2,3}))b",
+            r"(?<=(\2{2,3})(b))c",
+            r"(?<=a(?=(b)(\1){2}))b",
+            r"(?<=(\2{2}|a)(b))c",
+            r"(?<=\9{0})a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let huge = "9".repeat(100);
+        let source = format!(r"(?<=a(?=(b)\1{{{huge}}}))b");
+        assert!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &JsString::from(source.as_str()),
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings::default(),
+                |_| Ok::<_, ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+    #[test]
+    fn exact_reference_atoms_deep_scopes_long_counts_checked_overflow_clones_and_work_are_flat() {
+        let source =
+            "(?<=a(?=(".to_owned() + &"(".repeat(100000) + "b" + &")".repeat(100000) + r"\2{2})))b";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("abbb"), 1, true).unwrap();
+        assert_eq!(found.captures.len(), 100001);
+        assert_eq!(found.captures[0], Some(1..4));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..2)));
+        let input = JsString::from(("a".to_owned() + &"b".repeat(50001)).as_str());
+        let matcher = ordinary(r"(?<=a(?=(b)\1{50000}))b", false, false, false);
+        assert_eq!(
+            matcher.find(&input, 1, true).unwrap().captures[0],
+            Some(1..2)
+        );
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 1, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+        let source = format!(r"(?<=a(?=(b)\1{{{}}}))b", usize::MAX);
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("abbb"), 1, true)
+                .is_none()
+        );
+        let source = format!(r"(?<=a(?!(b)\1{{{}}}))b", usize::MAX);
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("ab"), 1, true)
+            .unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
+        let source = format!(r"(?<=a(?=()\1{{{}}}))b", usize::MAX);
+        assert_eq!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("ab"), 1, true)
+                .unwrap()
+                .captures[0],
+            Some(1..1)
+        );
+        let mut overflow = String::from("(?<=(");
+        for i in 2..=10001 {
+            write!(overflow, r"\{i}{{2}}(").unwrap();
+        }
+        overflow.push('b');
+        overflow.push_str(&")".repeat(10001));
+        overflow.push_str(")c");
+        assert!(
+            ordinary(&overflow, false, false, false)
+                .find(&JsString::from("c"), 0, true)
+                .is_none()
+        );
+        let negative = overflow.replace("(?<=", "(?<!");
+        let found = ordinary(&negative, false, false, false)
+            .find(&JsString::from("c"), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
     }
 
     #[test]

@@ -2280,6 +2280,29 @@ recursion, source expansion or default quota. Larger unproved consuming counts,
 capturing counted children, choices, changing-owner imports and Unicode modes
 remain pending.
 
+
+Effect-free reference atoms with a representable exact positive count can retain
+one flat Input, Local or Future target plus a scalar copy count (22.2.2.3.1,
+22.2.2.8, 22.2.2.9.2). Multiplying the exact atom count by its original copies is
+checked before lowering. Direction-specific undefined/empty proofs retain their
+existing behavior; unproved variable counts, unrepresentable copy products,
+unproved outside-zero reads and capturing counted children remain unsupported.
+Declared reference validation and complete-owner checks include the counted target.
+
+Forward prefix and backward suffix resolution multiply each nonempty referenced
+span width by its copies with checked arithmetic, retaining original source-order
+capture offsets. The existing comparator reads that original range for each copy;
+it never allocates or duplicates ranges by the count. Full unit width limits the
+work to available input before comparisons. Required empty ranges use one constant
+pass. A proved width overflow is unavailable for finite input: positive assertions
+fail and negative assertions retain their original rollback and undefined captures.
+
+Only all-one imported targets use the old scalar collapse, preserving its ordinal
+capture spans. Other multiplicities retain flat sequence offsets and original range
+writes, named aliases and shared indices pairs. No matcher, dependency, recursion,
+source expansion or default quota is added. Choices, changing-owner reads and
+Unicode modes retain their existing conservative boundaries.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
