@@ -6580,3 +6580,23 @@ brands, metadata, descriptors, and method construction rejection. Both toolchain
 pass every new variant with the existing unchanged pin and eight helpers. GC and
 host-abort behavior are exercised by the native storage/runtime regressions;
 the upstream programs and assertions are preserved byte for byte.
+
+## Concurrent workspace tests in CI
+
+The workspace jobs run Cargo's original test invocations two binaries at a time.
+Cargo supplies each invocation's arguments, working directory, and environment;
+the runner preserves these and reports failures from every binary. Compilation
+failures and an empty invocation list also fail the job. Documentation tests and
+the complete reviewed Test262 corpus retain their separate existing commands.
+Default debug information, test thread counts, native stacks, and opt-in quotas
+remain unchanged on both operating systems and Rust toolchains.
+
+A local warmed-build comparison on identical sources and executables reduced
+workspace execution from 252.62 seconds to 164.24 seconds, including invocation
+collection: 35% faster. All 408 invocations and 3,500 passing tests were preserved,
+with no ignored tests and only the separately executed corpus test filtered out.
+The Rust 1.85.0 run also passed all 408 invocations with identical test counts.
+These timings exclude cold compilation and do not predict hosted CI duration.
+Four dependency-free runner regressions exercise Cargo environment and directory
+preservation, ignored and filtered tests, test and compiler failures, and missing
+invocations.

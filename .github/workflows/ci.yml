@@ -43,7 +43,7 @@ jobs:
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
         # The complete corpus runs once in the independent optimized-profile job.
-        run: cargo +"$TOOLCHAIN" test --workspace --all-targets --locked -- --skip pinned_corpus_runs_all_reviewed_variants
+        run: python tools/run-cargo-workspace-tests.py --toolchain "$TOOLCHAIN"
       - name: Run documentation tests
         if: matrix.suite == 'workspace'
         shell: bash
@@ -70,6 +70,7 @@ jobs:
         run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
       - run: cargo +stable fmt --all --check
       - run: cargo +stable clippy --workspace --all-targets --locked -- -D warnings
+      - run: python3 tools/test-cargo-workspace-tests.py
       - run: python3 tools/check-policy.py
       - run: python3 tools/check-test262.py
       - run: python3 tools/generate-unicode.py --check
