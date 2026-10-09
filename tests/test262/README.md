@@ -1,11 +1,37 @@
 # Test262 regression fixtures
 
-These 7443 unmodified test fixtures and eleven harness files come from
+These 7446 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Modern RegExp constructor identity and nullable quantifier fixture review
+
+Three unchanged complete originals add six normal/strict harness-positive variants
+at the existing pin. Constructor calls return fresh objects when Symbol.match is
+false or the pattern's constructor differs. The complete nullable-quantifier
+program verifies (a?b??)* matches all of ab, retaining RepeatMatcher's rejection of
+empty optional iterations without discarding available consuming alternatives.
+Original metadata, specification prose and authorship remain unchanged.
+
+Stable, MSRV and Node pass all six complete variants without failures or host
+limits. Upstream Git blob identities and manifest SHA-256 digests verify every
+source byte. The original BSD licenses, pin and eleven helpers are preserved;
+Symbol.match metadata is interpreted unchanged. Parse-negative and runtime-negative
+inventories are unchanged. A separate five-original review leaves global-object
+property reflection and Unicode huge-count matching Unsupported; neither is
+adapted or counted as passing.
+
+The active corpus has 7446 fixtures, eleven helpers, 7427 reviewed Script sources
+and 14332 variants: 12855 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 599 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 14332-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## RegExp instance kind and invocation fixture review
 

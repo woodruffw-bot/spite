@@ -7423,3 +7423,6 @@ test/built-ins/RegExp/S15.10.7_A2_T1.js	-	-	-
 test/built-ins/RegExp/S15.10.7_A2_T2.js	-	-	-
 test/built-ins/RegExp/S15.10.7_A3_T1.js	-	-	-
 test/built-ins/RegExp/S15.10.7_A3_T2.js	-	-	-
+test/built-ins/RegExp/call_with_regexp_match_falsy.js	-	-	-
+test/built-ins/RegExp/call_with_regexp_not_same_constructor.js	-	-	-
+test/built-ins/RegExp/nullable-quantifier.js	-	-	-
