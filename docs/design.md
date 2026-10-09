@@ -2262,6 +2262,24 @@ Capturing counted children, consuming unproved counts, choices, changing owner
 reads and Unicode modes remain pending. There is no repetition expansion, new
 matcher, dependency, recursion or default quota.
 
+
+An effect-free scalar reference counted exactly once in an ordinary assertion is
+also the bare read (22.2.2.3.1, 22.2.2.8). Preparation requires min = max = 1,
+one reference copy and no owned capture effects. It retains the original declared
+Input, Local or Future target instead of requiring an empty proof. Existing
+matching-direction and complete-owner checks determine its consuming width;
+original named aliases and validation remain visible. Failed proof remains
+unsupported without changing the assertion's behavior.
+
+The existing sequence comparator and checkpoints perform the read once. When a
+pure imported sequence collapses to counted copies, every original scalar
+instruction is cleared, avoiding leftover duplicate reads. Original capture spans,
+required-one-unit clearing, indices and shared named pairs, frame positions and
+negative rollback remain unchanged. This adds no matcher, dependency, native
+recursion, source expansion or default quota. Larger unproved consuming counts,
+capturing counted children, choices, changing-owner imports and Unicode modes
+remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

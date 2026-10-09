@@ -4194,6 +4194,40 @@ Stable and MSRV pass all 14,008 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Effect-free capture reference atoms counted exactly once now retain their original
+declared targets in linear ordinary assertions. The existing direction-aware width
+proof and complete-owner import checks validate consuming Local/Future reads and
+stable imports. Pure repeated imported reads clear every original scalar after
+collapse, retaining exact source-relative capture offsets and one comparison per
+original read. Optional-empty behavior and negative rollback remain unchanged.
+
+Three core and six runtime regressions cover greedy/lazy exact-one forms, dependent
+Local/Future targets, open reads, adjacent and mixed bare/count-one imports, names
+and shared index pairs, negative commitment/rollback, lone surrogates, consumers,
+global/sticky state, empty advancement, callbacks, copies, collection, 100000
+capture scopes, 10000 dependency chains and opted-in work aborts. The inspected
+2652-row core snapshot, 22 runtime results and ten complete programs agree with
+Node, as do 591872 ordinary and 249872 named-binding match/capture comparisons.
+Defaults remain unlimited.
+
+All 208 core backreference tests, 132 related runtime targets and prototype
+workspace denied-warning Clippy pass. All 201 prior RegExp snapshots remain
+byte-identical. No old rejection control becomes supported: all 285 core rejection
+candidates and 772 runtime gap programs retain Unsupported. Eight ordered-coercion
+and four direct-eval probes retain Unsupported and their ordered state.
+
+Whole reviews retain ten Passed and 24 Unsupported variants for seventeen
+lookBehind originals and 192 Passed and 38 Unsupported for the separate 115-file
+named-groups/exec selection, without failures or host limits. No additional whole
+original qualifies for vendoring. The inventory remains 7284 fixtures, 7265 reviewed
+sources, 14008 variants, 12531 harness positives and 437 RegExp builtin positives.
+The existing pin, eleven helpers and dependencies stay unchanged.
+
+Stable and MSRV pass all 14,008 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
