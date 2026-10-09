@@ -2507,6 +2507,23 @@ retains existing opt-in work charges; matching, storage and default quotas are
 unchanged. Literal capture plans and the approved empty-body boundary behavior
 retain their separate paths.
 
+
+Validated UnicodeSets v-mode Patterns now admit one case-sensitive atom with
+exclusively nonsurrogate BMP membership (22.2.2.7.1, 22.2.7.2). Flat positive
+unions and ranges have the same membership as the proved u-mode class subset.
+Complete UnicodeSets validation precedes compilation. The ordinary class parser
+cannot consume a complete nested class or property/string escape; a conservative
+scan additionally rejects possible intersection and subtraction operators before
+construction. This prevents operators from acquiring ordinary literal semantics.
+
+The compiler retains digit, word and whitespace escapes and one-unit Unicode
+boundaries through the existing membership proof. Escaped punctuation remains
+literal. Inverted sets, complemented escapes, UnicodeSets operators, nested
+classes, class strings, braced escapes, supplementary values and ignore-case
+matching remain unproved. Construction accounting, matching, storage, dependency
+allowances and default quotas are unchanged. The approved empty-body boundary
+resolution retains its separate scope.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

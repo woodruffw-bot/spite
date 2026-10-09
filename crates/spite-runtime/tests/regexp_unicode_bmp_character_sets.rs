@@ -131,7 +131,7 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/[a]/v.exec('a')",
+        r"/[\u{1f600}]/v.exec('a')",
         r"/[a]/iu.exec('a')",
         r"/[^a]/u.exec('b')",
         r"/\D/u.exec('a')",

@@ -5202,6 +5202,42 @@ Stable and MSRV pass all 14,390 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Single case-sensitive UnicodeSets v-mode atoms now match through the proved BMP
+membership program. Flat positive classes, ranges, ordinary character escapes,
+class backspace and digit/word/whitespace escapes retain one-character, one-unit
+endpoints. Complete v validation precedes a conservative operator guard and the
+shared compiler. Intersection/subtraction, nested classes, class strings,
+properties, inversion, surrogate/supplementary values, braced class escapes and
+ignore-case matching retain Unsupported. No matching operation, allocation
+strategy, dependency or default quota changes.
+
+Two new core and seven runtime regressions cover escaped reserved punctuation,
+backspace ranges, Unicode boundaries, consumers, flags and clones, result
+metadata, ordered and abrupt coercions, strict lastIndex writes, 100000 class
+members, collection, long searches and opted-in work aborts. Node agrees with
+1144 inspected new core rows, 132 runtime rows, fifteen complete Boolean programs,
+one former complete program and unchanged direct-eval setup and operation, 2157368 exhaustive range comparisons and
+18939904 membership comparisons across every Unicode value for seventeen
+independent patterns.
+
+All 486 core tests, 147 related runtime targets and prototype denied-warning
+Clippy pass. All 366 prior golds remain byte-identical. Two simple rejection
+controls use still-unproved supplementary classes; the exact former complete
+program and unchanged direct-eval setup/operation are positive gold regressions. A direct-eval class-gap control now uses an unproved supplementary class. The 314 core rejection
+candidates, 852 old runtime gap programs and fourteen additional probes remain
+Unsupported. Eight ordered and ten direct-eval gap probes preserve conversion
+order and state. Whole seventeen-file and 115-file reviews remain 10/24 and
+192/38 Passed/Unsupported, with no failures or host limits.
+
+The inventory remains 7475 fixtures, 7456 reviewed Script sources, 14390 variants,
+12913 harness positives and 621 RegExp builtin positives. The existing pin, eleven
+helpers, dependency allowances and opt-in quota policy remain unchanged.
+
+Stable and MSRV pass all 14,390 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

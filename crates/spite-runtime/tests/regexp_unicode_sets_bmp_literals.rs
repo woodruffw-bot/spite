@@ -190,7 +190,7 @@ fn unicode_sets_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
         r"/ab*/v.exec('a')",
         r"/\uD800/v.exec('\uD800')",
         r"/\u{1f600}/v.exec('a')",
-        r"/[a]/v.exec('a')",
+        r"/[\u{1f600}]/v.exec('a')",
         r"/^a/v.exec('a')",
         r"/(a)\1/v.exec('aa')",
     ] {
