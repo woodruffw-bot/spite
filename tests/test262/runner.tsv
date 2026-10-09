@@ -7264,3 +7264,10 @@ test/built-ins/RegExp/S15.10.2.10_A4.1_T1.js	-	-	-
 test/built-ins/RegExp/S15.10.2.10_A4.1_T2.js	-	-	-
 test/built-ins/RegExp/S15.10.2.10_A4.1_T3.js	-	-	-
 test/built-ins/RegExp/S15.10.2.10_A5.1_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T4.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T5.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T6.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T7.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T8.js	-	-	-
+test/built-ins/RegExp/S15.10.2.11_A1_T9.js	-	-	-
