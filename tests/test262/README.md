@@ -1,11 +1,35 @@
 # Test262 regression fixtures
 
-These 7408 unmodified test fixtures and eleven harness files come from
+These 7415 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## RegExp constructor invalid flags whole-program fixture review
+
+Seven unchanged complete S15.10.4.1_A5 originals add fourteen normal/strict
+harness-positive variants at the existing pin. Complete original programs catch
+and verify SyntaxError for duplicate flags, invalid flags obtained through eval,
+and flag coercion from null, Number, Boolean and an object whose toString returns
+undefined. The original try/catch programs, TODO comments and historical flag
+lists remain unchanged; their assertions exercise runtime constructor behavior.
+
+Stable, MSRV and Node pass all fourteen complete variants without failures or
+host limits. Upstream Git blob identities and manifest SHA-256 digests verify every
+source byte. Original metadata, Sputnik copyright, BSD license, the pin and eleven
+helpers are preserved. The caught SyntaxErrors are harness-positive execution;
+parse-negative and runtime-negative inventories are unchanged.
+
+The active corpus has 7415 fixtures, eleven helpers, 7396 reviewed Script sources
+and 14270 variants: 12793 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 568 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 14270-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## RegExp constructor defaults and explicit flags whole-program fixture review
 
