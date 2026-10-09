@@ -2438,7 +2438,7 @@ Existing immutable literal programs, KMP searches and flat capture ranges preser
 Unicode matching positions without materializing code-point arrays. Validated
 named-capture normalization retains original source and complete capture metadata.
 Empty Unicode literals, ignore-case Unicode matching, `v`, surrogate literals,
-braced escapes and nonliteral syntax remain outside this proof. Construction and
+nonliteral syntax remains outside this proof. Construction and
 execution preserve opted-in work accounting; default resource quotas stay absent.
 
 
@@ -2475,9 +2475,20 @@ mandatory capture groups consume the same Unicode code points. Full Pattern
 validation precedes the unchanged flat literal compiler. Every consumed code
 point has one UTF-16 unit, so successful starts, ends and captures cannot split a
 surrogate pair. No Unicode class operations, string properties, case folding,
-surrogate literals or braced escapes acquire a matching plan. Empty Unicode bodies
+surrogate literals acquire a matching plan. Empty Unicode bodies
 retain their separate approved boundary resolution. This adds no core matching
 operation, allocation strategy, dependency or default quota.
+
+
+Unicode literal compilation now decodes `\u{CodePoint}` escapes whose values
+are nonsurrogate BMP characters (22.2.1, 22.2.2.2). Full `u`/`v` validation still
+precedes compilation. Checked hexadecimal accumulation rejects values outside
+`u16`, malformed escapes and empty digit lists; the existing BMP proof excludes
+surrogates. Leading zeros use constant decoder storage. Decoded syntax characters
+remain literal units rather than being reparsed as Pattern syntax. Ordinary
+character and class escape decoding remains separate, retaining the project's
+edition-17 scope without Annex B. Flat capture storage, linear literal matching,
+UTF-16 ranges and the narrow approved empty-body boundary behavior are unchanged.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

@@ -71,8 +71,8 @@ fn valid_unimplemented_matchers_fail_only_when_execution_reaches_matching() {
     for source in [
         r"/(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}/.exec('a')",
         r"/(?:(?:((?:(?:.a*b*){2}){2}){2})|){2,3}/.test('a')",
-        "/\\u{61}/u.exec('a')",
-        "/\\u{61}/v.exec('a')",
+        "/\\u{1f600}/u.exec('a')",
+        "/\\u{1f600}/v.exec('a')",
     ] {
         assert!(
             matches!(

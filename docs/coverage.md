@@ -4955,7 +4955,7 @@ complete Boolean programs and 1903560 exhaustive native match/capture comparison
 Four exact former complete programs remain positive tests. The original two-phase
 ordered setup and exec operation remain intact as a typed positive test and in a
 fifth snapshot row. Four simple old rejection controls and one ordered control
-now use still-unproved braced Unicode literals with the same capture structure.
+now use still-unproved supplementary braced Unicode literals with the same capture structure.
 
 All 477 core tests and prototype workspace denied-warning Clippy pass. The sweep
 ran 142 related runtime targets: 141 passed initially; the affected regexp_exec
@@ -5030,7 +5030,7 @@ mode, 30 inspected new runtime rows, eighteen complete Boolean programs and
 1903560 exhaustive native match/capture comparisons. A second inspected gold
 contains two exact former complete programs, two capture probes and the preserved
 original ordered setup and exec operation. Three simple old rejection controls
-and one ordered control now use still-unproved braced UnicodeSets literals with
+and one ordered control now use still-unproved supplementary braced UnicodeSets literals with
 the same capture structure.
 
 All 144 related runtime targets and prototype workspace denied-warning Clippy
@@ -5077,6 +5077,40 @@ positive programs, separately from 337 grammar fixtures.
 Stable and MSRV pass all 14,358 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
+
+
+Braced Unicode escapes now match within case-sensitive nonempty nonsurrogate BMP
+literal bodies and mandatory captures in both Unicode modes. Checked decoding
+preserves long leading-zero sequences and literal syntax characters without
+expanding storage. Supplementary values, surrogate values, nonempty ignore-case
+patterns, Unicode classes and other unproved bodies remain Unsupported. Ordinary
+escape semantics retain the edition-17 policy without Annex B.
+
+Three core regressions and six runtime regressions cover BMP endpoints, controls,
+decoded syntax characters, numeric/named capture ranges, consumers, ordered
+coercion, strict lastIndex writes, 100000 leading zeros and capture scopes,
+clones, collection, long input and explicit work aborts. The new inspected golds
+contain 720 core range rows checked independently in both Unicode modes, 160
+runtime rows, six exact former complete programs and two preserved ordered
+setup/exec programs. Twelve complete Boolean programs and 3807120 exhaustive
+native match/capture comparisons agree with Node.
+
+All 481 core tests, 145 related runtime targets and prototype denied-warning
+Clippy pass. The 360 prior snapshots remain byte-identical. Nine simple and two
+ordered rejection controls now use still-unproved supplementary braced values;
+their original BMP programs remain permanent positive regressions. All 314 core
+rejection candidates, 834 previous runtime gap programs and six additional probes
+retain Unsupported. Eight ordered and four direct-eval gap probes retain their
+conversion order and state. Whole seventeen-file and 115-file reviews retain
+10/24 and 192/38 Passed/Unsupported variants, with no failures or host limits.
+
+The inventory remains 7459 fixtures, 7440 reviewed Script sources, 14358 variants,
+12881 harness positives and 625 RegExp builtin positives. The existing pin, eleven
+helpers, dependency allowances and opt-in quota policy remain unchanged.
+
+Stable and MSRV pass all 14,358 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.

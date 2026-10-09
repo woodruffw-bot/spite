@@ -34,7 +34,7 @@ impl RegExpLiteralMatcher {
     /// Compiles a validated `u` or `v` Pattern with a nonempty BMP literal body.
     ///
     /// This case-sensitive subset excludes surrogate code units and may contain
-    /// capturing and noncapturing groups.
+    /// capturing and noncapturing groups, including braced escapes for BMP units.
     /// Every consumed character has one code unit and every successful endpoint
     /// is a code-point boundary. A scan through a surrogate pair cannot create
     /// a BMP occurrence; an initial offset inside a pair cannot match when
@@ -42,7 +42,7 @@ impl RegExpLiteralMatcher {
     /// separate proofs (22.2.2.2, 22.2.7.2). The caller must validate the Pattern
     /// in Unicode mode first. Storage and matching retain the ordinary flat plan.
     pub fn compile_bmp_unicode(source: &JsString) -> Option<Self> {
-        let matcher = Self::compile(source, false)?;
+        let matcher = Self::compile_with_unicode_escapes(source, false, true)?;
         (!matcher.0.units.is_empty()
             && matcher
                 .0
@@ -89,6 +89,14 @@ impl RegExpLiteralMatcher {
 
     /// Compiles the literal-only subset, returning `None` for other syntax.
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
+        Self::compile_with_unicode_escapes(source, ignore_case, false)
+    }
+
+    fn compile_with_unicode_escapes(
+        source: &JsString,
+        ignore_case: bool,
+        unicode_braced: bool,
+    ) -> Option<Self> {
         let source = source.code_units();
         let mut index = 0;
         let mut groups = Vec::new();
@@ -124,7 +132,11 @@ impl RegExpLiteralMatcher {
                 continue;
             }
             let unit = if unit == u16::from(b'\\') {
-                character_escape(source, &mut index)?
+                if unicode_braced && source.get(index..index + 2) == Some(&[0x75, 0x7b]) {
+                    braced_bmp_escape(source, &mut index)?
+                } else {
+                    character_escape(source, &mut index)?
+                }
             } else if is_syntax(unit) {
                 return None;
             } else {
@@ -303,6 +315,24 @@ pub(crate) fn is_syntax(unit: u16) -> bool {
     matches!(unit, 0x24 | 0x28..=0x2b | 0x2e | 0x3f | 0x5b | 0x5d | 0x5e | 0x7b..=0x7d)
 }
 
+// Validated Unicode RegExpUnicodeEscapeSequence :: u{ CodePoint } (22.2.1).
+// Checked u16 accumulation admits only the BMP; the complete literal proof
+// subsequently excludes surrogate units. Leading zeros require no extra storage.
+fn braced_bmp_escape(source: &[u16], index: &mut usize) -> Option<u16> {
+    *index += 2;
+    let mut value = 0u16;
+    let mut has_digit = false;
+    loop {
+        if source.get(*index) == Some(&0x7d) {
+            *index += 1;
+            return has_digit.then_some(value);
+        }
+        let digit = hex_escape(source, index, 1)?;
+        value = value.checked_mul(16)?.checked_add(digit)?;
+        has_digit = true;
+    }
+}
+
 fn hex_escape(source: &[u16], index: &mut usize, count: usize) -> Option<u16> {
     let mut value = 0;
     for _ in 0..count {
@@ -322,6 +352,105 @@ fn hex_escape(source: &[u16], index: &mut usize, count: usize) -> Option<u16> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn unicode_braced_bmp_ranges_snapshot() {
+        let mut rows = String::new();
+        for pattern in [
+            r"\u{61}",
+            r"(\u{61}())\u{62}",
+            r"\u{0}",
+            r"\u{D7FF}",
+            r"\u{E000}",
+            r"\u{FFFF}",
+            r"\u{00E9}",
+            r"(a)\u{62}",
+            r"()\u{1}()",
+            r"\u{0000000000000061}",
+            r"\u{2028}",
+            r"\u{212A}",
+        ] {
+            let source = JsString::from(pattern);
+            let matcher = RegExpLiteralMatcher::compile_bmp_unicode(&source).unwrap();
+            for units in [
+                vec![],
+                vec![0x61],
+                vec![0x61, 0x62],
+                vec![0xd800, 0xdc00, 0x61, 0x62],
+                vec![0xdc00, 0x61, 0xd800],
+                vec![0, 1, 0xd7ff, 0xe000, 0xffff, 0xe9, 0x2028, 0x212a],
+            ] {
+                let input = JsString::from_code_units(units);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        let ranges = matcher.find(&input, start, sticky).map(|range| {
+                            let mut rows = vec![[range.start, range.end]];
+                            rows.extend(matcher.capture_ranges().iter().map(|capture| {
+                                [range.start + capture.start, range.start + capture.end]
+                            }));
+                            rows
+                        });
+                        writeln!(rows,"{source:?} input={input:?} start={start} sticky={sticky} ranges={ranges:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_braced_bmp_decode_is_checked_and_ordinary_compile_is_separate() {
+        let matcher =
+            RegExpLiteralMatcher::compile_bmp_unicode(&JsString::from(r"()(\u{61}())\u{62}"))
+                .unwrap();
+        assert_eq!(matcher.matched_units(), &[0x61, 0x62]);
+        assert_eq!(matcher.capture_ranges(), &[0..0, 0..1, 1..1]);
+        assert_eq!(matcher.find(&JsString::from("😀ab"), 1, false), Some(2..4));
+        assert_eq!(matcher.find(&JsString::from("😀ab"), 1, true), None);
+        assert!(RegExpLiteralMatcher::compile(&JsString::from(r"\u{61}"), false).is_none());
+        assert!(RegExpLiteralMatcher::compile_unicode_empty(&JsString::from(r"\u{0}")).is_none());
+        for pattern in [
+            r"\u{}",
+            r"\u{",
+            r"\u{G}",
+            r"\u{10000}",
+            r"\u{10ffff}",
+            r"\u{110000}",
+            r"\u{D800}",
+            r"\u{DFFF}",
+            r"\u{ffffffffffffffffffffffff}",
+            r"[\u{61}]",
+        ] {
+            assert!(
+                RegExpLiteralMatcher::compile_bmp_unicode(&JsString::from(pattern)).is_none(),
+                "{pattern}"
+            );
+        }
+    }
+
+    #[test]
+    fn unicode_braced_bmp_long_zeros_deep_captures_and_clones_are_flat() {
+        let source = format!(
+            "{}\\u{{{}61}}{}",
+            "(".repeat(100000),
+            "0".repeat(100000),
+            ")".repeat(100000)
+        );
+        let matcher =
+            RegExpLiteralMatcher::compile_bmp_unicode(&JsString::from(source.as_str())).unwrap();
+        let copy = matcher.clone();
+        drop(matcher);
+        assert_eq!(copy.capture_ranges().len(), 100000);
+        assert!(copy.capture_ranges().iter().all(|range| range == &(0..1)));
+        assert_eq!(
+            copy.find(
+                &JsString::from(format!("😀{}a", "b".repeat(100000)).as_str()),
+                1,
+                false
+            ),
+            Some(100002..100003)
+        );
+    }
 
     #[test]
     fn unicode_empty_boundaries_and_captures() {
@@ -443,7 +572,7 @@ mod tests {
             "(?:)",
             r"\uD800",
             r"\uD83D\uDE00",
-            r"\u{61}",
+            r"\u{1f600}",
             ".",
             "[a]",
             "a?",
