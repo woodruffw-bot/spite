@@ -7453,3 +7453,5 @@ test/built-ins/RegExp/prototype/unicodeSets/this-val-invalid-obj.js	-	-	-
 test/built-ins/RegExp/prototype/unicodeSets/this-val-non-obj.js	-	-	-
 test/built-ins/RegExp/prototype/unicodeSets/this-val-regexp-prototype.js	-	-	-
 test/built-ins/RegExp/prototype/unicodeSets/this-val-regexp.js	-	-	-
+test/built-ins/RegExp/unicode_character_class_backspace_escape.js	-	-	-
+test/built-ins/RegExp/unicode_identity_escape.js	-	-	-
