@@ -5418,6 +5418,26 @@ Stable and MSRV pass all 14,450 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Case-sensitive Unicode literal construction now uses one code-point plan for
+BMP, supplementary and lone-surrogate atoms. Narrower core APIs remain available;
+the runtime removes repeated compilation attempts and a redundant scalar variant.
+The core compiler and matcher are byte-identical to the previous implementation.
+No admitted syntax, capture layout, initial-boundary rule or default quota changes.
+
+All six existing Unicode literal targets and 150 related runtime targets pass,
+including the 4096 raw constructor sources. All 378 prior snapshots remain
+byte-identical. Denied-warning prototype Clippy, 894 runtime gap programs, eight
+ordered probes and ten direct-eval probes pass without changing Unsupported,
+conversion order or state. Both whole trail-surrogate fixture variants pass.
+The corpus remains 7505 fixtures, 7486 reviewed Script sources, 14450 variants,
+12917 harness positives, 1525 parse negatives and 622 whole RegExp builtin positive
+sources, with the existing pin, eleven helpers and dependency allowances.
+
+Stable and MSRV pass all 14,450 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

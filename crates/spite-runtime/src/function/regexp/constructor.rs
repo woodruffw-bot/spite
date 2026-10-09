@@ -259,26 +259,8 @@ impl Realm {
                 budget.charge(capture_source.len())?;
                 budget.charge(capture_source.len())?;
                 let literal = if !flags.code_units().contains(&u16::from(b'i')) {
-                    if let Some(matcher) =
-                        RegExpLiteralMatcher::compile_bmp_unicode(&capture_source)
-                    {
-                        Some(RegExpMatcherBody::Literal(matcher))
-                    } else {
-                        budget.charge(capture_source.len())?;
-                        budget.charge(capture_source.len())?;
-                        budget.charge(capture_source.len())?;
-                        if let Some(matcher) =
-                            RegExpLiteralMatcher::compile_unicode_scalars(&capture_source)
-                        {
-                            Some(RegExpMatcherBody::UnicodeScalars(matcher))
-                        } else {
-                            budget.charge(capture_source.len())?;
-                            budget.charge(capture_source.len())?;
-                            budget.charge(capture_source.len())?;
-                            RegExpLiteralMatcher::compile_unicode_code_points(&capture_source)
-                                .map(RegExpMatcherBody::UnicodeCodePoints)
-                        }
-                    }
+                    RegExpLiteralMatcher::compile_unicode_code_points(&capture_source)
+                        .map(RegExpMatcherBody::UnicodeCodePoints)
                 } else {
                     None
                 };

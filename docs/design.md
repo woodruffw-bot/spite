@@ -2589,6 +2589,21 @@ work and heap quotas remain absent. Distinct surrogate atoms which would flatten
 into a pair, character classes containing surrogates, supplementary membership,
 nonempty case folding and other unproved Unicode bodies remain Unsupported.
 
+
+Native case-sensitive Unicode literal construction now selects the complete
+code-point literal proof directly, covering BMP units, supplementary characters
+and isolated surrogates in one runtime plan. The separate BMP and scalar core
+APIs retain their documented contracts. Repeated narrower compilation attempts
+and the duplicate scalar runtime variant are removed; mandatory empty bodies
+retain their independent ignore-case proof and dispatch.
+
+All literal occurrences use the existing atom proof, linear KMP scan and complete
+input-boundary checks. Captures, the approved initial-pair rule, validation,
+original metadata, conversion order and strict lastIndex behavior are preserved.
+Construction precharges one literal compilation pass instead of retrying narrower
+plans. Search still accounts for a possible one-unit rewind. Quotas remain opt-in,
+without dependencies or changes to the admitted syntax.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
