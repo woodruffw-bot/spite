@@ -52,6 +52,41 @@ impl RegExpLiteralMatcher {
         .then_some(matcher)
     }
 
+    /// Compiles a validated Unicode Pattern with only mandatory empty groups.
+    ///
+    /// Unicode and UnicodeSets validation are the caller's responsibility.
+    /// Ignore-case does not affect an empty body (22.2.2.2).
+    pub fn compile_unicode_empty(source: &JsString) -> Option<Self> {
+        let matcher = Self::compile(source, false)?;
+        matcher.0.units.is_empty().then_some(matcher)
+    }
+
+    /// Matches an empty Unicode body at the initial code-point boundary.
+    ///
+    /// An initial UTF-16 offset inside a surrogate pair identifies its complete
+    /// Unicode character. Following Node/V8 for the documented edition 17
+    /// RegExpBuiltinExec result-start inconsistency (22.2.7.2), an empty match
+    /// uses that character's leading boundary. Offsets past the input fail,
+    /// and lone surrogates retain their boundaries. Nonempty programs are rejected.
+    pub fn find_unicode_empty(&self, input: &JsString, start: usize) -> Option<Range<usize>> {
+        if !self.0.units.is_empty() {
+            return None;
+        }
+        let units = input.code_units();
+        units.get(start..)?;
+        let start = if start > 0
+            && units
+                .get(start)
+                .is_some_and(|unit| (0xdc00..=0xdfff).contains(unit))
+            && (0xd800..=0xdbff).contains(&units[start - 1])
+        {
+            start - 1
+        } else {
+            start
+        };
+        self.find(input, start, true)
+    }
+
     /// Compiles the literal-only subset, returning `None` for other syntax.
     pub fn compile(source: &JsString, ignore_case: bool) -> Option<Self> {
         let source = source.code_units();
@@ -287,6 +322,48 @@ fn hex_escape(source: &[u16], index: &mut usize, count: usize) -> Option<u16> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn unicode_empty_boundaries_and_captures() {
+        for pattern in ["", "()", "(?:)", "(())()"] {
+            let matcher =
+                RegExpLiteralMatcher::compile_unicode_empty(&JsString::from(pattern)).unwrap();
+            assert!(
+                matcher
+                    .capture_ranges()
+                    .iter()
+                    .all(|range| range == &(0..0))
+            );
+            for (units, expected) in [
+                (vec![], vec![Some(0), None]),
+                (vec![0xd800, 0xdc00], vec![Some(0), Some(0), Some(2), None]),
+                (vec![0xdc00, 0xd800], vec![Some(0), Some(1), Some(2), None]),
+                (
+                    vec![0x61, 0xd800, 0xdc00, 0x62],
+                    vec![Some(0), Some(1), Some(1), Some(3), Some(4), None],
+                ),
+            ] {
+                let input = JsString::from_code_units(units);
+                for (start, expected) in expected.into_iter().enumerate() {
+                    assert_eq!(
+                        matcher.find_unicode_empty(&input, start),
+                        expected.map(|point| point..point)
+                    );
+                }
+            }
+        }
+        for pattern in ["a", "a?", "[]", "^", "(?=)", r"\1"] {
+            assert!(
+                RegExpLiteralMatcher::compile_unicode_empty(&JsString::from(pattern)).is_none()
+            );
+        }
+        assert!(
+            RegExpLiteralMatcher::compile(&JsString::from("a"), false)
+                .unwrap()
+                .find_unicode_empty(&JsString::from("a"), 0)
+                .is_none()
+        );
+    }
 
     #[test]
     fn unicode_bmp_literal_ranges_snapshot() {

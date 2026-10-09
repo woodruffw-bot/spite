@@ -2441,6 +2441,32 @@ Empty Unicode literals, ignore-case Unicode matching, `v`, surrogate literals,
 braced escapes and nonliteral syntax remain outside this proof. Construction and
 execution preserve opted-in work accounting; default resource quotas stay absent.
 
+
+Mandatory empty literal bodies and capture groups execute in both `u` and `v`
+modes, including ignore-case flags, since no character is consumed or canonicalized.
+They reuse immutable literal programs and flat zero-length capture ranges. Before
+search, an offset inside a surrogate pair moves to its leading code-unit boundary;
+lone surrogates and end-of-input retain their boundaries. Existing consumer
+AdvanceStringIndex logic advances by code point after an empty Unicode match.
+This adds no code-point arrays, recursion, dependency or default resource quota.
+
+The boundary rule resolves a specific inconsistency in published ECMAScript 2026
+RegExpBuiltinExec (22.2.7.2). With `/(?:)/uy`, input `"😀"` and `lastIndex = 1`,
+the matcher starts at the complete Unicode character. GetStringIndex maps its
+empty-match end to 0, but the published algorithm retains 1 as the whole-match
+start and result `index`. This violates GetMatchString's requirement that start
+not exceed end. The approved resolution follows Node/V8: both whole-match bounds,
+result `index`, participating captures and updated `lastIndex` are 0. The exception
+is limited to an empty Unicode match whose initial offset is inside a surrogate
+pair; it grants no broader departure from the specification. Nonempty BMP literals
+cannot match inside a pair and retain their separate proof.
+
+The discrepancy was verified against the official
+[`es2026` source tag](https://github.com/tc39/ecma262/blob/f7db29f16c5175a93f0d6e8fb27a8e3cb9b97a9e/spec.html).
+Construction still validates the complete Pattern and preserves original source
+and named-capture metadata. Nonliteral empty bodies, Unicode backreferences,
+nonempty ignore-case bodies and other unproved Unicode syntax remain Unsupported.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

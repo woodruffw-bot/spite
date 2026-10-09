@@ -9,6 +9,10 @@
 - No other new direct dependencies or external build dependencies are approved.
 - Keep member crates under crates/ and share dependency versions in Cargo.toml.
 - Implement ECMA-262 behavior. Do not add Node.js, browser, or syntax extensions.
+- Resolve the edition 17 RegExpBuiltinExec inconsistency for an empty Unicode
+  match starting inside a surrogate pair by following Node/V8: use the leading
+  boundary for the whole-match start as well as its end. This narrowly approved
+  exception is documented in docs/design.md.
 - Cite specification sections for subtle semantics and add regression tests.
 - Separate unsupported features and host limits from JavaScript exceptions.
 - Host resource quotas are opt-in. Do not add default quotas or test-only
