@@ -427,6 +427,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Track actual matching direction through ordinary groups and nested assertions to prove counted reads of not-yet-participating owned captures empty in repeated units.
 - [x] Preserve full and empty capture effects of single-reference atoms counted exactly once when composing proved ordinary assertion and repetition units.
 - [x] Execute required counts of proved-empty captured single-reference children with identical capture effects retained once in ordinary units and both assertion directions.
+- [x] Retain full, partial and boundary capture effects of required same-reference atoms with multiple original copies when their reads are proved empty.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

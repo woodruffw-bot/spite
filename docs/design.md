@@ -2368,6 +2368,22 @@ capture lists. There is no count-sized allocation, expansion, new matcher,
 dependency, recursion or default quota. Required outer repetitions reuse their
 existing empty-state effects and optional stop behavior.
 
+
+Required scalar atoms with multiple original copies may retain capture effects
+when their common read is proved empty (22.2.2.3.1, 22.2.2.9.2). Every full,
+partial and empty source-copy span then denotes the same input point, including
+huge positive counts. The compiler checks each original span against the original
+copy count and maps it to one source-relative point. Reads of child-owned numeric
+slots or named aliases are excluded for multiple copies, preventing the provisional
+point mapping from proving its own input empty.
+
+A requires-empty condition includes every multi-copy captured child and is checked
+before lowering. Single-copy count-one children retain their earlier consuming
+behavior. Other consuming multi-copy spans, optional captured children and outside
+reads remain unproved. Capture writes, names, indices, rollback and the sequence
+boundary are reused. The effect list is proportional to declared source captures,
+never to a count; no matcher, dependency, recursion or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

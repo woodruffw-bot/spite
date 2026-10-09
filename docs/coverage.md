@@ -4533,6 +4533,40 @@ Stable and MSRV pass all 14,172 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Required same-reference atoms with multiple original copies now retain full,
+partial and boundary capture effects when the common read is proved empty. Original
+span bounds are checked against original copies; every admitted span maps to one
+source-relative point. An explicit owned-slot/alias exclusion prevents a provisional
+mapping from proving itself. Every multi-copy captured child requires an empty
+proof before lowering. Single-copy count-one consuming behavior stays unchanged.
+
+Three core and six runtime regressions cover leading/trailing partial spans,
+interior and boundary empty captures, fixed and variable required counts, both
+assertion directions, nested forward resets, an existing owned-read baseline,
+names and shared indices, negative rollback, lone surrogates, consumers, callbacks,
+global/sticky advancement, clones, collection, 100000 partial child capture scopes,
+100-digit bounds, long searches and opted-in work aborts. Defaults remain unlimited.
+The inspected 3840-row core snapshot, 22 runtime results and twelve complete Boolean
+programs agree with Node, as do 557056 ordinary and 258944 named-binding comparisons.
+
+All 226 core backreference tests, 138 related runtime targets and prototype
+workspace denied-warning Clippy pass. All 345 prior workspace snapshots, including
+213 RegExp snapshots, remain byte-identical. All 307 core rejection candidates and
+805 runtime gap programs retain Unsupported; no control needs retargeting. Eight
+ordered-coercion and four direct-eval probes preserve Unsupported and their state.
+
+Whole reviews retain ten Passed and 24 Unsupported variants for seventeen
+lookBehind originals and 192 Passed and 38 Unsupported for the separate 115-file
+named-groups/exec selection, without failures or host limits. No additional whole
+original qualifies for vendoring. The inventory remains 7366 fixtures, 7347 reviewed
+sources, 14172 variants, 12695 harness positives and 519 RegExp builtin positives.
+The existing pin, eleven helpers and dependencies remain unchanged.
+
+Stable and MSRV pass all 14,172 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
@@ -6597,6 +6631,11 @@ collection: 35% faster. All 408 invocations and 3,500 passing tests were preserv
 with no ignored tests and only the separately executed corpus test filtered out.
 The Rust 1.85.0 run also passed all 408 invocations with identical test counts.
 These timings exclude cold compilation and do not predict hosted CI duration.
+The subsequent hosted run passed all nine jobs on Linux and Windows with both
+Rust toolchains. Compared with its parent on identical Rust sources, workspace
+jobs fell from 335 to 229 seconds (Linux stable), 555 to 445 (Linux MSRV),
+625 to 562 (Windows stable), and 781 to 635 (Windows MSRV). These are observations
+from one hosted pair; the unchanged corpus jobs also all passed.
 Four dependency-free runner regressions exercise Cargo environment and directory
 preservation, ignored and filtered tests, test and compiler failures, and missing
 invocations.
