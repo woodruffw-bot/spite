@@ -144,7 +144,7 @@ fn repeated_captures_choices_inner_references_lookahead_and_unicode_remain_unsup
     for source in [
         r"/(?<=(a)+)b/.exec('ab')",
         r"/(?<=(a|bb))c/.exec('ac')",
-        r"/(?<=(a)\1)b/.exec('aab')",
+        r"/(?<=(a{1,2})\1)b/.exec('aab')",
         r"/(?<=(a(?=a+)))b/.exec('ab')",
         r"/(?<=(a))b/u.exec('ab')",
         r"/(?<=(a))b/v.exec('ab')",

@@ -419,6 +419,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute ordinary nullable repeated bodies with zero/one minimums, rejecting optional empty iterations before exporting captures and preserving nested branch/count retries.
 - [x] Resolve stable imported capture widths in linear forward assertions inside ordinary lookbehind, preserving nested forward capture ranges and scoped negative rollback.
 - [x] Execute nested ordinary lookbehind with stable imported capture widths, preserving independent leftmost backward ranges and scoped negative rollback.
+- [x] Execute proved bare local, open and future capture references in linear ordinary assertions, retaining direction-specific widths, exact capture ranges and scoped rollback.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -1,0 +1,12 @@
+---
+source: crates/spite-runtime/tests/regexp_linear_reference_assertions.rs
+expression: rows
+---
+"/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
+"/(?<=a(?=(b)\u005c1))b/.exec('abb')" "{\u0022result\u0022:[\u0022b\u0022,\u0022b\u0022]}"
+"/(?<=(a)\u005c1)b/.exec('aab')" "{\u0022result\u0022:[\u0022b\u0022,\u0022a\u0022]}"
+"/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
+"/(?<=a(?=(b)\u005c1))b/.exec('abbbb')" "{\u0022result\u0022:[\u0022b\u0022,\u0022b\u0022]}"
+"/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
+"/(?<=a(?=(b)\u005c1))b/.exec('abb')" "{\u0022result\u0022:[\u0022b\u0022,\u0022b\u0022]}"
+"/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"

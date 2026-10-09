@@ -134,7 +134,7 @@ fn variable_counts_choices_bare_capture_dependencies_and_unicode_remain_pending(
     for source in [
         r"/(?<=a(?=((b)\2){1,2}))b/.exec('abbbb')",
         r"/(?<=a(?=((b)\2){2}|b))b/.exec('abbbb')",
-        r"/(?<=a(?=(b)\1))b/.exec('abbbb')",
+        r"/(?<=a(?=(b{1,2})\1))b/.exec('abbbb')",
         r"/(?<=a(?=((b)\2){2}))b/u.exec('abbbb')",
         r"/(?<=a(?=((b)\2){2}))b/v.exec('abbbb')",
     ] {

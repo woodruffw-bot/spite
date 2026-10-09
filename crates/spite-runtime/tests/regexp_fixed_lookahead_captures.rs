@@ -148,7 +148,7 @@ fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
 fn variable_width_dependent_continuations_and_unicode_modes_stay_unsupported() {
     for source in [
         r"/(?<=a(?=(b+)))b/.exec('abb')",
-        r"/(?<=a(?=(b)\1))b/.exec('abb')",
+        r"/(?<=a(?=(b{1,2})\1))b/.exec('abb')",
         r"/(?<=a(?=(b|cc)))b/.exec('abb')",
         r"/(?<=a(?=(b){1,2}))b/.exec('abb')",
         r"/(?<=a(?=(b)))b/u.exec('ab')",

@@ -2212,6 +2212,34 @@ no new dependency, native recursion, source expansion or default quota. Changing
 owner targets, variable consuming counts, unproved choices and Unicode modes stay
 outside the proof.
 
+
+Linear ordinary assertion bodies containing bare capture references reuse an
+exact one-iteration reference-unit plan (22.2.2.8, 22.2.2.9.2). An assertion body
+executes once per attempt; the existing unit preparation can therefore retain its
+ordinary terms and original Local, Open and Future capture spans without adding
+a matcher or expanding source. Assertion preparation requires an actual bare
+reference so it preserves the control entry. Failed preparation changes no
+instruction. Already lowered native child regions skip this scan through the
+existing last-complex-child bound, keeping deep nested assertion preparation
+linear in its prepared instruction count.
+
+The shared matching-direction proof computes forward Local or backward Future
+widths. Open and opposite-direction reads remain undefined. Stable imported Input
+ranges keep the complete-owner checks, including every named alias. Checked
+prefix/suffix differences retain dependent widths and original capture offsets;
+an overflowing proved consuming width is unavailable for every finite input.
+Every ordinary term and referenced input range is still compared before a result
+is exported. Forward and backward frames retain their own positions and existing
+positive commitment and negative rollback.
+
+One required unit clears its owned captures, compares through the existing shared
+reference comparator and writes exact source-relative ranges. Empty open targets
+retain empty ranges, and imports retain their original positions. Original source,
+names and shared indices pairs remain unchanged. This reuses the existing unit
+plan, width resolver and scoped checkpoints, with no new dependency, native
+recursion, repeated source or default quota. Variable consuming counts, unproved
+choices, changing enclosing-owner reads and Unicode modes remain pending.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

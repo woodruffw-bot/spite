@@ -123,7 +123,7 @@ fn opted_in_work_aborts_keep_last_index_and_bypass_handlers() {
 #[test]
 fn changing_owner_targets_variable_counts_choices_and_unicode_remain_pending() {
     for source in [
-        r"/(?<=a(?=(b)\1))b/.exec('abb')",
+        r"/(?<=a(?=(b{1,2})\1))b/.exec('abb')",
         r"/(a)(?<=a(?=((\1)b){1,2}))a/.exec('aabab')",
         r"/(a)(?<=a(?=(\1|b)))a/.exec('aa')",
         r"/(a)(?<=a(?=(\1)(?=\2)))a/.exec('aaa')",
