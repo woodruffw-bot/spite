@@ -7439,3 +7439,17 @@ test/built-ins/RegExp/unicode_restricted_incomplete_quantifier.js	-	-	-
 test/built-ins/RegExp/unicode_restricted_octal_escape.js	-	-	-
 test/built-ins/RegExp/unicode_restricted_quantifiable_assertion.js	-	-	-
 test/built-ins/RegExp/unicode_restricted_quantifier_without_atom.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/length.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/name.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/prop-desc.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/this-val-invalid-obj.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/this-val-non-obj.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/this-val-regexp-prototype.js	-	-	-
+test/built-ins/RegExp/prototype/unicode/this-val-regexp.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/length.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/name.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/prop-desc.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/this-val-invalid-obj.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/this-val-non-obj.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/this-val-regexp-prototype.js	-	-	-
+test/built-ins/RegExp/prototype/unicodeSets/this-val-regexp.js	-	-	-

@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14358 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14386 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -5111,6 +5111,33 @@ helpers, dependency allowances and opt-in quota policy remain unchanged.
 Stable and MSRV pass all 14,358 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+## Unicode RegExp accessor fixture review
+
+Fourteen unchanged complete upstream programs add 28 normal/strict positives
+for the unicode and unicodeSets accessors at the existing pin. They verify
+getter names and lengths, property attributes, absent setters, prototype
+undefined results, invalid object and primitive receiver TypeErrors, and original
+flag values on literals and constructors. The complete originals retain their
+metadata, assertions, authorship and BSD license notices.
+
+All 28 selected whole variants pass stable, MSRV and Node without failures or
+host limits. Git blob identities and manifest SHA-256 digests verify every byte.
+The broader eighteen-file native review keeps eight Unsupported variants in four
+Unicode exec programs for unproved surrogate, dot and property matching; none is
+shortened or counted as passing. Two cross-realm originals were read and excluded
+because the host does not implement createRealm. The pin, eleven helpers and
+parse/runtime-negative inventories remain unchanged.
+
+The active corpus has 7473 fixtures, eleven helpers, 7454 reviewed Script sources
+and 14386 variants: 12909 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 619 whole
+positive programs, separately from 337 grammar fixtures.
+
+
+Stable and MSRV pass all 14,386 unchanged pinned-corpus variants and the
+complete workspace target and documentation checks. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.

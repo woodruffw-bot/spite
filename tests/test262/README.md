@@ -1,11 +1,37 @@
 # Test262 regression fixtures
 
-These 7459 unmodified test fixtures and eleven harness files come from
+These 7473 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Unicode RegExp accessor fixture review
+
+Fourteen unchanged complete upstream programs add 28 normal/strict positives
+for the unicode and unicodeSets accessors at the existing pin. They verify
+getter names and lengths, property attributes, absent setters, prototype
+undefined results, invalid object and primitive receiver TypeErrors, and original
+flag values on literals and constructors. The complete originals retain their
+metadata, assertions, authorship and BSD license notices.
+
+All 28 selected whole variants pass stable, MSRV and Node without failures or
+host limits. Git blob identities and manifest SHA-256 digests verify every byte.
+The broader eighteen-file native review keeps eight Unsupported variants in four
+Unicode exec programs for unproved surrogate, dot and property matching; none is
+shortened or counted as passing. Two cross-realm originals were read and excluded
+because the host does not implement createRealm. The pin, eleven helpers and
+parse/runtime-negative inventories remain unchanged.
+
+The active corpus has 7473 fixtures, eleven helpers, 7454 reviewed Script sources
+and 14386 variants: 12909 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 619 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 14386-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Unicode RegExp validation and U+180E whitespace fixture review
 
