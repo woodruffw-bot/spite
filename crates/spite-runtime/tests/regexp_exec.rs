@@ -180,8 +180,8 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         ("(?:(?:((?:(?:.a*b*){2}){2}){2})|){2,3}", ""),
         ("(?:(?:((?:(?:[a]a+b+){2}){2}){2})|){2,3}", ""),
         ("(?:(?:((?:(?:ab+c+){2}){2}){2})|){2,3}", ""),
-        (r"\\u{1f600}", "u"),
-        (r"\\u{1f600}", "v"),
+        (r"\\u{D800}", "u"),
+        (r"\\u{D800}", "v"),
     ] {
         let mut realm = Realm::default();
         realm.eval(&format!("let r=new RegExp('{source}','{flags}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0;}}}};")).unwrap();

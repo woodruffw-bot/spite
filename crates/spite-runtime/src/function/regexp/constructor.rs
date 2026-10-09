@@ -251,16 +251,25 @@ impl Realm {
         let matcher = if let Some(matcher) = references {
             Some(RegExpMatcherBody::Backreferences(matcher))
         } else if unicode {
-            // The approved empty-body behavior normalizes an initial
-            // offset inside a surrogate pair. Nonempty nonsurrogate BMP bodies
-            // retain their separate case-sensitive u/v proof (22.2.7.2).
+            // Unicode literal plans prove atom and capture boundaries before
+            // flattening. Empty and scalar plans use the approved leading
+            // boundary for an initial offset inside a surrogate pair (22.2.7.2).
             self.object_work(span, |_, budget| {
                 budget.charge(capture_source.len())?;
                 budget.charge(capture_source.len())?;
                 budget.charge(capture_source.len())?;
                 let literal = if !flags.code_units().contains(&u16::from(b'i')) {
-                    RegExpLiteralMatcher::compile_bmp_unicode(&capture_source)
-                        .map(RegExpMatcherBody::Literal)
+                    if let Some(matcher) =
+                        RegExpLiteralMatcher::compile_bmp_unicode(&capture_source)
+                    {
+                        Some(RegExpMatcherBody::Literal(matcher))
+                    } else {
+                        budget.charge(capture_source.len())?;
+                        budget.charge(capture_source.len())?;
+                        budget.charge(capture_source.len())?;
+                        RegExpLiteralMatcher::compile_unicode_scalars(&capture_source)
+                            .map(RegExpMatcherBody::UnicodeScalars)
+                    }
                 } else {
                     None
                 };

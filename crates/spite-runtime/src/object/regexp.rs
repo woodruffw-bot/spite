@@ -16,6 +16,7 @@ pub(crate) enum RegExpMatcherBody {
     Backreferences(RegExpBackreferenceMatcher),
     Literal(RegExpLiteralMatcher),
     UnicodeEmpty(RegExpLiteralMatcher),
+    UnicodeScalars(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
     Character(RegExpCharacterMatcher),
     Sequence(RegExpSequenceMatcher),
@@ -42,9 +43,9 @@ impl RegExpMatcher {
     pub fn new(body: RegExpMatcherBody, enclosing_captures: usize) -> Self {
         let inner = match &body {
             RegExpMatcherBody::Backreferences(m) => m.capture_count(),
-            RegExpMatcherBody::Literal(m) | RegExpMatcherBody::UnicodeEmpty(m) => {
-                m.capture_ranges().len()
-            }
+            RegExpMatcherBody::Literal(m)
+            | RegExpMatcherBody::UnicodeEmpty(m)
+            | RegExpMatcherBody::UnicodeScalars(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Character(_) => 0,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -101,6 +102,9 @@ impl RegExpMatcher {
         let (range, branch) = match &self.body {
             RegExpMatcherBody::Backreferences(_) => unreachable!("fallible reference dispatch"),
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::UnicodeScalars(matcher) => {
+                (matcher.find_unicode_scalars(input, start, sticky)?, 0)
+            }
             RegExpMatcherBody::UnicodeEmpty(matcher) => {
                 (matcher.find_unicode_empty(input, start)?, 0)
             }
@@ -145,7 +149,9 @@ impl RegExpMatcher {
         match &self.body {
             // References charge actual operations through find_with_work.
             RegExpMatcherBody::Backreferences(_) => 0,
-            RegExpMatcherBody::Literal(_) | RegExpMatcherBody::UnicodeEmpty(_) => 1,
+            RegExpMatcherBody::Literal(_)
+            | RegExpMatcherBody::UnicodeEmpty(_)
+            | RegExpMatcherBody::UnicodeScalars(_) => 1,
             RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
             RegExpMatcherBody::Character(_) => 1,
             RegExpMatcherBody::Quantified(_) => 1,
@@ -163,6 +169,13 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        // A scalar Unicode search can move its initial position back one unit.
+        // Precharge that possible unit before executing an opted-in work quota.
+        let remaining = if matches!(self.body, RegExpMatcherBody::UnicodeScalars(_)) {
+            remaining.saturating_add(1)
+        } else {
+            remaining
+        };
         let full_suffix = match &self.body {
             RegExpMatcherBody::Quantified(_)
             | RegExpMatcherBody::QuantifiedContinuation(_)
@@ -209,9 +222,9 @@ impl RegExpMatch<'_> {
         let index = index - self.matcher.enclosing_captures;
         let fixed = match &self.matcher.body {
             RegExpMatcherBody::Backreferences(_) => unreachable!("dynamic reference captures"),
-            RegExpMatcherBody::Literal(matcher) | RegExpMatcherBody::UnicodeEmpty(matcher) => {
-                matcher.capture_ranges()
-            }
+            RegExpMatcherBody::Literal(matcher)
+            | RegExpMatcherBody::UnicodeEmpty(matcher)
+            | RegExpMatcherBody::UnicodeScalars(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Character(_) => return None,
             RegExpMatcherBody::Prefixed(matcher) => {

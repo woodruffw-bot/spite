@@ -5298,6 +5298,46 @@ Stable and MSRV pass all 14,446 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Case-sensitive u/v scalar literal concatenations now consume supplementary
+characters using raw source pairs, braced scalar escapes and directly adjacent
+fixed Unicode escapes. Atom decoding precedes flat capture compilation, preventing
+surrogates separated by groups or braced escape boundaries from joining. The
+approved Node/V8 initial-pair boundary exception now covers consuming matches
+and is documented alongside the empty case. Lone surrogate atoms and other
+unproved Unicode bodies remain Unsupported.
+
+Three core and seven runtime regressions cover scalar bounds, spelling and group
+boundaries, captures and named indices, consumers, original metadata, clones,
+ordered and abrupt coercions, strict lastIndex writes, deep groups, long zeros,
+collection, overlapping long searches and opted-in work aborts. Default work and
+heap quotas remain absent. Node agrees with 1408 core snapshot rows in each mode,
+220 runtime rows, seventeen complete Boolean programs, seven exact former complete
+programs and two ordered calls. Fifteen patterns agree over 3807120 exhaustive
+UTF-16 range comparisons in both modes. Every one of 1112064 Unicode scalars
+agrees for braced and fixed escape spellings, captures and initial/end offsets in
+both u/v modes (4448256 scalar-spelling-mode combinations).
+
+All 492 core tests, 149 related runtime targets and denied-warning prototype
+Clippy pass; 372 existing snapshots remain byte-identical. Ten simple and two
+ordered rejection controls retain their original complete programs as positive
+regressions and now use unproved lone-surrogate cases. All 314 prior core
+rejection candidates and 886 runtime gap programs, including ten new probes,
+remain Unsupported. Eight ordered and ten direct-eval probes preserve conversion
+order and state. Whole seventeen-file and 115-file reviews are
+10/24 and
+192/38 Passed/Unsupported,
+with no failures or host limits.
+
+The corpus remains 7503 fixtures, 7484 reviewed Script sources and 14446 variants,
+including 12913 harness positives, 1525 parse negatives and 621 RegExp builtin
+positive source files. The existing pin, eleven helpers and dependency allowances
+remain unchanged.
+
+Stable and MSRV pass all 14,446 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -2456,10 +2456,17 @@ the matcher starts at the complete Unicode character. GetStringIndex maps its
 empty-match end to 0, but the published algorithm retains 1 as the whole-match
 start and result `index`. This violates GetMatchString's requirement that start
 not exceed end. The approved resolution follows Node/V8: both whole-match bounds,
-result `index`, participating captures and updated `lastIndex` are 0. The exception
-is limited to an empty Unicode match whose initial offset is inside a surrogate
-pair; it grants no broader departure from the specification. Nonempty BMP literals
-cannot match inside a pair and retain their separate proof.
+result `index`, participating captures and updated `lastIndex` are 0.
+
+The same approved leading-start rule applies to consuming Unicode matches.
+With `/(\u{1F600})/duy`, input `"😀"` and `lastIndex = 1`, the published algorithm
+retains whole-match start 1 and end 2, returning the trailing surrogate as `m[0]`,
+while the participating capture maps to the complete character at 0..2. Following
+Node/V8, the whole match and capture both contain the emoji, `index` is 0, both
+indices are 0..2 and `lastIndex` is 2. This also applies in `v` mode and searching
+matches. The exception is limited to an initial UTF-16 offset inside a surrogate
+pair and grants no broader specification departure. Nonempty BMP literals cannot
+match inside a pair and retain their separate proof.
 
 The discrepancy was verified against the official
 [`es2026` source tag](https://github.com/tc39/ecma262/blob/f7db29f16c5175a93f0d6e8fb27a8e3cb9b97a9e/spec.html).
@@ -2540,6 +2547,24 @@ leading-zero spellings require no additional decoder storage. Matching, capture
 storage, construction accounting, dependency allowances and opt-in quota policy
 are unchanged. Supplementary membership, inversion, complemented escapes,
 ignore-case matching, nested classes and UnicodeSets operations remain unproved.
+
+
+Case-sensitive u/v scalar literal concatenations now include supplementary
+characters (22.2.1, 22.2.2.7, 22.2.7.2). Each atom is decoded before group
+flattening: a raw source pair, one braced scalar escape, or directly adjacent
+fixed lead/trail Unicode escapes denotes one code point. Escaped surrogates
+separated by groups and braced surrogate atoms cannot become an emoji through
+flattening. Lone surrogate atoms remain unproved.
+
+All admitted atoms encode either as a nonsurrogate BMP unit or a complete pair.
+Consequently each occurrence and capture endpoint is a code-point boundary.
+Existing immutable KMP programs can search UTF-16 directly in linear time without
+code-point arrays or native recursion. The Unicode dispatch uses the approved
+initial leading boundary and retains ordinary result construction, named metadata,
+coercion order and strict lastIndex writes. Construction charges each compilation
+pass; opted-in search accounting includes a possible one-unit rewind. Default
+work and heap quotas remain absent. Supplementary character classes, quantifiers,
+assertions, backreferences and nonempty ignore-case matching remain unproved.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
