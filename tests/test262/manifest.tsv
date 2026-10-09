@@ -7513,3 +7513,4 @@ parse-syntax-error	8545aa538f74b17018999ce29f3e9d763475bea8c41a9e58841d4e10d2487
 parse-syntax-error	986930012742c2b10cdf78af2228649d63483c7393a55fabbc2c468e09d40425	test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-26.js
 parse-syntax-error	de379392fa8184b5cf251002b3b51b43173f6cfdb413e892b14abe08b9b05894	test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-27.js
 parse-syntax-error	428317ef852bc4aa6406da640e8e573978bda8d634b7e5a63f30e1f50f1ced12	test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-28.js
+script-pass	0854b86cb7dda47ed9ad2102c62304d1b62a7da9c30da9c5d04420f70ab868fb	test/language/literals/regexp/u-unicode-esc.js
