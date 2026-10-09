@@ -7362,3 +7362,12 @@ test/built-ins/RegExp/S15.10.1_A1_T6.js	-	-	-
 test/built-ins/RegExp/S15.10.1_A1_T7.js	-	-	-
 test/built-ins/RegExp/S15.10.1_A1_T8.js	-	-	-
 test/built-ins/RegExp/S15.10.1_A1_T9.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A1_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A1_T2.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A1_T3.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A1_T4.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A1_T5.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A2_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A2_T2.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A3_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.3.1_A3_T2.js	-	-	-
