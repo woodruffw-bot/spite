@@ -7426,3 +7426,16 @@ test/built-ins/RegExp/S15.10.7_A3_T2.js	-	-	-
 test/built-ins/RegExp/call_with_regexp_match_falsy.js	-	-	-
 test/built-ins/RegExp/call_with_regexp_not_same_constructor.js	-	-	-
 test/built-ins/RegExp/nullable-quantifier.js	-	-	-
+test/built-ins/RegExp/character-class-escape-non-whitespace-u180e.js	-	-	-
+test/built-ins/RegExp/u180e.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_brackets.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_character_class_escape.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_identity_escape.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_identity_escape_alpha.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_identity_escape_c.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_identity_escape_u.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_identity_escape_x.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_incomplete_quantifier.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_octal_escape.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_quantifiable_assertion.js	-	-	-
+test/built-ins/RegExp/unicode_restricted_quantifier_without_atom.js	-	-	-

@@ -1,11 +1,37 @@
 # Test262 regression fixtures
 
-These 7446 unmodified test fixtures and eleven harness files come from
+These 7459 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Unicode RegExp validation and U+180E whitespace fixture review
+
+Thirteen unchanged whole upstream originals add 26 normal/strict harness-positive
+variants at the existing pin. Eleven programs verify native SyntaxError rejection
+of forbidden Unicode identity/control escapes, malformed hex/Unicode escapes,
+octal escapes, stray brackets, incomplete quantifiers and quantified assertions.
+Two complete programs verify U+180E is not whitespace through ordinary RegExp
+replacement. Original metadata, assertions, authorship and BSD licensing remain
+unchanged; invalid-pattern assertions require native SyntaxError, not Unsupported.
+
+All 26 whole selected variants pass stable, MSRV and Node without failures or host
+limits. Git blob identities and manifest SHA-256 digests verify every original
+byte. The broader sixteen-file review retains six Unsupported variants in three
+whole originals for Unicode classes and case folding, including the class portion
+of the identity-escape program. None is shortened or counted as passing. The pin,
+eleven helpers and parse/runtime-negative inventories remain unchanged.
+
+The active corpus has 7459 fixtures, eleven helpers, 7440 reviewed Script sources
+and 14358 variants: 12881 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 625 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 14358-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Modern RegExp constructor identity and nullable quantifier fixture review
 
