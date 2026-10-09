@@ -7281,3 +7281,16 @@ script-pass	fe2f52e012136885b009a25477a23179dff4785212039f863313ba5df56ba618	tes
 script-pass	19abaffecabc3b9d06f3ab52b61e0b21baeb4ace1e25af7ea5a07ad42f36024c	test/built-ins/RegExp/S15.10.2.3_A1_T7.js
 script-pass	fc8024a2c37f59e25b3c9cee04789276535041634d323c7ac08ec8fe9f8e3ca8	test/built-ins/RegExp/S15.10.2.3_A1_T8.js
 script-pass	eb56ba0bd890d647fb43a427c9aaa2187ebd6d88daba6c7e16353f889dd1c952	test/built-ins/RegExp/S15.10.2.3_A1_T9.js
+script-pass	a73ca4632358a2850e0297ab2215da6cec6596f90defaaa07b02cac9d1c702b8	test/built-ins/RegExp/S15.10.2.10_A1.1_T1.js
+script-pass	6a1984580fe9fdccd96e324e093831ce71c64657c5da678f9bc336fde58e7305	test/built-ins/RegExp/S15.10.2.10_A1.2_T1.js
+script-pass	e252cfe1b1337345ddbc34e4ece7700393d60d8a316f993ef4d78b40c683b62b	test/built-ins/RegExp/S15.10.2.10_A1.3_T1.js
+script-pass	efaa8191fad439811a8e5cbf4b1dcdaa422c2eb4cbb010f23ccbc9ca80303c5b	test/built-ins/RegExp/S15.10.2.10_A1.4_T1.js
+script-pass	007a4b140940ec16dff7d2128f489648a423a087738bb02346d8e0941885582b	test/built-ins/RegExp/S15.10.2.10_A1.5_T1.js
+script-pass	c44eb109d0612642c6bcfc020c2c8e0d07721c61a7a61882f1f58d07e6940ec0	test/built-ins/RegExp/S15.10.2.10_A2.1_T1.js
+script-pass	9d3c40cbddaa74a418218370b9570263a321758a1856d839e88084d5aeb8160f	test/built-ins/RegExp/S15.10.2.10_A2.1_T2.js
+script-pass	01e0a51bce2dc692d07fc5bd9f0a8ce2143121a540945c0741096ca76a098257	test/built-ins/RegExp/S15.10.2.10_A3.1_T1.js
+script-pass	489d46e70d242f3aa4f33af09e1a779f93f0084dc61ac7bcb0e1355d70d2ab96	test/built-ins/RegExp/S15.10.2.10_A3.1_T2.js
+script-pass	1c4789c0788de0e215ebbc779c4d134929fd6519930c33d915e02f1243bfd7d1	test/built-ins/RegExp/S15.10.2.10_A4.1_T1.js
+script-pass	304bf352e5a42ad6ec345206ccd48cf233605ab3868abf4f2ab319066201469b	test/built-ins/RegExp/S15.10.2.10_A4.1_T2.js
+script-pass	c46051c170fdee33031d49061d0b2c18af50bf5985284941aded82e50779b389	test/built-ins/RegExp/S15.10.2.10_A4.1_T3.js
+script-pass	c192018645591036f83dfc143c1785b32febd3bd14abb7e8acb532c53c76759c	test/built-ins/RegExp/S15.10.2.10_A5.1_T1.js
