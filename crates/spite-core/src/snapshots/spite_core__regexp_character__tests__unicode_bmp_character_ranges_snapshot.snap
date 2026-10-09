@@ -1,0 +1,1534 @@
+---
+source: crates/spite-core/src/regexp_character.rs
+expression: rows
+---
+"[]" input="" start=0 sticky=false range=None
+"[]" input="" start=0 sticky=true range=None
+"[]" input="" start=1 sticky=false range=None
+"[]" input="" start=1 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[]" input="09A_z" start=0 sticky=false range=None
+"[]" input="09A_z" start=0 sticky=true range=None
+"[]" input="09A_z" start=1 sticky=false range=None
+"[]" input="09A_z" start=1 sticky=true range=None
+"[]" input="09A_z" start=2 sticky=false range=None
+"[]" input="09A_z" start=2 sticky=true range=None
+"[]" input="09A_z" start=3 sticky=false range=None
+"[]" input="09A_z" start=3 sticky=true range=None
+"[]" input="09A_z" start=4 sticky=false range=None
+"[]" input="09A_z" start=4 sticky=true range=None
+"[]" input="09A_z" start=5 sticky=false range=None
+"[]" input="09A_z" start=5 sticky=true range=None
+"[]" input="09A_z" start=6 sticky=false range=None
+"[]" input="09A_z" start=6 sticky=true range=None
+"[a]" input="" start=0 sticky=false range=None
+"[a]" input="" start=0 sticky=true range=None
+"[a]" input="" start=1 sticky=false range=None
+"[a]" input="" start=1 sticky=true range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([0, 1])
+"[a]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=Some([0, 1])
+"[a]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[a]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[a]" input="\ud800\udc00a" start=0 sticky=false range=Some([2, 3])
+"[a]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[a]" input="\ud800\udc00a" start=1 sticky=false range=Some([2, 3])
+"[a]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[a]" input="\ud800\udc00a" start=2 sticky=false range=Some([2, 3])
+"[a]" input="\ud800\udc00a" start=2 sticky=true range=Some([2, 3])
+"[a]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[a]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[a]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[a]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[a]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[a]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[a]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[a]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[a]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[a]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[a]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[a]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[a]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[a]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[a]" input="09A_z" start=0 sticky=false range=None
+"[a]" input="09A_z" start=0 sticky=true range=None
+"[a]" input="09A_z" start=1 sticky=false range=None
+"[a]" input="09A_z" start=1 sticky=true range=None
+"[a]" input="09A_z" start=2 sticky=false range=None
+"[a]" input="09A_z" start=2 sticky=true range=None
+"[a]" input="09A_z" start=3 sticky=false range=None
+"[a]" input="09A_z" start=3 sticky=true range=None
+"[a]" input="09A_z" start=4 sticky=false range=None
+"[a]" input="09A_z" start=4 sticky=true range=None
+"[a]" input="09A_z" start=5 sticky=false range=None
+"[a]" input="09A_z" start=5 sticky=true range=None
+"[a]" input="09A_z" start=6 sticky=false range=None
+"[a]" input="09A_z" start=6 sticky=true range=None
+"[a-b]" input="" start=0 sticky=false range=None
+"[a-b]" input="" start=0 sticky=true range=None
+"[a-b]" input="" start=1 sticky=false range=None
+"[a-b]" input="" start=1 sticky=true range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([0, 1])
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=Some([0, 1])
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([1, 2])
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=Some([1, 2])
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[a-b]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[a-b]" input="\ud800\udc00a" start=0 sticky=false range=Some([2, 3])
+"[a-b]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[a-b]" input="\ud800\udc00a" start=1 sticky=false range=Some([2, 3])
+"[a-b]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[a-b]" input="\ud800\udc00a" start=2 sticky=false range=Some([2, 3])
+"[a-b]" input="\ud800\udc00a" start=2 sticky=true range=Some([2, 3])
+"[a-b]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[a-b]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[a-b]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[a-b]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[a-b]" input="\udc00\ud800b" start=0 sticky=false range=Some([2, 3])
+"[a-b]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[a-b]" input="\udc00\ud800b" start=1 sticky=false range=Some([2, 3])
+"[a-b]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[a-b]" input="\udc00\ud800b" start=2 sticky=false range=Some([2, 3])
+"[a-b]" input="\udc00\ud800b" start=2 sticky=true range=Some([2, 3])
+"[a-b]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[a-b]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[a-b]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[a-b]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[a-b]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[a-b]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[a-b]" input="09A_z" start=0 sticky=false range=None
+"[a-b]" input="09A_z" start=0 sticky=true range=None
+"[a-b]" input="09A_z" start=1 sticky=false range=None
+"[a-b]" input="09A_z" start=1 sticky=true range=None
+"[a-b]" input="09A_z" start=2 sticky=false range=None
+"[a-b]" input="09A_z" start=2 sticky=true range=None
+"[a-b]" input="09A_z" start=3 sticky=false range=None
+"[a-b]" input="09A_z" start=3 sticky=true range=None
+"[a-b]" input="09A_z" start=4 sticky=false range=None
+"[a-b]" input="09A_z" start=4 sticky=true range=None
+"[a-b]" input="09A_z" start=5 sticky=false range=None
+"[a-b]" input="09A_z" start=5 sticky=true range=None
+"[a-b]" input="09A_z" start=6 sticky=false range=None
+"[a-b]" input="09A_z" start=6 sticky=true range=None
+"[\u00e9]" input="" start=0 sticky=false range=None
+"[\u00e9]" input="" start=0 sticky=true range=None
+"[\u00e9]" input="" start=1 sticky=false range=None
+"[\u00e9]" input="" start=1 sticky=true range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([2, 3])
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([2, 3])
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=Some([2, 3])
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=Some([2, 3])
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u00e9]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u00e9]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u00e9]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u00e9]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u00e9]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u00e9]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u00e9]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u00e9]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u00e9]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u00e9]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u00e9]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u00e9]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u00e9]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u00e9]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u00e9]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u00e9]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u00e9]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u00e9]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u00e9]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u00e9]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u00e9]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u00e9]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u00e9]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u00e9]" input="09A_z" start=0 sticky=false range=None
+"[\u00e9]" input="09A_z" start=0 sticky=true range=None
+"[\u00e9]" input="09A_z" start=1 sticky=false range=None
+"[\u00e9]" input="09A_z" start=1 sticky=true range=None
+"[\u00e9]" input="09A_z" start=2 sticky=false range=None
+"[\u00e9]" input="09A_z" start=2 sticky=true range=None
+"[\u00e9]" input="09A_z" start=3 sticky=false range=None
+"[\u00e9]" input="09A_z" start=3 sticky=true range=None
+"[\u00e9]" input="09A_z" start=4 sticky=false range=None
+"[\u00e9]" input="09A_z" start=4 sticky=true range=None
+"[\u00e9]" input="09A_z" start=5 sticky=false range=None
+"[\u00e9]" input="09A_z" start=5 sticky=true range=None
+"[\u00e9]" input="09A_z" start=6 sticky=false range=None
+"[\u00e9]" input="09A_z" start=6 sticky=true range=None
+"[\u00e9\u03c3]" input="" start=0 sticky=false range=None
+"[\u00e9\u03c3]" input="" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="" start=1 sticky=false range=None
+"[\u00e9\u03c3]" input="" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([2, 3])
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([2, 3])
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=Some([2, 3])
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=Some([2, 3])
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=Some([3, 4])
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=Some([3, 4])
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u00e9\u03c3]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u00e9\u03c3]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u00e9\u03c3]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u00e9\u03c3]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=0 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=0 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=1 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=1 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=2 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=2 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=3 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=3 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=4 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=4 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=5 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=5 sticky=true range=None
+"[\u00e9\u03c3]" input="09A_z" start=6 sticky=false range=None
+"[\u00e9\u03c3]" input="09A_z" start=6 sticky=true range=None
+"[\u212a]" input="" start=0 sticky=false range=None
+"[\u212a]" input="" start=0 sticky=true range=None
+"[\u212a]" input="" start=1 sticky=false range=None
+"[\u212a]" input="" start=1 sticky=true range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([4, 5])
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([4, 5])
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=Some([4, 5])
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=Some([4, 5])
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=Some([4, 5])
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=Some([4, 5])
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u212a]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u212a]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u212a]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u212a]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u212a]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u212a]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u212a]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u212a]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u212a]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u212a]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u212a]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u212a]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u212a]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u212a]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u212a]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u212a]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u212a]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u212a]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u212a]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u212a]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u212a]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u212a]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u212a]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u212a]" input="09A_z" start=0 sticky=false range=None
+"[\u212a]" input="09A_z" start=0 sticky=true range=None
+"[\u212a]" input="09A_z" start=1 sticky=false range=None
+"[\u212a]" input="09A_z" start=1 sticky=true range=None
+"[\u212a]" input="09A_z" start=2 sticky=false range=None
+"[\u212a]" input="09A_z" start=2 sticky=true range=None
+"[\u212a]" input="09A_z" start=3 sticky=false range=None
+"[\u212a]" input="09A_z" start=3 sticky=true range=None
+"[\u212a]" input="09A_z" start=4 sticky=false range=None
+"[\u212a]" input="09A_z" start=4 sticky=true range=None
+"[\u212a]" input="09A_z" start=5 sticky=false range=None
+"[\u212a]" input="09A_z" start=5 sticky=true range=None
+"[\u212a]" input="09A_z" start=6 sticky=false range=None
+"[\u212a]" input="09A_z" start=6 sticky=true range=None
+"[[]" input="" start=0 sticky=false range=None
+"[[]" input="" start=0 sticky=true range=None
+"[[]" input="" start=1 sticky=false range=None
+"[[]" input="" start=1 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[[]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[[]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[[]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[[]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[[]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[[]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[[]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[[]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[[]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[[]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[[]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[[]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[[]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[[]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[[]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[[]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[[]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[[]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[[]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[[]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[[]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[[]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[[]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[[]" input="09A_z" start=0 sticky=false range=None
+"[[]" input="09A_z" start=0 sticky=true range=None
+"[[]" input="09A_z" start=1 sticky=false range=None
+"[[]" input="09A_z" start=1 sticky=true range=None
+"[[]" input="09A_z" start=2 sticky=false range=None
+"[[]" input="09A_z" start=2 sticky=true range=None
+"[[]" input="09A_z" start=3 sticky=false range=None
+"[[]" input="09A_z" start=3 sticky=true range=None
+"[[]" input="09A_z" start=4 sticky=false range=None
+"[[]" input="09A_z" start=4 sticky=true range=None
+"[[]" input="09A_z" start=5 sticky=false range=None
+"[[]" input="09A_z" start=5 sticky=true range=None
+"[[]" input="09A_z" start=6 sticky=false range=None
+"[[]" input="09A_z" start=6 sticky=true range=None
+"[\u005cb]" input="" start=0 sticky=false range=None
+"[\u005cb]" input="" start=0 sticky=true range=None
+"[\u005cb]" input="" start=1 sticky=false range=None
+"[\u005cb]" input="" start=1 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005cb]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005cb]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u005cb]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005cb]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u005cb]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005cb]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u005cb]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u005cb]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005cb]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005cb]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005cb]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005cb]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u005cb]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005cb]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u005cb]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005cb]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u005cb]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u005cb]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005cb]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005cb]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005cb]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=Some([3, 4])
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=Some([3, 4])
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=Some([3, 4])
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=Some([3, 4])
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=Some([3, 4])
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005cb]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005cb]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005cb]" input="09A_z" start=0 sticky=false range=None
+"[\u005cb]" input="09A_z" start=0 sticky=true range=None
+"[\u005cb]" input="09A_z" start=1 sticky=false range=None
+"[\u005cb]" input="09A_z" start=1 sticky=true range=None
+"[\u005cb]" input="09A_z" start=2 sticky=false range=None
+"[\u005cb]" input="09A_z" start=2 sticky=true range=None
+"[\u005cb]" input="09A_z" start=3 sticky=false range=None
+"[\u005cb]" input="09A_z" start=3 sticky=true range=None
+"[\u005cb]" input="09A_z" start=4 sticky=false range=None
+"[\u005cb]" input="09A_z" start=4 sticky=true range=None
+"[\u005cb]" input="09A_z" start=5 sticky=false range=None
+"[\u005cb]" input="09A_z" start=5 sticky=true range=None
+"[\u005cb]" input="09A_z" start=6 sticky=false range=None
+"[\u005cb]" input="09A_z" start=6 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="" start=0 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="" start=0 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="" start=1 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="" start=1 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([0, 1])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=Some([0, 1])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([1, 2])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=Some([1, 2])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=0 sticky=false range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=1 sticky=false range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=2 sticky=false range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=2 sticky=true range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=0 sticky=false range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=1 sticky=false range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=2 sticky=false range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=2 sticky=true range=Some([2, 3])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=Some([0, 1])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=Some([0, 1])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=Some([1, 2])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=Some([1, 2])
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=0 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=0 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=1 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=1 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=2 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=2 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=3 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=3 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=4 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=4 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=5 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=5 sticky=true range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=6 sticky=false range=None
+"[\u005ccA\u005cx61\u005cu0062\u005c0]" input="09A_z" start=6 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="" start=0 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="" start=0 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="" start=1 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="" start=1 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=Some([0, 1])
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=Some([0, 1])
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=Some([1, 2])
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=Some([1, 2])
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=Some([2, 3])
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=Some([2, 3])
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=0 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=0 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=1 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=1 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=2 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=2 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=3 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=3 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=4 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=4 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=5 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=5 sticky=true range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=6 sticky=false range=None
+"[\u005cu0000-\u005cu0002]" input="09A_z" start=6 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="" start=0 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="" start=0 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="" start=1 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=Some([0, 1])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=Some([0, 1])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=Some([3, 4])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=Some([3, 4])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=Some([3, 4])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=Some([3, 4])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=Some([4, 5])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=Some([4, 5])
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=0 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=0 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=1 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=1 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=2 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=2 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=3 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=3 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=4 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=4 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=5 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=5 sticky=true range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=6 sticky=false range=None
+"[\u005cuD7FF\u005cuE000\u005cuFFFF]" input="09A_z" start=6 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="" start=0 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="" start=1 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=Some([9, 10])
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=Some([3, 4])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=Some([3, 4])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=Some([3, 4])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=Some([3, 4])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=Some([3, 4])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=Some([4, 5])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=Some([4, 5])
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=0 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=0 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=1 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=1 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=2 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=2 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=3 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=3 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=4 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=4 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=5 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=5 sticky=true range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=6 sticky=false range=None
+"[\u005cuE000-\u005cuFFFF]" input="09A_z" start=6 sticky=true range=None
+"[\u005cd]" input="" start=0 sticky=false range=None
+"[\u005cd]" input="" start=0 sticky=true range=None
+"[\u005cd]" input="" start=1 sticky=false range=None
+"[\u005cd]" input="" start=1 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005cd]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005cd]" input="\ud800\udc00a" start=0 sticky=false range=None
+"[\u005cd]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005cd]" input="\ud800\udc00a" start=1 sticky=false range=None
+"[\u005cd]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005cd]" input="\ud800\udc00a" start=2 sticky=false range=None
+"[\u005cd]" input="\ud800\udc00a" start=2 sticky=true range=None
+"[\u005cd]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005cd]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005cd]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005cd]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005cd]" input="\udc00\ud800b" start=0 sticky=false range=None
+"[\u005cd]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005cd]" input="\udc00\ud800b" start=1 sticky=false range=None
+"[\u005cd]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005cd]" input="\udc00\ud800b" start=2 sticky=false range=None
+"[\u005cd]" input="\udc00\ud800b" start=2 sticky=true range=None
+"[\u005cd]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005cd]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005cd]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005cd]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005cd]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005cd]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005cd]" input="09A_z" start=0 sticky=false range=Some([0, 1])
+"[\u005cd]" input="09A_z" start=0 sticky=true range=Some([0, 1])
+"[\u005cd]" input="09A_z" start=1 sticky=false range=Some([1, 2])
+"[\u005cd]" input="09A_z" start=1 sticky=true range=Some([1, 2])
+"[\u005cd]" input="09A_z" start=2 sticky=false range=None
+"[\u005cd]" input="09A_z" start=2 sticky=true range=None
+"[\u005cd]" input="09A_z" start=3 sticky=false range=None
+"[\u005cd]" input="09A_z" start=3 sticky=true range=None
+"[\u005cd]" input="09A_z" start=4 sticky=false range=None
+"[\u005cd]" input="09A_z" start=4 sticky=true range=None
+"[\u005cd]" input="09A_z" start=5 sticky=false range=None
+"[\u005cd]" input="09A_z" start=5 sticky=true range=None
+"[\u005cd]" input="09A_z" start=6 sticky=false range=None
+"[\u005cd]" input="09A_z" start=6 sticky=true range=None
+"[\u005cw\u005cs]" input="" start=0 sticky=false range=None
+"[\u005cw\u005cs]" input="" start=0 sticky=true range=None
+"[\u005cw\u005cs]" input="" start=1 sticky=false range=None
+"[\u005cw\u005cs]" input="" start=1 sticky=true range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([0, 1])
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=Some([0, 1])
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([1, 2])
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=Some([1, 2])
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"[\u005cw\u005cs]" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=0 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=0 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=1 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=1 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=2 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=2 sticky=true range=Some([2, 3])
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=3 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=3 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=4 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud800\udc00a" start=4 sticky=true range=None
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=0 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=0 sticky=true range=None
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=1 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=1 sticky=true range=None
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=2 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=2 sticky=true range=Some([2, 3])
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=3 sticky=false range=None
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=3 sticky=true range=None
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=4 sticky=false range=None
+"[\u005cw\u005cs]" input="\udc00\ud800b" start=4 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=Some([4, 5])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=Some([4, 5])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=Some([4, 5])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=Some([4, 5])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=Some([4, 5])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=Some([4, 5])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=Some([5, 6])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=Some([5, 6])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=Some([6, 7])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=Some([6, 7])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=Some([7, 8])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=Some([7, 8])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=Some([9, 10])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=Some([9, 10])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=Some([9, 10])
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"[\u005cw\u005cs]" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"[\u005cw\u005cs]" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"[\u005cw\u005cs]" input="09A_z" start=0 sticky=false range=Some([0, 1])
+"[\u005cw\u005cs]" input="09A_z" start=0 sticky=true range=Some([0, 1])
+"[\u005cw\u005cs]" input="09A_z" start=1 sticky=false range=Some([1, 2])
+"[\u005cw\u005cs]" input="09A_z" start=1 sticky=true range=Some([1, 2])
+"[\u005cw\u005cs]" input="09A_z" start=2 sticky=false range=Some([2, 3])
+"[\u005cw\u005cs]" input="09A_z" start=2 sticky=true range=Some([2, 3])
+"[\u005cw\u005cs]" input="09A_z" start=3 sticky=false range=Some([3, 4])
+"[\u005cw\u005cs]" input="09A_z" start=3 sticky=true range=Some([3, 4])
+"[\u005cw\u005cs]" input="09A_z" start=4 sticky=false range=Some([4, 5])
+"[\u005cw\u005cs]" input="09A_z" start=4 sticky=true range=Some([4, 5])
+"[\u005cw\u005cs]" input="09A_z" start=5 sticky=false range=None
+"[\u005cw\u005cs]" input="09A_z" start=5 sticky=true range=None
+"[\u005cw\u005cs]" input="09A_z" start=6 sticky=false range=None
+"[\u005cw\u005cs]" input="09A_z" start=6 sticky=true range=None
+"\u005cd" input="" start=0 sticky=false range=None
+"\u005cd" input="" start=0 sticky=true range=None
+"\u005cd" input="" start=1 sticky=false range=None
+"\u005cd" input="" start=1 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"\u005cd" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"\u005cd" input="\ud800\udc00a" start=0 sticky=false range=None
+"\u005cd" input="\ud800\udc00a" start=0 sticky=true range=None
+"\u005cd" input="\ud800\udc00a" start=1 sticky=false range=None
+"\u005cd" input="\ud800\udc00a" start=1 sticky=true range=None
+"\u005cd" input="\ud800\udc00a" start=2 sticky=false range=None
+"\u005cd" input="\ud800\udc00a" start=2 sticky=true range=None
+"\u005cd" input="\ud800\udc00a" start=3 sticky=false range=None
+"\u005cd" input="\ud800\udc00a" start=3 sticky=true range=None
+"\u005cd" input="\ud800\udc00a" start=4 sticky=false range=None
+"\u005cd" input="\ud800\udc00a" start=4 sticky=true range=None
+"\u005cd" input="\udc00\ud800b" start=0 sticky=false range=None
+"\u005cd" input="\udc00\ud800b" start=0 sticky=true range=None
+"\u005cd" input="\udc00\ud800b" start=1 sticky=false range=None
+"\u005cd" input="\udc00\ud800b" start=1 sticky=true range=None
+"\u005cd" input="\udc00\ud800b" start=2 sticky=false range=None
+"\u005cd" input="\udc00\ud800b" start=2 sticky=true range=None
+"\u005cd" input="\udc00\ud800b" start=3 sticky=false range=None
+"\u005cd" input="\udc00\ud800b" start=3 sticky=true range=None
+"\u005cd" input="\udc00\ud800b" start=4 sticky=false range=None
+"\u005cd" input="\udc00\ud800b" start=4 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"\u005cd" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"\u005cd" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"\u005cd" input="09A_z" start=0 sticky=false range=Some([0, 1])
+"\u005cd" input="09A_z" start=0 sticky=true range=Some([0, 1])
+"\u005cd" input="09A_z" start=1 sticky=false range=Some([1, 2])
+"\u005cd" input="09A_z" start=1 sticky=true range=Some([1, 2])
+"\u005cd" input="09A_z" start=2 sticky=false range=None
+"\u005cd" input="09A_z" start=2 sticky=true range=None
+"\u005cd" input="09A_z" start=3 sticky=false range=None
+"\u005cd" input="09A_z" start=3 sticky=true range=None
+"\u005cd" input="09A_z" start=4 sticky=false range=None
+"\u005cd" input="09A_z" start=4 sticky=true range=None
+"\u005cd" input="09A_z" start=5 sticky=false range=None
+"\u005cd" input="09A_z" start=5 sticky=true range=None
+"\u005cd" input="09A_z" start=6 sticky=false range=None
+"\u005cd" input="09A_z" start=6 sticky=true range=None
+"\u005cw" input="" start=0 sticky=false range=None
+"\u005cw" input="" start=0 sticky=true range=None
+"\u005cw" input="" start=1 sticky=false range=None
+"\u005cw" input="" start=1 sticky=true range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=Some([0, 1])
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=Some([0, 1])
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=Some([1, 2])
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=Some([1, 2])
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"\u005cw" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"\u005cw" input="\ud800\udc00a" start=0 sticky=false range=Some([2, 3])
+"\u005cw" input="\ud800\udc00a" start=0 sticky=true range=None
+"\u005cw" input="\ud800\udc00a" start=1 sticky=false range=Some([2, 3])
+"\u005cw" input="\ud800\udc00a" start=1 sticky=true range=None
+"\u005cw" input="\ud800\udc00a" start=2 sticky=false range=Some([2, 3])
+"\u005cw" input="\ud800\udc00a" start=2 sticky=true range=Some([2, 3])
+"\u005cw" input="\ud800\udc00a" start=3 sticky=false range=None
+"\u005cw" input="\ud800\udc00a" start=3 sticky=true range=None
+"\u005cw" input="\ud800\udc00a" start=4 sticky=false range=None
+"\u005cw" input="\ud800\udc00a" start=4 sticky=true range=None
+"\u005cw" input="\udc00\ud800b" start=0 sticky=false range=Some([2, 3])
+"\u005cw" input="\udc00\ud800b" start=0 sticky=true range=None
+"\u005cw" input="\udc00\ud800b" start=1 sticky=false range=Some([2, 3])
+"\u005cw" input="\udc00\ud800b" start=1 sticky=true range=None
+"\u005cw" input="\udc00\ud800b" start=2 sticky=false range=Some([2, 3])
+"\u005cw" input="\udc00\ud800b" start=2 sticky=true range=Some([2, 3])
+"\u005cw" input="\udc00\ud800b" start=3 sticky=false range=None
+"\u005cw" input="\udc00\ud800b" start=3 sticky=true range=None
+"\u005cw" input="\udc00\ud800b" start=4 sticky=false range=None
+"\u005cw" input="\udc00\ud800b" start=4 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"\u005cw" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"\u005cw" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"\u005cw" input="09A_z" start=0 sticky=false range=Some([0, 1])
+"\u005cw" input="09A_z" start=0 sticky=true range=Some([0, 1])
+"\u005cw" input="09A_z" start=1 sticky=false range=Some([1, 2])
+"\u005cw" input="09A_z" start=1 sticky=true range=Some([1, 2])
+"\u005cw" input="09A_z" start=2 sticky=false range=Some([2, 3])
+"\u005cw" input="09A_z" start=2 sticky=true range=Some([2, 3])
+"\u005cw" input="09A_z" start=3 sticky=false range=Some([3, 4])
+"\u005cw" input="09A_z" start=3 sticky=true range=Some([3, 4])
+"\u005cw" input="09A_z" start=4 sticky=false range=Some([4, 5])
+"\u005cw" input="09A_z" start=4 sticky=true range=Some([4, 5])
+"\u005cw" input="09A_z" start=5 sticky=false range=None
+"\u005cw" input="09A_z" start=5 sticky=true range=None
+"\u005cw" input="09A_z" start=6 sticky=false range=None
+"\u005cw" input="09A_z" start=6 sticky=true range=None
+"\u005cs" input="" start=0 sticky=false range=None
+"\u005cs" input="" start=0 sticky=true range=None
+"\u005cs" input="" start=1 sticky=false range=None
+"\u005cs" input="" start=1 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=0 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=0 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=1 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=1 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=2 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=2 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=3 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=3 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=4 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=4 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=5 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=5 sticky=true range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=6 sticky=false range=None
+"\u005cs" input="ab\u00e9\u03c3\u212a" start=6 sticky=true range=None
+"\u005cs" input="\ud800\udc00a" start=0 sticky=false range=None
+"\u005cs" input="\ud800\udc00a" start=0 sticky=true range=None
+"\u005cs" input="\ud800\udc00a" start=1 sticky=false range=None
+"\u005cs" input="\ud800\udc00a" start=1 sticky=true range=None
+"\u005cs" input="\ud800\udc00a" start=2 sticky=false range=None
+"\u005cs" input="\ud800\udc00a" start=2 sticky=true range=None
+"\u005cs" input="\ud800\udc00a" start=3 sticky=false range=None
+"\u005cs" input="\ud800\udc00a" start=3 sticky=true range=None
+"\u005cs" input="\ud800\udc00a" start=4 sticky=false range=None
+"\u005cs" input="\ud800\udc00a" start=4 sticky=true range=None
+"\u005cs" input="\udc00\ud800b" start=0 sticky=false range=None
+"\u005cs" input="\udc00\ud800b" start=0 sticky=true range=None
+"\u005cs" input="\udc00\ud800b" start=1 sticky=false range=None
+"\u005cs" input="\udc00\ud800b" start=1 sticky=true range=None
+"\u005cs" input="\udc00\ud800b" start=2 sticky=false range=None
+"\u005cs" input="\udc00\ud800b" start=2 sticky=true range=None
+"\u005cs" input="\udc00\ud800b" start=3 sticky=false range=None
+"\u005cs" input="\udc00\ud800b" start=3 sticky=true range=None
+"\u005cs" input="\udc00\ud800b" start=4 sticky=false range=None
+"\u005cs" input="\udc00\ud800b" start=4 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=false range=Some([4, 5])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=0 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=false range=Some([4, 5])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=1 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=false range=Some([4, 5])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=2 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=false range=Some([4, 5])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=3 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=false range=Some([4, 5])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=4 sticky=true range=Some([4, 5])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=false range=Some([5, 6])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=5 sticky=true range=Some([5, 6])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=false range=Some([6, 7])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=6 sticky=true range=Some([6, 7])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=false range=Some([7, 8])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=7 sticky=true range=Some([7, 8])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=false range=Some([9, 10])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=8 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=false range=Some([9, 10])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=9 sticky=true range=Some([9, 10])
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=false range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=10 sticky=true range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=false range=None
+"\u005cs" input="\u0000\u0001\u0002\u0008 \u000a\u2028\u2029\u180e\ufeff" start=11 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=0 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=1 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=2 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=3 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=4 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=5 sticky=true range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=false range=None
+"\u005cs" input="\ud7ff\ud800\udfff\ue000\uffff" start=6 sticky=true range=None
+"\u005cs" input="09A_z" start=0 sticky=false range=None
+"\u005cs" input="09A_z" start=0 sticky=true range=None
+"\u005cs" input="09A_z" start=1 sticky=false range=None
+"\u005cs" input="09A_z" start=1 sticky=true range=None
+"\u005cs" input="09A_z" start=2 sticky=false range=None
+"\u005cs" input="09A_z" start=2 sticky=true range=None
+"\u005cs" input="09A_z" start=3 sticky=false range=None
+"\u005cs" input="09A_z" start=3 sticky=true range=None
+"\u005cs" input="09A_z" start=4 sticky=false range=None
+"\u005cs" input="09A_z" start=4 sticky=true range=None
+"\u005cs" input="09A_z" start=5 sticky=false range=None
+"\u005cs" input="09A_z" start=5 sticky=true range=None
+"\u005cs" input="09A_z" start=6 sticky=false range=None
+"\u005cs" input="09A_z" start=6 sticky=true range=None

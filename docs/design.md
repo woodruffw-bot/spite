@@ -2490,6 +2490,23 @@ character and class escape decoding remains separate, retaining the project's
 edition-17 scope without Annex B. Flat capture storage, linear literal matching,
 UTF-16 ranges and the narrow approved empty-body boundary behavior are unchanged.
 
+
+Validated Unicode u-mode Patterns now admit exactly one case-sensitive
+CharacterSetMatcher atom whose members are all nonsurrogate BMP characters
+(22.2.2.7.1, 22.2.7.2). Positive classes can contain literal characters, ordinary
+character escapes and ranges excluding surrogate values, plus digit, word and
+whitespace class escapes. Empty positive classes produce no matches. Validation
+precedes parsing, and the compiler rejects inverted sets, complemented escapes,
+dot, surrogate-containing ranges and non-atom syntax before construction.
+
+Each member consumes one code point and one UTF-16 unit. Scanning either half of
+a surrogate pair cannot succeed, so existing membership bits and unit search
+preserve successful Unicode boundaries. The caller uses the u-only entry point;
+UnicodeSets syntax and ignore-case folding require separate proofs. Construction
+retains existing opt-in work charges; matching, storage and default quotas are
+unchanged. Literal capture plans and the approved empty-body boundary behavior
+retain their separate paths.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

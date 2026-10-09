@@ -420,6 +420,23 @@ impl Realm {
                 }
             }
         };
+        // A proved u-mode atom can reuse ordinary membership and matching only
+        // when every member is a nonsurrogate BMP character (22.2.2.7.1).
+        // UnicodeSets class operations and ignore-case folding remain separate.
+        let matcher = if matcher.is_none()
+            && flags.code_units().contains(&u16::from(b'u'))
+            && !flags.code_units().contains(&u16::from(b'i'))
+        {
+            self.object_work(span, |_, budget| {
+                budget.charge(capture_source.len())?;
+                RegExpCharacterMatcher::compile_bmp_unicode_with_work(&capture_source, |work| {
+                    budget.charge(work)
+                })
+                .map(|body| body.map(RegExpMatcherBody::Character))
+            })?
+        } else {
+            matcher
+        };
         let matcher = if matcher.is_none() && !unicode {
             let ordinary = self.object_work(span, |_, budget| {
                 budget.charge(named_groups.len())?;

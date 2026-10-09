@@ -435,6 +435,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match mandatory empty Unicode literal bodies and captures in u/v modes, normalizing initial surrogate-pair offsets and preserving consumer advancement.
 - [x] Match case-sensitive nonempty nonsurrogate BMP literal bodies and captures in UnicodeSets mode, preserving Unicode boundaries and UTF-16 indices.
 - [x] Decode braced Unicode escapes for case-sensitive nonsurrogate BMP literal bodies and captures in u/v modes, with checked scalar bounds and unchanged ordinary escape semantics.
+- [x] Match case-sensitive u-mode single character-set atoms with exclusively nonsurrogate BMP membership, preserving Unicode boundaries and UTF-16 indices.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

@@ -1,13 +1,14 @@
-//! One ordinary-mode CharacterSetMatcher atom (22.2.2.7.1, 22.2.2.8–9).
+//! One ordinary or proved BMP Unicode CharacterSetMatcher atom (22.2.2.7.1).
 
 use crate::{JsString, is_line_terminator, is_whitespace, regexp_canonicalize_character};
 use std::{ops::Range, sync::Arc};
 
-/// Immutable matcher for one ordinary class, class escape, or dot atom.
+/// Immutable matcher for one ordinary atom or a proved BMP Unicode character set.
 ///
-/// The complete Pattern must already be validated without `u` or `v`. Groups,
-/// concatenations, alternatives and quantifiers of these atoms remain unsupported.
-/// Membership uses the pinned ordinary Canonicalize operation before inversion.
+/// Ordinary compilation requires validation without `u` or `v`; the BMP Unicode
+/// compiler requires `u` validation and only admits case-sensitive nonsurrogate
+/// BMP membership. Groups, concatenations, alternatives and quantifiers remain
+/// unsupported. Ordinary membership canonicalizes before inversion.
 #[derive(Clone, Debug)]
 pub struct RegExpCharacterMatcher(Arc<Program>);
 
@@ -40,6 +41,43 @@ struct PreparedAlternative {
 }
 
 impl RegExpCharacterMatcher {
+    /// Compiles one case-sensitive character-set atom from a validated u Pattern.
+    ///
+    /// Admitted membership contains only nonsurrogate BMP characters. Each
+    /// successful match therefore consumes one Unicode character and one UTF-16
+    /// unit; starts and ends cannot split a surrogate pair (22.2.2.7.1, 22.2.7.2).
+    /// UnicodeSets syntax, case folding, inverted sets and supplementary values
+    /// require separate proofs. The caller must validate the complete u Pattern.
+    pub fn compile_bmp_unicode(source: &JsString) -> Option<Self> {
+        Self::compile_bmp_unicode_with_work(source, |_| Ok::<(), std::convert::Infallible>(()))
+            .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same Unicode subset with fallible opt-in construction work.
+    ///
+    /// Unsupported atoms are rejected before set construction. Accepted atoms
+    /// retain the ordinary compiler's charges and immutable membership storage.
+    pub fn compile_bmp_unicode_with_work<E>(
+        source: &JsString,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some((prepared, end)) = PreparedCharacter::parse(source.code_units(), false) else {
+            return Ok(None);
+        };
+        if end != source.len()
+            || prepared.inverted
+            || !prepared.atoms.iter().all(|atom| match *atom {
+                Atom::Character(unit) => !(0xd800..=0xdfff).contains(&unit),
+                Atom::Range(start, end) => !(start <= 0xdfff && end >= 0xd800),
+                Atom::Set(kind) => matches!(kind, 0x64 | 0x73 | 0x77),
+                Atom::Dot(_) => false,
+            })
+        {
+            return Ok(None);
+        }
+        prepared.compile_with_work(false, charge).map(Some)
+    }
+
     /// Compiles exactly one character-set atom, without expanding Pattern size.
     pub fn compile(source: &JsString, ignore_case: bool, dot_all: bool) -> Option<Self> {
         Self::compile_with_work(source, ignore_case, dot_all, |_| {
@@ -343,6 +381,118 @@ fn class_atom(source: &[u16], index: &mut usize) -> Option<Atom> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn unicode_bmp_character_ranges_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "[]",
+            "[a]",
+            "[a-b]",
+            "[é]",
+            "[éσ]",
+            "[K]",
+            "[[]",
+            r"[\b]",
+            r"[\cA\x61\u0062\0]",
+            r"[\u0000-\u0002]",
+            r"[\uD7FF\uE000\uFFFF]",
+            r"[\uE000-\uFFFF]",
+            r"[\d]",
+            r"[\w\s]",
+            r"\d",
+            r"\w",
+            r"\s",
+        ] {
+            let p = JsString::from(source);
+            let matcher = RegExpCharacterMatcher::compile_bmp_unicode(&p).unwrap();
+            for units in [
+                vec![],
+                vec![0x61, 0x62, 0xe9, 0x3c3, 0x212a],
+                vec![0xd800, 0xdc00, 0x61],
+                vec![0xdc00, 0xd800, 0x62],
+                vec![0, 1, 2, 8, 0x20, 0xa, 0x2028, 0x2029, 0x180e, 0xfeff],
+                vec![0xd7ff, 0xd800, 0xdfff, 0xe000, 0xffff],
+                vec![0x30, 0x39, 0x41, 0x5f, 0x7a],
+            ] {
+                let input = JsString::from_code_units(units);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        let range = matcher
+                            .find(&input, start, sticky)
+                            .map(|r| [r.start, r.end]);
+                        writeln!(
+                            rows,
+                            "{p:?} input={input:?} start={start} sticky={sticky} range={range:?}"
+                        )
+                        .unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_bmp_character_membership_and_unproved_domains_are_distinct() {
+        let source = JsString::from(r"[\u0000-\uD7FF\uE000-\uFFFF]");
+        let matcher = RegExpCharacterMatcher::compile_bmp_unicode(&source).unwrap();
+        for value in 0..=u16::MAX {
+            assert_eq!(matcher.matches(value), !(0xd800..=0xdfff).contains(&value));
+        }
+        for source in [
+            ".",
+            "[^]",
+            "[^a]",
+            r"\D",
+            r"\W",
+            r"\S",
+            r"[\D]",
+            r"[\d\S]",
+            r"[\uD800]",
+            r"[\uD7FF-\uE000]",
+            r"[\uD800\uDC00]",
+            r"[\u{61}]",
+            "(a)",
+            "[a]b",
+            "[a]*",
+            r"[\p{ASCII}]",
+            "[[a]&&[b]]",
+        ] {
+            assert!(
+                RegExpCharacterMatcher::compile_bmp_unicode(&JsString::from(source)).is_none(),
+                "{source}"
+            );
+        }
+        let matcher = RegExpCharacterMatcher::compile_bmp_unicode(&JsString::from("[a]")).unwrap();
+        let input = JsString::from("😀a");
+        assert_eq!(matcher.find(&input, 1, true), None);
+        assert_eq!(matcher.find(&input, 1, false), Some(2..3));
+        assert_eq!(matcher.find(&input, 2, true), Some(2..3));
+    }
+
+    #[test]
+    fn unicode_bmp_character_flat_construction_clones_and_opt_in_failure() {
+        let source = JsString::from(format!("[{}]", "a".repeat(100000)).as_str());
+        let matcher = RegExpCharacterMatcher::compile_bmp_unicode(&source).unwrap();
+        let cloned = matcher.clone();
+        drop(matcher);
+        let input = JsString::from(format!("{}a", "b".repeat(100000)).as_str());
+        assert_eq!(cloned.find(&input, 0, false), Some(100000..100001));
+        let mut charges = Vec::new();
+        let result =
+            RegExpCharacterMatcher::compile_bmp_unicode_with_work(&JsString::from(r"\d"), |n| {
+                charges.push(n);
+                if n == 65536 { Err("work") } else { Ok(()) }
+            });
+        assert!(matches!(result, Err("work")));
+        assert_eq!(charges, [2, 1024, 65536]);
+        let result =
+            RegExpCharacterMatcher::compile_bmp_unicode_with_work(&JsString::from("."), |_| {
+                Err("should not construct")
+            });
+        assert!(matches!(result, Ok(None)));
+    }
 
     #[test]
     fn ordinary_character_set_snapshot() {

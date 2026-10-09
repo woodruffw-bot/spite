@@ -187,7 +187,7 @@ fn unicode_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
         r"/\u{1f600}/v.exec('a')",
         r"/\uD800/u.exec('\uD800')",
         r"/\u{1f600}/u.exec('a')",
-        r"/[a]/u.exec('a')",
+        r"/[\u{1f600}]/u.exec('a')",
         r"/^a/u.exec('a')",
         r"/(a)\1/u.exec('aa')",
     ] {

@@ -5083,7 +5083,7 @@ Braced Unicode escapes now match within case-sensitive nonempty nonsurrogate BMP
 literal bodies and mandatory captures in both Unicode modes. Checked decoding
 preserves long leading-zero sequences and literal syntax characters without
 expanding storage. Supplementary values, surrogate values, nonempty ignore-case
-patterns, Unicode classes and other unproved bodies remain Unsupported. Ordinary
+patterns, UnicodeSets classes and other unproved bodies remain Unsupported. Ordinary
 escape semantics retain the edition-17 policy without Annex B.
 
 Three core regressions and six runtime regressions cover BMP endpoints, controls,
@@ -5138,6 +5138,44 @@ positive programs, separately from 337 grammar fixtures.
 Stable and MSRV pass all 14,386 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
+
+
+Single case-sensitive Unicode u-mode character-set atoms now match when their
+complete membership contains only nonsurrogate BMP values. Admitted syntax
+includes positive unions, bounded nonsurrogate ranges, class backspace and
+ordinary character escapes, and digit/word/whitespace escapes. Empty positive
+classes never match. Inversion, complemented escapes, dot, supplementary and
+surrogate values, braced class escapes, captures/concatenations/quantifiers,
+UnicodeSets operations and ignore-case matching retain their unproved boundaries.
+No existing matching operation, membership storage, dependency or default quota
+changes; unsupported atoms are rejected before set construction.
+
+Three new core and seven runtime regressions cover all BMP membership, controls,
+Unicode whitespace and ASCII word rules, surrogate-pair and lone-surrogate input,
+offsets, consumers, flags and clones, result metadata, ordered coercions, strict
+lastIndex writes, 100000 class members, collection, long searches and opted-in
+work aborts. Node agrees with 1530 inspected core range rows, 132 runtime rows,
+fifteen complete Boolean programs, two exact former complete programs, 2157368
+exhaustive range comparisons and 18939904 membership comparisons across every
+Unicode value for seventeen independent patterns.
+
+All 484 core tests, 146 related runtime targets and prototype denied-warning
+Clippy pass. All 363 previous golds remain byte-identical. Two simple rejection
+controls now use still-unproved supplementary classes; their original complete
+programs are permanent positive gold regressions. The 314 core rejection
+candidates, 840 old runtime gap programs and twelve additional probes remain
+Unsupported. Eight ordered and four direct-eval gap probes preserve conversion
+order and state. Whole seventeen-file and 115-file reviews remain 10/24 and
+192/38 Passed/Unsupported, with no failures or host limits. Newly eligible whole
+ClassEscape originals are recorded separately when vendored.
+
+The inventory remains 7473 fixtures, 7454 reviewed Script sources, 14386 variants,
+12909 harness positives and 619 RegExp builtin positives. The existing pin, eleven
+helpers, dependency allowances and opt-in quota policy remain unchanged.
+
+Stable and MSRV pass all 14,386 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
