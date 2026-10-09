@@ -2384,6 +2384,20 @@ reads remain unproved. Capture writes, names, indices, rollback and the sequence
 boundary are reused. The effect list is proportional to declared source captures,
 never to a count; no matcher, dependency, recursion or default quota is added.
 
+
+A captured atom consisting of multiple copies of the same reference can compose
+with an exact count of one when every capture endpoint is a boundary of the whole
+atom (22.2.2.3.1, 22.2.2.9.2). Checked ordinals map those endpoints onto one scaled
+term. The existing checked copy multiplicity and width determine the original full
+span or empty boundary; the actual matching direction and owner proofs are reused.
+Reads of child-owned slots and aliases remain excluded from this multiple-copy
+scalar proof. Interior capture boundaries still require the established empty-read
+proof. Other consuming child counts and optional child effects remain unproved.
+
+The existing flat sequence boundary retains nested capture effects without
+reflattening growing lists. This adds neither an instruction nor a runtime matcher,
+source expansion, recursion, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
