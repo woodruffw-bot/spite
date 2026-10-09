@@ -7401,3 +7401,8 @@ script-pass	22b9424b274cfe934ce7ee7506f236ce431e65c485d91cc3dbbee2781cf29aa0	tes
 script-pass	d5116cc5f1221a4d9217f8efb3d94c282985b4a0c89911dd05a82f33fe76de7c	test/built-ins/RegExp/S15.10.3.1_A2_T2.js
 script-pass	727e4690240840849b51397c21c9e6e4b4b0e4d7b6e3458263ce81cdb190d1bf	test/built-ins/RegExp/S15.10.3.1_A3_T1.js
 script-pass	2760fff7bf3410df323bb0d6a4892f430303d0f17eb2f16c42e1ddb2aa93d370	test/built-ins/RegExp/S15.10.3.1_A3_T2.js
+script-pass	dc0de36801ed1079278260405fe3bc584f29104eb87f809dd94866b9f6b44698	test/built-ins/RegExp/S15.10.4.1_A1_T1.js
+script-pass	3346a911479d45aae0a34c28402222f84d3e345e8e1ade473ddc014ef3c93307	test/built-ins/RegExp/S15.10.4.1_A1_T2.js
+script-pass	1b33683eec448ba2604437db9c98bd199d4470e4750a84e73911fc12f790229c	test/built-ins/RegExp/S15.10.4.1_A1_T3.js
+script-pass	1a7c5a70b196e4989cce332e64ea6409a5ef584be2ecff60176e66390821cdf5	test/built-ins/RegExp/S15.10.4.1_A1_T4.js
+script-pass	a95c3716fa6ceed00903449d0a404405bbfbf6230517dc6a98e6e954f7ad0160	test/built-ins/RegExp/S15.10.4.1_A1_T5.js
