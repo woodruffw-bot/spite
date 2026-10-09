@@ -2624,6 +2624,28 @@ sticky units or the suffix plus a possible rewind unit. This covers a dot's
 one-unit Pattern spelling consuming a two-unit input character. Quotas remain
 opt-in, and host failures preserve completion and lastIndex state.
 
+
+Unicode single-dot and character-escape plans now admit an optional leading ^
+and/or trailing $ (22.2.2.4). Multiline assertions recognize exactly the four
+LineTerminator values in the preceding/following complete-character context.
+Without m, ^ requires the actual input start and $ requires the actual input end;
+there is no implicit acceptance before a final newline. CR and LF are individual
+characters, each eligible as a multiline boundary.
+
+The plan adds constant-size assertion flags to the existing complete-character
+scan. Sticky execution checks only the normalized initial character; nonsticky
+execution preserves candidate order. Successful ranges, the narrowly approved
+initial-pair rule, original metadata, consumers and strict lastIndex behavior
+remain shared. Source decoding and ordinary matching are unchanged.
+
+The original bare-atom core entry points retain their contracts; separate
+assertion entry points validate the complete admitted body and precharge its
+source length. Optional search quotas cover the input scan and each assertion
+check before execution, with at most two sticky units and a possible rewind unit.
+Groups, literal/class compositions, quantifiers, alternatives, empty anchored
+bodies and Unicode ignore-case matching remain separate proofs. Quotas stay
+opt-in, with no new dependency or input-sized matching allocation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

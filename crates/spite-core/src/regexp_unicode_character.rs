@@ -7,11 +7,17 @@ use std::ops::Range;
 ///
 /// The caller must validate the complete Pattern with `u` or `v` and without `i`.
 /// Dot and `\d`, `\D`, `\s`, `\S`, `\w`, `\W` are the complete admitted bodies.
-/// Classes, groups, concatenations, assertions and quantifiers remain separate.
+/// Optional leading ^ and/or trailing $ are admitted by the assertion entry points.
+/// Classes, groups, concatenations and quantifiers remain separate.
 /// Matching consumes complete code points, including isolated surrogates, while
 /// successful ranges retain UTF-16 indices. No input-sized storage is allocated.
 #[derive(Clone, Debug)]
-pub struct RegExpUnicodeCharacterMatcher(Atom);
+pub struct RegExpUnicodeCharacterMatcher {
+    atom: Atom,
+    start_anchor: bool,
+    end_anchor: bool,
+    multiline: bool,
+}
 
 #[derive(Clone, Copy, Debug)]
 enum Atom {
@@ -35,13 +41,64 @@ impl RegExpUnicodeCharacterMatcher {
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let atom = match source.code_units() {
-            [0x2e] => Atom::Dot(dot_all),
-            [0x5c, kind @ (0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57)] => Atom::Escape(*kind),
-            _ => return Ok(None),
+        let Some(atom) = parse_atom(source.code_units(), dot_all) else {
+            return Ok(None);
         };
         charge(source.len())?;
-        Ok(Some(Self(atom)))
+        Ok(Some(Self {
+            atom,
+            start_anchor: false,
+            end_anchor: false,
+            multiline: false,
+        }))
+    }
+
+    /// Compiles one admitted atom with an optional leading ^ and/or trailing $.
+    ///
+    /// Complete u/v validation and case-sensitive matching remain prerequisites.
+    /// Multiline assertions inspect the preceding/following complete character;
+    /// non-multiline $ succeeds only at the actual input end (22.2.2.4).
+    pub fn compile_with_assertions(
+        source: &JsString,
+        multiline: bool,
+        dot_all: bool,
+    ) -> Option<Self> {
+        Self::compile_with_assertions_and_work(source, multiline, dot_all, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same anchored subset with fallible opt-in construction work.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let units = source.code_units();
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let Some(body) =
+            units.get(usize::from(start_anchor)..units.len() - usize::from(end_anchor))
+        else {
+            return Ok(None);
+        };
+        let Some(atom) = parse_atom(body, dot_all) else {
+            return Ok(None);
+        };
+        charge(source.len())?;
+        Ok(Some(Self {
+            atom,
+            start_anchor,
+            end_anchor,
+            multiline,
+        }))
+    }
+
+    /// Bounds the input scan and each optional assertion check for opt-in work.
+    pub fn search_passes(&self) -> usize {
+        1 + usize::from(self.start_anchor) + usize::from(self.end_anchor)
     }
 
     /// Finds the first complete matching character, or only the sticky character.
@@ -66,7 +123,17 @@ impl RegExpUnicodeCharacterMatcher {
             } else {
                 (u32::from(first), 1)
             };
-            if self.matches(value) {
+            let end = cursor + width;
+            let start_ok = !self.start_anchor
+                || cursor == 0
+                || (self.multiline
+                    && char::from_u32(u32::from(units[cursor - 1]))
+                        .is_some_and(is_line_terminator));
+            let end_ok = !self.end_anchor
+                || end == units.len()
+                || (self.multiline
+                    && char::from_u32(u32::from(units[end])).is_some_and(is_line_terminator));
+            if start_ok && end_ok && self.matches(value) {
                 return Some(cursor..cursor + width);
             }
             if sticky {
@@ -78,7 +145,7 @@ impl RegExpUnicodeCharacterMatcher {
     }
 
     fn matches(&self, value: u32) -> bool {
-        match self.0 {
+        match self.atom {
             Atom::Dot(all) => all || !char::from_u32(value).is_some_and(is_line_terminator),
             Atom::Escape(kind) => {
                 let included = match kind | 0x20 {
@@ -91,6 +158,14 @@ impl RegExpUnicodeCharacterMatcher {
                 included != (kind < 0x60)
             }
         }
+    }
+}
+
+fn parse_atom(units: &[u16], dot_all: bool) -> Option<Atom> {
+    match units {
+        [0x2e] => Some(Atom::Dot(dot_all)),
+        [0x5c, kind @ (0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57)] => Some(Atom::Escape(*kind)),
+        _ => None,
     }
 }
 
@@ -282,6 +357,162 @@ mod tests {
             );
             assert!(matcher.find(&input, input.len(), false).is_none());
             assert!(matcher.find(&input, usize::MAX, false).is_none());
+        }
+    }
+    #[test]
+    fn unicode_character_assertion_ranges_snapshot() {
+        let mut rows = String::new();
+        for source in ["^.$", "^.", ".$", r"^\D$", r"\W$", r"^\s", r"^\d$"] {
+            for multiline in [false, true] {
+                for all in [false, true] {
+                    let matcher = RegExpUnicodeCharacterMatcher::compile_with_assertions(
+                        &JsString::from(source),
+                        multiline,
+                        all,
+                    )
+                    .unwrap();
+                    for text in ["", "😀", "a\n", "\na\r\n😀\u{2028}", "9", "\u{2029}x"] {
+                        let input = JsString::from(text);
+                        for start in 0..=input.len() + 1 {
+                            for sticky in [false, true] {
+                                writeln!(rows, "{source:?} multiline={multiline} dotAll={all} input={input:?} start={start} sticky={sticky} {:?}", matcher.find(&input, start, sticky)).unwrap();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_character_assertions_agree_with_independent_character_contexts() {
+        let alphabet = [0x61, 0x39, 0xa, 0xd, 0x2028, 0xd800, 0xdc00];
+        let mut plans = Vec::new();
+        for (source, body) in [
+            ("^.$", "."),
+            ("^.", "."),
+            (".$", "."),
+            (r"^\D$", r"\D"),
+            (r"\W$", r"\W"),
+            (r"^\s", r"\s"),
+            (r"^\d$", r"\d"),
+        ] {
+            for multiline in [false, true] {
+                for all in [false, true] {
+                    plans.push((
+                        source,
+                        body,
+                        multiline,
+                        all,
+                        RegExpUnicodeCharacterMatcher::compile_with_assertions(
+                            &JsString::from(source),
+                            multiline,
+                            all,
+                        )
+                        .unwrap(),
+                    ));
+                }
+            }
+        }
+        for length in 0..=4 {
+            for mut ordinal in 0..alphabet.len().pow(length) {
+                let units: Vec<u16> = (0..length)
+                    .map(|_| {
+                        let unit = alphabet[ordinal % alphabet.len()];
+                        ordinal /= alphabet.len();
+                        unit
+                    })
+                    .collect();
+                let mut cursor = 0;
+                let decoded: Vec<_> = char::decode_utf16(units.iter().copied())
+                    .map(|decoded| {
+                        let (value, width) = match decoded {
+                            Ok(c) => (u32::from(c), c.len_utf16()),
+                            Err(e) => (u32::from(e.unpaired_surrogate()), 1),
+                        };
+                        let range = cursor..cursor + width;
+                        cursor += width;
+                        (value, range)
+                    })
+                    .collect();
+                let input = JsString::from_code_units(units);
+                let line = |value: u32| matches!(value, 0xa | 0xd | 0x2028 | 0x2029);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        for (source, body, multiline, all, matcher) in &plans {
+                            let candidates = decoded
+                                .iter()
+                                .enumerate()
+                                .filter(|(_, (_, range))| range.end > start);
+                            let expected = candidates
+                                .take(if sticky { 1 } else { decoded.len() })
+                                .find(|(i, (value, range))| {
+                                    reference_membership(body, *all, *value)
+                                        && (!source.starts_with('^')
+                                            || *i == 0
+                                            || (*multiline && line(decoded[i - 1].0)))
+                                        && (!source.ends_with('$')
+                                            || range.end == input.len()
+                                            || (*multiline && line(decoded[i + 1].0)))
+                                })
+                                .map(|(_, (_, range))| range.clone());
+                            assert_eq!(
+                                matcher.find(&input, start, sticky),
+                                expected,
+                                "{input:?} {source} multiline={multiline} dotAll={all} start={start} sticky={sticky}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_character_assertion_compilation_and_optional_work_contracts() {
+        for source in [
+            "", "^", "$", "^$", "^^.$", "^.$$", "^a$", "^(.)$", r"^\D+$", "^[a]$",
+        ] {
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_with_assertions(
+                    &JsString::from(source),
+                    true,
+                    true
+                )
+                .is_none()
+            );
+        }
+        for source in ["^.$", "^.", ".$", r"^\D$", r"\W$", r"^\s"] {
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile(&JsString::from(source), true).is_none()
+            );
+            let mut charges = Vec::new();
+            let matcher = RegExpUnicodeCharacterMatcher::compile_with_assertions_and_work(
+                &JsString::from(source),
+                true,
+                true,
+                |work| {
+                    charges.push(work);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(charges, vec![source.len()]);
+            assert_eq!(
+                matcher.search_passes(),
+                1 + usize::from(source.starts_with('^')) + usize::from(source.ends_with('$'))
+            );
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_with_assertions_and_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Err(17)
+                )
+                .is_err()
+            );
         }
     }
 }

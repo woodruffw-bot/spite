@@ -441,6 +441,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match case-sensitive u/v scalar literal concatenations, including supplementary characters and escapes, with code-point capture boundaries and UTF-16 indices.
 - [x] Match case-sensitive u/v lone-surrogate literal atoms and concatenations while enforcing complete input-character and capture boundaries.
 - [x] Match case-sensitive single Unicode dot and character escapes in u/v modes, including complements, complete supplementary characters and isolated surrogates.
+- [x] Match optional leading ^ and trailing $ assertions around a single case-sensitive Unicode dot or character escape, with complete-character multiline contexts.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

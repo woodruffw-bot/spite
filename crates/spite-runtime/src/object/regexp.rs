@@ -158,7 +158,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeEmpty(_)
             | RegExpMatcherBody::UnicodeCodePoints(_) => 1,
             RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
-            RegExpMatcherBody::Character(_) | RegExpMatcherBody::UnicodeCharacter(_) => 1,
+            RegExpMatcherBody::Character(_) => 1,
+            RegExpMatcherBody::UnicodeCharacter(matcher) => matcher.search_passes(),
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
             RegExpMatcherBody::RepeatedLiteral(m) => m.search_passes(),

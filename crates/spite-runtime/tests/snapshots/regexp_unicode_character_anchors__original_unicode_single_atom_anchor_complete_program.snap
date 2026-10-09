@@ -1,0 +1,5 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_character_anchors.rs
+expression: "format!(\"{:?} {result:?}\", JsString::from(source))"
+---
+"/^./u.exec('a')" "[\u0022a\u0022]"
