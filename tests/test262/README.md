@@ -1,11 +1,34 @@
 # Test262 regression fixtures
 
-These 7254 unmodified test fixtures and eleven harness files come from
+These 7271 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Disjunction whole-program fixture review
+
+Seventeen unchanged complete S15.10.2.3 originals add 34 normal/strict
+harness-positive variants at the existing pin. Preserved complete checks cover
+source-ordered alternatives and their continuations, nested alternative captures,
+unmatched sibling slots, counted and repeated alternatives, ignoreCase with
+original input text, dot branches and both orders of captured/uncaptured empty
+alternatives. All match-array, index, input and boolean failure checks remain.
+
+Stable, MSRV and Node pass all 34 complete variants without failures or host
+limits. Upstream Git blob identities and manifest SHA-256 digests verify every
+source byte. Original metadata, Sputnik copyright, BSD license, the pin and eleven
+helpers are preserved.
+
+The active corpus has 7271 fixtures, eleven helpers, 7252 reviewed Script sources
+and 13982 variants: 12505 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 424 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 13982-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Quantifier whole-program fixture review
 
