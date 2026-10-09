@@ -7485,3 +7485,5 @@ test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-27.js	50
 test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-28.js	503	511	reserved double punctuation in regular expression Unicode class
 test/language/literals/regexp/u-unicode-esc.js	-	-	-
 test/built-ins/RegExp/prototype/exec/u-lastindex-adv.js	-	-	-
+test/built-ins/RegExp/prototype/exec/u-captured-value.js	-	-	-
+test/built-ins/RegExp/prototype/exec/u-lastindex-value.js	-	-	-

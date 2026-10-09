@@ -7515,3 +7515,5 @@ parse-syntax-error	de379392fa8184b5cf251002b3b51b43173f6cfdb413e892b14abe08b9b05
 parse-syntax-error	428317ef852bc4aa6406da640e8e573978bda8d634b7e5a63f30e1f50f1ced12	test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-28.js
 script-pass	0854b86cb7dda47ed9ad2102c62304d1b62a7da9c30da9c5d04420f70ab868fb	test/language/literals/regexp/u-unicode-esc.js
 script-pass	df20964b753dd5372677c79f75df96363458c37c8167b42ecd6b7e90e38db7a3	test/built-ins/RegExp/prototype/exec/u-lastindex-adv.js
+script-pass	da89d2aa0d77e4e96d6fd0faaabae50e50a2b7e7e3881a53b12c60ca80ac0c70	test/built-ins/RegExp/prototype/exec/u-captured-value.js
+script-pass	2bede49a2f4a54c9b42928011443126638176d5b0d1f9f11699566a45f6ab4a0	test/built-ins/RegExp/prototype/exec/u-lastindex-value.js
