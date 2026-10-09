@@ -2303,6 +2303,21 @@ writes, named aliases and shared indices pairs. No matcher, dependency, recursio
 source expansion or default quota is added. Choices, changing-owner reads and
 Unicode modes retain their existing conservative boundaries.
 
+
+Nested ordinary units can retain effect-free exact reference multiplicities through
+noncapturing group lowering (22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The existing flat
+Input/Local/Future sequence targets and checked prefix/suffix width resolution are
+shared by consuming repetitions and assertions. Exact counts preserve declared
+reads and original capture offsets without count-sized expansion or allocation.
+
+When a group's direction is not established by an assertion, only proofs valid in
+both directions may erase a counted read: Empty/Open targets, a lexically empty
+owned capture span or a zero maximum for that owner. Other targets retain their
+exact multiplicity and complete-owner validation. Variable consuming counts and
+unproved owner dependencies remain unsupported. Required empty units preserve
+capture effects once, while optional empty units retain their existing stop and
+rollback rules. No matcher, dependency, recursion or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

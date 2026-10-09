@@ -2462,7 +2462,7 @@ fn quantify_reference_wrapper(
                 copies: atom_copies,
                 captures,
                 ..
-            }) if assertion_direction.is_some() && captures.is_empty() => {
+            }) if captures.is_empty() => {
                 counted_targets.push((
                     copies,
                     *max,
@@ -2537,15 +2537,18 @@ fn quantify_reference_wrapper(
             }
         })
         .collect();
-    if let Some(backward) = assertion_direction {
+    // With no known assertion direction, only Open/empty spans and an owned
+    // zero maximum are empty in both directions. Other exact terms retain their
+    // declared target for the eventual forward/backward unit proof.
+    {
         for (ordinal, max, exact_copies) in counted_targets {
             let empty = match targets[ordinal] {
                 ReferenceTarget::Empty | ReferenceTarget::Open => true,
                 ReferenceTarget::Local(span, _) => {
-                    backward || span.start == span.end || max == Some(0)
+                    assertion_direction == Some(true) || span.start == span.end || max == Some(0)
                 }
                 ReferenceTarget::Future(span, _) => {
-                    !backward || span.start == span.end || max == Some(0)
+                    assertion_direction == Some(false) || span.start == span.end || max == Some(0)
                 }
                 // Keep unproved outside targets and their validation visible.
                 // Only declared same-body spans receive the empty proof.
@@ -3886,6 +3889,166 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn nested_exact_reference_units_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"((b)\2{2})+",
+            r"((b)\2{2})+?",
+            r"((b)(\2{2})\3{2}){2}",
+            r"(\1{2}b)+",
+            r"(\1*b)+",
+            r"(\2{2}(b))+",
+            r"(a)(\1{2}b)+",
+            r"((b)\2{2}){2}",
+            r"((b)\2{2}){1,3}",
+            r"((b)\2{2}){1,3}?",
+            r"((b)\2{2})*",
+            r"((b)\2{2})*?",
+            r"((b)(?:\2\2){2})+",
+            r"(?<=((\3{2})(b)){2})c",
+            r"(?<=((b)\2{2}){2})c",
+            r"(?<=((\1*b)){2})c",
+            r"(?<=a(?=((b)\2{2}){2}))b",
+            r"(?:()(?:\1)+){2}",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n", "abbb", "abbbb", "abbbbb", "bbbbc", "bbbbbbbc", "aaaab", "aaabc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn nested_exact_scalar_units_keep_greedy_retry_lazy_direction_and_pending_counts() {
+        for (source, text, range, captures) in [
+            (
+                r"((b)\2{2})+",
+                "bbbbbbb",
+                0..6,
+                vec![Some(3..6), Some(3..4)],
+            ),
+            (
+                r"((b)\2{2})+?",
+                "bbbbbbb",
+                0..3,
+                vec![Some(0..3), Some(0..1)],
+            ),
+            (
+                r"((b)\2{2})+bb",
+                "bbbbbbb",
+                0..5,
+                vec![Some(0..3), Some(0..1)],
+            ),
+            (r"(\1*b)+", "bbb", 0..3, vec![Some(2..3)]),
+            (r"(\2{2}(b))+", "bbb", 0..3, vec![Some(2..3), Some(2..3)]),
+            (
+                r"(?<=((\3{2})(b)){2})c",
+                "bbbbbbc",
+                6..7,
+                vec![Some(0..3), Some(0..2), Some(2..3)],
+            ),
+            (
+                r"(?<=((b)\2{2}){2})c",
+                "bbc",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (
+                r"(?<=((\1*b)){2})c",
+                "bbc",
+                2..3,
+                vec![Some(0..1), Some(0..1)],
+            ),
+            (
+                r"(?<=a(?=((b)\2{2}){2}))b",
+                "abbbbbb",
+                1..2,
+                vec![Some(4..7), Some(4..5)],
+            ),
+            (r"(?:()(?:\1)+){2}", "", 0..0, vec![Some(0..0)]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=a(?=((b)\2{2,3}){2}))b",
+            r"(?<=((\3{2,3})(b)){2})c",
+            r"(?:(a|)(?:\1)+){2}",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+    #[test]
+    fn nested_exact_scalar_units_deep_captures_long_repeats_clones_and_work_are_flat() {
+        let source = "(".to_owned() + &"(".repeat(100000) + "b" + &")".repeat(100000) + r"\2{2})+";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("bbbbbbb"), 0, true).unwrap();
+        assert_eq!(found.range, 0..6);
+        assert_eq!(found.captures[0], Some(3..6));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(3..4)));
+        let input = JsString::from("b".repeat(30000).as_str());
+        let matcher = ordinary(r"((b)\2{2})+", false, false, false);
+        let found = matcher.find(&input, 0, true).unwrap();
+        assert_eq!(found.range, 0..30000);
+        assert_eq!(found.captures[0], Some(29997..30000));
+        assert_eq!(found.captures[1], Some(29997..29998));
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
+        let count = "9".repeat(100);
+        let source = format!(r"(\1* ){{{count}}}").replace(' ', "");
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from(""), 0, true)
+            .unwrap();
+        assert_eq!(found.captures[0], Some(0..0));
+        let source = format!(r"(?:()(?:\1)+){{{count}}}");
+        assert_eq!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from(""), 0, true)
+                .unwrap()
+                .captures[0],
+            Some(0..0)
+        );
     }
 
     #[test]
