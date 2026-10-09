@@ -2524,6 +2524,23 @@ matching remain unproved. Construction accounting, matching, storage, dependency
 allowances and default quotas are unchanged. The approved empty-body boundary
 resolution retains its separate scope.
 
+
+Braced Unicode escapes now retain their scalar values inside proved u/v BMP
+character classes and range endpoints (22.2.1, 22.2.2.7.1). The class parser uses
+the literal compiler's checked, constant-storage hexadecimal decoder only when
+Unicode mode is explicit. The ordinary parser retains its original grammar.
+Surrogates, supplementary values and ranges crossing the surrogate interval are
+rejected before membership construction.
+
+An escape that decodes to a bracket, hyphen, caret or ampersand contributes a
+literal character; it does not become class syntax or a UnicodeSets operator.
+Full Pattern validation still precedes compilation. The existing conservative
+v-mode operator scan and positive BMP membership proof remain in force. Long
+leading-zero spellings require no additional decoder storage. Matching, capture
+storage, construction accounting, dependency allowances and opt-in quota policy
+are unchanged. Supplementary membership, inversion, complemented escapes,
+ignore-case matching, nested classes and UnicodeSets operations remain unproved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

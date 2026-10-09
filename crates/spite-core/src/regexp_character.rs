@@ -91,7 +91,9 @@ impl RegExpCharacterMatcher {
         source: &JsString,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let Some((prepared, end)) = PreparedCharacter::parse(source.code_units(), false) else {
+        let Some((prepared, end)) =
+            PreparedCharacter::parse_with_unicode_escapes(source.code_units(), false, true)
+        else {
             return Ok(None);
         };
         if end != source.len()
@@ -163,7 +165,15 @@ impl RegExpCharacterMatcher {
 
 impl PreparedCharacter {
     pub(crate) fn parse(units: &[u16], dot_all: bool) -> Option<(Self, usize)> {
-        let (atoms, inverted, source_len) = prepare(units, dot_all)?;
+        Self::parse_with_unicode_escapes(units, dot_all, false)
+    }
+
+    fn parse_with_unicode_escapes(
+        units: &[u16],
+        dot_all: bool,
+        unicode_braced: bool,
+    ) -> Option<(Self, usize)> {
+        let (atoms, inverted, source_len) = prepare(units, dot_all, unicode_braced)?;
         Some((
             Self {
                 atoms,
@@ -341,7 +351,7 @@ fn append_class_range(output: &mut Vec<u16>, start: u16, end: u16) {
     append_class_unit(output, end);
 }
 
-fn prepare(units: &[u16], dot_all: bool) -> Option<(Vec<Atom>, bool, usize)> {
+fn prepare(units: &[u16], dot_all: bool, unicode_braced: bool) -> Option<(Vec<Atom>, bool, usize)> {
     if units.first() == Some(&u16::from(b'.')) {
         return Some((vec![Atom::Dot(dot_all)], false, 1));
     }
@@ -358,12 +368,12 @@ fn prepare(units: &[u16], dot_all: bool) -> Option<(Vec<Atom>, bool, usize)> {
     }
     let mut atoms = Vec::new();
     while units.get(index) != Some(&u16::from(b']')) {
-        let atom = class_atom(units, &mut index)?;
+        let atom = class_atom(units, &mut index, unicode_braced)?;
         if units.get(index) == Some(&u16::from(b'-'))
             && units.get(index + 1) != Some(&u16::from(b']'))
         {
             index += 1;
-            let end = class_atom(units, &mut index)?;
+            let end = class_atom(units, &mut index, unicode_braced)?;
             let (Atom::Character(start), Atom::Character(end)) = (atom, end) else {
                 return None;
             };
@@ -386,7 +396,7 @@ fn is_class_escape(unit: u16) -> bool {
     matches!(unit, 0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57)
 }
 
-fn class_atom(source: &[u16], index: &mut usize) -> Option<Atom> {
+fn class_atom(source: &[u16], index: &mut usize, unicode_braced: bool) -> Option<Atom> {
     let unit = *source.get(*index)?;
     *index += 1;
     if unit == u16::from(b'\\') {
@@ -397,6 +407,8 @@ fn class_atom(source: &[u16], index: &mut usize) -> Option<Atom> {
         } else if escaped == u16::from(b'b') {
             *index += 1;
             Some(Atom::Character(8))
+        } else if unicode_braced && source.get(*index..*index + 2) == Some(&[0x75, 0x7b]) {
+            crate::regexp_literal::braced_bmp_escape(source, index).map(Atom::Character)
         } else {
             crate::regexp_literal::character_escape(source, index).map(Atom::Character)
         }
@@ -411,6 +423,111 @@ fn class_atom(source: &[u16], index: &mut usize) -> Option<Atom> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn unicode_braced_bmp_character_ranges_snapshot() {
+        let mut rows = String::new();
+        for pattern in [
+            r"[\u{61}]",
+            r"[\u{61}\u{62}]",
+            r"[\u{61}-\u{63}]",
+            r"[\u{0}-\u{2}]",
+            r"[\u{D7FF}\u{E000}\u{FFFF}]",
+            r"[\u{e9}\u{3c3}]",
+            r"[\u{5d}\u{5b}]",
+            r"[\u{2d}\u{5e}]",
+            r"[\u{26}\u{26}]",
+            r"[\u{2d}-a]",
+            r"[\u{1}]",
+            r"[\u{000000000061}\d]",
+        ] {
+            let source = JsString::from(pattern);
+            let ordinary = RegExpCharacterMatcher::compile_bmp_unicode(&source).unwrap();
+            let sets = RegExpCharacterMatcher::compile_bmp_unicode_sets(&source).unwrap();
+            assert!(RegExpCharacterMatcher::compile(&source, false, false).is_none());
+            for units in [
+                vec![],
+                vec![0xd800, 0xdc00, 0x61, 0x62, 0x63],
+                vec![0xdc00, 0xd800, 0xe9, 0x3c3],
+                vec![0x5b, 0x5d, 0x26, 0x2d, 0x5e, 8, 0x41],
+                vec![0, 1, 2, 0x20, 0x2028, 0x180e, 0xfeff],
+                vec![0xd7ff, 0xd800, 0xdfff, 0xe000, 0xffff],
+                vec![0x30, 0x39, 0x41, 0x5f, 0x7a],
+            ] {
+                let input = JsString::from_code_units(units);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        let range = ordinary
+                            .find(&input, start, sticky)
+                            .map(|r| [r.start, r.end]);
+                        assert_eq!(
+                            range,
+                            sets.find(&input, start, sticky).map(|r| [r.start, r.end])
+                        );
+                        writeln!(rows,"{source:?} input={input:?} start={start} sticky={sticky} range={range:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_braced_bmp_character_checked_bounds_and_decoded_syntax() {
+        for source in [
+            r"[\u{}]",
+            r"[\u{GG}]",
+            r"[\u{61]",
+            r"[\u{10000}]",
+            r"[\u{110000}]",
+            r"[\u{D800}]",
+            r"[\u{DFFF}]",
+            r"[\u{D7FF}-\u{E000}]",
+            r"[^\u{61}]",
+            r"[\u{61}]\u{62}",
+            r"([\u{61}])",
+            r"[\u{61}]*",
+        ] {
+            assert!(
+                RegExpCharacterMatcher::compile_bmp_unicode(&JsString::from(source)).is_none(),
+                "{source}"
+            );
+            assert!(
+                RegExpCharacterMatcher::compile_bmp_unicode_sets(&JsString::from(source)).is_none(),
+                "{source}"
+            );
+        }
+        let source = JsString::from(r"[\u{26}\u{26}]");
+        let matcher = RegExpCharacterMatcher::compile_bmp_unicode_sets(&source).unwrap();
+        assert_eq!(matcher.find(&JsString::from("😀&"), 1, true), None);
+        assert_eq!(matcher.find(&JsString::from("😀&"), 1, false), Some(2..3));
+        for unit in 0..=u16::MAX {
+            assert_eq!(matcher.matches(unit), unit == 38);
+        }
+        let source = JsString::from(r"[\u{0}-\u{D7FF}\u{E000}-\u{FFFF}]");
+        let matcher = RegExpCharacterMatcher::compile_bmp_unicode(&source).unwrap();
+        for unit in 0..=u16::MAX {
+            assert_eq!(matcher.matches(unit), !(0xd800..=0xdfff).contains(&unit));
+        }
+    }
+
+    #[test]
+    fn unicode_braced_bmp_character_long_zeros_clones_and_opt_in_failure() {
+        let source = JsString::from(format!(r"[\u{{{}61}}]", "0".repeat(100000)).as_str());
+        let matcher = RegExpCharacterMatcher::compile_bmp_unicode_sets(&source).unwrap();
+        let copy = matcher.clone();
+        drop(matcher);
+        let input = JsString::from(format!("{}a", "b".repeat(100000)).as_str());
+        assert_eq!(copy.find(&input, 0, false), Some(100000..100001));
+        let result =
+            RegExpCharacterMatcher::compile_bmp_unicode_with_work(&source, |_| Err("work"));
+        assert!(matches!(result, Err("work")));
+        let result = RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(
+            &JsString::from(r"[\u{10000}]"),
+            |_| Err("should not construct"),
+        );
+        assert!(matches!(result, Ok(None)));
+    }
 
     #[test]
     fn unicode_sets_bmp_character_ranges_snapshot() {
@@ -469,7 +586,7 @@ mod tests {
             r"[\p{RGI_Emoji}]",
             "[^a]",
             r"[\uD800]",
-            r"[\u{61}]",
+            r"[\u{1f600}]",
             ".",
             r"\D",
             "([a])",
@@ -566,7 +683,7 @@ mod tests {
             r"[\uD800]",
             r"[\uD7FF-\uE000]",
             r"[\uD800\uDC00]",
-            r"[\u{61}]",
+            r"[\u{1f600}]",
             "(a)",
             "[a]b",
             "[a]*",

@@ -1,0 +1,6 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_braced_bmp_character_sets.rs
+expression: rows
+---
+"/[\\u{61}]/u.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+"/[\\u{61}]/v.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"

@@ -5263,6 +5263,41 @@ Stable and MSRV pass all 14,446 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Braced Unicode BMP escapes now match inside case-sensitive u/v positive classes
+and scalar ranges. The checked literal escape decoder is shared with the
+Unicode class parser; ordinary parsing is unchanged. Decoded punctuation remains
+literal data, including adjacent escaped ampersands. Surrogate, supplementary
+and crossing-surrogate membership, inversion, complemented escapes, case
+folding, nested classes and UnicodeSets operations remain Unsupported.
+
+Three new core and seven runtime regressions cover BMP bounds, decoded syntax,
+Unicode input boundaries, consumers, flags and clones, metadata, strict lastIndex
+writes, ordered and abrupt coercions, 100000 leading zeroes, collection, long
+searches and opted-in work aborts. Default work and heap quotas remain absent.
+Node agrees with 1128 new core snapshot rows in each Unicode mode, 264 runtime
+rows, fifteen complete Boolean programs and two exact former complete programs.
+Seventeen patterns agree over 4314736 exhaustive UTF-16 range comparisons and
+37879808 membership comparisons across every Unicode value in both modes.
+
+All 489 core tests, 148 related runtime targets and denied-warning prototype
+Clippy pass; 369 existing snapshots remain byte-identical. Three simple rejection
+controls now use unproved supplementary classes, while their two unique original
+complete programs are positive snapshot regressions. All 314 core rejection
+candidates and 876 runtime gap programs, including ten new probes, remain
+Unsupported. Eight ordered and ten direct-eval probes retain conversion order
+and state. Whole seventeen-file and 115-file reviews remain 10/24 and 192/38
+Passed/Unsupported, with no failures or host limits.
+
+The corpus remains 7503 fixtures, 7484 reviewed Script sources, 14446 variants,
+12913 harness positives, 1525 parse negatives and 621 RegExp builtin positive
+source files. The existing pin, eleven helpers and dependency allowances remain
+unchanged.
+
+Stable and MSRV pass all 14,446 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -316,9 +316,9 @@ pub(crate) fn is_syntax(unit: u16) -> bool {
 }
 
 // Validated Unicode RegExpUnicodeEscapeSequence :: u{ CodePoint } (22.2.1).
-// Checked u16 accumulation admits only the BMP; the complete literal proof
-// subsequently excludes surrogate units. Leading zeros require no extra storage.
-fn braced_bmp_escape(source: &[u16], index: &mut usize) -> Option<u16> {
+// Checked u16 accumulation admits only BMP values; the containing literal or
+// character-set proof excludes surrogates. Leading zeros need no extra storage.
+pub(crate) fn braced_bmp_escape(source: &[u16], index: &mut usize) -> Option<u16> {
     *index += 2;
     let mut value = 0u16;
     let mut has_digit = false;

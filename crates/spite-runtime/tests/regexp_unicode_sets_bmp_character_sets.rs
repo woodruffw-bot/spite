@@ -139,7 +139,7 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         r"/\D/v.exec('a')",
         r"/[\uD800]/v.exec('\uD800')",
         r"/[\uD7FF-\uE000]/v.exec('a')",
-        r"/[\u{61}]/v.exec('a')",
+        r"/[\u{1f600}]/v.exec('a')",
         r"/[a]b/v.exec('ab')",
         r"/([a])/v.exec('a')",
         r"/[a]*/v.exec('a')",
