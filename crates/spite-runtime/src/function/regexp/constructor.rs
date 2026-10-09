@@ -9,7 +9,8 @@ use spite_core::{
     RegExpCharacterMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
-    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, Span, regexp_outer_group_body,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher, Span,
+    regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -427,6 +428,13 @@ impl Realm {
             if matcher.is_none() && unicode && !flags.code_units().contains(&u16::from(b'i')) {
                 self.object_work(span, |_, budget| {
                     budget.charge(capture_source.len())?;
+                    if let Some(body) = RegExpUnicodeCharacterMatcher::compile_with_work(
+                        &capture_source,
+                        flags.code_units().contains(&u16::from(b's')),
+                        |work| budget.charge(work),
+                    )? {
+                        return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
+                    }
                     let body = if flags.code_units().contains(&u16::from(b'v')) {
                         RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(
                             &capture_source,

@@ -6,7 +6,7 @@ use spite_core::{
     RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
-    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -19,6 +19,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeCodePoints(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
     Character(RegExpCharacterMatcher),
+    UnicodeCharacter(RegExpUnicodeCharacterMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
     Quantified(RegExpQuantifiedMatcher),
@@ -47,7 +48,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeEmpty(m)
             | RegExpMatcherBody::UnicodeCodePoints(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
-            RegExpMatcherBody::Character(_) => 0,
+            RegExpMatcherBody::Character(_) | RegExpMatcherBody::UnicodeCharacter(_) => 0,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedSequence(m) => m.capture_count(),
@@ -111,6 +112,9 @@ impl RegExpMatcher {
             }
             RegExpMatcherBody::Anchored(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::Character(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::UnicodeCharacter(matcher) => {
+                (matcher.find(input, start, sticky)?, 0)
+            }
             RegExpMatcherBody::Prefixed(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::RepeatedLiteral(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::RepeatedSequence(matcher) => {
@@ -154,7 +158,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeEmpty(_)
             | RegExpMatcherBody::UnicodeCodePoints(_) => 1,
             RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
-            RegExpMatcherBody::Character(_) => 1,
+            RegExpMatcherBody::Character(_) | RegExpMatcherBody::UnicodeCharacter(_) => 1,
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
             RegExpMatcherBody::RepeatedLiteral(m) => m.search_passes(),
@@ -170,6 +174,12 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        if matches!(self.body, RegExpMatcherBody::UnicodeCharacter(_)) {
+            // A dot or escape consumes at most two units. Initial-pair rewind
+            // can expose one extra unit, including in the one-unit dot source.
+            let remaining = remaining.saturating_add(1);
+            return if sticky { 2.min(remaining) } else { remaining };
+        }
         // A Unicode literal search can move its initial position back one unit.
         // Precharge that possible unit before executing an opted-in work quota.
         let remaining = if matches!(self.body, RegExpMatcherBody::UnicodeCodePoints(_)) {
@@ -227,7 +237,9 @@ impl RegExpMatch<'_> {
             | RegExpMatcherBody::UnicodeEmpty(matcher)
             | RegExpMatcherBody::UnicodeCodePoints(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
-            RegExpMatcherBody::Character(_) => return None,
+            RegExpMatcherBody::Character(_) | RegExpMatcherBody::UnicodeCharacter(_) => {
+                return None;
+            }
             RegExpMatcherBody::Prefixed(matcher) => {
                 return matcher.capture_range(index, &self.range);
             }

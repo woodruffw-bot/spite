@@ -134,14 +134,14 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
         r"/[\u{1f600}]/v.exec('a')",
         r"/[a]/iu.exec('a')",
         r"/[^a]/u.exec('b')",
-        r"/\D/u.exec('a')",
+        r"/(\D)/u.exec('a')",
         r"/[\uD800]/u.exec('\uD800')",
         r"/[\uD7FF-\uE000]/u.exec('a')",
         r"/[\u{1f600}]/u.exec('a')",
         r"/[a]b/u.exec('ab')",
         r"/([a])/u.exec('a')",
         r"/[a]*/u.exec('a')",
-        r"/./u.exec('a')",
+        r"/(.)/u.exec('a')",
         r"/[\p{ASCII}]/u.exec('a')",
     ] {
         assert!(

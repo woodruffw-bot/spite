@@ -333,7 +333,7 @@ impl RegExpLiteralMatcher {
 
 // GetStringIndex maps an initial low-surrogate offset to its character's
 // leading boundary. Use that boundary for the whole match and captures too.
-fn unicode_start(input: &JsString, start: usize) -> Option<usize> {
+pub(crate) fn unicode_start(input: &JsString, start: usize) -> Option<usize> {
     let units = input.code_units();
     units.get(start..)?;
     Some(

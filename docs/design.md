@@ -2604,6 +2604,26 @@ Construction precharges one literal compilation pass instead of retrying narrowe
 plans. Search still accounts for a possible one-unit rewind. Quotas remain opt-in,
 without dependencies or changes to the admitted syntax.
 
+
+Single case-sensitive Unicode dot and CharacterClassEscape bodies now have a
+constant-size plan (22.2.2.7, 22.2.2.7.1, 22.2.2.9). Dot excludes exactly the
+four LineTerminator values unless s is set. The d/w/s escapes use decimal ASCII,
+ASCII word membership and ECMAScript whitespace plus line terminators; their
+uppercase counterparts complement those sets across all Unicode code points,
+including supplementary characters and isolated surrogates.
+
+Matching decodes input characters while scanning, with no input-sized allocation,
+consuming paired surrogates together and lone surrogates individually. UTF-16
+result ranges use complete-character boundaries, with the approved initial-pair
+leading-boundary rule. Existing BMP APIs and ordinary unit matching are preserved.
+Only a complete dot or escape body is admitted; groups, concatenations, classes,
+anchors, quantifiers and ignore-case Unicode matching remain separate proofs.
+
+Opted-in construction charges constant plan work; search precharges up to two
+sticky units or the suffix plus a possible rewind unit. This covers a dot's
+one-unit Pattern spelling consuming a two-unit input character. Quotas remain
+opt-in, and host failures preserve completion and lastIndex state.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

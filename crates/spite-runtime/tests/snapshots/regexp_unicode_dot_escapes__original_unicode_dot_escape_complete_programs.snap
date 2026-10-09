@@ -1,0 +1,9 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_dot_escapes.rs
+expression: rows
+---
+"/./v.test('a')" "true"
+"/\u005cD/u.exec('a')" "[\u0022a\u0022]"
+"/./u.exec('a')" "[\u0022a\u0022]"
+"/\u005cD/v.exec('a')" "[\u0022a\u0022]"
+"/./v.exec('a')" "[\u0022a\u0022]"
