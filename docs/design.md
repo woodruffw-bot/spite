@@ -2127,9 +2127,8 @@ the existing checkpoint.
 
 Consuming units require equal representable counts and checked complete widths.
 All-zero required units retain one effect pass, even with unrepresentable counts;
-exact-zero units remain skipped. Outside-child capture-dependent lookahead widths,
-bare unproved capture reads, variable consuming counts, unproved choices and
-Unicode modes remain pending. This extends the shared proof and comparator
+exact-zero units remain skipped. Changing enclosing-owner capture dependencies, variable consuming counts,
+unproved choices and Unicode modes remain pending. This extends the shared proof and comparator
 without new dependencies, default quotas, source expansion or native recursion.
 
 
@@ -2158,6 +2157,32 @@ child consumes input and keeps preparation and nesting flat. Count increments
 remain bounded by the entry's checked maximum and actual accepted consumption.
 The change uses the existing checkpoint mechanism, with no new dependencies,
 default resource quotas, source expansion or native recursion.
+
+
+Linear forward lookahead inside ordinary lookbehind can import stable capture
+ranges preceding every enclosing backward owner (22.2.2.8, 22.2.2.9.2). Group
+frames cache the earliest backward owner's first capture slot, inherited at entry,
+so nested forward assertion preparation never rescans its ancestors. Each numeric
+target and every alias of a named target must precede this bound. Open outside
+captures remain undefined; mutable enclosing-owner and future captures stay
+outside this proof.
+
+The shared checked assertion-width resolver receives matching direction. Scalar
+imports, exact imported counts and counted mixed units resolve their lengths from
+original input ranges. Forward units resolve completed left-hand Local spans;
+backward units retain their right-hand Future proof. An empty required unit needs
+one capture-effect pass even for unrepresentable counts. A consuming unavailable
+or overflowing width makes a positive assertion fail and a negative assertion
+succeed without exporting owned captures. Exact-zero units do not read targets.
+
+Forward frames retain full input context and require the computed end position.
+Imported captures preserve their original positions; owned captures retain the
+rightmost forward unit's ranges. Parent backward widths skip these zero-width
+children, and failed negative assertions restore completed effects through their
+existing checkpoints. Flat instructions, frames and shared units keep deep scopes
+and large counts safe without new dependencies, source expansion, native recursion
+or default quotas. Variable consuming counts, unproved choices, changing owner
+captures and Unicode modes remain pending.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

@@ -149,7 +149,7 @@ fn internal_reads_dependent_children_variable_counts_choices_and_unicode_remain_
         r"/(a)(?<=a{2}(\1){1,2})b/.exec('aaab')",
         r"/(?<=(\1))a/.exec('a')",
         r"/(a)(?<=(?<=\1))b/.exec('ab')",
-        r"/(a)(?<=(?=\1)\1)b/.exec('ab')",
+        r"/(a)(?<=(?=\1{1,2})\1)b/.exec('ab')",
         r"/(a)(?<=\1|a)b/.exec('ab')",
         r"/(a)(?<=\1{1,2})b/.exec('aab')",
         r"/(a)(?<=\1+)b/.exec('ab')",
