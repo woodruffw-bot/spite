@@ -2413,6 +2413,22 @@ sequence boundary prevents reflattening nested effect lists. Storage follows
 declared boundaries rather than the repetition count; this adds no instruction,
 runtime matcher, recursive traversal, dependency or default quota.
 
+
+Exactly repeated same-reference children preserve captures from their final
+mandatory iteration (22.2.2.3.1, 22.2.2.9.2). For a representable positive exact
+count, checked multiplication determines the total copy width. Declared child
+endpoints shift to the last iteration: its suffix in forward matching, or its
+physical leftmost span in backward matching. Deduplicated endpoints split the
+total atom into flat segments with checked multiplicities. Existing owner, width,
+direction, capture and rollback machinery interprets those segments.
+
+The consuming proof excludes reads of child-owned numeric slots and named aliases.
+Unrepresentable products and bounds retain the existing required-empty proof,
+including undefined reads in both directions; they do not acquire a consuming
+plan. Variable and optional consuming child counts remain unproved. Storage
+follows declared capture boundaries rather than repetition counts. This adds no
+instruction, runtime matcher, recursive traversal, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

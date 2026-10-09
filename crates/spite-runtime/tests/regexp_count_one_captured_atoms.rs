@@ -125,9 +125,9 @@ fn opted_in_work_abort_keeps_last_index_and_bypasses_handlers() {
 #[test]
 fn other_counts_partial_reference_spans_and_unicode_stay_pending() {
     for source in [
-        r"/(?<=a(?=(b)(\1){2}))b/.exec('abbb')",
+        r"/(?<=a(?=(b)(\1){2,3}))b/.exec('abbb')",
         r"/(?<=a(?=(b)(\1){1,2}))b/.exec('abbb')",
-        r"/(?<=a(?=(b)(?:(\1)\1){2}))b/.exec('abbb')",
+        r"/(?<=a(?=(b)(?:(\1)\1){2,3}))b/.exec('abbb')",
         r"/(?<=(a)(\1){1})b/u.exec('ab')",
         r"/(?<=(a)(\1){1})b/v.exec('ab')",
     ] {

@@ -130,7 +130,7 @@ fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
 #[test]
 fn other_child_counts_optional_effects_and_unicode_remain_pending() {
     for source in [
-        r"/(?<=a(?=(b)(\1(\1)){2}))b/.exec('abbbbbb')",
+        r"/(?<=a(?=(b)(\1(\1)){2,3}))b/.exec('abbbbbb')",
         r"/(?<=a(?=(b)(\1(\1)){0,1}))b/.exec('abbb')",
         r"/(?<=a(?=(b)(\1(\1)){1}))b/u.exec('abbb')",
         r"/(?<=a(?=(b)(\1(\1)){1}))b/v.exec('abbb')",

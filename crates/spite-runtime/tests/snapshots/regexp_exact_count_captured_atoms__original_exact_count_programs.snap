@@ -1,0 +1,10 @@
+---
+source: crates/spite-runtime/tests/regexp_exact_count_captured_atoms.rs
+expression: rows
+---
+"/(?<=a(?=(b)(?:(\\1)\\1){2}))b/.exec('abbb')" "null"
+"/(?<=a(?=(b)(\\1(\\1)){2}))b/.exec('abbb')" "null"
+"/(?<=a(?=(b)(\\1(\\1)){2}))b/.exec('abbbbbb')" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbbbbb\u0022}"
+"/(?<=a(?=(b)(\\1){2}))b/.exec('abb')" "null"
+"/(?<=a(?=(b)(\\1){2}))b/.exec('abbb')" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022}"
+"/(?<=a(?=(b)(\\1\\1){2}))b/.exec('abbbbb')" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbbbb\u0022}"

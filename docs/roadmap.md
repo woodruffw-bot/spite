@@ -430,6 +430,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain full, partial and boundary capture effects of required same-reference atoms with multiple original copies when their reads are proved empty.
 - [x] Preserve full-span and boundary-empty captures when a multiple-reference atom is counted exactly once in proved ordinary assertion and repetition units.
 - [x] Preserve consuming partial spans and interior-empty captures in same-reference atoms counted exactly once, using declared capture boundaries and checked segment multiplicities.
+- [x] Preserve final-iteration complete, partial and interior-empty captures in exactly repeated same-reference atoms, with checked copy counts and matching-direction-aware endpoints.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

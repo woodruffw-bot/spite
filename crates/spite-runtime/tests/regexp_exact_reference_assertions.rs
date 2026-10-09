@@ -136,7 +136,7 @@ fn variable_counts_capture_effects_choices_and_unicode_remain_pending() {
     for source in [
         r"/(?<=a(?=(b)\1{1,2}))b/.exec('abbb')",
         r"/(?<=(\2{1,2})(b))c/.exec('bbbc')",
-        r"/(?<=a(?=(b)(\1){2}))b/.exec('abbb')",
+        r"/(?<=a(?=(b)(\1){2,3}))b/.exec('abbb')",
         r"/(?<=(\2{2}|a)(b))c/.exec('bbbc')",
         r"/(?<=a(?=(b)\1{2}))b/u.exec('abbb')",
         r"/(?<=a(?=(b)\1{2}))b/v.exec('abbb')",
