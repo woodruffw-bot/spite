@@ -2428,6 +2428,7 @@ fn quantify_reference_wrapper(
     let mut targets = Vec::new();
     let mut counted_targets = Vec::new();
     let mut captures = Vec::new();
+    let mut nested_capture_effects = false;
     let mut opened = Vec::new();
     for (position, instruction) in instructions
         .iter()
@@ -2466,9 +2467,28 @@ fn quantify_reference_wrapper(
                 named,
                 bounds: (min, max, _),
                 copies: atom_copies,
-                captures,
+                captures: child_captures,
                 ..
-            }) if captures.is_empty() => {
+            }) if child_captures.is_empty()
+                || (*min == Some(1)
+                    && *max == Some(1)
+                    && *atom_copies == 1
+                    && child_captures
+                        .iter()
+                        .all(|(_, span)| span.start <= span.end && span.end <= 1)) =>
+            {
+                // Count one preserves the child's original capture effects.
+                // Its single reference maps each full or empty span to one
+                // source-relative term; other counts and partial spans remain
+                // unproved (22.2.2.3.1, 22.2.2.9.2).
+                for &(slot, span) in child_captures.iter() {
+                    captures.push((
+                        slot,
+                        copies.checked_add(span.start)?,
+                        copies.checked_add(span.end)?,
+                    ));
+                }
+                nested_capture_effects |= !child_captures.is_empty();
                 counted_targets.push((
                     copies,
                     *max,
@@ -2585,15 +2605,19 @@ fn quantify_reference_wrapper(
         .into_iter()
         .map(|(slot, start, end)| (slot, ReferenceCaptureSpan { start, end }))
         .collect();
+    // Retain a sequence after importing nested capture effects. A following
+    // wrapper cannot flatten the sequence again, keeping deeply nested counted
+    // captures from repeatedly copying their growing effect lists.
     let single = reference.filter(|&(_, index, named)| {
-        targets.iter().all(|target| {
-            *target
-                == (ReferenceTarget::Input {
-                    index,
-                    named,
-                    copies: 1,
-                })
-        })
+        !nested_capture_effects
+            && targets.iter().all(|target| {
+                *target
+                    == (ReferenceTarget::Input {
+                        index,
+                        named,
+                        copies: 1,
+                    })
+            })
     });
     if single.is_none() {
         for instruction in &mut instructions[body] {
@@ -3907,6 +3931,133 @@ mod tests {
     }
 
     #[test]
+    fn count_one_captured_atoms_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(a)(\1){1})b",
+            r"(?<=(a)(\1){1}?)b",
+            r"(?<=(\2){1}(a))b",
+            r"(?<=(\1){1}a)b",
+            r"(a)(?=(\1){1}b)",
+            r"(?=(a)(\1){1})a",
+            r"(?!(a)(\1){1})b",
+            r"(?<!(a)(\1){1})b",
+            r"(?<=a(?=(b)(\1){1}))b",
+            r"((\2){1}(b))+",
+            r"((b)(\2){1})+",
+            r"(?<=((b)(\2){1}){2})c",
+            r"(?<=((\3){1}(b)){2})c",
+            r"(a)((\1){1}b)+",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n", "abbb", "abbbb", "abbbbb", "bbbbc", "bbbbbbbc", "aaaab", "aaabc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn count_one_captured_children_keep_imported_local_future_and_open_effects() {
+        for (source, text, range, captures) in [
+            (
+                r"(?<=(a)(\1){1})b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(1..1)],
+            ),
+            (
+                r"(?<=(\2){1}(a))b",
+                "aab",
+                2..3,
+                vec![Some(0..1), Some(1..2)],
+            ),
+            (r"(?<=(\1){1}a)b", "ab", 1..2, vec![Some(0..0)]),
+            (
+                r"(a)(?=(\1){1}b)",
+                "aab",
+                0..1,
+                vec![Some(0..1), Some(1..2)],
+            ),
+            (
+                r"(?<=a(?=(b)(\1){1}))b",
+                "abb",
+                1..2,
+                vec![Some(1..2), Some(2..3)],
+            ),
+            (r"(?<!(a)(\1){1})b", "b", 0..1, vec![None, None]),
+            (
+                r"(?<=(a)(()\1){1})b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(1..1), Some(1..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=a(?=(b)(\1){2}))b",
+            r"(?<=a(?=(b)(\1){1,2}))b",
+            r"(?<=a(?=(b)(\1\1){1}))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+    #[test]
+    fn count_one_child_effects_deep_captures_clones_and_opted_in_work_are_flat() {
+        let n = 100000;
+        let source = format!(r"(?<=(a){}\1{}{{1}})b", "(".repeat(n), ")".repeat(n));
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("ab"), 0, true);
+        assert!(found.is_none());
+        let found = copy.find(&JsString::from("ab"), 0, false).unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), n + 1);
+        assert_eq!(found.captures[0], Some(0..1));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..1)));
+        let input = JsString::from(("c".repeat(10000) + "ab").as_str());
+        let mut work = 0;
+        assert!(
+            copy.find_with_work(&input, 0, false, |n| {
+                work += n;
+                if work > 1000 { Err(()) } else { Ok(()) }
+            })
+            .is_err()
+        );
+    }
+
+    #[test]
     fn unit_matching_direction_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -4461,7 +4612,7 @@ mod tests {
         for source in [
             r"(?<=a(?=(b)\1{1,2}))b",
             r"(?<=(\2{1,2})(b))c",
-            r"(?<=a(?=(b)(\1){1}))b",
+            r"(?<=a(?=(b)(\1){2}))b",
             r"(?<=(\2{1}|a)(b))c",
         ] {
             assert!(

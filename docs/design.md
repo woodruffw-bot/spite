@@ -2335,6 +2335,22 @@ and declared-reference validation. Variable consuming widths remain unsupported.
 There is no count-sized expansion, new matcher, dependency, recursion or default
 quota. Existing capture rollback, negative assertions and result offsets are reused.
 
+
+A single-reference captured atom counted exactly once can compose into an ordinary
+reference unit without dropping its capture effects (22.2.2.3.1, 22.2.2.9.2). Its
+closed full or empty spans map to one source-relative term with checked ordinal
+addition. The existing Input/Local/Open/Future classification, actual matching
+direction, complete-owner proof and checked widths determine the original ranges.
+Capture aliases, negative rollback and the surrounding unit's repetition are reused.
+Other child counts and partial spans across multiple reference copies remain unproved.
+
+After importing nested capture effects, lowering retains a flat sequence instead
+of collapsing back to the scalar instruction. A further wrapper cannot flatten
+that sequence again, preventing repeated copying of growing child-effect lists.
+The list is proportional to the source's declared capture slots, never to a repeat
+count. No runtime matcher, dependency, source expansion, recursion or default quota
+is added. The child's declared read and capture slots stay visible to validation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

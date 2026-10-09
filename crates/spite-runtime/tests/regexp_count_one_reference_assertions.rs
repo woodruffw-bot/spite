@@ -124,7 +124,7 @@ fn larger_consuming_counts_capture_effects_choices_and_unicode_remain_pending() 
     for source in [
         r"/(?<=a(?=(b)\1{1,2}))b/.exec('abb')",
         r"/(?<=(\2{1,2})(b))c/.exec('bbc')",
-        r"/(?<=a(?=(b)(\1){1}))b/.exec('abb')",
+        r"/(?<=a(?=(b)(\1){2}))b/.exec('abb')",
         r"/(?<=(\2{1}|a)(b))c/.exec('bbc')",
         r"/(?<=a(?=(b)\1{1}))b/u.exec('abb')",
         r"/(?<=a(?=(b)\1{1}))b/v.exec('abb')",
