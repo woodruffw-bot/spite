@@ -87,7 +87,7 @@ fn named_quantified_and_backreference_patterns_remain_unsupported() {
         r"/(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:([a]b|c)*)|){2,3}/.test('a')",
         r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('aa')",
-        "/(\\u{D800})/u.test('a')",
+        "/(\\u{D800}\\u{DC00})/u.test('a')",
     ] {
         assert!(
             matches!(

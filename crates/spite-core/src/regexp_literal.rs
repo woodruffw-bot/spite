@@ -20,14 +20,15 @@ struct Program {
     failure: Vec<usize>,
     ignore_case: bool,
     captures: Vec<Range<usize>>,
-    unicode_scalars: bool,
+    mode: LiteralMode,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum LiteralMode {
     Ordinary,
     BmpUnicode,
     ScalarUnicode,
+    CodePointUnicode,
 }
 
 impl RegExpLiteralMatcher {
@@ -88,10 +89,45 @@ impl RegExpLiteralMatcher {
         start: usize,
         sticky: bool,
     ) -> Option<Range<usize>> {
-        if !self.0.unicode_scalars {
+        if self.0.mode != LiteralMode::ScalarUnicode {
             return None;
         }
         self.find(input, unicode_start(input, start)?, sticky)
+    }
+
+    /// Compiles a case-sensitive Unicode literal concatenation, including lone
+    /// surrogate atoms (22.2.1, 22.2.2.7). The caller must validate u/v grammar.
+    ///
+    /// Two distinct surrogate atoms which would flatten into one pair remain
+    /// excluded: no Unicode input can match that concatenation. All admitted
+    /// internal atom and capture boundaries agree with UTF-16 decoding. Empty
+    /// bodies and other syntax are excluded; use find_unicode_code_points to
+    /// enforce input boundaries for successful occurrences.
+    pub fn compile_unicode_code_points(source: &JsString) -> Option<Self> {
+        let matcher =
+            Self::compile_with_unicode_escapes(source, false, LiteralMode::CodePointUnicode)?;
+        (!matcher.0.units.is_empty()).then_some(matcher)
+    }
+
+    /// Searches Unicode literal occurrences with complete input characters.
+    ///
+    /// An occurrence cannot consume half of an input pair. A rejected boundary
+    /// resumes the same KMP scan, retaining linear search time. Internal boundaries
+    /// follow the compiled atom proof; only the two external bounds need checking.
+    /// Initial pair offsets use the documented Node/V8 leading boundary rule.
+    pub fn find_unicode_code_points(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+    ) -> Option<Range<usize>> {
+        if self.0.mode != LiteralMode::CodePointUnicode {
+            return None;
+        }
+        let units = input.code_units();
+        self.find_if(input, unicode_start(input, start)?, sticky, |range| {
+            unicode_boundary(units, range.start) && unicode_boundary(units, range.end)
+        })
     }
 
     /// Compiles a validated Unicode Pattern with only mandatory empty groups.
@@ -161,9 +197,29 @@ impl RegExpLiteralMatcher {
                 }
                 continue;
             }
-            if mode == LiteralMode::ScalarUnicode {
-                let scalar = unicode_scalar_atom(source, &mut index, unit)?;
-                units.extend_from_slice(scalar.encode_utf16(&mut [0; 2]));
+            if matches!(
+                mode,
+                LiteralMode::ScalarUnicode | LiteralMode::CodePointUnicode
+            ) {
+                let value = unicode_literal_atom(source, &mut index, unit)?;
+                if mode == LiteralMode::ScalarUnicode {
+                    let scalar = char::from_u32(value)?;
+                    units.extend_from_slice(scalar.encode_utf16(&mut [0; 2]));
+                } else if value <= 0xffff {
+                    let unit = value as u16;
+                    // Distinct lone atoms cannot denote a well-formed input pair,
+                    // even when empty or noncapturing groups separate them.
+                    if (0xdc00..=0xdfff).contains(&unit)
+                        && units
+                            .last()
+                            .is_some_and(|unit| (0xd800..=0xdbff).contains(unit))
+                    {
+                        return None;
+                    }
+                    units.push(unit);
+                } else {
+                    units.extend_from_slice(char::from_u32(value)?.encode_utf16(&mut [0; 2]));
+                }
                 continue;
             }
             let unit = if unit == u16::from(b'\\') {
@@ -200,7 +256,7 @@ impl RegExpLiteralMatcher {
             failure,
             ignore_case,
             captures,
-            unicode_scalars: mode == LiteralMode::ScalarUnicode,
+            mode,
         })))
     }
 
@@ -297,7 +353,7 @@ fn unicode_start(input: &JsString, start: usize) -> Option<usize> {
 // Decode one Pattern atom before flattening groups. RegExpUnicodeEscapeSequence
 // joins only directly adjacent fixed lead/trail escapes, not braced surrogates
 // or escapes separated by a group. Raw source pairs form one SourceCharacter.
-fn unicode_scalar_atom(source: &[u16], index: &mut usize, unit: u16) -> Option<char> {
+fn unicode_literal_atom(source: &[u16], index: &mut usize, unit: u16) -> Option<u32> {
     let value = if unit == 0x5c {
         if source.get(*index..*index + 2) == Some(&[0x75, 0x7b]) {
             *index += 2;
@@ -318,13 +374,19 @@ fn unicode_scalar_atom(source: &[u16], index: &mut usize, unit: u16) -> Option<c
         } else {
             let fixed_unicode = source.get(*index) == Some(&0x75);
             let first = character_escape(source, index)?;
-            if fixed_unicode && (0xd800..=0xdbff).contains(&first) {
-                if source.get(*index..*index + 2) != Some(&[0x5c, 0x75]) {
-                    return None;
+            if fixed_unicode
+                && (0xd800..=0xdbff).contains(&first)
+                && source.get(*index..*index + 2) == Some(&[0x5c, 0x75])
+            {
+                let mut next = *index + 2;
+                if let Some(value) = hex_escape(source, &mut next, 4)
+                    .and_then(|second| surrogate_scalar(first, second))
+                {
+                    *index = next;
+                    value
+                } else {
+                    u32::from(first)
                 }
-                *index += 2;
-                let second = hex_escape(source, index, 4)?;
-                surrogate_scalar(first, second)?
             } else {
                 u32::from(first)
             }
@@ -332,13 +394,26 @@ fn unicode_scalar_atom(source: &[u16], index: &mut usize, unit: u16) -> Option<c
     } else if is_syntax(unit) {
         return None;
     } else if (0xd800..=0xdbff).contains(&unit) {
-        let second = *source.get(*index)?;
-        *index += 1;
-        surrogate_scalar(unit, second)?
+        if let Some(value) = source
+            .get(*index)
+            .and_then(|&second| surrogate_scalar(unit, second))
+        {
+            *index += 1;
+            value
+        } else {
+            u32::from(unit)
+        }
     } else {
         u32::from(unit)
     };
-    char::from_u32(value)
+    Some(value)
+}
+
+fn unicode_boundary(input: &[u16], offset: usize) -> bool {
+    offset == 0
+        || offset == input.len()
+        || !(0xdc00..=0xdfff).contains(&input[offset])
+        || !(0xd800..=0xdbff).contains(&input[offset - 1])
 }
 
 fn surrogate_scalar(first: u16, second: u16) -> Option<u32> {
@@ -462,6 +537,124 @@ fn hex_escape(source: &[u16], index: &mut usize, count: usize) -> Option<u16> {
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn unicode_surrogate_literal_ranges_snapshot() {
+        let mut rows = String::new();
+        for pattern in [
+            r"\uD83D",
+            r"\uDE00",
+            r"\u{D800}",
+            r"\u{DFFF}",
+            r"(\uD83D)",
+            r"()(\uDE00())",
+            r"a\uD83D",
+            r"\uDE00a",
+            r"\uD83D\uD83D",
+            r"\uDE00\uDE00",
+            r"(\uD83D)\uD83D\uDE00",
+            r"\uD83D\uDE00(\uDE00)",
+            r"(\uD83D)a(\uDE00)",
+            r"\u{D800}\u{10000}",
+            r"(\uD800)\uD800\uDC00",
+            r"\u{1f600}\u{DFFF}",
+        ] {
+            let source = JsString::from(pattern);
+            let matcher = RegExpLiteralMatcher::compile_unicode_code_points(&source).unwrap();
+            for units in [
+                vec![],
+                vec![0xd83d],
+                vec![0xde00],
+                vec![0xd83d, 0xde00],
+                vec![0xd83d, 0xd83d, 0xde00, 0xde00],
+                vec![0x61, 0xd83d, 0x61, 0xde00, 0x61],
+                vec![0xd800, 0xd800, 0xdc00, 0xdfff, 0xd83d, 0xde00, 0xdfff],
+            ] {
+                let input = JsString::from_code_units(units);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        let ranges =
+                            matcher
+                                .find_unicode_code_points(&input, start, sticky)
+                                .map(|range| {
+                                    let mut result = vec![[range.start, range.end]];
+                                    result.extend(matcher.capture_ranges().iter().map(|capture| {
+                                        [range.start + capture.start, range.start + capture.end]
+                                    }));
+                                    result
+                                });
+                        writeln!(rows,"{source:?} input={input:?} start={start} sticky={sticky} ranges={ranges:?}").unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_surrogate_atom_boundaries_survive_decoding_and_group_flattening() {
+        for source in [
+            r"(\uD83D)(\uDE00)",
+            r"\uD83D(?:)\uDE00",
+            r"\u{D83D}\u{DE00}",
+            r"\uD83D\u{DE00}",
+            r"\u{D83D}\uDE00",
+            r"\uD83D()\uDE00",
+            "",
+            "()",
+            r"\uD800+",
+            r"[\uD800]",
+        ] {
+            assert!(
+                RegExpLiteralMatcher::compile_unicode_code_points(&JsString::from(source))
+                    .is_none(),
+                "{source}"
+            );
+        }
+        for unit in [0xd800, 0xdbff, 0xdc00, 0xdfff] {
+            let source = JsString::from_code_units(vec![unit]);
+            let matcher = RegExpLiteralMatcher::compile_unicode_code_points(&source).unwrap();
+            assert_eq!(
+                matcher.find_unicode_code_points(&source, 0, true),
+                Some(0..1)
+            );
+            assert!(matcher.find_unicode_scalars(&source, 0, true).is_none());
+        }
+        let input = JsString::from_code_units(vec![0xd83d, 0xde00, 0xd83d, 0xde00, 0xde00]);
+        let matcher =
+            RegExpLiteralMatcher::compile_unicode_code_points(&JsString::from(r"\uDE00")).unwrap();
+        assert_eq!(
+            matcher.find_unicode_code_points(&input, 1, false),
+            Some(4..5)
+        );
+        assert_eq!(matcher.find_unicode_code_points(&input, 1, true), None);
+        assert_eq!(matcher.find_unicode_code_points(&input, 6, false), None);
+    }
+
+    #[test]
+    fn unicode_surrogate_boundary_rejections_resume_linear_search_and_flat_captures() {
+        let mut units = [0xd83d, 0xde00].repeat(100000);
+        units.push(0xde00);
+        let input = JsString::from_code_units(units);
+        let source = format!(
+            "{}\\u{{{}de00}}{}",
+            "(".repeat(100000),
+            "0".repeat(100000),
+            ")".repeat(100000)
+        );
+        let matcher =
+            RegExpLiteralMatcher::compile_unicode_code_points(&JsString::from(source.as_str()))
+                .unwrap();
+        let copy = matcher.clone();
+        drop(matcher);
+        assert_eq!(copy.capture_ranges().len(), 100000);
+        assert!(copy.capture_ranges().iter().all(|range| range == &(0..1)));
+        assert_eq!(
+            copy.find_unicode_code_points(&input, 1, false),
+            Some(200000..200001)
+        );
+        assert_eq!(copy.find_unicode_code_points(&input, 199999, true), None);
+    }
 
     #[test]
     fn unicode_scalar_literal_ranges_snapshot() {

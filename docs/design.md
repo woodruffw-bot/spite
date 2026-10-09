@@ -2566,6 +2566,29 @@ pass; opted-in search accounting includes a possible one-unit rewind. Default
 work and heap quotas remain absent. Supplementary character classes, quantifiers,
 assertions, backreferences and nonempty ignore-case matching remain unproved.
 
+
+Case-sensitive Unicode literal concatenations now include lone surrogate atoms
+(22.2.1, 22.2.2.7, 22.2.7.2). A shared atom decoder preserves raw source pairs
+and directly adjacent fixed lead/trail escape pairs while allowing isolated
+surrogates as Unicode code points. The existing scalar API retains its narrower
+proof. Braced surrogate escapes and surrogates separated by group syntax remain
+separate atoms.
+
+Before flattening, a distinct lone trail atom immediately after a lone lead atom
+is rejected: no Unicode input can contain that adjacent pair as two characters.
+This also catches empty and noncapturing groups between the atoms. Every other
+internal atom and capture boundary agrees with UTF-16 decoding. The two external
+match bounds are checked against the input; an occurrence consuming half of an
+input pair is rejected. The same KMP failure state resumes after rejection,
+retaining linear search without code-point arrays, recursion or mutable programs.
+
+The previously approved Node/V8 initial-pair boundary rule, metadata, result
+construction, strict lastIndex writes, conversion order and opt-in work accounting
+are retained. Long leading-zero escapes and deep groups use flat storage. Default
+work and heap quotas remain absent. Distinct surrogate atoms which would flatten
+into a pair, character classes containing surrogates, supplementary membership,
+nonempty case folding and other unproved Unicode bodies remain Unsupported.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

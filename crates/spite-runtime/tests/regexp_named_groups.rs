@@ -129,7 +129,7 @@ fn unsupported_backreferences_modes_and_conditionally_captured_local_choices_rem
         r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(?<x>a)(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(?:x(?:(?<n>a)|(?<n>b))y){2}){2})|){2,3}/.test('xay')",
-        "/(?<x>\\u{D800})/u.test('a')",
+        "/(?<x>\\u{D800}\\u{DC00})/u.test('a')",
     ] {
         assert!(
             matches!(

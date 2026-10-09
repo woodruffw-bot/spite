@@ -124,8 +124,8 @@ fn unicode_braced_bmp_opted_work_aborts_and_other_bodies_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\u{D800}/u.exec('a')",
-        r"/\u{D800}/v.exec('\uD800')",
+        r"/\u{D800}\u{DC00}/u.exec('a')",
+        r"/\u{D800}\u{DC00}/v.exec('\uD800')",
         r"/\u{61}/iu.exec('a')",
         r"/[\u{1f600}]/u.exec('a')",
         r"/\u{61}+/v.exec('aa')",

@@ -17,6 +17,7 @@ pub(crate) enum RegExpMatcherBody {
     Literal(RegExpLiteralMatcher),
     UnicodeEmpty(RegExpLiteralMatcher),
     UnicodeScalars(RegExpLiteralMatcher),
+    UnicodeCodePoints(RegExpLiteralMatcher),
     Anchored(RegExpAnchoredMatcher),
     Character(RegExpCharacterMatcher),
     Sequence(RegExpSequenceMatcher),
@@ -45,7 +46,8 @@ impl RegExpMatcher {
             RegExpMatcherBody::Backreferences(m) => m.capture_count(),
             RegExpMatcherBody::Literal(m)
             | RegExpMatcherBody::UnicodeEmpty(m)
-            | RegExpMatcherBody::UnicodeScalars(m) => m.capture_ranges().len(),
+            | RegExpMatcherBody::UnicodeScalars(m)
+            | RegExpMatcherBody::UnicodeCodePoints(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Character(_) => 0,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -102,6 +104,9 @@ impl RegExpMatcher {
         let (range, branch) = match &self.body {
             RegExpMatcherBody::Backreferences(_) => unreachable!("fallible reference dispatch"),
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::UnicodeCodePoints(matcher) => {
+                (matcher.find_unicode_code_points(input, start, sticky)?, 0)
+            }
             RegExpMatcherBody::UnicodeScalars(matcher) => {
                 (matcher.find_unicode_scalars(input, start, sticky)?, 0)
             }
@@ -151,7 +156,8 @@ impl RegExpMatcher {
             RegExpMatcherBody::Backreferences(_) => 0,
             RegExpMatcherBody::Literal(_)
             | RegExpMatcherBody::UnicodeEmpty(_)
-            | RegExpMatcherBody::UnicodeScalars(_) => 1,
+            | RegExpMatcherBody::UnicodeScalars(_)
+            | RegExpMatcherBody::UnicodeCodePoints(_) => 1,
             RegExpMatcherBody::Anchored(matcher) => matcher.search_passes(sticky),
             RegExpMatcherBody::Character(_) => 1,
             RegExpMatcherBody::Quantified(_) => 1,
@@ -171,7 +177,10 @@ impl RegExpMatcher {
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
         // A scalar Unicode search can move its initial position back one unit.
         // Precharge that possible unit before executing an opted-in work quota.
-        let remaining = if matches!(self.body, RegExpMatcherBody::UnicodeScalars(_)) {
+        let remaining = if matches!(
+            self.body,
+            RegExpMatcherBody::UnicodeScalars(_) | RegExpMatcherBody::UnicodeCodePoints(_)
+        ) {
             remaining.saturating_add(1)
         } else {
             remaining
@@ -224,7 +233,8 @@ impl RegExpMatch<'_> {
             RegExpMatcherBody::Backreferences(_) => unreachable!("dynamic reference captures"),
             RegExpMatcherBody::Literal(matcher)
             | RegExpMatcherBody::UnicodeEmpty(matcher)
-            | RegExpMatcherBody::UnicodeScalars(matcher) => matcher.capture_ranges(),
+            | RegExpMatcherBody::UnicodeScalars(matcher)
+            | RegExpMatcherBody::UnicodeCodePoints(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Character(_) => return None,
             RegExpMatcherBody::Prefixed(matcher) => {

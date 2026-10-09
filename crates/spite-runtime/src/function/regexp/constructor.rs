@@ -267,8 +267,17 @@ impl Realm {
                         budget.charge(capture_source.len())?;
                         budget.charge(capture_source.len())?;
                         budget.charge(capture_source.len())?;
-                        RegExpLiteralMatcher::compile_unicode_scalars(&capture_source)
-                            .map(RegExpMatcherBody::UnicodeScalars)
+                        if let Some(matcher) =
+                            RegExpLiteralMatcher::compile_unicode_scalars(&capture_source)
+                        {
+                            Some(RegExpMatcherBody::UnicodeScalars(matcher))
+                        } else {
+                            budget.charge(capture_source.len())?;
+                            budget.charge(capture_source.len())?;
+                            budget.charge(capture_source.len())?;
+                            RegExpLiteralMatcher::compile_unicode_code_points(&capture_source)
+                                .map(RegExpMatcherBody::UnicodeCodePoints)
+                        }
                     }
                 } else {
                     None

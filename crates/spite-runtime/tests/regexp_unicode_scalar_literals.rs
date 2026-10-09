@@ -149,7 +149,7 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         r"/[\u{1f600}]/v.exec('😀')",
         r"/😀+/u.exec('😀')",
         r"/(😀)\1/u.exec('😀😀')",
-        r"/\uD800/u.exec('\uD800')",
+        r"/\uD800()\uDC00/u.exec('\uD800')",
         r"/(?=😀)/v.exec('😀')",
     ] {
         assert!(

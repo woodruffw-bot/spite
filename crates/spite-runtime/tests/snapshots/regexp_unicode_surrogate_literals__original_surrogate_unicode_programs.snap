@@ -1,0 +1,15 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_surrogate_literals.rs
+expression: rows
+---
+"/(\\u{D800})/u.test('a')" "false"
+"/\\u{D800}/u.exec('a')" "null"
+"/\\u{D800}/v.exec('a')" "null"
+"/(?<x>\\u{D800})/u.test('a')" "false"
+"/(?:\\u{D800})/u.test('a')" "false"
+"/(?:\\u{D800})/v.test('a')" "false"
+"/\\uD800/u.exec('\\uD800')" "[\u0022\u005cud800\u0022]"
+"/\\u{D800}/v.exec('\\uD800')" "[\u0022\u005cud800\u0022]"
+"/\\uD800/v.exec('\\uD800')" "[\u0022\u005cud800\u0022]"
+"let r=new RegExp('\\\\u{D800}','u'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" "{\u0022match\u0022:null,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
+"let r=new RegExp('\\\\u{D800}','v'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" "{\u0022match\u0022:null,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"

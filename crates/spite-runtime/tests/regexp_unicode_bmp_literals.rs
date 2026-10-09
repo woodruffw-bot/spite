@@ -184,9 +184,9 @@ fn unicode_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
     for source in [
         r"/(?:a?)/u.exec('a')",
         r"/a/iu.exec('a')",
-        r"/\u{D800}/v.exec('a')",
-        r"/\uD800/u.exec('\uD800')",
-        r"/\u{D800}/u.exec('a')",
+        r"/\u{D800}\u{DC00}/v.exec('a')",
+        r"/\uD800()\uDC00/u.exec('\uD800')",
+        r"/\u{D800}\u{DC00}/u.exec('a')",
         r"/[\u{1f600}]/u.exec('a')",
         r"/^a/u.exec('a')",
         r"/(a)\1/u.exec('aa')",
