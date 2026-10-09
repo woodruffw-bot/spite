@@ -2375,12 +2375,13 @@ fn quantify_reference_wrapper(
     instructions: &mut [PreparedInstruction],
     body: Range<usize>,
     bounds: Bounds,
-    require_reference: bool,
+    assertion_direction: Option<bool>,
     named_slots: &HashMap<usize, usize>,
 ) -> Option<()> {
     let mut reference = None;
     let mut copies = 0usize;
     let mut targets = Vec::new();
+    let mut counted_targets = Vec::new();
     let mut captures = Vec::new();
     let mut opened = Vec::new();
     for (position, instruction) in instructions
@@ -2413,6 +2414,19 @@ fn quantify_reference_wrapper(
                     named: true,
                 }
             }
+            PreparedInstruction::Ready(Instruction::QuantifiedReference {
+                index,
+                named,
+                bounds: (_, max, _),
+                captures,
+                ..
+            }) if assertion_direction.is_some() && captures.is_empty() => {
+                counted_targets.push((copies, *max));
+                ReferenceTarget::Input {
+                    index: *index,
+                    named: *named,
+                }
+            }
             PreparedInstruction::Ready(Instruction::Character(_) | Instruction::Assert(_))
             | PreparedInstruction::Set {
                 repeated: false, ..
@@ -2432,7 +2446,7 @@ fn quantify_reference_wrapper(
     }
     // A count-one assertion plan must retain its control entry and needs an
     // actual reference. Failed preparation has not changed any instruction.
-    if require_reference && reference.is_none() {
+    if assertion_direction.is_some() && reference.is_none() {
         return None;
     }
     let position = reference.map_or(body.start, |(position, _, _)| position);
@@ -2444,7 +2458,7 @@ fn quantify_reference_wrapper(
             local.insert((group, true), span);
         }
     }
-    let targets: Vec<_> = targets
+    let mut targets: Vec<_> = targets
         .into_iter()
         .enumerate()
         .map(|(ordinal, target)| {
@@ -2467,6 +2481,29 @@ fn quantify_reference_wrapper(
             }
         })
         .collect();
+    if let Some(backward) = assertion_direction {
+        for (ordinal, max) in counted_targets {
+            let empty = match targets[ordinal] {
+                ReferenceTarget::Empty | ReferenceTarget::Open => true,
+                ReferenceTarget::Local(span) => {
+                    backward || span.start == span.end || max == Some(0)
+                }
+                ReferenceTarget::Future(span) => {
+                    !backward || span.start == span.end || max == Some(0)
+                }
+                // Keep unproved outside targets and their validation visible.
+                // Only declared same-body spans receive the empty proof.
+                _ => false,
+            };
+            if !empty {
+                return None;
+            }
+            // A reference atom has no capture effects. Every finite required
+            // repetition of undefined/empty preserves the same MatchState;
+            // optional empty iterations stop immediately (22.2.2.3.1).
+            targets[ordinal] = ReferenceTarget::Empty;
+        }
+    }
     let captures: Vec<_> = captures
         .into_iter()
         .map(|(slot, start, end)| (slot, ReferenceCaptureSpan { start, end }))
@@ -2495,6 +2532,7 @@ fn quantify_reference_wrapper(
                 PreparedInstruction::Ready(
                     Instruction::Reference(_)
                         | Instruction::NamedReference(_)
+                        | Instruction::QuantifiedReference { .. }
                         | Instruction::Open(_)
                         | Instruction::Close(_)
                 )
@@ -3470,7 +3508,7 @@ fn prepare(
                         &mut instructions,
                         entry..end,
                         (Some(1), Some(1), true),
-                        true,
+                        Some(matches!(assertion, Some(GroupAssertion::Lookbehind(_)))),
                         &named_slots,
                     );
                 }
@@ -3592,7 +3630,7 @@ fn prepare(
                             &mut instructions,
                             start..end,
                             bounds,
-                            false,
+                            None,
                             &named_slots,
                         )
                         .is_none()
@@ -3702,7 +3740,7 @@ fn prepare(
                     &mut instructions,
                     start..end,
                     bounds,
-                    false,
+                    None,
                     &named_slots,
                 )?;
                 cursor += consumed;
@@ -3768,6 +3806,154 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn undefined_counted_assertions_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(\1{1,2}))a",
+            r"(?<=(\1{1,2}?))a",
+            r"(?<=(a)\1*?)b",
+            r"(?<=(\1*))a",
+            r"(?<=(\1{0}))a",
+            r"(?<=a(?=(\1{1,2}b)))b",
+            r"(?<=a(?=(\2*(b))))b",
+            r"(?<=a(?=(\2{1,2}(b))))b",
+            r"(?<=(a)\1{1,2})b",
+            r"(?<=(a)\1*)b",
+            r"(?<=(a)\1{0})b",
+            r"(?<=(\2{0})(b))c",
+            r"(?<=a(?=(b)\1{0}))b",
+            r"(?<=a(?!((\2{1,2})b)q))b",
+            r"(a)(?<=(b)\2{1,2}\1)c",
+            r"(a)(?<=a(?=(\2*\1)))a",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+    #[test]
+    fn counted_undefined_targets_keep_required_captures_siblings_names_and_pending_widths() {
+        for (source, text, range, captures) in [
+            (r"(?<=(\1{1,2}))a", "a", 0..1, vec![Some(0..0)]),
+            (r"(?<=(a)\1*)b", "ab", 1..2, vec![Some(0..1)]),
+            (
+                r"(?<=a(?=(\2*(b))))b",
+                "ab",
+                1..2,
+                vec![Some(1..2), Some(1..2)],
+            ),
+            (
+                r"(?<=(\2{0})(b))c",
+                "bc",
+                1..2,
+                vec![Some(0..0), Some(0..1)],
+            ),
+            (r"(?<=a(?=(b)\1{0}))b", "ab", 1..2, vec![Some(1..2)]),
+            (
+                r"(a)(?<=(b)\2{1,2}\1)c",
+                "bac",
+                1..3,
+                vec![Some(1..2), Some(0..1)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=(\1{1,2}a{1,2}))a",
+            r"(?<=a(?=(b)\1{1,2}))b",
+            r"(?<=(\2{1,2})(b))c",
+            r"(?<=(\1{1,2}|a))a",
+            r"(?<=\9{0})a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+    #[test]
+    fn counted_undefined_assertions_huge_bounds_deep_scopes_clones_rollback_and_work_are_flat() {
+        let count = "9".repeat(100);
+        let source = "(?<=".to_owned()
+            + &"(".repeat(100000)
+            + &format!(r"\1{{{count}}}")
+            + &")".repeat(100000)
+            + ")a";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("a"), 0, true).unwrap();
+        assert_eq!(found.captures.len(), 100000);
+        assert!(found.captures.iter().all(|r| *r == Some(0..0)));
+        drop(copy);
+        let source = "(?<=".to_owned()
+            + &"(".repeat(100000)
+            + &format!(r"\1{{{count}}}")
+            + &")".repeat(100000)
+            + "q)a";
+        let negative = source.replace("(?<=", "(?<!");
+        let found = ordinary(&negative, false, false, false)
+            .find(&JsString::from("a"), 0, true)
+            .unwrap();
+        assert!(found.captures.iter().all(Option::is_none));
+        let source = format!(r"(?<=(a)\1{{{count},}})b");
+        let matcher = ordinary(&source, false, false, false);
+        assert_eq!(
+            matcher
+                .find(&JsString::from("ab"), 1, true)
+                .unwrap()
+                .captures[0],
+            Some(0..1)
+        );
+        let source = "(?<=a(?=(".to_owned()
+            + &"(".repeat(100000)
+            + &format!(r"\2{{{count}}}")
+            + &")".repeat(100000)
+            + "b)))b";
+        let matcher = ordinary(&source, false, false, false);
+        let found = matcher.find(&JsString::from("ab"), 1, true).unwrap();
+        assert_eq!(found.captures[0], Some(1..2));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..1)));
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("ab"), 1, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
@@ -3866,7 +4052,7 @@ mod tests {
         assert_eq!(&*found.captures, &[Some(1..2)]);
         for source in [
             r"(?<=a(?=(b{1,2})\1))b",
-            r"(?<=(\1{1,2}))a",
+            r"(?<=(\1{1,2}a{1,2}))a",
             r"(?<=(a{1,2})\1)b",
             r"(?<=a(?=(b|aa)\1))b",
             r"(a)(?<=((b)(?=\2)))c",
@@ -6206,7 +6392,7 @@ mod tests {
             assert_eq!(&*found.captures, &*captures, "{source}");
         }
         for source in [
-            r"(?<=(\1{1,2}))a",
+            r"(?<=(\1{1,2}a{1,2}))a",
             r"(a)(?<=(?<=\1{1,2}))b",
             r"(a)(?<=(?=\1{1,2})\1)b",
             r"(a)(?<=\1|a)b",
@@ -6381,7 +6567,7 @@ mod tests {
             assert_eq!(&*found.captures, &*captures, "{source}");
         }
         for source in [
-            r"(?<=(\1{1,2}))a",
+            r"(?<=(\1{1,2}a{1,2}))a",
             r"(a)(?<=(?<=\1{1,2}))b",
             r"(a)(?<=(?=\1{1,2})\1)b",
             r"(a)(?<=\1|a)b",
@@ -9593,7 +9779,7 @@ mod tests {
             r"(?<=a|bb)c",
             r"(?<=a+)b",
             r"(?<=a{1,2})b",
-            r"(?<=(\1{1,2}))a",
+            r"(?<=(\1{1,2}a{1,2}))a",
             r"(?<=(?=a+))a",
         ] {
             assert!(

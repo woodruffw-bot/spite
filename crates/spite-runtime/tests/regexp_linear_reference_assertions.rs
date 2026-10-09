@@ -153,7 +153,7 @@ fn explicit_work_abort_keeps_last_index_and_bypasses_language_handlers() {
 fn unproved_counts_choices_owner_reads_and_unicode_remain_pending() {
     for source in [
         r"/(?<=a(?=(b{1,2})\1))b/.exec('abbbb')",
-        r"/(?<=(\1{1,2}))a/.exec('a')",
+        r"/(?<=(\1{1,2}a{1,2}))a/.exec('a')",
         r"/(?<=(a{1,2})\1)b/.exec('aab')",
         r"/(?<=a(?=(b|aa)\1))b/.exec('abb')",
         r"/(a)(?<=((b)(?=\2)))c/.exec('abc')",

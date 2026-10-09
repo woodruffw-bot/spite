@@ -2240,6 +2240,28 @@ plan, width resolver and scoped checkpoints, with no new dependency, native
 recursion, repeated source or default quota. Variable consuming counts, unproved
 choices, changing enclosing-owner reads and Unicode modes remain pending.
 
+
+Counted same-body references in linear ordinary assertions can reuse the required
+one-unit plan when every repetition of the reference atom is proved empty
+(22.2.2.3.1, 22.2.2.8, 22.2.2.9.2). The scalar counted atom must own no capture
+effects. Its declared target is classified from the original same-body span:
+Open and already-empty reads are empty in either direction; a closed Local target
+is still undefined when matching backward, and a Future target is still undefined
+when matching forward. A zero maximum also proves a declared owned target empty.
+Outside Input reads remain visible and unproved; preparation never hides invalid
+references or assumes an imported capture is empty.
+
+Every finite required repetition of this effect-free empty atom preserves the
+same MatchState, including a minimum with too many digits for usize. Optional
+empty iterations stop immediately. Preparation replaces only these proved atoms
+with empty unit terms, keeping surrounding captures and source spans. The proof
+finishes before changing instructions; failed preparation leaves them unchanged.
+Owned capture clearing, original range writes, names and shared index pairs,
+forward/backward frame positions and negative rollback keep the existing behavior.
+Capturing counted children, consuming unproved counts, choices, changing owner
+reads and Unicode modes remain pending. There is no repetition expansion, new
+matcher, dependency, recursion or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
