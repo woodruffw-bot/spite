@@ -7517,3 +7517,5 @@ script-pass	0854b86cb7dda47ed9ad2102c62304d1b62a7da9c30da9c5d04420f70ab868fb	tes
 script-pass	df20964b753dd5372677c79f75df96363458c37c8167b42ecd6b7e90e38db7a3	test/built-ins/RegExp/prototype/exec/u-lastindex-adv.js
 script-pass	da89d2aa0d77e4e96d6fd0faaabae50e50a2b7e7e3881a53b12c60ca80ac0c70	test/built-ins/RegExp/prototype/exec/u-captured-value.js
 script-pass	2bede49a2f4a54c9b42928011443126638176d5b0d1f9f11699566a45f6ab4a0	test/built-ins/RegExp/prototype/exec/u-lastindex-value.js
+script-pass	e047d6c901cc886c64b37d75c3a4c45b594136010d0f7a0adb4a5789ccfa3c23	test/built-ins/RegExp/dotall/with-dotall-unicode.js
+script-pass	296c520adee126392092a4fad11677ba2c773617eac4811a0bd2003d5529f2d5	test/built-ins/RegExp/dotall/without-dotall-unicode.js
