@@ -2351,6 +2351,23 @@ The list is proportional to the source's declared capture slots, never to a repe
 count. No runtime matcher, dependency, source expansion, recursion or default quota
 is added. The child's declared read and capture slots stay visible to validation.
 
+
+A required single-reference child may retain its full/empty capture effects for
+counts beyond one when the owned read is proved empty (22.2.2.3.1, 22.2.2.9.2).
+Open captures, lexically empty owners and not-yet-participating captures in the
+actual direction give that proof. Each required iteration writes identical ranges
+at the same input position, so one pass preserves the final capture state, including
+huge bounds. Greedy/lazy bounds do not change those ranges. The existing flat
+source-relative capture spans, named writes and rollback remain unchanged.
+
+An explicit requires-empty condition rejects every non-count-one captured child
+whose read could consume input before lowering or instruction mutation. Optional
+captured children, outside reads and partial spans across multiple copies remain
+unproved. The existing sequence boundary prevents repeated flattening of child
+capture lists. There is no count-sized allocation, expansion, new matcher,
+dependency, recursion or default quota. Required outer repetitions reuse their
+existing empty-state effects and optional stop behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

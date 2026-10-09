@@ -2470,17 +2470,17 @@ fn quantify_reference_wrapper(
                 captures: child_captures,
                 ..
             }) if child_captures.is_empty()
-                || (*min == Some(1)
-                    && *max == Some(1)
+                || (*min != Some(0)
                     && *atom_copies == 1
                     && child_captures
                         .iter()
                         .all(|(_, span)| span.start <= span.end && span.end <= 1)) =>
             {
-                // Count one preserves the child's original capture effects.
-                // Its single reference maps each full or empty span to one
-                // source-relative term; other counts and partial spans remain
-                // unproved (22.2.2.3.1, 22.2.2.9.2).
+                // Required children retain their original full or empty spans
+                // over one reference term. A count other than one additionally
+                // requires an empty-read proof below: all required iterations
+                // then write identical ranges at the same input position
+                // (22.2.2.3.1, 22.2.2.9.2). Optional child effects remain unproved.
                 for &(slot, span) in child_captures.iter() {
                     captures.push((
                         slot,
@@ -2497,6 +2497,7 @@ fn quantify_reference_wrapper(
                     } else {
                         None
                     },
+                    !child_captures.is_empty() && !(*min == Some(1) && *max == Some(1)),
                 ));
                 ReferenceTarget::Input {
                     index: *index,
@@ -2567,7 +2568,7 @@ fn quantify_reference_wrapper(
     // undefined for every repetition. Empty spans and owned zero maxima have
     // the same proof in both directions. Keep outside reads visible.
     {
-        for (ordinal, max, exact_copies) in counted_targets {
+        for (ordinal, max, exact_copies, requires_empty) in counted_targets {
             let empty = match targets[ordinal] {
                 ReferenceTarget::Empty | ReferenceTarget::Open => true,
                 ReferenceTarget::Local(span, _) => {
@@ -2581,6 +2582,9 @@ fn quantify_reference_wrapper(
                 _ => false,
             };
             if !empty {
+                if requires_empty {
+                    return None;
+                }
                 let exact_copies = exact_copies?;
                 if exact_copies == 0 {
                     return None;
@@ -2595,9 +2599,10 @@ fn quantify_reference_wrapper(
                 }
                 continue;
             }
-            // A reference atom has no capture effects. Every finite required
-            // repetition of undefined/empty preserves the same MatchState;
-            // optional empty iterations stop immediately (22.2.2.3.1).
+            // The read consumes no input. Required child effects remain in
+            // the source-relative capture list and write their identical empty
+            // ranges once. Effect-free optional reads stop immediately
+            // (22.2.2.3.1); optional captured children were excluded above.
             targets[ordinal] = ReferenceTarget::Empty;
         }
     }
@@ -3928,6 +3933,143 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn required_empty_captured_atoms_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(?<=(a)(\1){2})b",
+            r"(?<=(a)(\1)+)b",
+            r"(?<=(a)(\1){2,4}?)b",
+            r"(?<=(\1){2}a)b",
+            r"(?=(\2){2}(a))a",
+            r"(?=(\2)+(a))a",
+            r"(?<=a(?=(\2)+(b)))b",
+            r"((\3)+(b))+",
+            r"((\2)+b)+",
+            r"(?<=((b)(\2)+){2})c",
+            r"(?<=((\1)+b){2})c",
+            r"(a)((\3)+b)+",
+            r"(?<!(a)(\1){2})b",
+            r"(?!(\2){2}(a))b",
+            r"(?<=(a)(()\1){2})b",
+            r"(?<=(a)(\1()){2})b",
+            r"((\1){1,2}){2}a()",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n", "abbb", "abbbb", "abbbbb", "bbbbc", "bbbbbbbc", "aaaab", "aaabc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn required_empty_captured_children_keep_once_effects_in_both_directions() {
+        for (source, text, range, captures) in [
+            (
+                r"(?<=(a)(\1){2})b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(1..1)],
+            ),
+            (r"(?<=(a)(\1)+)b", "ab", 1..2, vec![Some(0..1), Some(1..1)]),
+            (r"(?<=(\1){2}a)b", "ab", 1..2, vec![Some(0..0)]),
+            (r"(?=(\2){2}(a))a", "a", 0..1, vec![Some(0..0), Some(0..1)]),
+            (
+                r"(?<=a(?=(\2)+(b)))b",
+                "ab",
+                1..2,
+                vec![Some(1..1), Some(1..2)],
+            ),
+            (
+                r"((\3)+(b))+",
+                "bbb",
+                0..3,
+                vec![Some(2..3), Some(2..2), Some(2..3)],
+            ),
+            (
+                r"(?<=((b)(\2)+){2})c",
+                "bbc",
+                2..3,
+                vec![Some(0..1), Some(0..1), Some(1..1)],
+            ),
+            (
+                r"((\1){1,2}){2}a()",
+                "a",
+                0..1,
+                vec![Some(0..0), Some(0..0), Some(1..1)],
+            ),
+            (r"(?<!(a)(\1){2})b", "b", 0..1, vec![None, None]),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [
+            r"(?<=a(?=(b)(\1){2}))b",
+            r"(?<=a(?=(b)(\1){1,2}))b",
+            r"(?<=a(?=(b)(\1){0,2}))b",
+            r"(?<=a(?=(b)(\1\1){2}))b",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+    #[test]
+    fn required_empty_child_effects_deep_captures_huge_counts_clones_and_work_are_flat() {
+        let n = 100000;
+        let count = "9".repeat(100);
+        let source = format!(r"(?<=(a){}\1{}{{{count}}})b", "(".repeat(n), ")".repeat(n));
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("ab"), 0, false).unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), n + 1);
+        assert_eq!(found.captures[0], Some(0..1));
+        assert!(found.captures[1..].iter().all(|r| *r == Some(1..1)));
+        let source = format!(r"(?=(\2){{{count}}}(a))a");
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("a"), 0, true)
+            .unwrap();
+        assert_eq!(&*found.captures, &[Some(0..0), Some(0..1)]);
+        let input = JsString::from(("c".repeat(10000) + "ab").as_str());
+        let mut work = 0;
+        assert!(
+            copy.find_with_work(&input, 0, false, |n| {
+                work += n;
+                if work > 1000 { Err(()) } else { Ok(()) }
+            })
+            .is_err()
+        );
     }
 
     #[test]
@@ -8699,7 +8841,7 @@ mod tests {
             assert_eq!(&*found.captures, &*captures, "{source}");
         }
         for source in [
-            r"((\1){1,2}){2}a()",
+            r"((\1(?:a|)){1,2}){2}a()",
             r"(((a)(\3)\4){0,2}){2}a",
             r"(((a)\3){0,2}){2}a",
             r"(?<=(((a)\3){0,2}){2})a",
@@ -8865,7 +9007,7 @@ mod tests {
         for source in [
             r"((a){0,2}){2}b",
             r"(([a-z]){0,2}){2}b",
-            r"((\1){1,2}){2}a()",
+            r"((\1(?:a|)){1,2}){2}a()",
             r"(((a)\3){0,2}){2}a",
             r"(?<=((a{0,2}){2}){2})a",
         ] {

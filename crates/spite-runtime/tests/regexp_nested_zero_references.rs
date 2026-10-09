@@ -170,7 +170,7 @@ fn explicit_nested_empty_reference_work_aborts_before_last_index_and_handlers() 
 #[test]
 fn outside_references_unproved_local_spans_consuming_children_behind_and_unicode_are_pending() {
     for source in [
-        r"/((\1){1,2}){2}a()/.exec('a')",
+        r"/((\1(?:a|)){1,2}){2}a()/.exec('a')",
         r"/(((a)(\3)\4){0,2}){2}a/.exec('a')",
         r"/(((a)\3){0,2}){2}a/.exec('a')",
         r"/(?<=(((a)\3){0,2}){2})a/.exec('a')",
