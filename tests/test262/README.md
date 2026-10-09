@@ -1,11 +1,37 @@
 # Test262 regression fixtures
 
-These 7185 unmodified test fixtures and eleven harness files come from
+These 7254 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Quantifier whole-program fixture review
+
+Sixty-nine unchanged complete S15.10.2.7 originals add 138 normal/strict
+harness-positive variants at the existing pin. All six QuantifierPrefix groups
+retain complete original checks for bounded and unbounded counts, exact counts,
+optional matches, greedy adjacent captures and continuations, literal and escaped
+question marks, empty matches, unmatched optional captures and backreferences.
+Preserved digit, word, whitespace and negated-class programs include non-ASCII
+input boundaries, escapes and original input/index assertions. Originals calling
+test retain their complete boolean failure checks.
+
+Stable, MSRV and Node pass all 138 complete variants without failures or host
+limits. Upstream Git blob identities and manifest SHA-256 digests verify every
+source byte. Exact shared headers and assertion suffixes reconstruct every whole
+source for review; all distinct metadata and program bodies remain unchanged.
+The original Sputnik copyright, BSD license, pin and eleven helpers are preserved.
+
+The active corpus has 7254 fixtures, eleven helpers, 7235 reviewed Script sources
+and 13948 variants: 12471 harness positives, 1469 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution contains 407 whole
+positive programs, separately from 337 grammar fixtures.
+
+Stable and MSRV pass the complete 13948-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Term quantification whole-program fixture review
 
