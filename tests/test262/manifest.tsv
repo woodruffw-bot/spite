@@ -7406,3 +7406,15 @@ script-pass	3346a911479d45aae0a34c28402222f84d3e345e8e1ade473ddc014ef3c93307	tes
 script-pass	1b33683eec448ba2604437db9c98bd199d4470e4750a84e73911fc12f790229c	test/built-ins/RegExp/S15.10.4.1_A1_T3.js
 script-pass	1a7c5a70b196e4989cce332e64ea6409a5ef584be2ecff60176e66390821cdf5	test/built-ins/RegExp/S15.10.4.1_A1_T4.js
 script-pass	a95c3716fa6ceed00903449d0a404405bbfbf6230517dc6a98e6e954f7ad0160	test/built-ins/RegExp/S15.10.4.1_A1_T5.js
+script-pass	bba78819e491e095bd29ff05503c26c16f296495c09bdc32b5dfcd5d76204d93	test/built-ins/RegExp/S15.10.4.1_A2_T1.js
+script-pass	5ee48d1e85a1020103c158c4207d7b51c25bf3ffa5d8aa31ad1315d92c3e4128	test/built-ins/RegExp/S15.10.4.1_A2_T2.js
+script-pass	de88618691d2afcdebb199720f2f488cb31f72c88bf818ae7a9664860c258a16	test/built-ins/RegExp/S15.10.4.1_A3_T1.js
+script-pass	cfd091f0c3cd6e0850f6ddf531f8c2e6189daec17f3d773af1209be92b6dfe5a	test/built-ins/RegExp/S15.10.4.1_A3_T2.js
+script-pass	528fe9f968c26414f2d5da9d3e5af9d97f2f9cfce0a5e32258e83971ba8a5171	test/built-ins/RegExp/S15.10.4.1_A3_T3.js
+script-pass	b67b27f79f47d7be862c793298107ecb8610d773f2169678e22f64f7bf15edc4	test/built-ins/RegExp/S15.10.4.1_A3_T4.js
+script-pass	4bfb145f51c0ab5123c24a17b52d4bf201451df02020570fca3e8a18d01698e1	test/built-ins/RegExp/S15.10.4.1_A3_T5.js
+script-pass	9008de443d6454e89e6ba3c35b3d4c7db8a9d94dcc8373ead3fd64db8fb966b8	test/built-ins/RegExp/S15.10.4.1_A4_T1.js
+script-pass	b1f6f3a2d68cb1b8502c7a5d7f4f34284d41697c268a0cd07fcc1461f64ad81c	test/built-ins/RegExp/S15.10.4.1_A4_T2.js
+script-pass	ff59e2de7617c9f890e0f4c3863f7b946e70e77f6c4f1027e4fe0ba4c7cc4435	test/built-ins/RegExp/S15.10.4.1_A4_T3.js
+script-pass	8bc34ad2daaed4bd1e0fa66de83d809fe583b91054e0014cdec4a331fd53f5ac	test/built-ins/RegExp/S15.10.4.1_A4_T4.js
+script-pass	5e848a265da5f3ffd6e1fe1138ffdb2f1e156351e96dcfc82d313108c7afde33	test/built-ins/RegExp/S15.10.4.1_A4_T5.js

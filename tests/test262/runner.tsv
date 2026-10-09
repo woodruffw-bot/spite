@@ -7376,3 +7376,15 @@ test/built-ins/RegExp/S15.10.4.1_A1_T2.js	-	-	-
 test/built-ins/RegExp/S15.10.4.1_A1_T3.js	-	-	-
 test/built-ins/RegExp/S15.10.4.1_A1_T4.js	-	-	-
 test/built-ins/RegExp/S15.10.4.1_A1_T5.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A2_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A2_T2.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A3_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A3_T2.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A3_T3.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A3_T4.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A3_T5.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A4_T1.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A4_T2.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A4_T3.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A4_T4.js	-	-	-
+test/built-ins/RegExp/S15.10.4.1_A4_T5.js	-	-	-
