@@ -2398,6 +2398,21 @@ The existing flat sequence boundary retains nested capture effects without
 reflattening growing lists. This adds neither an instruction nor a runtime matcher,
 source expansion, recursion, dependency or default quota.
 
+
+A same-reference child counted exactly once may retain capture endpoints inside
+its original atom (22.2.2.3.1, 22.2.2.9.2). The compiler collects and deduplicates
+declared endpoints, splitting only at those boundaries. Each segment carries a
+checked scalar copy multiplicity; existing complete-owner, matching-direction and
+width proofs determine its input range. Child capture ordinals then index the
+existing segment offsets, preserving partial spans and interior-empty points.
+
+Reads of child-owned numeric slots or named aliases remain excluded from this
+multiple-copy proof. Other consuming child counts and optional effects stay
+unproved. Empty reads retain their source-relative point semantics. The existing
+sequence boundary prevents reflattening nested effect lists. Storage follows
+declared boundaries rather than the repetition count; this adds no instruction,
+runtime matcher, recursive traversal, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

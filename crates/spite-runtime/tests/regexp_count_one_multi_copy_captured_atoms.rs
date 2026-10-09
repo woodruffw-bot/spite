@@ -120,7 +120,7 @@ fn opted_in_work_abort_keeps_last_index_and_bypasses_handlers() {
 #[test]
 fn partial_consuming_spans_optional_counts_and_unicode_stay_pending() {
     for source in [
-        r"/(?<=a(?=(b)(?:(\1)\1){1}))b/.exec('abbb')",
+        r"/(?<=a(?=(b)(?:(\1)\1){2}))b/.exec('abbb')",
         r"/(?<=a(?=(b)(\1\1){2}))b/.exec('abbbbb')",
         r"/(?<=a(?=(b)(\1\1){0,2}))b/.exec('abbbbb')",
         r"/(?<=(a)(\1\1){1})b/u.exec('ab')",

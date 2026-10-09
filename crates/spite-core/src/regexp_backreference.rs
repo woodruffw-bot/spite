@@ -2465,6 +2465,66 @@ fn quantify_reference_wrapper(
             PreparedInstruction::Ready(Instruction::QuantifiedReference {
                 index,
                 named,
+                bounds: (Some(1), Some(1), _),
+                copies: atom_copies,
+                captures: child_captures,
+                ..
+            }) if *atom_copies > 1
+                && child_captures.iter().any(|(_, span)| {
+                    (span.start != 0 && span.start != *atom_copies)
+                        || (span.end != 0 && span.end != *atom_copies)
+                })
+                && child_captures.iter().all(|(slot, span)| {
+                    span.start <= span.end
+                        && span.end <= *atom_copies
+                        && if *named {
+                            named_slots.get(slot) != Some(index)
+                        } else {
+                            slot != index
+                        }
+                }) =>
+            {
+                // Split only at declared capture boundaries, never at every
+                // repeated copy. Each segment keeps its checked multiplicity;
+                // existing direction and owner proofs determine its width
+                // (22.2.2.3.1, 22.2.2.9.2).
+                let mut boundaries = vec![0, *atom_copies];
+                for (_, span) in child_captures.iter() {
+                    boundaries.push(span.start);
+                    boundaries.push(span.end);
+                }
+                boundaries.sort_unstable();
+                boundaries.dedup();
+                for (slot, span) in child_captures.iter() {
+                    captures.push((
+                        *slot,
+                        copies.checked_add(boundaries.binary_search(&span.start).ok()?)?,
+                        copies.checked_add(boundaries.binary_search(&span.end).ok()?)?,
+                    ));
+                }
+                nested_capture_effects = true;
+                if reference.is_none() {
+                    reference = Some((position, *index, *named));
+                }
+                for segment in boundaries.windows(2) {
+                    counted_targets.push((
+                        copies,
+                        Some(1),
+                        Some(segment[1].checked_sub(segment[0])?),
+                        false,
+                    ));
+                    targets.push(ReferenceTarget::Input {
+                        index: *index,
+                        named: *named,
+                        copies: 1,
+                    });
+                    copies = copies.checked_add(1)?;
+                }
+                continue;
+            }
+            PreparedInstruction::Ready(Instruction::QuantifiedReference {
+                index,
+                named,
                 bounds: (min, max, _),
                 copies: atom_copies,
                 captures: child_captures,
@@ -3967,6 +4027,205 @@ mod tests {
     }
 
     #[test]
+    fn count_one_partial_multi_copy_captured_atoms_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "(?<=a(?=(b)(\\1(\\1)){1}))b",
+            "(?<=a(?=(b)((\\1)\\1){1}))b",
+            "(?<=a(?=(b)(\\1()\\1){1}))b",
+            "(?<=a(?=(b)(\\1(\\1)\\1){1}))b",
+            "(?<=a(?=(b)(\\1(\\1\\1)\\1){1}))b",
+            "(?<=(\\3(\\3)){1}(a))b",
+            "(?<=((\\3)\\3){1}(a))b",
+            "(?<=(\\3()\\3){1}(a))b",
+            "(a)(?=(\\1(\\1)){1})a",
+            "(a)((\\1(\\1)){1}b)+",
+            "(a)(((\\1)\\1){1}b)+",
+            "(a)((\\1()\\1){1}b)+",
+            "(?=(\\3(\\3)){1}(a))a",
+            "(?<=(a)(\\1(\\1)){1})b",
+            "(?<=a(?!(b)(\\1(\\1)){1}))b",
+            "(a)(?!(\\1(\\1)){1})b",
+            "(?<=a(?=(b)(?:(\\1)\\1){1}))b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "a", "ab", "abb", "aab", "bbc", "abc", "bac", "abbx", "aa", "aB", "a\nb",
+                    "\na\n", "abbb", "abbbb", "abbbbb", "bbbbc", "bbbbbbbc", "aaaab", "aaabc",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+    #[test]
+    fn count_one_partial_multi_copy_children_keep_original_ranges() {
+        for (source, text, range, captures) in [
+            (
+                "(?<=a(?=(b)(\\1(\\1)){1}))b",
+                "abbb",
+                1..2,
+                vec![Some(1..2), Some(2..4), Some(3..4)],
+            ),
+            (
+                "(?<=a(?=(b)((\\1)\\1){1}))b",
+                "abbb",
+                1..2,
+                vec![Some(1..2), Some(2..4), Some(2..3)],
+            ),
+            (
+                "(?<=a(?=(b)(\\1()\\1){1}))b",
+                "abbb",
+                1..2,
+                vec![Some(1..2), Some(2..4), Some(3..3)],
+            ),
+            (
+                "(?<=a(?=(b)(\\1(\\1)\\1){1}))b",
+                "abbbb",
+                1..2,
+                vec![Some(1..2), Some(2..5), Some(3..4)],
+            ),
+            (
+                "(?<=a(?=(b)(\\1(\\1\\1)\\1){1}))b",
+                "abbbbb",
+                1..2,
+                vec![Some(1..2), Some(2..6), Some(3..5)],
+            ),
+            (
+                "(?<=(\\3(\\3)){1}(a))b",
+                "aaab",
+                3..4,
+                vec![Some(0..2), Some(1..2), Some(2..3)],
+            ),
+            (
+                "(?<=((\\3)\\3){1}(a))b",
+                "aaab",
+                3..4,
+                vec![Some(0..2), Some(0..1), Some(2..3)],
+            ),
+            (
+                "(?<=(\\3()\\3){1}(a))b",
+                "aaab",
+                3..4,
+                vec![Some(0..2), Some(1..1), Some(2..3)],
+            ),
+            (
+                "(a)(?=(\\1(\\1)){1})a",
+                "aaa",
+                0..2,
+                vec![Some(0..1), Some(1..3), Some(2..3)],
+            ),
+            (
+                "(a)((\\1(\\1)){1}b)+",
+                "aaabaab",
+                0..7,
+                vec![Some(0..1), Some(4..7), Some(4..6), Some(5..6)],
+            ),
+            (
+                "(a)(((\\1)\\1){1}b)+",
+                "aaabaab",
+                0..7,
+                vec![Some(0..1), Some(4..7), Some(4..6), Some(4..5)],
+            ),
+            (
+                "(a)((\\1()\\1){1}b)+",
+                "aaabaab",
+                0..7,
+                vec![Some(0..1), Some(4..7), Some(4..6), Some(5..5)],
+            ),
+            (
+                "(?=(\\3(\\3)){1}(a))a",
+                "a",
+                0..1,
+                vec![Some(0..0), Some(0..0), Some(0..1)],
+            ),
+            (
+                "(?<=(a)(\\1(\\1)){1})b",
+                "ab",
+                1..2,
+                vec![Some(0..1), Some(1..1), Some(1..1)],
+            ),
+            (
+                "(?<=a(?!(b)(\\1(\\1)){1}))b",
+                "ab",
+                1..2,
+                vec![None, None, None],
+            ),
+            (
+                "(a)(?!(\\1(\\1)){1})b",
+                "ab",
+                0..2,
+                vec![Some(0..1), None, None],
+            ),
+            (
+                "(?<=a(?=(b)(?:(\\1)\\1){1}))b",
+                "abbb",
+                1..2,
+                vec![Some(1..2), Some(2..3)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        for source in [r"(?<=a(?=(b)(\1(\1)){2}))b", r"(?<=a(?=(b)(\1(\1)){0,1}))b"] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+    #[test]
+    fn deep_partial_child_boundaries_keep_flat_storage_clones_and_work() {
+        let n = 100000;
+        let source = format!(
+            r"(?<=a(?=(b)(\1{}\1{}){{1}}))b",
+            "(".repeat(n),
+            ")".repeat(n)
+        );
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("abbb"), 1, true).unwrap();
+        assert_eq!(found.range, 1..2);
+        assert_eq!(found.captures.len(), n + 2);
+        assert_eq!(found.captures[0], Some(1..2));
+        assert_eq!(found.captures[1], Some(2..4));
+        assert!(found.captures[2..].iter().all(|r| *r == Some(3..4)));
+        assert!(copy.find(&JsString::from("abb"), 0, false).is_none());
+        let input = JsString::from(("c".repeat(10000) + "abbb").as_str());
+        let mut work = 0;
+        assert!(
+            copy.find_with_work(&input, 0, false, |n| {
+                work += n;
+                if work > 1000 { Err(()) } else { Ok(()) }
+            })
+            .is_err()
+        );
+    }
+
+    #[test]
     fn count_one_multi_copy_captured_atoms_execution_snapshot() {
         let mut rows = String::new();
         for source in [
@@ -4081,7 +4340,7 @@ mod tests {
                 .is_none()
         );
         for source in [
-            r"(?<=a(?=(b)(?:(\1)\1){1}))b",
+            r"(?<=a(?=(b)(?:(\1)\1){2}))b",
             r"(?<=a(?=(b)(\1\1){2}))b",
             r"(?<=a(?=(b)(\1\1){0,2}))b",
         ] {
@@ -4221,7 +4480,7 @@ mod tests {
         }
         for source in [
             r"(?<=a(?=(b)(\1\1){2}))b",
-            r"(?<=a(?=(b)(\1(\1)){1}))b",
+            r"(?<=a(?=(b)(\1(\1)){2}))b",
             r"(?<=a(?=(b)(\1\1){0,2}))b",
         ] {
             assert!(
@@ -4494,7 +4753,7 @@ mod tests {
         for source in [
             r"(?<=a(?=(b)(\1){2}))b",
             r"(?<=a(?=(b)(\1){1,2}))b",
-            r"(?<=a(?=(b)(?:(\1)\1){1}))b",
+            r"(?<=a(?=(b)(?:(\1)\1){2}))b",
         ] {
             assert!(
                 RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
