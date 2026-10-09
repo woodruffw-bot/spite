@@ -3053,11 +3053,7 @@ fn fixed_lookbehind_width(
                 first
             }
             PreparedInstruction::Ready(
-                Instruction::Lookbehind {
-                    body: child,
-                    width: LookbehindWidth::Fixed(_),
-                    ..
-                }
+                Instruction::Lookbehind { body: child, .. }
                 | Instruction::SkipGroup { body: child, .. },
             ) => {
                 if *child <= entry || *child >= pc {
@@ -3294,11 +3290,11 @@ fn outside_reference_assertion_width(
             PreparedInstruction::Ready(Instruction::Jump(owner)) => {
                 let end =
                     match instructions.get(*owner)? {
-                        PreparedInstruction::Ready(Instruction::Lookbehind {
-                            body,
-                            width: LookbehindWidth::Fixed(_),
-                            ..
-                        }) if *body == pc => owner.checked_add(1)?,
+                        PreparedInstruction::Ready(Instruction::Lookbehind { body, .. })
+                            if *body == pc =>
+                        {
+                            owner.checked_add(1)?
+                        }
                         PreparedInstruction::Ready(Instruction::Lookahead {
                             body,
                             end,
@@ -3470,10 +3466,15 @@ fn prepare(
                     {
                         LookbehindWidth::Fixed(width)
                     } else {
+                        // Nested backward children consume no parent input.
+                        // Import only slots stable for the complete owner.
+                        let captures = current
+                            .lookbehind_input_limit
+                            .map_or(capture_start..capture_count, |limit| limit..usize::MAX);
                         outside_reference_assertion_width(
                             &mut instructions,
                             entry,
-                            capture_start..capture_count,
+                            captures,
                             bindings.groups,
                             true,
                         )?
@@ -3740,6 +3741,200 @@ mod tests {
         )
         .unwrap()
         .unwrap()
+    }
+
+    #[test]
+    fn nested_outside_lookbehind_execution_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"(a)(?<=a(?<=\1))b",
+            r"(a)(?<=a(?<=(\1)))b",
+            r"(a)(?<=a(?<=((b)\1){2}))c",
+            r"(a)(?<=\1(?<=(b\1){2}))c",
+            r"(a)(?<=a(?<!((b)\1){2}q))c",
+            r"(a)(?<=a(?<=((b)\1){0}))c",
+            r"(a)(?<=a(?<=((b)\1){2}?))c",
+            r"(a)(?<=a(?<=((b)\1\B){2}))c",
+            r"(a)(?<=a(?=(?<=((b)\1){2})c))c",
+            r"(a)(?<=a(?<=(?<=\1)\1))b",
+            r"(a)(?<=a(?<=(\1)(?=\1)))a",
+            r"()(a)(?<=a(?<=(\1\2)))b",
+            r"(a)?(?<=a(?<=(\1)))b",
+            r"(a)(?<=a(?<=((\3(b)\1){2})))c",
+            r"(a)(?<=a(?<!((b)\1){3}))b",
+            r"(a)(?<=a(?<=(\3(b)\1){2}))c",
+            r"(a)(?<=(a\1){2}(?<=\1))b",
+            r"(a)(?<=a{2}(?<=\1))b",
+            r"(a)(?<=(?<=\1))b",
+        ] {
+            for (ignore_case, multiline, dot_all) in [
+                (false, false, false),
+                (true, true, false),
+                (false, false, true),
+                (true, false, true),
+            ] {
+                let matcher = ordinary(source, ignore_case, multiline, dot_all);
+                for text in [
+                    "", "ab", "babac", "bababc", "bbabbac", "aaaab", "aaab", "aab", "aaa", "bAbAc",
+                    "\nab\n", "ab\nb", "aabab",
+                ] {
+                    let input = JsString::from(text);
+                    for (start, sticky) in [(0, false), (0, true), (1, true)] {
+                        writeln!(rows,"{source:?} i={ignore_case} m={multiline} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+    #[test]
+    fn nested_imported_backward_widths_keep_outside_ranges_leftmost_children_and_owner_guards() {
+        for (source, text, range, captures) in [
+            (
+                r"(a)(?<=a(?<=((b)\1){2}))c",
+                "babac",
+                3..5,
+                vec![Some(3..4), Some(0..2), Some(0..1)],
+            ),
+            (
+                r"(a)(?<=a(?=(?<=((b)\1){2})c))c",
+                "babac",
+                3..5,
+                vec![Some(3..4), Some(0..2), Some(0..1)],
+            ),
+            (
+                r"(a)(?<=a(?<=((b)\1){0}))c",
+                "ac",
+                0..2,
+                vec![Some(0..1), None, None],
+            ),
+            (
+                r"(a)(?<=a(?<!((b)\1){2}q))c",
+                "babac",
+                3..5,
+                vec![Some(3..4), None, None],
+            ),
+            (
+                r"(a)(?<=a(?<=(\3(b)\1){2}))c",
+                "bbabbac",
+                5..7,
+                vec![Some(5..6), Some(0..3), Some(1..2)],
+            ),
+        ] {
+            let found = ordinary(source, false, false, false)
+                .find(&JsString::from(text), 0, false)
+                .unwrap();
+            assert_eq!(found.range, range, "{source}");
+            assert_eq!(&*found.captures, &*captures, "{source}");
+        }
+        let input = JsString::from_code_units(vec![0xdc00, 0xd800, 0xdc00, 0xd800, 0x63]);
+        let found = ordinary(
+            r"([\uD800])(?<=[\uD800](?<=(([\uDC00])\1){2}))c",
+            false,
+            false,
+            false,
+        )
+        .find(&input, 3, true)
+        .unwrap();
+        assert_eq!(found.range, 3..5);
+        assert_eq!(&*found.captures, &[Some(3..4), Some(0..2), Some(0..1)]);
+        for source in [
+            r"(a)(?<=a(?<=((b)\1){1,2}))c",
+            r"(a)(?<=a(?<=(\1|b)))c",
+            r"(a)(?<=a(?<=\2))(b)",
+            r"(a)(?<=((b)(?<=\2)))c",
+            r"(a)(?<=a(?=(\1)(?<=\2)))a",
+        ] {
+            assert!(
+                RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    RegExpBackreferenceNamedBindings::default(),
+                    |_| Ok::<_, ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        let source = JsString::from(r"(a)(?<=a(?<=(\k<x>)))(b)");
+        let start = source
+            .code_units()
+            .windows(5)
+            .position(|u| u == [0x5c, 0x6b, 0x3c, 0x78, 0x3e])
+            .unwrap();
+        let references = [RegExpBackreferenceNamedReference {
+            escape: start..start + 5,
+            group: 0,
+        }];
+        assert!(
+            RegExpBackreferenceMatcher::compile_ordinary_with_named_bindings_and_work(
+                &source,
+                false,
+                false,
+                false,
+                RegExpBackreferenceNamedBindings {
+                    groups: &[&[0, 2]],
+                    references: &references
+                },
+                |_| Ok::<_, ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+    #[test]
+    fn nested_imported_lookbehind_deep_captures_assertions_empty_counts_clones_and_work_are_flat() {
+        let source = "(a)(?<=a(?<=(".to_owned()
+            + &"(".repeat(100000)
+            + "b"
+            + &")".repeat(100000)
+            + r"\1){2}))c";
+        let matcher = ordinary(&source, false, false, false);
+        let copy = matcher.clone();
+        drop(matcher);
+        let found = copy.find(&JsString::from("babac"), 3, true).unwrap();
+        assert_eq!(found.captures.len(), 100002);
+        assert_eq!(found.captures[0], Some(3..4));
+        assert_eq!(found.captures[1], Some(0..2));
+        assert!(found.captures[2..].iter().all(|r| *r == Some(0..1)));
+        drop(copy);
+        let negative = source
+            .replace("a(?<=", "a(?<!")
+            .replace("{2}))c", "{2}q))c");
+        let found = ordinary(&negative, false, false, false)
+            .find(&JsString::from("babac"), 3, true)
+            .unwrap();
+        assert_eq!(found.captures[0], Some(3..4));
+        assert!(found.captures[1..].iter().all(Option::is_none));
+        let source = format!(r"()(?<=a(?<=((\1)){{{}}}))b", "9".repeat(100));
+        let found = ordinary(&source, false, false, false)
+            .find(&JsString::from("ab"), 1, true)
+            .unwrap();
+        assert!(found.captures.iter().all(|r| *r == Some(1..1)));
+        let source =
+            "(a)(?<=a".to_owned() + &"(?<=".repeat(10000) + r"\1" + &")".repeat(10000) + ")b";
+        assert!(
+            ordinary(&source, false, false, false)
+                .find(&JsString::from("ab"), 0, true)
+                .is_some()
+        );
+        let matcher = ordinary(r"(a)(?<=a(?<=((b)\1){50000}))c", false, false, false);
+        let input = JsString::from(("ba".repeat(50000) + "c").as_str());
+        let found = matcher.find(&input, 99999, true).unwrap();
+        assert_eq!(found.captures[1], Some(0..2));
+        assert_eq!(found.captures[2], Some(0..1));
+        let mut work = 0;
+        assert!(
+            matcher
+                .find_with_work(&input, 99999, true, |n| {
+                    work += n;
+                    if work > 1000 { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+        );
     }
 
     #[test]
@@ -5457,7 +5652,7 @@ mod tests {
             r"(?<=((a)\2){1,2})b",
             r"(a)(?<=(\1(\2)){1,2})b",
             r"(a)(?<=(a\1){2}|a)b",
-            r"(a)(?<=(a\1){2}(?<=\1))b",
+            r"(a)(?<=(a\1){2}(?<=\1{1,2}))b",
             r"(a)(?<=(a\1){2}(?=\1{1,2}))b",
         ] {
             assert!(
@@ -5650,7 +5845,7 @@ mod tests {
             r"(a)(?<=(a){1,2}\1)b",
             r"(a)(?<=(a\1){1,2})b",
             r"(a)(?<=a{2}\1|a)b",
-            r"(a)(?<=a{2}(?<=\1))b",
+            r"(a)(?<=a{2}(?<=\1{1,2}))b",
             r"(a)(?<=a{2}(?=\1{1,2})\1)b",
             r"(a)(?<=a{2}(\1){1,2})b",
         ] {
@@ -5812,7 +6007,7 @@ mod tests {
         }
         for source in [
             r"(?<=(\1))a",
-            r"(a)(?<=(?<=\1))b",
+            r"(a)(?<=(?<=\1{1,2}))b",
             r"(a)(?<=(?=\1{1,2})\1)b",
             r"(a)(?<=\1|a)b",
             r"(a)(?<=\1{1,2})b",
@@ -5987,7 +6182,7 @@ mod tests {
         }
         for source in [
             r"(?<=(\1))a",
-            r"(a)(?<=(?<=\1))b",
+            r"(a)(?<=(?<=\1{1,2}))b",
             r"(a)(?<=(?=\1{1,2})\1)b",
             r"(a)(?<=\1|a)b",
             r"(a)(?<=\1{1,2})b",

@@ -143,7 +143,7 @@ fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
 fn internal_reads_dependent_children_variable_counts_choices_and_unicode_remain_unsupported() {
     for source in [
         r"/(?<=(\1))a/.exec('a')",
-        r"/(a)(?<=(?<=\1))b/.exec('ab')",
+        r"/(a)(?<=(?<=\1{1,2}))b/.exec('ab')",
         r"/(a)(?<=(?=\1{1,2})\1)b/.exec('ab')",
         r"/(a)(?<=\1|a)b/.exec('ab')",
         r"/(a)(?<=\1{1,2})b/.exec('aab')",

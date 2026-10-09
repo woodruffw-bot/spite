@@ -4008,6 +4008,43 @@ Stable and MSRV pass all 13,810 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Nested ordinary lookbehind now executes linear stable-import width plans inside
+backward parents and forward assertions. Cached earliest-owner capture bounds
+prove all numeric/named imports stable. Parent widths treat a proved complete
+child as a zero-width term, while each child resolves its checked prefix at entry.
+Existing frames preserve independent backward positions, leftmost repeated ranges
+and scoped partial/completed negative rollback.
+
+Three core and six runtime regressions cover scalar and counted imports, same-unit
+Future dependencies, fixed/lazy/zero counts, undefined open/unmatched targets,
+nested assertions in both directions, names and shared indices identity,
+boundaries, lone surrogates, consumers, global/sticky state, empty advancement,
+callbacks, clones, collection, 100000 capture scopes, 10000 nested assertions,
+50000 units, 100-digit empty counts and explicit work aborts. Defaults remain
+unlimited. The inspected 2964-row core snapshot, eighteen runtime results and ten
+complete programs agree with Node. Another 639616 ordinary and 207264 named-binding
+comparisons cover flags, inputs, starting positions and sticky/search behavior.
+
+All 199 tests in the core backreference module, 129 related runtime targets and
+prototype denied-warning Clippy pass. All 194 prior RegExp snapshots remain
+byte-identical. Four obsolete core rejection controls and four runtime controls
+keep their original capture layouts with variable nested-lookbehind bounds; their
+original exact-count patterns retain positive snapshot coverage. All 271 complete
+core rejection candidates and 753 runtime gap programs retain Unsupported. Eight
+ordered-coercion and four direct-eval probes retain Unsupported and ordered state.
+
+Whole original reviews retain ten Passed and 24 Unsupported variants for seventeen
+lookBehind originals and 192 Passed and 38 Unsupported for the separate 115-file
+named-groups/exec selection, without failures or host limits. No additional whole
+original qualifies for vendoring. The inventory remains 7185 fixtures, 7166 reviewed
+sources, 13810 variants, 12333 harness positives and 338 RegExp builtin positives.
+The pin, eleven helpers and dependencies stay unchanged.
+
+Stable and MSRV pass all 13,810 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

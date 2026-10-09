@@ -1921,7 +1921,7 @@ failed capture effects. No matcher instruction or execution path changes.
 The proof stays flat and does not expand counts, copy input, add dependencies or
 impose default quotas. Stable imported targets remain outside the complete owner.
 Consuming units with unproved internal reads,
-unproved variable counts, choices and dynamic child assertions remain unsupported.
+unproved variable counts, choices and unproved dynamic child assertions remain unsupported.
 
 
 Exact-count linear lookbehind units can mix ordinary characters, classes and
@@ -1932,7 +1932,7 @@ required minimum, and contains only
 ordinary repeated terms or input targets outside the complete owner's capture
 declaration range; every slot of a named alias must be outside. Forward-lowered
 empty/local targets remain excluded from consuming mixed units. Internal reads,
-unproved variable counts, choices and dynamic child assertions remain pending.
+unproved variable counts, choices and unproved dynamic child assertions remain pending.
 
 Entry width adds checked constant term widths times count and a flat outside
 width term for each reference occurrence. Different target lengths, source-order
@@ -1951,7 +1951,8 @@ negative failures restore checkpoints and leave imported ranges intact.
 
 The plan stays flat and uses no native recursion, new dependency or default
 quota. Unit-sized range/offset vectors are independent of the repetition count.
-Fixed backward parents and fixed lookahead still reject dynamic-width children.
+Parent assertion widths skip proved stable imported child assertions as zero-width
+terms; each child resolves its checked complete width at entry.
 Unicode modes and other capture-dependent backward plans remain unsupported.
 
 
@@ -2002,7 +2003,7 @@ their own matching direction. Forward-lowered
 Empty targets represent empty right-hand spans; nonempty right-hand targets
 retain their spans for the fixed backward width proof. Enclosing Open targets are tracked separately and retain their
 undefined value in either matching direction. Unproved variable counts, choices,
-capture-dependent child assertions and Unicode modes remain pending. This extends
+unproved capture-dependent child assertions and Unicode modes remain pending. This extends
 preparation; matching operations, quotas, dependencies and native-stack behavior
 are unchanged.
 
@@ -2103,7 +2104,7 @@ required effect pass. Exact-zero bodies retain their skip path. Repeated capture
 keep their first backward unit; completed failures restore owned captures while
 preserving imports.
 
-Variable consuming counts, unproved choices, capture-dependent child assertions
+Variable consuming counts, unproved choices, unproved capture-dependent child assertions
 and Unicode modes remain pending. Resolution uses flat vectors and charges their
 allocation and traversal. There is no default quota, new dependency, native
 recursion or repeated-source expansion.
@@ -2183,6 +2184,33 @@ existing checkpoints. Flat instructions, frames and shared units keep deep scope
 and large counts safe without new dependencies, source expansion, native recursion
 or default quotas. Variable consuming counts, unproved choices, changing owner
 captures and Unicode modes remain pending.
+
+
+Nested linear ordinary lookbehind can resolve stable imported capture widths
+inside fixed or imported-width backward parents and forward assertions
+(22.2.2.8, 22.2.2.9.2). A nested backward child's imports must precede the earliest
+enclosing backward owner's first capture slot, including every named alias.
+Cached group-frame bounds retain that proof without rescanning ancestor scopes.
+Root backward assertions preserve their existing complete-own-scope check and
+undefined outside open/forward reads.
+
+A proved child assertion consumes no parent input, even when its required prefix
+width depends on imported ranges. Parent width preparation skips the complete
+child region. The existing assertion frame resolves the child's complete width
+at its actual input position, then executes its own backward terms and unit
+reference dependencies. Parent and child have independent checked positions;
+forward lookahead inside either retains full original input context.
+
+Stable imports retain their original ranges. Repeated backward children retain
+their leftmost unit captures, including right-hand Future dependencies; forward
+children keep their rightmost unit effects. Exact-zero units skip reads, and
+required all-empty units retain one effect pass even for unrepresentable counts.
+An unavailable consuming prefix fails a positive child and succeeds for a negative
+child without exporting owned captures. Partial and completed failures retain the
+existing capture/alias checkpoints. This reuses flat width proofs and frames with
+no new dependency, native recursion, source expansion or default quota. Changing
+owner targets, variable consuming counts, unproved choices and Unicode modes stay
+outside the proof.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
