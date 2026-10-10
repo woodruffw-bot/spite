@@ -2874,6 +2874,21 @@ v sets, string sets, continuations, alternatives and quantifiers. Repeated
 assertions and assertions around interior groups remain separate proofs. Existing
 full literal-concatenation plans remain the fallback when one-atom proof fails.
 
+
+The fixed Unicode binary property matcher also admits ASCII_Hex_Digit and its
+exact AHex alias (22.2.2.9). Unicode 18 PropList.txt defines only 0030..0039,
+0041..0046 and 0061..0066. The constructor and flat class parser share the same
+three positive or four complementary intervals. The entire pinned simple/common
+fold table preserves membership in this set, so u/v complement ordering yields
+the same membership with i. Class inversion still follows union and folding.
+
+Fixed intervals are appended once per property kind and charged before any
+allocation, even for repeated property names. Shared normalized immutable ranges
+retain complete-character matching, original capture text and UTF-16 indices,
+optional assertions and clones. No per-input storage or recursion is introduced.
+Hex_Digit, other properties, nested sets, v operators and repeated property atoms
+remain separate proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

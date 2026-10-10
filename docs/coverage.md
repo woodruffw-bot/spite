@@ -5944,6 +5944,32 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+ASCII_Hex_Digit/AHex execution now has three new core tests and seven runtime
+tests. All 35651584 property/flag/code-point membership checks pass, including
+supplementary values and lone surrogates. Unicode 18 PropList.txt's exact three
+intervals and the complete pinned C/S fold table independently establish positive
+membership and closure. The reviewed source has SHA-256
+f438f532e8737bb8a2702126cdf9c4af5e357c58c7acf9d9eb2fc7c1a1d955d6.
+
+Independent original-input candidate/context oracles and Node agree with all
+1600 core and 560 runtime snapshot rows, and Node verifies twenty-six complete
+Boolean programs. Coverage includes aliases, positive/complement unions and
+inversion, original named/__proto__ captures and indices, all line terminators,
+approved pair starts, strict writes, coercions, clones, all consumers, collection,
+10000 repeated properties, 3000 wrappers and 200002 input units. Opted-in work
+failure remains a host outcome, with unlimited defaults.
+
+All 540 core tests and 165 related runtime targets pass. All 422 prior snapshots
+remain byte-identical, with two new reviewed golds. All 1013 gaps, eight ordered
+and ten direct-eval probes preserve Unsupported and state. Whole 17/115-source
+and unchanged dotAll/class/simple-fold reviews have no failures or host limits.
+The fixture inventory, dependencies and Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
