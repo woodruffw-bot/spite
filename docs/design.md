@@ -2903,6 +2903,22 @@ named captures, source/flags, clone compilation and UTF-16 indices reuse the
 existing plans. Other Unicode properties and v set operators remain separate
 proofs, with no new dependency, recursion or input-sized storage.
 
+
+White_Space and its exact space alias use the fixed Unicode binary property
+matcher (22.2.2.9). Unicode 18 PropList.txt defines 25 members, represented as
+ten positive or eleven complementary intervals after adjacent normalization.
+This property includes NEL (0085) and excludes BOM (FEFF); the ordinary character
+escape s has the opposite membership for those two characters. Complete pinned
+C/S folding preserves property membership, so u/v complement orders agree with i.
+
+Standalone and flat-class property parsing now share one exact alias lookup.
+The class property mask has sixteen bits, enough for the ten admitted positive
+and complementary kinds. Each fixed kind contributes its intervals only once;
+the source-sized move and larger fixed append are charged before allocation.
+Complete-character boundaries, immutable ranges, original captures and indices,
+assertions, consumers and clones reuse the existing plans. Other properties and
+set operators remain separate proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

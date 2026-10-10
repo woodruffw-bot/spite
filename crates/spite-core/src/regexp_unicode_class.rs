@@ -13,7 +13,7 @@ use std::{ops::Range, sync::Arc};
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
-/// surrogates. The fixed ASCII, Any, ASCII_Hex_Digit and Hex_Digit properties
+/// surrogates. Fixed ASCII, Any, hex-digit and White_Space properties
 /// are admitted in flat unions and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
@@ -127,7 +127,7 @@ impl RegExpUnicodeClassMatcher {
 
     /// Compiles standalone fixed binary Unicode properties and boundaries.
     ///
-    /// Admits ASCII, Any, ASCII_Hex_Digit/AHex and Hex_Digit/Hex.
+    /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex and White_Space/space.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -174,40 +174,20 @@ impl RegExpUnicodeClassMatcher {
             return Ok(None);
         }
         let name = &body[3..body.len() - 1];
-        let kind = match name {
-            [0x41, 0x53, 0x43, 0x49, 0x49] => 0,
-            [0x41, 0x6e, 0x79] => 2,
-            [0x41, 0x48, 0x65, 0x78]
-            | [
-                0x41,
-                0x53,
-                0x43,
-                0x49,
-                0x49,
-                0x5f,
-                0x48,
-                0x65,
-                0x78,
-                0x5f,
-                0x44,
-                0x69,
-                0x67,
-                0x69,
-                0x74,
-            ] => 4,
-            [0x48, 0x65, 0x78] | [0x48, 0x65, 0x78, 0x5f, 0x44, 0x69, 0x67, 0x69, 0x74] => 6,
-            _ => return Ok(None),
+        let Some(kind) = fixed_property_kind(name) else {
+            return Ok(None);
         };
         let negated = body[1] == 0x50;
         // CompileToCharSet complements u property escapes before Canonicalize.
         // UnicodeSets mode complements the canonical set instead. The shared
         // interval constructor folds only members of its original ranges.
         let complement_first = negated && ignore_case && !unicode_sets;
-        // Hex properties use up to six positive or seven complementary intervals.
+        // Fixed properties use up to ten positive or eleven complementary intervals.
         // Charge the bounded append before it can allocate.
         charge(match kind {
             4 => 4,
             6 => 7,
+            8 => 11,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -241,7 +221,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        let mut properties = 0u8;
+        let mut properties = 0u16;
         while index < units.len() - 1 {
             let Some(first) = class_atom(units, &mut index, unicode_sets) else {
                 return Ok(None);
@@ -284,11 +264,11 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..8 {
+        for kind in 0..10 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
-                charge(ranges.len().saturating_add(8))?;
+                charge(ranges.len().saturating_add(if kind >= 8 { 24 } else { 8 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
             }
         }
@@ -488,32 +468,7 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
                 while source.get(*index).is_some_and(|&unit| unit != 0x7d) {
                     *index += 1;
                 }
-                let kind = match source.get(name..*index)? {
-                    [0x41, 0x53, 0x43, 0x49, 0x49] => 0,
-                    [0x41, 0x6e, 0x79] => 2,
-                    [0x41, 0x48, 0x65, 0x78]
-                    | [
-                        0x41,
-                        0x53,
-                        0x43,
-                        0x49,
-                        0x49,
-                        0x5f,
-                        0x48,
-                        0x65,
-                        0x78,
-                        0x5f,
-                        0x44,
-                        0x69,
-                        0x67,
-                        0x69,
-                        0x74,
-                    ] => 4,
-                    [0x48, 0x65, 0x78] | [0x48, 0x65, 0x78, 0x5f, 0x44, 0x69, 0x67, 0x69, 0x74] => {
-                        6
-                    }
-                    _ => return None,
-                };
+                let kind = fixed_property_kind(source.get(name..*index)?)?;
                 if source.get(*index) != Some(&0x7d) {
                     return None;
                 }
@@ -526,6 +481,47 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
         _ => u32::from(unit),
     };
     Some(ClassAtom::Point(point))
+}
+
+fn fixed_property_kind(name: &[u16]) -> Option<u8> {
+    Some(match name {
+        [0x41, 0x53, 0x43, 0x49, 0x49] => 0,
+        [0x41, 0x6e, 0x79] => 2,
+        [0x41, 0x48, 0x65, 0x78]
+        | [
+            0x41,
+            0x53,
+            0x43,
+            0x49,
+            0x49,
+            0x5f,
+            0x48,
+            0x65,
+            0x78,
+            0x5f,
+            0x44,
+            0x69,
+            0x67,
+            0x69,
+            0x74,
+        ] => 4,
+        [0x48, 0x65, 0x78] | [0x48, 0x65, 0x78, 0x5f, 0x44, 0x69, 0x67, 0x69, 0x74] => 6,
+        [0x73, 0x70, 0x61, 0x63, 0x65]
+        | [
+            0x57,
+            0x68,
+            0x69,
+            0x74,
+            0x65,
+            0x5f,
+            0x53,
+            0x70,
+            0x61,
+            0x63,
+            0x65,
+        ] => 8,
+        _ => return None,
+    })
 }
 
 // These interval preimages give the same canonical membership as the standalone
@@ -558,6 +554,32 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xff1a, 0xff20),
             (0xff27, 0xff40),
             (0xff47, 0x10ffff),
+        ],
+        // UCD White_Space includes NEL (0085) and excludes BOM (FEFF).
+        8 => &[
+            (9, 13),
+            (0x20, 0x20),
+            (0x85, 0x85),
+            (0xa0, 0xa0),
+            (0x1680, 0x1680),
+            (0x2000, 0x200a),
+            (0x2028, 0x2029),
+            (0x202f, 0x202f),
+            (0x205f, 0x205f),
+            (0x3000, 0x3000),
+        ],
+        9 => &[
+            (0, 8),
+            (14, 0x1f),
+            (0x21, 0x84),
+            (0x86, 0x9f),
+            (0xa1, 0x167f),
+            (0x1681, 0x1fff),
+            (0x200b, 0x2027),
+            (0x202a, 0x202e),
+            (0x2030, 0x205e),
+            (0x2060, 0x2fff),
+            (0x3001, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -1952,6 +1974,190 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Hex}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_whitespace_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{White_Space}",
+                    r"\P{space}",
+                    r"[\p{space}]",
+                    r"[^\p{White_Space}]",
+                    r"[\P{space}K]",
+                    r"[\p{space}K]",
+                    r"[\p{space}\P{White_Space}]",
+                    r"[^\P{space}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let whitespace = matches!(point, 9..=13 | 0x20 | 0x85 | 0xa0 | 0x1680 | 0x2000..=0x200a | 0x2028..=0x2029 | 0x202f | 0x205f | 0x3000);
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{White_Space}" | r"[\p{space}]" => whitespace,
+                            r"\P{space}" | r"[^\p{White_Space}]" => !whitespace,
+                            r"[\P{space}K]" => !whitespace || k,
+                            r"[\p{space}K]" => whitespace || k,
+                            r"[\p{space}\P{White_Space}]" => true,
+                            r"[^\P{space}K]" => whitespace && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_whitespace_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{space}",
+            r"\P{White_Space}",
+            r"^[\p{White_Space}]$",
+            r"[\P{space}K]",
+            r"[^\P{space}K]",
+            r"[\p{White_Space}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\t\u{85}\u{feff} \u{a0}X\n",
+                            "X\r\n \u{2028}\u{85}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_whitespace_property_work_deduplication_and_contracts() {
+        let source =
+            JsString::from(format!("[{}]", r"\p{space}\P{White_Space}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{space}$", r"^[\P{White_Space}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(plan.find(&JsString::from(" \n😀\n"), 0, false), Some(2..4));
+        }
+        for source in [
+            r"[\p{space}--A]",
+            r"[\p{space}&&A]",
+            r"[[\p{space}]]",
+            r"[A-\p{space}]",
+            r"[\p{space}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{space}]"),
                 true,
                 true,
                 false

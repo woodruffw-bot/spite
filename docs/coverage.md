@@ -5996,6 +5996,29 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+White_Space/space execution adds three core tests and seven runtime tests.
+All 35651584 property/flag/code-point membership checks pass. The independently
+reviewed Unicode 18 PropList.txt has eleven raw intervals totaling 25 members;
+adjacent line separators normalize to one range. Every pinned C/S mapping keeps
+membership unchanged. Node and independent original-input candidate/context
+oracles agree with all 1920 core and 560 runtime result rows; Node verifies all
+twenty-eight complete Boolean programs, including both NEL/BOM differences from s.
+
+Coverage includes aliases, complements, class unions and inversion, original
+named/__proto__ text and indices, all line terminators, approved pair starts,
+clones/coercions/strict writes, all consumers, collection, 10000 repeated
+properties, 3000 captures, 200002 input units, unlimited defaults and opted-in
+host failures. All 546 core tests and 167 related runtime targets pass. All 427
+previous snapshots remain byte-identical, with two new reviewed golds. All 1023
+gaps, eight ordered and ten direct-eval probes preserve Unsupported and state.
+Whole 17/115-source and unchanged dotAll/class/simple-fold reviews have no
+failures or host limits. The corpus, dependencies and Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

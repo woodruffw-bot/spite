@@ -1,0 +1,1924 @@
+---
+source: crates/spite-core/src/regexp_unicode_class.rs
+expression: rows
+---
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="" start=2 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="" start=2 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=false m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="" start=2 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="" start=2 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=false m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=false m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="" start=2 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="" start=2 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=true m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="" start=2 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="" start=2 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=false i=true m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=false i=true m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="" start=2 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="" start=2 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=false m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="" start=2 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="" start=2 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=false m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=false m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="" start=2 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="" start=2 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=false input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=true m=false input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="" start=1 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="" start=2 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="" start=2 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="" start=0 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="" start=0 sticky=true None
+"\u005cp{space}" v=true i=true m=true input="" start=1 sticky=false None
+"\u005cp{space}" v=true i=true m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=false m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=false i=true m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=false m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=false input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=1 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=2 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=2 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=0 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=0 sticky=true None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=1 sticky=false None
+"\u005cP{White_Space}" v=true i=true m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=false m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=false i=true m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=false m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=false input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(3..4)
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=1 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=2 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=2 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=0 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=0 sticky=true None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=1 sticky=false None
+"^[\u005cp{White_Space}]$" v=true i=true m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true Some(0..2)
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(4..5)
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=0 sticky=false Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=0 sticky=true Some(0..1)
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=1 sticky=false Some(1..2)
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=1 sticky=true Some(1..2)
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=2 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=2 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=true None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=false None
+"[\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=false m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=false i=true m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=false m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=false input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=2 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=2 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=0 sticky=true None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=false None
+"[^\u005cP{space}K]" v=true i=true m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=false m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=false i=true m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=false m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=false input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=9 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\ud83d\ude00\u0009\u0085\ufeff \u00a0X\u000a" start=10 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=false Some(1..2)
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=1 sticky=true Some(1..2)
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=false Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=2 sticky=true Some(2..3)
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=7 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="X\u000d\u000a \u2028\u0085\u2029" start=8 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=3 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="\uff10\uff26" start=3 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=1 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=2 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=2 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=0 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=0 sticky=true None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=1 sticky=false None
+"[\u005cp{White_Space}]" v=true i=true m=true input="" start=1 sticky=true None
