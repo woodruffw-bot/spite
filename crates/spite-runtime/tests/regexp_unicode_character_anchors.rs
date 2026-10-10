@@ -147,7 +147,7 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         r"/^..$/u.exec('ab')",
         r"/^\D+$/v.exec('ab')",
         r"/^.$|b/u.exec('b')",
-        r"/^\p{ASCII}$/v.exec('a')",
+        r"/^\p{Assigned}$/v.exec('a')",
         r"/^$/.exec('')+/(?:^$)/u.exec('')",
     ] {
         assert!(

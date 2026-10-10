@@ -472,6 +472,17 @@ impl Realm {
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
                 }
+                if let Some(body) =
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'v')),
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )?
+                {
+                    return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
+                }
                 // Legacy BMP APIs retain their case-sensitive Unicode contract.
                 if flags.code_units().contains(&u16::from(b'i')) {
                     return Ok(None);

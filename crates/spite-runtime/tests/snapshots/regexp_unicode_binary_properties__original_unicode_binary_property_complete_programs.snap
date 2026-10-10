@@ -1,0 +1,7 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_binary_properties.rs
+expression: rows
+---
+"/^\u005cp{ASCII}$/v.exec('a')" "[\u0022a\u0022]"
+"/\u005cp{ASCII}/iv.exec('a')" "[\u0022a\u0022]"
+"/\u005cp{ASCII}/u.exec('a')" "[\u0022a\u0022]"

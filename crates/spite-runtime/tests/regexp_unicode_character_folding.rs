@@ -136,7 +136,7 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         r"/(\w)+/iu.exec('a')",
         r"/\w+/iv.exec('a')",
         r"/\w\d/iu.exec('a9')",
-        r"/\p{ASCII}/iv.exec('a')",
+        r"/\p{Assigned}/iv.exec('a')",
         r"/\b/iu.exec('a')",
     ] {
         assert!(

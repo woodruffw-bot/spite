@@ -13,8 +13,9 @@ use std::{ops::Range, sync::Arc};
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
-/// surrogates. Property/string escapes, nested v sets and set operators
-/// remain separate proofs. Matching always consumes complete input characters.
+/// surrogates. A separate entry point admits standalone ASCII/Any property
+/// escapes. Other property/string sets, nested v sets and set operators remain
+/// separate proofs. Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeClassMatcher {
     ranges: Arc<[(u32, u32)]>,
@@ -123,6 +124,84 @@ impl RegExpUnicodeClassMatcher {
         )
     }
 
+    /// Compiles standalone Unicode ASCII/Any property escapes and boundaries.
+    ///
+    /// Requires complete u/v validation with the supplied flags. Exact property
+    /// names are required. In u with i, P complements before folding; in v with
+    /// i, P complements folded membership. Other property sets remain excluded.
+    pub fn compile_binary_property_with_flags(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+    ) -> Option<Self> {
+        Self::compile_binary_property_with_flags_and_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same binary-property subset with fallible opt-in work.
+    pub fn compile_binary_property_with_flags_and_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let units = source.code_units();
+        charge(units.len())?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let Some(body) =
+            units.get(usize::from(start_anchor)..units.len() - usize::from(end_anchor))
+        else {
+            return Ok(None);
+        };
+        if body.len() < 5
+            || body[0] != 0x5c
+            || !matches!(body[1], 0x70 | 0x50)
+            || body[2] != 0x7b
+            || body.last() != Some(&0x7d)
+        {
+            return Ok(None);
+        }
+        let name = &body[3..body.len() - 1];
+        let end = match name {
+            [0x41, 0x53, 0x43, 0x49, 0x49] => 0x7f,
+            [0x41, 0x6e, 0x79] => 0x10ffff,
+            _ => return Ok(None),
+        };
+        let negated = body[1] == 0x50;
+        // CompileToCharSet complements u property escapes before Canonicalize.
+        // UnicodeSets mode complements the canonical set instead. The shared
+        // interval constructor folds only members of its original ranges.
+        let complement_first = negated && ignore_case && !unicode_sets;
+        charge(1)?;
+        let ranges = if complement_first {
+            if end == 0x10ffff {
+                Vec::new()
+            } else {
+                vec![(end + 1, 0x10ffff)]
+            }
+        } else {
+            vec![(0, end)]
+        };
+        Self::compile_ranges_with_work(
+            ranges,
+            negated && !complement_first,
+            start_anchor,
+            end_anchor,
+            multiline,
+            ignore_case,
+            charge,
+        )
+    }
+
     fn compile_units_with_work<E>(
         units: &[u16],
         unicode_sets: bool,
@@ -179,6 +258,26 @@ impl RegExpUnicodeClassMatcher {
         if index != units.len() - 1 {
             return Ok(None);
         }
+        Self::compile_ranges_with_work(
+            ranges,
+            inverted,
+            start_anchor,
+            end_anchor,
+            multiline,
+            ignore_case,
+            charge,
+        )
+    }
+
+    fn compile_ranges_with_work<E>(
+        mut ranges: Vec<(u32, u32)>,
+        inverted: bool,
+        start_anchor: bool,
+        end_anchor: bool,
+        multiline: bool,
+        ignore_case: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
         ranges = normalize_ranges_with_work(ranges, &mut charge)?;
         if ignore_case {
             // Keep original intervals: canonical input cannot reach mapped
@@ -1009,5 +1108,179 @@ mod tests {
             assert!(matches!(result, Err(17)));
             assert_eq!(calls, failure + 1);
         }
+    }
+
+    #[test]
+    fn unicode_binary_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{ASCII}",
+            r"\P{ASCII}",
+            r"\p{Any}",
+            r"\P{Any}",
+            r"^\p{ASCII}$",
+            r"^\P{ASCII}$",
+            r"\p{Any}$",
+            r"^\p{Any}",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(source),
+                            sets,
+                            ignore_case,
+                            multiline,
+                        )
+                        .unwrap();
+                        for input in ["aSkſK😀\n", "\r\n\u{2028}\u{2029}", "A\nſ\n😀", ""] {
+                            let input = JsString::from(input);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",JsString::from(source),plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_binary_properties_match_independent_membership_for_all_code_points() {
+        let settings = [
+            (r"\p{ASCII}", false, false),
+            (r"\P{ASCII}", false, false),
+            (r"\p{ASCII}", false, true),
+            (r"\p{ASCII}", true, true),
+            (r"\P{ASCII}", false, true),
+            (r"\P{ASCII}", true, true),
+            (r"\p{Any}", false, true),
+            (r"\P{Any}", true, true),
+        ];
+        let plans: Vec<_> = settings
+            .iter()
+            .map(|(source, sets, i)| {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                    &JsString::from(*source),
+                    *sets,
+                    *i,
+                    false,
+                )
+                .unwrap()
+            })
+            .collect();
+        for point in 0..=0x10ffffu32 {
+            let units = if point <= 0xffff {
+                vec![point as u16]
+            } else {
+                vec![
+                    ((point - 65536) / 1024 + 0xd800) as u16,
+                    ((point - 65536) % 1024 + 0xdc00) as u16,
+                ]
+            };
+            let width = units.len();
+            let input = JsString::from_code_units(units);
+            for ((source, sets, i), plan) in settings.iter().zip(&plans) {
+                let ascii = point <= 127;
+                let alias = matches!(point, 0x17f | 0x212a);
+                let expected = match *source {
+                    r"\p{Any}" => true,
+                    r"\P{Any}" => false,
+                    r"\p{ASCII}" => ascii || (*i && alias),
+                    r"\P{ASCII}" if !i => !ascii,
+                    r"\P{ASCII}" if *sets => !ascii && !alias,
+                    r"\P{ASCII}" => !ascii || matches!(point, 0x4b | 0x6b | 0x53 | 0x73),
+                    _ => unreachable!(),
+                };
+                assert_eq!(
+                    plan.find(&input, 0, false),
+                    expected.then_some(0..width),
+                    "{source} v={sets} i={i} U+{point:X}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_binary_property_contracts_clones_source_bounds_and_work() {
+        for source in [r"\p{ASCII}", r"\P{Any}", r"^\p{ASCII}$"] {
+            assert!(RegExpUnicodeClassMatcher::compile(&JsString::from(source), true).is_none());
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true
+                )
+                .is_none()
+            );
+        }
+        for source in [
+            r"\p{ascii}",
+            r"\p{Assigned}",
+            r"\p{Script=Han}",
+            r"\p{RGI_Emoji}",
+            r"[\p{ASCII}]",
+            r"(\p{ASCII})",
+            r"\p{ASCII}+",
+            r"\p{ASCII}x",
+            r"\p{ASCII}|x",
+            r"^$",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true
+                )
+                .is_none()
+            );
+        }
+        let source = JsString::from(r"^\P{ASCII}$");
+        let mut calls = 0;
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+            &source,
+            false,
+            true,
+            true,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source,
+                    false,
+                    true,
+                    true,
+                    |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    }
+                )
+                .is_err()
+            );
+        }
+        let input = JsString::from("x\n😀\nS");
+        assert_eq!(plan.clone().find(&input, 3, false), Some(2..4));
+        assert_eq!(plan.find(&input, 5, true), Some(5..6));
+        let literal = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(r"^\p{ASCII}$"),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert_eq!(literal.find(&JsString::from("A\n"), 0, false), None);
     }
 }

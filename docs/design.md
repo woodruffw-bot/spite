@@ -2809,6 +2809,35 @@ the first choice. The final fallback admits the complete validated normalized
 Unicode source only when the shared literal proof succeeds. Interior assertions,
 references, alternatives, classes and quantified bodies remain separate proofs.
 
+
+Standalone ASCII/Any property escapes reuse the immutable Unicode interval plan.
+Exact existing grammar names select 0..127 or 0..0x10ffff; no generated data or
+dependency is added. Optional boundary assertions and complete enclosing
+capturing/noncapturing groups share the previous context and capture machinery.
+Any consumes all complete input characters, including isolated surrogates and
+all line terminators, independently of s. Original text and UTF-16 widths remain.
+
+The case-insensitive complements follow edition 17 CompileToCharSet,
+MaybeSimpleCaseFolding, AllCharacters and CharacterSetMatcher. With u, P
+complements the raw property before folding. With v, it complements the folded
+property within canonical characters; the shared plan's outer inversion is
+equivalent because input points are canonicalized. Construction shares the
+existing source/set/fold/normalization charges and immutable Arc storage.
+Other property sets, property escapes within classes and continuations remain
+separate proofs.
+
+The installed Node v24.19.0 differs on ASCII property escapes with iv: it rejects
+long s and Kelvin sign for p{ASCII} and accepts them for P{ASCII}. The tagged
+ES2026 source (commit 0248456c758431e4bb8e5d26333ff1865123c9cd) instead applies
+Canonicalize to the input and property members, so p matches both and P rejects
+both. Independent raw-code-point predicates verify that rule for every code
+point, and independent candidate/context/capture oracles verify all gold rows.
+This implementation follows the specification; the approved Node exception
+remains limited to leading whole-match starts inside surrogate pairs.
+See [CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset),
+[MaybeSimpleCaseFolding](https://262.ecma-international.org/17.0/#sec-maybesimplecasefolding)
+and [CharacterSetMatcher](https://262.ecma-international.org/17.0/#sec-runtime-semantics-charactersetmatcher-abstract-operation).
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
