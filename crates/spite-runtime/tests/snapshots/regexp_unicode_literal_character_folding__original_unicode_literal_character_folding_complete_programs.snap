@@ -1,0 +1,15 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_literal_character_folding.rs
+expression: rows
+---
+"/^a$/u.test('a')" "true"
+"/^a$/v.test('a')" "true"
+"/(^a)/u.test('a')" "true"
+"/a/iu.exec('a')" "[\u0022a\u0022]"
+"/^a/u.exec('a')" "[\u0022a\u0022]"
+"/\u005cu{61}/iu.exec('a')" "[\u0022a\u0022]"
+"/^a$/u.exec('a')" "[\u0022a\u0022]"
+"/\u005cu{1f600}/iu.exec('\ud83d\ude00')" "[\u0022\ud83d\ude00\u0022]"
+"/a/iv.exec('a')" "[\u0022a\u0022]"
+"/^a/v.exec('a')" "[\u0022a\u0022]"
+"/\u005cuD800/iu.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"

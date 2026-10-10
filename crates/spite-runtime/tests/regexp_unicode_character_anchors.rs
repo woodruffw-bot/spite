@@ -142,7 +142,7 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
     for source in [
         r"/(^.$)+/iu.exec('a')",
         r"/^(.)$/v.exec('a')",
-        r"/^a$/u.exec('a')",
+        r"/(?:^a$)+/u.exec('a')",
         r"/^([a])$/v.exec('a')",
         r"/^..$/u.exec('ab')",
         r"/^\D+$/v.exec('ab')",

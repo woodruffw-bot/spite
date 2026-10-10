@@ -186,12 +186,12 @@ fn unicode_sets_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
     );
     for source in [
         r"/(?:a?)/v.exec('a')",
-        r"/a/iv.exec('a')",
+        r"/(?:a)+/iv.exec('a')",
         r"/ab*/v.exec('a')",
         r"/\uD800()\uDC00/v.exec('\uD800')",
         r"/\u{D800}\u{DC00}/v.exec('a')",
         r"/([\u{1f600}])+/v.exec('a')",
-        r"/^a/v.exec('a')",
+        r"/(?:^a)+/v.exec('a')",
         r"/(a)\1/v.exec('aa')",
     ] {
         assert!(

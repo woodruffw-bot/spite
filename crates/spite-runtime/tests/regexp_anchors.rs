@@ -78,8 +78,8 @@ fn internal_assertions_alternatives_and_unicode_modes_remain_explicit_gaps() {
         r"/(?:(?:(?:(?:a+(^a)+){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:^a*[b]+|b$){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:^a*[b]+){2}){2}){2})|){2,3}/.test('a')",
-        "/^a$/u.test('a')",
-        "/^a$/v.test('a')",
+        "/(?:^a$)+/u.test('a')",
+        "/(?:^a$)+/v.test('a')",
         r"/(?:(?:((?:(?:^a+^b+){2}){2}){2})|){2,3}/.test('ab')",
     ] {
         assert!(

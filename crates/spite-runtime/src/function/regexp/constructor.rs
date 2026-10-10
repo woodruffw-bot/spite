@@ -453,6 +453,16 @@ impl Realm {
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
                 }
+                if let Some(body) =
+                    RegExpUnicodeCharacterMatcher::compile_literal_with_flags_and_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )?
+                {
+                    return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
+                }
                 if let Some(body) = RegExpUnicodeClassMatcher::compile_with_flags_and_work(
                     &matching_source,
                     flags.code_units().contains(&u16::from(b'v')),

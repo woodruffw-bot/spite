@@ -1,18 +1,20 @@
-//! Single Unicode dot and CharacterClassEscape atoms (22.2.2.7.1, 22.2.2.9).
+//! Single Unicode literal, dot and CharacterClassEscape atoms (22.2.2.7.1, 22.2.2.9).
 
 use crate::{
-    JsString, case_data::SIMPLE_CASE_FOLD, is_line_terminator, is_whitespace,
-    regexp_canonicalize_character, regexp_literal::unicode_start,
+    JsString,
+    case_data::SIMPLE_CASE_FOLD,
+    is_line_terminator, is_whitespace, regexp_canonicalize_character,
+    regexp_literal::{unicode_literal_atom, unicode_start},
 };
 use std::ops::Range;
 
-/// Immutable matcher for one Unicode dot or character escape.
+/// Immutable matcher for one Unicode literal, dot or character escape.
 ///
 /// The caller must validate the complete Pattern with `u` or `v`. Existing bare
 /// and assertion entry points require no i; flag-aware entry points also admit i.
 /// Dot and `\d`, `\D`, `\s`, `\S`, `\w`, `\W` are the complete admitted bodies.
 /// Optional leading ^ and/or trailing $ are admitted by the assertion entry points.
-/// Classes, groups, concatenations and quantifiers remain separate.
+/// The separate literal entry point admits one decoded literal atom. Classes,\n/// groups, concatenations and quantifiers remain separate.
 /// Matching consumes complete code points, including isolated surrogates, while
 /// successful ranges retain UTF-16 indices. No input-sized storage is allocated.
 #[derive(Clone, Debug)]
@@ -21,13 +23,14 @@ pub struct RegExpUnicodeCharacterMatcher {
     start_anchor: bool,
     end_anchor: bool,
     multiline: bool,
-    fold_word: bool,
+    fold_input: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
 enum Atom {
     Dot(bool),
     Escape(u16),
+    Literal(u32),
 }
 
 impl RegExpUnicodeCharacterMatcher {
@@ -55,7 +58,7 @@ impl RegExpUnicodeCharacterMatcher {
             start_anchor: false,
             end_anchor: false,
             multiline: false,
-            fold_word: false,
+            fold_input: false,
         }))
     }
 
@@ -127,7 +130,64 @@ impl RegExpUnicodeCharacterMatcher {
             start_anchor,
             end_anchor,
             multiline,
-            fold_word: ignore_case && matches!(atom, Atom::Escape(0x77 | 0x57)),
+            fold_input: ignore_case && matches!(atom, Atom::Escape(0x77 | 0x57)),
+        }))
+    }
+
+    /// Compiles one literal Unicode atom with optional boundary assertions.
+    ///
+    /// Complete u/v validation is required. This entry point shares atom decoding
+    /// with Unicode literal concatenations, while i uses pinned simple/common
+    /// folding and consumes the original input width (22.2.2.7.3). Bare dot/escape
+    /// APIs keep their original subset. Groups and concatenations are excluded.
+    pub fn compile_literal_with_flags(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+    ) -> Option<Self> {
+        Self::compile_literal_with_flags_and_work(source, ignore_case, multiline, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same literal subset with fallible opt-in work accounting.
+    pub fn compile_literal_with_flags_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        // Braced escapes may contain source-sized runs of leading zeroes.
+        // Charge before decoding, including rejected literal bodies.
+        charge(source.len())?;
+        let units = source.code_units();
+        let start_anchor = units.first() == Some(&0x5e);
+        let mut index = usize::from(start_anchor);
+        let Some(&first) = units.get(index) else {
+            return Ok(None);
+        };
+        index += 1;
+        let Some(value) = unicode_literal_atom(units, &mut index, first) else {
+            return Ok(None);
+        };
+        let end_anchor = units.get(index) == Some(&0x24);
+        index += usize::from(end_anchor);
+        if index != units.len() {
+            return Ok(None);
+        }
+        let value = if ignore_case {
+            charge(2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize)?;
+            regexp_canonicalize_character(value, true, true)
+        } else {
+            value
+        };
+        Ok(Some(Self {
+            atom: Atom::Literal(value),
+            start_anchor,
+            end_anchor,
+            multiline,
+            fold_input: ignore_case,
         }))
     }
 
@@ -135,7 +195,7 @@ impl RegExpUnicodeCharacterMatcher {
     pub fn search_passes(&self) -> usize {
         1 + usize::from(self.start_anchor)
             + usize::from(self.end_anchor)
-            + if self.fold_word {
+            + if self.fold_input {
                 // Bound pinned-table binary search, including final membership.
                 2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize
             } else {
@@ -174,14 +234,15 @@ impl RegExpUnicodeCharacterMatcher {
     }
 
     fn matches(&self, value: u32) -> bool {
+        let value = if self.fold_input {
+            regexp_canonicalize_character(value, true, true)
+        } else {
+            value
+        };
         match self.atom {
+            Atom::Literal(expected) => value == expected,
             Atom::Dot(all) => all || !char::from_u32(value).is_some_and(is_line_terminator),
             Atom::Escape(kind) => {
-                let value = if self.fold_word {
-                    regexp_canonicalize_character(value, true, true)
-                } else {
-                    value
-                };
                 let included = match kind | 0x20 {
                     0x64 => (0x30..=0x39).contains(&value),
                     0x77 => matches!(value, 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a),
@@ -241,6 +302,223 @@ fn parse_atom(units: &[u16], dot_all: bool) -> Option<Atom> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unicode_literal_character_folding_ranges_snapshot() {
+        let input = JsString::from_code_units(vec![
+            0xd83d, 0xde00, 0x17f, 0x212a, 0x41, 0x61, 0x24, 0x5e, 0x2e, 0xa, 0xd800, 0xdc01,
+            0xd800,
+        ]);
+        let mut rows = String::new();
+        for body in [
+            "a",
+            "A",
+            "s",
+            "k",
+            "ſ",
+            "K",
+            r"\$",
+            r"\^",
+            r"\.",
+            r"\u{1f600}",
+            r"\uD83D\uDE00",
+            r"\uD800",
+            r"\u{10400}",
+            "ß",
+        ] {
+            for (left, right) in [("", ""), ("^", "$")] {
+                let source = JsString::from(format!("{left}{body}{right}").as_str());
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let matcher = RegExpUnicodeCharacterMatcher::compile_literal_with_flags(
+                            &source,
+                            ignore_case,
+                            multiline,
+                        )
+                        .unwrap();
+                        for start in 0..=input.len() + 1 {
+                            for sticky in [false, true] {
+                                writeln!(rows,"{source:?} ignore_case={ignore_case} multiline={multiline} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_literal_character_folds_keep_independent_sets_and_original_widths() {
+        for (source, members) in [
+            ("A", &[0x41, 0x61][..]),
+            ("ß", &[0xdf, 0x1e9e, 0x1df95][..]),
+            (r"\u{10400}", &[0x10400, 0x10428][..]),
+        ] {
+            let matcher = RegExpUnicodeCharacterMatcher::compile_literal_with_flags(
+                &JsString::from(source),
+                true,
+                false,
+            )
+            .unwrap();
+            for value in 0..=0x10ffff {
+                let units = if value <= 0xffff {
+                    vec![value as u16]
+                } else {
+                    char::from_u32(value)
+                        .unwrap()
+                        .encode_utf16(&mut [0; 2])
+                        .to_vec()
+                };
+                let len = units.len();
+                let input = JsString::from_code_units(units);
+                let expected = members.contains(&value).then_some(0..len);
+                assert_eq!(
+                    matcher.find(&input, 0, true),
+                    expected,
+                    "{source} U+{value:x}"
+                );
+                if len == 2 {
+                    assert_eq!(
+                        matcher.find(&input, 1, true),
+                        expected,
+                        "interior {source} U+{value:x}"
+                    );
+                }
+            }
+        }
+        for &(source, target) in SIMPLE_CASE_FOLD {
+            let point = |value: u32| {
+                JsString::from_code_units(if value <= 0xffff {
+                    vec![value as u16]
+                } else {
+                    char::from_u32(value)
+                        .unwrap()
+                        .encode_utf16(&mut [0; 2])
+                        .to_vec()
+                })
+            };
+            let pattern = point(source);
+            let input = point(target);
+            let matcher =
+                RegExpUnicodeCharacterMatcher::compile_literal_with_flags(&pattern, true, false)
+                    .unwrap();
+            assert_eq!(
+                matcher.find(&input, 0, true),
+                Some(0..input.len()),
+                "U+{source:x} -> U+{target:x}"
+            );
+            let matcher =
+                RegExpUnicodeCharacterMatcher::compile_literal_with_flags(&input, true, false)
+                    .unwrap();
+            assert_eq!(
+                matcher.find(&pattern, 0, true),
+                Some(0..pattern.len()),
+                "reverse U+{target:x}"
+            );
+        }
+    }
+
+    #[test]
+    fn unicode_literal_character_contracts_clones_and_fallible_work() {
+        for source in [
+            "",
+            ".",
+            r"\w",
+            "[a]",
+            "(a)",
+            "ab",
+            "a+",
+            "a|b",
+            r"\uD800()\uDC00",
+            r"\u{D800}\u{DC00}",
+        ] {
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_literal_with_flags(
+                    &JsString::from(source),
+                    true,
+                    false
+                )
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodeCharacterMatcher::compile_with_flags(
+                &JsString::from("a"),
+                true,
+                false,
+                false
+            )
+            .is_none()
+        );
+        for (source, anchored) in [
+            (r"\$", false),
+            (r"^\$$", true),
+            (r"\\$", true),
+            (r"\u0024", false),
+        ] {
+            let matcher = RegExpUnicodeCharacterMatcher::compile_literal_with_flags(
+                &JsString::from(source),
+                true,
+                false,
+            )
+            .unwrap();
+            assert_eq!(
+                matcher.search_passes(),
+                14 + usize::from(anchored) + usize::from(source.starts_with('^'))
+            );
+        }
+        let source = JsString::from(r"^\u{00000061}$");
+        let mut charges = Vec::new();
+        let matcher = RegExpUnicodeCharacterMatcher::compile_literal_with_flags_and_work(
+            &source,
+            true,
+            true,
+            |n| {
+                charges.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(charges, vec![source.len(), 13]);
+        assert_eq!(
+            matcher.clone().find(&JsString::from("A"), 0, true),
+            Some(0..1)
+        );
+        for failure in 0..charges.len() {
+            let mut calls = 0;
+            let result = RegExpUnicodeCharacterMatcher::compile_literal_with_flags_and_work(
+                &source,
+                true,
+                true,
+                |_| {
+                    let call = calls;
+                    calls += 1;
+                    if call == failure { Err(17) } else { Ok(()) }
+                },
+            );
+            assert!(matches!(result, Err(17)));
+            assert_eq!(calls, failure + 1);
+        }
+        let source = JsString::from(format!("\\u{{{}61}}", "0".repeat(100000)).as_str());
+        assert!(matches!(
+            RegExpUnicodeCharacterMatcher::compile_literal_with_flags_and_work(
+                &source,
+                true,
+                false,
+                |_| Err(17)
+            ),
+            Err(17)
+        ));
+        assert_eq!(
+            RegExpUnicodeCharacterMatcher::compile_literal_with_flags(&source, true, false)
+                .unwrap()
+                .find(&JsString::from("A"), 0, true),
+            Some(0..1)
+        );
+    }
     use std::fmt::Write;
 
     const PLANS: [(&str, bool); 8] = [

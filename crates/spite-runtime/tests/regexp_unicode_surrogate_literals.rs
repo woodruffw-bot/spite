@@ -118,7 +118,7 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         r"/(\uD83D)(\uDE00)/u.exec('😀')",
         r"/\uD83D(?:)\uDE00/v.exec('😀')",
         r"/\u{D83D}\u{DE00}/u.exec('😀')",
-        r"/\uD800/iu.exec('\uD800')",
+        r"/(?:\uD800)+/iu.exec('\uD800')",
         r"/([\uD800])+/v.exec('\uD800')",
         r"/\uDE00+/u.exec('\uDE00')",
         r"/(\uDE00)\1/u.exec('\uDE00\uDE00')",

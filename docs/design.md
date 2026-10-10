@@ -2734,6 +2734,24 @@ indices aliasing. Search retains the same matcher and input widths. Wrappers do
 not add native recursion. Quantified groups, continuation/alternative bodies and
 assertions outside the complete wrappers remain separate matching proofs.
 
+
+A separate Unicode character entry point admits one decoded literal atom with
+optional leading ^ and trailing $ (22.2.2.7.3). It shares Unicode literal decoding
+with the existing concatenation compiler. An assertion is recognized only after
+decoding the atom, so escaped dollars/carets and fixed/braced escapes retain their
+literal values. The original dot/escape APIs retain their previous subsets.
+
+The decoded pattern character and complete input characters use the pinned
+simple/common canonicalization when i is set. A constant-size literal plan stores
+the canonical point, while search consumes the original input character and
+returns its original UTF-16 width. Existing complete wrappers provide captures
+and names. Source work is charged before decoding even rejected bodies: braced
+escapes may contain source-sized runs of leading zeroes. Construction and search
+also cover bounded pinned-table lookups. The installed Node's Unicode 17 data
+differs on six of sixteen dedicated cross-plane cases; independent digest-pinned
+Unicode 18 data verifies all sixteen. No older data replaces the existing pin.
+Concatenations, quantified literals and interior groups remain separate proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

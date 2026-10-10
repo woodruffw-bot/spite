@@ -130,7 +130,7 @@ fn optional_work_and_variable_assertion_gaps_remain_distinct_from_exceptions() {
         r"/(?:(?:(a$|b)+)|){2,3}/m.test('a')",
         r"/(?:(?:(?:(?:(a|bc)^){2}){2})|){2,3}/m.test('a')",
         r"/(?:(?:(?:(?<n>a)^(?:\k<n>)+){2})|){2,3}/.test('a')",
-        r"/(^a)/u.test('a')",
+        r"/(?:(^a))+/u.test('a')",
     ] {
         assert!(
             matches!(

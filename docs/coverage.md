@@ -5750,6 +5750,34 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Single Unicode literal atoms now execute i and optional ^/$ assertions with
+original input widths, including enclosing captures/names. Three new core tests
+check 3342336 code-point memberships against independent explicit fold sets,
+every supplementary interior start, both directions of all 1533 pinned mappings,
+escapes/assertions, old API contracts, clones and fallible pre-decoding work.
+All 520 core tests and 158 related runtime targets pass.
+
+Eight new runtime tests cover 2304 complete result rows, original captures,
+consumers, escaped anchors, simple/full/Turkic distinctions, lone surrogates,
+clones/coercions/strict writes, collection, 100000 leading escape zeroes and
+200000 input units with unlimited defaults, opted-in failures and remaining
+gaps. Node agrees with 3360 core rows in each mode, 2304 runtime rows, twenty-two
+complete Boolean programs and eleven exact former programs retained as positive
+golds. Sixteen cross-plane rows agree with an independent parser of digest-pinned
+Unicode 18 CaseFolding.txt; six differ from the installed Node's Unicode 17 data.
+Eleven former controls in eight targets now exercise unproved quantified bodies.
+All 400 prior snapshots remain byte-identical, with four new reviewed golds.
+All 966 runtime gaps, eight ordered and ten direct-eval probes preserve
+Unsupported and state. Whole 17/115-source and unchanged dotAll/class/simple-fold
+reviews have no failures or host limits. No upstream original is added here:
+the existing pin, 7515 fixtures, 7496 Script sources, 14470 variants and eleven
+helpers remain unchanged. No dependency or default work/heap quota is added.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
