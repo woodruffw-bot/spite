@@ -7489,3 +7489,6 @@ test/built-ins/RegExp/prototype/exec/u-captured-value.js	-	-	-
 test/built-ins/RegExp/prototype/exec/u-lastindex-value.js	-	-	-
 test/built-ins/RegExp/dotall/with-dotall-unicode.js	-	-	-
 test/built-ins/RegExp/dotall/without-dotall-unicode.js	-	-	-
+test/language/literals/regexp/u-astral-char-class-invert.js	-	-	-
+test/language/literals/regexp/u-surrogate-pairs-atom-char-class.js	-	-	-
+test/language/literals/regexp/u-surrogate-pairs-atom-escape-char-class.js	-	-	-
