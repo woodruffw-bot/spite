@@ -164,9 +164,9 @@ fn unicode_literal_character_folding_opted_work_and_remaining_gaps() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/ab/iu.exec('AB')",
+        r"/(?:ab)+/iu.exec('AB')",
         r"/a+/iv.exec('A')",
-        r"/(a)b/iu.exec('AB')",
+        r"/(?:(a)b)+/iu.exec('AB')",
         r"/a|b/iv.exec('A')",
         r"/^(a)$/iu.exec('A')",
         r"/(?=a)/iv.exec('A')",

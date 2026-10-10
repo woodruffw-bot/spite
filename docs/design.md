@@ -2752,6 +2752,30 @@ differs on six of sixteen dedicated cross-plane cases; independent digest-pinned
 Unicode 18 data verifies all sixteen. No older data replaces the existing pin.
 Concatenations, quantified literals and interior groups remain separate proofs.
 
+
+Unicode i literal concatenations share the existing complete-character literal
+proof (22.2.2.7.3). Original source capture offsets become code-point ordinals,
+then immutable canonical points receive a freshly computed KMP prefix table.
+This preserves borders introduced by folding without using source UTF-16 widths
+to predict input boundaries. Mandatory and empty groups remain in source order.
+
+Search folds complete input points and charges actual decoder, lookup and
+prefix operations through the existing fallible dispatch. Only a successful
+match walks its matched points backward to find the original start, then
+resolves captures in one forward pass with source-sized temporary storage.
+Captured text, empty positions, indices and names use original input widths;
+the input itself is never copied or retained by the match. No native recursion
+is added. Construction charges source passes before decoding/storage and bounds
+each pinned lookup and capture-boundary binary search. Search charges storage
+before allocating it. Existing single-atom plans remain the first choice.
+
+The installed Node's Unicode 17 data differs on ten of twenty-four dedicated
+Unicode 18 capture-width cases. Independent digest-pinned CaseFolding.txt verifies
+all twenty-four, including supplementary/BMP changes and interior empty captures.
+References, alternatives, classes, quantified bodies and assertions remain
+separate proofs. The prior exclusion of distinct surrogate atoms that would
+flatten into one pair remains: Unicode input cannot match them as two characters.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -26,6 +26,7 @@ mod regexp_repeated_sequence;
 mod regexp_sequence;
 mod regexp_unicode_character;
 mod regexp_unicode_class;
+mod regexp_unicode_folded_literal;
 mod replacement;
 mod symbol;
 mod unicode;
@@ -61,6 +62,9 @@ pub use regexp_repeated_sequence::RegExpRepeatedSequenceMatcher;
 pub use regexp_sequence::RegExpSequenceMatcher;
 pub use regexp_unicode_character::RegExpUnicodeCharacterMatcher;
 pub use regexp_unicode_class::RegExpUnicodeClassMatcher;
+pub use regexp_unicode_folded_literal::{
+    RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
+};
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
 pub use unicode::{is_identifier_part, is_identifier_start};

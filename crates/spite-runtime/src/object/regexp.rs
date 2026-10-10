@@ -7,7 +7,7 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
-    RegExpUnicodeClassMatcher,
+    RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -22,6 +22,7 @@ pub(crate) enum RegExpMatcherBody {
     Character(RegExpCharacterMatcher),
     UnicodeCharacter(RegExpUnicodeCharacterMatcher),
     UnicodeClass(RegExpUnicodeClassMatcher),
+    UnicodeFoldedLiteral(RegExpUnicodeFoldedLiteralMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
     Quantified(RegExpQuantifiedMatcher),
@@ -46,6 +47,7 @@ impl RegExpMatcher {
     pub fn new(body: RegExpMatcherBody, enclosing_captures: usize) -> Self {
         let inner = match &body {
             RegExpMatcherBody::Backreferences(m) => m.capture_count(),
+            RegExpMatcherBody::UnicodeFoldedLiteral(m) => m.capture_count(),
             RegExpMatcherBody::Literal(m)
             | RegExpMatcherBody::UnicodeEmpty(m)
             | RegExpMatcherBody::UnicodeCodePoints(m) => m.capture_ranges().len(),
@@ -95,6 +97,19 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodeFoldedLiteral(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: Some(found.captures),
+                    })
+                });
+        }
         Ok(self.find_precharged(input, start, sticky))
     }
 
@@ -105,7 +120,9 @@ impl RegExpMatcher {
         sticky: bool,
     ) -> Option<RegExpMatch<'a>> {
         let (range, branch) = match &self.body {
-            RegExpMatcherBody::Backreferences(_) => unreachable!("fallible reference dispatch"),
+            RegExpMatcherBody::Backreferences(_) | RegExpMatcherBody::UnicodeFoldedLiteral(_) => {
+                unreachable!("fallible matching dispatch")
+            }
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::UnicodeCodePoints(matcher) => {
                 (matcher.find_unicode_code_points(input, start, sticky)?, 0)
@@ -157,8 +174,8 @@ impl RegExpMatcher {
     }
     pub fn search_passes(&self, sticky: bool) -> usize {
         match &self.body {
-            // References charge actual operations through find_with_work.
-            RegExpMatcherBody::Backreferences(_) => 0,
+            // These plans charge actual operations through find_with_work.
+            RegExpMatcherBody::Backreferences(_) | RegExpMatcherBody::UnicodeFoldedLiteral(_) => 0,
             RegExpMatcherBody::Literal(_)
             | RegExpMatcherBody::UnicodeEmpty(_)
             | RegExpMatcherBody::UnicodeCodePoints(_) => 1,
@@ -242,7 +259,9 @@ impl RegExpMatch<'_> {
         }
         let index = index - self.matcher.enclosing_captures;
         let fixed = match &self.matcher.body {
-            RegExpMatcherBody::Backreferences(_) => unreachable!("dynamic reference captures"),
+            RegExpMatcherBody::Backreferences(_) | RegExpMatcherBody::UnicodeFoldedLiteral(_) => {
+                unreachable!("dynamic captures")
+            }
             RegExpMatcherBody::Literal(matcher)
             | RegExpMatcherBody::UnicodeEmpty(matcher)
             | RegExpMatcherBody::UnicodeCodePoints(matcher) => matcher.capture_ranges(),

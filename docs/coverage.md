@@ -5778,6 +5778,37 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Unicode i literal concatenations now execute mandatory nested/empty captures
+with original input boundaries. Four new core tests compare nine independent
+literal/capture plans over all raw inputs up to four units from a nine-unit
+alphabet, all starts and sticky modes. They cover folded prefix retries,
+supplementary/isolated-surrogate boundaries, cross-plane widths, every fallible
+charge, clones, 5000 captures and 200000 input units without default quotas.
+All 524 core tests and 159 related runtime targets pass.
+
+Eight new runtime tests cover original captures and names/indices aliases,
+prefix retries and empty positions, consumers, full/Turkic exclusions,
+clones/coercions/strict writes, collection, 3000 captures, long repeated prefixes,
+unlimited defaults and opted-in failures. Node agrees with 540 core rows in each
+mode, 880 runtime rows, twenty-two complete Boolean programs and two exact former
+programs retained as positive golds. Twenty-four cross-plane capture rows agree
+with an independent parser of digest-pinned Unicode 18 CaseFolding.txt; ten
+differ from the installed Node's Unicode 17 data. Two old controls now exercise
+unproved quantified groups. One new stress script initially redeclared a
+lexical name; its corrected version and all final checks pass without an
+implementation change. All 404 prior snapshots remain byte-identical, with
+four new reviewed golds. All 973 runtime gaps, eight ordered and ten direct-eval
+probes preserve Unsupported and state. Whole 17/115-source and unchanged
+dotAll/class/simple-fold reviews have no failures or host limits.
+No upstream original is added here: the existing pin, 7515 fixtures, 7496 Script
+sources, 14470 variants and eleven helpers remain unchanged. No dependency or
+default work/heap quota is added.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

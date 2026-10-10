@@ -10,7 +10,7 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
-    RegExpUnicodeClassMatcher, Span, regexp_outer_group_body,
+    RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -493,6 +493,22 @@ impl Realm {
                 enclosing_captures = wrappers;
             }
             body
+        } else {
+            matcher
+        };
+        // Folded literal concatenations resolve capture boundaries in original
+        // input characters, rather than folded/source UTF-16 widths (22.2.2.7.3).
+        let matcher = if matcher.is_none() && unicode && flags.code_units().contains(&0x69) {
+            let body = self.object_work(span, |_, budget| {
+                RegExpUnicodeFoldedLiteralMatcher::compile_with_work(&capture_source, |work| {
+                    budget.charge(work)
+                })
+            })?;
+            if body.is_some() {
+                // This plan compiles the complete original capture layout.
+                enclosing_captures = 0;
+            }
+            body.map(RegExpMatcherBody::UnicodeFoldedLiteral)
         } else {
             matcher
         };
