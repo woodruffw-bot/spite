@@ -421,22 +421,24 @@ impl Realm {
                 }
             }
         };
-        // Case-sensitive u/v atoms require complete-character matching.
+        // Unicode u/v atoms require complete-character matching.
         // Unicode dot/escape and flat-class plans precede the legacy BMP proof
-        // (22.2.2.7.1, 22.2.2.9). Set operators and folding remain separate.
-        let matcher = if matcher.is_none()
-            && unicode
-            && !flags.code_units().contains(&u16::from(b'i'))
-        {
+        // (22.2.2.7.1, 22.2.2.9). Class folding and set operators remain separate.
+        let matcher = if matcher.is_none() && unicode {
             self.object_work(span, |_, budget| {
                 budget.charge(capture_source.len())?;
-                if let Some(body) = RegExpUnicodeCharacterMatcher::compile_with_assertions_and_work(
+                if let Some(body) = RegExpUnicodeCharacterMatcher::compile_with_flags_and_work(
                     &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     flags.code_units().contains(&u16::from(b's')),
                     |work| budget.charge(work),
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
+                }
+                // Unicode classes require an independent folding proof.
+                if flags.code_units().contains(&u16::from(b'i')) {
+                    return Ok(None);
                 }
                 if let Some(body) = RegExpUnicodeClassMatcher::compile_with_assertions_and_work(
                     &capture_source,

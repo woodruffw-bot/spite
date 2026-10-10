@@ -1,0 +1,7 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_character_folding.rs
+expression: rows
+---
+"/^.$/iu.exec('a')" "[\u0022a\u0022]"
+"/./iu.exec('a')" "[\u0022a\u0022]"
+"/\u005cW/iv.exec('a')" "null"

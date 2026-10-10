@@ -1,11 +1,15 @@
 //! Single Unicode dot and CharacterClassEscape atoms (22.2.2.7.1, 22.2.2.9).
 
-use crate::{JsString, is_line_terminator, is_whitespace, regexp_literal::unicode_start};
+use crate::{
+    JsString, case_data::SIMPLE_CASE_FOLD, is_line_terminator, is_whitespace,
+    regexp_canonicalize_character, regexp_literal::unicode_start,
+};
 use std::ops::Range;
 
-/// Immutable matcher for one case-sensitive Unicode dot or character escape.
+/// Immutable matcher for one Unicode dot or character escape.
 ///
-/// The caller must validate the complete Pattern with `u` or `v` and without `i`.
+/// The caller must validate the complete Pattern with `u` or `v`. Existing bare
+/// and assertion entry points require no i; flag-aware entry points also admit i.
 /// Dot and `\d`, `\D`, `\s`, `\S`, `\w`, `\W` are the complete admitted bodies.
 /// Optional leading ^ and/or trailing $ are admitted by the assertion entry points.
 /// Classes, groups, concatenations and quantifiers remain separate.
@@ -17,6 +21,7 @@ pub struct RegExpUnicodeCharacterMatcher {
     start_anchor: bool,
     end_anchor: bool,
     multiline: bool,
+    fold_word: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -50,6 +55,7 @@ impl RegExpUnicodeCharacterMatcher {
             start_anchor: false,
             end_anchor: false,
             multiline: false,
+            fold_word: false,
         }))
     }
 
@@ -74,6 +80,34 @@ impl RegExpUnicodeCharacterMatcher {
         source: &JsString,
         multiline: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_with_flags_and_work(source, false, multiline, dot_all, charge)
+    }
+
+    /// Compiles one dot/escape atom with optional assertions and Unicode i.
+    ///
+    /// The complete Pattern must be validated in u/v mode. Unicode word escapes
+    /// use pinned simple/common case folding; dot, digit and space sets are
+    /// invariant under folding. Full and Turkic folding do not apply.
+    pub fn compile_with_flags(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+    ) -> Option<Self> {
+        Self::compile_with_flags_and_work(source, ignore_case, multiline, dot_all, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same flag-aware subset with fallible opt-in work accounting.
+    pub fn compile_with_flags_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
@@ -93,12 +127,20 @@ impl RegExpUnicodeCharacterMatcher {
             start_anchor,
             end_anchor,
             multiline,
+            fold_word: ignore_case && matches!(atom, Atom::Escape(0x77 | 0x57)),
         }))
     }
 
     /// Bounds the input scan and each optional assertion check for opt-in work.
     pub fn search_passes(&self) -> usize {
-        1 + usize::from(self.start_anchor) + usize::from(self.end_anchor)
+        1 + usize::from(self.start_anchor)
+            + usize::from(self.end_anchor)
+            + if self.fold_word {
+                // Bound pinned-table binary search, including final membership.
+                2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize
+            } else {
+                0
+            }
     }
 
     /// Finds the first complete matching character, or only the sticky character.
@@ -135,6 +177,11 @@ impl RegExpUnicodeCharacterMatcher {
         match self.atom {
             Atom::Dot(all) => all || !char::from_u32(value).is_some_and(is_line_terminator),
             Atom::Escape(kind) => {
+                let value = if self.fold_word {
+                    regexp_canonicalize_character(value, true, true)
+                } else {
+                    value
+                };
                 let included = match kind | 0x20 {
                     0x64 => (0x30..=0x39).contains(&value),
                     0x77 => matches!(value, 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a),
@@ -536,5 +583,158 @@ mod tests {
                 .is_err()
             );
         }
+    }
+    #[test]
+    fn unicode_character_folding_ranges_snapshot() {
+        let input = JsString::from_code_units(vec![
+            0xd83d, 0xde00, 0x17f, 0x212a, 9, 0x39, 0x41, 0xfeff, 0xd800, 0xa, 0xdc00,
+        ]);
+        let mut rows = String::new();
+        for (body, all) in PLANS {
+            for (left, right) in [("", ""), ("^", ""), ("", "$"), ("^", "$")] {
+                let source = JsString::from(format!("{left}{body}{right}").as_str());
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let matcher = RegExpUnicodeCharacterMatcher::compile_with_flags(
+                            &source,
+                            ignore_case,
+                            multiline,
+                            all,
+                        )
+                        .unwrap();
+                        for start in 0..=input.len() + 1 {
+                            for sticky in [false, true] {
+                                writeln!(rows, "{source:?} ignore_case={ignore_case} multiline={multiline} dot_all={all} start={start} sticky={sticky} {:?}", matcher.find(&input, start, sticky)).unwrap();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_ignore_case_characters_agree_over_every_code_point_and_pair_offset() {
+        let plans = PLANS.map(|(source, all)| {
+            (
+                source,
+                all,
+                RegExpUnicodeCharacterMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    all,
+                )
+                .unwrap(),
+            )
+        });
+        for value in 0..=0x10ffff {
+            let units = if value <= 0xffff {
+                vec![value as u16]
+            } else {
+                let mut buffer = [0; 2];
+                char::from_u32(value)
+                    .unwrap()
+                    .encode_utf16(&mut buffer)
+                    .to_vec()
+            };
+            let input = JsString::from_code_units(units);
+            for (source, all, matcher) in &plans {
+                // WordCharacters adds the only two non-ASCII characters whose
+                // pinned simple/common fold is an ASCII word character.
+                let word = matches!(value,0x30..=0x39|0x41..=0x5a|0x5f|0x61..=0x7a|0x17f|0x212a);
+                let expected = match *source {
+                    r"\w" => word,
+                    r"\W" => !word,
+                    _ => reference_membership(source, *all, value),
+                };
+                assert_eq!(
+                    matcher.matches(value),
+                    expected,
+                    "source={source} value={value:x}"
+                );
+                assert_eq!(
+                    matcher.find(&input, 0, true),
+                    expected.then_some(0..input.len())
+                );
+                if input.len() == 2 {
+                    assert_eq!(
+                        matcher.find(&input, 1, true),
+                        expected.then_some(0..2),
+                        "source={source} value={value:x}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_character_folding_contracts_and_opted_work() {
+        for source in [
+            "[a]",
+            "(a)",
+            "(. )",
+            "a",
+            "b",
+            r"\p{ASCII}",
+            r"\b",
+            r"\w+",
+            r"\w\d",
+        ] {
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true
+                )
+                .is_none(),
+                "{source}"
+            );
+        }
+        for (source, _) in PLANS {
+            let plain = RegExpUnicodeCharacterMatcher::compile_with_flags(
+                &JsString::from(source),
+                false,
+                false,
+                false,
+            )
+            .unwrap();
+            let folded = RegExpUnicodeCharacterMatcher::compile_with_flags(
+                &JsString::from(source),
+                true,
+                false,
+                false,
+            )
+            .unwrap();
+            assert_eq!(
+                folded.search_passes() > plain.search_passes(),
+                matches!(source, r"\w" | r"\W")
+            );
+        }
+        let source = JsString::from(r"^\w$");
+        let mut charges = Vec::new();
+        RegExpUnicodeCharacterMatcher::compile_with_flags_and_work(
+            &source,
+            true,
+            true,
+            false,
+            |work| {
+                charges.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(charges, [source.len()]);
+        let result = RegExpUnicodeCharacterMatcher::compile_with_flags_and_work(
+            &source,
+            true,
+            true,
+            false,
+            |_| Err::<(), _>(17),
+        );
+        assert!(matches!(result, Err(17)));
     }
 }

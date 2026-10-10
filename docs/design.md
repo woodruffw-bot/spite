@@ -2683,6 +2683,18 @@ Sticky matching considers only the normalized initial complete character.
 Groups, concatenations, quantifiers, Unicode folding and v operators remain
 separate proofs, while escaped punctuation remains class data.
 
+
+Single Unicode dot and d/D/s/S/w/W escape atoms also admit i, including their
+optional boundary assertions (22.2.2.7.3, 22.2.2.9). Dot, digit and space sets are
+invariant under folding. Word escapes canonicalize each complete input character
+through the pinned simple/common table before ASCII word membership or inversion,
+so long s and Kelvin sign match while full/Turkic mappings do not apply. No fold
+changes the consumed character width or the original returned text. Existing
+case-sensitive bare/assertion APIs retain their contracts; flag-aware APIs admit i.
+Word search work additionally bounds pinned-table binary lookup. Unicode classes,
+literal folding, groups, concatenations and quantifiers retain their independent
+proof boundaries. The runtime guards class/BMP plans before any i fallback.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
