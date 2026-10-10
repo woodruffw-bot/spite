@@ -2797,6 +2797,18 @@ without input-sized storage or native recursion. Successful captures are still
 resolved once from original complete input characters. Source scans/copies,
 ring allocation/writes and context checks are charged through opt-in host work.
 
+
+The same flat Unicode literal program supports case-sensitive boundary matching
+(22.2.2.4 and 22.2.2.7.3). Its explicit flag entry point canonicalizes pattern
+and input points only with i. Without i, it compares exact complete code points
+and does no pinned-fold lookup or lookup work charge. Both paths compute KMP
+prefixes from the actual comparison points and use identical original-width
+capture resolution and multiline context. Existing bare core APIs retain their
+Unicode i subset; prior single-atom and bare case-sensitive runtime plans remain
+the first choice. The final fallback admits the complete validated normalized
+Unicode source only when the shared literal proof succeeds. Interior assertions,
+references, alternatives, classes and quantified bodies remain separate proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

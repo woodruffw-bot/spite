@@ -450,6 +450,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match single Unicode literal atoms with simple/common folding and optional boundary assertions, retaining complete original input widths and enclosing captures.
 - [x] Match Unicode literal concatenations with simple/common folding, including nested mandatory and empty captures, using original complete-character capture bounds.
 - [x] Match optional leading and trailing boundary assertions around Unicode folded literal concatenations and complete enclosing groups, including multiline context and original captures.
+- [x] Match case-sensitive Unicode literal concatenations with optional boundary assertions and enclosing captures, sharing complete-character search and multiline context.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

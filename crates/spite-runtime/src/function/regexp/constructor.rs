@@ -496,12 +496,13 @@ impl Realm {
         } else {
             matcher
         };
-        // Folded literal concatenations resolve capture boundaries in original
+        // Unicode literal concatenations resolve capture boundaries in original
         // input characters, rather than folded/source UTF-16 widths (22.2.2.7.3).
-        let matcher = if matcher.is_none() && unicode && flags.code_units().contains(&0x69) {
+        let matcher = if matcher.is_none() && unicode {
             let body = self.object_work(span, |_, budget| {
-                RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions_and_work(
+                RegExpUnicodeFoldedLiteralMatcher::compile_with_flags_and_work(
                     &capture_source,
+                    flags.code_units().contains(&0x69),
                     flags.code_units().contains(&0x6d),
                     |work| budget.charge(work),
                 )
