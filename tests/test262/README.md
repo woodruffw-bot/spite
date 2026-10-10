@@ -1,11 +1,32 @@
 # Test262 regression fixtures
 
-These 7513 unmodified test fixtures and eleven harness files come from
+These 7515 unmodified test fixtures and eleven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Unicode capture fixture review
+
+Two unchanged complete upstream originals add four normal/strict harness-positive
+variants at the existing pin. They cover escaped named replacement substitutions
+in ordinary and Unicode modes and Unicode capture names, including raw/escaped
+BMP and supplementary names, dollar/underscore names and permitted joiners.
+All assertions, metadata, specification excerpts, authorship and BSD notices
+remain intact.
+
+All four complete variants pass stable, MSRV and Node without failures or host
+limits. Git blob identity and manifest SHA-256 verify all 2286 bytes. The active
+corpus contains 7515 fixtures, eleven helpers, 7496 reviewed Script sources and
+14470 variants: 12937 harness positives, 1525 parse negatives, four raw positives
+and four runtime negatives. RegExp builtin execution reaches 629 whole positive
+sources; grammar coverage retains 369 whole fixtures, including twenty-three
+positives. The existing pin and eleven helpers remain unchanged.
+
+Stable and MSRV pass the complete 14470-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Unicode class simple-fold fixture review
 

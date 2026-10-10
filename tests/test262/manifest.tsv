@@ -7523,3 +7523,5 @@ script-pass	283d5df6f1009ab8eaf8138a8104ab528b6ceb69b146f3b00f6b101de21de201	tes
 script-pass	3987ec1fbe0435dddf42f5b8ae535dcc2e2395b33a2eaa030b3cdf47bc3dce47	test/language/literals/regexp/u-surrogate-pairs-atom-char-class.js
 script-pass	00f48e6668ee9e212845d5bbdc22821eefbb5157e21604d0ccba678000139a54	test/language/literals/regexp/u-surrogate-pairs-atom-escape-char-class.js
 script-pass	910b65ec1219372bc0b6e673df0c81e190e16d7fdc4c053d81e09844515a6f70	test/built-ins/RegExp/unicode_full_case_folding.js
+script-pass	646d6a51605cd38412a5476ee9a4b47c007f49f71367f86ca073acf79afc4e93	test/built-ins/RegExp/named-groups/string-replace-escaped.js
+script-pass	2bb4aba8f98aceeb8a9139b3acb0b751be26a8c2a0c585a9d233a7c2749ae915	test/built-ins/RegExp/named-groups/unicode-property-names.js

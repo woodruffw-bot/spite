@@ -7493,3 +7493,5 @@ test/language/literals/regexp/u-astral-char-class-invert.js	-	-	-
 test/language/literals/regexp/u-surrogate-pairs-atom-char-class.js	-	-	-
 test/language/literals/regexp/u-surrogate-pairs-atom-escape-char-class.js	-	-	-
 test/built-ins/RegExp/unicode_full_case_folding.js	-	-	-
+test/built-ins/RegExp/named-groups/string-replace-escaped.js	-	-	-
+test/built-ins/RegExp/named-groups/unicode-property-names.js	-	-	-
