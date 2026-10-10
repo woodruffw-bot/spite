@@ -1,4 +1,4 @@
-//! Unicode literal/dot/escape atoms and word assertions (22.2.2.4, 22.2.2.7.1).
+//! Unicode literal/dot/escape atoms and assertions (22.2.2.4, 22.2.2.7.1).
 
 use crate::{
     JsString,
@@ -8,7 +8,7 @@ use crate::{
 };
 use std::ops::Range;
 
-/// Immutable matcher for one Unicode atom or zero-width word assertion.
+/// Immutable matcher for one Unicode atom or zero-width assertion.
 ///
 /// The caller must validate the complete Pattern with `u` or `v`. Existing bare
 /// and assertion entry points require no i; flag-aware entry points also admit i.
@@ -17,8 +17,8 @@ use std::ops::Range;
 /// The separate literal entry point admits one decoded literal atom. Classes,
 /// groups, concatenations and quantifiers remain separate.
 /// Matching consumes complete code points, including isolated surrogates, while
-/// successful ranges retain UTF-16 indices. The separate word-assertion entry
-/// point consumes no characters. No input-sized storage is allocated.
+/// successful ranges retain UTF-16 indices. Separate standalone word/line
+/// assertion entry points consume no characters. No input-sized storage is allocated.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeCharacterMatcher {
     atom: Atom,
@@ -281,6 +281,35 @@ impl RegExpUnicodeCharacterMatcher {
         }))
     }
 
+    /// Compiles standalone Unicode ^, $ or ^$ assertions, with optional m.
+    ///
+    /// Requires complete u/v validation. IgnoreCase does not affect line
+    /// assertions. Other entry points and Pattern compositions retain their own
+    /// subsets (22.2.2.4).
+    pub fn compile_line_assertions_with_work<E>(
+        source: &JsString,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len())?;
+        let (start_anchor, end_anchor) = match source.code_units() {
+            [0x5e] => (true, false),
+            [0x24] => (false, true),
+            [0x5e, 0x24] => (true, true),
+            _ => return Ok(None),
+        };
+        Ok(Some(Self {
+            atom: Atom::Empty,
+            start_anchor,
+            end_anchor,
+            multiline,
+            fold_input: false,
+            start_word: None,
+            end_word: None,
+            word_ignore_case: false,
+        }))
+    }
+
     /// Bounds the input scan and each optional assertion check for opt-in work.
     pub fn search_passes(&self) -> usize {
         1 + usize::from(self.start_anchor)
@@ -299,7 +328,7 @@ impl RegExpUnicodeCharacterMatcher {
     /// An initial offset inside a pair uses its leading boundary, following the
     /// approved Node/V8 resolution of the edition-17 inconsistency (22.2.7.2).
     /// An offset at/past the input end cannot match a consuming atom. Zero-width
-    /// word assertions can match the input end without advancing lastIndex.
+    /// assertions can match the input end without advancing lastIndex.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
         let units = input.code_units();
         let mut cursor = unicode_start(input, start)?;
@@ -1680,6 +1709,162 @@ mod tests {
                 true
             )
             .is_none()
+        );
+    }
+
+    fn zero_line_plan(source: &str, m: bool) -> RegExpUnicodeCharacterMatcher {
+        RegExpUnicodeCharacterMatcher::compile_line_assertions_with_work(
+            &JsString::from(source),
+            m,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn unicode_line_assertion_zero_width_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in ["^", "$", "^$"] {
+            for m in [false, true] {
+                let plan = zero_line_plan(source, m);
+                for input in [
+                    JsString::from("A😀B\n"),
+                    JsString::from("A\r\nB\u{2028}\u{2029}"),
+                    JsString::from("😀"),
+                    JsString::from_code_units(vec![0xd800, 10, 0xdc00]),
+                    JsString::from(""),
+                ] {
+                    for start in [0, 1, 2, input.len(), input.len() + 1] {
+                        for sticky in [false, true] {
+                            writeln!(
+                                rows,
+                                "{:?} m={m} input={input:?} start={start} sticky={sticky} {:?}",
+                                JsString::from(source),
+                                plan.find(&input, start, sticky)
+                            )
+                            .unwrap();
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_line_assertions_agree_with_independent_raw_zero_width_candidates() {
+        let alphabet = [0x41, 0x5f, 8, 10, 13, 0x2028, 0x2029, 0xd83d, 0xde00];
+        let line = |v: u16| [10, 13, 0x2028, 0x2029].contains(&v);
+        for m in [false, true] {
+            let plans = [
+                zero_line_plan("^", m),
+                zero_line_plan("$", m),
+                zero_line_plan("^$", m),
+            ];
+            for len in 0..=4 {
+                for ordinal in 0..alphabet.len().pow(len) {
+                    let units: Vec<_> = (0..len)
+                        .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                        .collect();
+                    let input = JsString::from_code_units(units.clone());
+                    let boundaries: Vec<_> = (0..=units.len())
+                        .filter(|&at| {
+                            !(at > 0
+                                && at < units.len()
+                                && (0xdc00..=0xdfff).contains(&units[at])
+                                && (0xd800..=0xdbff).contains(&units[at - 1]))
+                        })
+                        .collect();
+                    for start in 0..=units.len() + 1 {
+                        for sticky in [false, true] {
+                            for (kind, plan) in plans.iter().enumerate() {
+                                let mut expected = None;
+                                if start <= units.len() {
+                                    let normalized = if start > 0
+                                        && start < units.len()
+                                        && !boundaries.contains(&start)
+                                    {
+                                        start - 1
+                                    } else {
+                                        start
+                                    };
+                                    for &at in &boundaries {
+                                        if at < normalized || (sticky && at != normalized) {
+                                            continue;
+                                        }
+                                        let begin =
+                                            kind == 1 || at == 0 || (m && line(units[at - 1]));
+                                        let end = kind == 0
+                                            || at == units.len()
+                                            || (m && line(units[at]));
+                                        if begin && end {
+                                            expected = Some(at..at);
+                                            break;
+                                        }
+                                    }
+                                }
+                                assert_eq!(
+                                    plan.find(&input, start, sticky),
+                                    expected,
+                                    "kind={kind} m={m} {input:?} start={start} sticky={sticky}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_line_assertions_work_clones_endpoints_and_complete_contracts() {
+        let source = JsString::from("^$");
+        let plan = RegExpUnicodeCharacterMatcher::compile_line_assertions_with_work(
+            &source,
+            true,
+            |work| {
+                assert_eq!(work, 2);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(plan.clone().find(&JsString::from(""), 0, true), Some(0..0));
+        assert_eq!(plan.find(&JsString::from("A\r\nB"), 0, false), Some(2..2));
+        assert!(
+            RegExpUnicodeCharacterMatcher::compile_line_assertions_with_work(&source, true, |_| {
+                Err(())
+            })
+            .is_err()
+        );
+        for source in [
+            "", r"\^", r"\$", r"\b", r"\B", r"^^", r"$$", r"$^", r"(^)", r"^|$", r"(?=^)",
+        ] {
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_line_assertions_with_work(
+                    &JsString::from(source),
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodeCharacterMatcher::compile_word_assertion_with_flags_and_work(
+                &source,
+                true,
+                true,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+        assert!(
+            RegExpUnicodeCharacterMatcher::compile_with_flags(&source, true, true, true).is_none()
         );
     }
 }

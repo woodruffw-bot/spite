@@ -2984,6 +2984,22 @@ The already approved initial-offset ambiguity and leading-boundary resolution
 remain documented above; this additional Node behavior has no specification
 ambiguity.
 
+
+A separate Unicode line-assertion entry point admits exactly ^, $ or ^$
+(22.2.2.4). It reuses the constant-storage empty atom and the existing complete
+character candidate search. Construction is charged before examination; no
+source/input allocation or recursion is added. The prior word/consuming APIs
+retain their subsets. IgnoreCase does not affect line assertions, while the
+original i flag remains observable on the native object.
+
+Multiline ^/$ inspect the preceding/following line terminator. The four line
+terminator code points are tested separately, including the empty position
+between CR and LF. Non-multiline ^/$ require the actual input start/end. Empty
+input and input-end matches retain their original UTF-16 position, and the
+approved initial-offset leading-boundary resolution remains in force. Complete
+ordinary wrappers capture that same empty range; exec and the shared generic
+consumers retain their established empty-match advancement behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

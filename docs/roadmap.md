@@ -460,6 +460,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match optional word boundaries around one complete Unicode class or fixed property, with case-folded neighbors, multiline context and original captures.
 - [x] Match optional word boundaries around one complete Unicode literal, dot or character escape, retaining independent neighbor folding and original captures.
 - [x] Match standalone Unicode word assertions with optional line anchors, case-folded neighbors, empty captures and original zero-width indices.
+- [x] Match standalone Unicode line assertions with multiline context, empty captures, original indices and unchanged empty-match advancement.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
