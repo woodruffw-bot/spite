@@ -5704,6 +5704,30 @@ Stable and MSRV pass all 14,466 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Complete outer groups now execute around single Unicode dot/escape and flat-class
+plans. Seven new runtime tests cover nested capture/noncapture wrappers, names
+and null-prototype groups, indices aliasing, approved initial pair offsets,
+original folded text, isolated surrogates and optional inner boundary assertions,
+string consumers, clones/coercions/strict writes, collection, 2000 captures and
+a 200000-unit input without default quotas, and opted-in failures. All 517 core
+tests and 157 related runtime targets pass. Node agrees with 2304 capture-result
+rows, twenty-two complete Boolean programs and thirty-four exact former programs
+retained as positive snapshots. Forty-five old controls in fifteen targets and
+one ordered direct-eval control now exercise unproved quantified groups.
+All 398 prior snapshots remain byte-identical, with two new reviewed golds.
+All 959 runtime gaps, eight ordered and ten direct-eval probes preserve their
+Unsupported result and state. Whole 17/115-source reviews and unchanged
+dotAll/class-boundary/simple-fold variants have no failures or host limits.
+One initially invalid string-set test Pattern was corrected before final checks;
+the implementation did not change. No upstream original is added here: the
+existing pin, 7513 fixtures, 7494 Script sources, 14466 variants and eleven
+helpers remain unchanged. No dependency or default work/heap quota is added.
+
+Stable and MSRV pass all 14,466 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

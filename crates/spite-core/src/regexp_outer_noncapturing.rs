@@ -35,9 +35,11 @@ pub struct RegExpOuterGroupBody {
 
 /// Removes complete ordinary capturing/noncapturing outer groups (22.2.2.3).
 ///
-/// The Pattern must already be validated without `u` or `v`. Quantified groups,
-/// groups followed by continuations and assertion/named/modifier groups remain
-/// inside the body. Three linear scans use constant space and no native recursion.
+/// The Pattern must already be validated. Unicode callers must additionally
+/// compile the complete retained body as a subset excluding nested v sets and
+/// string-set escapes, which this delimiter scan does not interpret. Quantified
+/// groups, continuations and assertion/named/modifier groups remain inside the
+/// body. Three linear scans use constant space and no native recursion.
 pub fn regexp_outer_group_body(source: &JsString) -> Option<RegExpOuterGroupBody> {
     let units = source.code_units();
     let mut opening_end = 0;

@@ -148,15 +148,15 @@ fn unicode_dot_escapes_opted_work_preserves_state_and_pending_completion() {
 #[test]
 fn unicode_dot_escapes_unproved_syntax_remains_unsupported() {
     for source in [
-        r"/(.)/iu.exec('a')",
-        r"/(\W)/iv.exec('a')",
-        r"/(.)/u.exec('a')",
-        r"/./v.exec('a')+/(.)/v.exec('a')",
+        r"/(.)+/iu.exec('a')",
+        r"/(\W)+/iv.exec('a')",
+        r"/(.)+/u.exec('a')",
+        r"/./v.exec('a')+/(.)+/v.exec('a')",
         r"/\D+/u.exec('a')",
         r"/a./v.exec('ab')",
         r"/^../u.exec('a')",
-        r"/([\D])/u.exec('a')",
-        r"/([^a])/v.exec('b')",
+        r"/([\D])+/u.exec('a')",
+        r"/([^a])+/v.exec('b')",
         r"/\p{ASCII}/u.exec('a')",
         r"/[\q{ab}]/v.exec('ab')",
         r"/\d|a/u.exec('a')",

@@ -425,10 +425,27 @@ impl Realm {
         // Unicode dot/escape and flat-class plans precede the legacy BMP proof
         // (22.2.2.7.1, 22.2.2.9). Set operators and string/property escapes remain separate.
         let matcher = if matcher.is_none() && unicode {
-            self.object_work(span, |_, budget| {
+            // Complete wrappers around a proved single atom capture its whole
+            // original input character (22.2.2.7). Compile the retained body
+            // completely before admitting wrappers; nested v sets stay excluded.
+            let (matching_source, wrappers) = self.object_work(span, |_, budget| {
                 budget.charge(capture_source.len())?;
+                budget.charge(capture_source.len())?;
+                budget.charge(capture_source.len())?;
+                if let Some(group) = regexp_outer_group_body(&capture_source) {
+                    budget.charge(group.body.len())?;
+                    Ok((
+                        JsString::from_code_units(capture_source.code_units()[group.body].to_vec()),
+                        group.captures,
+                    ))
+                } else {
+                    Ok((capture_source.clone(), 0))
+                }
+            })?;
+            let body = self.object_work(span, |_, budget| {
+                budget.charge(matching_source.len())?;
                 if let Some(body) = RegExpUnicodeCharacterMatcher::compile_with_flags_and_work(
-                    &capture_source,
+                    &matching_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     flags.code_units().contains(&u16::from(b's')),
@@ -437,7 +454,7 @@ impl Realm {
                     return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
                 }
                 if let Some(body) = RegExpUnicodeClassMatcher::compile_with_flags_and_work(
-                    &capture_source,
+                    &matching_source,
                     flags.code_units().contains(&u16::from(b'v')),
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
@@ -451,16 +468,21 @@ impl Realm {
                 }
                 let body = if flags.code_units().contains(&u16::from(b'v')) {
                     RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(
-                        &capture_source,
+                        &matching_source,
                         |work| budget.charge(work),
                     )
                 } else {
-                    RegExpCharacterMatcher::compile_bmp_unicode_with_work(&capture_source, |work| {
-                        budget.charge(work)
-                    })
+                    RegExpCharacterMatcher::compile_bmp_unicode_with_work(
+                        &matching_source,
+                        |work| budget.charge(work),
+                    )
                 }?;
                 Ok(body.map(RegExpMatcherBody::Character))
-            })?
+            })?;
+            if body.is_some() {
+                enclosing_captures = wrappers;
+            }
+            body
         } else {
             matcher
         };

@@ -127,7 +127,7 @@ fn unicode_braced_bmp_opted_work_aborts_and_other_bodies_remain_distinct() {
         r"/\u{D800}\u{DC00}/u.exec('a')",
         r"/\u{D800}\u{DC00}/v.exec('\uD800')",
         r"/\u{61}/iu.exec('a')",
-        r"/([\u{1f600}])/u.exec('a')",
+        r"/([\u{1f600}])+/u.exec('a')",
         r"/\u{61}+/v.exec('aa')",
         r"/(\u{61})\1/u.exec('aa')",
     ] {

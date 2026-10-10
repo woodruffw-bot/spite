@@ -2721,6 +2721,19 @@ checked against the digest-pinned Unicode 18 CaseFolding.txt; shared-version
 cases agree with Node. This data-version difference does not change the approved
 Node/V8 initial-pair boundary rule or the existing Unicode 18 baseline.
 
+
+Single Unicode character/class plans admit complete enclosing capturing and
+noncapturing groups (22.2.2.7). The existing constant-space three-scan wrapper
+helper borrows the retained body. The complete body must compile as a proved
+atom before any wrappers are admitted, excluding nested v sets and string
+escapes whose delimiters the helper does not interpret. Original construction
+validation, named-slot normalization and source/flag metadata remain shared.
+A source-bounded body copy is charged before allocation. All enclosing captures
+span the original complete input character, with existing named bindings and
+indices aliasing. Search retains the same matcher and input widths. Wrappers do
+not add native recursion. Quantified groups, continuation/alternative bodies and
+assertions outside the complete wrappers remain separate matching proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -446,6 +446,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match optional leading ^ and trailing $ assertions around case-sensitive flat Unicode classes, with complete-character multiline contexts.
 - [x] Match Unicode dot and d/D/s/S/w/W escapes with i and optional boundary assertions, using simple/common word folding and complete-character indices.
 - [x] Match flat u/v class unions, ranges, inversion and character escapes with simple/common folding, preserving original complete-character widths and indices.
+- [x] Match complete capturing and noncapturing wrappers around a single Unicode dot, character escape or flat class, preserving named groups, original text and UTF-16 capture indices.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
