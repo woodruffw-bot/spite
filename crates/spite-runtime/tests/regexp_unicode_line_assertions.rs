@@ -154,9 +154,9 @@ fn unicode_line_assertions_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^^/u.test('A')",
-        r"/$$/u.test('A')",
-        r"/$^/u.test('A')",
+        r"/(?:^^)+/u.test('A')",
+        r"/(?:$$)+/u.test('A')",
+        r"/(?:$^)+/u.test('A')",
         r"/(?:^)+/u.test('A')",
         r"/^|$/v.test('A')",
         r"/^(?=A)/u.test('A')",

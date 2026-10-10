@@ -6149,6 +6149,33 @@ Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Pure Unicode assertion sequences now have three core and eight runtime tests.
+Twelve manual conjunction plans agree with an independent candidate/context
+oracle for every raw string of up to four units from a ten-unit alphabet, all
+starts/sticky/m/i combinations. All 2400 core and 1200 runtime snapshot rows
+agree with an independent complete-character oracle using pinned C/S-derived
+word aliases. Node verifies thirty-eight complete Boolean programs and the
+five exact formerly unsupported whole programs, retained as positive snapshots.
+Sixteen core and ten runtime rows differ only in the documented Node \B
+interior-pair bug; every difference verifies an empty match strictly inside a
+valid pair, with no unexplained differences.
+
+Coverage includes repeated/reordered and contradictory assertions, actual
+endpoints, all line terminators, CR/LF positions, named/__proto__ empty captures
+and indices, approved pair starts, isolated surrogates, all consumers, clones,
+coercions/strict writes, collection, 3000 captures, 40000 source units, 200001
+input units, unlimited defaults and opted-in host failures. All 561 core tests
+and 172 related runtime targets pass. All 440 previous snapshots remain
+byte-identical, with three new reviewed golds. All 1051 gap programs, eight
+ordered and ten direct-eval probes retain Unsupported and state. Whole
+17/115-source and unchanged dotAll/class/simple-fold reviews have no failures
+or host limits. Corpus, dependencies and the Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

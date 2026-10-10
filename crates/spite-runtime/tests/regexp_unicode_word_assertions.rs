@@ -163,8 +163,8 @@ fn unicode_word_assertions_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\b\b/u.test('A')",
-        r"/\b\B/u.test('A')",
+        r"/(?:\b\b)+/u.test('A')",
+        r"/(?:\b\B)+/u.test('A')",
         r"/(?:\b)+/u.test('A')",
         r"/\b|\B/v.test('A')",
         r"/\b(?=A)/u.test('A')",

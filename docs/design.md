@@ -3000,6 +3000,23 @@ approved initial-offset leading-boundary resolution remains in force. Complete
 ordinary wrappers capture that same empty range; exec and the shared generic
 consumers retain their established empty-match advancement behavior.
 
+
+A separate Unicode assertion-sequence entry point admits complete bodies with
+at least two ^, $, \b or \B assertions (22.2.2.4). Every condition observes the
+same unchanged position. A charged linear parse deduplicates line assertions and
+each word condition into constant storage; opposite word conditions retain a
+failing conjunction. No source/input allocation, recursion or dependency is
+added. The prior entry points retain their subsets, and the constructor still
+requires complete u/v validation before choosing this proof.
+
+The existing complete-character search preserves multiline context, i-folded
+word neighbors, original empty capture indices and the approved initial-offset
+resolution. Complete ordinary wrappers retain their existing capture proof.
+Consumers keep their established empty-match advancement. Quantified groups,
+alternatives, lookaround and mixed consuming bodies require separate proofs.
+The documented Node interior-pair \B discrepancy also affects repeated \B
+assertions; it does not change the edition-17 candidate positions.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
