@@ -5970,6 +5970,32 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Hex_Digit/Hex execution now has three new core tests and eight runtime tests.
+All 35651584 membership checks over eight property unions, four flags and every
+Unicode code point pass. Independent Unicode 18 PropList.txt membership and
+complete pinned C/S closure checks establish all six intervals. Node and the
+independent original-input candidate/context oracles agree with 1920 core and
+560 runtime result rows; Node verifies twenty-six complete Boolean programs.
+
+Coverage includes fullwidth digits and letters, aliases and complement ordering,
+class union/inversion, original named/__proto__ text and indices, boundaries,
+approved pair starts, clones/coercions/strict writes, all consumers, collection,
+10000 repeated properties, 3000 captures, 200002 input units, unlimited defaults
+and opted-in host failures. One prior core rejection and one runtime control now
+target Assigned. The exact former class source is retained in the new core gold
+and the exact former complete JavaScript program in a new positive runtime gold.
+
+All 543 core tests and 166 related runtime targets pass. All 424 prior snapshots
+remain byte-identical, with three new reviewed golds. All 1018 gaps, eight ordered
+and ten direct-eval probes retain Unsupported and state. Whole 17/115-source and
+unchanged dotAll/class/simple-fold reviews have no failures or host limits. The
+upstream inventory, dependencies and Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

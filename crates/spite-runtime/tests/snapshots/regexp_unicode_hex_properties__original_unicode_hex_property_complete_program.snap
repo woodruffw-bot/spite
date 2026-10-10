@@ -1,0 +1,5 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_hex_properties.rs
+expression: "format!(\"{:?} {result:?}\", JsString::from(source))"
+---
+"/\u005cp{Hex_Digit}/u.exec('A')" "[\u0022A\u0022]"

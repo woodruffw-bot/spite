@@ -148,7 +148,7 @@ fn unicode_ascii_hex_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Hex_Digit}/u.exec('A')",
+        r"/\p{Assigned}/u.exec('A')",
         r"/[\p{AHex}&&A]/v.exec('A')",
         r"/[\p{AHex}--A]/v.exec('A')",
         r"/\p{AHex}+/u.exec('AA')",

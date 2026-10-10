@@ -2889,6 +2889,20 @@ optional assertions and clones. No per-input storage or recursion is introduced.
 Hex_Digit, other properties, nested sets, v operators and repeated property atoms
 remain separate proofs.
 
+
+Hex_Digit and its exact Hex alias use the same fixed binary property path
+(22.2.2.9). Unicode 18 PropList.txt adds FF10..FF19, FF21..FF26 and FF41..FF46
+to ASCII hex membership. The six positive or seven complementary intervals
+share ordinary property parsing, deduplicated class union and immutable range
+normalization. Every pinned simple/common fold preserves membership, so u/v
+complement orders agree with i while retaining fullwidth original input text.
+
+The larger fixed append is charged before allocation; flat class appends remain
+bounded by seven intervals per kind. Complete-character assertions, wrapper and
+named captures, source/flags, clone compilation and UTF-16 indices reuse the
+existing plans. Other Unicode properties and v set operators remain separate
+proofs, with no new dependency, recursion or input-sized storage.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

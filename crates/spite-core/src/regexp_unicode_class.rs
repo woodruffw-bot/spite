@@ -13,9 +13,10 @@ use std::{ops::Range, sync::Arc};
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
-/// surrogates. ASCII/Any/ASCII_Hex_Digit property escapes are admitted in flat unions and via
-/// a separate standalone entry point. Other property/string sets and v operators remain
-/// separate proofs. Matching always consumes complete input characters.
+/// surrogates. The fixed ASCII, Any, ASCII_Hex_Digit and Hex_Digit properties
+/// are admitted in flat unions and through the standalone binary-property API.
+/// Other property/string sets and v operators remain separate proofs.
+/// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeClassMatcher {
     ranges: Arc<[(u32, u32)]>,
@@ -124,7 +125,9 @@ impl RegExpUnicodeClassMatcher {
         )
     }
 
-    /// Compiles standalone Unicode ASCII/Any/ASCII_Hex_Digit property escapes and boundaries.
+    /// Compiles standalone fixed binary Unicode properties and boundaries.
+    ///
+    /// Admits ASCII, Any, ASCII_Hex_Digit/AHex and Hex_Digit/Hex.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -192,6 +195,7 @@ impl RegExpUnicodeClassMatcher {
                 0x69,
                 0x74,
             ] => 4,
+            [0x48, 0x65, 0x78] | [0x48, 0x65, 0x78, 0x5f, 0x44, 0x69, 0x67, 0x69, 0x74] => 6,
             _ => return Ok(None),
         };
         let negated = body[1] == 0x50;
@@ -199,9 +203,13 @@ impl RegExpUnicodeClassMatcher {
         // UnicodeSets mode complements the canonical set instead. The shared
         // interval constructor folds only members of its original ranges.
         let complement_first = negated && ignore_case && !unicode_sets;
-        // ASCII hex uses three positive or four complementary intervals.
+        // Hex properties use up to six positive or seven complementary intervals.
         // Charge the bounded append before it can allocate.
-        charge(if kind == 4 { 4 } else { 1 })?;
+        charge(match kind {
+            4 => 4,
+            6 => 7,
+            _ => 1,
+        })?;
         let mut ranges = Vec::new();
         append_property(
             &mut ranges,
@@ -276,7 +284,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..6 {
+        for kind in 0..8 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -501,6 +509,9 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
                         0x69,
                         0x74,
                     ] => 4,
+                    [0x48, 0x65, 0x78] | [0x48, 0x65, 0x78, 0x5f, 0x44, 0x69, 0x67, 0x69, 0x74] => {
+                        6
+                    }
                     _ => return None,
                 };
                 if source.get(*index) != Some(&0x7d) {
@@ -520,7 +531,7 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
 // These interval preimages give the same canonical membership as the standalone
 // property plan. Only v+i P{ASCII} must remove the two non-ASCII ASCII aliases
 // before union and the shared fold closure. u+i complements the original set.
-// ASCII_Hex_Digit has no additional simple/common-fold preimages: its uppercase
+// Both hex properties have no additional simple/common-fold preimages: uppercase
 // members already have lowercase partners. Both u/v complement orders agree.
 fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, ignore_case: bool) {
     let intervals: &[(u32, u32)] = match kind {
@@ -531,6 +542,23 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
         3 => &[],
         4 => &[(0x30, 0x39), (0x41, 0x46), (0x61, 0x66)],
         5 => &[(0, 0x2f), (0x3a, 0x40), (0x47, 0x60), (0x67, 0x10ffff)],
+        6 => &[
+            (0x30, 0x39),
+            (0x41, 0x46),
+            (0x61, 0x66),
+            (0xff10, 0xff19),
+            (0xff21, 0xff26),
+            (0xff41, 0xff46),
+        ],
+        7 => &[
+            (0, 0x2f),
+            (0x3a, 0x40),
+            (0x47, 0x60),
+            (0x67, 0xff0f),
+            (0xff1a, 0xff20),
+            (0xff27, 0xff40),
+            (0xff47, 0x10ffff),
+        ],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -1725,7 +1753,7 @@ mod tests {
             r"[[\p{AHex}]]",
             r"[A-\p{AHex}]",
             r"[\p{AHex}-A]",
-            r"[\p{Hex_Digit}]",
+            r"[\p{Assigned}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -1740,6 +1768,190 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{AHex}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_hex_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Hex_Digit}",
+                    r"\P{Hex}",
+                    r"[\p{Hex}]",
+                    r"[^\p{Hex_Digit}]",
+                    r"[\P{Hex}K]",
+                    r"[\p{Hex}K]",
+                    r"[\p{Hex}\P{Hex_Digit}]",
+                    r"[^\P{Hex}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let hex = matches!(point, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66 | 0xff10..=0xff19 | 0xff21..=0xff26 | 0xff41..=0xff46);
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Hex_Digit}" | r"[\p{Hex}]" => hex,
+                            r"\P{Hex}" | r"[^\p{Hex_Digit}]" => !hex,
+                            r"[\P{Hex}K]" => !hex || k,
+                            r"[\p{Hex}K]" => hex || k,
+                            r"[\p{Hex}\P{Hex_Digit}]" => true,
+                            r"[^\P{Hex}K]" => hex && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_hex_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Hex}",
+            r"\P{Hex_Digit}",
+            r"^[\p{Hex_Digit}]$",
+            r"[\P{Hex}K]",
+            r"[^\P{Hex}K]",
+            r"[\p{Hex_Digit}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀0FaGſK\n",
+                            "x\r\nF\u{2028}a\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_hex_property_work_deduplication_and_contracts() {
+        let source =
+            JsString::from(format!("[{}]", r"\p{Hex}\P{Hex_Digit}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Hex}$", r"^[\P{Hex_Digit}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(plan.find(&JsString::from("F\n😀\n"), 0, false), Some(2..4));
+        }
+        for source in [
+            r"[\p{Hex}--A]",
+            r"[\p{Hex}&&A]",
+            r"[[\p{Hex}]]",
+            r"[A-\p{Hex}]",
+            r"[\p{Hex}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Hex}]"),
                 true,
                 true,
                 false
