@@ -2823,8 +2823,7 @@ complements the raw property before folding. With v, it complements the folded
 property within canonical characters; the shared plan's outer inversion is
 equivalent because input points are canonicalized. Construction shares the
 existing source/set/fold/normalization charges and immutable Arc storage.
-Other property sets, property escapes within classes and continuations remain
-separate proofs.
+Other property sets and continuations remain separate proofs.
 
 The installed Node v24.19.0 differs on ASCII property escapes with iv: it rejects
 long s and Kelvin sign for p{ASCII} and accepts them for P{ASCII}. The tagged
@@ -2837,6 +2836,26 @@ remains limited to leading whole-match starts inside surrogate pairs.
 See [CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset),
 [MaybeSimpleCaseFolding](https://262.ecma-international.org/17.0/#sec-maybesimplecasefolding)
 and [CharacterSetMatcher](https://262.ecma-international.org/17.0/#sec-runtime-semantics-charactersetmatcher-abstract-operation).
+
+
+Flat Unicode classes also admit ASCII/Any property escapes as set-valued atoms
+(CompileToCharSet and CharacterRange). Four bits deduplicate the fixed positive
+and negative sets, which append at most three intervals each after source parsing.
+Property sets remain excluded as range endpoints. Exact names, ordinary unions,
+outer inversion, existing escapes and boundaries share validation and immutable
+interval normalization. Nested v sets, set operators and other properties remain
+separate proofs.
+
+For v with i, P{ASCII}'s interval preimage excludes long s and Kelvin sign before
+union and the common fold closure; otherwise folding those source members would
+incorrectly add s/k to the complemented canonical set. A literal K or a word
+escape can add those characters back as part of a union. With u, the raw property
+complement intentionally includes those aliases before folding. The same tagged
+edition-17 rule documented for standalone properties applies, including the
+installed Node discrepancy. Original widths and captures remain unchanged.
+Property interval appends charge the possible original-vector move before
+allocation. Repeated properties use source-linear parsing and constant additional
+fixed sets, rather than repeated property expansion. No native recursion is added.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

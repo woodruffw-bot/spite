@@ -148,7 +148,7 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         r"/(?=([a]))/iv.exec('a')",
         r"/(?:[[a]])/iv.exec('a')",
         r"/(?:[\q{a\)b}])/iv.exec('a)b')",
-        r"/([\p{ASCII}])/iu.exec('a')",
+        r"/([\p{Assigned}])/iu.exec('a')",
         r"/(.)(.)/u.exec('ab')",
     ] {
         assert!(

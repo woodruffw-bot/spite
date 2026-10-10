@@ -151,7 +151,7 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         r"/^[a]b$/v.exec('ab')",
         r"/^[a&&b]$/v.exec('a')",
         r"/^[[a]]$/v.exec('a')",
-        r"/^[\p{ASCII}]$/u.exec('a')",
+        r"/^[\p{Assigned}]$/u.exec('a')",
         r"/^[\q{ab}]$/v.exec('ab')",
         r"/^[a]$|b/u.exec('b')",
     ] {

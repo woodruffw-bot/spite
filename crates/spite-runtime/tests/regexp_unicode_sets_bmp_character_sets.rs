@@ -144,7 +144,7 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         r"/([a])+/v.exec('a')",
         r"/[a]*/v.exec('a')",
         r"/(.)+/v.exec('a')",
-        r"/[\p{ASCII}]/v.exec('a')",
+        r"/[\p{Assigned}]/v.exec('a')",
     ] {
         assert!(
             matches!(

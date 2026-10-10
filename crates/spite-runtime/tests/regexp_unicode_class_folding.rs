@@ -146,7 +146,7 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         r"/[a]b/iu.exec('ab')",
         r"/[a&&b]/iv.exec('a')",
         r"/[[a]]/iv.exec('a')",
-        r"/[\p{ASCII}]/iv.exec('a')",
+        r"/[\p{Assigned}]/iv.exec('a')",
         r"/[\q{ab}]/iv.exec('ab')",
     ] {
         assert!(

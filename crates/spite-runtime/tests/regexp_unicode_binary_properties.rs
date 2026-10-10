@@ -153,7 +153,7 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
         r"/\p{Assigned}/u.exec('A')",
         r"/\p{Script=Han}/v.exec('𠮷')",
         r"/\p{RGI_Emoji}/v.exec('😀')",
-        r"/[\p{ASCII}]/u.exec('A')",
+        r"/[\p{Assigned}]/u.exec('A')",
         r"/\p{ASCII}+/v.exec('A')",
         r"/\p{ASCII}x/u.exec('Ax')",
         r"/\p{ASCII}|x/v.exec('A')",

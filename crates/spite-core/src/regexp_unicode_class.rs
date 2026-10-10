@@ -13,8 +13,8 @@ use std::{ops::Range, sync::Arc};
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
-/// surrogates. A separate entry point admits standalone ASCII/Any property
-/// escapes. Other property/string sets, nested v sets and set operators remain
+/// surrogates. ASCII/Any property escapes are admitted in flat unions and via
+/// a separate standalone entry point. Other property/string sets and v operators remain
 /// separate proofs. Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeClassMatcher {
@@ -215,6 +215,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
+        let mut properties = 0u8;
         while index < units.len() - 1 {
             let Some(first) = class_atom(units, &mut index, unicode_sets) else {
                 return Ok(None);
@@ -241,6 +242,7 @@ impl RegExpUnicodeClassMatcher {
                 match first {
                     ClassAtom::Point(point) => ranges.push((point, point)),
                     ClassAtom::Escape(kind) => escapes |= 1 << kind,
+                    ClassAtom::Property(kind) => properties |= 1 << kind,
                 }
             }
             if index > units.len() - 1 {
@@ -253,6 +255,15 @@ impl RegExpUnicodeClassMatcher {
                 // At most ten fixed-range visits and eleven appends.
                 charge(24)?;
                 append_escape(&mut ranges, kind, ignore_case);
+            }
+        }
+        // Fixed properties are appended once even when repeated in the source.
+        for kind in 0..4 {
+            if properties & (1 << kind) != 0 {
+                // Appending may move the original intervals if capacity grows.
+                // Charge that move and the fixed set before allocating.
+                charge(ranges.len().saturating_add(8))?;
+                append_property(&mut ranges, kind, unicode_sets, ignore_case);
             }
         }
         if index != units.len() - 1 {
@@ -417,6 +428,7 @@ fn lookup_levels(length: usize) -> usize {
 enum ClassAtom {
     Point(u32),
     Escape(u8),
+    Property(u8),
 }
 
 fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<ClassAtom> {
@@ -439,12 +451,49 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
                 *index += 1;
                 return Some(ClassAtom::Escape(kind as u8));
             }
+            if matches!(source.get(*index), Some(0x70 | 0x50)) {
+                let negative = source[*index] == 0x50;
+                *index += 1;
+                if source.get(*index) != Some(&0x7b) {
+                    return None;
+                }
+                *index += 1;
+                let name = *index;
+                while source.get(*index).is_some_and(|&unit| unit != 0x7d) {
+                    *index += 1;
+                }
+                let kind = match source.get(name..*index)? {
+                    [0x41, 0x53, 0x43, 0x49, 0x49] => 0,
+                    [0x41, 0x6e, 0x79] => 2,
+                    _ => return None,
+                };
+                if source.get(*index) != Some(&0x7d) {
+                    return None;
+                }
+                *index += 1;
+                return Some(ClassAtom::Property(kind + u8::from(negative)));
+            }
             unicode_literal_atom(source, index, unit)?
         }
         0xd800..=0xdbff => unicode_literal_atom(source, index, unit)?,
         _ => u32::from(unit),
     };
     Some(ClassAtom::Point(point))
+}
+
+// These interval preimages give the same canonical membership as the standalone
+// property plan. Only v+i P{ASCII} must remove the two non-ASCII ASCII aliases
+// before union and the shared fold closure. u+i complements the original set.
+fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, ignore_case: bool) {
+    let intervals: &[(u32, u32)] = match kind {
+        0 => &[(0, 0x7f)],
+        1 if unicode_sets && ignore_case => &[(0x80, 0x17e), (0x180, 0x2129), (0x212b, 0x10ffff)],
+        1 => &[(0x80, 0x10ffff)],
+        2 => &[(0, 0x10ffff)],
+        3 => &[],
+        _ => unreachable!("validated binary property kind"),
+    };
+    ranges.extend_from_slice(intervals);
 }
 
 fn append_escape(ranges: &mut Vec<(u32, u32)>, kind: u8, ignore_case: bool) {
@@ -680,7 +729,7 @@ mod tests {
             r"[\x00&&0]",
             "[[a]]",
             r"[\q{a|b}]",
-            r"[\p{ASCII}]",
+            r"[\p{Assigned}]",
             r"[^\q{a|b}]",
         ] {
             assert!(
@@ -696,7 +745,7 @@ mod tests {
             "[a]b",
             "([a])",
             "^[a]$",
-            r"[\p{ASCII}]",
+            r"[\p{Assigned}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile(&JsString::from(source), false).is_none(),
@@ -876,7 +925,7 @@ mod tests {
             "^[a]+$",
             "^[a]b$",
             "^[a&&b]$",
-            r"^[\p{ASCII}]$",
+            r"^[\p{Assigned}]$",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_assertions(
@@ -1063,7 +1112,7 @@ mod tests {
         for source in [
             r"[a&&b]",
             r"[[a]]",
-            r"[\p{ASCII}]",
+            r"[\p{Assigned}]",
             r"[\q{a|b}]",
             r"([a])",
             r"[a]+",
@@ -1282,5 +1331,197 @@ mod tests {
         )
         .unwrap();
         assert_eq!(literal.find(&JsString::from("A\n"), 0, false), None);
+    }
+
+    #[test]
+    fn unicode_class_property_union_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"[\p{ASCII}]",
+            r"[^\p{ASCII}]",
+            r"[\P{ASCII}K]",
+            r"[^\P{ASCII}K]",
+            r"[\p{ASCII}\P{ASCII}]",
+            r"[\P{Any}K]",
+            r"[^\P{Any}K]",
+            r"[\p{Any}]",
+            r"[\P{ASCII}\w]",
+            r"^[\P{ASCII}K]$",
+            r"^[\p{ASCII}]$",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let plan = RegExpUnicodeClassMatcher::compile_with_flags(
+                            &JsString::from(source),
+                            sets,
+                            ignore_case,
+                            multiline,
+                        )
+                        .unwrap();
+                        for input in ["aSkſK😀\n", "\r\n\u{2028}\u{2029}", "A\nſ\n😀", ""] {
+                            let input = JsString::from(input);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",JsString::from(source),plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_class_property_unions_match_independent_membership_for_all_code_points() {
+        let sources = [
+            r"[\p{ASCII}]",
+            r"[^\p{ASCII}]",
+            r"[\P{ASCII}K]",
+            r"[^\P{ASCII}K]",
+            r"[\p{ASCII}\P{ASCII}]",
+            r"[\P{Any}K]",
+            r"[^\P{Any}K]",
+            r"[\P{ASCII}\w]",
+        ];
+        let mut plans = Vec::new();
+        for source in sources {
+            for sets in [false, true] {
+                for i in [false, true] {
+                    plans.push((
+                        source,
+                        sets,
+                        i,
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &JsString::from(source),
+                            sets,
+                            i,
+                            false,
+                        )
+                        .unwrap(),
+                    ));
+                }
+            }
+        }
+        for point in 0..=0x10ffffu32 {
+            let units = if point <= 0xffff {
+                vec![point as u16]
+            } else {
+                vec![
+                    ((point - 65536) / 1024 + 0xd800) as u16,
+                    ((point - 65536) % 1024 + 0xdc00) as u16,
+                ]
+            };
+            let width = units.len();
+            let input = JsString::from_code_units(units);
+            for (source, sets, i, plan) in &plans {
+                let alias = matches!(point, 0x17f | 0x212a);
+                let ascii = point <= 127 || (*i && alias);
+                let nonascii = if !i {
+                    point > 127
+                } else if *sets {
+                    point > 127 && !alias
+                } else {
+                    point > 127 || matches!(point, 0x4b | 0x6b | 0x53 | 0x73)
+                };
+                let k = point == 0x4b || (*i && matches!(point, 0x6b | 0x212a));
+                let word =
+                    matches!(point,0x30..=0x39|0x41..=0x5a|0x5f|0x61..=0x7a) || (*i && alias);
+                let expected = match *source {
+                    r"[\p{ASCII}]" => ascii,
+                    r"[^\p{ASCII}]" => !ascii,
+                    r"[\P{ASCII}K]" => nonascii || k,
+                    r"[^\P{ASCII}K]" => !(nonascii || k),
+                    r"[\p{ASCII}\P{ASCII}]" => ascii || nonascii,
+                    r"[\P{Any}K]" => k,
+                    r"[^\P{Any}K]" => !k,
+                    r"[\P{ASCII}\w]" => nonascii || word,
+                    _ => unreachable!(),
+                };
+                assert_eq!(
+                    plan.find(&input, 0, false),
+                    expected.then_some(0..width),
+                    "{source} v={sets} i={i} U+{point:X}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_class_property_repeated_sets_clones_contracts_and_work() {
+        let source = JsString::from(
+            format!("[{}]", r"\P{ASCII}\p{Any}\P{Any}\p{ASCII}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        let source = JsString::from(r"^[\P{ASCII}K]$");
+        let mut calls = 0;
+        let plan = RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+            &source,
+            true,
+            true,
+            true,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source,
+                    true,
+                    true,
+                    true,
+                    |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    }
+                )
+                .is_err()
+            );
+        }
+        assert_eq!(plan.find(&JsString::from("x\nK\n"), 0, false), Some(2..3));
+        assert_eq!(plan.find(&JsString::from("x\nſ\n"), 0, false), None);
+        for source in [
+            r"[\p{Assigned}]",
+            r"[\p{Script=Han}]",
+            r"[\p{RGI_Emoji}]",
+            r"[\p{ASCII}--K]",
+            r"[\p{ASCII}&&K]",
+            r"[[\p{ASCII}]]",
+            r"[K-\p{ASCII}]",
+            r"[\p{ASCII}-K]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{ASCII}]"),
+                true,
+                true,
+                true
+            )
+            .is_none()
+        );
     }
 }

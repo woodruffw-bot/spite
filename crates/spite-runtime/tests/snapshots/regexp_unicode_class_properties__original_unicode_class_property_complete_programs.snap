@@ -1,0 +1,11 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_class_properties.rs
+expression: rows
+---
+"/([\u005cp{ASCII}])/iu.exec('a')" "[\u0022a\u0022,\u0022a\u0022]"
+"/[\u005cp{ASCII}]/u.exec('A')" "[\u0022A\u0022]"
+"/[\u005cp{ASCII}]/u.exec('a')" "[\u0022a\u0022]"
+"/^[\u005cp{ASCII}]$/u.exec('a')" "[\u0022a\u0022]"
+"/[\u005cp{ASCII}]/iv.exec('a')" "[\u0022a\u0022]"
+"/[\u005cp{ASCII}]/u.exec('a')" "[\u0022a\u0022]"
+"/[\u005cp{ASCII}]/v.exec('a')" "[\u0022a\u0022]"
