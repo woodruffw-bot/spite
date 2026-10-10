@@ -429,15 +429,42 @@ impl Realm {
             // original input character (22.2.2.7). Compile the retained body
             // completely before admitting wrappers; nested v sets stay excluded.
             let (matching_source, wrappers) = self.object_work(span, |_, budget| {
-                budget.charge(capture_source.len())?;
-                budget.charge(capture_source.len())?;
-                budget.charge(capture_source.len())?;
-                if let Some(group) = regexp_outer_group_body(&capture_source) {
-                    budget.charge(group.body.len())?;
-                    Ok((
-                        JsString::from_code_units(capture_source.code_units()[group.body].to_vec()),
-                        group.captures,
-                    ))
+                // Assertions surrounding a complete ordinary atom wrapper are
+                // zero-width, so moving them inside that wrapper preserves its
+                // capture range (22.2.2.4). The retained body must still compile
+                // completely as one proved Unicode character/class below.
+                let units = capture_source.code_units();
+                budget.charge(units.len().saturating_mul(4))?;
+                let start_anchor = units.first() == Some(&0x5e);
+                let end_anchor = units.last() == Some(&0x24)
+                    && units[..units.len() - 1]
+                        .iter()
+                        .rev()
+                        .take_while(|&&unit| unit == 0x5c)
+                        .count()
+                        % 2
+                        == 0;
+                let body_source = if start_anchor || end_anchor {
+                    let body =
+                        &units[usize::from(start_anchor)..units.len() - usize::from(end_anchor)];
+                    budget.charge(body.len())?;
+                    JsString::from_code_units(body.to_vec())
+                } else {
+                    capture_source.clone()
+                };
+                if let Some(group) = regexp_outer_group_body(&body_source) {
+                    let body = &body_source.code_units()[group.body];
+                    let length = body.len() + usize::from(start_anchor) + usize::from(end_anchor);
+                    budget.charge(length)?;
+                    let mut source = Vec::with_capacity(length);
+                    if start_anchor {
+                        source.push(0x5e);
+                    }
+                    source.extend_from_slice(body);
+                    if end_anchor {
+                        source.push(0x24);
+                    }
+                    Ok((JsString::from_code_units(source), group.captures))
                 } else {
                     Ok((capture_source.clone(), 0))
                 }

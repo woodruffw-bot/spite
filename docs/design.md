@@ -2857,6 +2857,23 @@ Property interval appends charge the possible original-vector move before
 allocation. Repeated properties use source-linear parsing and constant additional
 fixed sets, rather than repeated property expansion. No native recursion is added.
 
+
+Optional leading ^ and trailing $ may also surround complete ordinary wrappers
+around a single proved Unicode atom (22.2.2.4). The constructor removes those
+outside assertions, peels the same complete ordinary wrappers, and restores the
+assertions around the retained body before complete atom compilation. Moving a
+zero-width assertion inside the wrapper preserves its whole-character capture
+range. An escaped trailing dollar is kept literal; consecutive backslash parity
+is inspected before treating a raw final dollar as an assertion. Original named
+slots, source/flags, text and indices remain unchanged.
+
+The source scan is charged before delimiter/parity passes and both source-sized
+copies are charged before allocation. No input storage or native recursion is
+added. Full dot/escape/literal/class/property body proof still excludes nested
+v sets, string sets, continuations, alternatives and quantifiers. Repeated
+assertions and assertions around interior groups remain separate proofs. Existing
+full literal-concatenation plans remain the fallback when one-atom proof fails.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

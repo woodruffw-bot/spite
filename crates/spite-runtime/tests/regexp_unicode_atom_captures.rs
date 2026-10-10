@@ -144,7 +144,7 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         r"/([a])+/iu.exec('a')",
         r"/([a])b/iv.exec('ab')",
         r"/([a]|b)/iu.exec('a')",
-        r"/^([a])$/iu.exec('a')",
+        r"/^([a])+$/iu.exec('a')",
         r"/(?=([a]))/iv.exec('a')",
         r"/(?:[[a]])/iv.exec('a')",
         r"/(?:[\q{a\)b}])/iv.exec('a)b')",

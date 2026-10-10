@@ -99,8 +99,8 @@ fn internal_assertions_choices_quantifiers_and_unicode_remain_explicit_gaps() {
         r"/(?:(?:((?:(?:[a]+^b+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:^[a]+[b]+|b$){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:^[a]*[b]+$){2}){2}){2})|){2,3}/.test('a')",
-        "/^([a])$/u.test('a')",
-        "/^([a])$/v.test('a')",
+        "/^([a])+$/u.test('a')",
+        "/^([a])+$/v.test('a')",
     ] {
         assert!(
             matches!(

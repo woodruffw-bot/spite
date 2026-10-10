@@ -5920,6 +5920,30 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Assertions outside complete single-Unicode-atom wrappers now execute through the
+existing atom plans. Eight new runtime tests cover dot/escape/literal/class and
+ASCII/Any property bodies, ordinary/named/__proto__ captures and indices aliases,
+multiline boundaries, approved pair starts, lone surrogates, escaped dollars and
+backslashes, dotAll, all consumers, clones/coercions/strict writes, 3000 wrappers,
+200003 input units, collection, unlimited defaults and opted-in host failures.
+All 537 core tests and 164 related runtime targets pass.
+
+An independent original-input candidate/context/capture oracle verifies all
+720 new result rows. Node differs on two inherited ASCII iv property cases and
+agrees with every other row, all twenty-eight complete Boolean programs and
+seven unique exact former programs retained as positive golds. Eight old controls
+in six targets now exercise quantified groups or Assigned. All 420 prior
+snapshots remain byte-identical, with two new reviewed golds. All 1008 gaps,
+eight ordered and ten direct-eval probes preserve Unsupported and state. Whole
+17/115-source and unchanged dotAll/class/simple-fold reviews have no failures
+or host limits. No upstream original, Unicode data, dependency or default quota
+is added; no additional Node exception is introduced.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -157,7 +157,7 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
         r"/\p{ASCII}+/v.exec('A')",
         r"/\p{ASCII}x/u.exec('Ax')",
         r"/\p{ASCII}|x/v.exec('A')",
-        r"/^(\p{ASCII})$/u.exec('A')",
+        r"/^(\p{Assigned})$/u.exec('A')",
     ] {
         assert!(
             matches!(
