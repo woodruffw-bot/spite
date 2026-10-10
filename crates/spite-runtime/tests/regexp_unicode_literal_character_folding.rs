@@ -168,7 +168,7 @@ fn unicode_literal_character_folding_opted_work_and_remaining_gaps() {
         r"/a+/iv.exec('A')",
         r"/(?:(a)b)+/iu.exec('AB')",
         r"/a|b/iv.exec('A')",
-        r"/^(a)$/iu.exec('A')",
+        r"/^(a)+$/iu.exec('A')",
         r"/(?=a)/iv.exec('A')",
         r"/\u{D800}\u{DC00}/iu.exec('😀')",
     ] {

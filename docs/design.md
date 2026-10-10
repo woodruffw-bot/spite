@@ -2776,6 +2776,27 @@ References, alternatives, classes, quantified bodies and assertions remain
 separate proofs. The prior exclusion of distinct surrogate atoms that would
 flatten into one pair remains: Unicode input cannot match them as two characters.
 
+
+Unicode folded literal concatenations also admit an optional leading ^ and
+trailing $ around the body, including assertions inside complete enclosing
+ordinary groups (22.2.2.4 and 22.2.2.7.3). Named wrappers retain source-order
+capture slots. A separate core assertion entry point preserves the bare literal
+API's subset. After charged constant-space wrapper scans, the complete retained
+body must pass the existing literal proof. Escaped anchors stay literal; interior
+assertions and quantified/alternative/class bodies remain separate proofs.
+
+The existing Unicode context helper checks actual original input boundaries.
+Without m, ^ accepts only the initial boundary and $ only the actual end. With m,
+LF, CR, LS and PS independently provide boundaries, including both CR and LF.
+Search retries overlapping folded candidates using the existing KMP failure
+table. End assertions are checked before walking back to a candidate start.
+Only a multiline start assertion allocates a ring of pattern-point-count plus
+one original UTF-16 boundaries; every rejected candidate's start is then an O(1)
+lookup. This keeps repeated assertion failures linear in the input length,
+without input-sized storage or native recursion. Successful captures are still
+resolved once from original complete input characters. Source scans/copies,
+ring allocation/writes and context checks are charged through opt-in host work.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -1,7 +1,11 @@
 //! Literal Unicode concatenations with simple/common folding (22.2.2.7.3).
 use crate::{
-    JsString, RegExpLiteralMatcher, case_data::SIMPLE_CASE_FOLD, regexp_canonicalize_character,
-    regexp_literal::unicode_start, regexp_unicode_character::unicode_input_character,
+    JsString, RegExpLiteralMatcher,
+    case_data::SIMPLE_CASE_FOLD,
+    regexp_canonicalize_character,
+    regexp_literal::unicode_start,
+    regexp_outer_group_body,
+    regexp_unicode_character::{unicode_assertions_match, unicode_input_character},
 };
 use std::{ops::Range, sync::Arc};
 
@@ -9,8 +13,11 @@ use std::{ops::Range, sync::Arc};
 ///
 /// The complete Pattern must be validated in u/v mode. Ordinary mandatory
 /// capturing/noncapturing groups and empty groups are admitted. Named wrappers
-/// must first be normalized to their source-order capture slots. Assertions,
-/// references, alternatives, classes and quantifiers are excluded. The existing\n/// literal proof also excludes distinct surrogate atoms that would flatten into\n/// one pair, which no Unicode input can match as two separate characters.
+/// must first be normalized to their source-order capture slots. Optional outer
+/// boundary assertions have a separate entry point. References, alternatives,
+/// classes and quantifiers are excluded. The existing literal proof also excludes
+/// distinct surrogate atoms that would flatten into one pair, which no Unicode
+/// input can match as two separate characters.
 /// Compilation and search add no native recursion or input-sized storage.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeFoldedLiteralMatcher(Arc<Program>);
@@ -20,6 +27,9 @@ struct Program {
     points: Vec<u32>,
     failure: Vec<usize>,
     captures: Vec<Range<usize>>,
+    start_anchor: bool,
+    end_anchor: bool,
+    multiline: bool,
 }
 
 /// A successful match's original absolute UTF-16 boundaries.
@@ -44,12 +54,71 @@ impl RegExpUnicodeFoldedLiteralMatcher {
     /// Each pinned-table lookup and capture-boundary lookup is also bounded.
     pub fn compile_with_work<E>(
         source: &JsString,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impl(source, false, false, charge)
+    }
+
+    /// Compiles optional leading ^ and trailing $ around the literal body.
+    ///
+    /// Complete ordinary enclosing groups may include these assertions. Other
+    /// assertion positions remain excluded. The Pattern must be validated and
+    /// any named groups normalized before calling this method.
+    pub fn compile_with_assertions(source: &JsString, multiline: bool) -> Option<Self> {
+        Self::compile_with_assertions_and_work(source, multiline, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the assertion subset with fallible opt-in construction work.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impl(source, true, multiline, charge)
+    }
+
+    fn compile_impl<E>(
+        source: &JsString,
+        assertions: bool,
+        multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         // Covers the existing literal compiler, flat vectors and prefix passes,
         // including allocation moves. A rejected body is charged before scanning.
-        charge(source.len().saturating_mul(32))?;
-        let Some(literal) = RegExpLiteralMatcher::compile_unicode_code_points(source) else {
+        charge(
+            source
+                .len()
+                .saturating_mul(if assertions { 48 } else { 32 }),
+        )?;
+        let units = source.code_units();
+        let outer = assertions
+            .then(|| regexp_outer_group_body(source))
+            .flatten();
+        let wrappers = outer.as_ref().map_or(0, |group| group.captures);
+        let mut body = outer.map_or(0..units.len(), |group| group.body);
+        let start_anchor = assertions && units.get(body.start) == Some(&0x5e);
+        body.start += usize::from(start_anchor);
+        let end_anchor = assertions
+            && body.end > body.start
+            && units[body.end - 1] == 0x24
+            && units[body.start..body.end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        body.end -= usize::from(end_anchor);
+        // The source charge precedes this copy and the delimiter scans. Complete
+        // literal compilation excludes Unicode set/string syntax those scans do
+        // not interpret, as required by the outer-group helper's contract.
+        let retained = assertions.then(|| JsString::from_code_units(units[body].to_vec()));
+        let Some(literal) =
+            RegExpLiteralMatcher::compile_unicode_code_points(retained.as_ref().unwrap_or(source))
+        else {
             return Ok(None);
         };
         let units = literal.matched_units();
@@ -71,7 +140,8 @@ impl RegExpUnicodeFoldedLiteralMatcher {
                 .len()
                 .saturating_mul(2usize.saturating_mul(2 + levels)),
         )?;
-        let mut captures = Vec::with_capacity(literal.capture_ranges().len());
+        let mut captures = Vec::with_capacity(wrappers + literal.capture_ranges().len());
+        captures.extend((0..wrappers).map(|_| 0..points.len()));
         for range in literal.capture_ranges() {
             let (Ok(start), Ok(end)) = (
                 boundaries.binary_search(&range.start),
@@ -96,6 +166,9 @@ impl RegExpUnicodeFoldedLiteralMatcher {
             points,
             failure,
             captures,
+            start_anchor,
+            end_anchor,
+            multiline,
         }))))
     }
 
@@ -122,6 +195,26 @@ impl RegExpUnicodeFoldedLiteralMatcher {
             return Ok(None);
         };
         let units = input.code_units();
+        if self.0.start_anchor && !self.0.multiline && cursor != 0 {
+            return Ok(None);
+        }
+        let sticky = sticky || (self.0.start_anchor && !self.0.multiline);
+        let initial = cursor;
+        // A multiline start assertion needs each candidate's original start,
+        // including rejected overlapping candidates. A source-sized ring keeps
+        // that lookup constant-time instead of rescanning each candidate.
+        let mut starts = if self.0.start_anchor && self.0.multiline {
+            if units.len() - cursor < self.0.points.len() {
+                return Ok(None);
+            }
+            charge(self.0.points.len().saturating_add(1))?;
+            let mut ring = vec![0; self.0.points.len() + 1];
+            ring[0] = cursor;
+            ring
+        } else {
+            Vec::new()
+        };
+        let mut consumed = 0;
         let mut matched = 0;
         while let Some(&first) = units.get(cursor) {
             charge(2 + fold_work())?;
@@ -141,17 +234,49 @@ impl RegExpUnicodeFoldedLiteralMatcher {
                 return Ok(None);
             }
             cursor += width;
+            if !starts.is_empty() {
+                charge(1)?;
+                consumed += 1;
+                let slot = consumed % starts.len();
+                starts[slot] = cursor;
+            }
             if matched == self.0.points.len() {
                 let end = cursor;
+                let known_start = if !starts.is_empty() {
+                    Some(starts[(consumed - matched) % starts.len()])
+                } else {
+                    sticky.then_some(initial)
+                };
+                charge(2)?;
+                // Check an end assertion before recovering a start. Rejected
+                // suffixes must not turn a linear KMP scan into repeated walks.
+                if !unicode_assertions_match(
+                    units,
+                    known_start.unwrap_or(0),
+                    end,
+                    self.0.start_anchor,
+                    self.0.end_anchor,
+                    self.0.multiline,
+                ) {
+                    if sticky {
+                        return Ok(None);
+                    }
+                    matched = self.0.failure[matched - 1];
+                    continue;
+                }
                 // Recover the original start without keeping all scanned offsets.
-                for _ in 0..matched {
-                    charge(2)?;
-                    cursor -= 1;
-                    if cursor > 0
-                        && (0xdc00..=0xdfff).contains(&units[cursor])
-                        && (0xd800..=0xdbff).contains(&units[cursor - 1])
-                    {
+                if let Some(start) = known_start {
+                    cursor = start;
+                } else {
+                    for _ in 0..matched {
+                        charge(2)?;
                         cursor -= 1;
+                        if cursor > 0
+                            && (0xdc00..=0xdfff).contains(&units[cursor])
+                            && (0xd800..=0xdbff).contains(&units[cursor - 1])
+                        {
+                            cursor -= 1;
+                        }
                     }
                 }
                 let range = cursor..end;
@@ -447,5 +572,329 @@ mod tests {
             .unwrap();
         assert_eq!(found.range, 200000..200002);
         assert!(found.captures.iter().all(|c| c == &Some(200000..200002)));
+    }
+
+    #[test]
+    fn folded_unicode_literal_boundary_ranges_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            "^(a)A(b)$",
+            "((^a(a)$))",
+            "(aA$)",
+            "^a(a)",
+            r"^(\u{10400})(\u{10428})$",
+            r"^(\$)(a)\$$",
+            "^(())a(a)$",
+            "^a(a)$",
+            "a(a)$",
+            "^a(a)",
+        ] {
+            for multiline in [false, true] {
+                let plan = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+                    &JsString::from(source),
+                    multiline,
+                )
+                .unwrap();
+                for input in [
+                    "aaab\nAAB\r\nAA\u{2028}aa\u{2029}",
+                    "\u{10428}\u{10400}\n\u{10400}\u{10428}",
+                    "$A$\n$A$",
+                    "AA\n",
+                    "",
+                ] {
+                    let input = JsString::from(input);
+                    for start in 0..=input.len() + 1 {
+                        for sticky in [false, true] {
+                            let found = plan
+                                .find_with_work(&input, start, sticky, |_| Ok::<(), ()>(()))
+                                .unwrap()
+                                .map(|m| (m.range, m.captures));
+                            writeln!(rows,"{:?} m={multiline} input={input:?} start={start} sticky={sticky} {found:?}",JsString::from(source)).unwrap();
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn folded_unicode_literal_boundaries_independent_candidates() {
+        let plans = [
+            (
+                "^(a)A$",
+                vec![0x61, 0x61],
+                std::iter::once(0..1).collect(),
+                true,
+                true,
+            ),
+            (
+                "((^a(a)$))",
+                vec![0x61, 0x61],
+                vec![0..2, 0..2, 1..2],
+                true,
+                true,
+            ),
+            ("(a(a)$)", vec![0x61, 0x61], vec![0..2, 1..2], false, true),
+            (
+                "^a(a)",
+                vec![0x61, 0x61],
+                std::iter::once(1..2).collect(),
+                true,
+                false,
+            ),
+            (
+                "^(())a(a)$",
+                vec![0x61, 0x61],
+                vec![0..0, 0..0, 1..2],
+                true,
+                true,
+            ),
+            (
+                r"^(\uD800)(a)$",
+                vec![0xd800, 0x61],
+                vec![0..1, 1..2],
+                true,
+                true,
+            ),
+            (
+                "^a(ſ)$",
+                vec![0x61, 0x73],
+                std::iter::once(1..2).collect(),
+                true,
+                true,
+            ),
+        ];
+        let alphabet = [0x41u16, 0x61, 0x17f, 0xd800, 0xdc00, 10, 13, 0x2028, 0x2029];
+        for length in 0..=4 {
+            for encoded in 0..alphabet.len().pow(length) {
+                let mut value = encoded;
+                let raw: Vec<_> = (0..length)
+                    .map(|_| {
+                        let unit = alphabet[value % alphabet.len()];
+                        value /= alphabet.len();
+                        unit
+                    })
+                    .collect();
+                let input = JsString::from_code_units(raw.clone());
+                let (points, bounds) = decoded(&raw);
+                for (source, pattern, caps, begin, end) in &plans {
+                    for multiline in [false, true] {
+                        let plan = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+                            &JsString::from(*source),
+                            multiline,
+                        )
+                        .unwrap();
+                        for start in 0..=raw.len() + 1 {
+                            for sticky in [false, true] {
+                                let normalized = if start > 0
+                                    && start < raw.len()
+                                    && (0xdc00..=0xdfff).contains(&raw[start])
+                                    && (0xd800..=0xdbff).contains(&raw[start - 1])
+                                {
+                                    start - 1
+                                } else {
+                                    start
+                                };
+                                let mut expected = None;
+                                for (offset, &first) in bounds.iter().enumerate() {
+                                    if first < normalized || (sticky && first != normalized) {
+                                        continue;
+                                    }
+                                    let last_point = offset + pattern.len();
+                                    if points.get(offset..last_point) != Some(pattern.as_slice()) {
+                                        continue;
+                                    }
+                                    let last = bounds[last_point];
+                                    let lt = |unit| matches!(unit, 10 | 13 | 0x2028 | 0x2029);
+                                    if (*begin && first != 0 && !(multiline && lt(raw[first - 1])))
+                                        || (*end
+                                            && last != raw.len()
+                                            && !(multiline && lt(raw[last])))
+                                    {
+                                        continue;
+                                    }
+                                    expected = Some((
+                                        first..last,
+                                        caps.iter()
+                                            .map(|cap| {
+                                                Some(
+                                                    bounds[offset + cap.start]
+                                                        ..bounds[offset + cap.end],
+                                                )
+                                            })
+                                            .collect::<Box<[_]>>(),
+                                    ));
+                                    break;
+                                }
+                                let actual = plan
+                                    .find_with_work(&input, start, sticky, |_| Ok::<(), ()>(()))
+                                    .unwrap()
+                                    .map(|m| (m.range, m.captures));
+                                assert_eq!(
+                                    actual, expected,
+                                    "{source:?} m={multiline} raw={raw:?} start={start} sticky={sticky}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn folded_unicode_literal_boundaries_linear_rejections_and_work() {
+        for source in [
+            format!("^{}$", "a".repeat(5000)),
+            format!("{}$", "a".repeat(5000)),
+        ] {
+            let plan = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+                &JsString::from(source.as_str()),
+                true,
+            )
+            .unwrap();
+            let input = JsString::from(("a".repeat(100000) + "b").as_str());
+            let mut work = 0;
+            assert!(
+                plan.find_with_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap()
+                .is_none()
+            );
+            assert!(work < 25 * input.len() + 10000, "work={work}");
+        }
+        let source = JsString::from("((^(a)a$))");
+        let mut calls = 0;
+        let plan = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions_and_work(
+            &source,
+            true,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions_and_work(
+                    &source,
+                    true,
+                    |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    }
+                )
+                .is_err()
+            );
+        }
+        let input = JsString::from("xxAA\nAA");
+        let mut calls = 0;
+        let found = plan
+            .clone()
+            .find_with_work(&input, 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 5..7);
+        assert_eq!(&*found.captures, &[Some(5..7), Some(5..7), Some(5..6)]);
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                plan.find_with_work(&input, 0, false, |_| {
+                    n += 1;
+                    if n == fail { Err(()) } else { Ok(()) }
+                })
+                .is_err()
+            );
+        }
+        let ring = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+            &JsString::from("^aa$"),
+            true,
+        )
+        .unwrap();
+        let mut calls = 0;
+        assert!(
+            ring.find_with_work(&input, 0, false, |_| {
+                calls += 1;
+                if calls == 2 { Err(()) } else { Ok(()) }
+            })
+            .is_err()
+        );
+        assert_eq!(calls, 2);
+    }
+
+    #[test]
+    fn folded_unicode_literal_boundary_contracts_and_original_widths() {
+        for source in [
+            "^ab", "ab$", "(^ab$)", "^$", "^(a$)b", "a^b", "a$b", "^(ab)+$", "^[ab]$", "^(a|b)$",
+        ] {
+            assert!(RegExpUnicodeFoldedLiteralMatcher::compile(&JsString::from(source)).is_none());
+        }
+        for source in [
+            "^$",
+            "^(a$)b",
+            "a^b",
+            "a$b",
+            "^(ab)+$",
+            "^[ab]$",
+            "^(a|b)$",
+            r"^[\q{a\)b}]$",
+        ] {
+            assert!(
+                RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+                    &JsString::from(source),
+                    true
+                )
+                .is_none()
+            );
+        }
+        for (source, input) in [
+            (r"^(\$)(a)\$$", "$A$"),
+            (r"^(a)\\$", "A\\"),
+            (r"^(a)\$$", "A$"),
+        ] {
+            let plan = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+                &JsString::from(source),
+                false,
+            )
+            .unwrap();
+            assert_eq!(
+                plan.find_with_work(&JsString::from(input), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap()
+                    .range,
+                0..input.encode_utf16().count()
+            );
+        }
+        for (source, input, last) in [
+            ("((^(ß)(s)()$))", "\u{1df95}S", 3),
+            (r"^(\u{1df95})(s)()$", "ßS", 2),
+        ] {
+            let plan = RegExpUnicodeFoldedLiteralMatcher::compile_with_assertions(
+                &JsString::from(source),
+                false,
+            )
+            .unwrap();
+            let found = plan
+                .find_with_work(&JsString::from(input), 1, false, |_| Ok::<(), ()>(()))
+                .unwrap();
+            if last == 3 {
+                let found = found.unwrap();
+                assert_eq!(found.range, 0..3);
+                assert_eq!(
+                    &*found.captures,
+                    &[Some(0..3), Some(0..3), Some(0..2), Some(2..3), Some(3..3)]
+                );
+            } else {
+                assert!(found.is_none());
+            }
+        }
     }
 }

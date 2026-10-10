@@ -176,7 +176,7 @@ fn unicode_folded_literal_opted_work_and_remaining_gaps() {
         r"/ab+/iu.exec('AB')",
         r"/(ab)+/iv.exec('AB')",
         r"/a|b/iu.exec('A')",
-        r"/^ab$/iv.exec('AB')",
+        r"/^(ab)+$/iv.exec('AB')",
         r"/[a]b/iu.exec('AB')",
         r"/(a)\1/iv.exec('AA')",
         r"/(?=ab)/iu.exec('AB')",

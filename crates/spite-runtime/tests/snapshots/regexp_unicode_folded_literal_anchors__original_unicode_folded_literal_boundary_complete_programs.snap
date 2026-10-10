@@ -1,0 +1,6 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_folded_literal_anchors.rs
+expression: rows
+---
+"/^ab$/iv.exec('AB')" "[\u0022AB\u0022]"
+"/^(a)$/iu.exec('A')" "[\u0022A\u0022,\u0022A\u0022]"
