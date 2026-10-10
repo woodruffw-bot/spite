@@ -2919,6 +2919,28 @@ Complete-character boundaries, immutable ranges, original captures and indices,
 assertions, consumers and clones reuse the existing plans. Other properties and
 set operators remain separate proofs.
 
+
+The Unicode class/property matcher has a separate entry point for one optional
+leading and/or trailing word assertion b/B, combined with optional ^/$
+(22.2.2.4, 22.2.2.7.1). It strips only those complete outside assertions, restores
+the existing line assertions, and requires complete flat-class or fixed-property
+body proof. Consecutive backslash parity distinguishes a final word assertion
+from escaped literal backslashes. Existing class/property entry points retain
+their own admitted subsets.
+
+WordCharacters is ASCII letters, digits and underscore, plus the pinned long-s
+and Kelvin aliases only with Unicode i. Complete-character endpoints make the
+adjacent raw input units sufficient: surrogate units cannot be word characters.
+The matcher compares left and right membership at the original start/end; B
+requires equality. Line assertions and original capture ranges remain unchanged.
+
+The source scan and source-sized copy are charged before allocation. Eight
+additional fixed work passes per word assertion precharge neighbor checks before
+search. No input storage or recursion is added. Whole ordinary atom wrappers
+retain original named slots, text and UTF-16 indices. Word assertions around
+literal/dot/escape atoms, outside wrappers, or repeated/continued bodies remain
+separate proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

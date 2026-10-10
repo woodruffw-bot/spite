@@ -6019,6 +6019,31 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Word assertions around one complete Unicode class/fixed property now have three
+core and seven runtime tests. Nine manual predicate/assertion plans over every
+raw string of up to three units from an eleven-unit alphabet agree with an
+independent decoder/candidate/context oracle across all starts, sticky, m, i and
+u/v combinations. All 3200 core and 800 runtime snapshot rows agree with an
+independent original-input oracle and Node; the oracle independently derives
+WordCharacters' two non-ASCII aliases from the complete pinned C/S table. Node
+verifies twenty-six complete Boolean programs.
+
+Coverage includes b/B and single sides, empty properties, backspace within a
+class, case-folded neighbors, all line terminators, original named/__proto__
+captures and indices, approved pair starts, isolated surrogates, consumers,
+clones/coercions/strict writes, collection, 10000 repeated properties, 3000
+captures, 200003 input units, unlimited defaults and opted-in host failures.
+All 549 core tests and 168 related runtime targets pass. All 429 previous
+snapshots remain byte-identical, with two new reviewed golds. All 1029 gaps,
+eight ordered and ten direct-eval probes retain Unsupported and state. Whole
+17/115-source and unchanged dotAll/class/simple-fold reviews have no failures
+or host limits. The corpus, dependencies and Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

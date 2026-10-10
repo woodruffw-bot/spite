@@ -457,6 +457,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match ASCII_Hex_Digit and its AHex alias as Unicode property atoms and flat class members, preserving complement, folding and complete-character capture semantics.
 - [x] Match Hex_Digit and its Hex alias, including fullwidth characters, in Unicode property atoms and flat classes with original capture widths.
 - [x] Match White_Space and its space alias in Unicode property atoms and flat classes, preserving Unicode membership, complements and complete-character captures.
+- [x] Match optional word boundaries around one complete Unicode class or fixed property, with case-folded neighbors, multiline context and original captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
