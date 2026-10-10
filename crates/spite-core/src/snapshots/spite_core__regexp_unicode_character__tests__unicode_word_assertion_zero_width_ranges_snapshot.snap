@@ -1,0 +1,1604 @@
+---
+source: crates/spite-core/src/regexp_unicode_character.rs
+expression: rows
+---
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(1..1)
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true Some(1..1)
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(1..1)
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true Some(1..1)
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(1..1)
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true Some(1..1)
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(5..5)
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false Some(1..1)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true Some(1..1)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false Some(2..2)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true Some(2..2)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb" i=false m=false input="" start=0 sticky=false None
+"\u005cb" i=false m=false input="" start=0 sticky=true None
+"\u005cb" i=false m=false input="" start=1 sticky=false None
+"\u005cb" i=false m=false input="" start=1 sticky=true None
+"\u005cb" i=false m=false input="" start=2 sticky=false None
+"\u005cb" i=false m=false input="" start=2 sticky=true None
+"\u005cb" i=false m=false input="" start=0 sticky=false None
+"\u005cb" i=false m=false input="" start=0 sticky=true None
+"\u005cb" i=false m=false input="" start=1 sticky=false None
+"\u005cb" i=false m=false input="" start=1 sticky=true None
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(1..1)
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true Some(1..1)
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(1..1)
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true Some(1..1)
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(1..1)
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true Some(1..1)
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(5..5)
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false Some(1..1)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true Some(1..1)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false Some(2..2)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true Some(2..2)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb" i=false m=true input="" start=0 sticky=false None
+"\u005cb" i=false m=true input="" start=0 sticky=true None
+"\u005cb" i=false m=true input="" start=1 sticky=false None
+"\u005cb" i=false m=true input="" start=1 sticky=true None
+"\u005cb" i=false m=true input="" start=2 sticky=false None
+"\u005cb" i=false m=true input="" start=2 sticky=true None
+"\u005cb" i=false m=true input="" start=0 sticky=false None
+"\u005cb" i=false m=true input="" start=0 sticky=true None
+"\u005cb" i=false m=true input="" start=1 sticky=false None
+"\u005cb" i=false m=true input="" start=1 sticky=true None
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(1..1)
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true Some(1..1)
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(1..1)
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true Some(1..1)
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(1..1)
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true Some(1..1)
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(5..5)
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false Some(1..1)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true Some(1..1)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false Some(2..2)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true Some(2..2)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb" i=true m=false input="" start=0 sticky=false None
+"\u005cb" i=true m=false input="" start=0 sticky=true None
+"\u005cb" i=true m=false input="" start=1 sticky=false None
+"\u005cb" i=true m=false input="" start=1 sticky=true None
+"\u005cb" i=true m=false input="" start=2 sticky=false None
+"\u005cb" i=true m=false input="" start=2 sticky=true None
+"\u005cb" i=true m=false input="" start=0 sticky=false None
+"\u005cb" i=true m=false input="" start=0 sticky=true None
+"\u005cb" i=true m=false input="" start=1 sticky=false None
+"\u005cb" i=true m=false input="" start=1 sticky=true None
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(1..1)
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true Some(1..1)
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(1..1)
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true Some(1..1)
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(1..1)
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true Some(1..1)
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(5..5)
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false Some(1..1)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true Some(1..1)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false Some(2..2)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true Some(2..2)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb" i=true m=true input="" start=0 sticky=false None
+"\u005cb" i=true m=true input="" start=0 sticky=true None
+"\u005cb" i=true m=true input="" start=1 sticky=false None
+"\u005cb" i=true m=true input="" start=1 sticky=true None
+"\u005cb" i=true m=true input="" start=2 sticky=false None
+"\u005cb" i=true m=true input="" start=2 sticky=true None
+"\u005cb" i=true m=true input="" start=0 sticky=false None
+"\u005cb" i=true m=true input="" start=0 sticky=true None
+"\u005cb" i=true m=true input="" start=1 sticky=false None
+"\u005cb" i=true m=true input="" start=1 sticky=true None
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(6..6)
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(6..6)
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(6..6)
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB" i=false m=false input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB" i=false m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=false m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=false m=false input="" start=1 sticky=false None
+"\u005cB" i=false m=false input="" start=1 sticky=true None
+"\u005cB" i=false m=false input="" start=2 sticky=false None
+"\u005cB" i=false m=false input="" start=2 sticky=true None
+"\u005cB" i=false m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=false m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=false m=false input="" start=1 sticky=false None
+"\u005cB" i=false m=false input="" start=1 sticky=true None
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(6..6)
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(6..6)
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(6..6)
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB" i=false m=true input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB" i=false m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=false m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=false m=true input="" start=1 sticky=false None
+"\u005cB" i=false m=true input="" start=1 sticky=true None
+"\u005cB" i=false m=true input="" start=2 sticky=false None
+"\u005cB" i=false m=true input="" start=2 sticky=true None
+"\u005cB" i=false m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=false m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=false m=true input="" start=1 sticky=false None
+"\u005cB" i=false m=true input="" start=1 sticky=true None
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(6..6)
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(6..6)
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(6..6)
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB" i=true m=false input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB" i=true m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=true m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=true m=false input="" start=1 sticky=false None
+"\u005cB" i=true m=false input="" start=1 sticky=true None
+"\u005cB" i=true m=false input="" start=2 sticky=false None
+"\u005cB" i=true m=false input="" start=2 sticky=true None
+"\u005cB" i=true m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=true m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=true m=false input="" start=1 sticky=false None
+"\u005cB" i=true m=false input="" start=1 sticky=true None
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(6..6)
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(6..6)
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(6..6)
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB" i=true m=true input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB" i=true m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=true m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=true m=true input="" start=1 sticky=false None
+"\u005cB" i=true m=true input="" start=1 sticky=true None
+"\u005cB" i=true m=true input="" start=2 sticky=false None
+"\u005cB" i=true m=true input="" start=2 sticky=true None
+"\u005cB" i=true m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB" i=true m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB" i=true m=true input="" start=1 sticky=false None
+"\u005cB" i=true m=true input="" start=1 sticky=true None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb" i=false m=false input="" start=0 sticky=false None
+"^\u005cb" i=false m=false input="" start=0 sticky=true None
+"^\u005cb" i=false m=false input="" start=1 sticky=false None
+"^\u005cb" i=false m=false input="" start=1 sticky=true None
+"^\u005cb" i=false m=false input="" start=2 sticky=false None
+"^\u005cb" i=false m=false input="" start=2 sticky=true None
+"^\u005cb" i=false m=false input="" start=0 sticky=false None
+"^\u005cb" i=false m=false input="" start=0 sticky=true None
+"^\u005cb" i=false m=false input="" start=1 sticky=false None
+"^\u005cb" i=false m=false input="" start=1 sticky=true None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(5..5)
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(5..5)
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb" i=false m=true input="" start=0 sticky=false None
+"^\u005cb" i=false m=true input="" start=0 sticky=true None
+"^\u005cb" i=false m=true input="" start=1 sticky=false None
+"^\u005cb" i=false m=true input="" start=1 sticky=true None
+"^\u005cb" i=false m=true input="" start=2 sticky=false None
+"^\u005cb" i=false m=true input="" start=2 sticky=true None
+"^\u005cb" i=false m=true input="" start=0 sticky=false None
+"^\u005cb" i=false m=true input="" start=0 sticky=true None
+"^\u005cb" i=false m=true input="" start=1 sticky=false None
+"^\u005cb" i=false m=true input="" start=1 sticky=true None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb" i=true m=false input="" start=0 sticky=false None
+"^\u005cb" i=true m=false input="" start=0 sticky=true None
+"^\u005cb" i=true m=false input="" start=1 sticky=false None
+"^\u005cb" i=true m=false input="" start=1 sticky=true None
+"^\u005cb" i=true m=false input="" start=2 sticky=false None
+"^\u005cb" i=true m=false input="" start=2 sticky=true None
+"^\u005cb" i=true m=false input="" start=0 sticky=false None
+"^\u005cb" i=true m=false input="" start=0 sticky=true None
+"^\u005cb" i=true m=false input="" start=1 sticky=false None
+"^\u005cb" i=true m=false input="" start=1 sticky=true None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(0..0)
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true Some(0..0)
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(0..0)
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true Some(0..0)
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(5..5)
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(5..5)
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false Some(0..0)
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true Some(0..0)
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb" i=true m=true input="" start=0 sticky=false None
+"^\u005cb" i=true m=true input="" start=0 sticky=true None
+"^\u005cb" i=true m=true input="" start=1 sticky=false None
+"^\u005cb" i=true m=true input="" start=1 sticky=true None
+"^\u005cb" i=true m=true input="" start=2 sticky=false None
+"^\u005cb" i=true m=true input="" start=2 sticky=true None
+"^\u005cb" i=true m=true input="" start=0 sticky=false None
+"^\u005cb" i=true m=true input="" start=0 sticky=true None
+"^\u005cb" i=true m=true input="" start=1 sticky=false None
+"^\u005cb" i=true m=true input="" start=1 sticky=true None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB" i=false m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=false m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=false m=false input="" start=1 sticky=false None
+"^\u005cB" i=false m=false input="" start=1 sticky=true None
+"^\u005cB" i=false m=false input="" start=2 sticky=false None
+"^\u005cB" i=false m=false input="" start=2 sticky=true None
+"^\u005cB" i=false m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=false m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=false m=false input="" start=1 sticky=false None
+"^\u005cB" i=false m=false input="" start=1 sticky=true None
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB" i=false m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=false m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=false m=true input="" start=1 sticky=false None
+"^\u005cB" i=false m=true input="" start=1 sticky=true None
+"^\u005cB" i=false m=true input="" start=2 sticky=false None
+"^\u005cB" i=false m=true input="" start=2 sticky=true None
+"^\u005cB" i=false m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=false m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=false m=true input="" start=1 sticky=false None
+"^\u005cB" i=false m=true input="" start=1 sticky=true None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB" i=true m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=true m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=true m=false input="" start=1 sticky=false None
+"^\u005cB" i=true m=false input="" start=1 sticky=true None
+"^\u005cB" i=true m=false input="" start=2 sticky=false None
+"^\u005cB" i=true m=false input="" start=2 sticky=true None
+"^\u005cB" i=true m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=true m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=true m=false input="" start=1 sticky=false None
+"^\u005cB" i=true m=false input="" start=1 sticky=true None
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=0 sticky=false Some(0..0)
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=0 sticky=true Some(0..0)
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=1 sticky=false Some(0..0)
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=1 sticky=true Some(0..0)
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB" i=true m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=true m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=true m=true input="" start=1 sticky=false None
+"^\u005cB" i=true m=true input="" start=1 sticky=true None
+"^\u005cB" i=true m=true input="" start=2 sticky=false None
+"^\u005cB" i=true m=true input="" start=2 sticky=true None
+"^\u005cB" i=true m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB" i=true m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB" i=true m=true input="" start=1 sticky=false None
+"^\u005cB" i=true m=true input="" start=1 sticky=true None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb$" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false Some(5..5)
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false Some(5..5)
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false Some(5..5)
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb$" i=false m=false input="" start=0 sticky=false None
+"\u005cb$" i=false m=false input="" start=0 sticky=true None
+"\u005cb$" i=false m=false input="" start=1 sticky=false None
+"\u005cb$" i=false m=false input="" start=1 sticky=true None
+"\u005cb$" i=false m=false input="" start=2 sticky=false None
+"\u005cb$" i=false m=false input="" start=2 sticky=true None
+"\u005cb$" i=false m=false input="" start=0 sticky=false None
+"\u005cb$" i=false m=false input="" start=0 sticky=true None
+"\u005cb$" i=false m=false input="" start=1 sticky=false None
+"\u005cb$" i=false m=false input="" start=1 sticky=true None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(1..1)
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(1..1)
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true Some(1..1)
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(6..6)
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb$" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false Some(5..5)
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false Some(5..5)
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false Some(5..5)
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb$" i=false m=true input="" start=0 sticky=false None
+"\u005cb$" i=false m=true input="" start=0 sticky=true None
+"\u005cb$" i=false m=true input="" start=1 sticky=false None
+"\u005cb$" i=false m=true input="" start=1 sticky=true None
+"\u005cb$" i=false m=true input="" start=2 sticky=false None
+"\u005cb$" i=false m=true input="" start=2 sticky=true None
+"\u005cb$" i=false m=true input="" start=0 sticky=false None
+"\u005cb$" i=false m=true input="" start=0 sticky=true None
+"\u005cb$" i=false m=true input="" start=1 sticky=false None
+"\u005cb$" i=false m=true input="" start=1 sticky=true None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb$" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false Some(5..5)
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false Some(5..5)
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false Some(5..5)
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb$" i=true m=false input="" start=0 sticky=false None
+"\u005cb$" i=true m=false input="" start=0 sticky=true None
+"\u005cb$" i=true m=false input="" start=1 sticky=false None
+"\u005cb$" i=true m=false input="" start=1 sticky=true None
+"\u005cb$" i=true m=false input="" start=2 sticky=false None
+"\u005cb$" i=true m=false input="" start=2 sticky=true None
+"\u005cb$" i=true m=false input="" start=0 sticky=false None
+"\u005cb$" i=true m=false input="" start=0 sticky=true None
+"\u005cb$" i=true m=false input="" start=1 sticky=false None
+"\u005cb$" i=true m=false input="" start=1 sticky=true None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(9..9)
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(9..9)
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(9..9)
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(1..1)
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(1..1)
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true Some(1..1)
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(6..6)
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=0 sticky=false None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=0 sticky=true None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=1 sticky=false None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=1 sticky=true None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cb$" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false Some(5..5)
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false Some(5..5)
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false Some(5..5)
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false Some(5..5)
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true Some(5..5)
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cb$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cb$" i=true m=true input="" start=0 sticky=false None
+"\u005cb$" i=true m=true input="" start=0 sticky=true None
+"\u005cb$" i=true m=true input="" start=1 sticky=false None
+"\u005cb$" i=true m=true input="" start=1 sticky=true None
+"\u005cb$" i=true m=true input="" start=2 sticky=false None
+"\u005cb$" i=true m=true input="" start=2 sticky=true None
+"\u005cb$" i=true m=true input="" start=0 sticky=false None
+"\u005cb$" i=true m=true input="" start=0 sticky=true None
+"\u005cb$" i=true m=true input="" start=1 sticky=false None
+"\u005cb$" i=true m=true input="" start=1 sticky=true None
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(7..7)
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(7..7)
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(7..7)
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=0 sticky=false Some(2..2)
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=0 sticky=true None
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=1 sticky=false Some(2..2)
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=1 sticky=true None
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB$" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB$" i=false m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=false m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=false m=false input="" start=1 sticky=false None
+"\u005cB$" i=false m=false input="" start=1 sticky=true None
+"\u005cB$" i=false m=false input="" start=2 sticky=false None
+"\u005cB$" i=false m=false input="" start=2 sticky=true None
+"\u005cB$" i=false m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=false m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=false m=false input="" start=1 sticky=false None
+"\u005cB$" i=false m=false input="" start=1 sticky=true None
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(9..9)
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(9..9)
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(9..9)
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=0 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=0 sticky=true None
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=1 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=1 sticky=true None
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB$" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB$" i=false m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=false m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=false m=true input="" start=1 sticky=false None
+"\u005cB$" i=false m=true input="" start=1 sticky=true None
+"\u005cB$" i=false m=true input="" start=2 sticky=false None
+"\u005cB$" i=false m=true input="" start=2 sticky=true None
+"\u005cB$" i=false m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=false m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=false m=true input="" start=1 sticky=false None
+"\u005cB$" i=false m=true input="" start=1 sticky=true None
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(7..7)
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(7..7)
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(7..7)
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=0 sticky=false Some(2..2)
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=0 sticky=true None
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=1 sticky=false Some(2..2)
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=1 sticky=true None
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB$" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB$" i=true m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=true m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=true m=false input="" start=1 sticky=false None
+"\u005cB$" i=true m=false input="" start=1 sticky=true None
+"\u005cB$" i=true m=false input="" start=2 sticky=false None
+"\u005cB$" i=true m=false input="" start=2 sticky=true None
+"\u005cB$" i=true m=false input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=true m=false input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=true m=false input="" start=1 sticky=false None
+"\u005cB$" i=true m=false input="" start=1 sticky=true None
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=0 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=0 sticky=true None
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=1 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=1 sticky=true None
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=false Some(2..2)
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=true Some(2..2)
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"\u005cB$" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"\u005cB$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"\u005cB$" i=true m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=true m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=true m=true input="" start=1 sticky=false None
+"\u005cB$" i=true m=true input="" start=1 sticky=true None
+"\u005cB$" i=true m=true input="" start=2 sticky=false None
+"\u005cB$" i=true m=true input="" start=2 sticky=true None
+"\u005cB$" i=true m=true input="" start=0 sticky=false Some(0..0)
+"\u005cB$" i=true m=true input="" start=0 sticky=true Some(0..0)
+"\u005cB$" i=true m=true input="" start=1 sticky=false None
+"\u005cB$" i=true m=true input="" start=1 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb$" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb$" i=false m=false input="" start=0 sticky=false None
+"^\u005cb$" i=false m=false input="" start=0 sticky=true None
+"^\u005cb$" i=false m=false input="" start=1 sticky=false None
+"^\u005cb$" i=false m=false input="" start=1 sticky=true None
+"^\u005cb$" i=false m=false input="" start=2 sticky=false None
+"^\u005cb$" i=false m=false input="" start=2 sticky=true None
+"^\u005cb$" i=false m=false input="" start=0 sticky=false None
+"^\u005cb$" i=false m=false input="" start=0 sticky=true None
+"^\u005cb$" i=false m=false input="" start=1 sticky=false None
+"^\u005cb$" i=false m=false input="" start=1 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb$" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb$" i=false m=true input="" start=0 sticky=false None
+"^\u005cb$" i=false m=true input="" start=0 sticky=true None
+"^\u005cb$" i=false m=true input="" start=1 sticky=false None
+"^\u005cb$" i=false m=true input="" start=1 sticky=true None
+"^\u005cb$" i=false m=true input="" start=2 sticky=false None
+"^\u005cb$" i=false m=true input="" start=2 sticky=true None
+"^\u005cb$" i=false m=true input="" start=0 sticky=false None
+"^\u005cb$" i=false m=true input="" start=0 sticky=true None
+"^\u005cb$" i=false m=true input="" start=1 sticky=false None
+"^\u005cb$" i=false m=true input="" start=1 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb$" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb$" i=true m=false input="" start=0 sticky=false None
+"^\u005cb$" i=true m=false input="" start=0 sticky=true None
+"^\u005cb$" i=true m=false input="" start=1 sticky=false None
+"^\u005cb$" i=true m=false input="" start=1 sticky=true None
+"^\u005cb$" i=true m=false input="" start=2 sticky=false None
+"^\u005cb$" i=true m=false input="" start=2 sticky=true None
+"^\u005cb$" i=true m=false input="" start=0 sticky=false None
+"^\u005cb$" i=true m=false input="" start=0 sticky=true None
+"^\u005cb$" i=true m=false input="" start=1 sticky=false None
+"^\u005cb$" i=true m=false input="" start=1 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cb$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cb$" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cb$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cb$" i=true m=true input="" start=0 sticky=false None
+"^\u005cb$" i=true m=true input="" start=0 sticky=true None
+"^\u005cb$" i=true m=true input="" start=1 sticky=false None
+"^\u005cb$" i=true m=true input="" start=1 sticky=true None
+"^\u005cb$" i=true m=true input="" start=2 sticky=false None
+"^\u005cb$" i=true m=true input="" start=2 sticky=true None
+"^\u005cb$" i=true m=true input="" start=0 sticky=false None
+"^\u005cb$" i=true m=true input="" start=0 sticky=true None
+"^\u005cb$" i=true m=true input="" start=1 sticky=false None
+"^\u005cb$" i=true m=true input="" start=1 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB$" i=false m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB$" i=false m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB$" i=false m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB$" i=false m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=false m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=false m=false input="" start=1 sticky=false None
+"^\u005cB$" i=false m=false input="" start=1 sticky=true None
+"^\u005cB$" i=false m=false input="" start=2 sticky=false None
+"^\u005cB$" i=false m=false input="" start=2 sticky=true None
+"^\u005cB$" i=false m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=false m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=false m=false input="" start=1 sticky=false None
+"^\u005cB$" i=false m=false input="" start=1 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB$" i=false m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB$" i=false m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB$" i=false m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB$" i=false m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB$" i=false m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=false m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=false m=true input="" start=1 sticky=false None
+"^\u005cB$" i=false m=true input="" start=1 sticky=true None
+"^\u005cB$" i=false m=true input="" start=2 sticky=false None
+"^\u005cB$" i=false m=true input="" start=2 sticky=true None
+"^\u005cB$" i=false m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=false m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=false m=true input="" start=1 sticky=false None
+"^\u005cB$" i=false m=true input="" start=1 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB$" i=true m=false input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB$" i=true m=false input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB$" i=true m=false input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB$" i=true m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=true m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=true m=false input="" start=1 sticky=false None
+"^\u005cB$" i=true m=false input="" start=1 sticky=true None
+"^\u005cB$" i=true m=false input="" start=2 sticky=false None
+"^\u005cB$" i=true m=false input="" start=2 sticky=true None
+"^\u005cB$" i=true m=false input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=true m=false input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=true m=false input="" start=1 sticky=false None
+"^\u005cB$" i=true m=false input="" start=1 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=false Some(10..10)
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=0 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=false Some(10..10)
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=1 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=false Some(10..10)
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=2 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=false Some(10..10)
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=10 sticky=true Some(10..10)
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=false None
+"^\u005cB$" i=true m=true input="A\ud83d\ude00B a_\u017f\u212a\u000a" start=11 sticky=true None
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=false Some(2..2)
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=0 sticky=true None
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=false Some(2..2)
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=1 sticky=true None
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=false Some(2..2)
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=2 sticky=true Some(2..2)
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=false Some(7..7)
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=7 sticky=true Some(7..7)
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=false None
+"^\u005cB$" i=true m=true input="x\u000d\u000a \u2028A\u2029" start=8 sticky=true None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=0 sticky=false None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=0 sticky=true None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=1 sticky=false None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=1 sticky=true None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=false None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=2 sticky=true None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=3 sticky=false None
+"^\u005cB$" i=true m=true input="\ud83d\ude00" start=3 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=false None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=0 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=false None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=1 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=false None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=2 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=false None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=5 sticky=true None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=false None
+"^\u005cB$" i=true m=true input="A\ud800_\udc00B" start=6 sticky=true None
+"^\u005cB$" i=true m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=true m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=true m=true input="" start=1 sticky=false None
+"^\u005cB$" i=true m=true input="" start=1 sticky=true None
+"^\u005cB$" i=true m=true input="" start=2 sticky=false None
+"^\u005cB$" i=true m=true input="" start=2 sticky=true None
+"^\u005cB$" i=true m=true input="" start=0 sticky=false Some(0..0)
+"^\u005cB$" i=true m=true input="" start=0 sticky=true Some(0..0)
+"^\u005cB$" i=true m=true input="" start=1 sticky=false None
+"^\u005cB$" i=true m=true input="" start=1 sticky=true None

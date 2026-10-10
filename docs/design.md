@@ -2956,6 +2956,34 @@ Escaped backslashes and literal dollars remain consuming atoms, distinguished
 from outside assertions by the shared complete-body proof. No input allocation
 or recursion is added.
 
+
+The Unicode character matcher has a separate constant-storage entry point for
+one standalone \b/\B assertion, optionally surrounded by ^/$ (22.2.2.4).
+Complete validated u/v bodies must consist of exactly those assertions. The
+existing consuming entry points retain their subsets. Construction is charged
+before examination; the existing neighbor and line-context helpers perform the
+match without source/input allocation or recursion.
+
+Zero-width search includes the original input end. Failed candidates advance
+by complete code points (22.2.7.2); successful ranges are empty at the original
+UTF-16 position. Exec writes that position without advancing an empty success,
+while the shared match/replace/matchAll consumers advance with AdvanceStringIndex.
+Complete ordinary wrappers capture that same empty range, with original named
+slots and indices aliases. The approved initial-offset leading-boundary rule
+continues to apply when a caller starts inside a surrogate pair.
+
+Node 24.19.0 has a separate standalone \B discrepancy:
+`/\B/ug.exec("A😀B")` reports a zero-width match at UTF-16 index 2, between
+the surrogate halves; `/\B/uy` with lastIndex 2 also reports that interior index. Edition 17
+22.2.7.2 converts the input with StringToCodePoints, supplies character-list
+indices to the matcher, and advances failed search candidates with
+AdvanceStringIndex. Assertion IsWordChar (22.2.2.4) inspects neighboring elements
+of that list. Those rules exclude the interior surrogate position; the native
+matcher follows them. This example has no valid B match, so its result is null.
+The already approved initial-offset ambiguity and leading-boundary resolution
+remain documented above; this additional Node behavior has no specification
+ambiguity.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
