@@ -2937,9 +2937,24 @@ requires equality. Line assertions and original capture ranges remain unchanged.
 The source scan and source-sized copy are charged before allocation. Eight
 additional fixed work passes per word assertion precharge neighbor checks before
 search. No input storage or recursion is added. Whole ordinary atom wrappers
-retain original named slots, text and UTF-16 indices. Word assertions around
-literal/dot/escape atoms, outside wrappers, or repeated/continued bodies remain
-separate proofs.
+retain original named slots, text and UTF-16 indices. Word assertions outside wrappers and repeated/continued bodies remain separate
+proofs.
+
+
+The Unicode character matcher separately admits the same optional word assertions
+around one complete literal, dot or d/D/s/S/w/W escape atom (22.2.2.4,
+22.2.2.7.1). It shares the class matcher's source/parser and neighbor helper, then
+requires complete existing dot/escape or single-literal proof. Prior entry points
+retain their own subsets. Source-sized parsing/copying is charged before work and
+allocation, with eight extra fixed search passes per word assertion.
+
+Neighbor folding has its own i flag. Dot/digit/space atoms avoid unnecessary
+canonicalization while their neighbors still include long-s and Kelvin under
+Unicode i. Literal and word-escape folding use the existing pinned C/S data;
+original input widths, line context and capture/indices ranges remain intact.
+Escaped backslashes and literal dollars remain consuming atoms, distinguished
+from outside assertions by the shared complete-body proof. No input allocation
+or recursion is added.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

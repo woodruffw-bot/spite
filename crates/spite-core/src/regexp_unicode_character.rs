@@ -14,7 +14,8 @@ use std::ops::Range;
 /// and assertion entry points require no i; flag-aware entry points also admit i.
 /// Dot and `\d`, `\D`, `\s`, `\S`, `\w`, `\W` are the complete admitted bodies.
 /// Optional leading ^ and/or trailing $ are admitted by the assertion entry points.
-/// The separate literal entry point admits one decoded literal atom. Classes,\n/// groups, concatenations and quantifiers remain separate.
+/// The separate literal entry point admits one decoded literal atom. Classes,
+/// groups, concatenations and quantifiers remain separate.
 /// Matching consumes complete code points, including isolated surrogates, while
 /// successful ranges retain UTF-16 indices. No input-sized storage is allocated.
 #[derive(Clone, Debug)]
@@ -24,6 +25,9 @@ pub struct RegExpUnicodeCharacterMatcher {
     end_anchor: bool,
     multiline: bool,
     fold_input: bool,
+    start_word: Option<bool>,
+    end_word: Option<bool>,
+    word_ignore_case: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -59,6 +63,9 @@ impl RegExpUnicodeCharacterMatcher {
             end_anchor: false,
             multiline: false,
             fold_input: false,
+            start_word: None,
+            end_word: None,
+            word_ignore_case: false,
         }))
     }
 
@@ -131,6 +138,9 @@ impl RegExpUnicodeCharacterMatcher {
             end_anchor,
             multiline,
             fold_input: ignore_case && matches!(atom, Atom::Escape(0x77 | 0x57)),
+            start_word: None,
+            end_word: None,
+            word_ignore_case: false,
         }))
     }
 
@@ -188,6 +198,50 @@ impl RegExpUnicodeCharacterMatcher {
             end_anchor,
             multiline,
             fold_input: ignore_case,
+            start_word: None,
+            end_word: None,
+            word_ignore_case: false,
+        }))
+    }
+
+    /// Compiles optional word assertions around one Unicode literal/dot/escape atom.
+    ///
+    /// Requires complete u/v validation and at least one leading or trailing
+    /// \b/\B. Optional ^/$ retain m context. Atom and neighbor folding are
+    /// independent: dot/digit/space atoms do not need folding, but their word
+    /// assertions still include the Unicode i aliases (22.2.2.4, 22.2.2.7.1).
+    /// Groups and other compositions remain caller proofs.
+    pub fn compile_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some(assertions) = unicode_word_assertions_with_work(source, &mut charge)? else {
+            return Ok(None);
+        };
+        let matcher = Self::compile_with_flags_and_work(
+            &assertions.source,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )?;
+        let matcher = match matcher {
+            Some(matcher) => Some(matcher),
+            None => Self::compile_literal_with_flags_and_work(
+                &assertions.source,
+                ignore_case,
+                multiline,
+                charge,
+            )?,
+        };
+        Ok(matcher.map(|mut matcher| {
+            matcher.start_word = assertions.start;
+            matcher.end_word = assertions.end;
+            matcher.word_ignore_case = ignore_case;
+            matcher
         }))
     }
 
@@ -195,6 +249,7 @@ impl RegExpUnicodeCharacterMatcher {
     pub fn search_passes(&self) -> usize {
         1 + usize::from(self.start_anchor)
             + usize::from(self.end_anchor)
+            + 8 * (usize::from(self.start_word.is_some()) + usize::from(self.end_word.is_some()))
             + if self.fold_input {
                 // Bound pinned-table binary search, including final membership.
                 2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize
@@ -221,7 +276,11 @@ impl RegExpUnicodeCharacterMatcher {
                 self.start_anchor,
                 self.end_anchor,
                 self.multiline,
-            ) && self.matches(value)
+            ) && self.start_word.is_none_or(|expected| {
+                unicode_word_boundary(units, cursor, self.word_ignore_case) == expected
+            }) && self.end_word.is_none_or(|expected| {
+                unicode_word_boundary(units, end, self.word_ignore_case) == expected
+            }) && self.matches(value)
             {
                 return Some(cursor..cursor + width);
             }
@@ -254,6 +313,83 @@ impl RegExpUnicodeCharacterMatcher {
             }
         }
     }
+}
+
+pub(crate) struct UnicodeWordAssertions {
+    pub(crate) source: JsString,
+    pub(crate) start: Option<bool>,
+    pub(crate) end: Option<bool>,
+}
+
+// Strips only optional outside word assertions. A caller must subsequently prove
+// the complete retained body; line assertions keep their original order/context.
+pub(crate) fn unicode_word_assertions_with_work<E>(
+    source: &JsString,
+    mut charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<UnicodeWordAssertions>, E> {
+    let units = source.code_units();
+    charge(units.len().saturating_mul(2))?;
+    let start_anchor = units.first() == Some(&0x5e);
+    let end_anchor = units.last() == Some(&0x24);
+    let mut begin = usize::from(start_anchor);
+    let mut end = units.len() - usize::from(end_anchor);
+    let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+        Some([0x5c, kind @ (0x62 | 0x42)]) => {
+            begin += 2;
+            Some(*kind == 0x62)
+        }
+        _ => None,
+    };
+    let end_word = if end >= begin + 2 {
+        match &units[end - 2..end] {
+            [0x5c, kind @ (0x62 | 0x42)]
+                if units[begin..end - 1]
+                    .iter()
+                    .rev()
+                    .take_while(|&&unit| unit == 0x5c)
+                    .count()
+                    % 2
+                    == 1 =>
+            {
+                end -= 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        }
+    } else {
+        None
+    };
+    if start_word.is_none() && end_word.is_none() {
+        return Ok(None);
+    }
+    let length = end - begin + usize::from(start_anchor) + usize::from(end_anchor);
+    charge(length)?;
+    let mut body = Vec::with_capacity(length);
+    if start_anchor {
+        body.push(0x5e);
+    }
+    body.extend_from_slice(&units[begin..end]);
+    if end_anchor {
+        body.push(0x24);
+    }
+    Ok(Some(UnicodeWordAssertions {
+        source: JsString::from_code_units(body),
+        start: start_word,
+        end: end_word,
+    }))
+}
+
+// WordCharacters adds only the two pinned non-ASCII aliases with Unicode i.
+// Complete-character endpoints mean raw neighboring units suffice: surrogate
+// units cannot be word characters (22.2.2.4, 22.2.2.7.1).
+pub(crate) fn unicode_word_boundary(units: &[u16], at: usize, ignore_case: bool) -> bool {
+    let word = |unit: Option<&u16>| {
+        unit.is_some_and(|&unit| {
+            matches!(unit, 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a)
+                || (ignore_case && matches!(unit, 0x17f | 0x212a))
+        })
+    };
+    word(at.checked_sub(1).and_then(|position| units.get(position))) != word(units.get(at))
 }
 
 // Caller supplies a complete consuming-character range within the input.
@@ -1014,5 +1150,293 @@ mod tests {
             |_| Err::<(), _>(17),
         );
         assert!(matches!(result, Err(17)));
+    }
+
+    fn word_plan(source: &str, i: bool, m: bool, dot_all: bool) -> RegExpUnicodeCharacterMatcher {
+        RegExpUnicodeCharacterMatcher::compile_with_word_boundaries_and_work(
+            &JsString::from(source),
+            i,
+            m,
+            dot_all,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn unicode_character_word_boundary_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\bA\b",
+            r"\B.\B",
+            r"^\b\d\b$",
+            r"\b\D\B",
+            r"\b\s\B",
+            r"\B\S\b",
+            r"\b\w\b",
+            r"\b\W\b",
+            r"\b\u{1f600}\b",
+            r"\b\uD800\b",
+            r"\b\$\B",
+            r"\b\\\B",
+            r"\bA",
+            r".\B",
+            r"^\B\u{10400}\B$",
+            r"\b\u{000041}\b",
+        ] {
+            for i in [false, true] {
+                for m in [false, true] {
+                    for dot_all in [false, true] {
+                        let plan = word_plan(source, i, m, dot_all);
+                        for input in [
+                            JsString::from("A😀B a_ſK\n"),
+                            JsString::from("x\r\n8\u{2028}𐐨\u{2029}"),
+                            JsString::from("A$!A\\!A \u{85}\u{feff}"),
+                            JsString::from_code_units(vec![0x41, 0xd800, 0x5f, 0xdc00, 0x42]),
+                            JsString::from(""),
+                        ] {
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{:?} i={i} m={m} s={dot_all} input={input:?} start={start} sticky={sticky} {:?}",JsString::from(source),plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_character_word_boundaries_agree_with_independent_raw_candidates() {
+        let alphabet = [
+            0x41, 0x61, 0x5f, 8, 10, 0x20, 0x17f, 0x212a, 0xd83d, 0xde00, 0x38,
+        ];
+        let cases = [
+            (r"\bA\b", 1, Some(true), Some(true), false, false),
+            (r"\B.\B", 2, Some(false), Some(false), false, false),
+            (r"^\b\d\b$", 3, Some(true), Some(true), true, true),
+            (r"\b\W\b", 4, Some(true), Some(true), false, false),
+            (r"\b\s\B", 5, Some(true), Some(false), false, false),
+            (r"\B\S\b", 6, Some(false), Some(true), false, false),
+            (r"\b\w\b", 7, Some(true), Some(true), false, false),
+            (r"\b\u{1f600}\b", 8, Some(true), Some(true), false, false),
+            (r"\bA", 1, Some(true), None, false, false),
+            (r".\B", 2, None, Some(false), false, false),
+        ];
+        let word = |v: Option<&u16>, i| {
+            v.is_some_and(|&v| {
+                char::from_u32(u32::from(v)).is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
+                    || (i && [0x17f, 0x212a].contains(&v))
+            })
+        };
+        let line = |v: u16| [10, 13, 0x2028, 0x2029].contains(&v);
+        for i in [false, true] {
+            for m in [false, true] {
+                for dot_all in [false, true] {
+                    let plans: Vec<_> = cases
+                        .iter()
+                        .map(|c| word_plan(c.0, i, m, dot_all))
+                        .collect();
+                    for len in 0..=3 {
+                        for ordinal in 0..alphabet.len().pow(len) {
+                            let units: Vec<_> = (0..len)
+                                .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                                .collect();
+                            let input = JsString::from_code_units(units.clone());
+                            for start in 0..=units.len() + 1 {
+                                for sticky in [false, true] {
+                                    for (case, plan) in cases.iter().zip(&plans) {
+                                        let mut expected = None;
+                                        if start <= units.len() {
+                                            let mut cursor = start;
+                                            if cursor > 0
+                                                && cursor < units.len()
+                                                && (0xdc00..=0xdfff).contains(&units[cursor])
+                                                && (0xd800..=0xdbff).contains(&units[cursor - 1])
+                                            {
+                                                cursor -= 1;
+                                            }
+                                            while cursor < units.len() {
+                                                let first = u32::from(units[cursor]);
+                                                let pair = (0xd800..=0xdbff).contains(&first)
+                                                    && units.get(cursor + 1).is_some_and(|v| {
+                                                        (0xdc00..=0xdfff).contains(v)
+                                                    });
+                                                let (point, width) = if pair {
+                                                    (
+                                                        (first - 0xd800) * 1024
+                                                            + u32::from(units[cursor + 1])
+                                                            - 0xdc00
+                                                            + 65536,
+                                                        2,
+                                                    )
+                                                } else {
+                                                    (first, 1)
+                                                };
+                                                let end = cursor + width;
+                                                let is_word = point <= 0xffff
+                                                    && word(Some(&(point as u16)), i);
+                                                let space = [
+                                                    9, 10, 11, 12, 13, 0x20, 0xa0, 0x1680, 0x2028,
+                                                    0x2029, 0x202f, 0x205f, 0x3000, 0xfeff,
+                                                ]
+                                                .contains(&point)
+                                                    || (0x2000..=0x200a).contains(&point);
+                                                let member = match case.1 {
+                                                    1 => point == 0x41 || (i && point == 0x61),
+                                                    2 => {
+                                                        dot_all
+                                                            || ![10, 13, 0x2028, 0x2029]
+                                                                .contains(&point)
+                                                    }
+                                                    3 => (48..=57).contains(&point),
+                                                    4 => !is_word,
+                                                    5 => space,
+                                                    6 => !space,
+                                                    7 => is_word,
+                                                    8 => point == 0x1f600,
+                                                    _ => unreachable!(),
+                                                };
+                                                let at = |pos: usize| {
+                                                    word(
+                                                        pos.checked_sub(1)
+                                                            .and_then(|j| units.get(j)),
+                                                        i,
+                                                    ) != word(units.get(pos), i)
+                                                };
+                                                let begin_ok = !case.4
+                                                    || cursor == 0
+                                                    || (m && line(units[cursor - 1]));
+                                                let end_ok = !case.5
+                                                    || end == units.len()
+                                                    || (m && line(units[end]));
+                                                if member
+                                                    && begin_ok
+                                                    && end_ok
+                                                    && case.2.is_none_or(|b| at(cursor) == b)
+                                                    && case.3.is_none_or(|b| at(end) == b)
+                                                {
+                                                    expected = Some(cursor..end);
+                                                    break;
+                                                }
+                                                if sticky {
+                                                    break;
+                                                }
+                                                cursor = end;
+                                            }
+                                        }
+                                        assert_eq!(
+                                            plan.find(&input, start, sticky),
+                                            expected,
+                                            "{} i={i} m={m} s={dot_all} {input:?} start={start} sticky={sticky}",
+                                            case.0
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_character_word_boundaries_work_clones_and_complete_body_contracts() {
+        let source = JsString::from(format!(r"\b\u{{{}41}}\b", "0".repeat(10000)).as_str());
+        let plan = RegExpUnicodeCharacterMatcher::compile_with_word_boundaries_and_work(
+            &source,
+            true,
+            true,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            plan.clone().find(&JsString::from("x\na\n"), 0, false),
+            Some(2..3)
+        );
+        let source = JsString::from(r"^\B\u{10400}\B$");
+        let mut calls = 0;
+        let plan = RegExpUnicodeCharacterMatcher::compile_with_word_boundaries_and_work(
+            &source,
+            true,
+            true,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_with_word_boundaries_and_work(
+                    &source,
+                    true,
+                    true,
+                    false,
+                    |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    }
+                )
+                .is_err()
+            );
+        }
+        assert_eq!(plan.find(&JsString::from("x\n𐐨\n"), 0, false), Some(2..4));
+        for source in [
+            r"A",
+            r"\b[A]\b",
+            r"\b(A)\b",
+            r"\bA+\b",
+            r"\bAB\b",
+            r"\bA\\b",
+            r"\b\bA\b",
+            r"\b\B",
+            r"\b\p{Assigned}\b",
+        ] {
+            assert!(
+                RegExpUnicodeCharacterMatcher::compile_with_word_boundaries_and_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodeCharacterMatcher::compile_literal_with_flags(
+                &JsString::from(r"\bA\b"),
+                true,
+                true
+            )
+            .is_none()
+        );
+        assert!(
+            RegExpUnicodeCharacterMatcher::compile_with_flags(
+                &JsString::from(r"\b.\b"),
+                true,
+                true,
+                true
+            )
+            .is_none()
+        );
+        // Pinned Unicode 18 folding changes original widths; word neighbors stay
+        // non-ASCII non-word on either representation, independently of widths.
+        let plan = word_plan(r"\Bß\B", true, false, false);
+        assert_eq!(plan.find(&JsString::from("\u{1df95}"), 0, true), Some(0..2));
+        assert_eq!(plan.find(&JsString::from("ß"), 0, true), Some(0..1));
     }
 }

@@ -4,7 +4,10 @@ use crate::{
     case_data::SIMPLE_CASE_FOLD,
     regexp_canonicalize_character,
     regexp_literal::{unicode_literal_atom, unicode_start},
-    regexp_unicode_character::{unicode_assertions_match, unicode_input_character},
+    regexp_unicode_character::{
+        unicode_assertions_match, unicode_input_character, unicode_word_assertions_with_work,
+        unicode_word_boundary,
+    },
 };
 use std::{ops::Range, sync::Arc};
 
@@ -222,54 +225,11 @@ impl RegExpUnicodeClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        let units = source.code_units();
-        charge(units.len().saturating_mul(2))?;
-        let start_anchor = units.first() == Some(&0x5e);
-        let end_anchor = units.last() == Some(&0x24);
-        let mut begin = usize::from(start_anchor);
-        let mut end = units.len() - usize::from(end_anchor);
-        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
-            Some([0x5c, kind @ (0x62 | 0x42)]) => {
-                begin += 2;
-                Some(*kind == 0x62)
-            }
-            _ => None,
-        };
-        let end_word = if end >= begin + 2 {
-            match &units[end - 2..end] {
-                [0x5c, kind @ (0x62 | 0x42)]
-                    if units[begin..end - 1]
-                        .iter()
-                        .rev()
-                        .take_while(|&&unit| unit == 0x5c)
-                        .count()
-                        % 2
-                        == 1 =>
-                {
-                    end -= 2;
-                    Some(*kind == 0x62)
-                }
-                _ => None,
-            }
-        } else {
-            None
-        };
-        if start_word.is_none() && end_word.is_none() {
+        let Some(assertions) = unicode_word_assertions_with_work(source, &mut charge)? else {
             return Ok(None);
-        }
-        let length = end - begin + usize::from(start_anchor) + usize::from(end_anchor);
-        charge(length)?;
-        let mut body = Vec::with_capacity(length);
-        if start_anchor {
-            body.push(0x5e);
-        }
-        body.extend_from_slice(&units[begin..end]);
-        if end_anchor {
-            body.push(0x24);
-        }
-        let body = JsString::from_code_units(body);
+        };
         let matcher = Self::compile_with_flags_and_work(
-            &body,
+            &assertions.source,
             unicode_sets,
             ignore_case,
             multiline,
@@ -278,7 +238,7 @@ impl RegExpUnicodeClassMatcher {
         let matcher = match matcher {
             Some(matcher) => Some(matcher),
             None => Self::compile_binary_property_with_flags_and_work(
-                &body,
+                &assertions.source,
                 unicode_sets,
                 ignore_case,
                 multiline,
@@ -286,8 +246,8 @@ impl RegExpUnicodeClassMatcher {
             )?,
         };
         Ok(matcher.map(|mut matcher| {
-            matcher.start_word = start_word;
-            matcher.end_word = end_word;
+            matcher.start_word = assertions.start;
+            matcher.end_word = assertions.end;
             matcher
         }))
     }
@@ -572,19 +532,6 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
         _ => u32::from(unit),
     };
     Some(ClassAtom::Point(point))
-}
-
-// WordCharacters adds only the two pinned non-ASCII aliases with Unicode i.
-// Complete-character endpoints mean raw neighboring units suffice: surrogate
-// units cannot be word characters (22.2.2.4, 22.2.2.7.1).
-fn unicode_word_boundary(units: &[u16], at: usize, ignore_case: bool) -> bool {
-    let word = |unit: Option<&u16>| {
-        unit.is_some_and(|&unit| {
-            matches!(unit, 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a)
-                || (ignore_case && matches!(unit, 0x17f | 0x212a))
-        })
-    };
-    word(at.checked_sub(1).and_then(|position| units.get(position))) != word(units.get(at))
 }
 
 fn fixed_property_kind(name: &[u16]) -> Option<u8> {

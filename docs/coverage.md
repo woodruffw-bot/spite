@@ -6044,6 +6044,34 @@ Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Word assertions around one complete Unicode literal/dot/escape atom now have
+three core and eight runtime tests. Ten manual predicate/assertion plans agree
+with an independent decoder/context oracle for every raw string of up to three
+units from an eleven-unit alphabet, every start/sticky/m/i/dotAll combination.
+All 6400 core and 1600 runtime snapshot rows agree with an independent pinned
+Unicode oracle and Node. Node verifies thirty-four complete Boolean programs and
+two exact formerly unsupported whole programs, retained as positive snapshots.
+
+Coverage includes independently folded neighbors of dot/digit/space, complement
+word escapes, backslash parity, literal dollars, supplementary literals,
+isolated surrogates, approved pair starts, line context, original named and
+__proto__ captures/indices, all consumers, clones in both i directions,
+coercions/strict writes, collection, 10000 leading escape zeroes, 3000 captures,
+200003 input units, unlimited defaults and opted-in host failures. Pinned Unicode
+18 cross-plane literal folding retains original one/two-unit widths.
+
+All 552 core tests and 169 related runtime targets pass. All 431 previous golds
+remain byte-identical, with three new reviewed snapshots. All 1034 gap programs,
+eight ordered and ten direct-eval probes retain Unsupported and state; the two
+retargeted controls keep their exact former whole positive programs. Whole
+17/115-source and unchanged dotAll/class/simple-fold reviews have no failures
+or host limits. Corpus, dependencies and the Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
