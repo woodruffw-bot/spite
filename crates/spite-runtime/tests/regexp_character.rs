@@ -104,7 +104,7 @@ fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps()
         r"/(?:(?:([a]b|c)*)|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:[a]*[b]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:[a]+[b]+|b){2}){2}){2})|){2,3}/.test('a')",
-        "/[\\u{1f600}]/u.test('a')",
+        "/([\\u{1f600}])/u.test('a')",
         "/(.)/v.test('a')",
         r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
     ] {

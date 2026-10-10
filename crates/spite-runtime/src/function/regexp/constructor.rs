@@ -9,8 +9,8 @@ use spite_core::{
     RegExpCharacterMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
-    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher, Span,
-    regexp_outer_group_body,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
+    RegExpUnicodeClassMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -421,9 +421,9 @@ impl Realm {
                 }
             }
         };
-        // A proved u/v atom can reuse ordinary membership and matching only
-        // when every member is a nonsurrogate BMP character (22.2.2.7.1).
-        // UnicodeSets operators and ignore-case folding remain separate.
+        // Case-sensitive u/v atoms require complete-character matching.
+        // Unicode dot/escape and flat-class plans precede the legacy BMP proof
+        // (22.2.2.7.1, 22.2.2.9). Set operators and folding remain separate.
         let matcher = if matcher.is_none()
             && unicode
             && !flags.code_units().contains(&u16::from(b'i'))
@@ -437,6 +437,13 @@ impl Realm {
                     |work| budget.charge(work),
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
+                }
+                if let Some(body) = RegExpUnicodeClassMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
                 }
                 let body = if flags.code_units().contains(&u16::from(b'v')) {
                     RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(

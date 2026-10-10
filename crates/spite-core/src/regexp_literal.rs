@@ -353,7 +353,7 @@ pub(crate) fn unicode_start(input: &JsString, start: usize) -> Option<usize> {
 // Decode one Pattern atom before flattening groups. RegExpUnicodeEscapeSequence
 // joins only directly adjacent fixed lead/trail escapes, not braced surrogates
 // or escapes separated by a group. Raw source pairs form one SourceCharacter.
-fn unicode_literal_atom(source: &[u16], index: &mut usize, unit: u16) -> Option<u32> {
+pub(crate) fn unicode_literal_atom(source: &[u16], index: &mut usize, unit: u16) -> Option<u32> {
     let value = if unit == 0x5c {
         if source.get(*index..*index + 2) == Some(&[0x75, 0x7b]) {
             *index += 2;

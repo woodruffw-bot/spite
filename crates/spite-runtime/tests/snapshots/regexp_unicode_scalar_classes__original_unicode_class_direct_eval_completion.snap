@@ -1,0 +1,5 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_scalar_classes.rs
+expression: "format!(\"{:?} result={result:?} marker={marker:?}\",\nJsString::from(operation.as_str()))"
+---
+"try{eval(\u0022marker=1; /[\u005c\u005cu{1f600}]/v.test('a');\u0022);}catch{marker=2;}finally{marker=3;}" result=Boolean(false) marker=Number(3.0)

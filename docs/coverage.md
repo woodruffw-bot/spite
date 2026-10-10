@@ -5541,6 +5541,43 @@ Stable and MSRV pass all 14,458 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Case-sensitive flat Unicode classes now execute unions, ranges, inversion and
+all d/D/s/S/w/W escapes in u/v modes, preserving complete-character matching and
+UTF-16 result indices across supplementary values and lone surrogates. Contextual
+raw v operators/nested operands and property/string escapes retain Unsupported;
+escaped punctuation remains data. Groups, anchored classes, concatenations,
+quantifiers and Unicode folding remain independent proofs.
+
+Five new core tests compare every one of the 1114112 code points against 34
+independent class definitions (37879808 membership comparisons), and compare
+searches over every string of up to four units from an eight-unit alphabet using
+independent UTF-16 decoding. They cover pairing distinctions, full-domain ranges,
+empty/inverted sets, whitespace/word definitions, escaped delimiters/operators,
+large repeated escapes, clones and every opted-in construction failure point.
+All 507 core tests and 153 related runtime targets pass. The initial runtime
+sweep exposed one newly supported direct-eval control; after retargeting that
+control and preserving its original program, both affected targets pass in full.
+
+Eight new runtime tests cover consumer advancement, indices, original metadata,
+coercions and strict writes, collection, large sources, unlimited defaults and
+opted-in host failures. Node agrees with 1632 core rows across u/v, 2160 runtime
+rows, 29 complete Boolean programs and fifteen exact former Unsupported programs
+retained as positive golds. Twenty-one simple controls and one direct-eval control now exercise unproved
+groups; the exact original eval program retains its normal false completion and
+finally effect as a positive regression.
+All 384 previous snapshots remain byte-identical, with four new reviewed golds.
+All 927 runtime gap programs, eight ordered probes and ten direct-eval probes
+retain Unsupported and state. Whole 17-source and 115-source reviews, and all four
+whole Unicode dotAll variants, retain zero failures and host limits.
+The implementation includes no new upstream original; the corpus remains 7509
+fixtures, 7490 Script sources and 14458 variants at the existing pin with eleven
+helpers and the approved dependency allowances.
+
+Stable and MSRV pass all 14,458 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

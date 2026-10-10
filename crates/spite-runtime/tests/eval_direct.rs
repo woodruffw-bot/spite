@@ -88,7 +88,7 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
         ));
     }
     for pattern in [
-        r"[\u{1f600}]",
+        r"([\u{1f600}])",
         r"[\q{a|b}]",
         r"[^\q{a|b}]",
         "[a&&b]",

@@ -110,19 +110,7 @@ impl RegExpUnicodeCharacterMatcher {
         let units = input.code_units();
         let mut cursor = unicode_start(input, start)?;
         while let Some(&first) = units.get(cursor) {
-            let (value, width) = if (0xd800..=0xdbff).contains(&first)
-                && units
-                    .get(cursor + 1)
-                    .is_some_and(|unit| (0xdc00..=0xdfff).contains(unit))
-            {
-                (
-                    0x10000 + ((u32::from(first) - 0xd800) << 10) + u32::from(units[cursor + 1])
-                        - 0xdc00,
-                    2,
-                )
-            } else {
-                (u32::from(first), 1)
-            };
+            let (value, width) = unicode_input_character(units, cursor, first);
             let end = cursor + width;
             let start_ok = !self.start_anchor
                 || cursor == 0
@@ -158,6 +146,22 @@ impl RegExpUnicodeCharacterMatcher {
                 included != (kind < 0x60)
             }
         }
+    }
+}
+
+// Caller supplies the in-bounds first unit at a complete-character boundary.
+pub(crate) fn unicode_input_character(units: &[u16], cursor: usize, first: u16) -> (u32, usize) {
+    if (0xd800..=0xdbff).contains(&first)
+        && units
+            .get(cursor + 1)
+            .is_some_and(|unit| (0xdc00..=0xdfff).contains(unit))
+    {
+        (
+            0x10000 + ((u32::from(first) - 0xd800) << 10) + u32::from(units[cursor + 1]) - 0xdc00,
+            2,
+        )
+    } else {
+        (u32::from(first), 1)
     }
 }
 

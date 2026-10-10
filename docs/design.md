@@ -2646,6 +2646,30 @@ Groups, literal/class compositions, quantifiers, alternatives, empty anchored
 bodies and Unicode ignore-case matching remain separate proofs. Quotas stay
 opt-in, with no new dependency or input-sized matching allocation.
 
+
+Case-sensitive flat u/v classes now compile to immutable, disjoint Unicode
+intervals (22.2.2.7.1, 22.2.2.9). Unions, ranges, outer inversion and d/D/s/S/w/W
+escapes cover all code points, including supplementary values and lone surrogates.
+The existing literal atom decoder preserves raw/fixed surrogate pairing, while
+braced surrogates remain distinct class elements. Backspace and reserved escaped
+punctuation remain character data; decoded hyphens/brackets never create grammar.
+Raw v intersection/subtraction and nested class operands remain separate proofs,
+as do property/string escapes, groups, anchors, quantifiers and Unicode folding.
+
+Repeated class escapes set one of six bits and emit each fixed predicate once,
+so repeated escapes never expand into repeated universe-sized loops. Three stable
+byte passes sort 21-bit starts with exact linear work bounds, followed by a linear
+overlap/adjacency merge. Temporary storage scales with source size; ranges never
+expand into individual characters. Immutable intervals are shared across clones.
+
+Input matching shares the complete-character decoder and approved initial-pair
+rule with Unicode dot/escape plans, with no input-sized allocation. Membership
+uses binary interval lookup. Opt-in construction precharges source, fixed-set
+expansion, sorting, merging and final storage; search covers decoding and lookup
+passes, including up to two sticky units and one possible rewind. Existing BMP
+core APIs and ordinary matching retain their contracts. Quotas remain opt-in,
+with no dependency or native recursion added by the compiler/matcher.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
