@@ -2695,6 +2695,32 @@ Word search work additionally bounds pinned-table binary lookup. Unicode classes
 literal folding, groups, concatenations and quantifiers retain their independent
 proof boundaries. The runtime guards class/BMP plans before any i fallback.
 
+
+Flat u/v classes also admit i (22.2.2.7.3, 22.2.2.9). Original intervals are
+normalized first. A bounded scan of the pinned simple/common table adds targets
+only when the corresponding source belongs to the original set, followed by a
+second normalization. Mapped source values can remain in the interval union:
+idempotent canonical input never reaches them. Ranges never expand into members.
+Input canonicalization precedes membership and outer inversion, while consuming
+and returning the original complete input character and its UTF-16 width.
+
+Word complements exclude the pinned non-ASCII ASCII-word aliases before folding,
+preventing long s or Kelvin sign from adding ASCII word targets to the complement.
+Exhaustive tests verify these additions against the pinned table. Construction
+work covers each fixed-table lookup, possible target append, interval extension
+including an allocation move, second normalization and final immutable storage.
+Search work additionally bounds input folding. Bare/assertion core APIs retain
+case-sensitive contracts; flag-aware APIs admit i. Property/string escapes,
+operators, nested v sets, groups, concatenations and quantifiers remain separate.
+
+Unicode 18 includes U+1DF95 -> U+00DF in simple folding. The former consumes two
+UTF-16 units and the latter one; folding never substitutes either width for the
+original input width. The installed Node v24.19.0 uses Unicode 17 and differs on
+eight of twenty-four dedicated cross-plane cases. Those cases are independently
+checked against the digest-pinned Unicode 18 CaseFolding.txt; shared-version
+cases agree with Node. This data-version difference does not change the approved
+Node/V8 initial-pair boundary rule or the existing Unicode 18 baseline.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

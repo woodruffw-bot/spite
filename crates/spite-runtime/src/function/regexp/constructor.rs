@@ -423,7 +423,7 @@ impl Realm {
         };
         // Unicode u/v atoms require complete-character matching.
         // Unicode dot/escape and flat-class plans precede the legacy BMP proof
-        // (22.2.2.7.1, 22.2.2.9). Class folding and set operators remain separate.
+        // (22.2.2.7.1, 22.2.2.9). Set operators and string/property escapes remain separate.
         let matcher = if matcher.is_none() && unicode {
             self.object_work(span, |_, budget| {
                 budget.charge(capture_source.len())?;
@@ -436,17 +436,18 @@ impl Realm {
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeCharacter(body)));
                 }
-                // Unicode classes require an independent folding proof.
-                if flags.code_units().contains(&u16::from(b'i')) {
-                    return Ok(None);
-                }
-                if let Some(body) = RegExpUnicodeClassMatcher::compile_with_assertions_and_work(
+                if let Some(body) = RegExpUnicodeClassMatcher::compile_with_flags_and_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'v')),
+                    flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
+                }
+                // Legacy BMP APIs retain their case-sensitive Unicode contract.
+                if flags.code_units().contains(&u16::from(b'i')) {
+                    return Ok(None);
                 }
                 let body = if flags.code_units().contains(&u16::from(b'v')) {
                     RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(

@@ -1,0 +1,10 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_class_folding.rs
+expression: rows
+---
+"/[a]/iu.exec('a')" "[\u0022a\u0022]"
+"/[\u005cu{61}]/iv.exec('a')" "[\u0022a\u0022]"
+"/[^a]/iv.exec('b')" "[\u0022b\u0022]"
+"/^[a]$/iu.exec('a')" "[\u0022a\u0022]"
+"/[\u005cW]/iv.exec('a')" "null"
+"/[a]/iv.exec('a')" "[\u0022a\u0022]"

@@ -139,7 +139,7 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
         r"/([\u{10000}])/u.exec('a')",
         r"/([\u{D800}])/v.exec('\uD800')",
         r"/([\u{D7FF}-\u{E000}])/u.exec('a')",
-        r"/[\u{61}]/iv.exec('a')",
+        r"/([\u{61}])/iv.exec('a')",
         r"/([^\u{61}])/u.exec('b')",
         r"/[\u{61}&&\u{62}]/v.exec('a')",
         r"/[[\u{61}]]/v.exec('a')",

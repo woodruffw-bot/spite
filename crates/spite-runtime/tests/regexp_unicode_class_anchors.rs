@@ -145,7 +145,7 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^[a]$/iu.exec('a')",
+        r"/(^[a]$)/iu.exec('a')",
         r"/^([a])$/u.exec('a')",
         r"/^[a]+$/u.exec('a')",
         r"/^[a]b$/v.exec('ab')",

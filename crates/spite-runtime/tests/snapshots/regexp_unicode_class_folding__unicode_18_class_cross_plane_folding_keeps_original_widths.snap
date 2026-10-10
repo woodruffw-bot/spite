@@ -1,0 +1,28 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_class_folding.rs
+expression: rows
+---
+"[\u00df]" mode="u" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+"[\u00df]" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[\u00df]" mode="u" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[\u00df]" mode="u" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[\u005cu{1df95}]" mode="u" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+"[\u005cu{1df95}]" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[\u005cu{1df95}]" mode="u" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[\u005cu{1df95}]" mode="u" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\u00df" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\ud837\udf95" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\ud837\udf95" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[\u00df]" mode="v" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+"[\u00df]" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[\u00df]" mode="v" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[\u00df]" mode="v" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[\u005cu{1df95}]" mode="v" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+"[\u005cu{1df95}]" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[\u005cu{1df95}]" mode="v" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[\u005cu{1df95}]" mode="v" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\u00df" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\ud837\udf95" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\ud837\udf95" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"

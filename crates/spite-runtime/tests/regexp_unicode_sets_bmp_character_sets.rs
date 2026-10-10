@@ -134,7 +134,7 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         r"/[a&&a]/v.exec('a')",
         r"/[a--b]/v.exec('a')",
         r"/[[a]]/v.exec('a')",
-        r"/[a]/iv.exec('a')",
+        r"/([a])/iv.exec('a')",
         r"/([^a])/v.exec('b')",
         r"/(\D)/v.exec('a')",
         r"/([\uD800])/v.exec('\uD800')",

@@ -1,14 +1,17 @@
-//! Case-sensitive flat Unicode character-set classes (22.2.2.9).
+//! Flat Unicode character-set classes (22.2.2.9).
 use crate::{
     JsString,
+    case_data::SIMPLE_CASE_FOLD,
+    regexp_canonicalize_character,
     regexp_literal::{unicode_literal_atom, unicode_start},
     regexp_unicode_character::{unicode_assertions_match, unicode_input_character},
 };
 use std::{ops::Range, sync::Arc};
 
-/// Immutable intervals for one case-sensitive flat u/v character set.
+/// Immutable intervals for one flat u/v character set.
 ///
-/// The caller must validate the complete Pattern in its u/v mode without i.
+/// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
+/// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
 /// surrogates. Property/string escapes, nested v sets and set operators
 /// remain separate proofs. Matching always consumes complete input characters.
@@ -19,6 +22,7 @@ pub struct RegExpUnicodeClassMatcher {
     start_anchor: bool,
     end_anchor: bool,
     multiline: bool,
+    ignore_case: bool,
 }
 
 impl RegExpUnicodeClassMatcher {
@@ -44,7 +48,7 @@ impl RegExpUnicodeClassMatcher {
             return Ok(None);
         }
         charge(units.len())?;
-        Self::compile_units_with_work(units, unicode_sets, false, false, false, charge)
+        Self::compile_units_with_work(units, unicode_sets, false, false, false, false, charge)
     }
 
     /// Compiles a flat class with an optional leading ^ and/or trailing $.
@@ -67,6 +71,33 @@ impl RegExpUnicodeClassMatcher {
         source: &JsString,
         unicode_sets: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_with_flags_and_work(source, unicode_sets, false, multiline, charge)
+    }
+
+    /// Compiles a validated flat Unicode class with i and optional assertions.
+    ///
+    /// Uses pinned simple/common folding while consuming original complete input
+    /// characters. Outer inversion is applied after folded membership.
+    pub fn compile_with_flags(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+    ) -> Option<Self> {
+        Self::compile_with_flags_and_work(source, unicode_sets, ignore_case, multiline, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same flag-aware subset with fallible opt-in work accounting.
+    pub fn compile_with_flags_and_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let units = source.code_units();
@@ -87,6 +118,7 @@ impl RegExpUnicodeClassMatcher {
             start_anchor,
             end_anchor,
             multiline,
+            ignore_case,
             charge,
         )
     }
@@ -97,6 +129,7 @@ impl RegExpUnicodeClassMatcher {
         start_anchor: bool,
         end_anchor: bool,
         multiline: bool,
+        ignore_case: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let inverted = units.get(1) == Some(&0x5e);
@@ -140,52 +173,33 @@ impl RegExpUnicodeClassMatcher {
             if escapes & (1 << kind) != 0 {
                 // At most ten fixed-range visits and eleven appends.
                 charge(24)?;
-                append_escape(&mut ranges, kind);
+                append_escape(&mut ranges, kind, ignore_case);
             }
         }
         if index != units.len() - 1 {
             return Ok(None);
         }
-        if ranges.len() > 1 {
-            // Stable byte passes sort 21-bit Unicode values by start with
-            // explicit linear work bounds and source-sized temporary storage.
-            charge(ranges.len())?;
-            let mut buffer = vec![(0, 0); ranges.len()];
-            for shift in [0, 8, 16] {
-                charge(256)?;
-                let mut positions = [0usize; 256];
-                charge(ranges.len())?;
-                for &(first, _) in &ranges {
-                    positions[((first >> shift) & 255) as usize] += 1;
+        ranges = normalize_ranges_with_work(ranges, &mut charge)?;
+        if ignore_case {
+            // Keep original intervals: canonical input cannot reach mapped
+            // source values. Add only targets of members of the original set.
+            // Lookup is over the normalized original intervals, not new targets.
+            charge(
+                SIMPLE_CASE_FOLD
+                    .len()
+                    .saturating_mul(3 + lookup_levels(ranges.len())),
+            )?;
+            let mut targets = Vec::new();
+            for &(source, target) in SIMPLE_CASE_FOLD {
+                if interval_contains(&ranges, source) {
+                    targets.push((target, target));
                 }
-                charge(256)?;
-                let mut offset = 0;
-                for position in &mut positions {
-                    let count = *position;
-                    *position = offset;
-                    offset += count;
-                }
-                charge(ranges.len())?;
-                for &range in &ranges {
-                    let bucket = ((range.0 >> shift) & 255) as usize;
-                    buffer[positions[bucket]] = range;
-                    positions[bucket] += 1;
-                }
-                std::mem::swap(&mut ranges, &mut buffer);
             }
+            // Extension can move the original intervals if capacity grows.
+            charge(ranges.len().saturating_add(targets.len()))?;
+            ranges.extend(targets);
+            ranges = normalize_ranges_with_work(ranges, &mut charge)?;
         }
-        charge(ranges.len())?;
-        let mut write = 0;
-        for read in 0..ranges.len() {
-            let range = ranges[read];
-            if write > 0 && range.0 <= ranges[write - 1].1 + 1 {
-                ranges[write - 1].1 = ranges[write - 1].1.max(range.1);
-            } else {
-                ranges[write] = range;
-                write += 1;
-            }
-        }
-        ranges.truncate(write);
         charge(ranges.len())?;
         Ok(Some(Self {
             ranges: ranges.into(),
@@ -193,6 +207,7 @@ impl RegExpUnicodeClassMatcher {
             start_anchor,
             end_anchor,
             multiline,
+            ignore_case,
         }))
     }
 
@@ -201,6 +216,11 @@ impl RegExpUnicodeClassMatcher {
         2 + lookup_levels(self.ranges.len())
             + usize::from(self.start_anchor)
             + usize::from(self.end_anchor)
+            + if self.ignore_case {
+                2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize
+            } else {
+                0
+            }
     }
 
     /// Finds a complete character, normalizing an initial offset inside a pair.
@@ -230,10 +250,65 @@ impl RegExpUnicodeClassMatcher {
     }
 
     fn matches(&self, value: u32) -> bool {
-        let next = self.ranges.partition_point(|&(first, _)| first <= value);
-        let contains = next > 0 && value <= self.ranges[next - 1].1;
-        contains != self.inverted
+        let value = if self.ignore_case {
+            regexp_canonicalize_character(value, true, true)
+        } else {
+            value
+        };
+        interval_contains(&self.ranges, value) != self.inverted
     }
+}
+
+fn interval_contains(ranges: &[(u32, u32)], value: u32) -> bool {
+    let next = ranges.partition_point(|&(first, _)| first <= value);
+    next > 0 && value <= ranges[next - 1].1
+}
+
+fn normalize_ranges_with_work<E>(
+    mut ranges: Vec<(u32, u32)>,
+    charge: &mut impl FnMut(usize) -> Result<(), E>,
+) -> Result<Vec<(u32, u32)>, E> {
+    if ranges.len() > 1 {
+        // Stable byte passes sort 21-bit Unicode values by start with
+        // explicit linear work bounds and source-sized temporary storage.
+        charge(ranges.len())?;
+        let mut buffer = vec![(0, 0); ranges.len()];
+        for shift in [0, 8, 16] {
+            charge(256)?;
+            let mut positions = [0usize; 256];
+            charge(ranges.len())?;
+            for &(first, _) in &ranges {
+                positions[((first >> shift) & 255) as usize] += 1;
+            }
+            charge(256)?;
+            let mut offset = 0;
+            for position in &mut positions {
+                let count = *position;
+                *position = offset;
+                offset += count;
+            }
+            charge(ranges.len())?;
+            for &range in &ranges {
+                let bucket = ((range.0 >> shift) & 255) as usize;
+                buffer[positions[bucket]] = range;
+                positions[bucket] += 1;
+            }
+            std::mem::swap(&mut ranges, &mut buffer);
+        }
+    }
+    charge(ranges.len())?;
+    let mut write = 0;
+    for read in 0..ranges.len() {
+        let range = ranges[read];
+        if write > 0 && range.0 <= ranges[write - 1].1 + 1 {
+            ranges[write - 1].1 = ranges[write - 1].1.max(range.1);
+        } else {
+            ranges[write] = range;
+            write += 1;
+        }
+    }
+    ranges.truncate(write);
+    Ok(ranges)
 }
 
 fn lookup_levels(length: usize) -> usize {
@@ -273,9 +348,19 @@ fn class_atom(source: &[u16], index: &mut usize, unicode_sets: bool) -> Option<C
     Some(ClassAtom::Point(point))
 }
 
-fn append_escape(ranges: &mut Vec<(u32, u32)>, kind: u8) {
+fn append_escape(ranges: &mut Vec<(u32, u32)>, kind: u8, ignore_case: bool) {
     let positive: &[(u32, u32)] = match kind / 2 {
         0 => &[(0x30, 0x39)],
+        // WordCharacters includes the pinned non-ASCII ASCII-word aliases
+        // before complement. Exhaustive tests verify these two additions.
+        1 if ignore_case => &[
+            (0x30, 0x39),
+            (0x41, 0x5a),
+            (0x5f, 0x5f),
+            (0x61, 0x7a),
+            (0x17f, 0x17f),
+            (0x212a, 0x212a),
+        ],
         1 => &[(0x30, 0x39), (0x41, 0x5a), (0x5f, 0x5f), (0x61, 0x7a)],
         2 => &[
             (9, 13),
@@ -717,6 +802,202 @@ mod tests {
             let mut calls = 0;
             let result = RegExpUnicodeClassMatcher::compile_with_assertions_and_work(
                 &source,
+                true,
+                true,
+                |_| {
+                    let index = calls;
+                    calls += 1;
+                    if index == failure { Err(17) } else { Ok(()) }
+                },
+            );
+            assert!(matches!(result, Err(17)));
+            assert_eq!(calls, failure + 1);
+        }
+    }
+    #[test]
+    fn unicode_class_folding_ranges_snapshot() {
+        let input = JsString::from_code_units(vec![
+            0xd83d, 0xde00, 0x17f, 0x212a, 0x41, 0x61, 0x1fd3, 0x390, 0xd800, 0xa, 0xdc00, 0xfeff,
+        ]);
+        let mut rows = String::new();
+        for (body, _) in CASES {
+            for (left, right) in [("", ""), ("^", "$")] {
+                let source = JsString::from(format!("{left}{body}{right}").as_str());
+                for sets in [false, true] {
+                    for multiline in [false, true] {
+                        let matcher = RegExpUnicodeClassMatcher::compile_with_flags(
+                            &source, sets, true, multiline,
+                        )
+                        .unwrap();
+                        for start in 0..=input.len() + 1 {
+                            for sticky in [false, true] {
+                                writeln!(rows,"{source:?} sets={sets} multiline={multiline} start={start} sticky={sticky} {:?}",matcher.find(&input,start,sticky)).unwrap();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    fn folding_reference_member(case: u8, value: u32) -> bool {
+        let word = matches!(value,0x30..=0x39|0x41..=0x5a|0x5f|0x61..=0x7a|0x17f|0x212a);
+        match case {
+            10 => word,
+            11 => !word,
+            22 => word || value == 0x1f600,
+            _ => reference(case, value),
+        }
+    }
+
+    #[test]
+    fn every_unicode_class_fold_agrees_with_independent_set_preimages() {
+        use std::collections::HashMap;
+        let folds: HashMap<u32, u32> = SIMPLE_CASE_FOLD.iter().copied().collect();
+        let mut preimages: HashMap<u32, Vec<u32>> = HashMap::new();
+        for &(source, target) in SIMPLE_CASE_FOLD {
+            preimages.entry(target).or_default().push(source);
+        }
+        let plans = CASES.map(|(source, case)| {
+            (
+                case,
+                source.starts_with("[^"),
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false,
+                )
+                .unwrap(),
+            )
+        });
+        for value in 0..=0x10ffff {
+            let canonical = folds.get(&value).copied().unwrap_or(value);
+            for (case, inverted, matcher) in &plans {
+                let member = |point| folding_reference_member(*case, point) != *inverted;
+                let included = member(canonical)
+                    || preimages
+                        .get(&canonical)
+                        .is_some_and(|points| points.iter().copied().any(member));
+                assert_eq!(
+                    matcher.matches(value),
+                    included != *inverted,
+                    "case={case} value={value:x}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_class_word_complements_and_cross_plane_widths() {
+        for source in [r"[\w]", r"[^\W]"] {
+            let matcher = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(source),
+                true,
+                true,
+                false,
+            )
+            .unwrap();
+            for point in [0x41, 0x61, 0x17f, 0x212a] {
+                assert!(matcher.matches(point));
+            }
+            for point in [0xdf, 0x1df95, 0x1f600, 0xd800] {
+                assert!(!matcher.matches(point));
+            }
+        }
+        for source in [r"[\W]", r"[^\w]"] {
+            let matcher = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(source),
+                true,
+                true,
+                false,
+            )
+            .unwrap();
+            for point in [0x41, 0x61, 0x17f, 0x212a] {
+                assert!(!matcher.matches(point));
+            }
+            for point in [0xdf, 0x1df95, 0x1f600, 0xd800] {
+                assert!(matcher.matches(point));
+            }
+        }
+        // Unicode 18 has a supplementary simple-fold source with a BMP target.
+        assert!(SIMPLE_CASE_FOLD.contains(&(0x1df95, 0xdf)));
+        let mut buffer = [0; 2];
+        let wide = JsString::from_code_units(
+            char::from_u32(0x1df95)
+                .unwrap()
+                .encode_utf16(&mut buffer)
+                .to_vec(),
+        );
+        for sets in [false, true] {
+            let matcher = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from("[ß]"),
+                sets,
+                true,
+                false,
+            )
+            .unwrap();
+            assert_eq!(matcher.find(&wide, 0, true), Some(0..2));
+            assert_eq!(matcher.find(&wide, 1, true), Some(0..2));
+            let matcher = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\u{1df95}]"),
+                sets,
+                true,
+                false,
+            )
+            .unwrap();
+            assert_eq!(matcher.find(&JsString::from("ß"), 0, true), Some(0..1));
+            let inverted = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\u{10000}-\u{10ffff}]"),
+                sets,
+                true,
+                false,
+            )
+            .unwrap();
+            assert_eq!(inverted.find(&JsString::from("ß"), 0, true), None);
+        }
+    }
+
+    #[test]
+    fn unicode_class_folding_contracts_large_masks_and_fallible_work() {
+        for source in [
+            r"[a&&b]",
+            r"[[a]]",
+            r"[\p{ASCII}]",
+            r"[\q{a|b}]",
+            r"([a])",
+            r"[a]+",
+            r"[a]b",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true
+                )
+                .is_none(),
+                "{source}"
+            );
+        }
+        let source = JsString::from(format!("[{}A]", r"\w".repeat(100000)).as_str());
+        let matcher =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(matcher.find(&JsString::from("K"), 0, true), Some(0..1));
+        let source = JsString::from(r"^[\W\u{1000}-\u{ffff}A😀]$");
+        let mut charges = Vec::new();
+        RegExpUnicodeClassMatcher::compile_with_flags_and_work(&source, true, true, true, |work| {
+            charges.push(work);
+            Ok::<(), usize>(())
+        })
+        .unwrap()
+        .unwrap();
+        for failure in 0..charges.len() {
+            let mut calls = 0;
+            let result = RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                &source,
+                true,
                 true,
                 true,
                 |_| {
