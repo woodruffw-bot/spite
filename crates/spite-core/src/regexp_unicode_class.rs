@@ -2,7 +2,7 @@
 use crate::{
     JsString,
     regexp_literal::{unicode_literal_atom, unicode_start},
-    regexp_unicode_character::unicode_input_character,
+    regexp_unicode_character::{unicode_assertions_match, unicode_input_character},
 };
 use std::{ops::Range, sync::Arc};
 
@@ -16,6 +16,9 @@ use std::{ops::Range, sync::Arc};
 pub struct RegExpUnicodeClassMatcher {
     ranges: Arc<[(u32, u32)]>,
     inverted: bool,
+    start_anchor: bool,
+    end_anchor: bool,
+    multiline: bool,
 }
 
 impl RegExpUnicodeClassMatcher {
@@ -41,6 +44,61 @@ impl RegExpUnicodeClassMatcher {
             return Ok(None);
         }
         charge(units.len())?;
+        Self::compile_units_with_work(units, unicode_sets, false, false, false, charge)
+    }
+
+    /// Compiles a flat class with an optional leading ^ and/or trailing $.
+    ///
+    /// Requires full case-sensitive u/v validation. Non-multiline $ succeeds
+    /// only at the actual input end; m uses all four line terminators.
+    pub fn compile_with_assertions(
+        source: &JsString,
+        unicode_sets: bool,
+        multiline: bool,
+    ) -> Option<Self> {
+        Self::compile_with_assertions_and_work(source, unicode_sets, multiline, |_| {
+            Ok::<(), std::convert::Infallible>(())
+        })
+        .unwrap_or_else(|never| match never {})
+    }
+
+    /// Compiles the same anchored subset with fallible opt-in construction work.
+    pub fn compile_with_assertions_and_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let units = source.code_units();
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let Some(body) =
+            units.get(usize::from(start_anchor)..units.len() - usize::from(end_anchor))
+        else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        charge(units.len())?;
+        Self::compile_units_with_work(
+            body,
+            unicode_sets,
+            start_anchor,
+            end_anchor,
+            multiline,
+            charge,
+        )
+    }
+
+    fn compile_units_with_work<E>(
+        units: &[u16],
+        unicode_sets: bool,
+        start_anchor: bool,
+        end_anchor: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
         let inverted = units.get(1) == Some(&0x5e);
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
@@ -132,12 +190,17 @@ impl RegExpUnicodeClassMatcher {
         Ok(Some(Self {
             ranges: ranges.into(),
             inverted,
+            start_anchor,
+            end_anchor,
+            multiline,
         }))
     }
 
     /// Bounds the input scan and binary membership lookup for opt-in search work.
     pub fn search_passes(&self) -> usize {
         2 + lookup_levels(self.ranges.len())
+            + usize::from(self.start_anchor)
+            + usize::from(self.end_anchor)
     }
 
     /// Finds a complete character, normalizing an initial offset inside a pair.
@@ -146,8 +209,17 @@ impl RegExpUnicodeClassMatcher {
         let units = input.code_units();
         while let Some(&first) = units.get(cursor) {
             let (value, width) = unicode_input_character(units, cursor, first);
-            if self.matches(value) {
-                return Some(cursor..cursor + width);
+            let end = cursor + width;
+            if unicode_assertions_match(
+                units,
+                cursor,
+                end,
+                self.start_anchor,
+                self.end_anchor,
+                self.multiline,
+            ) && self.matches(value)
+            {
+                return Some(cursor..end);
             }
             if sticky {
                 return None;
@@ -473,6 +545,186 @@ mod tests {
                 calls += 1;
                 if index == failure { Err(17) } else { Ok(()) }
             });
+            assert!(matches!(result, Err(17)));
+            assert_eq!(calls, failure + 1);
+        }
+    }
+    #[test]
+    fn unicode_class_assertion_ranges_snapshot() {
+        let input = JsString::from_code_units(vec![
+            0xd83d, 0xde00, 0xa, 0x61, 0xd, 0xa, 0xd800, 0x2028, 0xdc00, 0x2029, 0x24,
+        ]);
+        let mut rows = String::new();
+        for body in [
+            "[😀]",
+            "[^]",
+            r"[\D]",
+            r"[\uD800-\uDFFF]",
+            r"[\r\n\u2028\u2029]",
+            r"[\$\^]",
+        ] {
+            for (left, right) in [("", ""), ("^", ""), ("", "$"), ("^", "$")] {
+                let source = JsString::from(format!("{left}{body}{right}").as_str());
+                for sets in [false, true] {
+                    for multiline in [false, true] {
+                        let matcher = RegExpUnicodeClassMatcher::compile_with_assertions(
+                            &source, sets, multiline,
+                        )
+                        .unwrap();
+                        for start in 0..=input.len() + 1 {
+                            for sticky in [false, true] {
+                                writeln!(rows, "{source:?} sets={sets} multiline={multiline} start={start} sticky={sticky} {:?}", matcher.find(&input, start, sticky)).unwrap();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_class_assertions_agree_with_independent_character_contexts() {
+        let alphabet = [0x61, 0x62, 0xa, 0xd, 0x2028, 0x2029, 0xd800, 0xdc00, 0x24];
+        let bodies = [
+            ("[a-b]", 2),
+            ("[^]", 1),
+            (r"[\uD800-\uDFFF]", 4),
+            (r"[\s]", 12),
+        ];
+        let mut plans = Vec::new();
+        for (body, case) in bodies {
+            for (left, right) in [("", ""), ("^", ""), ("", "$"), ("^", "$")] {
+                for multiline in [false, true] {
+                    let source = JsString::from(format!("{left}{body}{right}").as_str());
+                    plans.push((
+                        case,
+                        !left.is_empty(),
+                        !right.is_empty(),
+                        multiline,
+                        RegExpUnicodeClassMatcher::compile_with_assertions(
+                            &source, true, multiline,
+                        )
+                        .unwrap(),
+                    ));
+                }
+            }
+        }
+        for length in 0..=4 {
+            for mut ordinal in 0..alphabet.len().pow(length) {
+                let units: Vec<_> = (0..length)
+                    .map(|_| {
+                        let unit = alphabet[ordinal % alphabet.len()];
+                        ordinal /= alphabet.len();
+                        unit
+                    })
+                    .collect();
+                let mut cursor = 0;
+                let decoded: Vec<_> = char::decode_utf16(units.iter().copied())
+                    .map(|decoded| {
+                        let (value, width) = match decoded {
+                            Ok(c) => (u32::from(c), c.len_utf16()),
+                            Err(e) => (u32::from(e.unpaired_surrogate()), 1),
+                        };
+                        let range = cursor..cursor + width;
+                        cursor += width;
+                        (value, range)
+                    })
+                    .collect();
+                let input = JsString::from_code_units(units);
+                for start in 0..=input.len() + 1 {
+                    for sticky in [false, true] {
+                        for (case, left, right, multiline, matcher) in &plans {
+                            let first = decoded.iter().position(|(_, range)| range.end > start);
+                            let expected = first.and_then(|first| {
+                                decoded
+                                    .iter()
+                                    .enumerate()
+                                    .skip(first)
+                                    .take(if sticky { 1 } else { decoded.len() })
+                                    .find(|(i, (value, range))| {
+                                        let line =
+                                            |value| matches!(value, 0xa | 0xd | 0x2028 | 0x2029);
+                                        let left_ok = !left
+                                            || *i == 0
+                                            || (*multiline && line(decoded[i - 1].0));
+                                        let right_ok = !right
+                                            || range.end == input.len()
+                                            || (*multiline && line(decoded[i + 1].0));
+                                        left_ok && right_ok && reference(*case, *value)
+                                    })
+                                    .map(|(_, (_, range))| range.clone())
+                            });
+                            assert_eq!(
+                                matcher.find(&input, start, sticky),
+                                expected,
+                                "case={case} left={left} right={right} multiline={multiline} input={input:?} start={start} sticky={sticky}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_class_assertion_contracts_and_fallible_work() {
+        for source in ["^[a]", "[a]$", "^[a]$"] {
+            assert!(RegExpUnicodeClassMatcher::compile(&JsString::from(source), true).is_none());
+            let plan = RegExpUnicodeClassMatcher::compile_with_assertions(
+                &JsString::from(source),
+                true,
+                true,
+            )
+            .unwrap();
+            assert_eq!(
+                plan.search_passes(),
+                3 + usize::from(source.starts_with('^')) + usize::from(source.ends_with('$'))
+            );
+        }
+        for source in [
+            "^",
+            "$",
+            "^$",
+            "^^[a]",
+            "[a]$$",
+            "^([a])$",
+            "^[a]+$",
+            "^[a]b$",
+            "^[a&&b]$",
+            r"^[\p{ASCII}]$",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_assertions(
+                    &JsString::from(source),
+                    true,
+                    true
+                )
+                .is_none(),
+                "{source}"
+            );
+        }
+        let source = JsString::from(r"^[\W\u{1000}-\u{ffff}a😀]$");
+        let mut charges = Vec::new();
+        RegExpUnicodeClassMatcher::compile_with_assertions_and_work(&source, true, true, |work| {
+            charges.push(work);
+            Ok::<(), usize>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(charges[0], source.len());
+        for failure in 0..charges.len() {
+            let mut calls = 0;
+            let result = RegExpUnicodeClassMatcher::compile_with_assertions_and_work(
+                &source,
+                true,
+                true,
+                |_| {
+                    let index = calls;
+                    calls += 1;
+                    if index == failure { Err(17) } else { Ok(()) }
+                },
+            );
             assert!(matches!(result, Err(17)));
             assert_eq!(calls, failure + 1);
         }

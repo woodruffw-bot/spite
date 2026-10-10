@@ -2670,6 +2670,19 @@ passes, including up to two sticky units and one possible rewind. Existing BMP
 core APIs and ordinary matching retain their contracts. Quotas remain opt-in,
 with no dependency or native recursion added by the compiler/matcher.
 
+
+Case-sensitive flat Unicode classes also admit one optional leading ^ and one
+optional trailing $ (22.2.2.4). Class compilation borrows the body and charges the
+complete original source without copying it. Existing bare-class core entry
+points retain their contracts; assertion entry points take the multiline flag.
+Both Unicode character and class plans share one assertion-context helper, using
+complete input-character boundaries and all four line terminators. CR and LF are
+individual contexts; non-multiline $ requires the actual input end. Search work
+includes each enabled assertion check in addition to decoding and membership.
+Sticky matching considers only the normalized initial complete character.
+Groups, concatenations, quantifiers, Unicode folding and v operators remain
+separate proofs, while escaped punctuation remains class data.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

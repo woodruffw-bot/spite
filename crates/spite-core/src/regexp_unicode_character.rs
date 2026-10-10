@@ -112,16 +112,15 @@ impl RegExpUnicodeCharacterMatcher {
         while let Some(&first) = units.get(cursor) {
             let (value, width) = unicode_input_character(units, cursor, first);
             let end = cursor + width;
-            let start_ok = !self.start_anchor
-                || cursor == 0
-                || (self.multiline
-                    && char::from_u32(u32::from(units[cursor - 1]))
-                        .is_some_and(is_line_terminator));
-            let end_ok = !self.end_anchor
-                || end == units.len()
-                || (self.multiline
-                    && char::from_u32(u32::from(units[end])).is_some_and(is_line_terminator));
-            if start_ok && end_ok && self.matches(value) {
+            if unicode_assertions_match(
+                units,
+                cursor,
+                end,
+                self.start_anchor,
+                self.end_anchor,
+                self.multiline,
+            ) && self.matches(value)
+            {
                 return Some(cursor..cursor + width);
             }
             if sticky {
@@ -147,6 +146,25 @@ impl RegExpUnicodeCharacterMatcher {
             }
         }
     }
+}
+
+// Caller supplies a complete consuming-character range within the input.
+pub(crate) fn unicode_assertions_match(
+    units: &[u16],
+    start: usize,
+    end: usize,
+    start_anchor: bool,
+    end_anchor: bool,
+    multiline: bool,
+) -> bool {
+    let start_ok = !start_anchor
+        || start == 0
+        || (multiline
+            && char::from_u32(u32::from(units[start - 1])).is_some_and(is_line_terminator));
+    let end_ok = !end_anchor
+        || end == units.len()
+        || (multiline && char::from_u32(u32::from(units[end])).is_some_and(is_line_terminator));
+    start_ok && end_ok
 }
 
 // Caller supplies the in-bounds first unit at a complete-character boundary.

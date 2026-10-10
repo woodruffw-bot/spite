@@ -1,0 +1,7 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_class_anchors.rs
+expression: rows
+---
+"/^[a]$/u.test('a')" "true"
+"/^[a]$/v.test('a')" "true"
+"/^[a]$/v.exec('a')" "[\u0022a\u0022]"
