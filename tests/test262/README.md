@@ -1,11 +1,35 @@
 # Test262 regression fixtures
 
-These 7515 unmodified test fixtures and eleven harness files come from
+These 7516 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Unicode non-word escape fixture review
+
+One unchanged complete generated upstream fixture checks that the entire ASCII
+word set is excluded by W in ordinary, u and v modes. The complete pinned
+regExpUtils.js helper is now vendored for its declared buildString include.
+The fixture and helper preserve all metadata, specification excerpts, assertions,
+authorship and BSD notices. The filename's negative cases are harness-positive
+non-membership checks, with no negative metadata or removed assertions.
+
+Both complete normal/strict variants pass stable, MSRV and Node without failures
+or host limits. Git blob identity and manifest SHA-256 verify all 2216 fixture
+and 3635 helper bytes. The pin remains unchanged. Generated positive word/non-word
+fixtures still require Unicode quantifier proofs and remain outside the corpus.
+
+The active corpus contains 7516 fixtures, twelve helpers, 7497 reviewed Script
+sources and 14472 variants: 12939 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin execution reaches 630
+whole positive sources. Grammar coverage retains 369 whole fixtures, including
+twenty-three positives.
+
+Stable and MSRV pass the complete 14472-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Unicode capture fixture review
 

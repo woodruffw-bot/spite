@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14470 reviewed Test262 variants, eleven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14472 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -6071,6 +6071,31 @@ or host limits. Corpus, dependencies and the Unicode baseline are unchanged.
 Stable and MSRV pass all 14,470 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+## Unicode non-word escape fixture review
+
+One unchanged complete generated upstream fixture checks that the entire ASCII
+word set is excluded by W in ordinary, u and v modes. The complete pinned
+regExpUtils.js helper is now vendored for its declared buildString include.
+The fixture and helper preserve all metadata, specification excerpts, assertions,
+authorship and BSD notices. The filename's negative cases are harness-positive
+non-membership checks, with no negative metadata or removed assertions.
+
+Both complete normal/strict variants pass stable, MSRV and Node without failures
+or host limits. Git blob identity and manifest SHA-256 verify all 2216 fixture
+and 3635 helper bytes. The pin remains unchanged. Generated positive word/non-word
+fixtures still require Unicode quantifier proofs and remain outside the corpus.
+
+The active corpus contains 7516 fixtures, twelve helpers, 7497 reviewed Script
+sources and 14472 variants: 12939 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin execution reaches 630
+whole positive sources. Grammar coverage retains 369 whole fixtures, including
+twenty-three positives.
+
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants and the
+complete workspace target and documentation checks. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
