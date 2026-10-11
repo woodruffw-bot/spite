@@ -3405,6 +3405,29 @@ earliest-start and greedy/lazy endpoints, UTF-16 ranges and safe work charges ar
 shared. This composition adds no search algorithm, source/input storage, native
 recursion, expanded counts, dependency, fixture change or default quota.
 
+
+Noncapturing branches in repeated Unicode alternatives retain their complete
+one-character proof (22.2.2.3, 22.2.2.4, 22.2.2.7). A dedicated entry point
+records balanced group ends using source-bounded flat storage before stripping
+whole-unit wrappers. Thus the first branch's noncapturing group cannot be
+mistaken for a group enclosing the whole alternative. The branch split respects
+escaped characters, u/v classes and complete group boundaries.
+
+Every complete branch must prove one unquantified consuming character. A branch
+wrapper reuses the existing scoped leaf proof with an exact-one internal marker;
+it must return no captures, whole-range predicates or nested alternatives before
+its character/class predicate is retained. For example, ((?:\ba)|(?:b\b))+
+keeps the word predicates local to their respective branches. Capturing branch
+groups, empty branches, concatenations, nested choices, modifier groups and
+branch quantifiers remain excluded. Earlier entry points retain their contracts.
+
+The final plan shares the existing flat alternative representation, original
+source-order predicates, cached work, greedy/lazy counts, last-character captures
+and UTF-16 ranges. The leaf-proof callback type is fixed at its boundary; that
+non-alternative proof cannot recursively admit choices. Construction adds no
+native recursion and search adds no input-sized storage. Counts are not expanded.
+No dependency, fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
