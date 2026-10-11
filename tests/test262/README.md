@@ -1,11 +1,36 @@
 # Test262 regression fixtures
 
-These 7516 unmodified test fixtures and twelve harness files come from
+These 7519 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Unicode word quantifier fixture review
+
+Three unchanged complete generated Test262 files exercise word/non-word escapes
+in ordinary, u and v modes. The positive word fixture matches all 63 ASCII
+WordCharacters with `^\w+$`; the non-word positive and word negative fixtures use
+their complete 1114049-code-point Unicode complement. Surrogate ordering and
+every original assertion, metadata field, specification excerpt and BSD notice
+are preserved. The negative-cases filename declares harness-positive membership
+checks, without negative metadata.
+
+All six complete normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. Git blob identity and manifest
+SHA-256 verify every fixture byte. The existing twelve helpers, including the
+complete regExpUtils.js, are unchanged; the Test262 pin is unchanged.
+
+The corpus contains 7519 fixtures, twelve helpers, 7500 reviewed Script sources
+and 14478 variants: 12945 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 633
+whole positive sources. Grammar coverage remains 369 fixtures, including
+twenty-three positives.
+
+Stable and MSRV pass the complete 14478-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Unicode non-word escape fixture review
 
@@ -18,8 +43,8 @@ non-membership checks, with no negative metadata or removed assertions.
 
 Both complete normal/strict variants pass stable, MSRV and Node without failures
 or host limits. Git blob identity and manifest SHA-256 verify all 2216 fixture
-and 3635 helper bytes. The pin remains unchanged. Generated positive word/non-word
-fixtures still require Unicode quantifier proofs and remain outside the corpus.
+and 3635 helper bytes. The pin remains unchanged. The related whole generated word/non-word
+fixtures are now reviewed and vendored after Unicode quantifier proofs.
 
 The active corpus contains 7516 fixtures, twelve helpers, 7497 reviewed Script
 sources and 14472 variants: 12939 harness positives, 1525 parse negatives, four

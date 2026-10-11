@@ -7496,3 +7496,6 @@ test/built-ins/RegExp/unicode_full_case_folding.js	-	-	-
 test/built-ins/RegExp/named-groups/string-replace-escaped.js	-	-	-
 test/built-ins/RegExp/named-groups/unicode-property-names.js	-	-	-
 test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escape-negative-cases.js	-	-	-
+test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escape-positive-cases.js	-	-	-
+test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-negative-cases.js	-	-	-
+test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-positive-cases.js	-	-	-

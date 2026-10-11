@@ -7527,3 +7527,6 @@ script-pass	646d6a51605cd38412a5476ee9a4b47c007f49f71367f86ca073acf79afc4e93	tes
 script-pass	2bb4aba8f98aceeb8a9139b3acb0b751be26a8c2a0c585a9d233a7c2749ae915	test/built-ins/RegExp/named-groups/unicode-property-names.js
 script-pass	e6d39accece59e3fa3e9e99e4993ec5405879c78ec8092ab39ee186cfdec34a8	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escape-negative-cases.js
 harness	76d46c1f38486ae94c4757646cefa64716b03fce3df7576be4c87d37b88c02f5	harness/regExpUtils.js
+script-pass	b1bd0e8027bbdc4e698af61f0b23054d2fcda58ad594faff9688abc3d999ab99	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escape-positive-cases.js
+script-pass	a1638eb47d976537ce07075afbe594e9f899b98e0b5a68001cf26dfdec7f7dbe	test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-negative-cases.js
+script-pass	a0f34065f7f24cf10c5ad5c37863ccceee8a867b33e522f3be816e8cb96556c9	test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-positive-cases.js
