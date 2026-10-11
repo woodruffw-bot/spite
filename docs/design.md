@@ -3444,6 +3444,30 @@ shared. Earlier entries retain their contracts. This composition adds no search
 algorithm, source/input storage, native recursion, expanded counts, dependency,
 fixture change or default quota.
 
+
+Line assertions before or after a complete noncapturing character branch remain
+local to that branch (22.2.2.3, 22.2.2.4, 22.2.2.7). A dedicated proof mode
+requires the complete branch to consume one unquantified character, contain no
+captures and retain no outside word gates. Its exact-one leaf proof places the
+internal marker before any proved trailing dollar assertion. Earlier entries
+retain their original branch contracts.
+
+For example, (^(?:a)|(?:b)$)+ applies the first branch's start gate and the
+second branch's end gate at each attempted iteration. These gates constrain
+the proved character's original boundaries, while any whole-repetition line
+assertions keep their separate scopes. Each branch has a flat character/class
+leaf and optional consuming DotAll line guard. Both see the same decoded input
+character; only the branch leaf uses the actual dotAll flag. Cached work includes
+the guard. Every enclosing capture selects the final character; zero counts skip
+the branch predicates and leave those captures undefined.
+
+The existing source-order choice scan, balanced whole-wrapper proof, linear
+input search, UTF-16 ranges and fallible charges are shared. No recursive branch
+representation, input-sized capture history, expanded counts, dependency,
+fixture changes or default quotas are added. Word assertions outside a branch
+wrapper, branch captures, nullable branches, nested choices, concatenations,
+modifiers and branch quantifiers remain outside this proof.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

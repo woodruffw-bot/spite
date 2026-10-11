@@ -484,6 +484,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compose outside word assertions with shared predicates around complete repeated Unicode alternative groups, preserving all assertion scopes and captures.
 - [x] Prove complete noncapturing branches around one unquantified Unicode character in repeated alternatives, preserving branch assertion scopes and enclosing captures.
 - [x] Compose outside word assertions with repeated single-character noncapturing alternative branches, preserving branch predicates and enclosing captures.
+- [x] Prove line assertions outside single-character noncapturing alternative branches, preserving branch and whole-repetition scopes.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
