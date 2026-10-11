@@ -3509,6 +3509,28 @@ This extends the existing constructor step without another core matcher, native
 recursion, input-sized storage or expanded counts. Source storage and work remain
 linear and fallible. No dependency, fixture or default quota changes are involved.
 
+
+Word assertions outside a complete noncapturing Unicode alternative branch keep
+their per-iteration scope (22.2.2.4, 22.2.2.7). For example,
+(\b(?:a)|(?:b)\b)+ checks the start boundary only for its a branch and the end
+boundary only for its b branch. These predicates remain separate from assertions
+around the whole repetition and from predicates retained within each branch.
+
+After full validation and name normalization, a dedicated compiler entry point
+extracts optional branch word gates, then requires the entire retained branch to
+prove exactly one unquantified character without captures. Its existing line
+gates and extracted word gates become a dotAll guard on that character's original
+boundaries, with the actual multiline and folding flags. The retained character
+or class proof keeps its own matching predicates. Earlier entry points retain
+their narrower contracts and original charges. Empty branches, continuations,
+branch captures, quantified branch bodies, modifiers and nested alternatives
+remain excluded from this proof.
+
+The branch representation stays flat. Matching uses the existing work-accounted
+branch scan and repetition selection without native recursion, expanded counts
+or input-sized storage. Source construction and search propagate opt-in work
+failures. No dependency, fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
