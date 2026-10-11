@@ -129,7 +129,7 @@ fn optional_work_and_remaining_unsupported_assertion_forms_keep_host_ordering() 
         r"/(?:(?:\b(ab|a)+\b)|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:\ba+b+\b){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:\b(?<n>a)\b(?:\k<n>)+){2})|){2,3}/.test('a')",
-        r"/\ba+\b/u.test('a')",
+        r"/\ba+\bb/u.test('a')",
         r"/(?:(?:^((\b(ab|a)+\b))$)|){2,3}/.test('ab')",
     ] {
         assert!(

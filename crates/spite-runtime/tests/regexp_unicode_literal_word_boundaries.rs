@@ -164,7 +164,7 @@ fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\b(a)+\b/u.test('a')",
+        r"/\b(a)+\bb/u.test('a')",
         r"/\b(a|b)\b/u.test('a')",
         r"/(\ba)b/u.test('ab')",
         r"/\b[a]b\b/v.test('ab')",

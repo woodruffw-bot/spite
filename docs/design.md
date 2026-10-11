@@ -3185,6 +3185,25 @@ length with constant storage and no native recursion. Source scans, copies,
 membership and predicates charge opted-in work before use; defaults stay
 unlimited and no dependency or fixture allowance is added.
 
+
+The complete outside-word repetition compiler adds a trailing \b/\B, optionally
+paired with a leading word assertion and ^/$ (22.2.2.4). Both public word entry
+points share the established full retained-body proof; the start-only API keeps
+its prior restriction. The constructor selects the broader entry once, without
+reparsing an already accepted leading predicate. Assertions inside repeated
+groups retain their scopes and require separate proofs.
+
+The monotone endpoint search checks the original trailing word context along
+with any line predicate. It retains the best endpoint for the earliest
+successful start in greedy mode and returns the first eligible endpoint in
+lazy mode. Finite maxima trim starts only before a success. Backtracking never
+retains discarded atom captures: existing span extraction uses the final
+selected complete-character endpoint, or leaves inner captures undefined for
+zero iterations. Named groups and original enclosing capture bounds continue
+through existing result construction. Every predicate charges opted-in work
+before use. Search stays linear with constant storage and no input offsets,
+expanded counts, native recursion, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

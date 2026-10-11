@@ -168,7 +168,7 @@ fn unicode_repeated_atom_start_word_opted_work_and_unproved_scopes() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\b(a)+\b/u.exec('a')",
+        r"/\b(a)+\bb/u.exec('a')",
         r"/\b(^a)+/um.exec('a')",
         r"/\b(a$)+/um.exec('a')",
         r"/\b(a?)+/u.exec('a')",

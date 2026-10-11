@@ -148,9 +148,9 @@ fn unicode_class_word_boundaries_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\bA+\b/u.exec('A')",
+        r"/\bA+\bb/u.exec('A')",
         r"/\b([A])\b/u.exec('A')",
-        r"/\b[A]+\b/u.exec('AA')",
+        r"/\b[A]+\bb/u.exec('AA')",
         r"/\b[A][B]\b/v.exec('AB')",
         r"/\b\b[A]\b/u.exec('A')",
         r"/\b[[A]]\b/v.exec('A')",

@@ -587,7 +587,7 @@ impl Realm {
                     return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body)));
                 }
                 if let Some(body) =
-                    RegExpUnicodeRepeatedAtomMatcher::compile_with_start_word_boundary_and_work(
+                    RegExpUnicodeRepeatedAtomMatcher::compile_with_word_boundaries_and_work(
                         &matching_source,
                         flags.code_units().contains(&0x76),
                         flags.code_units().contains(&0x69),
