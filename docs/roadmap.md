@@ -476,6 +476,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compose outside word-boundary assertions with complete repeated Unicode atom groups containing line assertions, preserving each predicate and capture scope.
 - [x] Preserve word and line assertions inside complete repeated Unicode atom groups, checking each consuming iteration in its original context and retaining final captures.
 - [x] Compose outside word assertions with word and line assertions inside complete repeated Unicode atom groups, preserving whole-match and per-iteration scopes.
+- [x] Preserve captures nested between word and line assertions inside repeated Unicode atom groups, proving every group contains the same consuming character.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

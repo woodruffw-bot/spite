@@ -3283,6 +3283,28 @@ This composition adds no search algorithm, input storage, expanded counts,
 native recursion, dependencies, fixtures or default quotas. Existing leaf and
 outside-predicate charges remain opt-in.
 
+
+The nested assertion-group entry proves groups interleaved with word and line
+predicates inside one repeated consuming atom (22.2.2.4, 22.2.2.7). After full
+Pattern validation and named-group normalization, a flat edge scan counts every
+ordinary/noncapturing opener and closer around the retained leaf. Every group
+must contain that same one character; empty assertion groups, multiple leaves,
+alternatives, concatenations and duplicate predicates remain excluded.
+
+Word and line assertions have no capture effects and consume no characters.
+Their conjunction therefore uses the established leaf order at the same input
+positions, without moving any assertion across the quantifier. Prefix \b^ and
+suffix $\B retain their required results. Optional outside ^/$ keep separate
+whole-repetition scopes. All complete inner captures share the final selected
+iteration, while zero iterations leave them undefined. For example,
+(\b(a))+ selects one initial a from aaa, and ((a)\b)+ selects only the final a;
+both numbered groups capture the selected character.
+
+The scanner and retained-source copy use opted-in work charges and source-sized
+storage. Matching keeps the existing monotone search and final-capture logic,
+with no new recursion, expanded counts, input storage, dependency or default
+quota. Outside words around these interleaved groups require another proof.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
