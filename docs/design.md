@@ -3468,6 +3468,24 @@ fixture changes or default quotas are added. Word assertions outside a branch
 wrapper, branch captures, nullable branches, nested choices, concatenations,
 modifiers and branch quantifiers remain outside this proof.
 
+
+Whole-match word assertions compose with the complete noncapturing branch-line
+proof (22.2.2.3, 22.2.2.4, 22.2.2.7). The existing word scan must leave a whole
+repetition that passes that proof before outside gates are attached. For example,
+\b(^(?:a)|(?:b)$)+\B keeps the branches' line predicates separate from the
+word predicates on the selected whole range. Branch-local word predicates remain
+inside their existing consuming leaf proof; enclosing groups retain the final
+selected character and zero counts leave their inner captures undefined.
+
+The existing flat branch/guard representation, balanced wrapper proof, cached
+work, earliest-start and greedy/lazy endpoints, UTF-16 ranges and fallible
+charges are shared. Earlier entries retain their contracts. This composition
+adds no search algorithm, source/input storage, native recursion, expanded
+counts, dependency, fixture change or default quota. A whole-range capture
+between the outside word gates and the repetition remains a separate unproved
+composition; retained controls distinguish it from a capture enclosing the
+complete asserted repetition.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
