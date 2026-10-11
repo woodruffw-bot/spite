@@ -3552,6 +3552,28 @@ counts or input-sized search storage. Source and search work remain fallible,
 with unchanged clone, collection and opt-in quota behavior. No dependency,
 fixture or default quota changes are involved.
 
+
+Exterior assertion sequences on Unicode character branches retain their
+per-iteration scope (22.2.2.4, 22.2.2.7). The dedicated sequence entry point
+recognizes leading word/start-line assertions and trailing word/end-line
+assertions. Repeated identical predicates inspect the same original boundary
+and can be combined; their order does not change this pure conjunction. Escaped
+literal suffixes remain part of the retained consuming body.
+
+The complete retained branch must still prove exactly one unquantified character
+without captures. Its canonical line gates and outside word gates use the
+existing per-character guard. Opposing word predicates at the same boundary
+mark the fully proved branch as impossible. For example, (\b\B(?:a)|b)+ can
+select only b. An impossible branch still allows the repetition to choose zero
+iterations; whole wrappers then capture the empty range while iteration
+captures remain undefined. Assertions inside the branch keep their own
+predicates. Earlier entry points retain their narrower contracts and charges.
+
+The sequence scan and canonical source storage remain bounded by source length.
+The flat branch representation adds one impossible flag and keeps existing
+matching, clone and fallible work accounting. No recursion, count expansion,
+input-sized storage, dependency, fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
