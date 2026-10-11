@@ -5,7 +5,10 @@ use crate::{
     regexp_canonicalize_character,
     regexp_literal::unicode_start,
     regexp_outer_group_body,
-    regexp_unicode_character::{unicode_assertions_match, unicode_input_character},
+    regexp_unicode_character::{
+        unicode_assertions_match, unicode_input_character, unicode_word_assertions_with_work,
+        unicode_word_boundary,
+    },
 };
 use std::{ops::Range, sync::Arc};
 
@@ -31,6 +34,8 @@ struct Program {
     end_anchor: bool,
     multiline: bool,
     ignore_case: bool,
+    start_word: Option<bool>,
+    end_word: Option<bool>,
 }
 
 /// A successful match's original absolute UTF-16 boundaries.
@@ -57,7 +62,7 @@ impl RegExpUnicodeFoldedLiteralMatcher {
         source: &JsString,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_impl(source, false, true, false, charge)
+        Self::compile_impl(source, false, false, true, false, charge)
     }
 
     /// Compiles optional leading ^ and trailing $ around the literal body.
@@ -78,7 +83,7 @@ impl RegExpUnicodeFoldedLiteralMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_impl(source, true, true, multiline, charge)
+        Self::compile_impl(source, true, false, true, multiline, charge)
     }
 
     /// Compiles the literal boundary subset with explicit Unicode i and m flags.
@@ -103,12 +108,28 @@ impl RegExpUnicodeFoldedLiteralMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_impl(source, true, ignore_case, multiline, charge)
+        Self::compile_impl(source, true, false, ignore_case, multiline, charge)
+    }
+
+    /// Compiles optional word assertions around a complete nonempty literal body.
+    ///
+    /// Complete u/v validation and normalized named groups are required. Complete
+    /// ordinary enclosing groups retain their original capture layout. Optional
+    /// ^/$ use m context; word neighbors use the original input and Unicode i
+    /// (22.2.2.4, 22.2.2.7.1). Other assertion positions remain excluded.
+    pub fn compile_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impl(source, true, true, ignore_case, multiline, charge)
     }
 
     fn compile_impl<E>(
         source: &JsString,
         assertions: bool,
+        word_assertions: bool,
         ignore_case: bool,
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
@@ -126,6 +147,24 @@ impl RegExpUnicodeFoldedLiteralMatcher {
             .flatten();
         let wrappers = outer.as_ref().map_or(0, |group| group.captures);
         let mut body = outer.map_or(0..units.len(), |group| group.body);
+        // Strip only the proved outer word assertions. The complete retained
+        // body still has to compile as a literal, with unchanged capture slots.
+        let word_source = if word_assertions {
+            charge(body.len())?;
+            let body_source = JsString::from_code_units(units[body.clone()].to_vec());
+            let Some(word) = unicode_word_assertions_with_work(&body_source, &mut charge)? else {
+                return Ok(None);
+            };
+            Some(word)
+        } else {
+            None
+        };
+        let (units, start_word, end_word) = if let Some(word) = &word_source {
+            body = 0..word.source.len();
+            (word.source.code_units(), word.start, word.end)
+        } else {
+            (units, None, None)
+        };
         let start_anchor = assertions && units.get(body.start) == Some(&0x5e);
         body.start += usize::from(start_anchor);
         let end_anchor = assertions
@@ -202,6 +241,8 @@ impl RegExpUnicodeFoldedLiteralMatcher {
             end_anchor,
             multiline,
             ignore_case,
+            start_word,
+            end_word,
         }))))
     }
 
@@ -233,10 +274,11 @@ impl RegExpUnicodeFoldedLiteralMatcher {
         }
         let sticky = sticky || (self.0.start_anchor && !self.0.multiline);
         let initial = cursor;
-        // A multiline start assertion needs each candidate's original start,
+        // A start assertion needs each candidate's original start,
         // including rejected overlapping candidates. A source-sized ring keeps
         // that lookup constant-time instead of rescanning each candidate.
-        let mut starts = if self.0.start_anchor && self.0.multiline {
+        let mut starts = if (self.0.start_anchor && self.0.multiline) || self.0.start_word.is_some()
+        {
             if units.len() - cursor < self.0.points.len() {
                 return Ok(None);
             }
@@ -295,6 +337,25 @@ impl RegExpUnicodeFoldedLiteralMatcher {
                     self.0.end_anchor,
                     self.0.multiline,
                 ) {
+                    if sticky {
+                        return Ok(None);
+                    }
+                    matched = self.0.failure[matched - 1];
+                    continue;
+                }
+                // The ring makes every rejected leading word check constant
+                // time, including overlapping KMP candidates. Charge both word
+                // checks before examining original, unfolded input neighbors.
+                charge(
+                    8 * (usize::from(self.0.start_word.is_some())
+                        + usize::from(self.0.end_word.is_some())),
+                )?;
+                if self.0.start_word.is_some_and(|expected| {
+                    unicode_word_boundary(units, known_start.unwrap_or(0), self.0.ignore_case)
+                        != expected
+                }) || self.0.end_word.is_some_and(|expected| {
+                    unicode_word_boundary(units, end, self.0.ignore_case) != expected
+                }) {
                     if sticky {
                         return Ok(None);
                     }
@@ -1213,5 +1274,332 @@ mod tests {
                 .is_none()
             );
         }
+    }
+
+    fn word_literal_plan(source: &str, i: bool, m: bool) -> RegExpUnicodeFoldedLiteralMatcher {
+        RegExpUnicodeFoldedLiteralMatcher::compile_with_word_boundaries_and_work(
+            &JsString::from(source),
+            i,
+            m,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn unicode_literal_word_boundary_original_capture_ranges_snapshot() {
+        let mut rows = String::new();
+        for source in [
+            r"\b(a)(a)\b",
+            r"\B(a)(a)\b",
+            r"\b(a())(a)\B",
+            r"((\b(a)(s)\b))",
+            r"\b(ſ)(K)\b",
+            r"^\b(a)(a)\b$",
+            r"\B(\u{1f600})(a)\b",
+            r"\b(a)(\u{1f600})\B",
+            r"\b(\uD800)(a)\b",
+            r"\b((a)b)\b",
+            r"\B(a)(a)\B",
+            r"(\b(a)(a)\b$)",
+        ] {
+            for i in [false, true] {
+                for m in [false, true] {
+                    let plan = word_literal_plan(source, i, m);
+                    for input in [
+                        JsString::from("aaa aa as ſK\n"),
+                        JsString::from("A\r\nAA\u{2028}as\u{2029}"),
+                        JsString::from("😀a a😀"),
+                        JsString::from_code_units(vec![0x41, 0xd800, 0x61, 0x20, 0xdc00, 0x41]),
+                        JsString::from(""),
+                    ] {
+                        for start in [0, 1, 2, input.len(), input.len() + 1] {
+                            for sticky in [false, true] {
+                                let found = plan
+                                    .find_with_work(&input, start, sticky, |_| Ok::<(), ()>(()))
+                                    .unwrap()
+                                    .map(|m| (m.range, m.captures));
+                                writeln!(rows,"{:?} i={i} m={m} input={input:?} start={start} sticky={sticky} {found:?}",JsString::from(source)).unwrap();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_literal_word_boundaries_agree_with_independent_complete_candidates() {
+        type Case = (
+            &'static str,
+            &'static [u32],
+            &'static [(usize, usize)],
+            Option<bool>,
+            Option<bool>,
+            bool,
+            bool,
+        );
+        let cases: &[Case] = &[
+            (
+                r"\b(a)(a)\b",
+                &[0x61, 0x61],
+                &[(0, 1), (1, 2)],
+                Some(true),
+                Some(true),
+                false,
+                false,
+            ),
+            (
+                r"\B(a)(a)\b",
+                &[0x61, 0x61],
+                &[(0, 1), (1, 2)],
+                Some(false),
+                Some(true),
+                false,
+                false,
+            ),
+            (
+                r"\b(a())(a)\B",
+                &[0x61, 0x61],
+                &[(0, 1), (1, 1), (1, 2)],
+                Some(true),
+                Some(false),
+                false,
+                false,
+            ),
+            (
+                r"((\b(a)(s)\b))",
+                &[0x61, 0x73],
+                &[(0, 2), (0, 2), (0, 1), (1, 2)],
+                Some(true),
+                Some(true),
+                false,
+                false,
+            ),
+            (
+                r"\b(ſ)(K)\b",
+                &[0x17f, 0x212a],
+                &[(0, 1), (1, 2)],
+                Some(true),
+                Some(true),
+                false,
+                false,
+            ),
+            (
+                r"^\b(a)(a)\b$",
+                &[0x61, 0x61],
+                &[(0, 1), (1, 2)],
+                Some(true),
+                Some(true),
+                true,
+                true,
+            ),
+            (
+                r"\B(\u{1f600})(a)\b",
+                &[0x1f600, 0x61],
+                &[(0, 1), (1, 2)],
+                Some(false),
+                Some(true),
+                false,
+                false,
+            ),
+            (
+                r"\b(a)(\u{1f600})\B",
+                &[0x61, 0x1f600],
+                &[(0, 1), (1, 2)],
+                Some(true),
+                Some(false),
+                false,
+                false,
+            ),
+            (
+                r"\b(\uD800)(a)\b",
+                &[0xd800, 0x61],
+                &[(0, 1), (1, 2)],
+                Some(true),
+                Some(true),
+                false,
+                false,
+            ),
+        ];
+        let alphabet = [
+            0x41, 0x61, 0x73, 0x17f, 0x212a, 0x20, 10, 0xd83d, 0xde00, 0xd800,
+        ];
+        for i in [false, true] {
+            for m in [false, true] {
+                let fold = |c| {
+                    if i {
+                        match c {
+                            0x41 => 0x61,
+                            0x17f => 0x73,
+                            0x212a => 0x6b,
+                            _ => c,
+                        }
+                    } else {
+                        c
+                    }
+                };
+                let word = |c: Option<&u32>| {
+                    c.is_some_and(|&c| {
+                        char::from_u32(fold(c))
+                            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
+                    })
+                };
+                let plans: Vec<_> = cases.iter().map(|c| word_literal_plan(c.0, i, m)).collect();
+                for len in 0..=4 {
+                    for ordinal in 0..alphabet.len().pow(len) {
+                        let units: Vec<_> = (0..len)
+                            .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                            .collect();
+                        let mut points = Vec::new();
+                        let mut offsets = vec![0];
+                        let mut j = 0;
+                        while j < units.len() {
+                            let mut cp = u32::from(units[j]);
+                            j += 1;
+                            if (0xd800..=0xdbff).contains(&cp)
+                                && j < units.len()
+                                && (0xdc00..=0xdfff).contains(&units[j])
+                            {
+                                cp = 65536 + (cp - 0xd800) * 1024 + u32::from(units[j]) - 0xdc00;
+                                j += 1;
+                            }
+                            points.push(cp);
+                            offsets.push(j);
+                        }
+                        let input = JsString::from_code_units(units);
+                        for start in 0..=input.len() + 1 {
+                            for sticky in [false, true] {
+                                for (case, plan) in cases.iter().zip(&plans) {
+                                    let expected = if start > input.len() {
+                                        None
+                                    } else {
+                                        let normalized =
+                                            offsets.partition_point(|&n| n <= start) - 1;
+                                        (normalized..points.len()).find_map(|at| {
+                                            if sticky && at != normalized {
+                                                return None;
+                                            }
+                                            let end = at + case.1.len();
+                                            let candidate = points.get(at..end)?;
+                                            if !candidate.iter().copied().map(fold).eq(case
+                                                .1
+                                                .iter()
+                                                .copied()
+                                                .map(fold))
+                                            {
+                                                return None;
+                                            }
+                                            let boundary = |at: usize| {
+                                                word(at.checked_sub(1).and_then(|j| points.get(j)))
+                                                    != word(points.get(at))
+                                            };
+                                            let line = |c| [10, 13, 0x2028, 0x2029].contains(&c);
+                                            if case.3.is_some_and(|v| boundary(at) != v)
+                                                || case.4.is_some_and(|v| boundary(end) != v)
+                                                || (case.5
+                                                    && at != 0
+                                                    && !(m && line(points[at - 1])))
+                                                || (case.6
+                                                    && end != points.len()
+                                                    && !(m && line(points[end])))
+                                            {
+                                                return None;
+                                            }
+                                            Some((
+                                                offsets[at]..offsets[end],
+                                                case.2
+                                                    .iter()
+                                                    .map(|&(a, b)| {
+                                                        Some(offsets[at + a]..offsets[at + b])
+                                                    })
+                                                    .collect::<Vec<_>>(),
+                                            ))
+                                        })
+                                    };
+                                    let actual = plan
+                                        .find_with_work(&input, start, sticky, |_| Ok::<(), ()>(()))
+                                        .unwrap()
+                                        .map(|m| (m.range, m.captures.into_vec()));
+                                    assert_eq!(
+                                        actual, expected,
+                                        "{} i={i} m={m} {input:?} start={start} sticky={sticky}",
+                                        case.0
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_literal_word_boundaries_work_overlaps_clones_and_complete_contracts() {
+        let plan = word_literal_plan(r"\b(a)(a)\b", false, false);
+        let input = JsString::from("a".repeat(100000).as_str());
+        let mut work = 0;
+        assert!(
+            plan.find_with_work(&input, 0, false, |n| {
+                work += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .is_none()
+        );
+        assert!(work < 25 * input.len(), "{work}");
+        let later = word_literal_plan(r"\B(a)(a)\b", false, false)
+            .clone()
+            .find_with_work(&input, 0, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(later.range, 99998..100000);
+        assert_eq!(
+            later.captures.as_ref(),
+            &[Some(99998..99999), Some(99999..100000)]
+        );
+        assert!(
+            RegExpUnicodeFoldedLiteralMatcher::compile_with_word_boundaries_and_work(
+                &JsString::from(r"\b(a)(a)\b"),
+                false,
+                false,
+                |_| Err(())
+            )
+            .is_err()
+        );
+        assert!(plan.find_with_work(&input, 0, false, |_| Err(())).is_err());
+        for source in [
+            r"aa",
+            r"\b\b",
+            r"\b(a)+\b",
+            r"\b(a|b)\b",
+            r"(\ba)b",
+            r"\b[a]b\b",
+            r"\b(a)(?=b)",
+            r"\b(\uD800)(\uDC00)a\b",
+        ] {
+            assert!(
+                RegExpUnicodeFoldedLiteralMatcher::compile_with_word_boundaries_and_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodeFoldedLiteralMatcher::compile_with_flags(
+                &JsString::from(r"\b(a)(a)\b"),
+                true,
+                true
+            )
+            .is_none()
+        );
     }
 }

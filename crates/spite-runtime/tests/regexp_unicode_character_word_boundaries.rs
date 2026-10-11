@@ -168,9 +168,9 @@ fn unicode_character_word_boundaries_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\b(A)\b/u.exec('A')",
+        r"/\b(A)+\b/u.exec('A')",
         r"/\bA+\b/u.exec('AA')",
-        r"/\bAB\b/v.exec('AB')",
+        r"/\bA+B\b/v.exec('AB')",
         r"/\b\bA\b/u.exec('A')",
         r"/\b(?=A)A\b/u.exec('A')",
     ] {

@@ -3017,6 +3017,24 @@ alternatives, lookaround and mixed consuming bodies require separate proofs.
 The documented Node interior-pair \B discrepancy also affects repeated \B
 assertions; it does not change the edition-17 candidate positions.
 
+
+Unicode literal concatenations have a separate word-boundary entry point
+(22.2.2.4, 22.2.2.7.1). Optional leading/trailing \b or \B and ^/$ surround a
+complete nonempty literal body. Complete ordinary wrappers retain their capture
+slots, including partial and empty captures. The constructor validates the
+whole u/v Pattern and normalizes named groups before trying this proof; prior
+literal APIs retain their subsets.
+
+Construction charges source examination and copies before allocation. Unicode i
+folds literal comparisons and original word neighbors independently, while
+captures retain original complete-character UTF-16 boundaries. A source-sized
+ring retains candidate starts whenever a leading word assertion needs them.
+Rejected overlapping KMP candidates check both boundaries in constant time;
+they never rescan the matched prefix. Successful captures use the established
+original-boundary resolver. No input-sized storage, native recursion or
+dependency is added. Internal assertions and nonliteral bodies require separate
+proofs, and the approved initial-offset resolution remains unchanged.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -589,12 +589,23 @@ impl Realm {
         // input characters, rather than folded/source UTF-16 widths (22.2.2.7.3).
         let matcher = if matcher.is_none() && unicode {
             let body = self.object_work(span, |_, budget| {
-                RegExpUnicodeFoldedLiteralMatcher::compile_with_flags_and_work(
+                let body = RegExpUnicodeFoldedLiteralMatcher::compile_with_flags_and_work(
                     &capture_source,
                     flags.code_units().contains(&0x69),
                     flags.code_units().contains(&0x6d),
                     |work| budget.charge(work),
-                )
+                )?;
+                match body {
+                    Some(body) => Ok(Some(body)),
+                    None => {
+                        RegExpUnicodeFoldedLiteralMatcher::compile_with_word_boundaries_and_work(
+                            &capture_source,
+                            flags.code_units().contains(&0x69),
+                            flags.code_units().contains(&0x6d),
+                            |work| budget.charge(work),
+                        )
+                    }
+                }
             })?;
             if body.is_some() {
                 // This plan compiles the complete original capture layout.

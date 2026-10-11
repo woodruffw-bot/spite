@@ -462,6 +462,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match standalone Unicode word assertions with optional line anchors, case-folded neighbors, empty captures and original zero-width indices.
 - [x] Match standalone Unicode line assertions with multiline context, empty captures, original indices and unchanged empty-match advancement.
 - [x] Match complete Unicode line and word assertion sequences, including repeated, reordered and contradictory conditions at the same empty position.
+- [x] Match optional word boundaries around Unicode literal concatenations and complete enclosing groups, preserving partial and empty captures, case-folded neighbors and original indices.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
