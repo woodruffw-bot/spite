@@ -7499,3 +7499,5 @@ test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escap
 test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escape-positive-cases.js	-	-	-
 test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-negative-cases.js	-	-	-
 test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-positive-cases.js	-	-	-
+test/built-ins/RegExp/CharacterClassEscapes/character-class-digit-class-escape-positive-cases.js	-	-	-
+test/built-ins/RegExp/CharacterClassEscapes/character-class-non-digit-class-escape-positive-cases.js	-	-	-
