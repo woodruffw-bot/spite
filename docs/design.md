@@ -3574,6 +3574,24 @@ The flat branch representation adds one impossible flag and keeps existing
 matching, clone and fallible work accounting. No recursion, count expansion,
 input-sized storage, dependency, fixture or default quota changes are involved.
 
+
+Whole-match word gates compose with the complete Unicode branch assertion-sequence
+proof (22.2.2.4, 22.2.2.7). The scanner retains the outside word predicates, then
+the entire body must prove its alternatives and repetition before those gates
+are attached. For example, \b(\b\b(?:a)|(?:b)\b\b)+\B separates whole-range
+predicates from the combined predicates checked for each iteration. A contradictory
+branch keeps its impossible flag, while zero iterations still check the outside
+predicates at the selected empty range.
+
+Complete whole captures retain their whole or empty ranges; iteration captures
+retain their last character or remain undefined. The existing result builder,
+name bindings and public source remain in use. Escaped dollar literals and
+predicates inside branches keep their original meaning. Earlier compiler entry
+points retain their narrower contracts. The composition adds no matching
+algorithm, native recursion, expanded counts or input-sized search storage.
+Source and search work remain fallible. No dependency, fixture or default quota
+changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
