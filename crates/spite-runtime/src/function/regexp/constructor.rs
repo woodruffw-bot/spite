@@ -432,8 +432,9 @@ impl Realm {
             let (matching_source, wrappers) = self.object_work(span, |_, budget| {
                 // Assertions surrounding a complete ordinary atom wrapper are
                 // zero-width, so moving them inside that wrapper preserves its
-                // capture range (22.2.2.4). The retained body must still compile
-                // completely as one proved Unicode character/class below.
+                // capture range (22.2.2.4). Word and line gates keep their order
+                // and only complete transparent wrappers are removed. The whole
+                // retained body must still pass a supported Unicode proof below.
                 let units = capture_source.code_units();
                 budget.charge(units.len().saturating_mul(4))?;
                 let start_anchor = units.first() == Some(&0x5e);
@@ -445,9 +446,30 @@ impl Realm {
                         .count()
                         % 2
                         == 0;
-                let body_source = if start_anchor || end_anchor {
-                    let body =
-                        &units[usize::from(start_anchor)..units.len() - usize::from(end_anchor)];
+                let mut start = usize::from(start_anchor);
+                let mut end = units.len() - usize::from(end_anchor);
+                // A single word gate at either boundary is zero-width too.
+                // Keep its original order relative to any outside line gate.
+                if units.get(start) == Some(&0x5c)
+                    && matches!(units.get(start + 1), Some(0x62 | 0x42))
+                {
+                    start += 2;
+                }
+                if end >= start + 2
+                    && units[end - 2] == 0x5c
+                    && matches!(units[end - 1], 0x62 | 0x42)
+                    && units[..end - 2]
+                        .iter()
+                        .rev()
+                        .take_while(|&&c| c == 0x5c)
+                        .count()
+                        % 2
+                        == 0
+                {
+                    end -= 2;
+                }
+                let body_source = if start != 0 || end != units.len() {
+                    let body = &units[start..end];
                     budget.charge(body.len())?;
                     JsString::from_code_units(body.to_vec())
                 } else {
@@ -455,16 +477,12 @@ impl Realm {
                 };
                 if let Some(group) = regexp_outer_group_body(&body_source) {
                     let body = &body_source.code_units()[group.body];
-                    let length = body.len() + usize::from(start_anchor) + usize::from(end_anchor);
+                    let length = body.len() + start + (units.len() - end);
                     budget.charge(length)?;
                     let mut source = Vec::with_capacity(length);
-                    if start_anchor {
-                        source.push(0x5e);
-                    }
+                    source.extend_from_slice(&units[..start]);
                     source.extend_from_slice(body);
-                    if end_anchor {
-                        source.push(0x24);
-                    }
+                    source.extend_from_slice(&units[end..]);
                     Ok((JsString::from_code_units(source), group.captures))
                 } else {
                     Ok((capture_source.clone(), 0))

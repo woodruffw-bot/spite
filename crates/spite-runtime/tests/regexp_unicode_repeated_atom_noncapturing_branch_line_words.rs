@@ -61,8 +61,8 @@ fn unicode_repeated_atom_noncapturing_branch_line_words_results_snapshot() {
 #[test]
 fn unicode_repeated_atom_noncapturing_branch_line_words_counts_and_scopes() {
     for source in [
-        r"/\B((^(?:.)|a)+)\B$/vms.exec('\n')",
-        r"/\B(?<whole>(^(?:.)|a)+)\B$/vms.exec('\n')",
+        r"/\B((^(?:.)|a)+)\B$b/vms.exec('\n')",
+        r"/\B(?<whole>(^(?:.)|a)+)\B$b/vms.exec('\n')",
     ] {
         assert!(
             matches!(

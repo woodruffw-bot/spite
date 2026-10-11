@@ -3486,6 +3486,29 @@ between the outside word gates and the repetition remains a separate unproved
 composition; retained controls distinguish it from a capture enclosing the
 complete asserted repetition.
 
+
+Unicode word gates around complete whole-capture wrappers preserve the original
+capture ranges (22.2.2.4, 22.2.2.7). After full validation and source-order name
+normalization, the existing constructor wrapper scan recognizes an optional
+leading/trailing word assertion alongside its existing line assertions. Escaped
+suffixes remain literal. The complete transparent group proof must succeed before
+the original predicates are retained around its complete body. Their order and
+multiline/folding context are unchanged. The retained body still must pass an
+existing supported Unicode proof; modifiers, continuations and quantified whole
+wrappers are not stripped.
+
+For example, \b(?<whole>(a|b)+)\b preserves whole as the entire selected range
+and the inner capture as its final character. With a zero-iteration body, the
+whole capture is empty and its inner capture remains undefined. The empty
+boundary capture in (\b)\b also retains its empty range. Complete peeled
+captures precede the retained body's captures in their original source order;
+the existing result builder and name bindings provide whole ranges for those
+wrappers. The public source remains the original Pattern.
+
+This extends the existing constructor step without another core matcher, native
+recursion, input-sized storage or expanded counts. Source storage and work remain
+linear and fallible. No dependency, fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

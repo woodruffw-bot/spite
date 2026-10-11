@@ -178,7 +178,7 @@ fn unicode_assertion_sequences_opted_work_and_remaining_compositions() {
         r"/\b\bA/u.test('A')",
         r"/^^|$$/v.test('A')",
         r"/^\b(?=A)/u.test('A')",
-        r"/(\b)\b/u.test('A')",
+        r"/(\b)\bb/u.test('A')",
     ] {
         assert!(
             matches!(
