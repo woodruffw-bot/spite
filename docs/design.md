@@ -3265,6 +3265,24 @@ repetition matcher, with no new input storage, recursion or expanded counts.
 Existing leaf work charges include the retained word and line predicates.
 There is no new dependency, fixture change or default quota.
 
+
+The composed-word repetition entry combines outside word predicates with the
+complete consuming-group proof for retained per-iteration word and line
+assertions (22.2.2.4, 22.2.2.7). It proves the entire retained group before
+attaching any outside predicate; older entry points keep their narrower
+contracts. No assertion crosses a group or quantifier boundary.
+
+For example, \b(\ba)+\B selects one initial a from aaa, while \ba+\B selects
+two. Inner assertions execute on each selected character against the original
+input context; outside word and line assertions apply to the selected whole
+repetition. Zero counts leave inner captures undefined without executing the
+child. The shared matcher retains the earliest start, greedy/lazy endpoint,
+final selected captures and complete UTF-16 character boundaries.
+
+This composition adds no search algorithm, input storage, expanded counts,
+native recursion, dependencies, fixtures or default quotas. Existing leaf and
+outside-predicate charges remain opt-in.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

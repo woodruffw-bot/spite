@@ -159,7 +159,7 @@ fn unicode_repeated_atom_scoped_word_opted_work_and_unproved_units() {
     );
     for source in [
         r"/\b(^$)+\b/u.exec('')",
-        r"/\b(\b.)+\b/u.exec('a')",
+        r"/\b(\b.)+\bb/u.exec('a')",
         r"/\b(a?)+\b/u.exec('a')",
         r"/\b(a|b)+\b/v.exec('a')",
         r"/\b()+\b/u.exec('a')",

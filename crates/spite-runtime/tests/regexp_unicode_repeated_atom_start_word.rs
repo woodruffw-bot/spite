@@ -176,7 +176,7 @@ fn unicode_repeated_atom_start_word_opted_work_and_unproved_scopes() {
         r"/\b()+/u.exec('a')",
         r"/\b(ab)+/v.exec('ab')",
         r"/\b(a)+b/u.exec('ab')",
-        r"/\b(\b.)+/v.exec('a')",
+        r"/\b(\b.)+b/v.exec('a')",
     ] {
         assert!(
             matches!(

@@ -166,7 +166,7 @@ fn unicode_repeated_atom_word_boundary_opted_work_and_unproved_scopes() {
         r"/\b()+\b/u.exec('a')",
         r"/\b(ab)+\b/v.exec('ab')",
         r"/\b(a)+b\b/u.exec('ab')",
-        r"/\b(\b.)+\b/v.exec('a')",
+        r"/\b(\b.)+\bb/v.exec('a')",
     ] {
         assert!(
             matches!(
