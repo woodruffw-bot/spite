@@ -3143,6 +3143,29 @@ at most once, preserving linear work and constant search storage. Folded
 membership, original pair/lone-surrogate indices and opted-in charges retain
 their established rules. No recursion, dependency or default quota is added.
 
+
+A dedicated capture entry point proves complete ordinary/noncapturing wrappers
+inside a repeated Unicode atom (22.2.2.7). The constructor validates the entire
+Pattern and normalizes named groups first. A charged source scan counts only
+ordinary captures, verifies all closing wrappers, and constructs a source-sized
+retained atom/repetition body. Its established unanchored compiler must prove
+one consuming atom before any outer line assertion is reapplied. Assertions
+inside repeated groups cannot move outside their original scopes; empty bodies,
+alternatives and concatenations require separate proofs. Prior public compiler
+entry points retain their established subsets.
+
+Every complete inner group captures the final selected atom iteration. After
+the repetition's range is selected, one checked complete-character boundary
+determines this shared original UTF-16 span. Zero selected iterations leave all
+inner captures undefined; complete outer groups still capture the whole range.
+A constant-size optional span in the runtime match serves every inner slot,
+without per-capture search storage. Existing result construction retains named
+properties, original strings, undefined own slots and indices-group aliases.
+Greedy backtracking to an earlier line endpoint derives captures from that
+selected endpoint rather than from the discarded scan. Source construction,
+search and span extraction charge opted-in work before use; no recursion,
+input-sized offsets, expanded counts, dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

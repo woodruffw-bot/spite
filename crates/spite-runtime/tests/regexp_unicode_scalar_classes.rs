@@ -157,10 +157,10 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/([a])+/iu.exec('a')",
-        r"/([\W])+/iv.exec('a')",
-        r"/([a])+/u.exec('a')",
-        r"/^([a])+$/v.exec('a')",
+        r"/([a])+b/iu.exec('a')",
+        r"/([\W])+b/iv.exec('a')",
+        r"/([a])+b/u.exec('a')",
+        r"/^([a])+b$/v.exec('a')",
         r"/[a]+b/u.exec('a')",
         r"/[a]b/v.exec('ab')",
         r"/[a&&b]/v.exec('a')",

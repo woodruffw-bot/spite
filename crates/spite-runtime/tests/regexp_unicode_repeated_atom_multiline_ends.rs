@@ -172,7 +172,7 @@ fn unicode_repeated_atom_multiline_ends_opted_work_and_remaining_compositions() 
     for source in [
         r"/a+b$/um.exec('ab')",
         r"/^a+b$/vm.exec('ab')",
-        r"/(a)+$/um.exec('a')",
+        r"/(a)+b$/um.exec('a')",
         r"/a+$$/um.exec('a')",
         r"/\ba+$/um.exec('a')",
     ] {

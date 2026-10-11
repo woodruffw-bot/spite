@@ -169,7 +169,7 @@ fn unicode_repeated_atoms_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(a)+/u.exec('a')",
+        r"/(a)+b/u.exec('a')",
         r"/^^a+/u.exec('a')",
         r"/a+b$/u.exec('a')",
         r"/a+b/v.exec('ab')",

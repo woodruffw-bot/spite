@@ -66,7 +66,9 @@ pub use regexp_unicode_class::RegExpUnicodeClassMatcher;
 pub use regexp_unicode_folded_literal::{
     RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
 };
-pub use regexp_unicode_repeated_atom::RegExpUnicodeRepeatedAtomMatcher;
+pub use regexp_unicode_repeated_atom::{
+    RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher,
+};
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
 pub use unicode::{is_identifier_part, is_identifier_start};

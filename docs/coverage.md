@@ -6440,6 +6440,38 @@ Stable and MSRV pass all 14,478 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Captured Unicode atom repetitions have three core and nine runtime tests.
+Independent raw UTF-16 candidate/count enumeration covers four-unit strings,
+all starts/sticky/i/m/s combinations, ordinary/noncapturing wrapper layouts,
+greedy/lazy/exact/zero counts and final selected complete-character spans.
+All 10240 core and 2400 runtime rows agree with an independent pinned-folding
+oracle and Node, as do thirty-two Boolean programs. All fifty distinct newly
+supported former whole programs are retained exactly in a positive snapshot
+and verified with Node. Their sixty-three prior controls in twenty-five files
+now add an unproved consuming suffix without changing capture counts.
+
+One former direct-eval program is also preserved exactly as a positive native
+and Node regression: its successful false result runs finally and leaves the
+marker at three. The remaining dynamic eval control and ten-probe helper use
+an unproved suffix and still skip language handlers on Unsupported.
+Named/__proto__ inner and outer groups, last-versus-whole ranges, undefined own
+slots and aliases, supplementary/lone-surrogate indices, approved pair starts,
+line endpoints, consumers, empty advancement, clones, coercions, strict writes
+and collection retain their required semantics. Unlimited defaults handle
+3000 inner plus 3000 outer captures over 200001 units, without per-capture search
+allocation. Opted-in exhaustion precedes the tested state changes.
+
+All 585 core tests and 208 related targets pass. All 464 prior snapshots remain
+byte-identical, with three reviewed new golds. All 1097 unproved programs,
+eight ordered and ten direct-eval probes retain Unsupported and state. Whole
+existing fixture reviews have no failures or host limits. The corpus pin,
+inventory, production dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,478 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

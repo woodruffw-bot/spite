@@ -147,7 +147,7 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/^((.)+)$/u.exec('A')",
+        r"/^((.)+)b$/u.exec('A')",
         r"/^(.)(.)$/v.exec('AA')",
         r"/^(\p{Assigned})$/u.exec('A')",
         r"/^(a|b)$/v.exec('a')",

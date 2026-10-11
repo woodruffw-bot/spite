@@ -5,11 +5,21 @@ use crate::{
 };
 use std::ops::Range;
 
+/// A selected Unicode repetition and the last captured atom iteration.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RegExpUnicodeRepeatedAtomMatch {
+    /// Original UTF-16 range of the complete repetition.
+    pub range: Range<usize>,
+    /// Last selected iteration, or None without inner captures or iterations.
+    pub atom_capture: Option<Range<usize>>,
+}
+
 /// A complete single consuming Unicode atom with one greedy or lazy quantifier.
 ///
 /// The caller must validate the whole u/v Pattern. Dedicated entry points admit
 /// a leading ^ and trailing $, including multiline contexts. Capturing groups in the repeated
-/// atom, other assertions, alternatives and concatenations are excluded.
+/// atom are admitted only by the dedicated complete-wrapper entry point; other
+/// inner assertions, alternatives and concatenations are excluded.
 /// Complete enclosing groups may be proved separately by the caller.
 /// Construction and search add no native recursion or input-sized storage;
 /// work quotas remain opt-in.
@@ -22,6 +32,7 @@ pub struct RegExpUnicodeRepeatedAtomMatcher {
     start_anchor: bool,
     multiline: bool,
     end_anchor: bool,
+    atom_captures: usize,
 }
 
 #[cfg(test)]
@@ -652,6 +663,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     start_anchor: false,
                     multiline: false,
                     end_anchor: false,
+                    atom_captures: 0,
                 }));
             }
         }
@@ -738,6 +750,128 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         plan.end_anchor = true;
         plan.multiline = multiline;
         Ok(Some(plan))
+    }
+
+    /// Proves complete ordinary/noncapturing wrappers inside the repeated atom.
+    ///
+    /// The caller validates the whole u/v Pattern and normalizes named groups.
+    /// Every retained inner body must be one consuming atom. Assertions inside
+    /// these wrappers, concatenations, alternatives and empty bodies are excluded.
+    /// Optional outer line assertions retain their original scopes (22.2.2.7).
+    pub fn compile_capturing_atom_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let units = source.code_units();
+        charge(units.len())?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
+        let start = usize::from(start_anchor);
+        let end = units.len().saturating_sub(usize::from(end_anchor));
+        let Some(body) = units.get(start..end) else {
+            return Ok(None);
+        };
+        for end in [
+            body.len()
+                .checked_sub(1)
+                .filter(|_| body.last() == Some(&0x3f)),
+            Some(body.len()),
+        ] {
+            let Some(end) = end else { continue };
+            let Some((atom_end, _, _)) = quantifier(body, end) else {
+                continue;
+            };
+            let mut at = 0;
+            let mut wrappers = 0;
+            let mut captures = 0;
+            while body.get(at) == Some(&0x28) {
+                if body.get(at + 1) == Some(&0x3f) {
+                    if body.get(at + 2) != Some(&0x3a) {
+                        break;
+                    }
+                    at += 3;
+                } else {
+                    at += 1;
+                    captures += 1;
+                }
+                wrappers += 1;
+            }
+            let Some(inner_end) = atom_end.checked_sub(wrappers) else {
+                continue;
+            };
+            if wrappers == 0
+                || at >= inner_end
+                || !body[inner_end..atom_end].iter().all(|&c| c == 0x29)
+            {
+                continue;
+            }
+            // Prove the retained consuming body without line assertions first.
+            // An assertion inside a repeated group must never move outside it.
+            charge(body.len())?;
+            let mut repeated = Vec::with_capacity(body.len());
+            repeated.extend_from_slice(&body[at..inner_end]);
+            repeated.extend_from_slice(&body[atom_end..]);
+            let repeated = JsString::from_code_units(repeated);
+            let Some(mut plan) = Self::compile_with_flags_and_work(
+                &repeated,
+                unicode_sets,
+                ignore_case,
+                dot_all,
+                &mut charge,
+            )?
+            else {
+                continue;
+            };
+            plan.start_anchor = start_anchor;
+            plan.end_anchor = end_anchor;
+            plan.multiline = multiline;
+            plan.atom_captures = captures;
+            return Ok(Some(plan));
+        }
+        Ok(None)
+    }
+
+    /// Returns the number of complete ordinary wrappers inside the repeated atom.
+    pub fn capture_count(&self) -> usize {
+        self.atom_captures
+    }
+
+    /// Finds the repetition and its final selected complete-character capture.
+    ///
+    /// Complete inner captures all share the final iteration, and are undefined
+    /// when no iteration was selected. This adds no per-capture allocation.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedAtomMatch>, E> {
+        let Some(range) = self.find_with_work(input, start, sticky, &mut charge)? else {
+            return Ok(None);
+        };
+        let atom_capture = if self.atom_captures != 0 && !range.is_empty() {
+            charge(2)?;
+            let units = input.code_units();
+            let mut at = range.end - 1;
+            if at > range.start
+                && (0xdc00..=0xdfff).contains(&units[at])
+                && (0xd800..=0xdbff).contains(&units[at - 1])
+            {
+                at -= 1;
+            }
+            Some(at..range.end)
+        } else {
+            None
+        };
+        Ok(Some(RegExpUnicodeRepeatedAtomMatch {
+            range,
+            atom_capture,
+        }))
     }
 
     // With no multiline $, only the actual input end can satisfy the assertion.
@@ -959,6 +1093,300 @@ impl RegExpUnicodeRepeatedAtomMatcher {
 
 fn escaped(units: &[u16], at: usize) -> bool {
     units[..at].iter().rev().take_while(|&&u| u == 0x5c).count() % 2 != 0
+}
+
+#[cfg(test)]
+mod captured_atom_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    type Case = (
+        &'static str,
+        u8,
+        usize,
+        Option<usize>,
+        bool,
+        usize,
+        bool,
+        bool,
+    );
+    const CASES: [Case; 16] = [
+        ("(a)+", 0, 1, None, true, 1, false, false),
+        ("((a)){0,3}?", 0, 0, Some(3), false, 2, false, false),
+        ("(?:(a)){2,4}", 0, 2, Some(4), true, 1, false, false),
+        ("(?:a)+", 0, 1, None, true, 0, false, false),
+        ("((?:a)){0}", 0, 0, Some(0), true, 1, false, false),
+        ("([aſK])+", 1, 1, None, true, 1, false, false),
+        ("((.)){1,3}$", 2, 1, Some(3), true, 2, false, true),
+        (r"^((\D)){0,2}?$", 3, 0, Some(2), false, 2, true, true),
+        (r"^(\p{Join_C})+$", 4, 1, None, true, 1, true, true),
+        (r"(\p{NChar}){1,2}$", 5, 1, Some(2), true, 1, false, true),
+        ("(😀)+", 6, 1, None, true, 1, false, false),
+        (r"((\uD800)){0,1}", 7, 0, Some(1), true, 2, false, false),
+        (r"(\?)??", 8, 0, Some(1), false, 1, false, false),
+        (r"(?:(\W))+", 9, 1, None, true, 1, false, false),
+        (r"(\u{61})?", 0, 0, Some(1), true, 1, false, false),
+        ("((a)){1,3}$", 0, 1, Some(3), true, 2, false, true),
+    ];
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_capturing_atom_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn unicode_captured_atom_ranges_snapshot() {
+        let mut rows = String::new();
+        for (source, ..) in CASES {
+            let pattern = JsString::from(source);
+            for v in [false, true] {
+                for i in [false, true] {
+                    for m in [false, true] {
+                        for s in [false, true] {
+                            let matcher = plan(source, v, i, m, s);
+                            for input in [
+                                JsString::from("Aaaa\nAA"),
+                                JsString::from("A\r\n\u{200c}\u{200d}\u{ffff}\u{10ffff}"),
+                                JsString::from("😀??aaſK"),
+                                JsString::from_code_units(vec![0x61, 0xd800, 0x61, 0xdc00]),
+                                JsString::from(""),
+                            ] {
+                                for start in [0, 1, input.len(), input.len() + 1] {
+                                    for sticky in [false, true] {
+                                        let found = matcher
+                                            .find_with_captures_and_work(
+                                                &input,
+                                                start,
+                                                sticky,
+                                                |_| Ok::<(), ()>(()),
+                                            )
+                                            .unwrap();
+                                        writeln!(rows,"{pattern:?} v={v} i={i} m={m} s={s} input={input:?} start={start} sticky={sticky} count={} range={:?} capture={:?}",matcher.capture_count(),found.as_ref().map(|f|f.range.clone()),found.and_then(|f|f.atom_capture)).unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_captured_atoms_agree_with_independent_counts_and_final_character() {
+        let alphabet: [u16; 10] = [
+            0x41, 0x61, 10, 13, 0x17f, 0x212a, 0xd83d, 0xde00, 0xd800, 0xdc00,
+        ];
+        let lt = |c| [10, 13, 0x2028, 0x2029].contains(&c);
+        for i in [false, true] {
+            for m in [false, true] {
+                for s in [false, true] {
+                    let plans: Vec<_> = CASES.iter().map(|c| plan(c.0, true, i, m, s)).collect();
+                    let fold = |c| {
+                        if i {
+                            match c {
+                                0x41 => 0x61,
+                                0x17f => 0x73,
+                                0x212a => 0x6b,
+                                _ => c,
+                            }
+                        } else {
+                            c
+                        }
+                    };
+                    let member = |kind, c| match kind {
+                        0 => fold(c) == 0x61,
+                        1 => [0x61, fold(0x17f), fold(0x212a)].contains(&fold(c)),
+                        2 => s || !lt(c),
+                        3 => !(0x30..=0x39).contains(&c),
+                        4 => (0x200c..=0x200d).contains(&c),
+                        5 => matches!(c, 0xfdd0..=0xfdef) || (c & 0xffff) >= 0xfffe,
+                        6 => c == 0x1f600,
+                        7 => c == 0xd800,
+                        8 => c == 0x3f,
+                        9 => !char::from_u32(fold(c))
+                            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_'),
+                        _ => unreachable!(),
+                    };
+                    for len in 0..=4 {
+                        for ordinal in 0..alphabet.len().pow(len) {
+                            let units: Vec<_> = (0..len)
+                                .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                                .collect();
+                            let mut points = Vec::new();
+                            let mut bounds = vec![0];
+                            let mut j = 0;
+                            while j < units.len() {
+                                let mut c = u32::from(units[j]);
+                                j += 1;
+                                if (0xd800..=0xdbff).contains(&c)
+                                    && j < units.len()
+                                    && (0xdc00..=0xdfff).contains(&units[j])
+                                {
+                                    c = 65536 + (c - 0xd800) * 1024 + u32::from(units[j]) - 0xdc00;
+                                    j += 1;
+                                }
+                                points.push(c);
+                                bounds.push(j);
+                            }
+                            let input = JsString::from_code_units(units);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    for (case, matcher) in CASES.iter().zip(&plans) {
+                                        let expected = if start > input.len() {
+                                            None
+                                        } else {
+                                            let first = bounds.partition_point(|&b| b <= start) - 1;
+                                            (first..=points.len()).find_map(|at| {
+                                                if (sticky && at != first)
+                                                    || (case.6
+                                                        && at != 0
+                                                        && !(m && lt(points[at - 1])))
+                                                {
+                                                    return None;
+                                                }
+                                                let available = points[at..]
+                                                    .iter()
+                                                    .take_while(|&&c| member(case.1, c))
+                                                    .count();
+                                                let upper =
+                                                    available.min(case.3.unwrap_or(available));
+                                                if upper < case.2 {
+                                                    return None;
+                                                }
+                                                let endpoint = |n: usize| {
+                                                    let end = at + n;
+                                                    if case.7
+                                                        && end != points.len()
+                                                        && !(m && lt(points[end]))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    Some(RegExpUnicodeRepeatedAtomMatch {
+                                                        range: bounds[at]..bounds[end],
+                                                        atom_capture: (case.5 != 0 && n != 0)
+                                                            .then(|| bounds[end - 1]..bounds[end]),
+                                                    })
+                                                };
+                                                let mut counts = case.2..=upper;
+                                                if case.4 {
+                                                    counts.rev().find_map(endpoint)
+                                                } else {
+                                                    counts.find_map(endpoint)
+                                                }
+                                            })
+                                        };
+                                        assert_eq!(matcher.capture_count(), case.5, "{}", case.0);
+                                        assert_eq!(
+                                            matcher
+                                                .find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                            expected,
+                                            "{} i={i} m={m} s={s} {input:?} start={start} sticky={sticky}",
+                                            case.0
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_captured_atoms_large_wrappers_charges_clones_and_scope_contracts() {
+        let source = format!("{}😀{}+", "(".repeat(3000), ")".repeat(3000));
+        let matcher = plan(&source, true, false, false, false).clone();
+        let input = JsString::from("😀".repeat(100000).as_str());
+        assert_eq!(matcher.capture_count(), 3000);
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_captures_and_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(RegExpUnicodeRepeatedAtomMatch {
+                range: 0..200000,
+                atom_capture: Some(199998..200000)
+            })
+        );
+        assert!(work < 6 * input.len(), "{work}");
+        let matcher = plan("((?:a)){2,3}$", false, false, true, false);
+        let mut calls = 0;
+        matcher
+            .find_with_captures_and_work(&JsString::from("aaa\n"), 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                matcher
+                    .find_with_captures_and_work(&JsString::from("aaa\n"), 0, false, |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    })
+                    .is_err()
+            );
+        }
+        for source in [
+            "(^a)+",
+            "(a$)+",
+            "(a?)+",
+            "(a|b)+",
+            "()+",
+            "(ab)+",
+            "(?:a)(a)+",
+            "(a)+b",
+            "(?i:a)+",
+            r"(\b.)+",
+            r"(\b)+",
+            r"(\B)+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_capturing_atom_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodeRepeatedAtomMatcher::compile_with_flags_and_work(
+                &JsString::from("(a)+"),
+                true,
+                false,
+                false,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
 }
 
 // The outer Option distinguishes malformed digits from a storage-sized overflow.

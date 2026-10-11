@@ -55,8 +55,8 @@ impl RegExpMatcher {
             RegExpMatcherBody::Sequence(m) => m.capture_ranges().len(),
             RegExpMatcherBody::Character(_)
             | RegExpMatcherBody::UnicodeCharacter(_)
-            | RegExpMatcherBody::UnicodeClass(_)
-            | RegExpMatcherBody::UnicodeRepeatedAtom(_) => 0,
+            | RegExpMatcherBody::UnicodeClass(_) => 0,
+            RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedSequence(m) => m.capture_count(),
@@ -96,6 +96,7 @@ impl RegExpMatcher {
                         branch: 0,
                         capture_count: self.capture_count,
                         dynamic_captures: Some(found.captures),
+                        atom_capture: None,
                     })
                 });
         }
@@ -109,19 +110,21 @@ impl RegExpMatcher {
                         branch: 0,
                         capture_count: self.capture_count,
                         dynamic_captures: Some(found.captures),
+                        atom_capture: None,
                     })
                 });
         }
         if let RegExpMatcherBody::UnicodeRepeatedAtom(matcher) = &self.body {
             return matcher
-                .find_with_work(input, start, sticky, charge)
+                .find_with_captures_and_work(input, start, sticky, charge)
                 .map(|found| {
-                    found.map(|range| RegExpMatch {
-                        range,
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
                         matcher: self,
                         branch: 0,
                         capture_count: self.capture_count,
                         dynamic_captures: None,
+                        atom_capture: found.atom_capture,
                     })
                 });
         }
@@ -184,6 +187,7 @@ impl RegExpMatcher {
             branch,
             capture_count: self.capture_count(),
             dynamic_captures: None,
+            atom_capture: None,
         })
     }
     pub fn capture_count(&self) -> usize {
@@ -263,6 +267,7 @@ pub(crate) struct RegExpMatch<'a> {
     branch: usize,
     pub capture_count: usize,
     dynamic_captures: Option<Box<[Option<Range<usize>>]>>,
+    atom_capture: Option<Range<usize>>,
 }
 
 impl RegExpMatch<'_> {
@@ -288,10 +293,10 @@ impl RegExpMatch<'_> {
             RegExpMatcherBody::Sequence(matcher) => matcher.capture_ranges(),
             RegExpMatcherBody::Character(_)
             | RegExpMatcherBody::UnicodeCharacter(_)
-            | RegExpMatcherBody::UnicodeClass(_)
-            | RegExpMatcherBody::UnicodeRepeatedAtom(_) => {
+            | RegExpMatcherBody::UnicodeClass(_) => {
                 return None;
             }
+            RegExpMatcherBody::UnicodeRepeatedAtom(_) => return self.atom_capture.clone(),
             RegExpMatcherBody::Prefixed(matcher) => {
                 return matcher.capture_range(index, &self.range);
             }
