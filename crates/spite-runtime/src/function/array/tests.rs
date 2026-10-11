@@ -222,7 +222,8 @@ fn truncation_work_abort_precedes_mutation_and_skips_language_handlers() {
     realm
         .eval("let flag=0;for(let i=0;i<10;i++)a[i]=i")
         .unwrap();
-    realm.limits.max_steps = Some(1000);
+    // Exhaust the prepaid linear scans of the eleven stored properties.
+    realm.limits.max_steps = Some(600);
     assert!(matches!(
         realm.eval("try{a.length=0;}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })

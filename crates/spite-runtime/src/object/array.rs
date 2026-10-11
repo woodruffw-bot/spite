@@ -142,13 +142,10 @@ impl OrdinaryObject {
         let new_length = *number as u32;
         let (old_length, writable) = self.array_length();
         if new_length < old_length && writable {
-            // Each deletion finds the largest remaining numeric index and may
-            // shift the property vector. Charge a conservative quadratic bound
-            // before reducing length, so a work abort cannot break invariants.
-            let work = count
-                .checked_mul(count)
-                .and_then(|n| n.checked_mul(16))
-                .ok_or(Error::WorkLimit)?;
+            // Two bounded index scans select the first deletion failure and
+            // retain the surviving properties. Charge their linear work before
+            // reducing length, so a work abort cannot break invariants.
+            let work = count.checked_mul(48).ok_or(Error::WorkLimit)?;
             budget.charge(work)?;
         }
         Ok(Some(new_length))
@@ -204,34 +201,27 @@ impl OrdinaryObject {
         if !self.define_own_property(key, descriptor)? {
             return Ok(false);
         }
-        loop {
-            let largest = self
-                .properties
-                .iter()
-                .enumerate()
-                .filter_map(|(slot, (key, _))| {
-                    array_index(key)
-                        .filter(|&index| index >= new_length)
-                        .map(|index| (index, slot))
-                })
-                .max_by_key(|&(index, _)| index);
-            let Some((index, slot)) = largest else {
-                break;
-            };
-            if !self.properties[slot].1.configurable() {
-                let length = self.array_length_mut();
-                length.value = Value::Number(f64::from(index + 1));
-                if make_read_only {
-                    length.writable = false;
-                }
-                return Ok(false);
-            }
-            self.properties.remove(slot);
-        }
+        // Ordinary deletion of these own properties invokes no user code. In
+        // descending index order the first failure is exactly the largest
+        // nonconfigurable index at or above the requested length (10.4.2.4).
+        // All larger indices are removed; smaller indices remain untouched.
+        // Stable retention also preserves named and Symbol creation order.
+        let blocked = self
+            .properties
+            .iter()
+            .filter_map(|(key, property)| {
+                array_index(key).filter(|&index| index >= new_length && !property.configurable())
+            })
+            .max();
+        // Canonical Array indices exclude u32::MAX, so restoration cannot overflow.
+        let final_length = blocked.map_or(new_length, |index| index + 1);
+        self.properties
+            .retain(|(key, _)| array_index(key).is_none_or(|index| index < final_length));
+        self.array_length_mut().value = Value::Number(f64::from(final_length));
         if make_read_only {
             self.array_length_mut().writable = false;
         }
-        Ok(true)
+        Ok(blocked.is_none())
     }
 
     fn array_length(&self) -> (u32, bool) {

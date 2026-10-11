@@ -6357,6 +6357,38 @@ Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Linear ArraySetLength truncation has three integration tests. Its 384 snapshot
+rows cover two insertion orders, all nonconfigurability masks over five sparse
+indices, three requested lengths and both requested writability states. Every
+row and five additional accessor/prototype/maximum-index/descriptor programs
+agree with Node. Getter/setter calls are absent during deletion, inherited
+properties do not block truncation, and failure restores length and applies a
+requested read-only state after deleting higher properties. A 100000-element
+array is truncated and collected with unlimited defaults. All existing twelve
+Array storage tests pass, including work exhaustion before mutation. All 579
+core tests, the runtime library and 206 related
+targets pass; 460 prior snapshots remain byte-identical, with one new gold.
+The 1084 unproved RegExp programs and eighteen ordered/direct-eval state probes
+retain their classifications; existing whole fixture reviews have no failures
+or host limits.
+
+With verified indexed lookup and linear truncation, all six variants of three
+additional unchanged generated Test262 word/nonword fixtures pass in the native
+debug and existing CI conformance profiles. Whole-fixture execution takes
+125.578 seconds in debug and
+21.167 seconds in conformance on
+this host. The recorded pre-change conformance execution of these same six
+variants passed in 1100.404 seconds. These host
+measurements include concurrent validation work. The conformance profile retains
+debug assertions and overflow checks.
+These measurements use the complete Unicode-complement character lists and
+unlimited defaults; the fixture inventory is unchanged until separate admission.
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -3701,8 +3701,13 @@ properties in descending numeric order. A non-configurable element stops deletio
 restores length to that index plus one, and still applies a requested read-only
 length. Already deleted higher properties remain deleted. Host work/capacity
 checks must precede mutation so an abort cannot expose an inconsistent array.
-Initial sparse truncation uses a conservatively charged quadratic algorithm;
-iteration over absent indices up to the logical length is unnecessary.
+Sparse truncation scans once for the largest non-configurable index at or above
+the requested length, then stably retains properties below the resulting length.
+Ordinary deletion invokes no user code, so this exactly preserves the descending
+first-failure rule and all partial effects. Named/Symbol creation order is
+unchanged. Both scans receive a checked linear work charge before mutation;
+neither absent indices nor repeated removal scans are visited. No additional
+allocation or cached state is needed.
 
 Land this work as storage invariants, Realm Array construction/Array.isArray and
 length coercions, array literal grammar/evaluation, then prototype methods and
