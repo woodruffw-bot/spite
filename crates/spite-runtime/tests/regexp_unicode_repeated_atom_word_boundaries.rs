@@ -162,7 +162,7 @@ fn unicode_repeated_atom_word_boundary_opted_work_and_unproved_scopes() {
         r"/\b(^a)+\bb/um.exec('a')",
         r"/\b(a$)+\bb/um.exec('a')",
         r"/\b(a?)+\b/u.exec('a')",
-        r"/\b(a|b)+\b/v.exec('a')",
+        r"/\b(a|b)+\bb/v.exec('a')",
         r"/\b()+\b/u.exec('a')",
         r"/\b(ab)+\b/v.exec('ab')",
         r"/\b(a)+b\b/u.exec('ab')",

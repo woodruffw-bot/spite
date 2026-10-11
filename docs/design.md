@@ -3346,6 +3346,23 @@ character; matching work is bounded by input length times the proved branch
 predicates. Earlier entry points keep their contracts. Dependencies, fixture
 sources and opt-in quota defaults are unchanged.
 
+
+The outside-word entry for repeated alternatives composes the existing word
+assertion scan with the complete one-character alternative proof (22.2.2.3,
+22.2.2.4, 22.2.2.7). It proves the entire retained repetition before attaching
+any outside predicate. Every branch still consumes the same decoded input
+character when it succeeds, with no branch captures or side effects. Wrappers
+retain their final-iteration captures; zero counts leave them undefined.
+
+For example, \b(a|b)+\B selects abb from abba. In \b(\ba|b)+\B on aaa, the
+branch's word predicate permits only the first a, so the selected match is a.
+Branch word and line assertions stay inside each iteration. Outside word and
+line gates constrain the selected whole range. Earlier entry points retain
+their contracts, and no predicate crosses a quantifier or capture boundary.
+The established range, capture and safely charged branch logic is shared;
+there is no new search algorithm, source/input storage, recursion, count
+expansion, dependency, fixture change or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

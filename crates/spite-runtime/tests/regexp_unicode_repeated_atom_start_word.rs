@@ -172,7 +172,7 @@ fn unicode_repeated_atom_start_word_opted_work_and_unproved_scopes() {
         r"/\b(^a)+b/um.exec('a')",
         r"/\b(a$)+b/um.exec('a')",
         r"/\b(a?)+/u.exec('a')",
-        r"/\b(a|b)+/v.exec('a')",
+        r"/\b(a|b)+b/v.exec('a')",
         r"/\b()+/u.exec('a')",
         r"/\b(ab)+/v.exec('ab')",
         r"/\b(a)+b/u.exec('ab')",

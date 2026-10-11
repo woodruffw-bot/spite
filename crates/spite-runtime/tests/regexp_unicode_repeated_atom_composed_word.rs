@@ -148,7 +148,7 @@ fn unicode_repeated_atom_composed_word_opted_work_and_unproved_units() {
         r"/\b(\b)+/u.exec('a')",
         r"/\B(^\B$)+/v.exec('')",
         r"/\b(\ba?)+/u.exec('a')",
-        r"/\b(\ba|b)+/v.exec('a')",
+        r"/\b(\ba|b)+b/v.exec('a')",
         r"/\b(\bab)+/u.exec('ab')",
         r"/\b(\ba)+b/v.exec('ab')",
         r"/\b(\ba)+\bb/u.exec('a')",
