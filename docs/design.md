@@ -3244,6 +3244,27 @@ All scans, copies and predicates use established opted-in charges. No assertion
 moves across a quantifier, and no recursion, expanded counts, dependency,
 fixture change or default quota is introduced.
 
+
+A dedicated complete-group entry admits optional word and line assertions
+around the single consuming atom inside a repetition (22.2.2.4, 22.2.2.7).
+The established character and flat-class/property compilers prove the entire
+retained atom before the repetition is accepted. Their word predicates use
+original neighboring input characters, including the Unicode i aliases. The
+private assertion mode keeps the older entry points' narrower contracts.
+
+Each selected iteration executes its own assertions. Thus (\ba)+ selects one
+initial a from aaa, while (a\b)+ selects only the final a. Moving either word
+assertion outside the quantifier would change the result. A zero count never
+executes the child and leaves its captures undefined; complete inner wrappers
+otherwise capture the last selected consuming character. Optional outside ^/$
+keep their separate scopes. Outside word assertions, empty units, alternatives
+and concatenations still require other complete proofs.
+
+Search and capture construction remain shared with the established monotone
+repetition matcher, with no new input storage, recursion or expanded counts.
+Existing leaf work charges include the retained word and line predicates.
+There is no new dependency, fixture change or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

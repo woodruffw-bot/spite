@@ -159,7 +159,7 @@ fn unicode_repeated_atom_inner_line_opted_work_and_unproved_units() {
     );
     for source in [
         r"/(^$)+/u.exec('')",
-        r"/(\b.)+/u.exec('a')",
+        r"/(\b.)+b/u.exec('a')",
         r"/(a?)+/u.exec('a')",
         r"/(a|b)+/v.exec('a')",
         r"/()+/u.exec('a')",
