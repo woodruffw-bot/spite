@@ -3305,6 +3305,22 @@ storage. Matching keeps the existing monotone search and final-capture logic,
 with no new recursion, expanded counts, input storage, dependency or default
 quota. Outside words around these interleaved groups require another proof.
 
+
+The outside-word entry for interleaved nested groups composes the existing
+outside assertion scan with the complete consuming-group proof (22.2.2.4,
+22.2.2.7). The whole retained body must pass that proof before any outside word
+predicate is attached. Earlier entry points keep their established contracts.
+Each complete inner group still contains the same one selected character, so
+its capture is the final iteration; zero counts leave all inner captures
+undefined without executing their predicates.
+
+For example, \b(\b(a))+\B selects one initial a from aaa, while \ba+\B selects
+two. Inner word/line assertions are evaluated per iteration in the original
+input context. Outside word and line gates constrain the selected whole match.
+The established earliest-start, greedy/lazy endpoint and complete UTF-16 range
+logic is shared. There is no new matching algorithm, input storage, recursion,
+expanded count, dependency, fixture change or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

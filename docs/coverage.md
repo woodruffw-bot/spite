@@ -6698,6 +6698,34 @@ Stable and MSRV pass all 14,482 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Outside words with interleaved nested assertion groups have three core and
+eight runtime tests. Sixteen independent plans retain inner word/line and
+outside word/line scopes, with numbered capture counts checked independently.
+Raw four-unit UTF-16 enumeration covers all starts, sticky/i/m/s combinations,
+bounded/lazy/zero counts and final selected captures. All 10240 core and 2400
+runtime rows agree with independent pinned-folding calculations and Node, as do
+twenty-three complete Boolean programs. Both newly supported whole programs
+remain exact positive snapshots verified with Node; their two old controls in
+one file add unproved suffixes.
+
+Regressions cover complete ordinary/noncapturing groups, named/__proto__ aliases,
+assertion order, folding, supplementary and lone-surrogate indices, initial pair
+normalization, consumers, coercions and strict lastIndex writes. Defaults and
+collection handle 6000 captures over 200001 line terminators. Successful and
+failing 200000-unit searches check linear work, and explicit exhaustion preserves
+the tested state.
+
+All 609 core tests and 216 related targets pass. All 487 previous snapshots are
+byte-identical, with three reviewed new golds. All 1169 unproved programs, eight
+ordered and ten direct-eval probes retain Unsupported and state. Existing whole
+fixture reviews have no failures or limits. The corpus pin, inventories,
+dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,482 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -1233,6 +1233,40 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         Ok(None)
     }
 
+    /// Compiles outside word assertions on complete repeated atom groups.
+    ///
+    /// Requires complete u/v validation and normalized named groups. The retained
+    /// body must pass the complete interleaved-group proof, including any per-iteration word or line
+    /// assertions. Word predicates remain outside the repetition; optional
+    /// outside ^/$ keep their separate original scopes. Empty units and other compositions remain excluded.
+    pub fn compile_with_nested_assertion_word_boundaries_and_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some(assertions) = unicode_word_assertions_with_work(source, &mut charge)? else {
+            return Ok(None);
+        };
+        let Some(mut plan) = Self::compile_nested_assertion_groups_with_work(
+            &assertions.source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.start_word = assertions.start;
+        plan.end_word = assertions.end;
+        plan.word_ignore_case = ignore_case;
+        Ok(Some(plan))
+    }
+
     fn compile_word_boundary_body_with_work<E>(
         assertions: UnicodeWordAssertions,
         unicode_sets: bool,
@@ -5861,6 +5895,585 @@ mod nested_assertion_group_tests {
         for source in [r"(\b(a))+", r"((a)\b)+", r"(^\B(.)\B$)+"] {
             assert!(
                 RegExpUnicodeRepeatedAtomMatcher::compile_capturing_atom_with_assertions_and_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod nested_assertion_word_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    type Case = (
+        &'static str,
+        u8,
+        usize,
+        Option<usize>,
+        bool,
+        usize,
+        bool,
+        bool,
+        bool,
+        bool,
+        Option<bool>,
+        Option<bool>,
+        Option<bool>,
+        Option<bool>,
+    );
+    const CASES: [Case; 16] = [
+        (
+            r"\b(\b(a))+\B",
+            0,
+            1,
+            None,
+            true,
+            2,
+            false,
+            false,
+            false,
+            false,
+            Some(true),
+            None,
+            Some(true),
+            Some(false),
+        ),
+        (
+            r"\B((a)\b){0,3}?\b",
+            0,
+            0,
+            Some(3),
+            false,
+            2,
+            false,
+            false,
+            false,
+            false,
+            None,
+            Some(true),
+            Some(false),
+            Some(true),
+        ),
+        (
+            r"\b(?:\b(a)\b){2,4}\b",
+            0,
+            2,
+            Some(4),
+            true,
+            1,
+            false,
+            false,
+            false,
+            false,
+            Some(true),
+            Some(true),
+            Some(true),
+            Some(true),
+        ),
+        (
+            r"\B(?:\B(?:a))+",
+            0,
+            1,
+            None,
+            true,
+            0,
+            false,
+            false,
+            false,
+            false,
+            Some(false),
+            None,
+            Some(false),
+            None,
+        ),
+        (
+            r"((?:a)\B){0}\B",
+            0,
+            0,
+            Some(0),
+            true,
+            1,
+            false,
+            false,
+            false,
+            false,
+            None,
+            Some(false),
+            None,
+            Some(false),
+        ),
+        (
+            r"\b(\b^([aſK]))+\b",
+            1,
+            1,
+            None,
+            true,
+            2,
+            false,
+            false,
+            true,
+            false,
+            Some(true),
+            None,
+            Some(true),
+            Some(true),
+        ),
+        (
+            r"((.)$\B){1,3}\B$",
+            2,
+            1,
+            Some(3),
+            true,
+            2,
+            false,
+            true,
+            false,
+            true,
+            None,
+            Some(false),
+            None,
+            Some(false),
+        ),
+        (
+            r"^\b((^\b(\D)\B$)){0,2}?\B$",
+            3,
+            0,
+            Some(2),
+            false,
+            3,
+            true,
+            true,
+            true,
+            true,
+            Some(true),
+            Some(false),
+            Some(true),
+            Some(false),
+        ),
+        (
+            r"^\B(\B(\p{Join_C})\B)+\B$",
+            4,
+            1,
+            None,
+            true,
+            2,
+            true,
+            true,
+            false,
+            false,
+            Some(false),
+            Some(false),
+            Some(false),
+            Some(false),
+        ),
+        (
+            r"((\p{NChar})\B$){1,2}\B$",
+            5,
+            1,
+            Some(2),
+            true,
+            2,
+            false,
+            true,
+            false,
+            true,
+            None,
+            Some(false),
+            None,
+            Some(false),
+        ),
+        (
+            r"\B(\B(😀)\B)+\B",
+            6,
+            1,
+            None,
+            true,
+            2,
+            false,
+            false,
+            false,
+            false,
+            Some(false),
+            Some(false),
+            Some(false),
+            Some(false),
+        ),
+        (
+            r"((\uD800)\b){0,1}\b",
+            7,
+            0,
+            Some(1),
+            true,
+            2,
+            false,
+            false,
+            false,
+            false,
+            None,
+            Some(true),
+            None,
+            Some(true),
+        ),
+        (
+            r"\b(\b(\?))??",
+            8,
+            0,
+            Some(1),
+            false,
+            2,
+            false,
+            false,
+            false,
+            false,
+            Some(true),
+            None,
+            Some(true),
+            None,
+        ),
+        (
+            r"\B(?:(\B(\W)\B$))+\B",
+            9,
+            1,
+            None,
+            true,
+            2,
+            false,
+            false,
+            false,
+            true,
+            Some(false),
+            Some(false),
+            Some(false),
+            Some(false),
+        ),
+        (
+            r"((\u{61})\b)?\b",
+            0,
+            0,
+            Some(1),
+            true,
+            2,
+            false,
+            false,
+            false,
+            false,
+            None,
+            Some(true),
+            None,
+            Some(true),
+        ),
+        (
+            r"\b((^\b(a)\b)){1,3}\b$",
+            0,
+            1,
+            Some(3),
+            true,
+            3,
+            false,
+            true,
+            true,
+            false,
+            Some(true),
+            Some(true),
+            Some(true),
+            Some(true),
+        ),
+    ];
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_with_nested_assertion_word_boundaries_and_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn unicode_repeated_atom_nested_assertion_word_ranges_snapshot() {
+        let mut rows = String::new();
+        for (source, ..) in CASES {
+            let pattern = JsString::from(source);
+            for v in [false, true] {
+                for i in [false, true] {
+                    for m in [false, true] {
+                        for s in [false, true] {
+                            let matcher = plan(source, v, i, m, s);
+                            for input in [
+                                JsString::from("Aaaa\nAA"),
+                                JsString::from("A\r\n\u{200c}\u{200d}\u{ffff}\u{10ffff}"),
+                                JsString::from("😀??aaſK"),
+                                JsString::from_code_units(vec![0x61, 0xd800, 0x61, 0xdc00]),
+                                JsString::from(""),
+                            ] {
+                                for start in [0, 1, input.len(), input.len() + 1] {
+                                    for sticky in [false, true] {
+                                        let found = matcher
+                                            .find_with_captures_and_work(
+                                                &input,
+                                                start,
+                                                sticky,
+                                                |_| Ok::<(), ()>(()),
+                                            )
+                                            .unwrap();
+                                        writeln!(rows,"{pattern:?} v={v} i={i} m={m} s={s} input={input:?} start={start} sticky={sticky} count={} range={:?} capture={:?}",matcher.capture_count(),found.as_ref().map(|f|f.range.clone()),found.and_then(|f|f.atom_capture)).unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_repeated_atom_nested_assertion_words_agree_with_independent_counts_and_final_character()
+     {
+        let alphabet: [u16; 10] = [
+            0x41, 0x61, 10, 13, 0x17f, 0x212a, 0xd83d, 0xde00, 0xd800, 0xdc00,
+        ];
+        let lt = |c| [10, 13, 0x2028, 0x2029].contains(&c);
+        for i in [false, true] {
+            for m in [false, true] {
+                for s in [false, true] {
+                    let plans: Vec<_> = CASES.iter().map(|c| plan(c.0, true, i, m, s)).collect();
+                    let fold = |c| {
+                        if i {
+                            match c {
+                                0x41 => 0x61,
+                                0x17f => 0x73,
+                                0x212a => 0x6b,
+                                _ => c,
+                            }
+                        } else {
+                            c
+                        }
+                    };
+                    let member = |kind, c| match kind {
+                        0 => fold(c) == 0x61,
+                        1 => [0x61, fold(0x17f), fold(0x212a)].contains(&fold(c)),
+                        2 => s || !lt(c),
+                        3 => !(0x30..=0x39).contains(&c),
+                        4 => (0x200c..=0x200d).contains(&c),
+                        5 => matches!(c, 0xfdd0..=0xfdef) || (c & 0xffff) >= 0xfffe,
+                        6 => c == 0x1f600,
+                        7 => c == 0xd800,
+                        8 => c == 0x3f,
+                        9 => !char::from_u32(fold(c))
+                            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_'),
+                        _ => unreachable!(),
+                    };
+                    for len in 0..=4 {
+                        for ordinal in 0..alphabet.len().pow(len) {
+                            let units: Vec<_> = (0..len)
+                                .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                                .collect();
+                            let mut points = Vec::new();
+                            let mut bounds = vec![0];
+                            let mut j = 0;
+                            while j < units.len() {
+                                let mut c = u32::from(units[j]);
+                                j += 1;
+                                if (0xd800..=0xdbff).contains(&c)
+                                    && j < units.len()
+                                    && (0xdc00..=0xdfff).contains(&units[j])
+                                {
+                                    c = 65536 + (c - 0xd800) * 1024 + u32::from(units[j]) - 0xdc00;
+                                    j += 1;
+                                }
+                                points.push(c);
+                                bounds.push(j);
+                            }
+                            let input = JsString::from_code_units(units);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    for (case, matcher) in CASES.iter().zip(&plans) {
+                                        let expected = if start > input.len() {
+                                            None
+                                        } else {
+                                            let first = bounds.partition_point(|&b| b <= start) - 1;
+                                            (first..=points.len()).find_map(|at| {
+                                                let word=|c:Option<&u32>|c.is_some_and(|&c|matches!(c,0x30..=0x39|0x41..=0x5a|0x5f|0x61..=0x7a)||(i&&matches!(c,0x17f|0x212a)));
+                                                let start_boundary=word(at.checked_sub(1).and_then(|n|points.get(n)))!=word(points.get(at));
+                                                if case.12.is_some_and(|expected|start_boundary!=expected) || (sticky && at != first)
+                                                    || (case.6
+                                                        && at != 0
+                                                        && !(m && lt(points[at - 1])))
+                                                {
+                                                    return None;
+                                                }
+                                                let available = (at..points.len())
+                                                    .take_while(|&p| {
+                                                        member(case.1, points[p])
+                                                            && !case.10.is_some_and(|positive| (word(p.checked_sub(1).and_then(|n|points.get(n))) != word(points.get(p))) != positive)
+                                                            && !case.11.is_some_and(|positive| (word(points.get(p)) != word(points.get(p+1))) != positive)
+                                                            && (!case.8
+                                                                || p == 0
+                                                                || (m && lt(points[p - 1])))
+                                                            && (!case.9
+                                                                || p + 1 == points.len()
+                                                                || (m && lt(points[p + 1])))
+                                                    })
+                                                    .count();
+                                                let upper =
+                                                    available.min(case.3.unwrap_or(available));
+                                                if upper < case.2 {
+                                                    return None;
+                                                }
+                                                let endpoint = |n: usize| {
+                                                    let end = at + n;
+                                                    if case.7
+                                                        && end != points.len()
+                                                        && !(m && lt(points[end]))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    let end_boundary=word(end.checked_sub(1).and_then(|n|points.get(n)))!=word(points.get(end));
+                                                    if case.13.is_some_and(|expected|end_boundary!=expected){return None;}
+                                                    Some(RegExpUnicodeRepeatedAtomMatch {
+                                                        range: bounds[at]..bounds[end],
+                                                        atom_capture: (case.5 != 0 && n != 0)
+                                                            .then(|| bounds[end - 1]..bounds[end]),
+                                                    })
+                                                };
+                                                let mut counts = case.2..=upper;
+                                                if case.4 {
+                                                    counts.rev().find_map(endpoint)
+                                                } else {
+                                                    counts.find_map(endpoint)
+                                                }
+                                            })
+                                        };
+                                        assert_eq!(matcher.capture_count(), case.5, "{}", case.0);
+                                        assert_eq!(
+                                            matcher
+                                                .find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                            expected,
+                                            "{} i={i} m={m} s={s} {input:?} start={start} sticky={sticky}",
+                                            case.0
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_repeated_atom_nested_assertion_word_work_clones_and_scope_contracts() {
+        let source = format!(
+            r"\B{}^\B{}.{}\B${}+\B",
+            "(".repeat(1500),
+            "(".repeat(1500),
+            ")".repeat(1500),
+            ")".repeat(1500)
+        );
+        let matcher = plan(&source, true, false, true, true).clone();
+        let input = JsString::from("\n".repeat(200000).as_str());
+        let mut work = 0;
+        assert_eq!(matcher.capture_count(), 3000);
+        assert_eq!(
+            matcher
+                .find_with_captures_and_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(RegExpUnicodeRepeatedAtomMatch {
+                range: 0..200000,
+                atom_capture: Some(199999..200000)
+            })
+        );
+        assert!(work < 50 * input.len(), "{work}");
+        let matcher = plan(r"\b(\b(a)){2}\b", false, false, false, false);
+        let input = JsString::from("a".repeat(200000).as_str());
+        work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            None
+        );
+        assert!(work < 50 * input.len(), "{work}");
+        let matcher = plan(r"\B(^\B(.)\B$){2,3}\B$", true, false, true, true);
+        let input = JsString::from("\r\n");
+        let mut calls = 0;
+        matcher
+            .find_with_captures_and_work(&input, 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                matcher
+                    .find_with_captures_and_work(&input, 0, false, |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    })
+                    .is_err()
+            );
+        }
+        for source in [
+            r"(\b(a))+",
+            r"\b(\b)+",
+            r"\B(^\B$)+",
+            r"\b(\b(a?))+",
+            r"\b(\b(a|b))+",
+            r"\b(\b(ab))+",
+            r"\b(\b(a))+b",
+            r"\b(a^\b)+",
+            r"\b(\ba(b))+",
+            r"\b(?i:\ba)+",
+            r"\b((\b)a)+",
+            r"\b(\b\b(a))+",
+        ] {
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_with_nested_assertion_word_boundaries_and_work(&JsString::from(source),true,false,true,true,|_|Ok::<(),()>(())).unwrap().is_none(),"{source}");
+        }
+        for source in [r"\b(\b(a))+", r"((a)\b)+\b", r"\B(^\B(.)\B$)+\B"] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_with_composed_word_boundaries_and_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_nested_assertion_groups_with_work(
                     &JsString::from(source),
                     true,
                     false,
