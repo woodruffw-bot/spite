@@ -6338,6 +6338,25 @@ Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Verified Array index lookup has five integration tests and a seven-row snapshot
+of dense, sparse, reordered, deleted, accessor and maximum-index properties.
+All snapshot rows and nine complete Boolean programs agree with Node. Cases
+also preserve named/Symbol metadata, nonwritable/nonconfigurable descriptors,
+inherited accessors and nonwritable data, read-only length, canonical keys,
+map/filter/slice consumers and traced collection. A 50000-element dense array
+runs with both default quotas disabled. All 579 core tests, the runtime library,
+and 205 related RegExp/Array targets pass; all
+459 previous snapshots remain byte-identical, with one new reviewed gold.
+The 1084 unproved RegExp programs and eighteen ordered/direct-eval state probes
+retain their classifications. Whole existing fixture reviews have no failures
+or host limits. This implementation adds no dependency, derived cache or default
+quota and preserves the pinned corpus inventory.
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

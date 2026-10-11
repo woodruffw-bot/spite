@@ -8,6 +8,47 @@ use crate::Value;
 use spite_core::{PropertyKey, PropertyKeyRef};
 
 impl OrdinaryObject {
+    // Array indices always remain below the own length (10.4.2.1). A key at
+    // or beyond that length cannot already be present. For common dense arrays,
+    // length is the first property and index n occupies slot n+1. Verify the
+    // exact key before using that position; sparse/reordered/metadata-bearing
+    // arrays fall back to the ordinary complete lookup. No derived cache or
+    // insertion-order assumption affects the returned descriptor.
+    pub(super) fn property_index(&self, key: PropertyKeyRef<'_>) -> Option<usize> {
+        if self.array {
+            if let Some(index) = array_index(key) {
+                if let Some(slot) = usize::try_from(index).ok().and_then(|n| n.checked_add(1)) {
+                    if self
+                        .properties
+                        .get(slot)
+                        .is_some_and(|(stored, _)| PropertyKeyRef::from(stored) == key)
+                    {
+                        return Some(slot);
+                    }
+                }
+                if let Some((_, Property::Data(length))) =
+                    self.properties.iter().find(|(key, _)| is_length(key))
+                {
+                    if let Value::Number(length) = length.value {
+                        // Construction can temporarily precede the complete
+                        // length descriptor. Use the invariant only once its
+                        // stored integral Number is valid; otherwise fall back.
+                        if length.is_finite()
+                            && length.fract() == 0.0
+                            && (0.0..=f64::from(u32::MAX)).contains(&length)
+                            && f64::from(index) >= length
+                        {
+                            return None;
+                        }
+                    }
+                }
+            }
+        }
+        self.properties
+            .iter()
+            .position(|(stored, _)| PropertyKeyRef::from(stored) == key)
+    }
+
     pub(super) fn initialize_array_elements(
         &mut self,
         values: Vec<Value>,

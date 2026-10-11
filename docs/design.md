@@ -3676,6 +3676,18 @@ assignments now supply these conversions. Array calls/new and Array.isArray now 
 literal syntax and at/join/toString/push/pop are implemented; remaining prototype
 methods are pending.
 
+
+Array own-property lookup first verifies the exact key at the expected dense
+position, without trusting insertion order or caching a derived array shape.
+Canonical indices at or beyond a valid stored length are absent by the Array
+exotic invariant (10.4.2.1). Otherwise lookup scans every stored property. The
+same lookup serves ordinary descriptor updates and deletion. Sparse arrays,
+named/Symbol metadata, holes, reordered keys and accessors retain their exact
+descriptors; a missing own key still permits normal prototype lookup and Set.
+This makes common dense reads and append definitions constant in property count
+without changing storage, descriptor rules or opted-in work accounting. Other
+shapes retain the complete scan, including writes into pre-sized sparse arrays.
+
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
 descriptor (10.4.2.4). The same object can therefore run conversion code twice and

@@ -287,10 +287,8 @@ impl OrdinaryObject {
     /// Use [`Objects::get_own`] to observe current mapped-argument values.
     pub fn own_property<'key>(&self, key: impl Into<PropertyKeyRef<'key>>) -> Option<&Property> {
         let key = key.into();
-        self.properties
-            .iter()
-            .find(|(k, _)| PropertyKeyRef::from(k) == key)
-            .map(|(_, p)| p)
+        self.property_index(key)
+            .map(|index| &self.properties[index].1)
     }
 
     /// Applies an ordinary descriptor (ECMA-262 10.1.6.3).
@@ -305,8 +303,8 @@ impl OrdinaryObject {
     ) -> Result<bool, PropertyLimit> {
         let key = key.into();
         let descriptor = descriptor.into().normalize();
-        if let Some((_, current)) = self.properties.iter_mut().find(|(k, _)| *k == key) {
-            return Ok(current.apply(descriptor));
+        if let Some(index) = self.property_index(PropertyKeyRef::from(&key)) {
+            return Ok(self.properties[index].1.apply(descriptor));
         }
         if !self.extensible {
             return Ok(false);
@@ -325,11 +323,7 @@ impl OrdinaryObject {
     /// Implements OrdinaryDelete (10.1.10.1), without strict-mode throw handling.
     pub fn delete<'key>(&mut self, key: impl Into<PropertyKeyRef<'key>>) -> bool {
         let key = key.into();
-        let Some(index) = self
-            .properties
-            .iter()
-            .position(|(k, _)| PropertyKeyRef::from(k) == key)
-        else {
+        let Some(index) = self.property_index(key) else {
             return true;
         };
         if !self.properties[index].1.configurable() {
