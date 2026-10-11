@@ -1,0 +1,8 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_repeated_atom_scoped_word.rs
+expression: rows
+---
+/\b(^a)+\b/um.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+/\b(^a)+/um.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+/\b(a$)+/um.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+/\b(a$)+\b/um.exec('a') "[\u0022a\u0022,\u0022a\u0022]"

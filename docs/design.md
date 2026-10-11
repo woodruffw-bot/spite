@@ -3225,6 +3225,25 @@ constant input storage. Source scans and copies use established precharges;
 predicates charge opted-in work before use. No expanded counts, recursion,
 dependency, corpus alteration or default quota is added.
 
+
+The scoped outside-word repetition entry composes the established word scan
+with the complete per-iteration line-group proof (22.2.2.4, 22.2.2.7). The entire
+retained body must pass that group proof before any outside word predicate is
+attached. The prior word entry points keep their established restrictions.
+Line assertions inside the atom remain checked at every consuming iteration;
+outside ^/$ and word assertions apply to the whole selected repetition.
+
+This adds no search algorithm or input storage. Established monotone candidate
+and endpoint gates select the earliest eligible start and greedy/lazy endpoint.
+The final selected iteration supplies complete inner captures, while zero counts
+leave them undefined and do not evaluate inner assertions. For example,
+\b(^a)+\B selects one initial a from aaa, while \b(^a)+\b cannot pass its
+trailing word assertion. Existing folded WordCharacters, UTF-16 boundaries,
+named groups, clone flags and result construction retain their behavior.
+All scans, copies and predicates use established opted-in charges. No assertion
+moves across a quantifier, and no recursion, expanded counts, dependency,
+fixture change or default quota is introduced.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

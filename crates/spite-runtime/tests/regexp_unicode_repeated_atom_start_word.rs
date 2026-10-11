@@ -169,8 +169,8 @@ fn unicode_repeated_atom_start_word_opted_work_and_unproved_scopes() {
     );
     for source in [
         r"/\b(a)+\bb/u.exec('a')",
-        r"/\b(^a)+/um.exec('a')",
-        r"/\b(a$)+/um.exec('a')",
+        r"/\b(^a)+b/um.exec('a')",
+        r"/\b(a$)+b/um.exec('a')",
         r"/\b(a?)+/u.exec('a')",
         r"/\b(a|b)+/v.exec('a')",
         r"/\b()+/u.exec('a')",

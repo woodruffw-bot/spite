@@ -165,7 +165,7 @@ fn unicode_repeated_atom_inner_line_opted_work_and_unproved_units() {
         r"/()+/u.exec('a')",
         r"/(ab)+/v.exec('ab')",
         r"/(^a)+b/u.exec('ab')",
-        r"/\b(^a)+\b/um.exec('a')",
+        r"/\b(^a)+\bb/um.exec('a')",
         r"/(a^)+/u.exec('a')",
     ] {
         assert!(
