@@ -3428,6 +3428,22 @@ non-alternative proof cannot recursively admit choices. Construction adds no
 native recursion and search adds no input-sized storage. Counts are not expanded.
 No dependency, fixture or default quota changes are involved.
 
+
+Outside word assertions compose with complete noncapturing one-character branches
+(22.2.2.3, 22.2.2.4, 22.2.2.7). The existing word scan must retain a whole
+repetition that passes the complete branch proof before outside predicates are
+attached. For example, \b((?:\ba)|(?:b\b))+\B keeps each branch's word
+predicates local to its character, with separate word/line gates on the whole
+selected range. Noncapturing branch wrappers add no capture effects. Complete
+enclosing groups retain the final selected character; zero counts leave their
+inner captures undefined.
+
+The existing branch representation, balanced whole-wrapper proof, cached work,
+earliest-start and greedy/lazy endpoints, UTF-16 ranges and fallible charges are
+shared. Earlier entries retain their contracts. This composition adds no search
+algorithm, source/input storage, native recursion, expanded counts, dependency,
+fixture change or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

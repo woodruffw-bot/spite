@@ -6924,6 +6924,34 @@ Stable and MSRV pass all 14,494 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Outside words on repeated noncapturing one-character branches have three core and
+seven runtime tests. Sixteen independent plans separate branch assertions from
+whole word/line gates and retain explicit capture counts. Raw four-unit UTF-16
+enumeration checks all starts, sticky/i/m/s contexts, greedy/lazy/bounded/zero
+counts and final selected characters. All 10240 core and 2400 runtime snapshot
+rows agree with pinned-folding models and Node, as do twenty-four complete
+Boolean programs. The full 1169-program gap audit finds no newly admitted old
+controls.
+
+Regressions cover ordinary/noncapturing whole wrappers, scoped branch assertions,
+word/line gates, aliases including __proto__, folded word context, supplementary
+and lone-surrogate ranges, initial pair normalization, consumers, coercions and
+strict lastIndex writes. Defaults, clones and collection handle 6000 captures
+over 200001 line terminators. Successful/failing 200000-unit searches check
+linear input work for fixed branches, and fallible construction/search charges
+and explicit work exhaustion preserve state.
+
+All 627 core tests and 222 related runtime targets pass. All 503 previous golds
+remain byte-identical, with two reviewed new snapshots. All gap, eight ordered
+and ten direct-eval controls preserve Unsupported and state; existing whole
+fixture reviews have no failures or limits. The corpus pin, inventories,
+dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,494 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
