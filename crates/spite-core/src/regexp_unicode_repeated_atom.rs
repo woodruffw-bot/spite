@@ -1,7 +1,10 @@
-//! Unicode atom quantifiers and proved line assertions (22.2.2.3, 22.2.2.4).
+//! Unicode atom quantifiers and proved boundary assertions (22.2.2.3, 22.2.2.4).
 use crate::{
     JsString, RegExpUnicodeCharacterMatcher, RegExpUnicodeClassMatcher,
-    regexp_literal::unicode_start, regexp_unicode_character::unicode_input_character,
+    regexp_literal::unicode_start,
+    regexp_unicode_character::{
+        unicode_input_character, unicode_word_assertions_with_work, unicode_word_boundary,
+    },
 };
 use std::ops::Range;
 
@@ -19,7 +22,8 @@ pub struct RegExpUnicodeRepeatedAtomMatch {
 /// The caller must validate the whole u/v Pattern. Dedicated entry points admit
 /// a leading ^ and trailing $, including multiline contexts. Capturing groups in the repeated
 /// atom are admitted only by the dedicated complete-wrapper entry point; other
-/// inner assertions, alternatives and concatenations are excluded.
+/// inner assertions, alternatives and concatenations are excluded. A separate
+/// entry point admits a leading word assertion outside the complete repetition.
 /// Complete enclosing groups may be proved separately by the caller.
 /// Construction and search add no native recursion or input-sized storage;
 /// work quotas remain opt-in.
@@ -33,6 +37,8 @@ pub struct RegExpUnicodeRepeatedAtomMatcher {
     multiline: bool,
     end_anchor: bool,
     atom_captures: usize,
+    start_word: Option<bool>,
+    word_ignore_case: bool,
 }
 
 #[cfg(test)]
@@ -664,6 +670,8 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     multiline: false,
                     end_anchor: false,
                     atom_captures: 0,
+                    start_word: None,
+                    word_ignore_case: false,
                 }));
             }
         }
@@ -835,6 +843,52 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         Ok(None)
     }
 
+    /// Compiles a leading word assertion outside one complete atom repetition.
+    ///
+    /// Requires complete u/v validation and normalized named groups. An optional
+    /// ^ precedes the word assertion; an optional $ follows the repetition.
+    /// Complete inner wrappers retain their final-iteration captures. Trailing
+    /// word assertions and assertions inside the repeated atom remain excluded.
+    pub fn compile_with_start_word_boundary_and_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some(assertions) = unicode_word_assertions_with_work(source, &mut charge)? else {
+            return Ok(None);
+        };
+        if assertions.start.is_none() || assertions.end.is_some() {
+            return Ok(None);
+        }
+        let matcher = Self::compile_with_line_anchors_and_work(
+            &assertions.source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )?;
+        let matcher = match matcher {
+            Some(matcher) => Some(matcher),
+            None => Self::compile_capturing_atom_with_work(
+                &assertions.source,
+                unicode_sets,
+                ignore_case,
+                multiline,
+                dot_all,
+                charge,
+            )?,
+        };
+        Ok(matcher.map(|mut matcher| {
+            matcher.start_word = assertions.start;
+            matcher.word_ignore_case = ignore_case;
+            matcher
+        }))
+    }
+
     /// Returns the number of complete ordinary wrappers inside the repeated atom.
     pub fn capture_count(&self) -> usize {
         self.atom_captures
@@ -936,7 +990,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
     // start has succeeded, greedy search extends only its endpoint; lazy search
     // returns immediately. Both pointers advance at most once over each input
     // character. Ordinary membership and assertions invoke no user code.
-    fn find_at_multiline_end_with_work<E>(
+    fn find_with_boundary_assertions_and_work<E>(
         &self,
         input: &JsString,
         start: usize,
@@ -955,12 +1009,19 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         let mut count = 0;
         let mut best = None;
         loop {
-            if self.start_anchor {
-                charge(1)?;
-                while candidate != 0
-                    && !matches!(units[candidate - 1], 0x0a | 0x0d | 0x2028 | 0x2029)
-                {
-                    if sticky {
+            if self.start_anchor || self.start_word.is_some() {
+                while {
+                    charge(1 + 8 * usize::from(self.start_word.is_some()))?;
+                    (self.start_anchor
+                        && candidate != 0
+                        && !(self.multiline
+                            && matches!(units[candidate - 1], 0x0a | 0x0d | 0x2028 | 0x2029)))
+                        || self.start_word.is_some_and(|expected| {
+                            unicode_word_boundary(units, candidate, self.word_ignore_case)
+                                != expected
+                        })
+                } {
+                    if sticky || (self.start_anchor && !self.multiline) {
                         return Ok(None);
                     }
                     let Some(&first) = units.get(candidate) else {
@@ -978,8 +1039,9 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 }
             }
             charge(1)?;
-            let at_end =
-                cursor == units.len() || matches!(units[cursor], 0x0a | 0x0d | 0x2028 | 0x2029);
+            let at_end = !self.end_anchor
+                || cursor == units.len()
+                || (self.multiline && matches!(units[cursor], 0x0a | 0x0d | 0x2028 | 0x2029));
             if at_end && count >= minimum {
                 best = Some(candidate..cursor);
                 if !self.greedy {
@@ -1028,9 +1090,12 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         sticky: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Range<usize>>, E> {
+        if self.start_word.is_some() {
+            return self.find_with_boundary_assertions_and_work(input, start, sticky, charge);
+        }
         if self.end_anchor {
             return if self.multiline {
-                self.find_at_multiline_end_with_work(input, start, sticky, charge)
+                self.find_with_boundary_assertions_and_work(input, start, sticky, charge)
             } else {
                 self.find_at_actual_end_with_work(input, start, sticky, charge)
             };
@@ -1988,5 +2053,334 @@ mod multiline_end_assertion_tests {
             .unwrap()
             .is_none()
         );
+    }
+}
+#[cfg(test)]
+mod start_word_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    type Case = (
+        &'static str,
+        u8,
+        usize,
+        Option<usize>,
+        bool,
+        usize,
+        bool,
+        bool,
+    );
+    const CASES: [Case; 16] = [
+        (r"\b(a)+", 0, 1, None, true, 1, false, false),
+        (r"\B((a)){0,3}?", 0, 0, Some(3), false, 2, false, false),
+        (r"\b(?:(a)){2,4}", 0, 2, Some(4), true, 1, false, false),
+        (r"\B(?:a)+", 0, 1, None, true, 0, false, false),
+        (r"\B((?:a)){0}", 0, 0, Some(0), true, 1, false, false),
+        (r"\b([aſK])+", 1, 1, None, true, 1, false, false),
+        (r"\B((.)){1,3}$", 2, 1, Some(3), true, 2, false, true),
+        (r"^\b((\D)){0,2}?$", 3, 0, Some(2), false, 2, true, true),
+        (r"^\b(\p{Join_C})+$", 4, 1, None, true, 1, true, true),
+        (r"\B(\p{NChar}){1,2}$", 5, 1, Some(2), true, 1, false, true),
+        (r"\b(😀)+", 6, 1, None, true, 1, false, false),
+        (r"\B((\uD800)){0,1}", 7, 0, Some(1), true, 2, false, false),
+        (r"\b(\?)??", 8, 0, Some(1), false, 1, false, false),
+        (r"\B(?:(\W))+", 9, 1, None, true, 1, false, false),
+        (r"\b(\u{61})?", 0, 0, Some(1), true, 1, false, false),
+        (r"\B((a)){1,3}$", 0, 1, Some(3), true, 2, false, true),
+    ];
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_with_start_word_boundary_and_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn unicode_repeated_atom_start_word_ranges_snapshot() {
+        let mut rows = String::new();
+        for (source, ..) in CASES {
+            let pattern = JsString::from(source);
+            for v in [false, true] {
+                for i in [false, true] {
+                    for m in [false, true] {
+                        for s in [false, true] {
+                            let matcher = plan(source, v, i, m, s);
+                            for input in [
+                                JsString::from("Aaaa\nAA"),
+                                JsString::from("A\r\n\u{200c}\u{200d}\u{ffff}\u{10ffff}"),
+                                JsString::from("😀??aaſK"),
+                                JsString::from_code_units(vec![0x61, 0xd800, 0x61, 0xdc00]),
+                                JsString::from(""),
+                            ] {
+                                for start in [0, 1, input.len(), input.len() + 1] {
+                                    for sticky in [false, true] {
+                                        let found = matcher
+                                            .find_with_captures_and_work(
+                                                &input,
+                                                start,
+                                                sticky,
+                                                |_| Ok::<(), ()>(()),
+                                            )
+                                            .unwrap();
+                                        writeln!(rows,"{pattern:?} v={v} i={i} m={m} s={s} input={input:?} start={start} sticky={sticky} count={} range={:?} capture={:?}",matcher.capture_count(),found.as_ref().map(|f|f.range.clone()),found.and_then(|f|f.atom_capture)).unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_repeated_atom_start_words_agree_with_independent_counts_and_final_character() {
+        let alphabet: [u16; 10] = [
+            0x41, 0x61, 10, 13, 0x17f, 0x212a, 0xd83d, 0xde00, 0xd800, 0xdc00,
+        ];
+        let lt = |c| [10, 13, 0x2028, 0x2029].contains(&c);
+        for i in [false, true] {
+            for m in [false, true] {
+                for s in [false, true] {
+                    let plans: Vec<_> = CASES.iter().map(|c| plan(c.0, true, i, m, s)).collect();
+                    let fold = |c| {
+                        if i {
+                            match c {
+                                0x41 => 0x61,
+                                0x17f => 0x73,
+                                0x212a => 0x6b,
+                                _ => c,
+                            }
+                        } else {
+                            c
+                        }
+                    };
+                    let member = |kind, c| match kind {
+                        0 => fold(c) == 0x61,
+                        1 => [0x61, fold(0x17f), fold(0x212a)].contains(&fold(c)),
+                        2 => s || !lt(c),
+                        3 => !(0x30..=0x39).contains(&c),
+                        4 => (0x200c..=0x200d).contains(&c),
+                        5 => matches!(c, 0xfdd0..=0xfdef) || (c & 0xffff) >= 0xfffe,
+                        6 => c == 0x1f600,
+                        7 => c == 0xd800,
+                        8 => c == 0x3f,
+                        9 => !char::from_u32(fold(c))
+                            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_'),
+                        _ => unreachable!(),
+                    };
+                    for len in 0..=4 {
+                        for ordinal in 0..alphabet.len().pow(len) {
+                            let units: Vec<_> = (0..len)
+                                .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                                .collect();
+                            let mut points = Vec::new();
+                            let mut bounds = vec![0];
+                            let mut j = 0;
+                            while j < units.len() {
+                                let mut c = u32::from(units[j]);
+                                j += 1;
+                                if (0xd800..=0xdbff).contains(&c)
+                                    && j < units.len()
+                                    && (0xdc00..=0xdfff).contains(&units[j])
+                                {
+                                    c = 65536 + (c - 0xd800) * 1024 + u32::from(units[j]) - 0xdc00;
+                                    j += 1;
+                                }
+                                points.push(c);
+                                bounds.push(j);
+                            }
+                            let input = JsString::from_code_units(units);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    for (case, matcher) in CASES.iter().zip(&plans) {
+                                        let expected = if start > input.len() {
+                                            None
+                                        } else {
+                                            let first = bounds.partition_point(|&b| b <= start) - 1;
+                                            (first..=points.len()).find_map(|at| {
+                                                let word = |c: Option<&u32>| c.is_some_and(|&c| {
+                                                    matches!(c, 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a)
+                                                        || (i && matches!(c, 0x17f | 0x212a))
+                                                });
+                                                let boundary = word(at.checked_sub(1).and_then(|p| points.get(p))) != word(points.get(at));
+                                                let positive = case.0.contains(r"\b");
+                                                if boundary != positive || (sticky && at != first)
+                                                    || (case.6
+                                                        && at != 0
+                                                        && !(m && lt(points[at - 1])))
+                                                {
+                                                    return None;
+                                                }
+                                                let available = points[at..]
+                                                    .iter()
+                                                    .take_while(|&&c| member(case.1, c))
+                                                    .count();
+                                                let upper =
+                                                    available.min(case.3.unwrap_or(available));
+                                                if upper < case.2 {
+                                                    return None;
+                                                }
+                                                let endpoint = |n: usize| {
+                                                    let end = at + n;
+                                                    if case.7
+                                                        && end != points.len()
+                                                        && !(m && lt(points[end]))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    Some(RegExpUnicodeRepeatedAtomMatch {
+                                                        range: bounds[at]..bounds[end],
+                                                        atom_capture: (case.5 != 0 && n != 0)
+                                                            .then(|| bounds[end - 1]..bounds[end]),
+                                                    })
+                                                };
+                                                let mut counts = case.2..=upper;
+                                                if case.4 {
+                                                    counts.rev().find_map(endpoint)
+                                                } else {
+                                                    counts.find_map(endpoint)
+                                                }
+                                            })
+                                        };
+                                        assert_eq!(matcher.capture_count(), case.5, "{}", case.0);
+                                        assert_eq!(
+                                            matcher
+                                                .find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                            expected,
+                                            "{} i={i} m={m} s={s} {input:?} start={start} sticky={sticky}",
+                                            case.0
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_repeated_atom_start_word_linear_work_and_contracts() {
+        let source = format!(r"\B{}😀{}+", "(".repeat(3000), ")".repeat(3000));
+        let matcher = plan(&source, true, false, false, false).clone();
+        let input = JsString::from("😀".repeat(100000).as_str());
+        let mut work = 0;
+        assert_eq!(matcher.capture_count(), 3000);
+        assert_eq!(
+            matcher
+                .find_with_captures_and_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(RegExpUnicodeRepeatedAtomMatch {
+                range: 0..200000,
+                atom_capture: Some(199998..200000)
+            })
+        );
+        assert!(work < 40 * input.len(), "{work}");
+        let input = JsString::from(format!("{}X", "a".repeat(200000)).as_str());
+        let matcher = plan(r"\Ba{3}$", false, false, false, false);
+        work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            None
+        );
+        assert!(work < 40 * input.len(), "{work}");
+        let matcher = plan(r"\b((a)){2,3}$", false, false, true, false);
+        let input = JsString::from("aaa\n");
+        let mut calls = 0;
+        matcher
+            .find_with_captures_and_work(&input, 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                matcher
+                    .find_with_captures_and_work(&input, 0, false, |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    })
+                    .is_err()
+            );
+        }
+        for source in [
+            r"a+",
+            r"\ba+\b",
+            r"a+\b",
+            r"\b(^a)+",
+            r"\b(a$)+",
+            r"\b(a?)+",
+            r"\b(a|b)+",
+            r"\b()+",
+            r"\b(ab)+",
+            r"\b(a)+b",
+            r"\b(?i:a)+",
+            r"\b(\b.)+",
+            r"\b(\B)+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_with_start_word_boundary_and_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for source in [r"\ba+", r"\B(a)+"] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_with_line_anchors_and_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_capturing_atom_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
     }
 }

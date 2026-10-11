@@ -174,7 +174,7 @@ fn unicode_repeated_atom_multiline_ends_opted_work_and_remaining_compositions() 
         r"/^a+b$/vm.exec('ab')",
         r"/(a)+b$/um.exec('a')",
         r"/a+$$/um.exec('a')",
-        r"/\ba+$/um.exec('a')",
+        r"/\ba+b$/um.exec('a')",
     ] {
         assert!(
             matches!(

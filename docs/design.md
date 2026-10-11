@@ -3166,6 +3166,25 @@ selected endpoint rather than from the discarded scan. Source construction,
 search and span extraction charge opted-in work before use; no recursion,
 input-sized offsets, expanded counts, dependency or default quota is added.
 
+
+A separate repetition entry point admits one leading \b/\B outside a complete
+quantified Unicode atom (22.2.2.4), optionally after ^ and before a trailing $.
+The existing charged word-assertion scan preserves line scopes. Established
+line and complete-inner-wrapper proofs must accept the entire retained body;
+trailing word assertions and assertions inside the atom require separate proofs.
+Prior compiler entry points retain their established subsets.
+
+The established monotone start/endpoint search checks both leading line and
+word predicates before selecting a candidate. Its endpoint gate retains EOF
+and multiline $ contexts, or accepts any endpoint without $. Earliest starts,
+finite maxima and greedy/lazy count order remain unchanged. WordCharacters
+uses the shared pinned Unicode-i aliases and original neighboring units at
+complete-character boundaries. Final selected iterations supply inner captures;
+complete outer groups retain the whole range. Search remains linear in input
+length with constant storage and no native recursion. Source scans, copies,
+membership and predicates charge opted-in work before use; defaults stay
+unlimited and no dependency or fixture allowance is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

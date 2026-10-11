@@ -470,6 +470,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match nonmultiline trailing $ and whole-input ^...$ assertions on a quantified Unicode atom, retaining bounded suffix selection and original enclosing captures.
 - [x] Match multiline trailing $ and ^...$ assertions on a quantified Unicode atom, preserving earliest starts, greedy/lazy endpoints and CR/LF boundaries.
 - [x] Repeat a Unicode atom enclosed in complete ordinary/noncapturing groups, retaining last-iteration inner captures, undefined zero-iteration captures and whole outer captures.
+- [x] Match leading word-boundary assertions outside quantified Unicode atoms and complete inner groups, preserving line contexts, original capture scopes and greedy/lazy selection.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

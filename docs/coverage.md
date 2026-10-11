@@ -6472,6 +6472,35 @@ Stable and MSRV pass all 14,478 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Leading word assertions on repeated Unicode atoms have three core and
+8 runtime tests. An independent raw UTF-16 candidate/count oracle checks
+four-unit strings, all starts and sticky/i/m/s combinations, positive/negative
+word predicates, complete inner wrappers, line contexts, bounded/zero counts
+and final selected capture spans. All 10240 core and 2400 runtime rows agree
+with independent pinned-folding calculations and Node, as do thirty-two complete
+Boolean programs. Named/__proto__ groups, original supplementary and lone-unit
+indices, approved pair starts, undefined own slots, consumers, empty advancement,
+cloning, coercion, strict writes and collection preserve their required behavior.
+Defaults handle 6000 captures over 200001 input units. Separate 200000-unit
+successful and failing searches verify linear work; explicit exhaustion precedes
+the tested state changes.
+
+All 588 core tests and 209 related targets pass. All 467 prior snapshots remain
+byte-identical, with 3 reviewed new golds. All 1106 remaining unproved
+programs, eight ordered and ten direct-eval probes retain Unsupported and state.
+Whole existing fixture reviews have no failures or host limits. The corpus pin,
+inventory, dependencies and default quotas are unchanged.
+
+All 4 distinct newly supported former whole programs are retained
+exactly in a positive snapshot and verified with Node. Their 4 old
+controls in 4 files now add an unproved consuming suffix without
+changing capture counts.
+
+Stable and MSRV pass all 14,478 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
