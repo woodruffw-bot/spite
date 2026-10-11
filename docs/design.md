@@ -3592,6 +3592,28 @@ algorithm, native recursion, expanded counts or input-sized search storage.
 Source and search work remain fallible. No dependency, fixture or default quota
 changes are involved.
 
+
+Assertions interleaved with complete noncapturing Unicode branch wrappers retain
+their original boundaries (22.2.2.4, 22.2.2.7). A dedicated entry point permits
+the existing assertion-sequence scan to peel noncapturing openers and matching
+trailing closers while combining predicates. For example,
+((?:\b(?:\ba))|(?:(?:b\b)\b))+ keeps both start predicates on the a iteration
+and both end predicates on the b iteration. With one consuming character and
+no captures, these nested boundaries coincide.
+
+The retained source is enclosed in one transparent noncapturing wrapper, with
+canonical line gates and word predicates. Its entire body still must prove one
+unquantified character without captures. Concatenation, captured branches,
+nested choices, quantifiers and modifiers remain excluded. Word conflicts across
+wrapper levels mark only that fully proved branch as impossible; zero iterations
+keep empty whole ranges and undefined iteration captures. Escaped literal
+suffixes are retained, and the earlier exterior-only mode keeps wrappers opaque.
+
+Both scans and canonical source storage are bounded by source length. Matching
+uses the existing flat branch representation, guards and fallible work accounting
+without native recursion, count expansion or input-sized storage. No dependency,
+fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

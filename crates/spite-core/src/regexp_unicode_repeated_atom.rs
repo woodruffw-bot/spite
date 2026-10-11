@@ -666,6 +666,7 @@ enum AtomAssertions {
     LineWrappedAlternative,
     AssertedWrappedAlternative,
     SequenceWrappedAlternative,
+    NestedSequenceWrappedAlternative,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -675,6 +676,7 @@ enum AlternativeProof {
     LineWrapped,
     AssertedWrapped,
     SequenceWrapped,
+    NestedSequenceWrapped,
 }
 
 impl RegExpUnicodeRepeatedAtomMatcher {
@@ -804,6 +806,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                         | AtomAssertions::LineWrappedAlternative
                         | AtomAssertions::AssertedWrappedAlternative
                         | AtomAssertions::SequenceWrappedAlternative
+                        | AtomAssertions::NestedSequenceWrappedAlternative
                 ) {
                 Self::compile_alternatives_with_work(
                     &body,
@@ -819,6 +822,9 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                         }
                         AtomAssertions::SequenceWrappedAlternative => {
                             AlternativeProof::SequenceWrapped
+                        }
+                        AtomAssertions::NestedSequenceWrappedAlternative => {
+                            AlternativeProof::NestedSequenceWrapped
                         }
                         _ => AlternativeProof::Bare,
                     },
@@ -1313,6 +1319,32 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Proves complete noncapturing branch wrappers interleaved with assertions.
+    ///
+    /// Requires full u/v validation and normalized named groups. Pure word/line
+    /// predicates at each original boundary can be combined only after peeling
+    /// balanced noncapturing wrappers and proving the entire remaining body to
+    /// be one unquantified character without captures. Conflicts make the branch
+    /// impossible; whole-repetition scopes and earlier contracts are unchanged.
+    pub fn compile_noncapturing_branch_nested_assertions_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_wrapped_atom_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            AtomAssertions::NestedSequenceWrappedAlternative,
+            charge,
+        )
+    }
+
     fn compile_alternatives_with_work<E>(
         source: &JsString,
         unicode_sets: bool,
@@ -1433,9 +1465,16 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 let mut start_word = None;
                 let mut end_word = None;
                 let mut impossible = false;
-                let branch_source = if proof == AlternativeProof::SequenceWrapped {
+                let branch_source = if matches!(
+                    proof,
+                    AlternativeProof::SequenceWrapped | AlternativeProof::NestedSequenceWrapped
+                ) {
                     if let Some((assertions, conflict)) =
-                        unicode_branch_assertion_sequences_with_work(&branch, &mut charge)?
+                        unicode_branch_assertion_sequences_with_work(
+                            &branch,
+                            proof == AlternativeProof::NestedSequenceWrapped,
+                            &mut charge,
+                        )?
                     {
                         start_word = assertions.start;
                         end_word = assertions.end;
@@ -1464,6 +1503,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     AlternativeProof::LineWrapped
                         | AlternativeProof::AssertedWrapped
                         | AlternativeProof::SequenceWrapped
+                        | AlternativeProof::NestedSequenceWrapped
                 ) && units.last() == Some(&0x24)
                     && !escaped(&units, units.len() - 1);
                 if end_line {
@@ -1496,6 +1536,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                                 AlternativeProof::LineWrapped
                                     | AlternativeProof::AssertedWrapped
                                     | AlternativeProof::SequenceWrapped
+                                    | AlternativeProof::NestedSequenceWrapped
                             ) || (!plan.start_anchor && !plan.end_anchor))
                             && plan.start_word.is_none()
                             && plan.end_word.is_none() =>
@@ -1592,6 +1633,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 | AtomAssertions::LineWrappedAlternative
                 | AtomAssertions::AssertedWrappedAlternative
                 | AtomAssertions::SequenceWrappedAlternative
+                | AtomAssertions::NestedSequenceWrappedAlternative
         ) {
             charge(body.len().saturating_mul(3))?;
             let mut ends = vec![usize::MAX; body.len()];
@@ -2469,6 +2511,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
 // (22.2.2.4). The caller still proves the entire consuming branch before use.
 fn unicode_branch_assertion_sequences_with_work<E>(
     source: &JsString,
+    allow_noncapturing_wrappers: bool,
     mut charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<(UnicodeWordAssertions, bool)>, E> {
     let units = source.code_units();
@@ -2477,6 +2520,7 @@ fn unicode_branch_assertion_sequences_with_work<E>(
     let (mut start_line, mut end_line) = (false, false);
     let (mut start_word, mut end_word) = (None, None);
     let mut impossible = false;
+    let (mut opened, mut closed) = (0, 0);
     while begin < end {
         if units[begin] == 0x5e {
             start_line = true;
@@ -2486,6 +2530,11 @@ fn unicode_branch_assertion_sequences_with_work<E>(
             impossible |= start_word.is_some_and(|old| old != positive);
             start_word = Some(positive);
             begin += 2;
+        } else if allow_noncapturing_wrappers
+            && units[begin..end].get(..3) == Some(&[0x28, 0x3f, 0x3a])
+        {
+            opened += 1;
+            begin += 3;
         } else {
             break;
         }
@@ -2502,20 +2551,35 @@ fn unicode_branch_assertion_sequences_with_work<E>(
             impossible |= end_word.is_some_and(|old| old != positive);
             end_word = Some(positive);
             end -= 2;
+        } else if closed < opened && units[end - 1] == 0x29 && !escaped(units, end - 1) {
+            closed += 1;
+            end -= 1;
         } else {
             break;
         }
     }
+    if opened != closed {
+        return Ok(None);
+    }
     if begin == 0 && end == units.len() {
         return Ok(None);
     }
-    let length = end - begin + usize::from(start_line) + usize::from(end_line);
+    let length = end - begin
+        + usize::from(start_line)
+        + usize::from(end_line)
+        + if allow_noncapturing_wrappers { 4 } else { 0 };
     charge(length)?;
     let mut body = Vec::with_capacity(length);
     if start_line {
         body.push(0x5e);
     }
+    if allow_noncapturing_wrappers {
+        body.extend_from_slice(&[0x28, 0x3f, 0x3a]);
+    }
     body.extend_from_slice(&units[begin..end]);
+    if allow_noncapturing_wrappers {
+        body.push(0x29);
+    }
     if end_line {
         body.push(0x24);
     }
@@ -13654,6 +13718,578 @@ mod noncapturing_branch_sequence_word_tests {
         ] {
             assert!(
                 RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_lines_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod noncapturing_branch_nested_assertion_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    type Case = (
+        &'static str,
+        u8,
+        usize,
+        Option<usize>,
+        bool,
+        usize,
+        bool,
+        bool,
+    );
+    const CASES: [Case; 16] = [
+        (r"((?:a)|(?:b))+", 0, 1, None, true, 1, false, false),
+        (
+            r"(((?:a)|(?:[ſK]))){0,3}?",
+            1,
+            0,
+            Some(3),
+            false,
+            2,
+            false,
+            false,
+        ),
+        (
+            r"(?:(?:.)|(?:\n)){2,4}",
+            2,
+            2,
+            Some(4),
+            true,
+            0,
+            false,
+            false,
+        ),
+        (r"((?:\d)|(?:\D))*", 3, 0, None, true, 1, false, false),
+        (
+            r"^((?:\p{Join_C})|(?:\p{NChar}))+$",
+            4,
+            1,
+            None,
+            true,
+            1,
+            true,
+            true,
+        ),
+        (r"((?:😀)|(?:a)){1,3}$", 5, 1, Some(3), true, 1, false, true),
+        (
+            r"((?:\uD800)|(?:\uDC00)){0,2}?",
+            6,
+            0,
+            Some(2),
+            false,
+            1,
+            false,
+            false,
+        ),
+        (r"((?:\|)|(?:a))+", 7, 1, None, true, 1, false, false),
+        (
+            r"((?:\b(?:\ba))|(?:(?:b\b)\b))+",
+            8,
+            1,
+            None,
+            true,
+            1,
+            false,
+            false,
+        ),
+        (
+            r"((?:^(?:^a))|(?:(?:b$)$)){1,2}$",
+            9,
+            1,
+            Some(2),
+            true,
+            1,
+            false,
+            true,
+        ),
+        (
+            r"((?:[a\|])|(?:b))??",
+            10,
+            0,
+            Some(1),
+            false,
+            1,
+            false,
+            false,
+        ),
+        (
+            r"((?:\B(?:\B.))|(?:\b(?:\b[aſK]))){1,3}",
+            11,
+            1,
+            Some(3),
+            true,
+            1,
+            false,
+            false,
+        ),
+        (
+            r"((?:(?:a$)$)|(?:^(?:^b)))+",
+            12,
+            1,
+            None,
+            true,
+            1,
+            false,
+            false,
+        ),
+        (
+            r"^((?:[a-z])|(?:\p{Join_C})){0,2}$",
+            13,
+            0,
+            Some(2),
+            true,
+            1,
+            true,
+            true,
+        ),
+        (
+            r"((?:\u{61})|(?:\u{1f600}))?",
+            14,
+            0,
+            Some(1),
+            true,
+            1,
+            false,
+            false,
+        ),
+        (
+            r"((?:\B^(?:\B.$)$)|(?:\b(?:\ba\b)\b)){1,3}$",
+            15,
+            1,
+            Some(3),
+            true,
+            1,
+            false,
+            true,
+        ),
+    ];
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertions_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap_or_else(|| panic!("Unproved line-branch source: {source}"))
+    }
+
+    #[test]
+    fn unicode_noncapturing_branch_nested_assertion_ranges_snapshot() {
+        let mut rows = String::new();
+        for (source, ..) in CASES {
+            let pattern = JsString::from(source);
+            for v in [false, true] {
+                for i in [false, true] {
+                    for m in [false, true] {
+                        for s in [false, true] {
+                            let matcher = plan(source, v, i, m, s);
+                            for input in [
+                                JsString::from("Aaaa\nAA"),
+                                JsString::from("A\r\n\u{200c}\u{200d}\u{ffff}\u{10ffff}"),
+                                JsString::from("😀??aaſK"),
+                                JsString::from_code_units(vec![0x61, 0xd800, 0x61, 0xdc00]),
+                                JsString::from(""),
+                            ] {
+                                for start in [0, 1, input.len(), input.len() + 1] {
+                                    for sticky in [false, true] {
+                                        let found = matcher
+                                            .find_with_captures_and_work(
+                                                &input,
+                                                start,
+                                                sticky,
+                                                |_| Ok::<(), ()>(()),
+                                            )
+                                            .unwrap();
+                                        writeln!(rows,"{pattern:?} v={v} i={i} m={m} s={s} input={input:?} start={start} sticky={sticky} count={} range={:?} capture={:?}",matcher.capture_count(),found.as_ref().map(|f|f.range.clone()),found.and_then(|f|f.atom_capture)).unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_repeated_atom_alternatives_agree_with_independent_counts_and_final_character() {
+        let alphabet: [u16; 10] = [
+            0x41, 0x61, 10, 13, 0x17f, 0x212a, 0xd83d, 0xde00, 0xd800, 0xdc00,
+        ];
+        let lt = |c| [10, 13, 0x2028, 0x2029].contains(&c);
+        for i in [false, true] {
+            for m in [false, true] {
+                for s in [false, true] {
+                    let plans: Vec<_> = CASES.iter().map(|c| plan(c.0, true, i, m, s)).collect();
+                    let fold = |c| {
+                        if i {
+                            match c {
+                                0x41 => 0x61,
+                                0x17f => 0x73,
+                                0x212a => 0x6b,
+                                _ => c,
+                            }
+                        } else {
+                            c
+                        }
+                    };
+                    for len in 0..=4 {
+                        for ordinal in 0..alphabet.len().pow(len) {
+                            let units: Vec<_> = (0..len)
+                                .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                                .collect();
+                            let mut points = Vec::new();
+                            let mut bounds = vec![0];
+                            let mut j = 0;
+                            while j < units.len() {
+                                let mut c = u32::from(units[j]);
+                                j += 1;
+                                if (0xd800..=0xdbff).contains(&c)
+                                    && j < units.len()
+                                    && (0xdc00..=0xdfff).contains(&units[j])
+                                {
+                                    c = 65536 + (c - 0xd800) * 1024 + u32::from(units[j]) - 0xdc00;
+                                    j += 1;
+                                }
+                                points.push(c);
+                                bounds.push(j);
+                            }
+                            let input = JsString::from_code_units(units);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    for (case, matcher) in CASES.iter().zip(&plans) {
+                                        let expected = if start > input.len() {
+                                            None
+                                        } else {
+                                            let first = bounds.partition_point(|&b| b <= start) - 1;
+                                            (first..=points.len()).find_map(|at| {
+                                                let word=|c:Option<&u32>|c.is_some_and(|&c|matches!(c,0x30..=0x39|0x41..=0x5a|0x5f|0x61..=0x7a)||(i&&matches!(c,0x17f|0x212a)));
+                                                if (sticky && at != first)
+                                                    || (case.6
+                                                        && at != 0
+                                                        && !(m && lt(points[at - 1])))
+                                                {
+                                                    return None;
+                                                }
+                                                let available = (at..points.len()).take_while(|&p| {
+                                                    let c = points[p];
+                                                    let prev = p.checked_sub(1).and_then(|n| points.get(n));
+                                                    let next = points.get(p+1);
+                                                    let wb = word(prev) != word(Some(&c));
+                                                    let we = word(Some(&c)) != word(next);
+                                                    let begin = p == 0 || (m && prev.is_some_and(|&c| lt(c)));
+                                                    let end = next.is_none() || (m && next.is_some_and(|&c| lt(c)));
+                                                    let dot = s || !lt(c);
+                                                    let class = [0x61, fold(0x17f), fold(0x212a)].contains(&fold(c));
+                                                    match case.1 {
+                                                        0 => [0x61,0x62].contains(&fold(c)),
+                                                        1 => class,
+                                                        2 => dot || c == 10,
+                                                        3 => true,
+                                                        4 => (0x200c..=0x200d).contains(&c) || matches!(c,0xfdd0..=0xfdef) || c&0xffff >= 0xfffe,
+                                                        5 | 14 => c == 0x1f600 || fold(c) == 0x61,
+                                                        6 => [0xd800,0xdc00].contains(&c),
+                                                        7 => c == 0x7c || fold(c) == 0x61,
+                                                        8 => (fold(c) == 0x61 && wb) || (fold(c) == 0x62 && we),
+                                                        9 => (fold(c) == 0x61 && begin) || (fold(c) == 0x62 && end),
+                                                        10 => [0x61,0x62,0x7c].contains(&fold(c)),
+                                                        11 => (dot && !wb) || (class && wb),
+                                                        12 => (fold(c) == 0x61 && end) || (fold(c) == 0x62 && begin),
+                                                        13 => (0x61..=0x7a).contains(&fold(c)) || (0x200c..=0x200d).contains(&c),
+                                                        15 => (dot && begin && end && !wb) || (fold(c) == 0x61 && wb && we),
+                                                        _ => unreachable!(),
+                                                    }
+                                                }).count();
+                                                let upper =
+                                                    available.min(case.3.unwrap_or(available));
+                                                if upper < case.2 {
+                                                    return None;
+                                                }
+                                                let endpoint = |n: usize| {
+                                                    let end = at + n;
+                                                    if case.7
+                                                        && end != points.len()
+                                                        && !(m && lt(points[end]))
+                                                    {
+                                                        return None;
+                                                    }
+                                                    Some(RegExpUnicodeRepeatedAtomMatch {
+                                                        range: bounds[at]..bounds[end],
+                                                        atom_capture: (case.5 != 0 && n != 0)
+                                                            .then(|| bounds[end - 1]..bounds[end]),
+                                                    })
+                                                };
+                                                let mut counts = case.2..=upper;
+                                                if case.4 {
+                                                    counts.rev().find_map(endpoint)
+                                                } else {
+                                                    counts.find_map(endpoint)
+                                                }
+                                            })
+                                        };
+                                        assert_eq!(matcher.capture_count(), case.5, "{}", case.0);
+                                        assert_eq!(
+                                            matcher
+                                                .find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                            expected,
+                                            "{} i={i} m={m} s={s} {input:?} start={start} sticky={sticky}",
+                                            case.0
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_noncapturing_branch_nested_assertion_work_clones_and_contracts() {
+        let source = format!("{}.|\\n{}+", "(".repeat(3000), ")".repeat(3000));
+        let matcher = plan(&source, true, false, true, false).clone();
+        let input = JsString::from("\n".repeat(200000).as_str());
+        let mut work = 0;
+        assert_eq!(matcher.capture_count(), 3000);
+        assert_eq!(
+            matcher
+                .find_with_captures_and_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(RegExpUnicodeRepeatedAtomMatch {
+                range: 0..200000,
+                atom_capture: Some(199999..200000)
+            })
+        );
+        assert!(work < 50 * input.len(), "{work}");
+
+        for source in [
+            r"((?:\b(?:\ba))|(?:b))+",
+            r"((?:\b(?:\ba))|b)+",
+            r"(a|(?:(?:b\b)\b))+",
+            r"((?:\B^(?:\B.$)$)|(?:\b(?:\ba\b)\b))+",
+        ] {
+            let source = JsString::from(source);
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_assertion_sequences_with_work(
+                    &source,
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertions_with_work(
+                    &source,
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_some()
+            );
+        }
+
+        for source in [r"((?:\b(?:\Ba))|b)+", r"((?:(?:a\b)\B)|b)+"] {
+            let matcher = plan(source, true, false, false, false);
+            assert_eq!(
+                matcher
+                    .find_with_work(&JsString::from("a"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                None
+            );
+            assert_eq!(
+                matcher
+                    .find_with_work(&JsString::from("b"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(0..1)
+            );
+        }
+        let source = r"((?:\b(?:\Ba))|(?:\B(?:\bb)))*";
+        let matcher = plan(source, true, false, false, false).clone();
+        assert_eq!(
+            matcher
+                .find_with_captures_and_work(&JsString::from("ab"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(RegExpUnicodeRepeatedAtomMatch {
+                range: 0..0,
+                atom_capture: None
+            })
+        );
+        assert_eq!(
+            plan(r"((?:\b(?:\Ba))|(?:\B(?:\bb)))+", true, false, false, false)
+                .find_with_work(&JsString::from("ab"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            None
+        );
+        assert!(
+            matcher
+                .find_with_work(&JsString::from("ab"), 0, false, |_| Err(()))
+                .is_err()
+        );
+
+        for source in [
+            r"((?:\b(?:a)c)|b)+",
+            r"((?:\b(a))|b)+",
+            r"((?:\b(?:a|b))|c)+",
+            r"((?:\b(?:a)? )|b)+",
+        ] {
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertions_with_work(
+                &JsString::from(source), true, false, false, false, |_| Ok::<(), ()>(())
+            ).unwrap().is_none(), "{source}");
+        }
+        let many = format!("({}|b)+", "a|".repeat(20000).trim_end_matches('|'));
+        assert_eq!(
+            plan(&many, false, false, false, false)
+                .find_with_work(&JsString::from("b"), 0, true, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(0..1)
+        );
+        let source = JsString::from(r"((?:\B^(?:\B.$)$)|(?:\b(?:\ba\b)\b)){1,3}$");
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertions_with_work(
+            &source,
+            true,
+            false,
+            true,
+            true,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertions_with_work(
+                    &source,
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    }
+                )
+                .is_err()
+            );
+        }
+        let matcher = plan(
+            r"((?:\B^(?:\B.$)$)|(?:\b(?:\ba\b)\b)){1,3}$",
+            true,
+            false,
+            true,
+            true,
+        );
+        let input = JsString::from("\r\n");
+        calls = 0;
+        matcher
+            .find_with_captures_and_work(&input, 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                matcher
+                    .find_with_captures_and_work(&input, 0, false, |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    })
+                    .is_err()
+            );
+        }
+
+        let deep = format!("({}a{}|b)+", "(?:".repeat(6000), ")".repeat(6000));
+        assert_eq!(plan(&deep, true, false, false, false).capture_count(), 1);
+        assert_eq!(
+            plan(&deep, true, false, false, false)
+                .find_with_work(&JsString::from("aa"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(0..2)
+        );
+
+        let guarded = format!("(^{}a{}|b)+", "(?:".repeat(6000), ")".repeat(6000));
+        assert_eq!(
+            plan(&guarded, true, false, false, false)
+                .find_with_work(&JsString::from("aa"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(0..1)
+        );
+        for source in [
+            r"((?:a)|)+",
+            r"(|(?:b))+",
+            r"((?:a)|(?:ab))+",
+            r"((?:a)|(?:b?))+",
+            r"((?:a)|(b))+",
+            r"((?:a)|(?:\b))+",
+            r"((?:a)|(?i:b))+",
+            r"((?:a)|(?:b))+c",
+            r"\b((?:a)|(?:b))+",
+            r"((?:a)|(?:b))+\b",
+            r"(\b((?:a)|(?:b)))+",
+            r"((a)|(?:b))+",
+            r"((?:a)|(?:b)){2}c",
+            r"((?:a|b)|(?:c))+",
+            r"((?:a){1}|(?:b))+",
+            r"((?:a{1})|(?:b))+",
+            r"(\b(?:a)|(?:b))+c",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertions_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for source in [
+            r"((?:^(?:^a))|(?:(?:b$)$))+",
+            r"((?:(?:a$)$)|(?:^(?:^b)))+",
+            r"((?:\B^(?:\B.$)$)|(?:\b(?:\ba\b)\b))+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branches_with_work(
                     &JsString::from(source),
                     true,
                     false,

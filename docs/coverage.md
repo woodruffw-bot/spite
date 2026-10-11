@@ -7131,6 +7131,28 @@ Stable and MSRV pass all 14,494 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Assertion sequences interleaved with noncapturing Unicode branches have three new core
+tests and 8 runtime tests. Sixteen independent semantic
+plans cover assertions scoped to individual branches, combined line and word
+gates, folding, surrogate pairs and lone surrogates, greedy/lazy counts, sticky
+starts and capture ranges. All 10240 core and 2400 runtime snapshot rows agree
+with pinned-folding calculations and Node; thirty-six complete Boolean
+programs also agree with Node. Earlier entry points retain their rejection
+contracts for the new forms. Fallible construction/search checks, clones,
+collection, 6000 wrappers and 200001 input units preserve unlimited defaults.
+
+All 648 core tests and 230 related runtime targets pass. All 519 previous
+snapshots remain byte-identical, with 2 new reviewed golds.
+The complete 1175-program current-build audit has no
+remaining admissions. Ordered/direct-eval state checks and existing whole
+fixture reviews keep their outcomes without failures or limits. Corpus
+inventories/pin, dependencies and default quota settings remain unchanged.
+
+Stable and MSRV pass all 14,494 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
