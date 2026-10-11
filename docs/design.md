@@ -3086,6 +3086,22 @@ operation. Initial offsets inside a pair use the approved leading boundary,
 including empty quantified matches. Consumers retain AdvanceStringIndex for
 empty results. There is no new dependency, recursion or default resource quota.
 
+
+The single Unicode atom repetition plan also proves an optional leading ^
+(22.2.2.4). Candidate positions must be the actual beginning or, with m, follow a
+LineTerminator. This includes positions between CR and LF and the input end
+when an empty quantified match is possible. The assertion examines the original
+input rather than a sliced suffix. A dedicated flag-aware entry point retains
+the existing unanchored API's complete-body contract.
+
+Candidates failing the assertion advance by one complete character. A failed
+short run still cannot meet the minimum from any later start within that run,
+so the established skip remains valid. Search remains linear with constant
+storage and charges context/character work before use. A nonmultiline or sticky
+start cannot retry an ineligible candidate. Complete enclosing groups, including
+an assertion outside them, retain the selected original match range. Trailing
+assertions and quantified capture bodies remain separate proofs.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

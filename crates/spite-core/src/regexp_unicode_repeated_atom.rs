@@ -1,4 +1,4 @@
-//! Unanchored quantification of one complete Unicode character (22.2.2.3, 22.2.2.7).
+//! Single Unicode character quantifiers with optional starting ^ (22.2.2.3, 22.2.2.4).
 use crate::{
     JsString, RegExpUnicodeCharacterMatcher, RegExpUnicodeClassMatcher,
     regexp_literal::unicode_start, regexp_unicode_character::unicode_input_character,
@@ -17,6 +17,267 @@ pub struct RegExpUnicodeRepeatedAtomMatcher {
     minimum: Option<usize>,
     maximum: Option<usize>,
     greedy: bool,
+    start_anchor: bool,
+    multiline: bool,
+}
+
+#[cfg(test)]
+mod start_assertion_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    const CASES: [(&str, u8, usize, Option<usize>, bool); 10] = [
+        ("^a+", 0, 1, None, true),
+        ("^a*?", 0, 0, None, false),
+        ("^a??", 0, 0, Some(1), false),
+        ("^a{2,3}", 0, 2, Some(3), true),
+        ("^.+", 1, 1, None, true),
+        (r"^\D{1,2}", 2, 1, Some(2), true),
+        (r"^\W+", 3, 1, None, true),
+        (r"^\p{Join_C}+", 4, 1, None, true),
+        (r"^\p{NChar}{1,2}", 5, 1, Some(2), true),
+        ("^[aſK]+", 6, 1, None, true),
+    ];
+
+    #[test]
+    fn unicode_repeated_atom_start_ranges_snapshot() {
+        let mut rows = String::new();
+        for (source, ..) in CASES {
+            let pattern = JsString::from(source);
+            for v in [false, true] {
+                for i in [false, true] {
+                    for m in [false, true] {
+                        for s in [false, true] {
+                            let matcher = plan(source, v, i, m, s);
+                            for input in [
+                                JsString::from("B\raaa\nAAſK\u{2028}"),
+                                JsString::from("\r\n\u{200c}\u{200d}\u{ffff}\u{10ffff}"),
+                                JsString::from("😀\naaa"),
+                                JsString::from_code_units(vec![0x61, 0xd800, 0x0a, 0x61, 0xdc00]),
+                                JsString::from(""),
+                            ] {
+                                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                    for sticky in [false, true] {
+                                        writeln!(rows,"{pattern:?} v={v} i={i} m={m} s={s} input={input:?} start={start} sticky={sticky} {:?}", matcher.find_with_work(&input,start,sticky,|_|Ok::<(),()>(())).unwrap()).unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_repeated_atom_start_matches_independent_candidate_oracle() {
+        let alphabet: [u16; 10] = [
+            0x41, 0x61, 0x0a, 0x0d, 0x2028, 0x17f, 0x200c, 0xffff, 0xd83d, 0xde00,
+        ];
+        let lt = |c| matches!(c, 0x0a | 0x0d | 0x2028 | 0x2029);
+        for i in [false, true] {
+            for m in [false, true] {
+                for s in [false, true] {
+                    let fold = |c| {
+                        if i {
+                            match c {
+                                0x41 => 0x61,
+                                0x17f => 0x73,
+                                0x212a => 0x6b,
+                                _ => c,
+                            }
+                        } else {
+                            c
+                        }
+                    };
+                    let member = |kind, c| match kind {
+                        0 => fold(c) == 0x61,
+                        1 => s || !lt(c),
+                        2 => !(0x30..=0x39).contains(&c),
+                        3 => !char::from_u32(fold(c))
+                            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_'),
+                        4 => (0x200c..=0x200d).contains(&c),
+                        5 => matches!(c, 0xfdd0..=0xfdef) || (c & 0xffff) >= 0xfffe,
+                        6 => [0x61, fold(0x17f), fold(0x212a)].contains(&fold(c)),
+                        _ => unreachable!(),
+                    };
+                    let plans: Vec<_> = CASES.iter().map(|c| plan(c.0, false, i, m, s)).collect();
+                    for len in 0..=4 {
+                        for ordinal in 0..alphabet.len().pow(len) {
+                            let units: Vec<_> = (0..len)
+                                .map(|j| alphabet[ordinal / alphabet.len().pow(j) % alphabet.len()])
+                                .collect();
+                            let mut points = Vec::new();
+                            let mut bounds = vec![0];
+                            let mut j = 0;
+                            while j < units.len() {
+                                let mut c = u32::from(units[j]);
+                                j += 1;
+                                if (0xd800..=0xdbff).contains(&c)
+                                    && j < units.len()
+                                    && (0xdc00..=0xdfff).contains(&units[j])
+                                {
+                                    c = 65536 + (c - 0xd800) * 1024 + u32::from(units[j]) - 0xdc00;
+                                    j += 1;
+                                }
+                                points.push(c);
+                                bounds.push(j);
+                            }
+                            let input = JsString::from_code_units(units);
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    for (case, matcher) in CASES.iter().zip(&plans) {
+                                        let expected = if start > input.len() {
+                                            None
+                                        } else {
+                                            let first = bounds.partition_point(|&b| b <= start) - 1;
+                                            (first..=points.len()).find_map(|at| {
+                                                if (sticky && at != first)
+                                                    || (at != 0 && !(m && lt(points[at - 1])))
+                                                {
+                                                    return None;
+                                                }
+                                                let available = points[at..]
+                                                    .iter()
+                                                    .take_while(|&&c| member(case.1, c))
+                                                    .count();
+                                                let count =
+                                                    available.min(case.3.unwrap_or(available));
+                                                if count < case.2 {
+                                                    return None;
+                                                }
+                                                Some(
+                                                    bounds[at]
+                                                        ..bounds[at
+                                                            + if case.4 { count } else { case.2 }],
+                                                )
+                                            })
+                                        };
+                                        assert_eq!(
+                                            matcher
+                                                .find_with_work(&input, start, sticky, |_| Ok::<
+                                                    (),
+                                                    (),
+                                                >(
+                                                    ()
+                                                ))
+                                                .unwrap(),
+                                            expected,
+                                            "{} i={i} m={m} s={s} {input:?} start={start} sticky={sticky}",
+                                            case.0
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_repeated_atom_start_linear_work_clone_and_contracts() {
+        let input = JsString::from("aaB\n".repeat(50000).as_str());
+        let mut work = 0;
+        assert_eq!(
+            plan("^a{3}", true, false, true, false)
+                .clone()
+                .find_with_work(&input, 0, false, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            None
+        );
+        assert!(work < 6 * input.len(), "{work}");
+        assert_eq!(
+            plan("^a*?", false, false, true, false)
+                .find_with_work(&JsString::from("X\r\n"), 2, true, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(2..2)
+        );
+        assert_eq!(
+            plan("^.+", true, false, false, false)
+                .find_with_work(&JsString::from("😀"), 1, true, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(0..2)
+        );
+        assert!(
+            plan("^.+", true, false, true, true)
+                .find_with_work(&input, 0, false, |_| Err(()))
+                .is_err()
+        );
+        let source = JsString::from("^a{2,3}");
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
+            &source,
+            true,
+            true,
+            true,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 1..=calls {
+            let mut n = 0;
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
+                    &source,
+                    true,
+                    true,
+                    true,
+                    false,
+                    |_| {
+                        n += 1;
+                        if n == fail { Err(()) } else { Ok(()) }
+                    }
+                )
+                .is_err()
+            );
+        }
+        for source in [
+            "^^a+",
+            "^a+$",
+            r"^\ba+",
+            "^(a)+",
+            "^a+b",
+            r"^[a--b]+",
+            r"^\p{Assigned}+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -120,10 +381,51 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     minimum,
                     maximum,
                     greedy,
+                    start_anchor: false,
+                    multiline: false,
                 }));
             }
         }
         Ok(None)
+    }
+
+    /// Compiles one consuming atom and quantifier with an optional leading ^.
+    ///
+    /// The caller validates the whole u/v Pattern with the supplied flags.
+    /// Only the actual beginning or a position after a LineTerminator may pass
+    /// the assertion (22.2.2.4). Trailing assertions remain separate proofs.
+    pub fn compile_with_start_anchor_and_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        if source.code_units().first() != Some(&0x5e) {
+            return Self::compile_with_flags_and_work(
+                source,
+                unicode_sets,
+                ignore_case,
+                dot_all,
+                charge,
+            );
+        }
+        charge(source.len())?;
+        let body = JsString::from_code_units(source.code_units()[1..].to_vec());
+        let Some(mut plan) = Self::compile_with_flags_and_work(
+            &body,
+            unicode_sets,
+            ignore_case,
+            dot_all,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.start_anchor = true;
+        plan.multiline = multiline;
+        Ok(Some(plan))
     }
 
     /// Finds the earliest complete-character candidate and its required run.
@@ -148,6 +450,24 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         };
         let units = input.code_units();
         loop {
+            if self.start_anchor {
+                charge(1)?;
+                if candidate != 0
+                    && !(self.multiline
+                        && matches!(units[candidate - 1], 0x0a | 0x0d | 0x2028 | 0x2029))
+                {
+                    if sticky || !self.multiline {
+                        return Ok(None);
+                    }
+                    let Some(&first) = units.get(candidate) else {
+                        return Ok(None);
+                    };
+                    charge(2)?;
+                    let (_, width) = unicode_input_character(units, candidate, first);
+                    candidate += width;
+                    continue;
+                }
+            }
             let mut cursor = candidate;
             let mut count = 0;
             while self.maximum.is_none_or(|upper| count < upper) {

@@ -6281,6 +6281,31 @@ Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Leading ^ on a quantified Unicode atom has three core and eight runtime tests.
+An independent raw UTF-16 candidate oracle covers ten semantic plans through four
+input units, every start, sticky/nonsticky search and every i/m/s combination.
+All 8000 core and 1500 runtime snapshot rows agree independently and with Node,
+as do thirty-six complete Boolean programs. The exact formerly unsupported
+/^a+/u.exec('a') program is retained in a positive snapshot and agrees with Node;
+its gap control now uses a still-unproved repeated leading assertion.
+
+Cases cover all four LineTerminators and positions within CRLF, actual starts,
+EOF empty repetitions, greedy/lazy/count bounds, folding and dotAll, properties,
+complete named/__proto__ captures, approved initial pair offsets, lone surrogates,
+consumers/empty advancement, clones, coercions, strict writes and collection.
+Unlimited defaults handle 3000 captures and 200002 input units. Opted-in search
+exhaustion preserves the tested state; a 200000-unit failed-run test verifies
+linear work. All 576 core tests and 177 related runtime targets pass. All 453
+previous snapshots remain byte-identical, with three reviewed new golds. All
+1078 gap programs, eight ordered and ten direct-eval probes retain Unsupported
+and state. Whole 17/115-source and unchanged dotAll/class/folding reviews have no
+failures or host limits. Corpus and dependencies are unchanged.
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
