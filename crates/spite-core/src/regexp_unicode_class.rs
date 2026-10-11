@@ -16,7 +16,7 @@ use std::{ops::Range, sync::Arc};
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
-/// surrogates. Fixed ASCII, Any, hex-digit, White_Space and Join_Control properties
+/// surrogates. Fixed ASCII, Any, hex-digit, White_Space, Join_Control and noncharacter properties
 /// are admitted in flat unions and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
@@ -133,7 +133,7 @@ impl RegExpUnicodeClassMatcher {
     /// Compiles standalone fixed binary Unicode properties and boundaries.
     ///
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
-    /// and Join_Control/Join_C.
+    /// Join_Control/Join_C and Noncharacter_Code_Point/NChar.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -188,13 +188,14 @@ impl RegExpUnicodeClassMatcher {
         // UnicodeSets mode complements the canonical set instead. The shared
         // interval constructor folds only members of its original ranges.
         let complement_first = negated && ignore_case && !unicode_sets;
-        // Fixed properties use up to ten positive or eleven complementary intervals.
+        // Fixed properties use up to eighteen positive or complementary intervals.
         // Charge the bounded append before it can allocate.
         charge(match kind {
             4 => 4,
             6 => 7,
             8 => 11,
             10 => 2,
+            12 => 18,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -310,11 +311,15 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..12 {
+        for kind in 0..14 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
-                charge(ranges.len().saturating_add(if kind >= 8 { 24 } else { 8 }))?;
+                charge(ranges.len().saturating_add(match kind {
+                    12 | 13 => 40,
+                    8..=11 => 24,
+                    _ => 8,
+                }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
             }
         }
@@ -588,6 +593,32 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x6c,
         ] => 10,
+        [0x4e, 0x43, 0x68, 0x61, 0x72]
+        | [
+            0x4e,
+            0x6f,
+            0x6e,
+            0x63,
+            0x68,
+            0x61,
+            0x72,
+            0x61,
+            0x63,
+            0x74,
+            0x65,
+            0x72,
+            0x5f,
+            0x43,
+            0x6f,
+            0x64,
+            0x65,
+            0x5f,
+            0x50,
+            0x6f,
+            0x69,
+            0x6e,
+            0x74,
+        ] => 12,
         _ => return None,
     })
 }
@@ -652,6 +683,47 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
         // Pinned UCD Join_Control: ZWNJ and ZWJ, both invariant under C/S folding.
         10 => &[(0x200c, 0x200d)],
         11 => &[(0, 0x200b), (0x200e, 0x10ffff)],
+        // Pinned UCD noncharacters: FDD0..FDEF and the final two points of every plane.
+        12 => &[
+            (0xfdd0, 0xfdef),
+            (0xfffe, 0xffff),
+            (0x1fffe, 0x1ffff),
+            (0x2fffe, 0x2ffff),
+            (0x3fffe, 0x3ffff),
+            (0x4fffe, 0x4ffff),
+            (0x5fffe, 0x5ffff),
+            (0x6fffe, 0x6ffff),
+            (0x7fffe, 0x7ffff),
+            (0x8fffe, 0x8ffff),
+            (0x9fffe, 0x9ffff),
+            (0xafffe, 0xaffff),
+            (0xbfffe, 0xbffff),
+            (0xcfffe, 0xcffff),
+            (0xdfffe, 0xdffff),
+            (0xefffe, 0xeffff),
+            (0xffffe, 0xfffff),
+            (0x10fffe, 0x10ffff),
+        ],
+        13 => &[
+            (0x0, 0xfdcf),
+            (0xfdf0, 0xfffd),
+            (0x10000, 0x1fffd),
+            (0x20000, 0x2fffd),
+            (0x30000, 0x3fffd),
+            (0x40000, 0x4fffd),
+            (0x50000, 0x5fffd),
+            (0x60000, 0x6fffd),
+            (0x70000, 0x7fffd),
+            (0x80000, 0x8fffd),
+            (0x90000, 0x9fffd),
+            (0xa0000, 0xafffd),
+            (0xb0000, 0xbfffd),
+            (0xc0000, 0xcfffd),
+            (0xd0000, 0xdfffd),
+            (0xe0000, 0xefffd),
+            (0xf0000, 0xffffd),
+            (0x100000, 0x10fffd),
+        ],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -2680,6 +2752,199 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Join_C}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_noncharacter_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Noncharacter_Code_Point}",
+                    r"\P{NChar}",
+                    r"[\p{NChar}]",
+                    r"[^\p{Noncharacter_Code_Point}]",
+                    r"[\P{NChar}K]",
+                    r"[\p{NChar}K]",
+                    r"[\p{NChar}\P{Noncharacter_Code_Point}]",
+                    r"[^\P{NChar}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let whitespace =
+                            matches!(point, 0xfdd0..=0xfdef) || (point & 0xffff) >= 0xfffe;
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Noncharacter_Code_Point}" | r"[\p{NChar}]" => whitespace,
+                            r"\P{NChar}" | r"[^\p{Noncharacter_Code_Point}]" => !whitespace,
+                            r"[\P{NChar}K]" => !whitespace || k,
+                            r"[\p{NChar}K]" => whitespace || k,
+                            r"[\p{NChar}\P{Noncharacter_Code_Point}]" => true,
+                            r"[^\P{NChar}K]" => whitespace && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_noncharacter_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{NChar}",
+            r"\P{Noncharacter_Code_Point}",
+            r"^[\p{Noncharacter_Code_Point}]$",
+            r"[\P{NChar}K]",
+            r"[^\P{NChar}K]",
+            r"[\p{Noncharacter_Code_Point}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{fdcf}\u{fdd0}\u{fdef}\u{fdf0}\u{fffe}\u{ffff}ſK\n",
+                            "X\r\n\u{1fffe}\u{2028}\u{10ffff}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_noncharacter_property_work_deduplication_and_contracts() {
+        let source = JsString::from(
+            format!(
+                "[{}]",
+                r"\p{NChar}\P{Noncharacter_Code_Point}".repeat(10000)
+            )
+            .as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{NChar}$", r"^[\P{Noncharacter_Code_Point}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{fdd0}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{NChar}--A]",
+            r"[\p{NChar}&&A]",
+            r"[[\p{NChar}]]",
+            r"[A-\p{NChar}]",
+            r"[\p{NChar}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{NChar}]"),
                 true,
                 true,
                 false

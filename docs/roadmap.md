@@ -464,6 +464,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match complete Unicode line and word assertion sequences, including repeated, reordered and contradictory conditions at the same empty position.
 - [x] Match optional word boundaries around Unicode literal concatenations and complete enclosing groups, preserving partial and empty captures, case-folded neighbors and original indices.
 - [x] Match Join_Control and its Join_C alias as Unicode property atoms and flat class members, preserving complements, enclosing captures and original complete-character indices.
+- [x] Match Noncharacter_Code_Point and its NChar alias across all Unicode planes, including complements, flat unions and original complete-character capture indices.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

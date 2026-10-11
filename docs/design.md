@@ -3049,6 +3049,20 @@ allocation. No Unicode expansion, source/input-sized membership table,
 recursion, dependency or baseline change is added. Join controls remain
 distinct from JavaScript whitespace and WordCharacters.
 
+
+Noncharacter_Code_Point and its exact NChar alias use eighteen positive and
+eighteen complementary intervals (22.2.2.9). The pinned PropList.txt specifies
+U+FDD0 through U+FDEF and the final two code points of each of the seventeen
+Unicode planes: sixty-six code points, including U+10FFFF. Noncharacters are
+valid ECMAScript string and RegExp characters, rather than encoding errors.
+Pinned C/S folding preserves membership, so u/v complement orders coincide.
+
+The existing fixed-property u16 mask deduplicates repeated aliases and
+complements before interval allocation. Bounded append and normalization work
+is charged before growth. Flat unions, inversion, assertions and complete
+enclosing captures share the established plans. There is no Unicode expansion,
+new dependency, native recursion, default quota or baseline change.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -6227,6 +6227,31 @@ Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Noncharacter_Code_Point/NChar have three core and seven runtime tests. Eight
+independent property/union/complement/inversion plans agree over every Unicode
+code point in both u/v modes with and without i: 35,651,584 membership checks.
+The pinned sixty-six-member set is independently verified, along with membership
+preservation for all pinned C/S pairs. All 1920 core and 560 runtime snapshot
+rows agree with an independent oracle and Node; thirty-two complete Boolean
+programs also agree with Node.
+
+Cases cover exact aliases, all seventeen planes and U+10FFFF, adjacent members
+and nonmembers, folded unions/complements/inversion, original named/__proto__
+capture indices, endpoints and multiline terminators, approved pair starts,
+lone surrogates, consumers, clones, coercions, strict writes and collection.
+Unlimited defaults handle 3000 captures, 10000 repeated property escapes and
+200002 input units; opted-in host failures preserve the tested state. All 570
+core tests and 175 related runtime targets pass. All 448 previous snapshots
+remain byte-identical, with two new reviewed golds. All 1066 gap programs, eight
+ordered and ten direct-eval probes retain Unsupported and state. Whole 17/115
+reviews and unchanged dotAll/class/folding fixtures have no failures or host
+limits. Corpus, dependencies and the Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
