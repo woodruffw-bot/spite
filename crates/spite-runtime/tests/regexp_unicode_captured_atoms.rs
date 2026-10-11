@@ -167,8 +167,8 @@ fn unicode_captured_atoms_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(^a)+/um.exec('aa')",
-        r"/(a$)+/um.exec('aa')",
+        r"/(^a)+b/um.exec('aa')",
+        r"/(a$)+b/um.exec('aa')",
         r"/(a?)+/u.exec('aa')",
         r"/(a|b)+/v.exec('aa')",
         r"/()+/u.exec('a')",

@@ -3204,6 +3204,27 @@ through existing result construction. Every predicate charges opted-in work
 before use. Search stays linear with constant storage and no input offsets,
 expanded counts, native recursion, dependency or default quota.
 
+
+A dedicated repeated-group compiler retains optional ^/$ inside a complete
+consuming Unicode atom (22.2.2.4, 22.2.2.7). It shares the complete-wrapper and
+quantifier proof with the prior capture entry, which still excludes these inner
+assertions. Only this scoped route enables line predicates on the retained
+character, literal, flat-class or fixed-property matcher. Each consuming
+iteration checks its own original start/end and multiline context. Outside
+line assertions remain separate predicates on the whole selected repetition.
+
+No assertion is moved across a group or quantifier. For example, (^a)+ selects
+one initial a from aaa, and (a$)+ selects the final a. Required repeated counts
+cannot reuse either assertion as an outside predicate. With m/s, adjacent line
+terminators can each satisfy both assertions in (^.$)+. Zero selected iterations
+never evaluate the inner predicates and leave all inner captures undefined.
+The selected final complete character continues to supply every complete inner
+capture. Empty units, inner word predicates, alternatives and concatenations
+remain separate proofs. Existing monotone searches retain linear work and
+constant input storage. Source scans and copies use established precharges;
+predicates charge opted-in work before use. No expanded counts, recursion,
+dependency, corpus alteration or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

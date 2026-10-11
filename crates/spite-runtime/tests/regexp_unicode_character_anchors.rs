@@ -140,9 +140,9 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(^.$)+/iu.exec('a')",
+        r"/(^.$)+b/iu.exec('a')",
         r"/^(.+)b$/v.exec('a')",
-        r"/(?:^a$)+/u.exec('a')",
+        r"/(?:^a$)+b/u.exec('a')",
         r"/^([a])+b$/v.exec('a')",
         r"/^..$/u.exec('ab')",
         r"/^\D+b$/v.exec('ab')",
