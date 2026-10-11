@@ -3321,6 +3321,31 @@ The established earliest-start, greedy/lazy endpoint and complete UTF-16 range
 logic is shared. There is no new matching algorithm, input storage, recursion,
 expanded count, dependency, fixture change or default quota.
 
+
+The repeated Unicode alternative proof follows Disjunction and RepeatMatcher
+(22.2.2.3, 22.2.2.4) for complete ordinary/noncapturing wrappers around branches
+that each consume exactly one Unicode character. Every branch must pass a
+complete consuming leaf proof. Empty branches, concatenations, branch captures,
+nested branch groups and nullable branch units remain excluded. Original class
+and escape boundaries govern separators; branch word and line assertions retain
+their input positions and original i/m/s context. Optional outside line gates
+still constrain the complete repetition, rather than its branches.
+
+For example, (\ba|b\b)+ selects the initial a in aaa, while (a|b)+ selects all
+three characters. Successful branches at a position consume the same decoded
+Unicode character. They introduce no branch captures or side effects, so their
+left-to-right choice cannot alter a later continuation or the wrapper captures.
+Every complete wrapper captures the last selected iteration; zero counts leave
+these captures undefined. Existing earliest-start and greedy/lazy range logic
+therefore remains applicable without a new backtracking algorithm.
+
+The branch representation and scan are flat, with source-sized prepaid storage
+and no native recursion or expanded counts. The sum of branch search work is
+computed once during construction and charged safely before each candidate
+character; matching work is bounded by input length times the proved branch
+predicates. Earlier entry points keep their contracts. Dependencies, fixture
+sources and opt-in quota defaults are unchanged.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

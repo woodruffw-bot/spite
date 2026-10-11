@@ -148,7 +148,7 @@ fn unicode_repeated_atom_inner_word_opted_work_and_unproved_units() {
         r"/(\b)+/u.exec('a')",
         r"/(^\B$)+/v.exec('')",
         r"/(\ba?)+/u.exec('a')",
-        r"/(\ba|b)+/v.exec('a')",
+        r"/(\ba|b)+b/v.exec('a')",
         r"/(\bab)+/u.exec('ab')",
         r"/(\ba)+b/v.exec('ab')",
         r"/\b(\ba)+b/u.exec('a')",

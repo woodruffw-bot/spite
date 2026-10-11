@@ -146,8 +146,8 @@ fn empty_complete_paths_lookaround_and_unicode_remain_distinct_from_match_failur
         r"/(a|){2,3}/.test('ab')",
         r"/((a|b)*){2,3}/.test('ab')",
         r"/((?<=(a+))a|b)+/.test('a')",
-        r"/(a|b)+/u.test('ab')",
-        r"/(a|b)+/v.test('ab')",
+        r"/(a|b)+b/u.test('ab')",
+        r"/(a|b)+b/v.test('ab')",
         r"/((?:a|b)?){2,3}/.test('ab')",
     ] {
         assert!(

@@ -161,7 +161,7 @@ fn unicode_repeated_atom_inner_line_opted_work_and_unproved_units() {
         r"/(^$)+/u.exec('')",
         r"/(\b.)+b/u.exec('a')",
         r"/(a?)+/u.exec('a')",
-        r"/(a|b)+/v.exec('a')",
+        r"/(a|b)+b/v.exec('a')",
         r"/()+/u.exec('a')",
         r"/(ab)+/v.exec('ab')",
         r"/(^a)+b/u.exec('ab')",

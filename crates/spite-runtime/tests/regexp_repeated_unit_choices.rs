@@ -132,7 +132,7 @@ fn optional_work_aborts_and_other_repeated_choices_remain_unsupported() {
         r"/(?:(?:(a|b)+(c)+)|){2,3}/.test('abc')",
         r"/(?:(?:(?<n>a|b)+\k<n>)|){2,3}/.test('ab')",
         r"/(?:(?:(a|b)+\1)|){2,3}/.test('aa')",
-        r"/(a|b)+/u.test('ab')",
+        r"/(a|b)+b/u.test('ab')",
     ] {
         assert!(
             matches!(
