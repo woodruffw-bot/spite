@@ -16,7 +16,7 @@ use std::{ops::Range, sync::Arc};
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
-/// surrogates. Fixed ASCII, Any, hex-digit and White_Space properties
+/// surrogates. Fixed ASCII, Any, hex-digit, White_Space and Join_Control properties
 /// are admitted in flat unions and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
@@ -132,7 +132,8 @@ impl RegExpUnicodeClassMatcher {
 
     /// Compiles standalone fixed binary Unicode properties and boundaries.
     ///
-    /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex and White_Space/space.
+    /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
+    /// and Join_Control/Join_C.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -193,6 +194,7 @@ impl RegExpUnicodeClassMatcher {
             4 => 4,
             6 => 7,
             8 => 11,
+            10 => 2,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -308,7 +310,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..10 {
+        for kind in 0..12 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -571,6 +573,21 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x63,
             0x65,
         ] => 8,
+        [0x4a, 0x6f, 0x69, 0x6e, 0x5f, 0x43]
+        | [
+            0x4a,
+            0x6f,
+            0x69,
+            0x6e,
+            0x5f,
+            0x43,
+            0x6f,
+            0x6e,
+            0x74,
+            0x72,
+            0x6f,
+            0x6c,
+        ] => 10,
         _ => return None,
     })
 }
@@ -632,6 +649,9 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x2060, 0x2fff),
             (0x3001, 0x10ffff),
         ],
+        // Pinned UCD Join_Control: ZWNJ and ZWJ, both invariant under C/S folding.
+        10 => &[(0x200c, 0x200d)],
+        11 => &[(0, 0x200b), (0x200e, 0x10ffff)],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -2476,6 +2496,193 @@ mod tests {
                 true,
                 true,
                 true
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_join_control_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Join_Control}",
+                    r"\P{Join_C}",
+                    r"[\p{Join_C}]",
+                    r"[^\p{Join_Control}]",
+                    r"[\P{Join_C}K]",
+                    r"[\p{Join_C}K]",
+                    r"[\p{Join_C}\P{Join_Control}]",
+                    r"[^\P{Join_C}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let whitespace = matches!(point, 0x200c..=0x200d);
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Join_Control}" | r"[\p{Join_C}]" => whitespace,
+                            r"\P{Join_C}" | r"[^\p{Join_Control}]" => !whitespace,
+                            r"[\P{Join_C}K]" => !whitespace || k,
+                            r"[\p{Join_C}K]" => whitespace || k,
+                            r"[\p{Join_C}\P{Join_Control}]" => true,
+                            r"[^\P{Join_C}K]" => whitespace && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_join_control_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Join_C}",
+            r"\P{Join_Control}",
+            r"^[\p{Join_Control}]$",
+            r"[\P{Join_C}K]",
+            r"[^\P{Join_C}K]",
+            r"[\p{Join_Control}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{200b}\u{200c}\u{200d}\u{200e}ſK\n",
+                            "X\r\n\u{200c}\u{2028}\u{200d}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_join_control_property_work_deduplication_and_contracts() {
+        let source =
+            JsString::from(format!("[{}]", r"\p{Join_C}\P{Join_Control}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Join_C}$", r"^[\P{Join_Control}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{200c}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{Join_C}--A]",
+            r"[\p{Join_C}&&A]",
+            r"[[\p{Join_C}]]",
+            r"[A-\p{Join_C}]",
+            r"[\p{Join_C}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Join_C}]"),
+                true,
+                true,
+                false
             )
             .is_none()
         );

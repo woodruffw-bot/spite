@@ -3035,6 +3035,20 @@ original-boundary resolver. No input-sized storage, native recursion or
 dependency is added. Internal assertions and nonliteral bodies require separate
 proofs, and the approved initial-offset resolution remains unchanged.
 
+
+Fixed binary Unicode property plans also admit Join_Control and its exact
+Join_C alias (22.2.2.9). The pinned PropList.txt contains only U+200C and U+200D;
+one positive interval and two complementary intervals represent the complete
+set. Pinned C/S folding preserves membership in both directions, so the u/v
+complement orders coincide for this property. Existing flat unions, inversion,
+assertions and complete enclosing capture proofs remain shared.
+
+Repeated aliases and complements append each fixed set once through the
+existing u16 property mask. Bounded interval append work is charged before
+allocation. No Unicode expansion, source/input-sized membership table,
+recursion, dependency or baseline change is added. Join controls remain
+distinct from JavaScript whitespace and WordCharacters.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

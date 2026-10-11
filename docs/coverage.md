@@ -6202,6 +6202,31 @@ Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Join_Control/Join_C have three core and seven runtime tests. Eight independently
+specified property/union/complement/inversion plans agree over every Unicode
+code point, in both u/v modes with and without i: 35,651,584 membership checks.
+The pinned PropList interval is verified independently and every pinned C/S
+pair preserves membership. All 1920 core and 560 runtime snapshot rows agree
+with an independent complete-character/context oracle and Node. Node verifies
+twenty-eight complete Boolean programs with no differences.
+
+Coverage includes exact aliases, both join controls and adjacent nonmembers,
+whitespace differences, folded class unions, complements/inversion, original
+named/__proto__ capture indices, actual endpoints, multiline terminators,
+approved pair starts, lone surrogates, consumers, clones, coercions/strict writes,
+collection, 3000 captures, 10000 repeated property escapes, 200002 input units,
+unlimited defaults and opted-in host failures. All 567 core tests and 174 related
+runtime targets pass. All 446 previous snapshots remain byte-identical, with two
+new reviewed golds. All 1061 gap programs, eight ordered and ten direct-eval
+probes retain Unsupported and state. Whole 17/115-source and unchanged
+dotAll/class/simple-fold reviews have no failures or host limits. Corpus,
+dependencies and the Unicode baseline are unchanged.
+
+Stable and MSRV pass all 14,472 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
