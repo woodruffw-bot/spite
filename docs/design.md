@@ -3389,6 +3389,22 @@ precomputed and charged safely before each candidate character; matching adds
 no new search algorithm, input storage, native recursion or expanded counts.
 Dependencies, fixture sources and opt-in quota defaults are unchanged.
 
+
+Outside word assertions compose with the complete shared alternative-group proof
+(22.2.2.3, 22.2.2.4, 22.2.2.7). The existing word scan must leave a whole body
+that passes that proof before outside predicates are attached. Branch assertions
+still constrain their own branch; shared word/line guards constrain every
+selected iteration; outside word/line gates constrain the selected whole range.
+Earlier entries retain their established contracts.
+
+For example, \b(\b(a|b))+\B selects the first a from aaa, while
+\B((a|b)\b)+\b selects the final a. Complete inner wrappers capture that last
+selected character, and zero counts leave their captures undefined without
+executing their shared guards. The existing flat branch/guard representation,
+earliest-start and greedy/lazy endpoints, UTF-16 ranges and safe work charges are
+shared. This composition adds no search algorithm, source/input storage, native
+recursion, expanded counts, dependency, fixture change or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
