@@ -135,7 +135,7 @@ fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
         r"/(?:(?:^(ab|a)+$)|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:^a+b+$){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:^(?:a+[b]+)$){2}){2}){2})|){2,3}/.test('ab')",
-        "/^a+$/u.test('a')",
+        r"/^a+b$/u.test('a')",
     ] {
         assert!(
             matches!(

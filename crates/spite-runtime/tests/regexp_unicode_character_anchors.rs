@@ -141,11 +141,11 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
     );
     for source in [
         r"/(^.$)+/iu.exec('a')",
-        r"/^(.+)$/v.exec('a')",
+        r"/^(.+)b$/v.exec('a')",
         r"/(?:^a$)+/u.exec('a')",
         r"/^([a])+$/v.exec('a')",
         r"/^..$/u.exec('ab')",
-        r"/^\D+$/v.exec('ab')",
+        r"/^\D+b$/v.exec('ab')",
         r"/^.$|b/u.exec('b')",
         r"/^\p{Assigned}$/v.exec('a')",
         r"/^$/.exec('')+/(?:^$)+/u.exec('')",

@@ -3102,6 +3102,27 @@ start cannot retry an ineligible candidate. Complete enclosing groups, including
 an assertion outside them, retain the selected original match range. Trailing
 assertions and quantified capture bodies remain separate proofs.
 
+
+A dedicated line-assertion entry point also proves a trailing $ on the single
+Unicode repetition plan without m (22.2.2.4). Only the actual input end satisfies
+this assertion, including when the final character is a LineTerminator. Optional
+leading ^ requires the actual beginning. The established multiline-start entry
+point and its unanchored contracts remain available; multiline $ is separate work.
+
+The complete-character scan records the final matching run. A monotone second
+pointer trims that run to a finite maximum, leaving its earliest eligible start.
+The minimum must still be satisfied. Sticky search and leading ^ reject any
+necessary change of their fixed start. The end assertion gives one possible
+endpoint, so greedy and lazy repetition order produce this same earliest range.
+A zero maximum selects the actual input end directly, subject to the fixed-start
+assertions. All returned ranges, including empty ones, use original indices.
+
+This is equivalent to independent candidate/count enumeration with $, while
+remaining linear in time and constant in search storage. Character membership
+and pointer movement charge opted-in work before use. No input-sized offset
+array, repetition expansion, recursion, dependency or default quota is added.
+Complete enclosing captures keep the selected whole-match range.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
