@@ -142,7 +142,7 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
     );
     for source in [
         r"/([a])+/iu.exec('a')",
-        r"/[a]+/iv.exec('a')",
+        r"/[a]+b/iv.exec('a')",
         r"/[a]b/iu.exec('ab')",
         r"/[a&&b]/iv.exec('a')",
         r"/[[a]]/iv.exec('a')",

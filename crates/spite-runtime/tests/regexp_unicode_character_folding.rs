@@ -134,7 +134,7 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         r"/([a])+/iu.exec('a')",
         r"/([^a])+/iv.exec('b')",
         r"/(\w)+/iu.exec('a')",
-        r"/\w+/iv.exec('a')",
+        r"/\w+b/iv.exec('a')",
         r"/\w\d/iu.exec('a9')",
         r"/\p{Assigned}/iv.exec('a')",
         r"/(?:\b)+/iu.exec('a')",

@@ -3063,6 +3063,29 @@ is charged before growth. Flat unions, inversion, assertions and complete
 enclosing captures share the established plans. There is no Unicode expansion,
 new dependency, native recursion, default quota or baseline change.
 
+
+A dedicated Unicode repetition plan proves one complete consuming literal, dot,
+escape, flat class or supported binary property followed by *, +, ?, or exact,
+open or bounded decimal counts, with optional lazy ordering (22.2.2.3,
+22.2.2.7). Full u/v syntax validation precedes the proof; assertions, alternatives,
+concatenations and quantified capturing groups require separate plans. Complete
+enclosing captures share the selected original whole-match range.
+
+The retained atom is proved completely before choosing a quantifier parse,
+including the ambiguity between a braced Unicode escape and a numeric bound
+before ?. Decimal comparisons retain exact bound order without machine-sized
+truncation. A minimum beyond representable string storage cannot match; a
+maximum beyond it cannot constrain any representable input. Counts never expand
+into repetitions, and leading zeros add no artificial source limit.
+
+Each attempt consumes complete characters up to its bound, greedily or lazily.
+If a run is shorter than the minimum, no later start within that run can succeed;
+search skips that run and its failing character once. Search is linear with
+constant storage, and charges opt-in work before each character/membership
+operation. Initial offsets inside a pair use the approved leading boundary,
+including empty quantified matches. Consumers retain AdvanceStringIndex for
+empty results. There is no new dependency, recursion or default resource quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

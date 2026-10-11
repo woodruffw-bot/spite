@@ -154,7 +154,7 @@ fn unicode_whitespace_properties_opted_work_and_remaining_sets() {
         r"/\p{Assigned}/u.exec('A')",
         r"/[\p{space}&&A]/v.exec('A')",
         r"/[\p{space}--A]/v.exec('A')",
-        r"/\p{space}+/u.exec('AA')",
+        r"/\p{space}+b/u.exec('AA')",
         r"/\p{space}A/v.exec('AA')",
     ] {
         assert!(

@@ -118,8 +118,8 @@ fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps
         r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:a+[b]+|b){2}){2}){2})|){2,3}/.test('b')",
         r"/(?:(?:((?:(?:^a+[b]+$){2}){2}){2})|){2,3}/.test('a')",
-        "/a+/u.test('a')",
-        "/[a]+/v.test('a')",
+        r"/a+b/u.test('a')",
+        r"/[a]+b/v.test('a')",
         r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('a')",
     ] {
         assert!(

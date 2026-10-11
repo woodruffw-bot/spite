@@ -140,7 +140,7 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
         r"/([\u{1f600}])+/u.exec('a')",
         r"/[a]b/u.exec('ab')",
         r"/([a])+/u.exec('a')",
-        r"/[a]*/u.exec('a')",
+        r"/[a]*b/u.exec('a')",
         r"/(.)+/u.exec('a')",
         r"/[\p{Assigned}]/u.exec('a')",
     ] {

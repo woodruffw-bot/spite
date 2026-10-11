@@ -161,7 +161,7 @@ fn unicode_noncharacter_properties_opted_work_and_remaining_sets() {
         r"/\p{Assigned}/u.exec('A')",
         r"/[\p{NChar}&&A]/v.exec('A')",
         r"/[\p{NChar}--A]/v.exec('A')",
-        r"/\p{NChar}+/u.exec('AA')",
+        r"/\p{NChar}+b/u.exec('AA')",
         r"/\p{NChar}A/v.exec('AA')",
     ] {
         assert!(

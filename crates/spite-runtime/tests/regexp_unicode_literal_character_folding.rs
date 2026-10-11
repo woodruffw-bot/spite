@@ -165,7 +165,7 @@ fn unicode_literal_character_folding_opted_work_and_remaining_gaps() {
     );
     for source in [
         r"/(?:ab)+/iu.exec('AB')",
-        r"/a+/iv.exec('A')",
+        r"/a+b/iv.exec('A')",
         r"/(?:(a)b)+/iu.exec('AB')",
         r"/a|b/iv.exec('A')",
         r"/^(a)+$/iu.exec('A')",

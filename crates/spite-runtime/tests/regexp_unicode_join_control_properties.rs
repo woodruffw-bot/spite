@@ -154,7 +154,7 @@ fn unicode_join_control_properties_opted_work_and_remaining_sets() {
         r"/\p{Assigned}/u.exec('A')",
         r"/[\p{Join_C}&&A]/v.exec('A')",
         r"/[\p{Join_C}--A]/v.exec('A')",
-        r"/\p{Join_C}+/u.exec('AA')",
+        r"/\p{Join_C}+b/u.exec('AA')",
         r"/\p{Join_C}A/v.exec('AA')",
     ] {
         assert!(

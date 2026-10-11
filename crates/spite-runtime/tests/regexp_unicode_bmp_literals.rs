@@ -182,7 +182,7 @@ fn unicode_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:a?)/u.exec('a')",
+        r"/(?:a?)b/u.exec('a')",
         r"/(?:a)+/iu.exec('a')",
         r"/\u{D800}\u{DC00}/v.exec('a')",
         r"/\uD800()\uDC00/u.exec('\uD800')",

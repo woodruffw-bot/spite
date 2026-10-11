@@ -143,7 +143,7 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
         r"/([^\u{61}])+/u.exec('b')",
         r"/[\u{61}&&\u{62}]/v.exec('a')",
         r"/[[\u{61}]]/v.exec('a')",
-        r"/[\u{61}]*/u.exec('a')",
+        r"/[\u{61}]*b/u.exec('a')",
         r"/([\u{61}])+/u.exec('a')",
         r"/[\u{61}]\u{62}/v.exec('ab')",
     ] {

@@ -151,7 +151,7 @@ fn unicode_hex_properties_opted_work_and_remaining_sets() {
         r"/\p{Assigned}/u.exec('A')",
         r"/[\p{Hex}&&A]/v.exec('A')",
         r"/[\p{Hex}--A]/v.exec('A')",
-        r"/\p{Hex}+/u.exec('AA')",
+        r"/\p{Hex}+b/u.exec('AA')",
         r"/\p{Hex}A/v.exec('AA')",
     ] {
         assert!(

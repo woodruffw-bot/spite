@@ -159,7 +159,7 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
         r"/[\p{RGI_Emoji}]/v.exec('😀')",
         r"/[\p{ASCII}&&K]/v.exec('K')",
         r"/[\p{ASCII}--K]/v.exec('A')",
-        r"/[\p{ASCII}]+/v.exec('A')",
+        r"/[\p{ASCII}]+b/v.exec('A')",
         r"/[\p{ASCII}]x/u.exec('Ax')",
     ] {
         assert!(
