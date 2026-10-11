@@ -3107,7 +3107,8 @@ A dedicated line-assertion entry point also proves a trailing $ on the single
 Unicode repetition plan without m (22.2.2.4). Only the actual input end satisfies
 this assertion, including when the final character is a LineTerminator. Optional
 leading ^ requires the actual beginning. The established multiline-start entry
-point and its unanchored contracts remain available; multiline $ is separate work.
+point and its unanchored contracts remain available. Multiline $ has its own
+monotone endpoint scan.
 
 The complete-character scan records the final matching run. A monotone second
 pointer trims that run to a finite maximum, leaving its earliest eligible start.
@@ -3122,6 +3123,25 @@ remaining linear in time and constant in search storage. Character membership
 and pointer movement charge opted-in work before use. No input-sized offset
 array, repetition expansion, recursion, dependency or default quota is added.
 Complete enclosing captures keep the selected whole-match range.
+
+
+Multiline trailing $ on the single quantified Unicode atom accepts the actual
+input end and complete-character positions before each LineTerminator
+(22.2.2.4). CR and LF remain separate assertion positions. Optional leading ^
+accepts only the beginning or a position after a LineTerminator. The constructor
+still proves the whole body, retaining complete outer captures and exact counts.
+
+Two monotone pointers maintain the earliest matching-run start within a finite
+maximum and the complete-character endpoint under examination. A leading
+assertion can further trim that run. Eligible ends are visited in order. The
+first successful start cannot move backwards; lazy search returns its first
+eligible end, while greedy search extends that same start until its maximum or
+membership failure. A later start never displaces an earlier successful one.
+Independent start/count enumeration verifies this ordering, including atoms
+which consume terminators and zero maxima. Each pointer crosses a character
+at most once, preserving linear work and constant search storage. Folded
+membership, original pair/lone-surrogate indices and opted-in charges retain
+their established rules. No recursion, dependency or default quota is added.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

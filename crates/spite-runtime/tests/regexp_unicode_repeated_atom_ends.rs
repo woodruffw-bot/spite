@@ -165,8 +165,8 @@ fn unicode_repeated_atom_ends_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/a+$/um.exec('a')",
-        r"/^a+$/vm.exec('a')",
+        r"/a+b$/um.exec('a')",
+        r"/^a+b$/vm.exec('a')",
         r"/a+$$/u.exec('a')",
         r"/(a)+$/u.exec('a')",
         r"/a+b$/v.exec('ab')",

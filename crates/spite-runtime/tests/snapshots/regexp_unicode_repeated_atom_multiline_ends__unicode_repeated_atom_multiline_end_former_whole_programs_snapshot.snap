@@ -1,0 +1,6 @@
+---
+source: crates/spite-runtime/tests/regexp_unicode_repeated_atom_multiline_ends.rs
+expression: rows
+---
+/a+$/um.exec('a') "[\u0022a\u0022]"
+/^a+$/vm.exec('a') "[\u0022a\u0022]"
