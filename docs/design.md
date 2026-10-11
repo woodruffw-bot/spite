@@ -3363,6 +3363,32 @@ The established range, capture and safely charged branch logic is shared;
 there is no new search algorithm, source/input storage, recursion, count
 expansion, dependency, fixture change or default quota.
 
+
+Shared predicates around repeated Unicode alternatives follow Disjunction and
+RepeatMatcher (22.2.2.3, 22.2.2.4) without moving a branch predicate onto other
+branches. The complete flat group scan records the depth of each extracted
+prefix/suffix word or line assertion. A shared prefix must precede another
+complete group opening; a shared suffix must follow another complete group
+closing. Thus (\b(a|b))+ can gate the whole alternative per iteration, while
+(\ba|b)+ keeps its predicate only on the first branch and uses the earlier
+branch proof. The dedicated shared entry rejects such branch-edge extractions.
+
+Every retained branch must pass its complete one-character proof. Captures
+inside branches, nullable/multiple-character branches, empty capture groups and
+other unproved compositions remain excluded. Extracted shared predicates become
+a separate complete consuming character guard, with DotAll enabled solely to
+permit every decoded character. That guard and the left-to-right branches
+inspect the same original input position. Branch i/m/s context remains intact;
+the guard preserves its original word/line context and adds no capture effects.
+All complete group wrappers capture the final selected character, while zero
+counts leave them undefined without executing the shared predicates.
+
+Earlier consuming-group entry points preserve their proof contracts and charges.
+The representation remains flat and source-sized. Guard and branch work is
+precomputed and charged safely before each candidate character; matching adds
+no new search algorithm, input storage, native recursion or expanded counts.
+Dependencies, fixture sources and opt-in quota defaults are unchanged.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
