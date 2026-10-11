@@ -3531,6 +3531,27 @@ branch scan and repetition selection without native recursion, expanded counts
 or input-sized storage. Source construction and search propagate opt-in work
 failures. No dependency, fixture or default quota changes are involved.
 
+
+Whole-match word assertions compose with the complete Unicode noncapturing branch
+assertion proof (22.2.2.4, 22.2.2.7). The word scanner retains the original
+whole-match gates, then the entire body must pass the existing exact-character
+alternative and repetition proof before those predicates are attached. For
+example, \b(\b(?:a)|(?:b)\b)+\B separates the repetition's outside word gates
+from the predicates checked for each a or b iteration. Line assertions and
+assertions retained within a branch keep their original scopes and flags.
+
+The constructor uses the existing capture summary, name bindings, result builder
+and public source. Complete transparent whole-capture wrappers preserve their
+whole ranges; iteration captures retain their final character or stay undefined
+for zero iterations. Empty branches, branch captures, modifiers, continuations
+and quantified branch bodies remain excluded from this proof. The earlier
+branch-line/word entry point retains its narrower rejection contract.
+
+This composition adds no matching algorithm, recursive representation, expanded
+counts or input-sized search storage. Source and search work remain fallible,
+with unchanged clone, collection and opt-in quota behavior. No dependency,
+fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
