@@ -7534,3 +7534,7 @@ script-pass	0fbf00f17c78ce86747382125474667547048858764d8df1ac6274e3173458ee	tes
 script-pass	93315b35795dd52eee48f34e37a036477cdc6b71a1ebbd8cdf5ecd0d0e9c34f4	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-digit-class-escape-positive-cases.js
 script-pass	96def3936bfcbfb8bd65c63f7bea6893209798bbb74698d85d110577f3eac2b7	test/built-ins/RegExp/CharacterClassEscapes/character-class-digit-class-escape-negative-cases.js
 script-pass	e096d0c2056a9c9ff4b9602681db41f14bccfe2bc777ad6304cd2c293a5d7ceb	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-digit-class-escape-negative-cases.js
+script-pass	c99083f6609898ba97c9c2201a6bd909fd48ae643e02ffcfd418ac9afc73a5e9	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class-escape-negative-cases.js
+script-pass	27c9f57d7e6e3965217db8021dbe30fe0d19429acdf90a22de56230d86346281	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class-escape-positive-cases.js
+script-pass	7fd505960f3450b4e4e02a623822e70a24a19a833e9a93d6c9e8929abb1ba8b2	test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-negative-cases.js
+script-pass	4b23d2726a5ee440d5def027683c961ab8db4dc3607cf0071166a7448c6b287a	test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-positive-cases.js
