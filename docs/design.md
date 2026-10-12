@@ -3634,6 +3634,32 @@ This composition adds no matching algorithm, native recursion, expanded counts
 or input-sized search storage. Source and search remain work-accounted and
 fallible. No dependency, fixture or default quota changes are involved.
 
+
+Unicode nullable repetition has a complete proof for exactly two alternatives:
+one raw empty branch and one unquantified character branch under `*`, `+`, or `?`,
+including lazy forms (22.2.2.3). The consuming branch must pass the existing full
+character and noncapturing assertion proof without captures, concatenations,
+nested alternatives or branch quantifiers. Balanced complete unit wrappers may
+capture each iteration; whole captures and outside line/word gates retain their
+original scope. Guarded empty branches, extra alternatives and braced counts
+remain outside this proof.
+
+RepeatMatcher rejects empty optional iterations. A nullable `+` can select one
+mandatory empty iteration, so its unit captures are defined empty ranges, while
+zero iterations under `*` or `?` leave unit captures undefined. A selected
+nonempty run retains its final character capture. Greedy search consumes the
+eligible character run; lazy search preserves the original branch order. For
+lazy `+` with the character first, separate nonempty and empty searches select
+the earliest start, preferring the character at a tie. Empty matches at earlier
+positions must precede consuming matches found farther into the input.
+
+The proof duplicates the pure consuming branch in a source-sized temporary
+pattern to reuse complete validation, then retains the original capture count,
+quantifier, empty-branch order and whole predicates. Search remains linear with
+constant storage and at most two passes. Existing non-nullable plans retain their
+original bounds and work charges. All work callbacks remain fallible; no native
+recursion, input-sized storage, dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

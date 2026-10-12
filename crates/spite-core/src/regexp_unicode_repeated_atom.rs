@@ -24,7 +24,8 @@ pub struct RegExpUnicodeRepeatedAtomMatch {
 /// outside line and word assertions, and complete wrappers inside the repeated
 /// atom. Scoped entry points preserve word and line predicates at each consuming
 /// iteration. A dedicated entry point proves alternatives whose branches each
-/// consume one Unicode character. Concatenations remain excluded.
+/// consume one Unicode character. A separate proof admits one raw empty
+/// alternative alongside a character under *, + or ?. Concatenations remain excluded.
 /// Complete enclosing groups may be proved separately by the caller.
 /// Construction and search add no native recursion or input-sized storage;
 /// work quotas remain opt-in.
@@ -41,6 +42,20 @@ pub struct RegExpUnicodeRepeatedAtomMatcher {
     start_word: Option<bool>,
     end_word: Option<bool>,
     word_ignore_case: bool,
+    nullable: Option<EmptyBranchOrder>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum EmptyBranchOrder {
+    First,
+    Last,
+}
+
+#[derive(Clone, Copy)]
+struct QuantifierBounds {
+    minimum: Option<usize>,
+    maximum: Option<usize>,
+    greedy: bool,
 }
 
 #[cfg(test)]
@@ -856,6 +871,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     start_word: None,
                     end_word: None,
                     word_ignore_case: false,
+                    nullable: None,
                 }));
             }
         }
@@ -1376,6 +1392,192 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             AtomAssertions::NestedSequenceWrappedAlternative,
             charge,
         )
+    }
+
+    /// Proves exactly one raw empty branch and one complete character branch.
+    ///
+    /// Requires full u/v validation and normalized named groups. Only *, + and
+    /// ? are admitted, including their lazy forms. Branch captures, guarded
+    /// empty branches, extra alternatives and braced quantifiers remain outside
+    /// this proof. RepeatMatcher rejects empty optional iterations (22.2.2.3),
+    /// while a mandatory empty iteration preserves defined empty captures.
+    pub fn compile_nullable_alternatives_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let assertions = unicode_word_assertions_with_work(source, &mut charge)?;
+        let retained = assertions.as_ref().map_or(source, |a| &a.source);
+        let units = retained.code_units();
+        charge(units.len().saturating_mul(4))?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
+        let start = usize::from(start_anchor);
+        let end = units.len().saturating_sub(usize::from(end_anchor));
+        let Some(body) = units.get(start..end) else {
+            return Ok(None);
+        };
+        let mut ends = vec![usize::MAX; body.len()];
+        let mut stack = Vec::new();
+        let mut classes = 0usize;
+        let mut at = 0;
+        while at < body.len() {
+            match body[at] {
+                0x5c => {
+                    at += 2;
+                    continue;
+                }
+                0x5b if classes == 0 || unicode_sets => {
+                    classes += 1;
+                }
+                0x5d if classes != 0 => {
+                    classes -= 1;
+                }
+                0x28 if classes == 0 => {
+                    stack.push(at);
+                }
+                0x29 if classes == 0 => {
+                    let Some(open) = stack.pop() else {
+                        return Ok(None);
+                    };
+                    ends[open] = at;
+                }
+                _ => {}
+            }
+            at += 1;
+        }
+        if !stack.is_empty() || classes != 0 {
+            return Ok(None);
+        }
+        for end in [
+            body.len()
+                .checked_sub(1)
+                .filter(|_| body.last() == Some(&0x3f)),
+            Some(body.len()),
+        ] {
+            let Some(end) = end else {
+                continue;
+            };
+            let Some((atom_end, _, _)) = quantifier(body, end) else {
+                continue;
+            };
+            if atom_end.checked_add(1) != Some(end) || !matches!(body[atom_end], 0x2a | 0x2b | 0x3f)
+            {
+                continue;
+            }
+            let mut at = 0;
+            let mut wrappers = 0;
+            let mut captures = 0;
+            while body.get(at) == Some(&0x28)
+                && atom_end.checked_sub(wrappers + 1) == Some(ends[at])
+            {
+                if body.get(at + 1) == Some(&0x3f) {
+                    if body.get(at + 2) != Some(&0x3a) {
+                        break;
+                    }
+                    at += 3;
+                } else {
+                    at += 1;
+                    captures += 1;
+                }
+                wrappers += 1;
+            }
+            let Some(inner_end) = atom_end.checked_sub(wrappers) else {
+                continue;
+            };
+            if wrappers == 0
+                || at >= inner_end
+                || !body[inner_end..atom_end].iter().all(|&c| c == 0x29)
+            {
+                continue;
+            }
+            let inner = &body[at..inner_end];
+            let mut separator = None;
+            let mut depth = 0usize;
+            let mut classes = 0usize;
+            let mut cursor = 0;
+            let mut extra = false;
+            while cursor < inner.len() {
+                match inner[cursor] {
+                    0x5c => {
+                        cursor += 2;
+                        continue;
+                    }
+                    0x5b if classes == 0 || unicode_sets => {
+                        classes += 1;
+                    }
+                    0x5d if classes != 0 => {
+                        classes -= 1;
+                    }
+                    0x28 if classes == 0 => {
+                        depth += 1;
+                    }
+                    0x29 if classes == 0 => {
+                        let Some(previous) = depth.checked_sub(1) else {
+                            return Ok(None);
+                        };
+                        depth = previous;
+                    }
+                    0x7c if classes == 0 && depth == 0 => {
+                        extra |= separator.replace(cursor).is_some();
+                    }
+                    _ => {}
+                }
+                cursor += 1;
+            }
+            let Some(separator) = separator else {
+                continue;
+            };
+            if extra || depth != 0 || classes != 0 {
+                continue;
+            }
+            let (rune, order) = if separator == 0 && inner.len() > 1 {
+                (&inner[1..], EmptyBranchOrder::First)
+            } else if separator + 1 == inner.len() && separator != 0 {
+                (&inner[..separator], EmptyBranchOrder::Last)
+            } else {
+                continue;
+            };
+            // Duplicate the pure consuming branch to reuse the complete branch
+            // proof, including assertions and transparent noncapturing wrappers.
+            // Neither duplicate can contribute captures or effects. This is a
+            // source-sized construction; quantified input paths are not expanded.
+            charge(rune.len().saturating_mul(2).saturating_add(5))?;
+            let mut proved_source =
+                Vec::with_capacity(rune.len().saturating_mul(2).saturating_add(5));
+            proved_source.push(0x28);
+            proved_source.extend_from_slice(rune);
+            proved_source.push(0x7c);
+            proved_source.extend_from_slice(rune);
+            proved_source.push(0x29);
+            proved_source.extend_from_slice(&body[atom_end..]);
+            let Some(mut plan) = Self::compile_noncapturing_branch_nested_assertions_with_work(
+                &JsString::from_code_units(proved_source),
+                unicode_sets,
+                ignore_case,
+                multiline,
+                dot_all,
+                &mut charge,
+            )?
+            else {
+                continue;
+            };
+            plan.atom_captures = captures;
+            plan.nullable = Some(order);
+            plan.start_anchor = start_anchor;
+            plan.end_anchor = end_anchor;
+            plan.multiline = multiline;
+            if let Some(assertions) = &assertions {
+                plan.start_word = assertions.start;
+                plan.end_word = assertions.end;
+                plan.word_ignore_case = ignore_case;
+            }
+            return Ok(Some(plan));
+        }
+        Ok(None)
     }
 
     fn compile_alternatives_with_work<E>(
@@ -2159,6 +2361,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     start_word: None,
                     end_word: None,
                     word_ignore_case: false,
+                    nullable: None,
                 }));
             }
             // All groups contain the same consuming leaf. Assertions have no
@@ -2277,8 +2480,9 @@ impl RegExpUnicodeRepeatedAtomMatcher {
 
     /// Finds the repetition and its final selected complete-character capture.
     ///
-    /// Complete inner captures all share the final iteration, and are undefined
-    /// when no iteration was selected. This adds no per-capture allocation.
+    /// Complete inner captures all share the final iteration. They are undefined
+    /// for zero iterations, but empty for a mandatory nullable iteration. This
+    /// adds no per-capture allocation.
     pub fn find_with_captures_and_work<E>(
         &self,
         input: &JsString,
@@ -2289,7 +2493,14 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         let Some(range) = self.find_with_work(input, start, sticky, &mut charge)? else {
             return Ok(None);
         };
-        let atom_capture = if self.atom_captures != 0 && !range.is_empty() {
+        let atom_capture = if self.atom_captures != 0
+            && range.is_empty()
+            && self.nullable.is_some()
+            && self.minimum == Some(1)
+        {
+            charge(1)?;
+            Some(range.clone())
+        } else if self.atom_captures != 0 && !range.is_empty() {
             charge(2)?;
             let units = input.code_units();
             let mut at = range.end - 1;
@@ -2309,6 +2520,57 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         }))
     }
 
+    /// Finds the earliest complete-character candidate with source-order choices.
+    ///
+    /// Nullable alternatives preserve mandatory empty iterations. For lazy +
+    /// with the character branch first, nonempty and empty candidates are found
+    /// in separate linear passes: earliest start wins, with the character path
+    /// preferred at the same start (22.2.2.3). No input-sized storage is added.
+    pub fn find_with_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Range<usize>>, E> {
+        let mut bounds = QuantifierBounds {
+            minimum: self.minimum,
+            maximum: self.maximum,
+            greedy: self.greedy,
+        };
+        if self.nullable.is_some() {
+            bounds.minimum = Some(0);
+        }
+        if self.nullable == Some(EmptyBranchOrder::Last) && self.minimum == Some(1) && !self.greedy
+        {
+            let consuming = self.find_with_bounds_and_work(
+                input,
+                start,
+                sticky,
+                QuantifierBounds {
+                    minimum: Some(1),
+                    ..bounds
+                },
+                &mut charge,
+            )?;
+            let empty = self.find_with_bounds_and_work(
+                input,
+                start,
+                sticky,
+                QuantifierBounds {
+                    maximum: Some(0),
+                    ..bounds
+                },
+                charge,
+            )?;
+            return Ok(match (consuming, empty) {
+                (Some(a), Some(b)) => Some(if a.start <= b.start { a } else { b }),
+                (a, b) => a.or(b),
+            });
+        }
+        self.find_with_bounds_and_work(input, start, sticky, bounds, charge)
+    }
+
     // With no multiline $, only the actual input end can satisfy the assertion.
     // Enumerating starts in order is equivalent to choosing the earliest start
     // of the final matching run that leaves a count within the exact bounds.
@@ -2318,10 +2580,11 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         input: &JsString,
         start: usize,
         sticky: bool,
+        bounds: QuantifierBounds,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Range<usize>>, E> {
         charge(1)?;
-        let Some(minimum) = self.minimum else {
+        let Some(minimum) = bounds.minimum else {
             return Ok(None);
         };
         let Some(mut candidate) = unicode_start(input, start) else {
@@ -2331,7 +2594,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             return Ok(None);
         };
         let units = input.code_units();
-        if self.maximum == Some(0) {
+        if bounds.maximum == Some(0) {
             return Ok((!(sticky || self.start_anchor) || candidate == units.len())
                 .then_some(units.len()..units.len()));
         }
@@ -2342,7 +2605,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if let Some(found) = self.atom.find(input, cursor) {
                 cursor = found.end;
                 count += 1;
-                if self.maximum.is_some_and(|upper| count > upper) {
+                if bounds.maximum.is_some_and(|upper| count > upper) {
                     if sticky || self.start_anchor {
                         return Ok(None);
                     };
@@ -2376,10 +2639,11 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         input: &JsString,
         start: usize,
         sticky: bool,
+        bounds: QuantifierBounds,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Range<usize>>, E> {
         charge(1)?;
-        let Some(minimum) = self.minimum else {
+        let Some(minimum) = bounds.minimum else {
             return Ok(None);
         };
         let Some(mut candidate) = unicode_start(input, start) else {
@@ -2428,18 +2692,18 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             });
             if at_end && word_end && count >= minimum {
                 best = Some(candidate..cursor);
-                if !self.greedy {
+                if !bounds.greedy {
                     return Ok(best);
                 }
             }
-            if cursor == units.len() || (best.is_some() && self.maximum == Some(count)) {
+            if cursor == units.len() || (best.is_some() && bounds.maximum == Some(count)) {
                 return Ok(best);
             }
             charge(1usize.saturating_add(self.atom.work()))?;
             if let Some(found) = self.atom.find(input, cursor) {
                 cursor = found.end;
                 count += 1;
-                if self.maximum.is_some_and(|upper| count > upper) {
+                if bounds.maximum.is_some_and(|upper| count > upper) {
                     if sticky {
                         return Ok(None);
                     }
@@ -2467,25 +2731,27 @@ impl RegExpUnicodeRepeatedAtomMatcher {
     /// inside that run. Skip it and its failing character once, keeping search
     /// linear and constant in storage. Initial pair offsets use the approved
     /// leading boundary; returned empty ranges use their actual selected position.
-    pub fn find_with_work<E>(
+    fn find_with_bounds_and_work<E>(
         &self,
         input: &JsString,
         start: usize,
         sticky: bool,
+        bounds: QuantifierBounds,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Range<usize>>, E> {
         if self.start_word.is_some() || self.end_word.is_some() {
-            return self.find_with_boundary_assertions_and_work(input, start, sticky, charge);
+            return self
+                .find_with_boundary_assertions_and_work(input, start, sticky, bounds, charge);
         }
         if self.end_anchor {
             return if self.multiline {
-                self.find_with_boundary_assertions_and_work(input, start, sticky, charge)
+                self.find_with_boundary_assertions_and_work(input, start, sticky, bounds, charge)
             } else {
-                self.find_at_actual_end_with_work(input, start, sticky, charge)
+                self.find_at_actual_end_with_work(input, start, sticky, bounds, charge)
             };
         }
         charge(1)?;
-        let Some(minimum) = self.minimum else {
+        let Some(minimum) = bounds.minimum else {
             return Ok(None);
         };
         let Some(mut candidate) = unicode_start(input, start) else {
@@ -2513,8 +2779,8 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             }
             let mut cursor = candidate;
             let mut count = 0;
-            while self.maximum.is_none_or(|upper| count < upper) {
-                if !self.greedy && count == minimum {
+            while bounds.maximum.is_none_or(|upper| count < upper) {
+                if !bounds.greedy && count == minimum {
                     break;
                 }
                 charge(1usize.saturating_add(self.atom.work()))?;
@@ -14893,6 +15159,257 @@ mod noncapturing_branch_nested_assertion_word_tests {
                 .unwrap()
                 .is_none(),
                 "{source}"
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod nullable_alternative_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_nullable_alternatives_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    // A small, independent RepeatMatcher interpreter. Its optional empty
+    // iterations are rejected before continuation; mandatory empties are kept.
+    #[allow(clippy::too_many_arguments)]
+    fn repeat(
+        input: &[u8],
+        at: usize,
+        minimum: usize,
+        maximum: usize,
+        greedy: bool,
+        empty_first: bool,
+        end: bool,
+        capture: Option<Range<usize>>,
+    ) -> Option<(usize, Option<Range<usize>>)> {
+        let continuation = || {
+            if minimum == 0 && (!end || at == input.len()) {
+                Some((at, capture.clone()))
+            } else {
+                None
+            }
+        };
+        if !greedy {
+            if let Some(found) = continuation() {
+                return Some(found);
+            }
+        }
+        if maximum != 0 {
+            for empty in [empty_first, !empty_first] {
+                let next = if empty {
+                    at
+                } else if input.get(at) == Some(&b'a') {
+                    at + 1
+                } else {
+                    continue;
+                };
+                if minimum == 0 && next == at {
+                    continue;
+                }
+                if let Some(found) = repeat(
+                    input,
+                    next,
+                    minimum.saturating_sub(1),
+                    maximum - 1,
+                    greedy,
+                    empty_first,
+                    end,
+                    Some(at..next),
+                ) {
+                    return Some(found);
+                }
+            }
+        }
+        if greedy { continuation() } else { None }
+    }
+
+    #[test]
+    fn unicode_nullable_alternative_repeat_matcher_snapshot() {
+        let mut rows = String::new();
+        let mut audited = 0;
+        for empty_first in [false, true] {
+            for (quantifier, minimum, maximum, greedy) in [
+                ("*", 0, None, true),
+                ("*?", 0, None, false),
+                ("+", 1, None, true),
+                ("+?", 1, None, false),
+                ("?", 0, Some(1), true),
+                ("??", 0, Some(1), false),
+            ] {
+                for start_anchor in [false, true] {
+                    for end_anchor in [false, true] {
+                        let source = format!(
+                            "{}({}){}{}",
+                            if start_anchor { "^" } else { "" },
+                            if empty_first { "|a" } else { "a|" },
+                            quantifier,
+                            if end_anchor { "$" } else { "" }
+                        );
+                        let p = plan(&source, false, false, false, false);
+                        for input in [
+                            "", "a", "b", "aa", "ab", "ba", "bb", "aaa", "aba", "baa", "aab",
+                            "bbb", "aaaa", "aaab", "baaa", "abab", "baba",
+                        ] {
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    let expected = (start..=input.len()).find_map(|at| {
+                                        if (sticky && at != start) || (start_anchor && at != 0) {
+                                            return None;
+                                        }
+                                        repeat(
+                                            input.as_bytes(),
+                                            at,
+                                            minimum,
+                                            maximum.unwrap_or(input.len() + 1),
+                                            greedy,
+                                            empty_first,
+                                            end_anchor,
+                                            None,
+                                        )
+                                        .map(|(end, capture)| (at..end, capture))
+                                    });
+                                    let actual = p
+                                        .find_with_captures_and_work(
+                                            &JsString::from(input),
+                                            start,
+                                            sticky,
+                                            |_| Ok::<(), ()>(()),
+                                        )
+                                        .unwrap();
+                                    let actual = actual.map(|m| (m.range, m.atom_capture));
+                                    assert_eq!(
+                                        actual, expected,
+                                        "{source:?} {input:?} {start} {sticky}"
+                                    );
+                                    audited += 1;
+                                    if start == 0 && !sticky && ["", "aaa", "baaa"].contains(&input)
+                                    {
+                                        writeln!(rows, "{source:?} {input:?} {actual:?}").unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        writeln!(rows, "{audited} independent RepeatMatcher comparisons").unwrap();
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_nullable_alternative_proof_stays_complete_and_narrow() {
+        for source in [
+            r"(a|b|)+",
+            r"(||a)+",
+            r"(|)+",
+            r"(a|(?:))+",
+            r"(a|\b)+",
+            r"((a)|)+",
+            r"(a|){1}",
+            r"(a|){0,3}?",
+            r"(ab|)+",
+            r"(a+|)+",
+            r"((?:a|b)|)+",
+            r"(?:(?i:a)|)+",
+            r"(?:a|)+b",
+            r"(?:a|)(?:a|)+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_nullable_alternatives_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for source in [
+            r"((?:\b(?:\ba))|)+",
+            r"(|(?:\B^(?:.$)$))+?",
+            r"\B(((?:\p{Join_C})|))+\B$",
+            r"((?:[a\|])|)??",
+            r"(|\$)+?",
+        ] {
+            let p = plan(source, true, true, true, true);
+            assert!(p.nullable.is_some());
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertion_words_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "old proof {source}");
+        }
+    }
+
+    #[test]
+    fn unicode_nullable_alternative_all_work_callbacks_can_abort() {
+        let source =
+            JsString::from(format!("\\B{}a|{}+?\\B", "(".repeat(24), ")".repeat(24)).as_str());
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_nullable_alternatives_with_work(
+            &source,
+            true,
+            false,
+            false,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert!(matches!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_nullable_alternatives_with_work(
+                    &source,
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    },
+                ),
+                Err(())
+            ));
+        }
+        let p = plan(r"\B(a|)+?\B", true, false, false, false);
+        let input = JsString::from("baaa");
+        let mut calls = 0;
+        p.find_with_captures_and_work(&input, 0, false, |_| {
+            calls += 1;
+            Ok::<(), ()>(())
+        })
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert_eq!(
+                p.find_with_captures_and_work(&input, 0, false, |_| {
+                    let selected = at == fail;
+                    at += 1;
+                    if selected { Err(()) } else { Ok(()) }
+                }),
+                Err(())
             );
         }
     }

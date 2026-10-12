@@ -7175,6 +7175,29 @@ Stable and MSRV pass all 14,494 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Unicode repetition with one raw empty branch has three new core tests and seven
+runtime tests. An independent small RepeatMatcher interpreter checks 7584
+combinations of branch order, greedy/lazy counts, mandatory empty captures,
+whole anchors, starts and sticky behavior. All 2400 runtime snapshot rows and
+thirty-four complete Boolean programs agree with Node. Two exact former whole
+programs now have positive snapshot coverage; their unsupported controls retain
+an unimplemented continuation. Result indices/names, folding, surrogate pairs
+and lone surrogates, string consumers, coercion order and strict writes are
+covered. Construction/search failures, clones, collection, 6000 unit wrappers
+and 200001 input units preserve unlimited defaults.
+
+All 654 core tests and 232 related runtime targets pass. All 523 previous
+snapshots remain byte-identical, with three new reviewed golds. The complete
+1177-program current-build gap audit has no remaining admissions. Ordered/direct
+eval state checks and existing whole fixture reviews retain their outcomes
+without failures or limits. Corpus inventories/pin and dependency policy stay
+unchanged.
+
+Stable and MSRV pass all 14,494 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

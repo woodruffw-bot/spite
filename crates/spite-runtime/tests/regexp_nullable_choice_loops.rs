@@ -164,8 +164,8 @@ fn larger_required_nullable_counts_backward_bodies_and_unicode_remain_pending() 
         "new RegExp('(a|){2}').exec('aa')",
         "new RegExp('((a?)|b){2,3}').exec('bbc')",
         "new RegExp('(?<=(a|)+)b').exec('ab')",
-        "new RegExp('(a|)*','u').exec('aa')",
-        "new RegExp('(a|)*','v').exec('aa')",
+        "new RegExp('(a|)*b','u').exec('aa')",
+        "new RegExp('(a|)*b','v').exec('aa')",
     ] {
         assert!(
             matches!(
