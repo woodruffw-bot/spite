@@ -3733,6 +3733,29 @@ tie. Complete whole-match and character assertions remain at their original
 boundaries. Earlier proof contracts and work charges are preserved. This adds
 no expanded counts, recursion, input-sized storage, dependency or default quota.
 
+
+Unicode nullable repetition admits positive open counts `{m,}`, including padded
+decimal spellings, lazy forms and lower bounds too large for `usize` (22.2.2.3).
+The complete proof still requires exactly one pure character branch and one raw
+or balanced noncapturing empty branch, with captures only around the entire unit.
+Mandatory empty iterations satisfy any source lower bound without expanding it.
+
+Greedy open repetition selects the longest accepted character run. Lazy matching
+with the empty branch first prefers the shortest accepted run. With the character
+branch first, lazy matching tries accepted counts at or above the lower bound in
+ascending order, then smaller counts in descending order. Two existing monotone
+searches retain that priority and select the earliest start before comparing
+paths at the same start. Complete assertions retain their original boundaries.
+
+When the character branch is first and fewer characters than the mandatory count
+are selected, the final iteration is empty and unit captures contain a defined
+empty range at the match end. Otherwise, nonempty runs retain the final character.
+Capture selection counts only selected UTF-16 characters, stopping at the lower
+bound. An unrepresentable bound exceeds every possible finite input count. This
+adds linear input work with constant search storage, no expanded source counts,
+native recursion, dependency or default quota. Earlier proof contracts and work
+charges are unchanged. Finite positive upper bounds remain outside this proof.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

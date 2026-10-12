@@ -58,6 +58,7 @@ enum NullableProof {
     ZeroMinimum,
     OneMinimumOpen,
     OneIteration,
+    PositiveOpen,
 }
 
 #[derive(Clone, Copy)]
@@ -1531,6 +1532,31 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Proves an explicitly open nullable count with a positive lower bound.
+    ///
+    /// Requires validated u/v syntax and normalized names. Mandatory empty
+    /// iterations may satisfy arbitrarily large source counts without expanding
+    /// them. Branch order preserves RepeatMatcher selection and final captures
+    /// (22.2.2.3); finite upper bounds remain outside this proof.
+    pub fn compile_positive_open_nullable_alternatives_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_nullable_alternatives_impl_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            NullableProof::PositiveOpen,
+            charge,
+        )
+    }
+
     fn compile_nullable_alternatives_impl_with_work<E>(
         source: &JsString,
         unicode_sets: bool,
@@ -1604,7 +1630,11 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 && body.get(end - 1) == Some(&0x7d);
             let one =
                 proof == NullableProof::OneIteration && minimum == Some(1) && maximum == Some(1);
-            if !simple && !zero && !one_open && !one {
+            let positive_open = proof == NullableProof::PositiveOpen
+                && minimum != Some(0)
+                && end.checked_sub(2).and_then(|at| body.get(at)) == Some(&0x2c)
+                && body.get(end - 1) == Some(&0x7d);
+            if !simple && !zero && !one_open && !one && !positive_open {
                 continue;
             }
             let mut at = 0;
@@ -2654,7 +2684,41 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         let Some(range) = self.find_with_work(input, start, sticky, &mut charge)? else {
             return Ok(None);
         };
-        let atom_capture = if self.atom_captures != 0
+        // With the character branch first, fewer than the mandatory count
+        // selected characters leave a final mandatory empty iteration. Count
+        // only the selected UTF-16 characters, stopping at the source bound.
+        // An unrepresentable bound exceeds every finite input character count.
+        let mandatory_empty = if self.atom_captures != 0
+            && self.nullable.is_some()
+            && self.maximum.is_none()
+            && self.minimum != Some(0)
+            && self.minimum != Some(1)
+        {
+            if range.is_empty()
+                || (self.nullable == Some(EmptyBranchOrder::Last) && self.minimum.is_none())
+            {
+                true
+            } else if self.nullable == Some(EmptyBranchOrder::Last) {
+                let units = input.code_units();
+                let mut at = range.start;
+                let mut count = 0;
+                while at < range.end && Some(count) != self.minimum {
+                    charge(2)?;
+                    let (_, width) = unicode_input_character(units, at, units[at]);
+                    at += width;
+                    count += 1;
+                }
+                Some(count) != self.minimum
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+        let atom_capture = if mandatory_empty {
+            charge(1)?;
+            Some(range.end..range.end)
+        } else if self.atom_captures != 0
             && range.is_empty()
             && self.nullable.is_some()
             && self.minimum == Some(1)
@@ -2735,6 +2799,41 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                         b
                     },
                 ),
+                (a, b) => a.or(b),
+            });
+        }
+        if self.nullable == Some(EmptyBranchOrder::Last)
+            && self.maximum.is_none()
+            && self.minimum != Some(0)
+            && self.minimum != Some(1)
+            && !self.greedy
+        {
+            // Mandatory character choices precede mandatory empty choices.
+            // First try lazily ending at or above the lower bound, then greedily
+            // below it. Each pass remains monotone, including outside guards.
+            let enough = self.find_with_bounds_and_work(
+                input,
+                start,
+                sticky,
+                QuantifierBounds {
+                    minimum: self.minimum,
+                    ..bounds
+                },
+                &mut charge,
+            )?;
+            let shorter = self.find_with_bounds_and_work(
+                input,
+                start,
+                sticky,
+                QuantifierBounds {
+                    maximum: self.minimum.map(|minimum| minimum - 1),
+                    greedy: true,
+                    ..bounds
+                },
+                charge,
+            )?;
+            return Ok(match (enough, shorter) {
+                (Some(a), Some(b)) => Some(if a.start <= b.start { a } else { b }),
                 (a, b) => a.or(b),
             });
         }
@@ -16660,6 +16759,268 @@ mod one_iteration_nullable_alternative_tests {
             ));
         }
         let p = plan(r"\B(a|){1}?\B", true, false, false, false);
+        let input = JsString::from("baaa");
+        let mut calls = 0;
+        p.find_with_captures_and_work(&input, 0, false, |_| {
+            calls += 1;
+            Ok::<(), ()>(())
+        })
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert_eq!(
+                p.find_with_captures_and_work(&input, 0, false, |_| {
+                    let selected = at == fail;
+                    at += 1;
+                    if selected { Err(()) } else { Ok(()) }
+                }),
+                Err(())
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod positive_open_nullable_alternative_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_positive_open_nullable_alternatives_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    // A small, independent RepeatMatcher interpreter. Its optional empty
+    // iterations are rejected before continuation; mandatory empties are kept.
+    #[allow(clippy::too_many_arguments)]
+    fn repeat(
+        input: &[u8],
+        at: usize,
+        minimum: usize,
+        maximum: usize,
+        greedy: bool,
+        empty_first: bool,
+        end: bool,
+        capture: Option<Range<usize>>,
+    ) -> Option<(usize, Option<Range<usize>>)> {
+        let continuation = || {
+            if minimum == 0 && (!end || at == input.len()) {
+                Some((at, capture.clone()))
+            } else {
+                None
+            }
+        };
+        if !greedy {
+            if let Some(found) = continuation() {
+                return Some(found);
+            }
+        }
+        if maximum != 0 {
+            for empty in [empty_first, !empty_first] {
+                let next = if empty {
+                    at
+                } else if input.get(at) == Some(&b'a') {
+                    at + 1
+                } else {
+                    continue;
+                };
+                if minimum == 0 && next == at {
+                    continue;
+                }
+                if let Some(found) = repeat(
+                    input,
+                    next,
+                    minimum.saturating_sub(1),
+                    maximum - 1,
+                    greedy,
+                    empty_first,
+                    end,
+                    Some(at..next),
+                ) {
+                    return Some(found);
+                }
+            }
+        }
+        if greedy { continuation() } else { None }
+    }
+
+    #[test]
+    fn unicode_positive_open_nullable_alternative_repeat_matcher_snapshot() {
+        let mut rows = String::new();
+        let mut audited = 0;
+        for empty_first in [false, true] {
+            for (quantifier, minimum, maximum, greedy) in [
+                ("{2,}", 2, None, true),
+                ("{2,}?", 2, None, false),
+                ("{3,}", 3, None, true),
+                ("{3,}?", 3, None, false),
+                ("{0003,}", 3, None, true),
+                ("{0003,}?", 3, None, false),
+                ("{7,}", 7, None, true),
+                ("{7,}?", 7, None, false),
+            ] {
+                for start_anchor in [false, true] {
+                    for end_anchor in [false, true] {
+                        let source = format!(
+                            "{}({}){}{}",
+                            if start_anchor { "^" } else { "" },
+                            if empty_first { "|a" } else { "a|" },
+                            quantifier,
+                            if end_anchor { "$" } else { "" }
+                        );
+                        let p = plan(&source, false, false, false, false);
+                        for input in [
+                            "", "a", "b", "aa", "ab", "ba", "bb", "aaa", "aba", "baa", "aab",
+                            "bbb", "aaaa", "aaab", "baaa", "abab", "baba",
+                        ] {
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    let expected = (start..=input.len()).find_map(|at| {
+                                        if (sticky && at != start) || (start_anchor && at != 0) {
+                                            return None;
+                                        }
+                                        repeat(
+                                            input.as_bytes(),
+                                            at,
+                                            minimum,
+                                            maximum.unwrap_or(input.len() + minimum),
+                                            greedy,
+                                            empty_first,
+                                            end_anchor,
+                                            None,
+                                        )
+                                        .map(|(end, capture)| (at..end, capture))
+                                    });
+                                    let actual = p
+                                        .find_with_captures_and_work(
+                                            &JsString::from(input),
+                                            start,
+                                            sticky,
+                                            |_| Ok::<(), ()>(()),
+                                        )
+                                        .unwrap();
+                                    let actual = actual.map(|m| (m.range, m.atom_capture));
+                                    assert_eq!(
+                                        actual, expected,
+                                        "{source:?} {input:?} {start} {sticky}"
+                                    );
+                                    audited += 1;
+                                    if start == 0 && !sticky && ["", "aaa", "baaa"].contains(&input)
+                                    {
+                                        writeln!(rows, "{source:?} {input:?} {actual:?}").unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        writeln!(rows, "{audited} independent RepeatMatcher comparisons").unwrap();
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_positive_open_nullable_alternative_proof_stays_complete_and_narrow() {
+        for source in [
+            r"(a|b|)+",
+            r"(||a)+",
+            r"(|)+",
+            r"(a|(?:\b))+",
+            r"(a|\b)+",
+            r"((a)|)+",
+            r"(a|){1,2}",
+            r"(a|){2,3}",
+            r"(a|){2}",
+            r"(a|){0,}",
+            r"(a|){0,3}?",
+            r"(ab|)+",
+            r"(a+|)+",
+            r"((?:a|b)|)+",
+            r"(?:(?i:a)|)+",
+            r"(?:a|)+b",
+            r"(?:a|)(?:a|)+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_positive_open_nullable_alternatives_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for source in [
+            r"((?:\b(?:\ba))|){2,}",
+            r"((?:)|(?:\B^(?:.$)$)){0003,}?",
+            r"\B(((?:\p{Join_C})|)){7,}\B$",
+            r"((?:[a\|])|(?:)){2,}?",
+            r"(|\$){3,}?",
+        ] {
+            let p = plan(source, true, true, true, true);
+            assert!(p.nullable.is_some());
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_one_minimum_open_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "open-count proof {source}");
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_zero_minimum_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "zero-lower-bound proof {source}");
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertion_words_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "old proof {source}");
+        }
+    }
+
+    #[test]
+    fn unicode_positive_open_nullable_alternative_all_work_callbacks_can_abort() {
+        let source =
+            JsString::from(format!("\\B{}a|{}{{2,}}?\\B", "(".repeat(24), ")".repeat(24)).as_str());
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_positive_open_nullable_alternatives_with_work(
+            &source,
+            true,
+            false,
+            false,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert!(matches!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_positive_open_nullable_alternatives_with_work(
+                    &source,
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    },
+                ),
+                Err(())
+            ));
+        }
+        let p = plan(r"\B(a|){3,}?\B", true, false, false, false);
         let input = JsString::from("baaa");
         let mut calls = 0;
         p.find_with_captures_and_work(&input, 0, false, |_| {

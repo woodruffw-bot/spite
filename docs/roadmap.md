@@ -498,6 +498,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve zero-lower-bound braced Unicode nullable repetition, including exact zero, padded bounds, unbounded maxima and greedy/lazy selection.
 - [x] Preserve nullable Unicode `{1,}` repetition and padded/lazy forms with mandatory empty captures and original branch order.
 - [x] Preserve exactly-one nullable Unicode repetition (`{1}` and `{1,1}`), including branch order, empty captures and padded/lazy forms.
+- [x] Preserve positive open-count nullable Unicode repetition, including mandatory empty captures, source order and unrepresentable lower bounds.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
