@@ -18,7 +18,7 @@ use std::{ops::Range, sync::Arc};
 /// Unions, ranges and inversion admit all Unicode code points, including lone
 /// surrogates. Fixed ASCII, Any, hex-digit, White_Space, Join_Control,
 /// noncharacter, Bidi_Control, Quotation_Mark, Pattern_White_Space and
-/// Logical_Order_Exception
+/// Logical_Order_Exception and Variation_Selector
 /// properties are admitted in flat unions
 /// and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
@@ -137,7 +137,8 @@ impl RegExpUnicodeClassMatcher {
     ///
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
     /// Join_Control/Join_C, Noncharacter_Code_Point/NChar, Bidi_Control/Bidi_C
-    /// Quotation_Mark/QMark, Pattern_White_Space/Pat_WS and Logical_Order_Exception/LOE.
+    /// Quotation_Mark/QMark, Pattern_White_Space/Pat_WS, Logical_Order_Exception/LOE
+    /// and Variation_Selector/VS.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -204,6 +205,7 @@ impl RegExpUnicodeClassMatcher {
             16 => 14,
             18 => 6,
             20 => 8,
+            22 => 5,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -319,13 +321,13 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..22 {
+        for kind in 0..24 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
                 charge(ranges.len().saturating_add(match kind {
                     12..=13 | 16..=17 => 40,
-                    8..=11 | 14..=15 | 18..=19 => 24,
+                    8..=11 | 14..=15 | 18..=19 | 22..=23 => 24,
                     20..=21 => 32,
                     _ => 8,
                 }))?;
@@ -708,6 +710,27 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x6e,
         ] => 20,
+        [0x56, 0x53]
+        | [
+            0x56,
+            0x61,
+            0x72,
+            0x69,
+            0x61,
+            0x74,
+            0x69,
+            0x6f,
+            0x6e,
+            0x5f,
+            0x53,
+            0x65,
+            0x6c,
+            0x65,
+            0x63,
+            0x74,
+            0x6f,
+            0x72,
+        ] => 22,
         _ => return None,
     })
 }
@@ -894,6 +917,20 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xaab7, 0xaab8),
             (0xaaba, 0xaaba),
             (0xaabd, 0x10ffff),
+        ],
+        // UCD 18 Variation_Selector: 260 members, invariant under C/S folding.
+        22 => &[
+            (0x180b, 0x180d),
+            (0x180f, 0x180f),
+            (0xfe00, 0xfe0f),
+            (0xe0100, 0xe01ef),
+        ],
+        23 => &[
+            (0x0, 0x180a),
+            (0x180e, 0x180e),
+            (0x1810, 0xfdff),
+            (0xfe10, 0xe00ff),
+            (0xe01f0, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -3887,6 +3924,229 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{LOE}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_variation_selector_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Variation_Selector}",
+                    r"\P{VS}",
+                    r"[\p{VS}]",
+                    r"[^\p{Variation_Selector}]",
+                    r"[\P{VS}K]",
+                    r"[\p{VS}K]",
+                    r"[\p{VS}\P{Variation_Selector}]",
+                    r"[^\P{VS}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let variation_selector = [
+                            0x180b, 0x180c, 0x180d, 0x180f, 0xfe00, 0xfe01, 0xfe02, 0xfe03, 0xfe04,
+                            0xfe05, 0xfe06, 0xfe07, 0xfe08, 0xfe09, 0xfe0a, 0xfe0b, 0xfe0c, 0xfe0d,
+                            0xfe0e, 0xfe0f, 0xe0100, 0xe0101, 0xe0102, 0xe0103, 0xe0104, 0xe0105,
+                            0xe0106, 0xe0107, 0xe0108, 0xe0109, 0xe010a, 0xe010b, 0xe010c, 0xe010d,
+                            0xe010e, 0xe010f, 0xe0110, 0xe0111, 0xe0112, 0xe0113, 0xe0114, 0xe0115,
+                            0xe0116, 0xe0117, 0xe0118, 0xe0119, 0xe011a, 0xe011b, 0xe011c, 0xe011d,
+                            0xe011e, 0xe011f, 0xe0120, 0xe0121, 0xe0122, 0xe0123, 0xe0124, 0xe0125,
+                            0xe0126, 0xe0127, 0xe0128, 0xe0129, 0xe012a, 0xe012b, 0xe012c, 0xe012d,
+                            0xe012e, 0xe012f, 0xe0130, 0xe0131, 0xe0132, 0xe0133, 0xe0134, 0xe0135,
+                            0xe0136, 0xe0137, 0xe0138, 0xe0139, 0xe013a, 0xe013b, 0xe013c, 0xe013d,
+                            0xe013e, 0xe013f, 0xe0140, 0xe0141, 0xe0142, 0xe0143, 0xe0144, 0xe0145,
+                            0xe0146, 0xe0147, 0xe0148, 0xe0149, 0xe014a, 0xe014b, 0xe014c, 0xe014d,
+                            0xe014e, 0xe014f, 0xe0150, 0xe0151, 0xe0152, 0xe0153, 0xe0154, 0xe0155,
+                            0xe0156, 0xe0157, 0xe0158, 0xe0159, 0xe015a, 0xe015b, 0xe015c, 0xe015d,
+                            0xe015e, 0xe015f, 0xe0160, 0xe0161, 0xe0162, 0xe0163, 0xe0164, 0xe0165,
+                            0xe0166, 0xe0167, 0xe0168, 0xe0169, 0xe016a, 0xe016b, 0xe016c, 0xe016d,
+                            0xe016e, 0xe016f, 0xe0170, 0xe0171, 0xe0172, 0xe0173, 0xe0174, 0xe0175,
+                            0xe0176, 0xe0177, 0xe0178, 0xe0179, 0xe017a, 0xe017b, 0xe017c, 0xe017d,
+                            0xe017e, 0xe017f, 0xe0180, 0xe0181, 0xe0182, 0xe0183, 0xe0184, 0xe0185,
+                            0xe0186, 0xe0187, 0xe0188, 0xe0189, 0xe018a, 0xe018b, 0xe018c, 0xe018d,
+                            0xe018e, 0xe018f, 0xe0190, 0xe0191, 0xe0192, 0xe0193, 0xe0194, 0xe0195,
+                            0xe0196, 0xe0197, 0xe0198, 0xe0199, 0xe019a, 0xe019b, 0xe019c, 0xe019d,
+                            0xe019e, 0xe019f, 0xe01a0, 0xe01a1, 0xe01a2, 0xe01a3, 0xe01a4, 0xe01a5,
+                            0xe01a6, 0xe01a7, 0xe01a8, 0xe01a9, 0xe01aa, 0xe01ab, 0xe01ac, 0xe01ad,
+                            0xe01ae, 0xe01af, 0xe01b0, 0xe01b1, 0xe01b2, 0xe01b3, 0xe01b4, 0xe01b5,
+                            0xe01b6, 0xe01b7, 0xe01b8, 0xe01b9, 0xe01ba, 0xe01bb, 0xe01bc, 0xe01bd,
+                            0xe01be, 0xe01bf, 0xe01c0, 0xe01c1, 0xe01c2, 0xe01c3, 0xe01c4, 0xe01c5,
+                            0xe01c6, 0xe01c7, 0xe01c8, 0xe01c9, 0xe01ca, 0xe01cb, 0xe01cc, 0xe01cd,
+                            0xe01ce, 0xe01cf, 0xe01d0, 0xe01d1, 0xe01d2, 0xe01d3, 0xe01d4, 0xe01d5,
+                            0xe01d6, 0xe01d7, 0xe01d8, 0xe01d9, 0xe01da, 0xe01db, 0xe01dc, 0xe01dd,
+                            0xe01de, 0xe01df, 0xe01e0, 0xe01e1, 0xe01e2, 0xe01e3, 0xe01e4, 0xe01e5,
+                            0xe01e6, 0xe01e7, 0xe01e8, 0xe01e9, 0xe01ea, 0xe01eb, 0xe01ec, 0xe01ed,
+                            0xe01ee, 0xe01ef,
+                        ]
+                        .binary_search(&point)
+                        .is_ok();
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Variation_Selector}" | r"[\p{VS}]" => variation_selector,
+                            r"\P{VS}" | r"[^\p{Variation_Selector}]" => !variation_selector,
+                            r"[\P{VS}K]" => !variation_selector || k,
+                            r"[\p{VS}K]" => variation_selector || k,
+                            r"[\p{VS}\P{Variation_Selector}]" => true,
+                            r"[^\P{VS}K]" => variation_selector && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_variation_selector_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{VS}",
+            r"\P{Variation_Selector}",
+            r"^[\p{Variation_Selector}]$",
+            r"[\P{VS}K]",
+            r"[^\P{VS}K]",
+            r"[\p{Variation_Selector}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{180b}\u{180c}\u{180d}\u{180f}\u{fe00}\u{fe01}\u{fe02}\u{fe03}\u{fe04}\u{fe05}\u{fe06}\u{fe07}\u{fe08}\u{fe09}\u{fe0a}\u{fe0b}\u{fe0c}\u{fe0d}\u{fe0e}\u{fe0f}\u{e0100}\u{e0101}\u{e0102}\u{e0103}\u{e0104}\u{e0105}\u{e0106}\u{e0107}\u{e0108}\u{e0109}\u{e010a}\u{e010b}\u{e010c}\u{e010d}\u{e010e}\u{e010f}\u{e0110}\u{e0111}\u{e0112}\u{e0113}\u{e0114}\u{e0115}\u{e0116}\u{e0117}\u{e0118}\u{e0119}\u{e011a}\u{e011b}\u{e011c}\u{e011d}\u{e011e}\u{e011f}\u{e0120}\u{e0121}\u{e0122}\u{e0123}\u{e0124}\u{e0125}\u{e0126}\u{e0127}\u{e0128}\u{e0129}\u{e012a}\u{e012b}\u{e012c}\u{e012d}\u{e012e}\u{e012f}\u{e0130}\u{e0131}\u{e0132}\u{e0133}\u{e0134}\u{e0135}\u{e0136}\u{e0137}\u{e0138}\u{e0139}\u{e013a}\u{e013b}\u{e013c}\u{e013d}\u{e013e}\u{e013f}\u{e0140}\u{e0141}\u{e0142}\u{e0143}\u{e0144}\u{e0145}\u{e0146}\u{e0147}\u{e0148}\u{e0149}\u{e014a}\u{e014b}\u{e014c}\u{e014d}\u{e014e}\u{e014f}\u{e0150}\u{e0151}\u{e0152}\u{e0153}\u{e0154}\u{e0155}\u{e0156}\u{e0157}\u{e0158}\u{e0159}\u{e015a}\u{e015b}\u{e015c}\u{e015d}\u{e015e}\u{e015f}\u{e0160}\u{e0161}\u{e0162}\u{e0163}\u{e0164}\u{e0165}\u{e0166}\u{e0167}\u{e0168}\u{e0169}\u{e016a}\u{e016b}\u{e016c}\u{e016d}\u{e016e}\u{e016f}\u{e0170}\u{e0171}\u{e0172}\u{e0173}\u{e0174}\u{e0175}\u{e0176}\u{e0177}\u{e0178}\u{e0179}\u{e017a}\u{e017b}\u{e017c}\u{e017d}\u{e017e}\u{e017f}\u{e0180}\u{e0181}\u{e0182}\u{e0183}\u{e0184}\u{e0185}\u{e0186}\u{e0187}\u{e0188}\u{e0189}\u{e018a}\u{e018b}\u{e018c}\u{e018d}\u{e018e}\u{e018f}\u{e0190}\u{e0191}\u{e0192}\u{e0193}\u{e0194}\u{e0195}\u{e0196}\u{e0197}\u{e0198}\u{e0199}\u{e019a}\u{e019b}\u{e019c}\u{e019d}\u{e019e}\u{e019f}\u{e01a0}\u{e01a1}\u{e01a2}\u{e01a3}\u{e01a4}\u{e01a5}\u{e01a6}\u{e01a7}\u{e01a8}\u{e01a9}\u{e01aa}\u{e01ab}\u{e01ac}\u{e01ad}\u{e01ae}\u{e01af}\u{e01b0}\u{e01b1}\u{e01b2}\u{e01b3}\u{e01b4}\u{e01b5}\u{e01b6}\u{e01b7}\u{e01b8}\u{e01b9}\u{e01ba}\u{e01bb}\u{e01bc}\u{e01bd}\u{e01be}\u{e01bf}\u{e01c0}\u{e01c1}\u{e01c2}\u{e01c3}\u{e01c4}\u{e01c5}\u{e01c6}\u{e01c7}\u{e01c8}\u{e01c9}\u{e01ca}\u{e01cb}\u{e01cc}\u{e01cd}\u{e01ce}\u{e01cf}\u{e01d0}\u{e01d1}\u{e01d2}\u{e01d3}\u{e01d4}\u{e01d5}\u{e01d6}\u{e01d7}\u{e01d8}\u{e01d9}\u{e01da}\u{e01db}\u{e01dc}\u{e01dd}\u{e01de}\u{e01df}\u{e01e0}\u{e01e1}\u{e01e2}\u{e01e3}\u{e01e4}\u{e01e5}\u{e01e6}\u{e01e7}\u{e01e8}\u{e01e9}\u{e01ea}\u{e01eb}\u{e01ec}\u{e01ed}\u{e01ee}\u{e01ef}\u{180a}\u{180e}\u{1810}\u{fdff}\u{fe10}\u{e00ff}\u{e01f0}\u{feff}ſK\n",
+                            "X\r\n\u{fe00}\u{2028}\u{fe0f}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_variation_selector_property_work_deduplication_and_contracts() {
+        let source =
+            JsString::from(format!("[{}]", r"\p{VS}\P{Variation_Selector}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{VS}$", r"^[\P{Variation_Selector}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{fe00}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{VS}--A]",
+            r"[\p{VS}&&A]",
+            r"[[\p{VS}]]",
+            r"[A-\p{VS}]",
+            r"[\p{VS}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{VS}]"),
                 true,
                 true,
                 false

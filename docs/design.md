@@ -4095,6 +4095,22 @@ earlier property kinds retain their work charges. Repeated fixed sets are added
 once with source-sized storage. No matcher field, search kernel, dependency or
 default quota is added.
 
+
+Unicode Variation_Selector and its exact VS alias reuse the fixed-property class
+matcher (22.2.2.9, 22.2.2.8). The pinned Unicode 18 PropList supplies 260 members
+in four positive and five complementary intervals, including supplementary
+selectors E0100..E01EF. The complete pinned CaseFolding data verifies that
+common/simple folding preserves membership in both directions. Exact aliases
+follow the edition-17 binary-property table.
+
+Standalone atoms, flat unions, inversion, enclosing captures, quantified atoms
+and word/line assertions reuse existing normalization and complete-character
+search. Supplementary selectors retain their original two UTF-16 units. The
+existing u32 local property mask holds the two additional bits; earlier property
+kinds retain their work charges. Repeated fixed sets are added once with
+source-sized storage. No matcher field, search kernel, dependency or default
+quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
