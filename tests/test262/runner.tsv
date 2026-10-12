@@ -7507,3 +7507,4 @@ test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class
 test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class-escape-positive-cases.js	-	-	-
 test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-negative-cases.js	-	-	-
 test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-positive-cases.js	-	-	-
+test/built-ins/RegExp/quantifier-integer-limit.js	-	-	-

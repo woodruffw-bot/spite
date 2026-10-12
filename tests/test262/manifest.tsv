@@ -7538,3 +7538,4 @@ script-pass	c99083f6609898ba97c9c2201a6bd909fd48ae643e02ffcfd418ac9afc73a5e9	tes
 script-pass	27c9f57d7e6e3965217db8021dbe30fe0d19429acdf90a22de56230d86346281	test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class-escape-positive-cases.js
 script-pass	7fd505960f3450b4e4e02a623822e70a24a19a833e9a93d6c9e8929abb1ba8b2	test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-negative-cases.js
 script-pass	4b23d2726a5ee440d5def027683c961ab8db4dc3607cf0071166a7448c6b287a	test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-positive-cases.js
+script-pass	4605bdc13b1d7de3945afcb6ba4d10d66f2ed2df2f7ff38222a176a865b6e78b	test/built-ins/RegExp/quantifier-integer-limit.js
