@@ -20,6 +20,9 @@ fn package_environment_and_directory() {
     assert_eq!(std::env::var("CARGO_MANIFEST_DIR").unwrap(), env!("CARGO_MANIFEST_DIR"));
     assert_eq!(std::env::var("CARGO_PKG_NAME").unwrap(), env!("CARGO_PKG_NAME"));
     assert_eq!(std::env::var("SPITE_RUNNER_PROBE_INHERITED").unwrap(), "unchanged");
+    if env!("CARGO_PKG_NAME") == "spite-core" {
+        assert!(cfg!(feature = "workspace-unified"));
+    }
 }
 #[test]
 fn requested_failure() {
@@ -33,20 +36,29 @@ fn pinned_corpus_runs_all_reviewed_variants() { panic!("corpus must run separate
 '''
 
 
+def make_workspace(root, core_name='spite-core', include_rest=True):
+    names = ['a', 'b'] if include_rest else ['a']
+    (root / 'Cargo.toml').write_text(
+        '[workspace]\nmembers=' + json.dumps(names) + '\nresolver="2"\n', encoding='utf-8')
+    for name in names:
+        package = root / name
+        (package / 'src').mkdir(parents=True)
+        package_name = core_name if name == 'a' else 'runner-probe-b'
+        (package / 'Cargo.toml').write_text(
+            f'[package]\nname="{package_name}"\nversion="0.1.0"\nedition="2021"\n'
+            '[features]\nworkspace-unified=[]\n'
+            + (f'[dependencies]\n{core_name}={{path="../a",features=["workspace-unified"]}}\n'
+               if name == 'b' else ''),
+            encoding='utf-8')
+        (package / 'src/lib.rs').write_text(SOURCE, encoding='utf-8')
+
+
 class CargoRunnerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temporary = tempfile.TemporaryDirectory(prefix='spite-ci-runner-probe-')
         cls.root = Path(cls.temporary.name)
-        (cls.root / 'Cargo.toml').write_text(
-            '[workspace]\nmembers=["a","b"]\nresolver="2"\n', encoding='utf-8')
-        for name in ['a', 'b']:
-            package = cls.root / name
-            (package / 'src').mkdir(parents=True)
-            (package / 'Cargo.toml').write_text(
-                f'[package]\nname="runner-probe-{name}"\nversion="0.1.0"\nedition="2021"\n',
-                encoding='utf-8')
-            (package / 'src/lib.rs').write_text(SOURCE, encoding='utf-8')
+        make_workspace(cls.root)
         cls.environment = dict(os.environ)
         cls.environment['SPITE_RUNNER_PROBE_INHERITED'] = 'unchanged'
         cls.environment.pop('SPITE_RUNNER_PROBE_FAIL', None)
@@ -58,15 +70,16 @@ class CargoRunnerTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.temporary.cleanup()
 
-    def run_suite(self, fail=None):
-        report = self.root / 'report.json'
+    def run_suite(self, fail=None, suite='all', root=None):
+        root = root or self.root
+        report = root / 'report.json'
         report.unlink(missing_ok=True)
         environment = self.environment.copy()
         if fail:
             environment['SPITE_RUNNER_PROBE_FAIL'] = fail
         result = subprocess.run(
             [sys.executable, str(RUNNER), '--toolchain', 'stable', '--offline',
-             '--report', str(report)], cwd=self.root, env=environment,
+             '--suite', suite, '--report', str(report)], cwd=root, env=environment,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         return result, json.loads(report.read_text()) if report.exists() else None
 
@@ -84,10 +97,55 @@ class CargoRunnerTests(unittest.TestCase):
             self.assertNotIn('environment', json.dumps(row))
 
     def test_failure_propagates_and_other_package_still_runs(self):
-        result, report = self.run_suite('runner-probe-a')
+        result, report = self.run_suite('spite-core')
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertEqual(len(report['invocations']), 2)
         self.assertEqual(sorted(row['status'] for row in report['invocations']), [0, 101])
+
+    def test_split_suites_preserve_exact_invocations_and_cover_the_workspace(self):
+        complete, all_report = self.run_suite()
+        core, core_report = self.run_suite(suite='core')
+        rest, rest_report = self.run_suite(suite='rest')
+        for result in [complete, core, rest]:
+            self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual([row['package'] for row in core_report['invocations']], ['spite-core'])
+        self.assertEqual([row['package'] for row in rest_report['invocations']], ['runner-probe-b'])
+        combined = core_report['invocations'] + rest_report['invocations']
+        fields = ['command', 'cwd', 'package', 'status', 'summaries']
+        project = lambda rows: sorted([{key: row[key] for key in fields} for row in rows],
+                                      key=lambda row: row['package'])
+        self.assertEqual(project(combined), project(all_report['invocations']),
+                         'Commands, working directories, results, and filters must agree')
+
+    def test_failure_stays_in_its_suite(self):
+        core, core_report = self.run_suite('spite-core', suite='core')
+        rest, rest_report = self.run_suite('spite-core', suite='rest')
+        self.assertEqual(core.returncode, 1, core.stdout)
+        self.assertEqual(rest.returncode, 0, rest.stdout)
+        self.assertEqual(core_report['invocations'][0]['status'], 101)
+        self.assertEqual(rest_report['invocations'][0]['status'], 0)
+
+    def test_split_suite_requires_the_core_package(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-runner-no-core-') as temporary:
+            root = Path(temporary)
+            make_workspace(root, core_name='runner-probe-a')
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env=self.environment, check=True)
+            result, report = self.run_suite(suite='core', root=root)
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn('split workspace suites require a spite-core package', result.stdout)
+            self.assertIsNone(report)
+
+    def test_empty_remaining_suite_cannot_succeed(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-runner-only-core-') as temporary:
+            root = Path(temporary)
+            make_workspace(root, include_rest=False)
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env=self.environment, check=True)
+            result, report = self.run_suite(suite='rest', root=root)
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn('selected workspace suite recorded no test invocations', result.stdout)
+            self.assertIsNone(report)
 
     def test_compiler_failure_does_not_report_success(self):
         source = self.root / 'a/src/lib.rs'

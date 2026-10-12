@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run Cargo's unchanged workspace test invocations two binaries at a time."""
+"""Run Cargo's unchanged workspace invocations, optionally split by package."""
 
 import argparse
 import concurrent.futures
@@ -25,7 +25,10 @@ def record(directory, command):
     changed = {key: value for key, value in os.environ.items()
                if baseline.get(key) != fingerprint(value)}
     removed = [key for key in baseline if key not in os.environ]
-    row = {'command': command, 'cwd': str(Path.cwd()),
+    package = os.environ.get('CARGO_PKG_NAME')
+    if not package:
+        raise RuntimeError('Cargo did not provide the test package name')
+    row = {'command': command, 'cwd': str(Path.cwd()), 'package': package,
            'changed_environment': changed, 'removed_environment': removed}
     path = directory / f'invocation-{time.monotonic_ns()}-{uuid.uuid4().hex}.json'
     path.write_text(json.dumps(row), encoding='utf-8')
@@ -36,6 +39,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain', choices=['stable', '1.85.0'], required=True)
     parser.add_argument('--offline', action='store_true')
+    parser.add_argument('--suite', choices=['all', 'core', 'rest'], default='all',
+                        help='Select recorded packages after compiling the complete workspace')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     version = subprocess.check_output(['rustc', '+' + args.toolchain, '-vV'], text=True)
@@ -66,6 +71,17 @@ def main():
                        sorted(directory.glob('invocation-*.json'))]
         if not invocations:
             raise RuntimeError('Cargo recorded no test invocations; check the host runner configuration')
+        # Every suite compiles the same workspace, preserving Cargo's feature
+        # unification. Partition only the recorded invocations, never test names.
+        if args.suite != 'all':
+            if not any(row['package'] == 'spite-core' for row in invocations):
+                raise RuntimeError('The split workspace suites require a spite-core package')
+            selected = [row for row in invocations
+                        if (row['package'] == 'spite-core') == (args.suite == 'core')]
+        else:
+            selected = invocations
+        if not selected:
+            raise RuntimeError('The selected workspace suite recorded no test invocations')
         collected = time.monotonic()
 
         def run(invocation):
@@ -83,13 +99,14 @@ def main():
                 r'test result: (\w+)\. (\d+) passed; (\d+) failed; (\d+) ignored; '
                 r'(\d+) measured; (\d+) filtered out', result.stdout)
             row = {'command': invocation['command'], 'cwd': invocation['cwd'],
+                   'package': invocation['package'],
                    'status': result.returncode, 'seconds': time.monotonic() - beginning,
                    'summaries': summaries}
             return row, result.stdout
 
         results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(run, invocation) for invocation in invocations]
+            futures = [executor.submit(run, invocation) for invocation in selected]
             for future in concurrent.futures.as_completed(futures):
                 row, output = future.result()
                 results.append(row)
@@ -99,6 +116,7 @@ def main():
         finished = time.monotonic()
         report = {'collection_seconds': collected - started,
                   'test_seconds': finished - collected, 'total_seconds': finished - started,
+                  'suite': args.suite, 'recorded_invocations': len(invocations),
                   'invocations': sorted(results, key=lambda row: (row['command'], row['cwd']))}
         if args.report:
             args.report.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')

@@ -9393,6 +9393,22 @@ the complete reviewed Test262 corpus retain their separate existing commands.
 Default debug information, test thread counts, native stacks, and opt-in quotas
 remain unchanged on both operating systems and Rust toolchains.
 
+Core tests and the remaining workspace tests now run in separate CI jobs. Both
+jobs compile the complete workspace before selecting their recorded packages,
+preserving Cargo's workspace feature unification. The two selections are
+disjoint and cover every recorded invocation. Documentation tests run once in
+the remaining-workspace job; the full Test262 job keeps its original command.
+The runner's default `all` suite continues to run the complete workspace.
+
+The runner's real Cargo probes verify the exact combined commands, directories,
+results and filters, package environment, inherited environment, failure
+propagation, ignored tests and separately run corpus test. A feature requested
+only by another workspace member verifies that the Core suite retains workspace
+feature unification. Split suites reject a missing Core package or an empty
+selection. This adds hosted jobs and repeats cold compilation so exhaustive
+Core checks can run alongside the other workspace tests; hosted timings are
+measured separately from the earlier warmed-build comparison below.
+
 A local warmed-build comparison on identical sources and executables reduced
 workspace execution from 252.62 seconds to 164.24 seconds, including invocation
 collection: 35% faster. All 408 invocations and 3,500 passing tests were preserved,
