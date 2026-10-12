@@ -3801,6 +3801,28 @@ contracts and work charges are unchanged. Unrepresentable finite bounds remain
 outside this proof: treating a large finite upper bound as infinity would lose
 the exact optional iteration budget. No dependency or default quota is added.
 
+
+Unicode nullable repetition admits exact source counts larger than `usize`,
+including single-count, padded, equal-range and lazy spellings (22.2.2.3).
+Canonical decimal source slices prove equal bounds without a big integer or count
+expansion. Empty/open upper-bound spellings and unequal overflowed bounds are
+excluded. Earlier proof entry points keep their narrower contracts.
+
+Every possible finite input has fewer characters than such an exact count.
+Character-first mandatory alternatives therefore prefer descending accepted
+endpoints and leave a defined empty final capture at the match end. Empty-first
+alternatives prefer ascending accepted endpoints; an empty match has a defined
+empty capture, and a nonempty match retains its final character. The quantifier's
+greedy/lazy spelling cannot reorder mandatory branch choices.
+
+The new proof sets only the matcher's effective branch priority and reuses its
+existing monotone search and capture kernels. Original source, flags, names,
+capture ordinals and clone metadata remain in the constructor. Complete pure
+character and raw/balanced noncapturing empty branch restrictions and assertion
+scopes are preserved. Canonical decimal comparisons charge bounded source work;
+matching adds no expanded count, recursion, input-sized storage, dependency or
+default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
