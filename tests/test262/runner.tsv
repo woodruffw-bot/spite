@@ -7564,3 +7564,4 @@ test/built-ins/RegExp/property-escapes/generated/Hex_Digit.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/White_Space.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Join_Control.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Noncharacter_Code_Point.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Variation_Selector.js	-	-	-

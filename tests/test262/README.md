@@ -1,11 +1,38 @@
 # Test262 regression fixtures
 
-These 7584 unmodified test fixtures and twelve harness files come from
+These 7585 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Generated Variation_Selector property fixture
+
+One unchanged complete Test262 source checks Variation_Selector and its VS alias,
+including both property complements. The positive string contains all 260
+members; its complement contains the remaining 1113852 code points with original
+surrogate ordering. All four original anchored positive-minimum property
+repetitions, helper calls, fallback checks, metadata and BSD notice are preserved.
+
+The source records Unicode 17.0.0, while the runtime uses its existing pinned
+Unicode 18.0.0 data. All 260 Variation_Selector members are identical in both
+inputs. No source or data pin is changed for this fixture.
+
+Both complete normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. Git blob identity and manifest
+SHA-256 verify the original bytes. All twelve existing helpers, including the
+unchanged regExpUtils.js, and the Test262 revision remain unchanged.
+
+The corpus contains 7585 fixtures, twelve helpers, 7566 reviewed Script sources
+and 14610 variants: 13077 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 699 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The implementation roadmap remains focused on concrete spec work.
+
+Stable and MSRV pass the complete 14610-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Generated fixed-property fixtures
 
