@@ -4049,6 +4049,23 @@ use the same paths. The final two bits of the existing property mask represent
 the positive and complementary sets. Earlier property kinds retain their work
 charges. No dependency, matcher field, search kernel or default quota is added.
 
+
+Unicode Quotation_Mark and its exact QMark alias reuse the fixed-property class
+matcher (22.2.2.9, 22.2.2.8). The pinned Unicode 18 PropList supplies thirty
+members in twenty-eight raw intervals. Adjacent intervals normalize to thirteen
+positive intervals and fourteen complementary intervals. Exact property aliases
+follow the edition-17 binary-property table. The complete pinned CaseFolding data
+shows that simple/common folding preserves membership in both directions;
+therefore u/v complement ordering agrees with i for this property.
+
+Standalone atoms, flat unions and inversion reuse complete-character matching,
+normalization, source-sized storage and opt-in accounting. Repeated fixed sets
+are appended once. The local class property mask becomes u32 to admit the two
+new positive/complementary bits; its earlier bits and construction charges keep
+their meanings. Enclosing captures, quantified atoms, word/line assertions and
+lastIndex reuse existing paths. No matcher field, search kernel, dependency or
+default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

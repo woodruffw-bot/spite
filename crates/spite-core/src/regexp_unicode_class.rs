@@ -17,7 +17,7 @@ use std::{ops::Range, sync::Arc};
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
 /// surrogates. Fixed ASCII, Any, hex-digit, White_Space, Join_Control,
-/// noncharacter and Bidi_Control properties are admitted in flat unions
+/// noncharacter, Bidi_Control and Quotation_Mark properties are admitted in flat unions
 /// and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
@@ -134,7 +134,8 @@ impl RegExpUnicodeClassMatcher {
     /// Compiles standalone fixed binary Unicode properties and boundaries.
     ///
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
-    /// Join_Control/Join_C, Noncharacter_Code_Point/NChar and Bidi_Control/Bidi_C.
+    /// Join_Control/Join_C, Noncharacter_Code_Point/NChar, Bidi_Control/Bidi_C
+    /// and Quotation_Mark/QMark.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -198,6 +199,7 @@ impl RegExpUnicodeClassMatcher {
             10 => 2,
             12 => 18,
             14 => 5,
+            16 => 14,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -270,7 +272,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        let mut properties = 0u16;
+        let mut properties = 0u32;
         while index < units.len() - 1 {
             let Some(first) = class_atom(units, &mut index, unicode_sets) else {
                 return Ok(None);
@@ -313,12 +315,12 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..16 {
+        for kind in 0..18 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
                 charge(ranges.len().saturating_add(match kind {
-                    12 | 13 => 40,
+                    12..=13 | 16..=17 => 40,
                     8..=11 | 14..=15 => 24,
                     _ => 8,
                 }))?;
@@ -636,6 +638,23 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x6c,
         ] => 14,
+        [0x51, 0x4d, 0x61, 0x72, 0x6b]
+        | [
+            0x51,
+            0x75,
+            0x6f,
+            0x74,
+            0x61,
+            0x74,
+            0x69,
+            0x6f,
+            0x6e,
+            0x5f,
+            0x4d,
+            0x61,
+            0x72,
+            0x6b,
+        ] => 16,
         _ => return None,
     })
 }
@@ -754,6 +773,38 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x2010, 0x2029),
             (0x202f, 0x2065),
             (0x206a, 0x10ffff),
+        ],
+        // UCD 18 Quotation_Mark: thirty members, invariant under C/S folding.
+        16 => &[
+            (0x22, 0x22),
+            (0x27, 0x27),
+            (0xab, 0xab),
+            (0xbb, 0xbb),
+            (0x2018, 0x201f),
+            (0x2039, 0x203a),
+            (0x2e42, 0x2e42),
+            (0x300c, 0x300f),
+            (0x301d, 0x301f),
+            (0xfe41, 0xfe44),
+            (0xff02, 0xff02),
+            (0xff07, 0xff07),
+            (0xff62, 0xff63),
+        ],
+        17 => &[
+            (0x0, 0x21),
+            (0x23, 0x26),
+            (0x28, 0xaa),
+            (0xac, 0xba),
+            (0xbc, 0x2017),
+            (0x2020, 0x2038),
+            (0x203b, 0x2e41),
+            (0x2e43, 0x300b),
+            (0x3010, 0x301c),
+            (0x3020, 0xfe40),
+            (0xfe45, 0xff01),
+            (0xff03, 0xff06),
+            (0xff08, 0xff61),
+            (0xff64, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -3167,6 +3218,199 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Bidi_C}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_quotation_mark_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Quotation_Mark}",
+                    r"\P{QMark}",
+                    r"[\p{QMark}]",
+                    r"[^\p{Quotation_Mark}]",
+                    r"[\P{QMark}K]",
+                    r"[\p{QMark}K]",
+                    r"[\p{QMark}\P{Quotation_Mark}]",
+                    r"[^\P{QMark}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let quotation_mark = [
+                            0x22, 0x27, 0xab, 0xbb, 0x2018, 0x2019, 0x201a, 0x201b, 0x201c, 0x201d,
+                            0x201e, 0x201f, 0x2039, 0x203a, 0x2e42, 0x300c, 0x300d, 0x300e, 0x300f,
+                            0x301d, 0x301e, 0x301f, 0xfe41, 0xfe42, 0xfe43, 0xfe44, 0xff02, 0xff07,
+                            0xff62, 0xff63,
+                        ]
+                        .contains(&point);
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Quotation_Mark}" | r"[\p{QMark}]" => quotation_mark,
+                            r"\P{QMark}" | r"[^\p{Quotation_Mark}]" => !quotation_mark,
+                            r"[\P{QMark}K]" => !quotation_mark || k,
+                            r"[\p{QMark}K]" => quotation_mark || k,
+                            r"[\p{QMark}\P{Quotation_Mark}]" => true,
+                            r"[^\P{QMark}K]" => quotation_mark && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_quotation_mark_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{QMark}",
+            r"\P{Quotation_Mark}",
+            r"^[\p{Quotation_Mark}]$",
+            r"[\P{QMark}K]",
+            r"[^\P{QMark}K]",
+            r"[\p{Quotation_Mark}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{21}\u{22}\u{23}\u{26}\u{27}\u{28}\u{ab}\u{bb}\u{2017}\u{2018}\u{2019}\u{201a}\u{201b}\u{201c}\u{201d}\u{201e}\u{201f}\u{2039}\u{203a}\u{2e42}\u{300c}\u{300d}\u{300e}\u{300f}\u{301d}\u{301e}\u{301f}\u{fe41}\u{fe42}\u{fe43}\u{fe44}\u{ff02}\u{ff07}\u{ff62}\u{ff63}\u{2010}\u{300b}\u{3010}\u{ff64}ſK\n",
+                            "X\r\n\u{201c}\u{2028}\u{301f}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_quotation_mark_property_work_deduplication_and_contracts() {
+        let source =
+            JsString::from(format!("[{}]", r"\p{QMark}\P{Quotation_Mark}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{QMark}$", r"^[\P{Quotation_Mark}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{201c}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{QMark}--A]",
+            r"[\p{QMark}&&A]",
+            r"[[\p{QMark}]]",
+            r"[A-\p{QMark}]",
+            r"[\p{QMark}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{QMark}]"),
                 true,
                 true,
                 false
