@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14588 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14590 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -7962,6 +7962,34 @@ inventories, dependencies and default quotas are unchanged.
 Stable and MSRV pass all 14,588 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+## Generated Quotation_Mark property fixture
+
+One unchanged complete Test262 source checks Quotation_Mark and its QMark alias,
+including both property complements. The positive string contains all thirty
+members; its complement contains the remaining 1114082 code points with original
+surrogate ordering. All four original anchored positive-minimum property
+repetitions, helper calls, fallback checks, metadata and BSD notice are preserved.
+
+The source records Unicode 17.0.0, while the runtime uses its existing pinned
+Unicode 18.0.0 data. All thirty Quotation_Mark members are identical in both
+inputs. No source or data pin is changed for this fixture.
+
+Both complete normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. Git blob identity and manifest
+SHA-256 verify the original bytes. All twelve existing helpers, including the
+unchanged regExpUtils.js, and the Test262 revision remain unchanged.
+
+The corpus contains 7575 fixtures, twelve helpers, 7556 reviewed Script sources
+and 14590 variants: 13057 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 689 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The implementation roadmap remains focused on concrete spec work.
+
+
+Stable and MSRV pass all 14,590 unchanged pinned-corpus variants and the
+complete workspace target and documentation checks. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks pass.
 
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
