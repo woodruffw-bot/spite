@@ -7335,6 +7335,33 @@ Stable and MSRV pass all 14,496 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Positive exact-count nullable Unicode repetition has three new core tests and six
+runtime tests. An independent RepeatMatcher interpreter checks 10112 combinations
+of exact/equal-range bounds, padded spellings, greedy/lazy selection, source order,
+captures, anchors, starts and sticky behavior. A separate finite derivation checks
+14280 endpoint/capture cases with arbitrary continuation acceptance. All 2400
+runtime snapshot rows and thirty-two finite Boolean programs agree with Node;
+14848 additional complete matches/captures agree with Node in both Unicode modes.
+
+Named indices, supplementary/lone-surrogate boundaries, folding, consumers,
+coercions, strict writes, clones and collection are covered. Cases with 6000 unit
+captures, 6000 empty wrappers and 200001 input units preserve unlimited defaults.
+An exact count of 300001 retains mandatory empty captures without expanding the
+count. Fallible callbacks and an explicit search quota preserve host-failure
+ordering, including the bounded capture scan. Narrow proof tests reject unequal
+finite ranges, open counts and unrepresentable exact counts.
+
+All 672 core tests and 238 related runtime targets pass. All 536 earlier golds
+remain byte-identical, with two new reviewed snapshots. The current-build
+1177-program gap audit has zero admissions. Ordered/direct eval checks and whole
+fixture reviews retain their outcomes without failures or limits. Corpus
+inventories/pin, dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,496 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

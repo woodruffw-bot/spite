@@ -3756,6 +3756,25 @@ adds linear input work with constant search storage, no expanded source counts,
 native recursion, dependency or default quota. Earlier proof contracts and work
 charges are unchanged. Finite positive upper bounds remain outside this proof.
 
+
+Unicode nullable repetition admits exact counts greater than one when both bounds
+fit `usize`, including equal-range, padded and lazy spellings (22.2.2.3). Every
+iteration is mandatory. The quantifier's greedy/lazy spelling cannot reorder the
+unit's original alternatives. Character-first alternatives prefer longer accepted
+runs up to the exact count; empty-first alternatives prefer shorter accepted runs.
+For example, `(|a){2}` selects an empty match on `aaa`, while `(a|){2}?` selects
+`aa`. Complete whole-match and character assertions retain their original scopes.
+
+The complete two-branch proof preserves pure unquantified character branches,
+raw or balanced noncapturing empty branches and captures around the entire unit.
+A single existing monotone endpoint search implements mandatory branch priority.
+The existing bounded capture scan preserves a defined empty final capture when
+character-first matching consumes fewer characters than the mandatory count.
+Source counts are not expanded; matching and capture selection add linear input
+work and constant search storage. Earlier proof contracts and work charges are
+unchanged. Unequal finite positive bounds and unrepresentable exact counts remain
+outside this proof; no dependency, recursion or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
