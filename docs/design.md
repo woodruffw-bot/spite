@@ -3863,6 +3863,24 @@ metadata are reused. Decimal source work is charged before subtraction. No
 mandatory count expansion, native recursion, input-sized search storage,
 dependency or default quota is added.
 
+
+Nullable Unicode repetition also admits explicit finite braced bounds with a
+represented positive minimum and an overflowing maximum (22.2.2.3). Complete
+pure-character and raw/balanced empty-branch validation precedes plan creation.
+The existing charged decimal subtraction retains the optional difference when
+it fits usize; an overflowing difference cannot constrain a finite input.
+
+Character-first branches reuse positive-minimum repetition and capture priority.
+Empty-first branches retain the exact optional budget and reuse the two existing
+monotone search phases. A native maximum minimum followed by a maximum one larger
+therefore permits exactly one optional character. Open braced bounds remain outside this entry point. Simple quantifiers
+reuse the existing complete body proof without decimal subtraction, preserving
+earlier API contracts.
+
+No count expansion, matcher field, kernel, native recursion, input-sized search
+storage, dependency or default quota is added. Original constructor source and
+flags remain intact.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

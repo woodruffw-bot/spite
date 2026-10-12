@@ -7500,6 +7500,34 @@ Stable and MSRV pass all 14,506 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Nullable Unicode repetition with a represented minimum and overflowing finite
+maximum has three new core tests and six runtime tests. All 10112 comparisons
+agree with an independent finite RepeatMatcher model; all 2400 runtime snapshot
+rows and 29 complete Boolean programs agree with finite-equivalent Node
+references. References preserve mandatory and optional counts that constrain
+the input and cap only counts above the input unit count. Original huge source
+metadata is checked separately, without claiming Node executes those counts.
+
+Native-width tests include usize::MAX and a maximum one larger, source branch
+priority, greedy/lazy matching and defined empty final captures. Cases cover
+named indices, flags, assertion scopes, coercions, strict writes and consumers.
+The 6000-capture and 6000-empty-wrapper cases execute over 200001 input units
+with unlimited defaults, including cloning and collection. Every fallible
+compile/search/capture callback can abort. The explicit search quota remains
+30000; exhaustion precedes lastIndex writes and handlers. Simple quantifiers
+have dedicated regression coverage for the explicit-braced entry-point guard.
+
+All 685 core tests and 243 related runtime targets pass. All 545 earlier golds
+remain byte-identical, with two new reviewed snapshots. The current-build
+1177-program gap audit has zero admissions. Ordered/direct eval checks and whole
+fixture reviews retain their outcomes without failures or limits. Corpus pin,
+inventories, dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,506 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
