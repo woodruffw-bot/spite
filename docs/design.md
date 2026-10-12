@@ -3840,6 +3840,29 @@ Unsupported matching and explicit search-quota failures retain their boundaries.
 Ordinary exec and other result-consuming operations keep result materialization.
 This adds no dependency, matcher kernel, unsafe code or default quota.
 
+
+Unicode nullable repetition admits unequal finite bounds when both exceed usize
+(22.2.2.3). Validated decimal subtraction preserves a representable optional
+count, including long borrow/zero runs, using constant integer storage. An
+overflowing difference exceeds every finite input; it is not substituted for a
+small optional count. Equal counts, open bounds and represented lower bounds
+remain outside this entry point; earlier APIs retain their narrower contracts.
+
+Character-first mandatory choices prefer descending finite endpoints and leave
+a defined empty final capture, independently of the quantifier's lazy spelling.
+Empty-first lazy repetition prefers ascending endpoints. Empty-first greedy
+repetition first tries descending endpoints within the exact optional budget,
+then ascending endpoints above it; earliest start wins, with the first phase
+winning a tie. A checked increment excludes an unreachable higher phase when
+the optional count is usize::MAX.
+
+Only new empty-first plans retain the finite optional budget in nullable branch
+metadata. Existing monotone search and capture kernels, complete pure-character
+and raw/balanced empty-branch proofs, assertion scopes and original constructor
+metadata are reused. Decimal source work is charged before subtraction. No
+mandatory count expansion, native recursion, input-sized search storage,
+dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

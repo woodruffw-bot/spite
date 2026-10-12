@@ -7471,6 +7471,35 @@ Stable and MSRV pass all 14,506 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Unequal finite nullable Unicode bounds larger than usize have four new core
+tests and six runtime tests. All 10112 comparisons agree with an independent
+finite RepeatMatcher model that retains mandatory counts above the tested input
+and the optional difference. Decimal subtraction checks small independent
+integer results, native overflow, usize::MAX and 6000-digit borrow/zero runs.
+All 2400 runtime snapshot rows and 37 complete Boolean programs agree with
+finite-equivalent Node references. Those references retain the exact optional
+difference when it can constrain the input, capping it only above the input's
+unit count. Original huge constructor source metadata is checked separately;
+these are not claims that Node executes the original huge mandatory counts.
+
+Native cases cover optional budgets one/three, usize::MAX and overflow, named
+indices, source clones, assertion scopes, folding, surrogate boundaries,
+consumers, coercions and strict writes. Cases with 6000 captures, 6000 empty
+wrappers and 200001 input units preserve unlimited defaults and collection.
+Every fallible compile/search/capture callback can abort. The explicit search
+quota remains 30000 and exhaustion precedes lastIndex writes and handlers.
+
+All 682 core tests and 242 related runtime targets pass. All 543 earlier golds
+remain byte-identical, with two new reviewed snapshots. The current-build
+1177-program gap audit has zero admissions. Ordered/direct eval checks and whole
+fixture reviews retain their outcomes without failures or limits. Corpus pin,
+inventories, dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,506 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

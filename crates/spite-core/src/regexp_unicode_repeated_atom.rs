@@ -49,6 +49,7 @@ pub struct RegExpUnicodeRepeatedAtomMatcher {
 enum EmptyBranchOrder {
     First,
     Last,
+    FirstFiniteOptional(usize),
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -62,6 +63,7 @@ enum NullableProof {
     PositiveExact,
     PositiveFinite,
     UnrepresentableExact,
+    UnrepresentableFinite,
 }
 
 #[derive(Clone, Copy)]
@@ -1635,6 +1637,31 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Proves unequal finite nullable bounds both larger than usize.
+    ///
+    /// Requires validated u/v syntax and normalized names. Decimal subtraction
+    /// retains a representable optional count without expanding mandatory empty
+    /// iterations. An overflowing difference exceeds any finite input; source
+    /// branch order still governs mandatory choices (22.2.2.3).
+    pub fn compile_unrepresentable_finite_nullable_alternatives_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_nullable_alternatives_impl_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            NullableProof::UnrepresentableFinite,
+            charge,
+        )
+    }
+
     fn compile_nullable_alternatives_impl_with_work<E>(
         source: &JsString,
         unicode_sets: bool,
@@ -1733,6 +1760,23 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             } else {
                 false
             };
+            let unrepresentable_finite = if proof == NullableProof::UnrepresentableFinite
+                && minimum.is_none()
+                && maximum.is_none()
+            {
+                charge((end - atom_end).saturating_mul(5))?;
+                let digits = &body[atom_end + 1..end - 1];
+                digits
+                    .iter()
+                    .position(|&unit| unit == 0x2c)
+                    .and_then(|comma| {
+                        let first = significant(&digits[..comma]);
+                        let last = significant(&digits[comma + 1..]);
+                        (!last.is_empty() && first != last).then(|| decimal_difference(first, last))
+                    })
+            } else {
+                None
+            };
             if !simple
                 && !zero
                 && !one_open
@@ -1741,6 +1785,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 && !positive_exact
                 && !positive_finite
                 && !unrepresentable_exact
+                && unrepresentable_finite.is_none()
             {
                 continue;
             }
@@ -1871,6 +1916,15 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 // empty-first ascending endpoints, independently of laziness.
                 // Original source/flags remain in the constructor metadata.
                 plan.greedy = order == EmptyBranchOrder::Last;
+            }
+            if let Some(optional) = unrepresentable_finite {
+                if order == EmptyBranchOrder::Last {
+                    // All finite character counts remain mandatory, so lazy
+                    // spelling cannot reorder character-first choices.
+                    plan.greedy = true;
+                } else if let Some(optional) = optional {
+                    plan.nullable = Some(EmptyBranchOrder::FirstFiniteOptional(optional));
+                }
             }
             plan.start_anchor = start_anchor;
             plan.end_anchor = end_anchor;
@@ -2885,12 +2939,16 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             {
                 Some(maximum - minimum)
             }
+            (Some(EmptyBranchOrder::FirstFiniteOptional(optional)), true, None, None) => {
+                Some(optional)
+            }
             _ => None,
         };
         if let Some(optional) = optional {
             // Prefer greedy optional iterations after all mandatory empty
             // choices, then backtrack mandatory choices to longer lazy runs.
-            // The positive minimum proves optional < maximum, so +1 is safe.
+            // Representable positive bounds prove optional < maximum.
+            // Overflowed source bounds retain a checked optional count.
             let first = self.find_with_bounds_and_work(
                 input,
                 start,
@@ -2901,12 +2959,17 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 },
                 &mut charge,
             )?;
+            // An optional count of usize::MAX exceeds every input range.
+            // Its higher phase is unreachable and must not overflow +1.
+            let Some(higher_minimum) = optional.checked_add(1) else {
+                return Ok(first);
+            };
             let higher = self.find_with_bounds_and_work(
                 input,
                 start,
                 sticky,
                 QuantifierBounds {
-                    minimum: Some(optional + 1),
+                    minimum: Some(higher_minimum),
                     greedy: false,
                     ..bounds
                 },
@@ -3656,6 +3719,33 @@ fn decimal(units: &[u16]) -> Option<Option<usize>> {
         n = n.and_then(|n| n.checked_mul(10)?.checked_add(usize::from(unit - 0x30)));
     }
     Some(n)
+}
+
+// Both ASCII decimal slices have validated ordering. Retain their exact
+// difference when it fits usize; overflowing positive terms cannot cancel.
+// Borrow and positional weight use constant storage, including long zero runs.
+fn decimal_difference(first: &[u16], last: &[u16]) -> Option<usize> {
+    let mut lower = first.iter().rev();
+    let mut borrow = 0;
+    let mut weight = Some(1usize);
+    let mut value = 0usize;
+    for &unit in last.iter().rev() {
+        let high = usize::from(unit - 0x30);
+        let low = lower.next().map_or(0, |&unit| usize::from(unit - 0x30)) + borrow;
+        let digit = if high < low {
+            borrow = 1;
+            high + 10 - low
+        } else {
+            borrow = 0;
+            high - low
+        };
+        if digit != 0 {
+            value = value.checked_add(weight?.checked_mul(digit)?)?;
+        }
+        weight = weight.and_then(|weight| weight.checked_mul(10));
+    }
+    debug_assert!(borrow == 0 && lower.next().is_none());
+    Some(value)
 }
 
 fn significant(units: &[u16]) -> &[u16] {
@@ -18041,5 +18131,386 @@ mod unrepresentable_exact_nullable_alternative_tests {
                 );
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod unrepresentable_finite_nullable_alternative_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_finite_nullable_alternatives_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    // A small, independent RepeatMatcher interpreter. Its optional empty
+    // iterations are rejected before continuation; mandatory empties are kept.
+    #[allow(clippy::too_many_arguments)]
+    fn repeat(
+        input: &[u8],
+        at: usize,
+        minimum: usize,
+        maximum: usize,
+        greedy: bool,
+        empty_first: bool,
+        end: bool,
+        capture: Option<Range<usize>>,
+    ) -> Option<(usize, Option<Range<usize>>)> {
+        let continuation = || {
+            if minimum == 0 && (!end || at == input.len()) {
+                Some((at, capture.clone()))
+            } else {
+                None
+            }
+        };
+        if !greedy {
+            if let Some(found) = continuation() {
+                return Some(found);
+            }
+        }
+        if maximum != 0 {
+            for empty in [empty_first, !empty_first] {
+                let next = if empty {
+                    at
+                } else if input.get(at) == Some(&b'a') {
+                    at + 1
+                } else {
+                    continue;
+                };
+                if minimum == 0 && next == at {
+                    continue;
+                }
+                if let Some(found) = repeat(
+                    input,
+                    next,
+                    minimum.saturating_sub(1),
+                    maximum - 1,
+                    greedy,
+                    empty_first,
+                    end,
+                    Some(at..next),
+                ) {
+                    return Some(found);
+                }
+            }
+        }
+        if greedy { continuation() } else { None }
+    }
+
+    #[test]
+    fn unicode_unrepresentable_finite_nullable_alternative_repeat_matcher_snapshot() {
+        let mut rows = String::new();
+        let mut audited = 0;
+        for empty_first in [false, true] {
+            // Every source bound exceeds usize::MAX. These inputs have at
+            // most four characters, so seven mandatory iterations are an
+            // independent finite RepeatMatcher reference retaining the exact optional budget.
+            // Differences larger than any tested input use seven optional copies.
+            for (quantifier, minimum, maximum, greedy) in [
+                (
+                    "{18446744073709551616,18446744073709551617}",
+                    7,
+                    Some(8),
+                    true,
+                ),
+                (
+                    "{18446744073709551616,18446744073709551617}?",
+                    7,
+                    Some(8),
+                    false,
+                ),
+                (
+                    "{999999999999999999999999,1000000000000000000000000}",
+                    7,
+                    Some(8),
+                    true,
+                ),
+                (
+                    "{000999999999999999999999999,1000000000000000000000000}?",
+                    7,
+                    Some(8),
+                    false,
+                ),
+                (
+                    "{999999999999999999999999,1000000000000000000000002}",
+                    7,
+                    Some(10),
+                    true,
+                ),
+                (
+                    "{999999999999999999999999,0001000000000000000000000002}?",
+                    7,
+                    Some(10),
+                    false,
+                ),
+                (
+                    "{18446744073709551616,36893488147419103231}",
+                    7,
+                    Some(14),
+                    true,
+                ),
+                (
+                    "{18446744073709551616,36893488147419103232}?",
+                    7,
+                    Some(14),
+                    false,
+                ),
+            ] {
+                for start_anchor in [false, true] {
+                    for end_anchor in [false, true] {
+                        let source = format!(
+                            "{}({}){}{}",
+                            if start_anchor { "^" } else { "" },
+                            if empty_first { "|a" } else { "a|" },
+                            quantifier,
+                            if end_anchor { "$" } else { "" }
+                        );
+                        let p = plan(&source, false, false, false, false);
+                        assert!(p.minimum.is_none() && p.maximum.is_none());
+                        assert_eq!(p.greedy, !empty_first || greedy);
+                        for input in [
+                            "", "a", "b", "aa", "ab", "ba", "bb", "aaa", "aba", "baa", "aab",
+                            "bbb", "aaaa", "aaab", "baaa", "abab", "baba",
+                        ] {
+                            for start in 0..=input.len() + 1 {
+                                for sticky in [false, true] {
+                                    let expected = (start..=input.len()).find_map(|at| {
+                                        if (sticky && at != start) || (start_anchor && at != 0) {
+                                            return None;
+                                        }
+                                        repeat(
+                                            input.as_bytes(),
+                                            at,
+                                            minimum,
+                                            maximum.unwrap_or(input.len() + minimum),
+                                            greedy,
+                                            empty_first,
+                                            end_anchor,
+                                            None,
+                                        )
+                                        .map(|(end, capture)| (at..end, capture))
+                                    });
+                                    let actual = p
+                                        .find_with_captures_and_work(
+                                            &JsString::from(input),
+                                            start,
+                                            sticky,
+                                            |_| Ok::<(), ()>(()),
+                                        )
+                                        .unwrap();
+                                    let actual = actual.map(|m| (m.range, m.atom_capture));
+                                    assert_eq!(
+                                        actual, expected,
+                                        "{source:?} {input:?} {start} {sticky}"
+                                    );
+                                    audited += 1;
+                                    if start == 0 && !sticky && ["", "aaa", "baaa"].contains(&input)
+                                    {
+                                        writeln!(rows, "{source:?} {input:?} {actual:?}").unwrap();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        writeln!(rows, "{audited} independent RepeatMatcher comparisons").unwrap();
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_unrepresentable_finite_nullable_alternative_proof_stays_complete_and_narrow() {
+        for source in [
+            r"(a|b|)+",
+            r"(||a)+",
+            r"(|)+",
+            r"(a|(?:\b))+",
+            r"((a)|)+",
+            r"(a|){1}",
+            r"(a|){2,2}",
+            r"(a|){2,3}",
+            r"(a|){0,}",
+            r"(a|){999999999999999999999999,}",
+            r"(a|){999999999999999999999999,999999999999999999999999}",
+            r"(ab|)+",
+            r"(a+|)+",
+            r"((?:a|b)|)+",
+            r"(?:(?i:a)|)+",
+            r"(?:a|)+b",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_finite_nullable_alternatives_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for source in [
+            r"((?:\b(?:\ba))|){999999999999999999999999,1000000000000000000000000}",
+            r"((?:)|(?:\B^(?:.$)$)){000999999999999999999999999,1000000000000000000000000}?",
+            r"\B(((?:\p{Join_C})|)){18446744073709551616,18446744073709551617}\B$",
+            r"((?:[a\|])|(?:)){999999999999999999999999,1000000000000000000000002}?",
+            r"(|\$){18446744073709551616,00036893488147419103231}?",
+        ] {
+            let p = plan(source, true, true, true, true);
+            assert!(p.nullable.is_some());
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_positive_exact_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "represented exact proof {source}");
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_positive_open_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "open proof {source}");
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_one_minimum_open_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "open-count proof {source}");
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_zero_minimum_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "zero-lower-bound proof {source}");
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertion_words_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "old proof {source}");
+        }
+    }
+
+    #[test]
+    fn unicode_unrepresentable_finite_nullable_alternative_all_work_callbacks_can_abort() {
+        let source = JsString::from(
+            format!(
+                "\\B{}a|{}{{999999999999999999999999,1000000000000000000000000}}?\\B",
+                "(".repeat(24),
+                ")".repeat(24)
+            )
+            .as_str(),
+        );
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_finite_nullable_alternatives_with_work(
+            &source,
+            true,
+            false,
+            false,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert!(matches!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_finite_nullable_alternatives_with_work(
+                    &source,
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    },
+                ),
+                Err(())
+            ));
+        }
+        for source in [
+            r"\B(a|){999999999999999999999999,1000000000000000000000000}?\B",
+            r"\B(|a){18446744073709551616,18446744073709551618}\B",
+            r"\B(|a){999999999999999999999999,1000000000000000000000000}$",
+        ] {
+            let p = plan(source, true, false, false, false);
+            let input = JsString::from("baaa");
+            let mut calls = 0;
+            p.find_with_captures_and_work(&input, 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+            for fail in 0..calls {
+                let mut at = 0;
+                assert_eq!(
+                    p.find_with_captures_and_work(&input, 0, false, |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    }),
+                    Err(())
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn decimal_optional_budget_subtraction_preserves_borrow_and_overflow() {
+        for first in 0usize..128 {
+            for last in first..256 {
+                for zeros in [0, 4] {
+                    let a = JsString::from(format!("{}{first}", "0".repeat(zeros)).as_str());
+                    let b = JsString::from(format!("{last}").as_str());
+                    assert_eq!(
+                        decimal_difference(
+                            significant(a.code_units()),
+                            significant(b.code_units())
+                        ),
+                        Some(last - first)
+                    );
+                }
+            }
+        }
+        for (first, last, expected) in [
+            (
+                "999999999999999999999999",
+                "1000000000000000000000000",
+                Some(1),
+            ),
+            (
+                "999999999999999999999999",
+                "1000000000000000000000002",
+                Some(3),
+            ),
+            (
+                "18446744073709551616",
+                "36893488147419103231",
+                usize::try_from(u64::MAX).ok(),
+            ),
+            ("18446744073709551616", "36893488147419103232", None),
+            (
+                "999999999999999999999999",
+                "1999999999999999999999999",
+                None,
+            ),
+        ] {
+            assert_eq!(
+                decimal_difference(
+                    JsString::from(first).code_units(),
+                    JsString::from(last).code_units()
+                ),
+                expected
+            );
+        }
+        let lower = JsString::from(format!("{}999", "1".repeat(6000)).as_str());
+        let upper = JsString::from(format!("{}2000", "1".repeat(5999)).as_str());
+        assert_eq!(
+            decimal_difference(lower.code_units(), upper.code_units()),
+            Some(1)
+        );
     }
 }
