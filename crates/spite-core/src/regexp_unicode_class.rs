@@ -17,7 +17,8 @@ use std::{ops::Range, sync::Arc};
 /// entry points require no i; flag-aware entry points admit simple/common folding.
 /// Unions, ranges and inversion admit all Unicode code points, including lone
 /// surrogates. Fixed ASCII, Any, hex-digit, White_Space, Join_Control,
-/// noncharacter, Bidi_Control, Quotation_Mark and Pattern_White_Space
+/// noncharacter, Bidi_Control, Quotation_Mark, Pattern_White_Space and
+/// Logical_Order_Exception
 /// properties are admitted in flat unions
 /// and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
@@ -136,7 +137,7 @@ impl RegExpUnicodeClassMatcher {
     ///
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
     /// Join_Control/Join_C, Noncharacter_Code_Point/NChar, Bidi_Control/Bidi_C
-    /// Quotation_Mark/QMark and Pattern_White_Space/Pat_WS.
+    /// Quotation_Mark/QMark, Pattern_White_Space/Pat_WS and Logical_Order_Exception/LOE.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -202,6 +203,7 @@ impl RegExpUnicodeClassMatcher {
             14 => 5,
             16 => 14,
             18 => 6,
+            20 => 8,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -317,13 +319,14 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..20 {
+        for kind in 0..22 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
                 charge(ranges.len().saturating_add(match kind {
                     12..=13 | 16..=17 => 40,
                     8..=11 | 14..=15 | 18..=19 => 24,
+                    20..=21 => 32,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -679,6 +682,32 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x63,
             0x65,
         ] => 18,
+        [0x4c, 0x4f, 0x45]
+        | [
+            0x4c,
+            0x6f,
+            0x67,
+            0x69,
+            0x63,
+            0x61,
+            0x6c,
+            0x5f,
+            0x4f,
+            0x72,
+            0x64,
+            0x65,
+            0x72,
+            0x5f,
+            0x45,
+            0x78,
+            0x63,
+            0x65,
+            0x70,
+            0x74,
+            0x69,
+            0x6f,
+            0x6e,
+        ] => 20,
         _ => return None,
     })
 }
@@ -845,6 +874,26 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x86, 0x200d),
             (0x2010, 0x2027),
             (0x202a, 0x10ffff),
+        ],
+        // UCD 18 Logical_Order_Exception: nineteen members, invariant under C/S folding.
+        20 => &[
+            (0xe40, 0xe44),
+            (0xec0, 0xec4),
+            (0x19b5, 0x19b7),
+            (0x19ba, 0x19ba),
+            (0xaab5, 0xaab6),
+            (0xaab9, 0xaab9),
+            (0xaabb, 0xaabc),
+        ],
+        21 => &[
+            (0x0, 0xe3f),
+            (0xe45, 0xebf),
+            (0xec5, 0x19b4),
+            (0x19b8, 0x19b9),
+            (0x19bb, 0xaab4),
+            (0xaab7, 0xaab8),
+            (0xaaba, 0xaaba),
+            (0xaabd, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -3642,6 +3691,202 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Pat_WS}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_logical_order_exception_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Logical_Order_Exception}",
+                    r"\P{LOE}",
+                    r"[\p{LOE}]",
+                    r"[^\p{Logical_Order_Exception}]",
+                    r"[\P{LOE}K]",
+                    r"[\p{LOE}K]",
+                    r"[\p{LOE}\P{Logical_Order_Exception}]",
+                    r"[^\P{LOE}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let logical_order_exception = [
+                            0xe40, 0xe41, 0xe42, 0xe43, 0xe44, 0xec0, 0xec1, 0xec2, 0xec3, 0xec4,
+                            0x19b5, 0x19b6, 0x19b7, 0x19ba, 0xaab5, 0xaab6, 0xaab9, 0xaabb, 0xaabc,
+                        ]
+                        .contains(&point);
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Logical_Order_Exception}" | r"[\p{LOE}]" => {
+                                logical_order_exception
+                            }
+                            r"\P{LOE}" | r"[^\p{Logical_Order_Exception}]" => {
+                                !logical_order_exception
+                            }
+                            r"[\P{LOE}K]" => !logical_order_exception || k,
+                            r"[\p{LOE}K]" => logical_order_exception || k,
+                            r"[\p{LOE}\P{Logical_Order_Exception}]" => true,
+                            r"[^\P{LOE}K]" => logical_order_exception && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_logical_order_exception_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{LOE}",
+            r"\P{Logical_Order_Exception}",
+            r"^[\p{Logical_Order_Exception}]$",
+            r"[\P{LOE}K]",
+            r"[^\P{LOE}K]",
+            r"[\p{Logical_Order_Exception}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{e40}\u{e41}\u{e42}\u{e43}\u{e44}\u{ec0}\u{ec1}\u{ec2}\u{ec3}\u{ec4}\u{19b5}\u{19b6}\u{19b7}\u{19ba}\u{aab5}\u{aab6}\u{aab9}\u{aabb}\u{aabc}\u{e3f}\u{e45}\u{ebf}\u{ec5}\u{19b4}\u{19b8}\u{19b9}\u{19bb}\u{aab4}\u{aab7}\u{aab8}\u{aaba}\u{aabd}\u{feff}ſK\n",
+                            "X\r\n\u{e40}\u{2028}\u{ec0}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_logical_order_exception_property_work_deduplication_and_contracts() {
+        let source = JsString::from(
+            format!("[{}]", r"\p{LOE}\P{Logical_Order_Exception}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{LOE}$", r"^[\P{Logical_Order_Exception}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{e40}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{LOE}--A]",
+            r"[\p{LOE}&&A]",
+            r"[[\p{LOE}]]",
+            r"[A-\p{LOE}]",
+            r"[\p{LOE}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{LOE}]"),
                 true,
                 true,
                 false
