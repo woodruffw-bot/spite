@@ -492,6 +492,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve exterior word and line assertion sequences on noncapturing Unicode branches, including contradictions and zero repetitions.
 - [x] Compose whole-match word assertions with repeated Unicode branches that retain exterior assertion sequences and contradictions.
 - [x] Preserve assertion sequences interleaved with nested noncapturing Unicode character branches under repetition.
+- [x] Compose whole-match word assertions with repeated Unicode branches that retain interleaved noncapturing assertion scopes.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

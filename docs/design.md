@@ -3614,6 +3614,26 @@ uses the existing flat branch representation, guards and fallible work accountin
 without native recursion, count expansion or input-sized storage. No dependency,
 fixture or default quota changes are involved.
 
+
+Whole-match word assertions compose with complete nested noncapturing Unicode
+branch assertion proofs (22.2.2.4, 22.2.2.7). The outside scanner retains the
+whole-range predicates, then the entire retained body must prove its branch
+wrappers, predicates, character alternatives and repetition before those gates
+are attached. Assertions at nested branch boundaries remain predicates on each
+iteration; their scope is distinct from the outside whole-match word gates.
+
+Conflicting nested predicates preserve impossible branches. Zero iterations
+still evaluate outside word gates at the selected empty range. Complete whole
+captures retain empty or whole ranges, while iteration captures remain undefined
+or retain the last matched character. The existing result builder, name bindings
+and public source remain in use. Earlier entry points keep their narrower
+contracts, and unsupported continuations, captures within branches, modifiers and
+nested choices stay excluded from this proof.
+
+This composition adds no matching algorithm, native recursion, expanded counts
+or input-sized search storage. Source and search remain work-accounted and
+fallible. No dependency, fixture or default quota changes are involved.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
