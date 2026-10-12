@@ -72,6 +72,7 @@ enum EmptyBranchProof {
     Raw,
     Nested,
     Sequences,
+    QuantifiedSequences,
 }
 
 #[derive(Clone, Copy)]
@@ -1727,6 +1728,52 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         ignore_case: bool,
         multiline: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_nullable_empty_branches_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            EmptyBranchProof::Sequences,
+            charge,
+        )
+    }
+
+    /// Proves nullable alternatives with quantified noncapturing empty groups.
+    ///
+    /// Requires validated u/v syntax and normalized names. Each empty-branch
+    /// group contains only other effect-free empty groups. Its quantifier may
+    /// select any validated finite/open count, including unrepresentable bounds.
+    /// All paths succeed at the same boundary without captures or assertions
+    /// (22.2.2.3); established outer count and capture priority remain unchanged.
+    pub fn compile_quantified_empty_sequence_nullable_alternatives_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_nullable_empty_branches_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            EmptyBranchProof::QuantifiedSequences,
+            charge,
+        )
+    }
+
+    fn compile_nullable_empty_branches_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        empty: EmptyBranchProof,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         for bounds in [
@@ -1748,10 +1795,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 ignore_case,
                 multiline,
                 dot_all,
-                NullableOptions {
-                    bounds,
-                    empty: EmptyBranchProof::Sequences,
-                },
+                NullableOptions { bounds, empty },
                 &mut charge,
             )? {
                 return Ok(Some(plan));
@@ -1976,7 +2020,12 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             let first = &inner[..separator];
             let last = &inner[separator + 1..];
             if options.empty != EmptyBranchProof::Raw {
-                charge(inner.len().saturating_mul(2))?;
+                let weight = if options.empty == EmptyBranchProof::QuantifiedSequences {
+                    4
+                } else {
+                    2
+                };
+                charge(inner.len().saturating_mul(weight))?;
             }
             let empty_branch = |branch: &[u16]| {
                 if branch.is_empty() {
@@ -1985,7 +2034,10 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 if options.empty == EmptyBranchProof::Raw {
                     return false;
                 }
-                if options.empty == EmptyBranchProof::Sequences {
+                if matches!(
+                    options.empty,
+                    EmptyBranchProof::Sequences | EmptyBranchProof::QuantifiedSequences
+                ) {
                     let mut at = 0;
                     let mut depth = 0usize;
                     while at < branch.len() {
@@ -1998,6 +2050,33 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                             };
                             depth = previous;
                             at += 1;
+                            if options.empty == EmptyBranchProof::QuantifiedSequences {
+                                // Only a completed, effect-free empty group can
+                                // own a quantifier. No count is expanded.
+                                let end = match branch.get(at) {
+                                    Some(0x2a | 0x2b | 0x3f) => at + 1,
+                                    Some(0x7b) => {
+                                        let Some(close) =
+                                            branch[at + 1..].iter().position(|&c| c == 0x7d)
+                                        else {
+                                            return false;
+                                        };
+                                        at + 2 + close
+                                    }
+                                    _ => continue,
+                                };
+                                let Some((start, _, _)) = quantifier(&branch[at..end], end - at)
+                                else {
+                                    return false;
+                                };
+                                if start != 0 {
+                                    return false;
+                                }
+                                at = end;
+                                if branch.get(at) == Some(&0x3f) {
+                                    at += 1;
+                                }
+                            }
                         } else {
                             return false;
                         }
@@ -19240,6 +19319,307 @@ mod noncapturing_empty_sequence_nullable_alternative_tests {
             r"\B(a|(?:)(?:)){3,999999999999999999999999}?\B",
             r"\B((?:(?:)(?:))|a){3,18446744073709551616}\B",
             r"\B((?:(?:)(?:))|a){3,999999999999999999999999}$",
+        ] {
+            let p = plan(source, true, false, false, false);
+            let input = JsString::from("baaa");
+            let mut calls = 0;
+            p.find_with_captures_and_work(&input, 0, false, |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+            for fail in 0..calls {
+                let mut at = 0;
+                assert_eq!(
+                    p.find_with_captures_and_work(&input, 0, false, |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    }),
+                    Err(())
+                );
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod quantified_empty_sequence_nullable_alternative_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_quantified_empty_sequence_nullable_alternatives_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    // A small, independent RepeatMatcher interpreter. Its optional empty
+    // iterations are rejected before continuation; mandatory empties are kept.
+    #[allow(clippy::too_many_arguments)]
+    fn repeat(
+        input: &[u8],
+        at: usize,
+        minimum: usize,
+        maximum: usize,
+        greedy: bool,
+        empty_first: bool,
+        end: bool,
+        capture: Option<Range<usize>>,
+    ) -> Option<(usize, Option<Range<usize>>)> {
+        let continuation = || {
+            if minimum == 0 && (!end || at == input.len()) {
+                Some((at, capture.clone()))
+            } else {
+                None
+            }
+        };
+        if !greedy {
+            if let Some(found) = continuation() {
+                return Some(found);
+            }
+        }
+        if maximum != 0 {
+            for empty in [empty_first, !empty_first] {
+                let next = if empty {
+                    at
+                } else if input.get(at) == Some(&b'a') {
+                    at + 1
+                } else {
+                    continue;
+                };
+                if minimum == 0 && next == at {
+                    continue;
+                }
+                if let Some(found) = repeat(
+                    input,
+                    next,
+                    minimum.saturating_sub(1),
+                    maximum - 1,
+                    greedy,
+                    empty_first,
+                    end,
+                    Some(at..next),
+                ) {
+                    return Some(found);
+                }
+            }
+        }
+        if greedy { continuation() } else { None }
+    }
+
+    #[test]
+    fn unicode_quantified_empty_sequence_nullable_alternative_repeat_matcher_snapshot() {
+        let mut rows = String::new();
+        let mut audited = 0;
+        for empty_first in [false, true] {
+            for empty in [
+                "(?:)*(?:)+?",
+                "(?:(?:)?(?:){0,3}?){3}",
+                "(?:){999999999999999999999999}",
+                "(?:(?:){999999999999999999999999,1000000000000000000000002})+?",
+                "(?:){000,003}?(?:){999999999999999999999999,}",
+            ] {
+                for (quantifier, minimum, maximum, greedy) in [
+                    ("*", 0, None, true),
+                    ("*?", 0, None, false),
+                    ("+", 1, None, true),
+                    ("+?", 1, None, false),
+                    ("?", 0, Some(1), true),
+                    ("??", 0, Some(1), false),
+                    ("{0,3}", 0, Some(3), true),
+                    ("{0,3}?", 0, Some(3), false),
+                    ("{1,}", 1, None, true),
+                    ("{1,}?", 1, None, false),
+                    ("{1}", 1, Some(1), true),
+                    ("{1}?", 1, Some(1), false),
+                    ("{3,}", 3, None, true),
+                    ("{3,}?", 3, None, false),
+                    ("{3}", 3, Some(3), true),
+                    ("{3}?", 3, Some(3), false),
+                    ("{3,6}", 3, Some(6), true),
+                    ("{3,6}?", 3, Some(6), false),
+                    ("{999999999999999999999999}", 7, Some(7), true),
+                    ("{999999999999999999999999}?", 7, Some(7), false),
+                    (
+                        "{999999999999999999999999,1000000000000000000000002}",
+                        7,
+                        Some(10),
+                        true,
+                    ),
+                    (
+                        "{999999999999999999999999,1000000000000000000000002}?",
+                        7,
+                        Some(10),
+                        false,
+                    ),
+                    ("{3,999999999999999999999999}", 3, None, true),
+                    ("{3,999999999999999999999999}?", 3, None, false),
+                    ("{999999999999999999999999,}", 7, None, true),
+                    ("{999999999999999999999999,}?", 7, None, false),
+                ] {
+                    for start_anchor in [false, true] {
+                        for end_anchor in [false, true] {
+                            let source = format!(
+                                "{}({}){}{}",
+                                if start_anchor { "^" } else { "" },
+                                if empty_first {
+                                    format!("{empty}|a")
+                                } else {
+                                    format!("a|{empty}")
+                                },
+                                quantifier,
+                                if end_anchor { "$" } else { "" }
+                            );
+                            let p = plan(&source, false, false, false, false);
+                            for input in [
+                                "", "a", "b", "aa", "ab", "ba", "bb", "aaa", "aba", "baa", "aab",
+                                "bbb", "aaaa", "aaab", "baaa", "abab", "baba",
+                            ] {
+                                for start in 0..=input.len() + 1 {
+                                    for sticky in [false, true] {
+                                        let expected = (start..=input.len()).find_map(|at| {
+                                            if (sticky && at != start) || (start_anchor && at != 0)
+                                            {
+                                                return None;
+                                            }
+                                            repeat(
+                                                input.as_bytes(),
+                                                at,
+                                                minimum,
+                                                maximum.unwrap_or(input.len() + minimum),
+                                                greedy,
+                                                empty_first,
+                                                end_anchor,
+                                                None,
+                                            )
+                                            .map(|(end, capture)| (at..end, capture))
+                                        });
+                                        let actual = p
+                                            .find_with_captures_and_work(
+                                                &JsString::from(input),
+                                                start,
+                                                sticky,
+                                                |_| Ok::<(), ()>(()),
+                                            )
+                                            .unwrap();
+                                        let actual = actual.map(|m| (m.range, m.atom_capture));
+                                        assert_eq!(
+                                            actual, expected,
+                                            "{source:?} {input:?} {start} {sticky}"
+                                        );
+                                        audited += 1;
+                                        if start == 0
+                                            && !sticky
+                                            && ["", "aaa", "baaa"].contains(&input)
+                                        {
+                                            writeln!(rows, "{source:?} {input:?} {actual:?}")
+                                                .unwrap();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        writeln!(rows, "{audited} independent RepeatMatcher comparisons").unwrap();
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_quantified_empty_sequence_nullable_alternative_contracts_remain_complete() {
+        for source in [
+            r"(a|(?:)*(?:)+?)*",
+            r"((?:(?:){0,3}?){3}|a){1}",
+            r"\B((?:[a\|])|(?:){000,003}?(?:){999999999999999999999999,}){3,6}?\B",
+            r"((?:\b(?:\ba))|(?:){999999999999999999999999}){3,999999999999999999999999}",
+        ] {
+            let p = plan(source, true, true, true, true);
+            assert!(p.nullable.is_some());
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_empty_sequence_nullable_alternatives_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "prior unquantified proof {source}");
+        }
+        for source in [
+            r"(a|(?:)()*)+",
+            r"(a|(?:)(?:\b)*)+",
+            r"(a|(?:)(?:b){0})+",
+            r"(a|(?:)*|b)+",
+            r"(ab|(?:)*)+",
+            r"((a)|(?:)*)+",
+            r"(?:a|(?:)*)+b",
+            r"(?:(?i:a)|(?:)*)+",
+            r"(a|(?=)*)+",
+            r"(a|(?:){2,1})+",
+            r"(a|(?:){999999999999999999999999,3})+",
+            r"(a|(?:)*{3})+",
+            r"(a|(?:)*??)+",
+            r"(a|(?:){})+",
+            r"(a|(?:){,3})+",
+            r"(a|(?:){3,,4})+",
+            r"(a|(?:)*\b)+",
+        ] {
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_quantified_empty_sequence_nullable_alternatives_with_work(
+                &JsString::from(source), true, false, false, false, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn unicode_quantified_empty_sequence_nullable_alternative_all_work_callbacks_can_abort() {
+        let source = JsString::from(
+            format!(
+                "\\B{}a|(?:)*(?:(?:)*(?:)+?){}{{3,999999999999999999999999}}?\\B",
+                "(".repeat(24),
+                ")".repeat(24)
+            )
+            .as_str(),
+        );
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_quantified_empty_sequence_nullable_alternatives_with_work(
+            &source,
+            true,
+            false,
+            false,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert!(matches!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_quantified_empty_sequence_nullable_alternatives_with_work(
+                    &source,
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    },
+                ),
+                Err(())
+            ));
+        }
+        for source in [
+            r"\B(a|(?:)*(?:)+?){3,999999999999999999999999}?\B",
+            r"\B((?:(?:)*(?:)+?)|a){3,18446744073709551616}\B",
+            r"\B((?:(?:)*(?:)+?)|a){3,999999999999999999999999}$",
         ] {
             let p = plan(source, true, false, false, false);
             let input = JsString::from("baaa");

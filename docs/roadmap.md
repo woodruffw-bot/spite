@@ -506,6 +506,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve exact optional budgets and mandatory branch priority for unequal finite nullable Unicode bounds larger than native integers.
 - [x] Preserve nullable Unicode repetition with a represented positive minimum and an overflowing finite maximum, including the exact optional budget.
 - [x] Preserve nullable Unicode repetition with complete noncapturing empty group sequences, reusing all existing count and capture rules.
+- [x] Preserve nullable Unicode repetition with quantified effect-free noncapturing empty group sequences.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

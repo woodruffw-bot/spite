@@ -7661,6 +7661,34 @@ Stable and MSRV pass all 14,586 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Quantified noncapturing empty sequences have three new core and six runtime
+tests. All 164320 comparisons agree with an independent finite RepeatMatcher
+across thirteen outer count families, greedy/lazy matching, both branch orders,
+five inner quantified-group structures, anchors and sticky starts. Controls
+preserve earlier APIs and reject effects, captures, characters, malformed or
+reversed bounds, branch choices and unproved continuations. All fallible compile
+and search callbacks can abort.
+
+All 2400 snapshot rows and 29 complete Boolean programs agree with
+finite-equivalent Node references, retaining original huge source metadata.
+Regressions cover case folding, names and indices, supplementary/lone-surrogate
+boundaries, consumers, coercion order, strict writes and native-width optional
+counts. Unlimited defaults handle 6000 captures and 6000 quantified empty
+wrappers over 200001 input units, clones and collection. A separate 6000-digit
+inner mandatory count checks compact execution and original source. The explicit
+30000-unit search quota aborts before lastIndex writes or catch/finally handlers.
+
+All 691 core tests and 245 related runtime targets pass. All 549 previous golds
+are byte-identical, with two new reviewed snapshots. The current-build
+1177-program gap audit has zero admissions; ordered/direct eval probes and whole
+fixture reviews retain their outcomes without failures or limits. Corpus pin,
+inventories, dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,586 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

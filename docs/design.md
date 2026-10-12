@@ -3899,6 +3899,25 @@ points. Original source, names, flags, branch priority, capture ordinals and
 lastIndex behavior remain intact. Empty-branch source work is charged before
 the flat scan; all fallible callbacks can abort.
 
+
+Nullable Unicode alternatives also prove quantified sequences of effect-free
+noncapturing empty groups (22.2.2.3). A flat balanced scan permits a validated
+quantifier only after a complete empty group. It excludes captures, assertions,
+characters, branch choices and scoped modifiers. Every accepted path succeeds
+at the same input boundary and produces no observable matching effects, whether
+the inner count is zero, required, optional, greedy, lazy, open or finite.
+
+The shared quantifier parser validates decimal syntax and bound ordering without
+expanding counts, including unrepresentable finite bounds. The existing outer
+count and branch-priority proofs share one dispatcher. Earlier empty-branch APIs
+retain their contracts and charges; the new scan is charged before execution.
+No matching/capture kernel, matcher field, input-sized search storage, recursion,
+dependency or default quota is added.
+
+The constructor tries this proof before the existing legacy BMP ignore-case
+guard. Original source, flags, names, wrapper captures, Unicode boundaries and
+lastIndex behavior are preserved through the established runtime paths.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
