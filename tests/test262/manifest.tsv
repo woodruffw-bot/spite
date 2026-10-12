@@ -7574,3 +7574,13 @@ script-pass	b5acac4c859f405f6e8ccc6c95b5f670f7f07ef4d2f8caab565693d1c1b1d695	tes
 script-pass	b280536f2750b07a8aa4bc99bf2f15839a6672cc44f7fc3487cf2451379f75bf	test/built-ins/RegExp/prototype/test/S15.10.6.3_A1_T7.js
 script-pass	80a8efb15dd5f857fc4c1921d183a1f0daf352a645a09ec4e5dee55ed43301f4	test/built-ins/RegExp/prototype/test/S15.10.6.3_A1_T8.js
 script-pass	a2e366dc7cd06970bd182e575f0148b932e67ff21ed8122825a4e61ad766fd27	test/built-ins/RegExp/prototype/test/S15.10.6.3_A1_T9.js
+script-pass	6cb16e772cd953f505c7ab260916c5445d2e40edb052d215d543b898a89bf29a	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T1.js
+script-pass	6ccca3aa3342e3a91e8caff853e2a7205e9b32fbbc0d787b4b1a2693da2b8fb7	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T10.js
+script-pass	f66a0af84ffb9f401405561b3418640cf6b57d20bd228298abfc063210fd545b	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T2.js
+script-pass	efa91389a4d808fd61ac24b27a9c66d876cf2b8134465015f4c1eee58527ce44	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T3.js
+script-pass	922b3b6b02e97141366406597313d048efc324442ba86da44210efc2925ce574	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T4.js
+script-pass	1e902eeb5657ddbaa86dca7ea6c3eab71de167ae87dd12bf7bb2bd285e0d1cc2	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T5.js
+script-pass	c404e4bbe6f5bff0c26d460f35c6a97e011a4ccc86c40f2d01a459ae5299f656	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T6.js
+script-pass	bc61b6b1ebe0571a0c5ede99431685bec6ce9bea21e5e51face60a946dd66cae	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T7.js
+script-pass	2070dc2f64798a4e66a66f357ad16ce3a409fea3c1931443067d6e721fc8e16c	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T8.js
+script-pass	92fc048df7178a2235fd1a61f5ce520e127fc74ca09d1c0f149a20895a219ce0	test/built-ins/RegExp/prototype/test/S15.10.6.3_A2_T9.js

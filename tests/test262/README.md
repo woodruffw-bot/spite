@@ -1,11 +1,43 @@
 # Test262 regression fixtures
 
-These 7563 unmodified test fixtures and twelve harness files come from
+These 7573 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## RegExp test incompatible receiver fixtures
+
+Ten unchanged whole Test262 fixtures exercise RegExp.prototype.test on ordinary
+objects, Math, function objects, String/Boolean/Number wrappers, primitive values
+and an unbound call. These receivers have no callable exec override, so native
+fallback brand checks or the initial receiver requirement throw TypeError.
+The original programs and their instanceof assertions remain unchanged.
+
+Their historical metadata describes an ES5 internal-Class rule. The current
+implementation also permits custom exec on objects, as required by 22.2.6.17
+and RegExpExec; these fixtures exercise only receivers without that override.
+They require no change to implemented behavior.
+
+The corpus now represents all forty-five whole files in the upstream
+RegExp.prototype.test directory at the existing pin, retaining all ninety
+original normal/strict variants.
+
+All twenty complete normal/strict variants pass native stable, MSRV and Node
+with unlimited defaults and no failures or host limits. Git blob identity and
+manifest SHA-256 verify original bytes, metadata, specification excerpts and BSD
+notices. The twelve existing helpers and Test262 revision are unchanged.
+
+The corpus contains 7573 fixtures, twelve helpers, 7554 reviewed Script sources
+and 14586 variants: 13053 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 687 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives.
+
+Stable and MSRV pass the complete 14586-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## RegExp test and exec equivalence fixtures
 
