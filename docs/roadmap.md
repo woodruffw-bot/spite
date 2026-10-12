@@ -515,6 +515,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match complete capture-free pure-empty Unicode disjunctions with noncapturing choices and quantifiers.
 - [x] Match Bidi_Control and its Bidi_C alias as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [x] Match Quotation_Mark and its QMark alias as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
+- [x] Match Pattern_White_Space and its Pat_WS alias as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
