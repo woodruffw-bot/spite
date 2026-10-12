@@ -1,11 +1,34 @@
 # Test262 regression fixtures
 
-These 7533 unmodified test fixtures and twelve harness files come from
+These 7536 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## RegExp test function metadata fixtures
+
+Three unchanged whole Test262 fixtures cover RegExp.prototype.test's name
+descriptor, absent prototype property and rejection as a constructor. Every
+original program, assertion, feature annotation and include is preserved.
+These fixtures cover behavior already implemented.
+
+All six complete normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. Git blob identity and manifest
+SHA-256 verify original bytes, metadata, specification excerpts and BSD notices.
+The existing propertyHelper.js and isConstructor.js support the original
+programs; all twelve helpers and the Test262 revision are unchanged.
+
+The corpus contains 7536 fixtures, twelve helpers, 7517 reviewed Script sources
+and 14512 variants: 12979 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 650 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives.
+
+Stable and MSRV pass the complete 14512-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Sticky RegExp test fixtures
 
