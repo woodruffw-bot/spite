@@ -3918,6 +3918,22 @@ The constructor tries this proof before the existing legacy BMP ignore-case
 guard. Original source, flags, names, wrapper captures, Unicode boundaries and
 lastIndex behavior are preserved through the established runtime paths.
 
+
+Nullable Unicode alternatives also admit complete noncapturing choices whose
+branches contain only effect-free empty groups and validated quantifiers
+(22.2.2.3). The flat scan accepts a choice separator only within a balanced
+noncapturing group. Every branch succeeds at the same boundary and produces
+no captures, assertions or consuming effects, so redundant paths preserve the
+established outer repetition and capture priority.
+
+Earlier raw, nested, sequential and quantified empty-branch entry points keep
+their complete contracts and work charges. The shared count dispatcher and
+validated decimal parser are reused. The constructor tries the complete proof
+before the existing legacy BMP ignore-case guard. Original source, flags,
+names, Unicode boundaries, captures and lastIndex behavior remain intact.
+No path/count expansion, matching/capture kernel, matcher field, recursion,
+input-sized search storage, dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
