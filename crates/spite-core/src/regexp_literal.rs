@@ -139,6 +139,25 @@ impl RegExpLiteralMatcher {
         matcher.0.units.is_empty().then_some(matcher)
     }
 
+    /// Compiles a validated Unicode Pattern of effect-free noncapturing groups.
+    ///
+    /// Balanced groups may contain empty choices and validated quantifiers
+    /// (22.2.2.3, 22.2.2.5). Every path succeeds at the same boundary, without
+    /// captures, assertions or consuming effects. The scan is iterative and
+    /// charges before proving the source; numeric counts are never expanded.
+    /// Ordinary Unicode grammar validation remains the caller's responsibility.
+    pub fn compile_unicode_pure_empty_with_work<E>(
+        source: &JsString,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(4))?;
+        if !crate::regexp_unicode_repeated_atom::pure_empty_groups(source.code_units(), true, true)
+        {
+            return Ok(None);
+        }
+        Ok(Self::compile(&JsString::from(""), false))
+    }
+
     /// Matches an empty Unicode body at the initial code-point boundary.
     ///
     /// An initial UTF-16 offset inside a surrogate pair identifies its complete
@@ -1490,5 +1509,139 @@ mod tests {
         drop(matcher);
         assert_eq!(clone.find(&JsString::from("ba"), 0, false), Some(1..2));
         drop(clone);
+    }
+}
+
+#[cfg(test)]
+mod unicode_pure_empty_tests {
+    use super::*;
+
+    fn compile(source: &str) -> RegExpLiteralMatcher {
+        RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(&JsString::from(source), |_| {
+            Ok::<(), ()>(())
+        })
+        .unwrap()
+        .unwrap_or_else(|| panic!("{source}"))
+    }
+
+    #[test]
+    fn unicode_pure_empty_boundaries_and_nested_choices() {
+        for source in [
+            "(?:|)",
+            "(?:||(?:))*",
+            "(?:(?:)*|(?:)+?)",
+            "(?:|){0,3}?",
+            "(?:)*(?:(?:|)|(?:){3,9})+",
+            "(?:(?:|){3}|(?:){0}){3,}",
+            "(?:|){999999999999999999999999}",
+            "(?:|){999999999999999999999999,9999999999999999999999999}?",
+        ] {
+            let matcher = compile(source);
+            assert!(matcher.capture_ranges().is_empty());
+            assert_eq!(matcher.matched_len(), 0);
+            for input in [
+                JsString::from(""),
+                JsString::from("a😀b"),
+                JsString::from_code_units(vec![0xd800, 0x61, 0xdc00, 0xd800, 0xdc00]),
+            ] {
+                for start in 0..=input.len() + 1 {
+                    // Decode whole input characters independently of the matcher's
+                    // boundary helper; each empty plan must use the same boundary.
+                    let mut boundary = 0;
+                    let expected = if start > input.len() {
+                        None
+                    } else {
+                        for ch in char::decode_utf16(input.code_units().iter().copied()) {
+                            let width = ch.map_or(1, char::len_utf16);
+                            if boundary + width > start {
+                                break;
+                            }
+                            boundary += width;
+                        }
+                        Some(boundary..boundary)
+                    };
+                    assert_eq!(
+                        matcher.find_unicode_empty(&input, start),
+                        expected,
+                        "{source} {input:?} {start}"
+                    );
+                }
+            }
+        }
+        let deep = format!("{}|{}", "(?:".repeat(100000), ")*".repeat(100000));
+        assert_eq!(
+            compile(&deep).find_unicode_empty(&JsString::from("😀"), 1),
+            Some(0..0)
+        );
+        let digits = "9".repeat(10000);
+        assert!(
+            compile(&format!("(?:|){{{digits},{digits}}}?"))
+                .capture_ranges()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn unicode_pure_empty_keeps_existing_capture_and_effect_contracts() {
+        for source in [
+            "()",
+            "(?<x>)",
+            "(?:|())",
+            "(?:|\\b)",
+            "(?:a){0}",
+            "(?i:)",
+            "(?:|)(a)",
+            "(?:|)*a",
+            "|",
+            "(?:|)|",
+            "(?:",
+            ")",
+            "(?:|){2,1}",
+            "(?:|){999999999999999999999999,3}",
+            "(?:|){3,,4}",
+            "(?:|){,3}",
+            "(?:|){x}",
+            "(?:|)*??",
+            "(?:|)*{3}",
+            "(?:|)\\b",
+            "^(?:|)",
+            "(?:|)$",
+            "(?:|a){0}",
+        ] {
+            assert!(
+                RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(
+                    &JsString::from(source),
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(RegExpLiteralMatcher::compile_unicode_empty(&JsString::from("(?:|)*")).is_none());
+        let old = RegExpLiteralMatcher::compile_unicode_empty(&JsString::from("(())()")).unwrap();
+        assert_eq!(old.capture_ranges(), &[0..0, 0..0, 0..0]);
+    }
+
+    #[test]
+    fn unicode_pure_empty_work_is_charged_before_the_source_scan() {
+        for source in [
+            "(?:|)*",
+            "(?:(?:)*|(?:)+?){999999999999999999999999}",
+            "(?:|a){0}",
+        ] {
+            let source = JsString::from(source);
+            let mut charges = Vec::new();
+            RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(&source, |work| {
+                charges.push(work);
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+            assert_eq!(charges, vec![source.len() * 4]);
+            assert!(matches!(
+                RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(&source, |_| Err(())),
+                Err(())
+            ));
+        }
     }
 }

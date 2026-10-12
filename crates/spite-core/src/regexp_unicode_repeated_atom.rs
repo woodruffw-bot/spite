@@ -2070,60 +2070,14 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                         | EmptyBranchProof::QuantifiedSequences
                         | EmptyBranchProof::Choices
                 ) {
-                    let mut at = 0;
-                    let mut depth = 0usize;
-                    while at < branch.len() {
-                        if branch.get(at..at + 3) == Some(&[0x28, 0x3f, 0x3a]) {
-                            depth += 1;
-                            at += 3;
-                        } else if branch[at] == 0x29 {
-                            let Some(previous) = depth.checked_sub(1) else {
-                                return false;
-                            };
-                            depth = previous;
-                            at += 1;
-                            if matches!(
-                                options.empty,
-                                EmptyBranchProof::QuantifiedSequences | EmptyBranchProof::Choices
-                            ) {
-                                // Only a completed, effect-free empty group can
-                                // own a quantifier. No count is expanded.
-                                let end = match branch.get(at) {
-                                    Some(0x2a | 0x2b | 0x3f) => at + 1,
-                                    Some(0x7b) => {
-                                        let Some(close) =
-                                            branch[at + 1..].iter().position(|&c| c == 0x7d)
-                                        else {
-                                            return false;
-                                        };
-                                        at + 2 + close
-                                    }
-                                    _ => continue,
-                                };
-                                let Some((start, _, _)) = quantifier(&branch[at..end], end - at)
-                                else {
-                                    return false;
-                                };
-                                if start != 0 {
-                                    return false;
-                                }
-                                at = end;
-                                if branch.get(at) == Some(&0x3f) {
-                                    at += 1;
-                                }
-                            }
-                        } else if options.empty == EmptyBranchProof::Choices
-                            && branch[at] == 0x7c
-                            && depth != 0
-                        {
-                            // Every complete alternative has the same empty,
-                            // effect-free result; no path is expanded.
-                            at += 1;
-                        } else {
-                            return false;
-                        }
-                    }
-                    return depth == 0;
+                    return pure_empty_groups(
+                        branch,
+                        matches!(
+                            options.empty,
+                            EmptyBranchProof::QuantifiedSequences | EmptyBranchProof::Choices
+                        ),
+                        options.empty == EmptyBranchProof::Choices,
+                    );
                 }
                 let mut at = 0;
                 let mut wrappers = 0;
@@ -4052,6 +4006,56 @@ fn quantifier(units: &[u16], end: usize) -> Option<(usize, Option<usize>, Option
         }
         _ => None,
     }
+}
+
+// A complete effect-free noncapturing group proof. The caller charges the
+// source scan before entering; validated decimal counts are never expanded.
+pub(crate) fn pure_empty_groups(branch: &[u16], quantified: bool, choices: bool) -> bool {
+    let mut at = 0;
+    let mut depth = 0usize;
+    while at < branch.len() {
+        if branch.get(at..at + 3) == Some(&[0x28, 0x3f, 0x3a]) {
+            depth += 1;
+            at += 3;
+        } else if branch[at] == 0x29 {
+            let Some(previous) = depth.checked_sub(1) else {
+                return false;
+            };
+            depth = previous;
+            at += 1;
+            if quantified {
+                // Only a completed, effect-free empty group can
+                // own a quantifier. No count is expanded.
+                let end = match branch.get(at) {
+                    Some(0x2a | 0x2b | 0x3f) => at + 1,
+                    Some(0x7b) => {
+                        let Some(close) = branch[at + 1..].iter().position(|&c| c == 0x7d) else {
+                            return false;
+                        };
+                        at + 2 + close
+                    }
+                    _ => continue,
+                };
+                let Some((start, _, _)) = quantifier(&branch[at..end], end - at) else {
+                    return false;
+                };
+                if start != 0 {
+                    return false;
+                }
+                at = end;
+                if branch.get(at) == Some(&0x3f) {
+                    at += 1;
+                }
+            }
+        } else if choices && branch[at] == 0x7c && depth != 0 {
+            // Every complete alternative has the same empty,
+            // effect-free result; no path is expanded.
+            at += 1;
+        } else {
+            return false;
+        }
+    }
+    depth == 0
 }
 
 #[cfg(test)]

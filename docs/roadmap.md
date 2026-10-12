@@ -508,6 +508,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve nullable Unicode repetition with complete noncapturing empty group sequences, reusing all existing count and capture rules.
 - [x] Preserve nullable Unicode repetition with quantified effect-free noncapturing empty group sequences.
 - [x] Preserve nullable Unicode repetition with nested effect-free noncapturing empty choices.
+- [x] Match standalone Unicode patterns of quantified effect-free noncapturing empty groups and choices.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

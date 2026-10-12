@@ -7717,6 +7717,33 @@ Stable and MSRV pass all 14,586 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Standalone Unicode effect-free empty groups and choices have three core tests
+and six runtime tests. All 1140 original result snapshot rows and twelve whole
+Boolean programs agree with Node, including u/v modes, case folding, global
+and sticky state, supplementary characters and lone surrogates. The boundary
+reference uses independent standard-library UTF-16 decoding. Controls retain
+earlier empty-capture behavior and reject effectful groups, assertions,
+characters, scoped modifiers, top-level choices and malformed counted bounds.
+Every compilation charge can abort before the proof scan.
+
+Unlimited defaults handle 100000 nested quantified noncapturing groups,
+10000-digit counts and 200001 input units, with cloning and collection. These
+deep and enormous-count tests prove the runtime's compact plan; they do not
+claim to execute those sources in Node. The original 30000-unit opt-in search
+quota still aborts before lastIndex writes or JavaScript catch/finally handlers.
+
+All 697 core tests and 247 related runtime targets pass. All 553 previous
+snapshots remain byte-identical, with one reviewed result snapshot added.
+The current-build 1179-program gap audit has zero admissions. Existing ordered
+and direct-eval gap probes and whole fixture reviews retain their outcomes
+without failures or limits. Corpus pin, inventories, dependencies and default
+quota settings are unchanged.
+
+Stable and MSRV pass all 14,586 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

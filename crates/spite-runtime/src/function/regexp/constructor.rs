@@ -272,8 +272,15 @@ impl Realm {
                     budget.charge(capture_source.len())?;
                     budget.charge(capture_source.len())?;
                     budget.charge(capture_source.len())?;
-                    Ok(RegExpLiteralMatcher::compile_unicode_empty(&capture_source)
-                        .map(RegExpMatcherBody::UnicodeEmpty))
+                    if let Some(body) = RegExpLiteralMatcher::compile_unicode_empty(&capture_source)
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeEmpty(body)));
+                    }
+                    Ok(RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(
+                        &capture_source,
+                        |work| budget.charge(work),
+                    )?
+                    .map(RegExpMatcherBody::UnicodeEmpty))
                 }
             })?
         } else {

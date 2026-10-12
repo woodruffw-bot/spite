@@ -3934,6 +3934,22 @@ names, Unicode boundaries, captures and lastIndex behavior remain intact.
 No path/count expansion, matching/capture kernel, matcher field, recursion,
 input-sized search storage, dependency or default quota is added.
 
+
+Standalone Unicode Patterns made only of balanced effect-free noncapturing
+groups, nested empty choices and validated quantifiers use the existing empty
+literal matching plan (22.2.2.3, 22.2.2.5). Every path succeeds at the same
+boundary with no capture, assertion or consuming effects. The shared flat group
+proof retains the nullable compiler's earlier contracts and work charges; the
+standalone entry point charges its scan before proving the source. Numeric
+counts are validated without expansion, including unrepresentable bounds.
+
+The constructor retains the earlier empty-capture path before trying the new
+proof. Original source/flags and zero capture counts are preserved. Unicode
+offsets inside a surrogate pair retain the documented leading-boundary rule.
+Existing result construction, strict lastIndex writes, consumers, cloning and
+tracing are reused. No recursion, matcher field, search kernel, input-sized
+search storage, dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
