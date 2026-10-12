@@ -3717,6 +3717,22 @@ zero-lower-bound and simple-quantifier entry points keep their narrower contract
 and work charges. This adds no matching/capture kernel, expanded counts,
 recursion, input-sized storage, dependency or default quota.
 
+
+Unicode nullable repetition admits exactly one mandatory iteration, spelled
+`{1}` or `{1,1}`, including padded decimal bounds and lazy forms (22.2.2.3).
+There is no optional repetition to reorder. At the earliest matching position,
+the original alternative order decides whether the empty or consuming branch
+wins. An empty mandatory iteration has defined empty unit captures; a consuming
+iteration retains its character and original capture boundaries.
+
+The complete proof requires exactly two branches: a raw or balanced
+noncapturing empty branch and a pure, unquantified character branch. A dedicated
+mode requires both quantifier bounds to equal one. Two existing monotone searches
+find the earliest consuming and empty candidates, with source order breaking a
+tie. Complete whole-match and character assertions remain at their original
+boundaries. Earlier proof contracts and work charges are preserved. This adds
+no expanded counts, recursion, input-sized storage, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
