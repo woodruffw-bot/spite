@@ -3823,6 +3823,23 @@ scopes are preserved. Canonical decimal comparisons charge bounded source work;
 matching adds no expanded count, recursion, input-sized storage, dependency or
 default quota.
 
+
+RegExp.prototype.test (22.2.6.16) shares RegExpExec's live exec lookup and
+Object/null result validation (22.2.7.1). After input string conversion, the
+Boolean consumer recognizes only the internal builtin RegExp exec callable or
+the noncallable exec fallback. Those paths use the existing RegExpBuiltinExec
+matcher, lastIndex conversion and strict writes, returning a Boolean after the
+same match/no-match decision instead of materializing discarded result arrays,
+capture strings, named groups or d-flag index pairs (22.2.7.2).
+
+Exact builtin dispatch retains the internal call nesting and argument guards.
+Custom functions, bound native functions, borrowed receivers and functions merely
+named exec retain ordinary call behavior and result validation. Getters and
+coercions still run in specification order; no second exec lookup occurs.
+Unsupported matching and explicit search-quota failures retain their boundaries.
+Ordinary exec and other result-consuming operations keep result materialization.
+This adds no dependency, matcher kernel, unsafe code or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

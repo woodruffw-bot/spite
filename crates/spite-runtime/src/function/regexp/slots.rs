@@ -100,6 +100,17 @@ impl Realm {
         string: &JsString,
         span: Span,
     ) -> Result<Value, Error> {
+        self.regexp_builtin_exec_impl(receiver, string, false, span)
+    }
+
+    #[inline(never)]
+    pub(super) fn regexp_builtin_exec_impl(
+        &mut self,
+        receiver: Value,
+        string: &JsString,
+        boolean_result: bool,
+        span: Span,
+    ) -> Result<Value, Error> {
         let data = self.regexp_require_data(receiver.clone(), span)?;
         let Value::Object(object) = receiver else {
             unreachable!("RegExp brand requires an Object");
@@ -144,7 +155,11 @@ impl Realm {
             if update_index {
                 self.set_property_or_throw(&object, last_index, Value::Number(0.0), span)?;
             }
-            return Ok(Value::Null);
+            return Ok(if boolean_result {
+                Value::Boolean(false)
+            } else {
+                Value::Null
+            });
         };
         if update_index {
             self.set_property_or_throw(
@@ -153,6 +168,9 @@ impl Realm {
                 Value::Number(found.range.end as f64),
                 span,
             )?;
+        }
+        if boolean_result {
+            return Ok(Value::Boolean(true));
         }
         self.object_work(span, |_, budget| budget.charge(found.capture_count))?;
         let count = found

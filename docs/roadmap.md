@@ -293,6 +293,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add RegExp constructor/prototype property metadata and the generic Symbol.species getter.
 - [x] Implement generic RegExp flags/toString operations and prototype exceptions for flag/source brand checks.
 - [x] Implement RegExp.test's ordered custom-exec delegation and Object/null result validation.
+- [x] Preserve native RegExp.test effects while avoiding discarded match and index arrays.
 - [x] Implement generic RegExp Symbol.match with live exec lookup, intrinsic result arrays and empty-match Unicode advancement.
 - [x] Implement generic RegExp Symbol.search with exact lastIndex restoration and uncoerced result indices.
 - [x] Implement generic RegExp Symbol.replace with collected exec results, ordered capture conversion, callbacks and captured/named substitution.

@@ -6,7 +6,7 @@ mod replace;
 mod slots;
 mod split;
 
-use super::Builtin;
+use super::{Builtin, Callable};
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     iterator_count::Counter,
@@ -353,10 +353,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let object = Self::regexp_object_receiver(receiver, span)?;
         let string = self.string(argument, span)?;
-        Ok(Value::Boolean(!matches!(
-            self.regexp_exec(&object, &string, span)?,
-            Value::Null
-        )))
+        self.regexp_exec_impl(&object, &string, true, span)
     }
 
     // RegExpExec, 22.2.7.1. All generic consumers share result validation and
@@ -367,9 +364,47 @@ impl Realm {
         string: &JsString,
         span: Span,
     ) -> Result<Value, Error> {
+        self.regexp_exec_impl(object, string, false, span)
+    }
+
+    fn regexp_exec_impl(
+        &mut self,
+        object: &ObjectHandle,
+        string: &JsString,
+        boolean_result: bool,
+        span: Span,
+    ) -> Result<Value, Error> {
         let exec = self.get_property(object, &JsString::from("exec"), span)?;
         if !self.is_callable(&exec, span)? {
-            return self.regexp_builtin_exec(Value::Object(object.clone()), string, span);
+            return self.regexp_builtin_exec_impl(
+                Value::Object(object.clone()),
+                string,
+                boolean_result,
+                span,
+            );
+        }
+        if boolean_result {
+            let Value::Object(function) = &exec else {
+                unreachable!("callable object");
+            };
+            let native_exec = self.object_work(span, |objects, _| {
+                Ok(matches!(
+                    objects.inspect(function)?.callable(),
+                    Some(Callable::Builtin(Builtin::RegExpMember(Member::Exec)))
+                ))
+            })?;
+            if native_exec {
+                // The intrinsic exec creates an unobservable result array.
+                // Preserve its call guards, brand check, matching and strict
+                // lastIndex writes; only result materialization is omitted.
+                self.enter_call(span)?;
+                let result = (|| {
+                    self.check_argument_count(1, span)?;
+                    self.regexp_builtin_exec_impl(Value::Object(object.clone()), string, true, span)
+                })();
+                self.call_depth -= 1;
+                return result;
+            }
         }
         let result = self.call(
             exec,
@@ -378,7 +413,13 @@ impl Realm {
             span,
         )?;
         match result {
-            Value::Null | Value::Object(_) => Ok(result),
+            Value::Null | Value::Object(_) => {
+                if boolean_result {
+                    Ok(Value::Boolean(!matches!(result, Value::Null)))
+                } else {
+                    Ok(result)
+                }
+            }
             _ => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
