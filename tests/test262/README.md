@@ -1,11 +1,40 @@
 # Test262 regression fixtures
 
-These 7577 unmodified test fixtures and twelve harness files come from
+These 7584 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Generated fixed-property fixtures
+
+Seven unchanged complete generated Test262 sources exercise ASCII, Any,
+ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space, Join_Control/Join_C and
+Noncharacter_Code_Point/NChar. Their original anchored positive-minimum property
+repetitions cover all positive members and complementary code points, including
+lone surrogates and supplementary characters with the original string ordering.
+All helper calls, fallback checks, metadata and BSD notices are preserved.
+
+These sources record Unicode 17.0.0. Their positive memberships are independently
+verified against the corresponding fixed ASCII/hexadecimal sets or the runtime's
+pinned Unicode 18 PropList; they are identical for these seven properties. No
+source, helper or data revision is changed.
+
+All fourteen complete normal/strict variants pass native stable, MSRV and Node
+with unlimited defaults and no failures or host limits. Git blob identity and
+manifest SHA-256 verify original bytes. The twelve existing helpers, including
+unchanged regExpUtils.js, and the Test262 revision remain unchanged.
+
+The corpus contains 7584 fixtures, twelve helpers, 7565 reviewed Script sources
+and 14608 variants: 13075 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 698 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The implementation roadmap remains focused on concrete spec work.
+
+Stable and MSRV pass the complete 14608-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Generated Logical_Order_Exception property fixture
 

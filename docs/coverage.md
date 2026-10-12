@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14594 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14608 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -8102,6 +8102,36 @@ positives. The implementation roadmap remains focused on concrete spec work.
 
 
 Stable and MSRV pass all 14,594 unchanged pinned-corpus variants and the
+complete workspace target and documentation checks. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks pass.
+
+## Generated fixed-property fixtures
+
+Seven unchanged complete generated Test262 sources exercise ASCII, Any,
+ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space, Join_Control/Join_C and
+Noncharacter_Code_Point/NChar. Their original anchored positive-minimum property
+repetitions cover all positive members and complementary code points, including
+lone surrogates and supplementary characters with the original string ordering.
+All helper calls, fallback checks, metadata and BSD notices are preserved.
+
+These sources record Unicode 17.0.0. Their positive memberships are independently
+verified against the corresponding fixed ASCII/hexadecimal sets or the runtime's
+pinned Unicode 18 PropList; they are identical for these seven properties. No
+source, helper or data revision is changed.
+
+All fourteen complete normal/strict variants pass native stable, MSRV and Node
+with unlimited defaults and no failures or host limits. Git blob identity and
+manifest SHA-256 verify original bytes. The twelve existing helpers, including
+unchanged regExpUtils.js, and the Test262 revision remain unchanged.
+
+The corpus contains 7584 fixtures, twelve helpers, 7565 reviewed Script sources
+and 14608 variants: 13075 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 698 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The implementation roadmap remains focused on concrete spec work.
+
+
+Stable and MSRV pass all 14,608 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
