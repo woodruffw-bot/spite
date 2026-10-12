@@ -3950,6 +3950,24 @@ Existing result construction, strict lastIndex writes, consumers, cloning and
 tracing are reused. No recursion, matcher field, search kernel, input-sized
 search storage, dependency or default quota is added.
 
+
+Mandatory complete ordinary capturing wrappers around pure-empty Unicode
+groups and choices preserve their original empty spans (22.2.2.3, 22.2.2.7).
+The existing outer-group scan removes only complete unquantified wrappers;
+the retained body must have no capture, assertion or consuming effects.
+An extra transparent noncapturing proof wrapper retains the scope of any
+empty alternatives exposed when enclosing noncapturing groups are removed.
+Every enclosing capture is therefore defined at the whole match's empty span.
+
+The entry point requires validated Unicode syntax and normalized named groups.
+Source work is charged before the wrapper scan, temporary proof copy and capture
+allocation. The existing empty literal plan stores zero-relative capture ranges;
+result construction retains original names and shared indices-group aliases.
+The earlier empty-capture and pure noncapturing paths are tried first and keep
+their contracts. Source, flags and the documented Unicode leading-boundary rule
+are unchanged. No count/path expansion, matcher field, matching kernel,
+recursion, input-sized search storage, dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

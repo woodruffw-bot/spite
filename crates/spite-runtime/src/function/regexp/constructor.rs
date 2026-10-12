@@ -276,11 +276,19 @@ impl Realm {
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeEmpty(body)));
                     }
-                    Ok(RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(
+                    if let Some(body) = RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(
                         &capture_source,
                         |work| budget.charge(work),
-                    )?
-                    .map(RegExpMatcherBody::UnicodeEmpty))
+                    )? {
+                        return Ok(Some(RegExpMatcherBody::UnicodeEmpty(body)));
+                    }
+                    Ok(
+                        RegExpLiteralMatcher::compile_unicode_enclosing_pure_empty_with_work(
+                            &capture_source,
+                            |work| budget.charge(work),
+                        )?
+                        .map(RegExpMatcherBody::UnicodeEmpty),
+                    )
                 }
             })?
         } else {
