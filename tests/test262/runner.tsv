@@ -7508,3 +7508,8 @@ test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class
 test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-negative-cases.js	-	-	-
 test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-positive-cases.js	-	-	-
 test/built-ins/RegExp/quantifier-integer-limit.js	-	-	-
+test/built-ins/RegExp/prototype/test/y-fail-lastindex-no-write.js	-	-	-
+test/built-ins/RegExp/prototype/test/y-fail-lastindex.js	-	-	-
+test/built-ins/RegExp/prototype/test/y-fail-return.js	-	-	-
+test/built-ins/RegExp/prototype/test/y-init-lastindex.js	-	-	-
+test/built-ins/RegExp/prototype/test/y-set-lastindex.js	-	-	-
