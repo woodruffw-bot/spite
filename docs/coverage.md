@@ -7869,6 +7869,38 @@ Stable and MSRV pass all 14,586 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Bidi_Control/Bidi_C execution has three core and eight runtime tests. All
+35,651,584 combinations of every Unicode code point, u/v, i and eight property
+forms agree with a separate twelve-member specification table. The pinned UCD
+18 PropList, exact PropertyAliases and complete CaseFolding input are verified;
+the four positive intervals contain exactly twelve members and folding preserves
+membership in both directions.
+
+All 1920 core snapshot rows and 560 native result rows agree with independent
+UTF-16 range evaluation and Node. Thirty complete Boolean programs also agree
+with Node, covering aliases, complementary unions, outer inversion, all four
+line terminators, word assertions around repetition, final-iteration captures,
+named/index groups, leading-surrogate boundaries, original-text consumers,
+coercion order and strict lastIndex writes.
+
+Unlimited defaults handle 10000 repeated property escapes, 3000 enclosing
+captures and 200002 input units, including cloning and collection. The unchanged
+30000-unit opt-in search quota aborts before lastIndex writes and JavaScript
+handlers. Every construction charge can abort; repeated property sets deduplicate
+to one normalized universal interval. Set operators, property ranges and other
+unproved consuming continuations remain excluded.
+
+All 712 core tests and 252 related runtime targets pass. All 559 earlier
+snapshots and earlier core test bodies remain unchanged; two reviewed snapshots
+are added. The current-build 1184-program gap audit has zero admissions, and
+ordered/direct eval and whole fixture reviews preserve prior outcomes. Corpus
+pin, inventories, dependencies and default quotas are unchanged.
+
+Stable and MSRV pass all 14,586 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

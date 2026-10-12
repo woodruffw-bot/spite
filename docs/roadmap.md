@@ -513,6 +513,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve mandatory captures throughout pure-empty Unicode concatenations, with noncapturing choices and quantifiers.
 - [x] Preserve captures in positive-minimum pure-empty Unicode repetitions, including nested mandatory captures, names and indices.
 - [x] Match complete capture-free pure-empty Unicode disjunctions with noncapturing choices and quantifiers.
+- [x] Match Bidi_Control and its Bidi_C alias as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

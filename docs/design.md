@@ -4032,6 +4032,23 @@ scope scan, wrapper allocation and shared syntax proof. No matcher field,
 search kernel, recursive representation, input-sized history, dependency or
 default quota is introduced.
 
+
+Unicode Bidi_Control and its exact Bidi_C alias reuse the fixed-property class
+matcher (22.2.2.9, 22.2.2.8). The pinned Unicode 18 PropList supplies twelve
+members in four intervals: 061C, 200E..200F, 202A..202E and 2066..2069. Their
+membership has no simple/common-fold preimages outside the set, verified against
+the complete pinned CaseFolding data, so u/v complement ordering agrees with i.
+Five complementary intervals include lone surrogates and all supplementary
+characters. Exact property aliases follow the edition-17 binary-property table.
+
+Standalone atoms, flat unions and inversion share existing normalization,
+source-sized interval storage, complete-character search and opt-in accounting.
+Each fixed property is appended once even if repeated in the source. Existing
+enclosing captures, word/line assertions, quantified atoms and lastIndex state
+use the same paths. The final two bits of the existing property mask represent
+the positive and complementary sets. Earlier property kinds retain their work
+charges. No dependency, matcher field, search kernel or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
