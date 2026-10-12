@@ -3968,6 +3968,28 @@ their contracts. Source, flags and the documented Unicode leading-boundary rule
 are unchanged. No count/path expansion, matcher field, matching kernel,
 recursion, input-sized search storage, dependency or default quota is added.
 
+
+Mandatory captures throughout pure-empty Unicode concatenations select the
+whole match's empty span (22.2.2.3, 22.2.2.5, 22.2.2.7). A source-sized iterative
+group scan excludes captures within a branch or quantified group. A group's
+own capture surrounds its alternatives, while captures nested in a branch
+would be conditional and remain excluded. Quantifying any group containing
+captures also remains outside this proof.
+
+Only after those effects are excluded are capturing openers projected to
+noncapturing openers. The unchanged pure-empty group proof validates the
+complete projected source, including exact quantifier placement, decimal
+ordering and lazy modifiers. The existing empty literal plan retains one
+zero-relative range per mandatory capture. Earlier entry points are tried
+first and preserve their contracts.
+
+Unicode syntax validation and named-group normalization remain prerequisites.
+Source work is charged before the metadata scan, projection and capture
+allocation. Assertions, characters, scoped modifiers, conditional captures
+and quantified captures remain outside this subset. No count/path expansion,
+matcher field, matching kernel, native recursion, input-sized search storage,
+dependency or default quota is introduced.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
