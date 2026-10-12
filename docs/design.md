@@ -3881,6 +3881,24 @@ No count expansion, matcher field, kernel, native recursion, input-sized search
 storage, dependency or default quota is added. Original constructor source and
 flags remain intact.
 
+
+Nullable Unicode alternatives admit complete sequences of unquantified empty
+noncapturing groups (22.2.2.3). A flat, balanced token proof accepts only (?: and
+closing parentheses, excluding captures, assertions, branches, characters and
+quantifiers. Empty groups have no observable matching effects.
+
+Private compile options separate the existing count proof from the empty-branch
+proof. Earlier entry points retain their raw or nested-only empty contracts and
+the same work charges. The new entry point reuses every existing count mode,
+including exact and finite overflowing bounds, and the complete pure-character
+branch proof. It adds no matcher field, matching/capture kernel, recursion,
+input-sized search storage, dependency or default quota.
+
+The constructor invokes this complete proof after the earlier count entry
+points. Original source, names, flags, branch priority, capture ordinals and
+lastIndex behavior remain intact. Empty-branch source work is charged before
+the flat scan; all fallible callbacks can abort.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
