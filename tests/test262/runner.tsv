@@ -7516,3 +7516,8 @@ test/built-ins/RegExp/prototype/test/y-set-lastindex.js	-	-	-
 test/built-ins/RegExp/prototype/test/S15.10.6.3_A6.js	-	-	-
 test/built-ins/RegExp/prototype/test/name.js	-	-	-
 test/built-ins/RegExp/prototype/test/not-a-constructor.js	-	-	-
+test/built-ins/RegExp/prototype/test/S15.10.6.3_A10.js	-	-	-
+test/built-ins/RegExp/prototype/test/S15.10.6.3_A11.js	-	-	-
+test/built-ins/RegExp/prototype/test/S15.10.6.3_A7.js	-	-	-
+test/built-ins/RegExp/prototype/test/S15.10.6.3_A8.js	-	-	-
+test/built-ins/RegExp/prototype/test/S15.10.6.3_A9.js	-	-	-
