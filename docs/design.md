@@ -4013,6 +4013,25 @@ group normalization remain prerequisites. No matcher field, search kernel,
 recursive representation, input-sized history, dependency or default quota
 is introduced.
 
+
+Complete capture-free pure-empty Unicode disjunctions match the same empty span
+on every path (22.2.2.3, 22.2.2.5). A flat scan checks original balanced group
+scopes and witnesses a top-level alternative before allocating one transparent
+noncapturing proof wrapper. The unchanged complete empty-group scanner then
+validates the entire projected source, including exact decimal ordering and
+lazy quantifiers. Counts and paths are never expanded.
+
+Only empty noncapturing groups, choices and quantifiers are admitted. Captures,
+assertions, characters, scoped modifiers and malformed bounds remain excluded.
+The existing zero-capture Unicode empty matcher retains decoded UTF-16 start
+boundaries and ordinary global/sticky state. Original source and flags remain
+separate from the proof projection. Earlier public proofs keep their contracts.
+
+Unicode validation remains a prerequisite. Source work is charged before the
+scope scan, wrapper allocation and shared syntax proof. No matcher field,
+search kernel, recursive representation, input-sized history, dependency or
+default quota is introduced.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

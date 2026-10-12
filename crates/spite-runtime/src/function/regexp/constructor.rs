@@ -298,8 +298,16 @@ impl Realm {
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeEmpty(body)));
                     }
-                    Ok(
+                    if let Some(body) =
                         RegExpLiteralMatcher::compile_unicode_positive_pure_empty_with_work(
+                            &capture_source,
+                            |work| budget.charge(work),
+                        )?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeEmpty(body)));
+                    }
+                    Ok(
+                        RegExpLiteralMatcher::compile_unicode_pure_empty_disjunction_with_work(
                             &capture_source,
                             |work| budget.charge(work),
                         )?

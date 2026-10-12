@@ -311,6 +311,46 @@ impl RegExpLiteralMatcher {
         })))
     }
 
+    /// Compiles complete capture-free pure-empty Unicode disjunctions.
+    ///
+    /// Requires validated u/v syntax (22.2.2.3, 22.2.2.5). Every alternative
+    /// contains only empty noncapturing groups, choices and quantifiers.
+    /// Original balanced group scopes are checked before one transparent
+    /// proof wrapper lets the shared empty-group scanner validate the complete
+    /// source. Every path has the same empty span and no capture effects.
+    pub fn compile_unicode_pure_empty_disjunction_with_work<E>(
+        source: &JsString,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(5).saturating_add(16))?;
+        let mut depth = 0usize;
+        let mut disjunction = false;
+        for &unit in source.code_units() {
+            match unit {
+                0x28 => depth += 1,
+                0x29 => {
+                    let Some(previous) = depth.checked_sub(1) else {
+                        return Ok(None);
+                    };
+                    depth = previous;
+                }
+                0x7c if depth == 0 => disjunction = true,
+                _ => {}
+            }
+        }
+        if depth != 0 || !disjunction {
+            return Ok(None);
+        }
+        let mut proof = Vec::with_capacity(source.len().saturating_add(4));
+        proof.extend_from_slice(&[0x28, 0x3f, 0x3a]);
+        proof.extend_from_slice(source.code_units());
+        proof.push(0x29);
+        if !crate::regexp_unicode_repeated_atom::pure_empty_groups(&proof, true, true) {
+            return Ok(None);
+        }
+        Ok(Self::compile(&JsString::from(""), false))
+    }
+
     /// Matches an empty Unicode body at the initial code-point boundary.
     ///
     /// An initial UTF-16 offset inside a surrogate pair identifies its complete
@@ -2271,6 +2311,160 @@ mod unicode_positive_pure_empty_tests {
             assert_eq!(charges, vec![source.len() * 16 + 32]);
             assert!(matches!(
                 RegExpLiteralMatcher::compile_unicode_positive_pure_empty_with_work(
+                    &source,
+                    |_| Err(())
+                ),
+                Err(())
+            ));
+        }
+    }
+}
+
+#[cfg(test)]
+mod unicode_pure_empty_disjunction_tests {
+    use super::*;
+    fn compile(source: &str) -> RegExpLiteralMatcher {
+        RegExpLiteralMatcher::compile_unicode_pure_empty_disjunction_with_work(
+            &JsString::from(source),
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap_or_else(|| panic!("{source}"))
+    }
+    #[test]
+    fn pure_empty_disjunctions_agree_with_independent_empty_paths_and_boundaries() {
+        let terms = ["", "(?:)", "(?:|)*", "(?:(?:||){2,4}|(?:)+?)"];
+        let third = [
+            "",
+            "(?:){0}",
+            "(?:|){7,9}",
+            "(?:||)+?",
+            "(?:(?:|)*?)",
+            "(?:){999999999999999999999999}",
+        ];
+        for left in terms {
+            for right in terms {
+                for end in third {
+                    let source = format!("{left}|{right}|{end}");
+                    let matcher = compile(&source);
+                    assert!(matcher.capture_ranges().is_empty());
+                    assert!(
+                        RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(
+                            &JsString::from(source.as_str()),
+                            |_| Ok::<(), ()>(()),
+                        )
+                        .unwrap()
+                        .is_none(),
+                        "earlier complete-group proof {source}"
+                    );
+                    for input in [
+                        JsString::from(""),
+                        JsString::from("a😀b"),
+                        JsString::from_code_units(vec![0xd800, 0x61, 0xdc00, 0xd800, 0xdc00]),
+                    ] {
+                        for start in 0..=input.len() + 1 {
+                            let mut boundary = 0;
+                            let expected = if start > input.len() {
+                                None
+                            } else {
+                                for ch in char::decode_utf16(input.code_units().iter().copied()) {
+                                    let width = ch.map_or(1, char::len_utf16);
+                                    if boundary + width > start {
+                                        break;
+                                    }
+                                    boundary += width;
+                                }
+                                Some(boundary..boundary)
+                            };
+                            assert_eq!(
+                                matcher.find_unicode_empty(&input, start),
+                                expected,
+                                "{source} {input:?} {start}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        let deep = "|".repeat(100000);
+        assert!(compile(&deep).capture_ranges().is_empty());
+        assert_eq!(
+            compile(&deep).find_unicode_empty(&JsString::from("😀"), 1),
+            Some(0..0)
+        );
+    }
+    #[test]
+    fn pure_empty_disjunctions_preserve_scopes_and_exclude_capture_or_character_effects() {
+        for source in [
+            "",
+            "(?:)",
+            "(?:|)*",
+            "()|",
+            "|()",
+            "(?:()|)|",
+            "(?<x>)|",
+            "a|",
+            "|a",
+            "^|",
+            "\\b|",
+            "(?i:)|",
+            "(?:|a){0}|",
+            "(?:){3,1}|",
+            "(?:){999999999999999999999999,3}|",
+            ")(?:(?:)|",
+            "(?:|",
+            "(?:)|)",
+            "(?:)*??|",
+            "(?:)*{3}|",
+            "\\||",
+            "[|]|",
+        ] {
+            assert!(
+                RegExpLiteralMatcher::compile_unicode_pure_empty_disjunction_with_work(
+                    &JsString::from(source),
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpLiteralMatcher::compile_unicode_pure_empty_with_work(
+                &JsString::from("(?:|)*"),
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(
+            RegExpLiteralMatcher::compile_unicode_empty(&JsString::from("(())()"))
+                .unwrap()
+                .capture_ranges(),
+            &[0..0, 0..0, 0..0]
+        );
+    }
+    #[test]
+    fn pure_empty_disjunctions_charge_before_scope_scan_and_projection() {
+        for text in [
+            "|",
+            "(?:|)*|(?:){999999999999999999999999}",
+            ")(?:(?:)|",
+            "|()",
+        ] {
+            let source = JsString::from(text);
+            let mut charges = Vec::new();
+            RegExpLiteralMatcher::compile_unicode_pure_empty_disjunction_with_work(
+                &source,
+                |work| {
+                    charges.push(work);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap();
+            assert_eq!(charges, vec![source.len() * 5 + 16]);
+            assert!(matches!(
+                RegExpLiteralMatcher::compile_unicode_pure_empty_disjunction_with_work(
                     &source,
                     |_| Err(())
                 ),
