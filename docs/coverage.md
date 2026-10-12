@@ -7362,6 +7362,34 @@ Stable and MSRV pass all 14,496 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Positive finite-range nullable Unicode repetition has three new core tests and
+six runtime tests. An independent RepeatMatcher interpreter checks 10112
+combinations of lower/upper bounds, padded spellings, greedy/lazy selection,
+source order, captures, anchors, starts and sticky behavior. A separate finite
+derivation checks 67320 endpoint/capture cases with arbitrary continuation
+acceptance. All 2400 runtime snapshot rows and thirty-two complete finite Boolean
+programs agree with Node.
+
+Named indices, supplementary/lone-surrogate boundaries, folding, consumers,
+coercions, strict writes, clones and collection are covered. Cases with 6000 unit
+captures, 6000 empty wrappers and 200001 input units preserve unlimited defaults.
+Bounds 300001/300002 retain their exact optional budget without expanding counts.
+Fallible callbacks cover both empty-first greedy phases, character-first lazy
+phases and the bounded capture scan. An explicit search quota preserves
+host-failure ordering. Narrow proof tests reject equal/open counts, zero lower
+bounds and unrepresentable finite bounds.
+
+All 675 core tests and 239 related runtime targets pass. All 538 earlier golds
+remain byte-identical, with two new reviewed snapshots. The current-build
+1177-program gap audit has zero admissions. Ordered/direct eval checks and whole
+fixture reviews retain their outcomes without failures or limits. Corpus
+inventories/pin, dependencies and default quota settings are unchanged.
+
+Stable and MSRV pass all 14,496 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

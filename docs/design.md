@@ -3775,6 +3775,32 @@ work and constant search storage. Earlier proof contracts and work charges are
 unchanged. Unequal finite positive bounds and unrepresentable exact counts remain
 outside this proof; no dependency, recursion or default quota is added.
 
+
+Unicode nullable repetition admits unequal finite bounds `{m,n}` with a positive
+lower bound when both bounds fit `usize`, including padded and lazy spellings
+(22.2.2.3). The complete two-branch proof preserves a pure unquantified character
+branch, a raw or balanced noncapturing empty branch and unit captures. Whole-match
+and per-character assertions retain their original boundaries.
+
+Character-first greedy repetition prefers longer accepted runs up to `n`.
+Character-first lazy repetition first tries accepted counts from `m` through `n`
+in ascending order, then counts below `m` in descending order. Empty-first lazy
+repetition prefers shorter runs. Empty-first greedy repetition first uses the
+optional iteration budget `n-m`, preferring counts from that budget down to zero.
+Only then does it backtrack mandatory empty choices to characters, trying higher
+counts through `n` in ascending order. Thus `(|a){2,3}` selects `a` on `aaa`,
+while `(|a){2,3}$` selects `aaa`.
+
+At most two existing monotone searches preserve that priority. Earliest starts
+precede later candidates; phase order resolves ties at the same start. Existing
+capture selection retains a defined empty final iteration when character-first
+matching consumes fewer characters than `m`; otherwise, a nonempty run retains
+its final character. Matching and capture selection add linear input work with
+constant search storage, no expanded counts or native recursion. Earlier proof
+contracts and work charges are unchanged. Unrepresentable finite bounds remain
+outside this proof: treating a large finite upper bound as infinity would lose
+the exact optional iteration budget. No dependency or default quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
