@@ -123,7 +123,7 @@ fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_sta
         r"/(?:(?<n>)+\k<n>){2}/.test('')",
         r"/(?:(a|)(?:\1)+){2}/.test('')",
         r"/(a*){2,3}/.test('a')",
-        r"/()+/u.test('')",
+        r"/()+a/u.test('')",
     ] {
         assert!(
             matches!(

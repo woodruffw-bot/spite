@@ -171,7 +171,7 @@ fn unicode_captured_atoms_opted_work_and_remaining_compositions() {
         r"/(a$)+b/um.exec('aa')",
         r"/(a?)+/u.exec('aa')",
         r"/(a|b)+b/v.exec('aa')",
-        r"/()+/u.exec('a')",
+        r"/()+a/u.exec('a')",
         r"/(ab)+/v.exec('ab')",
         r"/(a)+b/u.exec('ab')",
         r"/(\b)+/u.exec('a')",

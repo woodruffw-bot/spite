@@ -209,6 +209,28 @@ impl RegExpLiteralMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         charge(source.len().saturating_mul(12).saturating_add(32))?;
+        Ok(Self::compile_unicode_pure_empty_captures(source, false))
+    }
+
+    /// Compiles pure-empty Unicode captures with positive minimum repetitions.
+    ///
+    /// Requires validated u/v syntax and normalized named groups (22.2.2.3,
+    /// 22.2.2.5, 22.2.2.7). Every group containing captures must be mandatory:
+    /// its quantifier, if present, has a strictly positive minimum. Captures
+    /// inside alternatives remain excluded. All admitted paths therefore
+    /// define the same empty capture spans, without expanding decimal counts.
+    pub fn compile_unicode_positive_pure_empty_with_work<E>(
+        source: &JsString,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(16).saturating_add(32))?;
+        Ok(Self::compile_unicode_pure_empty_captures(source, true))
+    }
+
+    fn compile_unicode_pure_empty_captures(
+        source: &JsString,
+        positive_repetitions: bool,
+    ) -> Option<Self> {
         let units = source.code_units();
         let mut frames = Vec::new();
         let mut captures = 0usize;
@@ -218,7 +240,7 @@ impl RegExpLiteralMatcher {
                 0x28 => {
                     let capturing = units.get(index + 1) != Some(&0x3f);
                     if !capturing && !units[index..].starts_with(&[0x28, 0x3f, 0x3a]) {
-                        return Ok(None);
+                        return None;
                     }
                     captures += usize::from(capturing);
                     // The group's own capture surrounds its alternatives.
@@ -228,34 +250,47 @@ impl RegExpLiteralMatcher {
                     continue;
                 }
                 0x29 => {
-                    let Some((inside_start, choices, capturing)) = frames.pop() else {
-                        return Ok(None);
-                    };
+                    let (inside_start, choices, capturing) = frames.pop()?;
                     let nested_captures = captures > inside_start;
-                    if (choices && nested_captures)
-                        || ((capturing || nested_captures)
-                            && units
-                                .get(index + 1)
-                                .is_some_and(|c| matches!(c, 0x3f | 0x2a | 0x2b | 0x7b)))
-                    {
-                        return Ok(None);
+                    if choices && nested_captures {
+                        return None;
+                    }
+                    if capturing || nested_captures {
+                        match units.get(index + 1) {
+                            Some(0x3f | 0x2a) => return None,
+                            Some(0x2b) if !positive_repetitions => return None,
+                            Some(0x7b) => {
+                                if !positive_repetitions {
+                                    return None;
+                                }
+                                // Only witness a nonzero lower decimal here.
+                                // The complete projected-source proof below
+                                // validates its grammar, upper bound and order.
+                                let positive = units[index + 2..]
+                                    .iter()
+                                    .take_while(|&&c| matches!(c, 0x30..=0x39))
+                                    .any(|&c| c != 0x30);
+                                if !positive {
+                                    return None;
+                                }
+                            }
+                            _ => {}
+                        }
                     }
                 }
                 0x7c => {
-                    let Some((_, choices, _)) = frames.last_mut() else {
-                        return Ok(None);
-                    };
+                    let (_, choices, _) = frames.last_mut()?;
                     *choices = true;
                 }
                 // The shared projected-source proof validates exact quantifier
                 // placement, decimal bounds, laziness and ordering below.
                 0x30..=0x39 | 0x3f | 0x2a | 0x2b | 0x7b | 0x7d | 0x2c => {}
-                _ => return Ok(None),
+                _ => return None,
             }
             index += 1;
         }
         if !frames.is_empty() || captures == 0 {
-            return Ok(None);
+            return None;
         }
         let mut proof = Vec::with_capacity(units.len().saturating_add(captures.saturating_mul(2)));
         for (index, &unit) in units.iter().enumerate() {
@@ -265,15 +300,15 @@ impl RegExpLiteralMatcher {
             }
         }
         if !crate::regexp_unicode_repeated_atom::pure_empty_groups(&proof, true, true) {
-            return Ok(None);
+            return None;
         }
-        Ok(Some(Self(Arc::new(Program {
+        Some(Self(Arc::new(Program {
             units: Vec::new(),
             failure: Vec::new(),
             ignore_case: false,
             captures: vec![0..0; captures],
             mode: LiteralMode::Ordinary,
-        }))))
+        })))
     }
 
     /// Matches an empty Unicode body at the initial code-point boundary.
@@ -2056,6 +2091,186 @@ mod unicode_mandatory_pure_empty_tests {
             assert_eq!(charges, vec![source.len() * 12 + 32]);
             assert!(matches!(
                 RegExpLiteralMatcher::compile_unicode_mandatory_pure_empty_with_work(
+                    &source,
+                    |_| Err(())
+                ),
+                Err(())
+            ));
+        }
+    }
+}
+
+#[cfg(test)]
+mod unicode_positive_pure_empty_tests {
+    use super::*;
+    fn compile(source: &str) -> RegExpLiteralMatcher {
+        RegExpLiteralMatcher::compile_unicode_positive_pure_empty_with_work(
+            &JsString::from(source),
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap_or_else(|| panic!("{source}"))
+    }
+    #[test]
+    fn positive_empty_capture_captures_agree_with_independent_empty_terms() {
+        let terms = [
+            ("()+", 1),
+            ("(()){2,4}?", 2),
+            ("((?:|)())+?", 2),
+            ("(?:(())(?:|){3,}){3,}", 2),
+        ];
+        let middle = [
+            "(?:)",
+            "(?:|)*",
+            "(?:||)+?",
+            "(?:|){0,3}?",
+            "(?:(?:|){0}|(?:)+?)",
+            "(?:|){7,9}",
+        ];
+        for (left, left_count) in terms {
+            for (right, right_count) in terms {
+                for empty in middle {
+                    for outer in 0..3 {
+                        let inner = format!("{left}{empty}{right}");
+                        let source = match outer {
+                            0 => inner,
+                            1 => format!("(?:{inner})"),
+                            _ => format!("({inner})"),
+                        };
+                        let count = left_count + right_count + usize::from(outer == 2);
+                        let matcher = compile(&source);
+                        assert_eq!(matcher.capture_ranges(), vec![0..0; count], "{source}");
+                        for input in [
+                            JsString::from(""),
+                            JsString::from("a😀b"),
+                            JsString::from_code_units(vec![0xd800, 0x61, 0xdc00, 0xd800, 0xdc00]),
+                        ] {
+                            for start in 0..=input.len() + 1 {
+                                let mut boundary = 0;
+                                let expected = if start > input.len() {
+                                    None
+                                } else {
+                                    for ch in char::decode_utf16(input.code_units().iter().copied())
+                                    {
+                                        let width = ch.map_or(1, char::len_utf16);
+                                        if boundary + width > start {
+                                            break;
+                                        }
+                                        boundary += width;
+                                    }
+                                    Some(boundary..boundary)
+                                };
+                                assert_eq!(
+                                    matcher.find_unicode_empty(&input, start),
+                                    expected,
+                                    "{source} {input:?} {start}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (source, count) in [
+            ("((?:|))+()", 2),
+            ("(()){2,4}(?:|)*()", 3),
+            ("(?:(())(?:||)*()){3,}", 3),
+            ("((?:|)())+?()", 3),
+            ("(()(?:|)){2}()(()(?:)*?())+", 6),
+            ("(?:|){3,9}()+(?:|)*(()()){1,3}?", 4),
+            ("(|)+()(?:|){0,3}?", 2),
+            ("((?:|)())+(()(?:||)+?){0003,}", 4),
+            ("(){999999999999999999999999}", 1),
+            ("(?:(())(?:|){3,})+()", 3),
+        ] {
+            assert_eq!(
+                compile(source).capture_ranges(),
+                vec![0..0; count],
+                "{source}"
+            );
+            assert!(
+                RegExpLiteralMatcher::compile_unicode_mandatory_pure_empty_with_work(
+                    &JsString::from(source),
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "earlier mandatory-only proof {source}"
+            );
+        }
+        let deep = format!("{}(?:|)*", "()+".repeat(100000));
+        assert_eq!(compile(&deep).capture_ranges(), vec![0..0; 100000]);
+    }
+    #[test]
+    fn positive_empty_captures_reject_conditional_captures_and_effects() {
+        for source in [
+            "(?:|)*",
+            "(){0}",
+            "(()){0000,9}",
+            "(?:(())?)+",
+            "(?:()|)",
+            "(?:|())",
+            "(()|)",
+            "(|())",
+            "(?:(())|(?:))",
+            "((?:|))?",
+            "(?:(())(?:|)*)*",
+            "((?:|)()){0,1}",
+            "(?:())*",
+            "(^)",
+            "(\\b)",
+            "(?:())a",
+            "(?i:())",
+            "(?<x>())",
+            "(a{0})",
+            "(()(?:|){3,1})",
+            "(()(?:|){999999999999999999999999,3})",
+            "(()(?:|)*??)",
+            "(()(?:|)*{3})",
+            "((?:|)()",
+            "((?:|)()))",
+            "()|()",
+        ] {
+            assert!(
+                RegExpLiteralMatcher::compile_unicode_positive_pure_empty_with_work(
+                    &JsString::from(source),
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert_eq!(
+            RegExpLiteralMatcher::compile_unicode_empty(&JsString::from("(())()"))
+                .unwrap()
+                .capture_ranges(),
+            &[0..0, 0..0, 0..0]
+        );
+        assert_eq!(
+            RegExpLiteralMatcher::compile_unicode_enclosing_pure_empty_with_work(
+                &JsString::from("(((?:|)*))"),
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap()
+            .capture_ranges(),
+            &[0..0, 0..0]
+        );
+    }
+    #[test]
+    fn positive_empty_captures_charge_before_proof_and_capture_allocation() {
+        for text in ["((?:|))+()", "(){999999999999999999999999}", "(?:()|)"] {
+            let source = JsString::from(text);
+            let mut charges = Vec::new();
+            RegExpLiteralMatcher::compile_unicode_positive_pure_empty_with_work(&source, |work| {
+                charges.push(work);
+                Ok::<(), ()>(())
+            })
+            .unwrap();
+            assert_eq!(charges, vec![source.len() * 16 + 32]);
+            assert!(matches!(
+                RegExpLiteralMatcher::compile_unicode_positive_pure_empty_with_work(
                     &source,
                     |_| Err(())
                 ),

@@ -3990,6 +3990,29 @@ and quantified captures remain outside this subset. No count/path expansion,
 matcher field, matching kernel, native recursion, input-sized search storage,
 dependency or default quota is introduced.
 
+
+Pure-empty capturing groups with positive repetition minima define the same
+empty capture spans on every admitted iteration (22.2.2.3, 22.2.2.5, 22.2.2.7).
+The iterative capture metadata proof permits quantifying a group containing
+captures only when its minimum is strictly positive. Captures nested inside
+alternatives and groups containing captures with zero-minimum quantifiers
+remain excluded. A group's own capture still surrounds its alternatives.
+
+A plus quantifier witnesses a positive minimum directly. A counted quantifier
+must have a nonzero lower decimal; the unchanged complete projected-source
+proof then validates exact syntax, decimal ordering and laziness. No count
+is converted into a loop or expanded source. The existing empty literal plan
+retains one zero-relative range per capture and the existing Unicode boundary
+search handles execution. Names and original source/flags remain unchanged.
+
+The earlier mandatory-only public proof shares the scan with this capability
+disabled, preserving its original source charge and quantified-capture
+exclusions. The new public entry charges source work before metadata, decimal
+witnesses, projection and capture allocation. Unicode validation and named
+group normalization remain prerequisites. No matcher field, search kernel,
+recursive representation, input-sized history, dependency or default quota
+is introduced.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
