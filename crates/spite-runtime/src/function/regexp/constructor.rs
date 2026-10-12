@@ -820,6 +820,14 @@ impl Realm {
                         |work| budget.charge(work),
                     )?
                 { return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body))); }
+                if let Some(body) =
+                    RegExpUnicodeRepeatedAtomMatcher::compile_zero_minimum_nullable_alternatives_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&0x76), flags.code_units().contains(&0x69),
+                        flags.code_units().contains(&0x6d), flags.code_units().contains(&0x73),
+                        |work| budget.charge(work),
+                    )?
+                { return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body))); }
                 // Legacy BMP APIs retain their case-sensitive Unicode contract.
                 if flags.code_units().contains(&u16::from(b'i')) {
                     return Ok(None);

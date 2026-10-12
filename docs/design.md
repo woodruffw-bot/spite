@@ -3676,6 +3676,29 @@ entry point retains its narrower contract and original work charges. The bounded
 wrapper scans receive an explicit source-sized charge, preserve callback errors,
 and add no recursion, dependency, input-sized search storage or default quota.
 
+
+The complete Unicode nullable proof admits braced repetition when its lower
+bound is zero (22.2.2.3). This includes exact zero, zero-to-finite ranges, open
+upper bounds, padded decimal spellings and lazy forms. Every iteration is
+optional, so RepeatMatcher rejects the empty branch's zero-progress path. The
+existing character-run search therefore retains the original upper bound and
+greediness. Zero selected iterations leave unit captures undefined; selected
+characters retain the final iteration, while whole captures keep whole ranges.
+
+The consuming branch must still prove exactly one unquantified character without
+branch captures or effects. The empty branch may be raw or contain only complete
+noncapturing wrappers. Exactly two alternatives remain required. Braced counts
+with positive lower bounds retain distinct mandatory-empty semantics and remain
+outside this proof.
+
+A dedicated proof mode enables zero-lower-bound braces. Earlier raw-only and
+simple-quantifier entry points retain their narrower contracts and work charges.
+No new search or capture kernel is introduced. Decimal counts remain source
+bounded and are never expanded. An upper bound too large for native indexing
+cannot constrain a finite input's character run; exact finite bounds are retained.
+All source/search callbacks remain fallible, with no dependency, recursion,
+input-sized search storage or default quota added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
