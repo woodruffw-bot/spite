@@ -3699,6 +3699,24 @@ cannot constrain a finite input's character run; exact finite bounds are retaine
 All source/search callbacks remain fallible, with no dependency, recursion,
 input-sized search storage or default quota added.
 
+
+Unicode nullable repetition admits the braced open count `{1,}`, including padded
+decimal lower bounds and lazy forms (22.2.2.3). Its RepeatMatcher limits are
+exactly those of `+`: one mandatory iteration and no upper bound. The complete
+two-branch proof therefore reuses the existing nullable search and capture
+selection. Empty mandatory iterations have defined empty unit captures; selected
+nonempty runs retain the final character. Lazy matching preserves the original
+position of the empty branch, and earlier empty candidates precede consuming
+candidates farther into the input.
+
+A dedicated proof mode requires a lower bound of exactly one and an explicitly
+empty upper-bound spelling. Finite positive-minimum ranges and lower bounds above
+one remain outside this proof. Raw or balanced noncapturing empty branches and
+complete pure character branches retain the existing restrictions. Earlier
+zero-lower-bound and simple-quantifier entry points keep their narrower contracts
+and work charges. This adds no matching/capture kernel, expanded counts,
+recursion, input-sized storage, dependency or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
