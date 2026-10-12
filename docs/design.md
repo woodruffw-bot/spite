@@ -3660,6 +3660,22 @@ constant storage and at most two passes. Existing non-nullable plans retain thei
 original bounds and work charges. All work callbacks remain fallible; no native
 recursion, input-sized storage, dependency or default quota is added.
 
+
+Unicode nullable alternatives also admit an empty branch containing only balanced
+complete noncapturing wrappers (22.2.2.3, 22.2.2.7). The source scanner proves
+every opener is `(?:` and the retained suffix consists of precisely the matching
+closers. Captures, assertions, nested choices, quantifiers and modifiers in the
+empty branch remain excluded. The consuming branch still requires the complete
+one-character proof, and exactly two branches and raw `*`, `+`, `?` remain required.
+
+Transparent empty wrappers add no capture slots or matching effects. The existing
+nullable search therefore preserves source order, mandatory empty unit captures,
+zero-iteration undefined captures and outside predicates without a new matching
+kernel. A new compiler entry point enables the wrapper proof; the older raw-empty
+entry point retains its narrower contract and original work charges. The bounded
+wrapper scans receive an explicit source-sized charge, preserve callback errors,
+and add no recursion, dependency, input-sized search storage or default quota.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

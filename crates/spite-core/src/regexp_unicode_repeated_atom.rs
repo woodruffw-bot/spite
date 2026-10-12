@@ -1407,6 +1407,52 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         ignore_case: bool,
         multiline: bool,
         dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_nullable_alternatives_impl_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            false,
+            charge,
+        )
+    }
+
+    /// Proves empty alternatives enclosed by complete noncapturing wrappers.
+    ///
+    /// Requires full u/v validation and normalized named groups. Empty branches
+    /// may be raw or contain only balanced noncapturing wrappers; captures,
+    /// predicates, choices and quantifiers inside them remain excluded. The
+    /// character branch and repetition retain the complete nullable proof.
+    pub fn compile_noncapturing_empty_alternatives_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_nullable_alternatives_impl_with_work(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            true,
+            charge,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn compile_nullable_alternatives_impl_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        wrapped_empty: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         let assertions = unicode_word_assertions_with_work(source, &mut charge)?;
@@ -1534,10 +1580,32 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if extra || depth != 0 || classes != 0 {
                 continue;
             }
-            let (rune, order) = if separator == 0 && inner.len() > 1 {
-                (&inner[1..], EmptyBranchOrder::First)
-            } else if separator + 1 == inner.len() && separator != 0 {
-                (&inner[..separator], EmptyBranchOrder::Last)
+            let first = &inner[..separator];
+            let last = &inner[separator + 1..];
+            if wrapped_empty {
+                charge(inner.len().saturating_mul(2))?;
+            }
+            let empty_branch = |branch: &[u16]| {
+                if branch.is_empty() {
+                    return true;
+                }
+                if !wrapped_empty {
+                    return false;
+                }
+                let mut at = 0;
+                let mut wrappers = 0;
+                while branch.get(at..at + 3) == Some(&[0x28, 0x3f, 0x3a]) {
+                    at += 3;
+                    wrappers += 1;
+                }
+                wrappers != 0
+                    && branch.len().checked_sub(at) == Some(wrappers)
+                    && branch[at..].iter().all(|&c| c == 0x29)
+            };
+            let (rune, order) = if empty_branch(first) && !empty_branch(last) {
+                (last, EmptyBranchOrder::First)
+            } else if empty_branch(last) && !empty_branch(first) {
+                (first, EmptyBranchOrder::Last)
             } else {
                 continue;
             };
@@ -15379,6 +15447,280 @@ mod nullable_alternative_tests {
             let mut at = 0;
             assert!(matches!(
                 RegExpUnicodeRepeatedAtomMatcher::compile_nullable_alternatives_with_work(
+                    &source,
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| {
+                        let selected = at == fail;
+                        at += 1;
+                        if selected { Err(()) } else { Ok(()) }
+                    },
+                ),
+                Err(())
+            ));
+        }
+        let p = plan(r"\B(a|)+?\B", true, false, false, false);
+        let input = JsString::from("baaa");
+        let mut calls = 0;
+        p.find_with_captures_and_work(&input, 0, false, |_| {
+            calls += 1;
+            Ok::<(), ()>(())
+        })
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert_eq!(
+                p.find_with_captures_and_work(&input, 0, false, |_| {
+                    let selected = at == fail;
+                    at += 1;
+                    if selected { Err(()) } else { Ok(()) }
+                }),
+                Err(())
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod noncapturing_empty_alternative_tests {
+    use super::*;
+    use std::fmt::Write;
+
+    fn plan(source: &str, v: bool, i: bool, m: bool, s: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_empty_alternatives_with_work(
+            &JsString::from(source),
+            v,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    // A small, independent RepeatMatcher interpreter. Its optional empty
+    // iterations are rejected before continuation; mandatory empties are kept.
+    #[allow(clippy::too_many_arguments)]
+    fn repeat(
+        input: &[u8],
+        at: usize,
+        minimum: usize,
+        maximum: usize,
+        greedy: bool,
+        empty_first: bool,
+        end: bool,
+        capture: Option<Range<usize>>,
+    ) -> Option<(usize, Option<Range<usize>>)> {
+        let continuation = || {
+            if minimum == 0 && (!end || at == input.len()) {
+                Some((at, capture.clone()))
+            } else {
+                None
+            }
+        };
+        if !greedy {
+            if let Some(found) = continuation() {
+                return Some(found);
+            }
+        }
+        if maximum != 0 {
+            for empty in [empty_first, !empty_first] {
+                let next = if empty {
+                    at
+                } else if input.get(at) == Some(&b'a') {
+                    at + 1
+                } else {
+                    continue;
+                };
+                if minimum == 0 && next == at {
+                    continue;
+                }
+                if let Some(found) = repeat(
+                    input,
+                    next,
+                    minimum.saturating_sub(1),
+                    maximum - 1,
+                    greedy,
+                    empty_first,
+                    end,
+                    Some(at..next),
+                ) {
+                    return Some(found);
+                }
+            }
+        }
+        if greedy { continuation() } else { None }
+    }
+
+    #[test]
+    fn unicode_noncapturing_empty_alternative_repeat_matcher_snapshot() {
+        let mut rows = String::new();
+        let mut audited = 0;
+        for empty in ["(?:)", "(?:(?:(?:)))"] {
+            for empty_first in [false, true] {
+                for (quantifier, minimum, maximum, greedy) in [
+                    ("*", 0, None, true),
+                    ("*?", 0, None, false),
+                    ("+", 1, None, true),
+                    ("+?", 1, None, false),
+                    ("?", 0, Some(1), true),
+                    ("??", 0, Some(1), false),
+                ] {
+                    for start_anchor in [false, true] {
+                        for end_anchor in [false, true] {
+                            let source = format!(
+                                "{}({}){}{}",
+                                if start_anchor { "^" } else { "" },
+                                if empty_first {
+                                    format!("{empty}|a")
+                                } else {
+                                    format!("a|{empty}")
+                                },
+                                quantifier,
+                                if end_anchor { "$" } else { "" }
+                            );
+                            let p = plan(&source, false, false, false, false);
+                            for input in [
+                                "", "a", "b", "aa", "ab", "ba", "bb", "aaa", "aba", "baa", "aab",
+                                "bbb", "aaaa", "aaab", "baaa", "abab", "baba",
+                            ] {
+                                for start in 0..=input.len() + 1 {
+                                    for sticky in [false, true] {
+                                        let expected = (start..=input.len()).find_map(|at| {
+                                            if (sticky && at != start) || (start_anchor && at != 0)
+                                            {
+                                                return None;
+                                            }
+                                            repeat(
+                                                input.as_bytes(),
+                                                at,
+                                                minimum,
+                                                maximum.unwrap_or(input.len() + 1),
+                                                greedy,
+                                                empty_first,
+                                                end_anchor,
+                                                None,
+                                            )
+                                            .map(|(end, capture)| (at..end, capture))
+                                        });
+                                        let actual = p
+                                            .find_with_captures_and_work(
+                                                &JsString::from(input),
+                                                start,
+                                                sticky,
+                                                |_| Ok::<(), ()>(()),
+                                            )
+                                            .unwrap();
+                                        let actual = actual.map(|m| (m.range, m.atom_capture));
+                                        assert_eq!(
+                                            actual, expected,
+                                            "{source:?} {input:?} {start} {sticky}"
+                                        );
+                                        audited += 1;
+                                        if start == 0
+                                            && !sticky
+                                            && ["", "aaa", "baaa"].contains(&input)
+                                        {
+                                            writeln!(rows, "{source:?} {input:?} {actual:?}")
+                                                .unwrap();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        writeln!(rows, "{audited} independent RepeatMatcher comparisons").unwrap();
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_noncapturing_empty_alternative_proof_stays_complete_and_narrow() {
+        for source in [
+            r"(a|b|)+",
+            r"(||a)+",
+            r"(|)+",
+            r"(a|(?:\b))+",
+            r"(a|\b)+",
+            r"((a)|)+",
+            r"(a|){1}",
+            r"(a|){0,3}?",
+            r"(ab|)+",
+            r"(a+|)+",
+            r"((?:a|b)|)+",
+            r"(?:(?i:a)|)+",
+            r"(?:a|)+b",
+            r"(?:a|)(?:a|)+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_empty_alternatives_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for source in [
+            r"((?:\b(?:\ba))|(?:))+",
+            r"((?:(?:))|(?:\B^(?:.$)$))+?",
+            r"\B(((?:\p{Join_C})|(?:(?:))))+\B$",
+            r"((?:[a\|])|(?:))??",
+            r"((?:)|\$)+?",
+        ] {
+            let p = plan(source, true, true, true, true);
+            assert!(p.nullable.is_some());
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_nullable_alternatives_with_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "raw-only proof {source}"
+            );
+            assert!(RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_branch_nested_assertion_words_with_work(
+                &JsString::from(source), true, true, true, true, |_| Ok::<(), ()>(()),
+            ).unwrap().is_none(), "old proof {source}");
+        }
+    }
+
+    #[test]
+    fn unicode_noncapturing_empty_alternative_all_work_callbacks_can_abort() {
+        let source =
+            JsString::from(format!("\\B{}a|{}+?\\B", "(".repeat(24), ")".repeat(24)).as_str());
+        let mut calls = 0;
+        RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_empty_alternatives_with_work(
+            &source,
+            true,
+            false,
+            false,
+            false,
+            |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for fail in 0..calls {
+            let mut at = 0;
+            assert!(matches!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_empty_alternatives_with_work(
                     &source,
                     true,
                     false,
