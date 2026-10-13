@@ -4245,6 +4245,26 @@ checks agree with Node; independent membership and native tests cover both
 additions. The original Unicode 17 fixture remains unchanged and unvendored
 because its complementary set still contains those two characters.
 
+
+Terminal_Punctuation and its exact Term alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty). The 293 members use 117 positive and
+118 complementary intervals. All common/simple folding preimages preserve
+membership; both Unicode complement orders retain these fixed sets. Atoms,
+unions, inversion, captures, assertions, repetitions and captured property/dot
+patterns use the existing complete-character matcher.
+
+Tags 36 and 37 fit the existing temporary u64 property mask, whose bounded
+scan stops below 38. Earlier property tables, work charges and matcher fields
+remain unchanged. Standalone construction charges the bounded 118-interval
+append; classes charge each distinct set before allocating. No dependency,
+search kernel, recursion, default quota or input-sized storage is added.
+
+UCD 18 adds U+2E60 and U+2E61 to the Unicode 17 definition used by installed
+Node and the pinned Test262 fixture. Native membership follows UCD 18; shared
+data checks agree with Node and native tests cover the additions. The original
+Unicode 17 fixture remains unchanged and unvendored because its complementary
+set still contains those two characters.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
