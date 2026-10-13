@@ -33,6 +33,7 @@ use std::{ops::Range, sync::Arc};
 /// Regional_Indicator/RI uses UCD 18 regional-indicator membership.
 /// Unified_Ideograph/UIdeo uses UCD 18 unified-ideograph membership.
 /// Ideographic/Ideo uses UCD 18 ideographic membership.
+/// Deprecated/Dep uses UCD 18 deprecated membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -231,6 +232,7 @@ impl RegExpUnicodeClassMatcher {
             44 => 2,
             46 => 17,
             48 => 25,
+            50 => 9,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -346,7 +348,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..50 {
+        for kind in 0..52 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -367,6 +369,7 @@ impl RegExpUnicodeClassMatcher {
                     44..=45 => 8,
                     46..=47 => 68,
                     48..=49 => 100,
+                    50..=51 => 36,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -964,6 +967,7 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x69,
             0x63,
         ] => 48,
+        [0x44, 0x65, 0x70] | [0x44, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64] => 50,
         _ => return None,
     })
 }
@@ -2207,6 +2211,28 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x3134b, 0x3134f),
             (0x3347a, 0x3cfff),
             (0x3fc40, 0x10ffff),
+        ],
+        // UCD 18 Deprecated: 15 members, invariant under C/S folding.
+        50 => &[
+            (0x149, 0x149),
+            (0x673, 0x673),
+            (0xf77, 0xf77),
+            (0xf79, 0xf79),
+            (0x17a3, 0x17a4),
+            (0x206a, 0x206f),
+            (0x2329, 0x232a),
+            (0xe0001, 0xe0001),
+        ],
+        51 => &[
+            (0x0, 0x148),
+            (0x14a, 0x672),
+            (0x674, 0xf76),
+            (0xf78, 0xf78),
+            (0xf7a, 0x17a2),
+            (0x17a5, 0x2069),
+            (0x2070, 0x2328),
+            (0x232b, 0xe0000),
+            (0xe0002, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -9386,6 +9412,243 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Ideo}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_deprecated_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (329usize, 329usize),
+            (1651usize, 1651usize),
+            (3959usize, 3959usize),
+            (3961usize, 3961usize),
+            (6051usize, 6052usize),
+            (8298usize, 8303usize),
+            (9001usize, 9001usize),
+            (9002usize, 9002usize),
+            (917505usize, 917505usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Deprecated}",
+                    r"\P{Dep}",
+                    r"[\p{Dep}]",
+                    r"[^\p{Deprecated}]",
+                    r"[\P{Dep}K]",
+                    r"[\p{Dep}K]",
+                    r"[\p{Dep}\P{Deprecated}]",
+                    r"[^\P{Dep}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let deprecated = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Deprecated}" | r"[\p{Dep}]" => deprecated,
+                            r"\P{Dep}" | r"[^\p{Deprecated}]" => !deprecated,
+                            r"[\P{Dep}K]" => !deprecated || k,
+                            r"[\p{Dep}K]" => deprecated || k,
+                            r"[\p{Dep}\P{Deprecated}]" => true,
+                            r"[^\P{Dep}K]" => deprecated && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_deprecated_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Dep}",
+            r"\P{Deprecated}",
+            r"^[\p{Deprecated}]$",
+            r"[\P{Dep}K]",
+            r"[^\P{Dep}K]",
+            r"[\p{Deprecated}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{148}\u{149}\u{14a}\u{672}\u{673}\u{674}\u{f76}\u{f77}\u{f78}\u{f79}\u{f7a}\u{17a2}\u{17a3}\u{17a4}\u{17a5}\u{17a3}\u{206a}\u{206f}\u{2070}\u{2328}\u{2329}\u{232a}\u{232b}\u{e0000}\u{e0001}\u{e0002}\u{feff}ſK\n",
+                            "X\r\n\u{673}\u{2028}\u{17a3}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_deprecated_property_work_deduplication_and_contracts() {
+        // New tags 50/51 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{Dep}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x673, true),
+                (0x17a3, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{Dep}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x673, false),
+                (0x17a3, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source =
+            JsString::from(format!("[{}]", r"\p{Dep}\P{Deprecated}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Dep}$", r"^[\P{Deprecated}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{673}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{Dep}--A]",
+            r"[\p{Dep}&&A]",
+            r"[[\p{Dep}]]",
+            r"[A-\p{Dep}]",
+            r"[\p{Dep}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Dep}]"),
                 true,
                 true,
                 false

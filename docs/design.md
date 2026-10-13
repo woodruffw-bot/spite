@@ -4357,6 +4357,20 @@ of every addition range across both aliases, complements and Unicode/case modes.
 The original fixture remains unchanged and unvendored because its complement
 contains those new members.
 
+
+Deprecated and its exact Dep alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty): fifteen members in eight positive and
+nine complementary intervals. Every common/simple fold preserves membership.
+Both Unicode complement orders, atoms, unions, inversion, captures, assertions,
+repetitions and captured property/dot patterns use the complete-character matcher.
+
+Tags 50/51 fit the existing temporary u64 property mask; the bounded scan
+stops below 52. Earlier tables, charges and matcher fields remain unchanged.
+Construction charges the nine-interval append before allocation; classes
+charge each distinct set. No dependency, recursion or default quota is added.
+The pinned Unicode 17 Test262 fixture has identical complete positive and
+negative sets. Its unchanged provenance is reviewed separately from implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

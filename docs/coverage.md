@@ -8739,6 +8739,29 @@ Stable and MSRV pass all 14,624 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Deprecated/Dep adds three Core and eight runtime tests. Independent raw data
+checks 35,651,584 code-point/form/flag combinations. All 17,825,792 Node
+membership comparisons agree, including complements and both aliases. The
+1920 Core and 560 runtime snapshot rows agree with independent UTF-16
+evaluation and Node; thirty-two whole Boolean programs agree as well.
+
+Supplementary membership and the documented inside-surrogate-pair boundary
+behavior have explicit consuming-match coverage in both Unicode modes. Mixed
+earlier/new mask bits, deduplication, fallible construction, original capture
+indices, assertions, consumers, clones, strict writes and collection retain
+their contracts. Large sources and inputs keep unlimited defaults; explicit
+work quotas preserve host-failure ordering. All 769 Core tests and 271 related
+runtime targets pass. The 598 earlier snapshots remain byte-identical and two
+reviewed snapshots are added. The 1280-program gap audit has no admissions.
+Whole fixture outcomes retain 204 passed and 26 Unsupported variants in the
+115-source review. Inventories, pins and dependencies remain unchanged. The
+compatible original Deprecated fixture will be published separately after review.
+
+Stable and MSRV pass all 14,624 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
