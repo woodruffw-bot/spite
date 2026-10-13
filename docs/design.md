@@ -4204,6 +4204,27 @@ results; the additions have independent membership and native runtime tests.
 The original UCD 17 fixture's complement disagrees at those new members, so
 that fixture remains unchanged upstream and is not vendored.
 
+
+Extender and its exact Ext alias use the pinned UCD 18 PropList records
+(22.2.2.9 and UnicodeMatchProperty). The 63 members normalize to 43 positive
+and 44 complementary intervals. Every common/simple folding preimage preserves
+membership. Standalone atoms, flat unions and inverted classes retain their
+complete-character behavior in both Unicode modes, including existing captures,
+assertions, repetitions and captured property/dot patterns.
+
+The temporary property mask is widened from u32 to u64 to hold tags 32 and 33.
+Only tags below 34 are shifted or scanned. Earlier property tables, work charges
+and matcher fields are preserved; mixed old/new mask checks prevent truncation
+or overflow. Standalone construction charges the bounded 44-interval append;
+class construction charges each distinct set before it allocates. No dependency,
+search kernel, default quota or input-sized search storage is added.
+
+UCD 18 adds U+0B54 to the Unicode 17 definition used by installed Node and the
+pinned Test262 fixture. Native membership follows UCD 18. Shared-data checks
+retain Node's results, and an independent native test covers the addition with
+both aliases and complements. The original Unicode 17 fixture is unchanged and
+remains unvendored because its complementary set still includes U+0B54.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -24,6 +24,7 @@ use std::{ops::Range, sync::Arc};
 /// Han/Hani with exact Script/sc names also reuses these fixed intervals.
 /// Pattern_Syntax/Pat_Syn uses its exact fixed property intervals.
 /// Bidi_Mirrored/Bidi_M uses UCD 18 mirrored membership.
+/// Extender/Ext uses UCD 18 extender membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -196,7 +197,7 @@ impl RegExpUnicodeClassMatcher {
         // UnicodeSets mode complements the canonical set instead. The shared
         // interval constructor folds only members of its original ranges.
         let complement_first = negated && ignore_case && !unicode_sets;
-        // Fixed properties use up to eighteen positive or complementary intervals.
+        // Each fixed property has bounded positive and complementary interval lists.
         // Charge the bounded append before it can allocate.
         charge(match kind {
             4 => 4,
@@ -213,6 +214,7 @@ impl RegExpUnicodeClassMatcher {
             26 => 22,
             28 => 29,
             30 => 121,
+            32 => 44,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -285,7 +287,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        let mut properties = 0u32;
+        let mut properties = 0u64;
         while index < units.len() - 1 {
             let Some(first) = class_atom(units, &mut index, unicode_sets) else {
                 return Ok(None);
@@ -328,7 +330,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..32 {
+        for kind in 0..34 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -340,6 +342,7 @@ impl RegExpUnicodeClassMatcher {
                     26..=27 => 88,
                     28..=29 => 116,
                     30..=31 => 484,
+                    32..=33 => 176,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -792,6 +795,7 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x65,
             0x64,
         ] => 30,
+        [0x45, 0x78, 0x74] | [0x45, 0x78, 0x74, 0x65, 0x6e, 0x64, 0x65, 0x72] => 32,
         _ => return None,
     })
 }
@@ -1405,6 +1409,98 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1db11, 0x1db16),
             (0x1db19, 0x1db1a),
             (0x1db1c, 0x10ffff),
+        ],
+        // UCD 18 Extender: 63 members, invariant under C/S folding.
+        32 => &[
+            (0xb7, 0xb7),
+            (0x2d0, 0x2d1),
+            (0x640, 0x640),
+            (0x7fa, 0x7fa),
+            (0xa71, 0xa71),
+            (0xafb, 0xafb),
+            (0xb54, 0xb55),
+            (0xe46, 0xe46),
+            (0xec6, 0xec6),
+            (0x180a, 0x180a),
+            (0x1843, 0x1843),
+            (0x1aa7, 0x1aa7),
+            (0x1c36, 0x1c36),
+            (0x1c7b, 0x1c7b),
+            (0x3005, 0x3005),
+            (0x3031, 0x3035),
+            (0x309d, 0x309e),
+            (0x30fc, 0x30fe),
+            (0xa015, 0xa015),
+            (0xa60c, 0xa60c),
+            (0xa9cf, 0xa9cf),
+            (0xa9e6, 0xa9e6),
+            (0xaa70, 0xaa70),
+            (0xaadd, 0xaadd),
+            (0xaaf3, 0xaaf4),
+            (0xff70, 0xff70),
+            (0x10781, 0x10782),
+            (0x10d4e, 0x10d4e),
+            (0x10d6a, 0x10d6a),
+            (0x10d6f, 0x10d6f),
+            (0x11237, 0x11237),
+            (0x1135d, 0x1135d),
+            (0x113d2, 0x113d3),
+            (0x115c6, 0x115c8),
+            (0x11a98, 0x11a98),
+            (0x11dd9, 0x11dd9),
+            (0x16b42, 0x16b43),
+            (0x16fe0, 0x16fe1),
+            (0x16fe3, 0x16fe3),
+            (0x16ff2, 0x16ff3),
+            (0x1e13c, 0x1e13d),
+            (0x1e5ef, 0x1e5ef),
+            (0x1e944, 0x1e946),
+        ],
+        33 => &[
+            (0x0, 0xb6),
+            (0xb8, 0x2cf),
+            (0x2d2, 0x63f),
+            (0x641, 0x7f9),
+            (0x7fb, 0xa70),
+            (0xa72, 0xafa),
+            (0xafc, 0xb53),
+            (0xb56, 0xe45),
+            (0xe47, 0xec5),
+            (0xec7, 0x1809),
+            (0x180b, 0x1842),
+            (0x1844, 0x1aa6),
+            (0x1aa8, 0x1c35),
+            (0x1c37, 0x1c7a),
+            (0x1c7c, 0x3004),
+            (0x3006, 0x3030),
+            (0x3036, 0x309c),
+            (0x309f, 0x30fb),
+            (0x30ff, 0xa014),
+            (0xa016, 0xa60b),
+            (0xa60d, 0xa9ce),
+            (0xa9d0, 0xa9e5),
+            (0xa9e7, 0xaa6f),
+            (0xaa71, 0xaadc),
+            (0xaade, 0xaaf2),
+            (0xaaf5, 0xff6f),
+            (0xff71, 0x10780),
+            (0x10783, 0x10d4d),
+            (0x10d4f, 0x10d69),
+            (0x10d6b, 0x10d6e),
+            (0x10d70, 0x11236),
+            (0x11238, 0x1135c),
+            (0x1135e, 0x113d1),
+            (0x113d4, 0x115c5),
+            (0x115c9, 0x11a97),
+            (0x11a99, 0x11dd8),
+            (0x11dda, 0x16b41),
+            (0x16b44, 0x16fdf),
+            (0x16fe2, 0x16fe2),
+            (0x16fe4, 0x16ff1),
+            (0x16ff4, 0x1e13b),
+            (0x1e13e, 0x1e5ee),
+            (0x1e5f0, 0x1e943),
+            (0x1e947, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -6236,6 +6332,277 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Bidi_M}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_extender_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (183usize, 183usize),
+            (720usize, 721usize),
+            (1600usize, 1600usize),
+            (2042usize, 2042usize),
+            (2673usize, 2673usize),
+            (2811usize, 2811usize),
+            (2900usize, 2901usize),
+            (3654usize, 3654usize),
+            (3782usize, 3782usize),
+            (6154usize, 6154usize),
+            (6211usize, 6211usize),
+            (6823usize, 6823usize),
+            (7222usize, 7222usize),
+            (7291usize, 7291usize),
+            (12293usize, 12293usize),
+            (12337usize, 12341usize),
+            (12445usize, 12446usize),
+            (12540usize, 12542usize),
+            (40981usize, 40981usize),
+            (42508usize, 42508usize),
+            (43471usize, 43471usize),
+            (43494usize, 43494usize),
+            (43632usize, 43632usize),
+            (43741usize, 43741usize),
+            (43763usize, 43764usize),
+            (65392usize, 65392usize),
+            (67457usize, 67458usize),
+            (68942usize, 68942usize),
+            (68970usize, 68970usize),
+            (68975usize, 68975usize),
+            (70199usize, 70199usize),
+            (70493usize, 70493usize),
+            (70610usize, 70610usize),
+            (70611usize, 70611usize),
+            (71110usize, 71112usize),
+            (72344usize, 72344usize),
+            (73177usize, 73177usize),
+            (92994usize, 92995usize),
+            (94176usize, 94177usize),
+            (94179usize, 94179usize),
+            (94194usize, 94195usize),
+            (123196usize, 123197usize),
+            (124399usize, 124399usize),
+            (125252usize, 125254usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Extender}",
+                    r"\P{Ext}",
+                    r"[\p{Ext}]",
+                    r"[^\p{Extender}]",
+                    r"[\P{Ext}K]",
+                    r"[\p{Ext}K]",
+                    r"[\p{Ext}\P{Extender}]",
+                    r"[^\P{Ext}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let extender = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Extender}" | r"[\p{Ext}]" => extender,
+                            r"\P{Ext}" | r"[^\p{Extender}]" => !extender,
+                            r"[\P{Ext}K]" => !extender || k,
+                            r"[\p{Ext}K]" => extender || k,
+                            r"[\p{Ext}\P{Extender}]" => true,
+                            r"[^\P{Ext}K]" => extender && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_extender_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Ext}",
+            r"\P{Extender}",
+            r"^[\p{Extender}]$",
+            r"[\P{Ext}K]",
+            r"[^\P{Ext}K]",
+            r"[\p{Extender}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{b6}\u{b7}\u{b8}\u{2cf}\u{2d0}\u{2d1}\u{2d2}\u{63f}\u{640}\u{641}\u{7f9}\u{7fa}\u{7fb}\u{a70}\u{a71}\u{a72}\u{afa}\u{afb}\u{afc}\u{b53}\u{b55}\u{b56}\u{e45}\u{e46}\u{e47}\u{ec5}\u{ec6}\u{ec7}\u{1809}\u{180a}\u{180b}\u{1842}\u{1843}\u{1844}\u{1aa6}\u{1aa7}\u{1aa8}\u{1c35}\u{1c36}\u{1c37}\u{1c7a}\u{1c7b}\u{1c7c}\u{3004}\u{3005}\u{3006}\u{3030}\u{3031}\u{3035}\u{3036}\u{309c}\u{309d}\u{309e}\u{309f}\u{30fb}\u{30fc}\u{30fe}\u{30ff}\u{a014}\u{a015}\u{a016}\u{a60b}\u{a60c}\u{a60d}\u{a9ce}\u{a9cf}\u{a9d0}\u{a9e5}\u{a9e6}\u{a9e7}\u{aa6f}\u{aa70}\u{aa71}\u{aadc}\u{aadd}\u{aade}\u{aaf2}\u{aaf3}\u{aaf4}\u{aaf5}\u{ff6f}\u{ff70}\u{ff71}\u{10780}\u{10781}\u{10782}\u{10783}\u{10d4d}\u{10d4e}\u{10d4f}\u{10d69}\u{10d6a}\u{10d6b}\u{10d6e}\u{10d6f}\u{10d70}\u{11236}\u{11237}\u{11238}\u{1135c}\u{1135d}\u{1135e}\u{113d1}\u{113d2}\u{113d3}\u{113d4}\u{115c5}\u{115c6}\u{115c8}\u{115c9}\u{11a97}\u{11a98}\u{11a99}\u{11dd8}\u{11dd9}\u{11dda}\u{16b41}\u{16b42}\u{16b43}\u{16b44}\u{16fdf}\u{16fe0}\u{16fe1}\u{16fe2}\u{16fe3}\u{16fe4}\u{16ff1}\u{16ff2}\u{16ff3}\u{16ff4}\u{1e13b}\u{1e13c}\u{1e13d}\u{1e13e}\u{1e5ee}\u{1e5ef}\u{1e5f0}\u{1e943}\u{1e944}\u{1e946}\u{1e947}\u{feff}ſK\n",
+                            "X\r\n\u{b7}\u{2028}\u{640}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_extender_property_work_deduplication_and_contracts() {
+        // New tags 32/33 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{Ext}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0xb54, true),
+                (0x640, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{Ext}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0xb54, false),
+                (0x640, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(format!("[{}]", r"\p{Ext}\P{Extender}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Ext}$", r"^[\P{Extender}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{b7}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{Ext}--A]",
+            r"[\p{Ext}&&A]",
+            r"[[\p{Ext}]]",
+            r"[A-\p{Ext}]",
+            r"[\p{Ext}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Ext}]"),
                 true,
                 true,
                 false

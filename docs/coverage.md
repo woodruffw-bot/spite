@@ -8415,6 +8415,33 @@ Stable and MSRV pass all 14,616 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Extender/Ext adds three Core and nine runtime tests. Independent raw PropList
+records check 35,651,584 code-point/form/flag combinations. The complete Node
+audit checks 17,825,792 combinations and confirms exactly sixteen expected
+data differences at U+0B54, with no removals or unexpected differences. All
+1920 Core and 560 runtime snapshot rows use shared data and agree with the
+independent UTF-16/property interpreter and Node. Thirty complete Boolean
+programs agree with Node; eight additional native programs cover U+0B54 with
+both aliases, complements and every Unicode/case flag combination.
+
+Mixed earlier and new property-mask bits, repeated property deduplication,
+boundary neighbors, inversion, anchors, surrogate starts, captures/indices,
+consumers, clones, coercions, strict writes and collection are covered. Large
+source/input/capture cases preserve unlimited defaults. Explicit work quotas
+and fallible construction callbacks preserve host-failure ordering.
+
+All 742 Core tests and 262 related runtime targets pass. All 580 earlier
+snapshots remain byte-identical, with two reviewed snapshots added. The current
+1235-program gap audit has zero admissions. Whole fixture reviews retain their
+outcomes without failures or limits, including 204 passed and 26 Unsupported
+variants in the 115-source review. Corpus inventories, the pin and dependencies
+are unchanged. The incompatible Unicode 17 Extender fixture remains unvendored.
+
+Stable and MSRV pass all 14,616 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
