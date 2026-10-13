@@ -7573,3 +7573,4 @@ test/built-ins/RegExp/property-escapes/generated/IDS_Trinary_Operator.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Radical.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Regional_Indicator.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Deprecated.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Default_Ignorable_Code_Point.js	-	-	-
