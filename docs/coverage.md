@@ -8386,6 +8386,35 @@ Stable and MSRV pass all 14,616 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Bidi_Mirrored/Bidi_M adds three core and nine runtime tests. Independent
+membership built from all 570 original UnicodeData mirrored records checks
+35,651,584 code-point/form/flag combinations. The complete Node data audit
+checks 17,825,792 combinations and confirms exactly 256 differences for the
+sixteen UCD 18 additions, with no removed members or other discrepancies.
+All 1920 core and 560 runtime snapshot rows use shared membership data and
+agree with independent UTF-16/property evaluation and Node. Thirty complete
+Boolean programs agree with Node; 128 additional native programs cover every
+new member with both aliases, complements and all four Unicode/case flag forms.
+
+Boundary neighbors, class unions/inversion, multiline anchors, surrogate-pair
+starts, captures/indices/names, consumers, coercion order and strict lastIndex
+writes retain their specified behavior. Cloning and collection preserve large
+source/input/capture cases under unlimited defaults. Explicit work quotas and
+fallible construction callbacks stop before lastIndex writes or language handlers.
+
+All 739 core tests and 261 related runtime targets pass. All 578 earlier
+snapshots remain byte-identical; two reviewed snapshots are added. The current
+1230-program gap audit has zero admissions. Ordered/direct eval checks and
+whole fixture outcomes retain their counts without failures or limits. The
+115-source review retains 204 passed and 26 Unsupported variants. Corpus
+inventories, the Test262 pin and dependencies are unchanged. The incompatible
+original UCD 17 Bidi_Mirrored fixture remains unvendored.
+
+Stable and MSRV pass all 14,616 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

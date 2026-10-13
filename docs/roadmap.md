@@ -522,6 +522,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match Script/sc=Han/Hani as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [x] Concatenate one captured Unicode property atom with one captured dot atom, preserving distinct complete-character ranges and original UTF-16 indices.
 - [x] Match Pattern_Syntax/Pat_Syn Unicode property atoms and classes with exact complements, aliases and complete-character boundaries.
+- [x] Match Bidi_Mirrored/Bidi_M Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

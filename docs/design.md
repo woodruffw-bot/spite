@@ -4183,6 +4183,27 @@ fixed intervals and any moved source intervals; repeated property spellings add
 each fixed set once. No dependency, search kernel, default quota or input-sized
 search storage is introduced.
 
+
+Bidi_Mirrored and its exact Bidi_M alias use the pinned UCD 18 UnicodeData
+mirrored field (22.2.2.9 and UnicodeMatchProperty). The 570 members normalize to
+120 positive intervals and 121 complementary intervals. All common/simple
+case-fold preimages preserve membership, so both Unicode complement orders
+retain these intervals. Standalone atoms, flat unions, class inversion,
+captures, assertions and the existing repetition and captured property/dot
+proofs share the same complete-character matcher.
+
+Tags 30 and 31 fit the existing unsigned 32-bit property mask. The bounded tag
+scan includes bit 31 and shifts only by values below 32. Earlier tag tables,
+work charges and matcher fields remain unchanged. No dependency, search kernel,
+default quota or input-sized search storage is introduced.
+
+UCD 18 adds sixteen mirrored members to the UCD 17 definition used by the
+installed Node and the pinned Test262 fixture. Native matching follows the
+project's existing UCD 18 pin. Shared-data differential checks retain Node's
+results; the additions have independent membership and native runtime tests.
+The original UCD 17 fixture's complement disagrees at those new members, so
+that fixture remains unchanged upstream and is not vendored.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
