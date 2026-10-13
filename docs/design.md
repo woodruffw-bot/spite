@@ -4111,6 +4111,22 @@ kinds retain their work charges. Repeated fixed sets are added once with
 source-sized storage. No matcher field, search kernel, dependency or default
 quota is added.
 
+
+Unicode Dash reuses the fixed-property class
+matcher (22.2.2.9, 22.2.2.8). The pinned Unicode 18 PropList supplies 31 members
+in 24 positive and 25 complementary intervals, including supplementary Garay
+and Yezidi hyphens U+10D6E and U+10EAD. The complete pinned CaseFolding data verifies that
+common/simple folding preserves membership in both directions. Exact aliases
+follow the edition-17 binary-property table.
+
+Standalone atoms, flat unions, inversion, enclosing captures, quantified atoms
+and word/line assertions reuse existing normalization and complete-character
+search. Supplementary hyphens retain their original two UTF-16 units. The
+existing u32 local property mask holds the two additional bits; earlier property
+kinds retain their work charges. Repeated fixed sets are added once with
+source-sized storage. No matcher field, search kernel, dependency or default
+quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

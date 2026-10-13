@@ -18,7 +18,7 @@ use std::{ops::Range, sync::Arc};
 /// Unions, ranges and inversion admit all Unicode code points, including lone
 /// surrogates. Fixed ASCII, Any, hex-digit, White_Space, Join_Control,
 /// noncharacter, Bidi_Control, Quotation_Mark, Pattern_White_Space and
-/// Logical_Order_Exception and Variation_Selector
+/// Logical_Order_Exception, Variation_Selector and Dash
 /// properties are admitted in flat unions
 /// and through the standalone binary-property API.
 /// Other property/string sets and v operators remain separate proofs.
@@ -138,7 +138,7 @@ impl RegExpUnicodeClassMatcher {
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
     /// Join_Control/Join_C, Noncharacter_Code_Point/NChar, Bidi_Control/Bidi_C
     /// Quotation_Mark/QMark, Pattern_White_Space/Pat_WS, Logical_Order_Exception/LOE
-    /// and Variation_Selector/VS.
+    /// Variation_Selector/VS and Dash.
     ///
     /// Requires complete u/v validation with the supplied flags. Exact property
     /// names are required. In u with i, P complements before folding; in v with
@@ -206,6 +206,7 @@ impl RegExpUnicodeClassMatcher {
             18 => 6,
             20 => 8,
             22 => 5,
+            24 => 25,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -321,7 +322,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..24 {
+        for kind in 0..26 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -329,6 +330,7 @@ impl RegExpUnicodeClassMatcher {
                     12..=13 | 16..=17 => 40,
                     8..=11 | 14..=15 | 18..=19 | 22..=23 => 24,
                     20..=21 => 32,
+                    24..=25 => 100,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -731,6 +733,7 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x72,
         ] => 22,
+        [0x44, 0x61, 0x73, 0x68] => 24,
         _ => return None,
     })
 }
@@ -931,6 +934,60 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1810, 0xfdff),
             (0xfe10, 0xe00ff),
             (0xe01f0, 0x10ffff),
+        ],
+        // UCD 18 Dash: 31 members, invariant under C/S folding.
+        24 => &[
+            (0x2d, 0x2d),
+            (0x58a, 0x58a),
+            (0x5be, 0x5be),
+            (0x1400, 0x1400),
+            (0x1806, 0x1806),
+            (0x2010, 0x2015),
+            (0x2053, 0x2053),
+            (0x207b, 0x207b),
+            (0x208b, 0x208b),
+            (0x2212, 0x2212),
+            (0x2e17, 0x2e17),
+            (0x2e1a, 0x2e1a),
+            (0x2e3a, 0x2e3b),
+            (0x2e40, 0x2e40),
+            (0x2e5d, 0x2e5d),
+            (0x301c, 0x301c),
+            (0x3030, 0x3030),
+            (0x30a0, 0x30a0),
+            (0xfe31, 0xfe32),
+            (0xfe58, 0xfe58),
+            (0xfe63, 0xfe63),
+            (0xff0d, 0xff0d),
+            (0x10d6e, 0x10d6e),
+            (0x10ead, 0x10ead),
+        ],
+        25 => &[
+            (0x0, 0x2c),
+            (0x2e, 0x589),
+            (0x58b, 0x5bd),
+            (0x5bf, 0x13ff),
+            (0x1401, 0x1805),
+            (0x1807, 0x200f),
+            (0x2016, 0x2052),
+            (0x2054, 0x207a),
+            (0x207c, 0x208a),
+            (0x208c, 0x2211),
+            (0x2213, 0x2e16),
+            (0x2e18, 0x2e19),
+            (0x2e1b, 0x2e39),
+            (0x2e3c, 0x2e3f),
+            (0x2e41, 0x2e5c),
+            (0x2e5e, 0x301b),
+            (0x301d, 0x302f),
+            (0x3031, 0x309f),
+            (0x30a1, 0xfe30),
+            (0xfe33, 0xfe57),
+            (0xfe59, 0xfe62),
+            (0xfe64, 0xff0c),
+            (0xff0e, 0x10d6d),
+            (0x10d6f, 0x10eac),
+            (0x10eae, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -4147,6 +4204,199 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{VS}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_dash_property_membership_over_every_code_point() {
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Dash}",
+                    r"\P{Dash}",
+                    r"[\p{Dash}]",
+                    r"[^\p{Dash}]",
+                    r"[\P{Dash}K]",
+                    r"[\p{Dash}K]",
+                    r"[\p{Dash}\P{Dash}]",
+                    r"[^\P{Dash}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let dash = [
+                            0x2d, 0x58a, 0x5be, 0x1400, 0x1806, 0x2010, 0x2011, 0x2012, 0x2013,
+                            0x2014, 0x2015, 0x2053, 0x207b, 0x208b, 0x2212, 0x2e17, 0x2e1a, 0x2e3a,
+                            0x2e3b, 0x2e40, 0x2e5d, 0x301c, 0x3030, 0x30a0, 0xfe31, 0xfe32, 0xfe58,
+                            0xfe63, 0xff0d, 0x10d6e, 0x10ead,
+                        ]
+                        .binary_search(&point)
+                        .is_ok();
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Dash}" | r"[\p{Dash}]" => dash,
+                            r"\P{Dash}" | r"[^\p{Dash}]" => !dash,
+                            r"[\P{Dash}K]" => !dash || k,
+                            r"[\p{Dash}K]" => dash || k,
+                            r"[\p{Dash}\P{Dash}]" => true,
+                            r"[^\P{Dash}K]" => dash && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_dash_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Dash}",
+            r"\P{Dash}",
+            r"^[\p{Dash}]$",
+            r"[\P{Dash}K]",
+            r"[^\P{Dash}K]",
+            r"[\p{Dash}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{2d}\u{58a}\u{5be}\u{1400}\u{1806}\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2053}\u{207b}\u{208b}\u{2212}\u{2e17}\u{2e1a}\u{2e3a}\u{2e3b}\u{2e40}\u{2e5d}\u{301c}\u{3030}\u{30a0}\u{fe31}\u{fe32}\u{fe58}\u{fe63}\u{ff0d}\u{10d6e}\u{10ead}\u{2c}\u{2e}\u{589}\u{58b}\u{5bd}\u{5bf}\u{13ff}\u{1401}\u{1805}\u{1807}\u{200f}\u{2016}\u{2052}\u{2054}\u{207a}\u{207c}\u{208a}\u{208c}\u{2211}\u{2213}\u{2e16}\u{2e18}\u{2e19}\u{2e1b}\u{2e39}\u{2e3c}\u{2e3f}\u{2e41}\u{2e5c}\u{2e5e}\u{301b}\u{301d}\u{302f}\u{3031}\u{309f}\u{30a1}\u{fe30}\u{fe33}\u{fe57}\u{fe59}\u{fe62}\u{fe64}\u{ff0c}\u{ff0e}\u{10d6d}\u{10d6f}\u{10eac}\u{10eae}\u{feff}ſK\n",
+                            "X\r\n\u{2010}\u{2028}\u{2015}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_dash_property_work_deduplication_and_contracts() {
+        let source = JsString::from(format!("[{}]", r"\p{Dash}\P{Dash}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Dash}$", r"^[\P{Dash}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{2010}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{Dash}--A]",
+            r"[\p{Dash}&&A]",
+            r"[[\p{Dash}]]",
+            r"[A-\p{Dash}]",
+            r"[\p{Dash}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Dash}]"),
                 true,
                 true,
                 false
