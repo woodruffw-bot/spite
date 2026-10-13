@@ -4407,6 +4407,25 @@ adds four members absent from the pinned Unicode 17 fixture, which remains
 unchanged and unvendored. The new U+1DF6F member also changes folded
 membership for its uppercase U+1DF6E preimage.
 
+
+Grapheme_Extend and its exact Gr_Ext alias use pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+2,269 members in 389 positive and 390 raw complementary intervals.
+U+0345 folds to nonmember U+03B9. Complement before folding under u+i
+admits all four iota equivalents in both p and P; complement after folding
+under v+i excludes them from P. Its 393-interval v+i complement removes
+the full preimage before union, folding and class inversion. Captures,
+assertions, repetitions and property/dot patterns keep complete-character
+matching and UTF-16 boundaries.
+
+Tags 56/57 fit the temporary u64 property mask; the bounded scan stops
+below 58. Earlier tables and matcher fields remain unchanged. Standalone
+construction charges 393 intervals before allocation; each distinct class
+set charges 1,572. No dependency, recursion or default quota is added.
+UCD 18 adds 37 members absent from the pinned Unicode 17 fixture, which
+remains unchanged and unvendored. This data-version difference is separate
+from the documented, narrowly approved inside-pair Node/V8 boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
