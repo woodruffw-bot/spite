@@ -4338,6 +4338,25 @@ fixture. Native membership follows UCD 18. Shared data agrees with Node, and
 native tests cover both aliases and complements at the addition. The original
 fixture remains unchanged and unvendored because its complement contains U+2B81E.
 
+
+Ideographic and its exact Ideo alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty): 123244 members in twenty-four positive
+and twenty-five complementary intervals. Every common/simple fold preserves
+membership. Atoms, unions, inversion, captures, assertions, repetitions and
+captured property/dot patterns reuse the complete-character matcher.
+
+Tags 48/49 fit the existing temporary u64 mask; the bounded scan stops below 50.
+All earlier tables, charges and matcher fields remain unchanged. Construction
+charges the twenty-five-interval append before allocation; class compilation
+charges each distinct set. No dependency, recursion or default quota is added.
+
+UCD 18 adds 12301 members across six ranges to the Unicode 17 set used by Node
+and the pinned Test262 fixture. Native membership follows UCD 18. Shared data
+agrees with Node; dedicated native tests cover endpoints and interior members
+of every addition range across both aliases, complements and Unicode/case modes.
+The original fixture remains unchanged and unvendored because its complement
+contains those new members.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
