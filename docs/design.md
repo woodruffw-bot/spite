@@ -4371,6 +4371,24 @@ charge each distinct set. No dependency, recursion or default quota is added.
 The pinned Unicode 17 Test262 fixture has identical complete positive and
 negative sets. Its unchanged provenance is reviewed separately from implementation.
 
+
+Diacritic and its exact Dia alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty): 1,334 members in 228 positive and
+229 raw complementary intervals. U+0345 folds to nonmember U+03B9. Under
+u+i, complement before folding admits all four iota equivalents in both
+p and P; under v+i, complement after folding excludes them from P. The
+230-interval v+i complement removes the full preimage before union, folding
+and any class inversion. Captures, assertions, repetitions and property/dot
+patterns retain complete-character matching and UTF-16 boundaries.
+
+Tags 52/53 fit the temporary u64 property mask; the bounded scan stops
+below 54. Earlier tables and matcher fields remain unchanged. Standalone
+construction charges 230 intervals before allocation; each distinct class
+set charges 920. No dependency, recursion or default quota is added.
+UCD 18 adds 87 members absent from the pinned Unicode 17 fixture, which
+remains unchanged and unvendored. This version difference is documented
+separately from the narrowly approved inside-pair Node/V8 boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
