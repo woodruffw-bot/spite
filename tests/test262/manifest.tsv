@@ -7600,3 +7600,4 @@ script-pass	8be965b6cf787cf85f25e20e6b7812ad7d54c9b461c276d3d91ba676def107e6	tes
 script-pass	eb8be5ae591f743898c280242501b9997d9597635a0054ff328b3d538dbf84a1	test/built-ins/RegExp/prototype/exec/regexp-builtin-exec-v-u-flag.js
 script-pass	19a46ed97c4cbf8264cca44dd3b82ce08f841bfba94185c767b387b7d5743738	test/built-ins/RegExp/property-escapes/generated/Pattern_Syntax.js
 script-pass	4f36648621c6783916b1ba7c17168d5e08210435b2ff52171413522e71ed2daf	test/built-ins/RegExp/property-escapes/generated/IDS_Binary_Operator.js
+script-pass	d16691a3996a5156d5f4e665b75c67c1124d6052781b1504a013172bb36a4ff6	test/built-ins/RegExp/property-escapes/generated/IDS_Trinary_Operator.js
