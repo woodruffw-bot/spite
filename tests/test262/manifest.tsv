@@ -7599,3 +7599,4 @@ script-pass	903bf95f6373782c2daf0c64b6b352b531e90ad5f8ad0f7dc09429e2069fd3c0	tes
 script-pass	8be965b6cf787cf85f25e20e6b7812ad7d54c9b461c276d3d91ba676def107e6	test/built-ins/RegExp/property-escapes/generated/Dash.js
 script-pass	eb8be5ae591f743898c280242501b9997d9597635a0054ff328b3d538dbf84a1	test/built-ins/RegExp/prototype/exec/regexp-builtin-exec-v-u-flag.js
 script-pass	19a46ed97c4cbf8264cca44dd3b82ce08f841bfba94185c767b387b7d5743738	test/built-ins/RegExp/property-escapes/generated/Pattern_Syntax.js
+script-pass	4f36648621c6783916b1ba7c17168d5e08210435b2ff52171413522e71ed2daf	test/built-ins/RegExp/property-escapes/generated/IDS_Binary_Operator.js

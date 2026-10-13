@@ -7568,3 +7568,4 @@ test/built-ins/RegExp/property-escapes/generated/Variation_Selector.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Dash.js	-	-	-
 test/built-ins/RegExp/prototype/exec/regexp-builtin-exec-v-u-flag.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Pattern_Syntax.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/IDS_Binary_Operator.js	-	-	-
