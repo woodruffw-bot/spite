@@ -4468,6 +4468,24 @@ remains unchanged and unvendored. Independent Node comparisons use
 matching Unicode 17 folding data. The production Unicode 18 pin and
 the narrowly approved inside-pair Node/V8 exception remain unchanged.
 
+
+Default_Ignorable_Code_Point and its exact DI alias use pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+4,174 members in seventeen positive and eighteen complementary intervals.
+Every common/simple fold preserves membership, so both Unicode complement
+orders retain the same set. Atoms, classes, unions, inversion, captures,
+assertions, repetitions and captured property/dot patterns preserve complete
+characters and original UTF-16 ranges. Joiners and BOM are members; this
+property is distinct from word and RegExp whitespace membership.
+
+Tags 62/63 occupy the highest existing temporary u64 property-mask bits.
+The bounded scan stops below 64; no shift reaches the mask width. Earlier
+tables and matcher fields remain unchanged. Standalone construction charges
+eighteen intervals before allocation; each distinct class set charges 72.
+No dependency, recursion or default quota is added. The pinned Unicode 17
+fixture has identical complete positive and negative sets; its unchanged
+provenance is reviewed separately from this implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

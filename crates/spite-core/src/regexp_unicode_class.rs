@@ -39,6 +39,7 @@ use std::{ops::Range, sync::Arc};
 /// Grapheme_Extend/Gr_Ext uses UCD 18 grapheme-extend membership.
 /// Grapheme_Base/Gr_Base uses UCD 18 grapheme-base membership.
 /// Case_Ignorable/CI uses UCD 18 case-ignorable membership.
+/// Default_Ignorable_Code_Point/DI uses UCD 18 default-ignorable membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -243,6 +244,7 @@ impl RegExpUnicodeClassMatcher {
             56 => 393,
             58 => 912,
             60 => 470,
+            62 => 18,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -358,7 +360,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..62 {
+        for kind in 0..64 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -385,6 +387,7 @@ impl RegExpUnicodeClassMatcher {
                     56..=57 => 1572,
                     58..=59 => 3648,
                     60..=61 => 1880,
+                    62..=63 => 72,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -1049,6 +1052,37 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6c,
             0x65,
         ] => 60,
+        [0x44, 0x49]
+        | [
+            0x44,
+            0x65,
+            0x66,
+            0x61,
+            0x75,
+            0x6c,
+            0x74,
+            0x5f,
+            0x49,
+            0x67,
+            0x6e,
+            0x6f,
+            0x72,
+            0x61,
+            0x62,
+            0x6c,
+            0x65,
+            0x5f,
+            0x43,
+            0x6f,
+            0x64,
+            0x65,
+            0x5f,
+            0x50,
+            0x6f,
+            0x69,
+            0x6e,
+            0x74,
+        ] => 62,
         _ => return None,
     })
 }
@@ -8469,6 +8503,46 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xe0002, 0xe001f),
             (0xe0080, 0xe00ff),
             (0xe01f0, 0x10ffff),
+        ],
+        // UCD 18 Default_Ignorable_Code_Point: 4174 members, invariant under C/S folding.
+        62 => &[
+            (0xad, 0xad),
+            (0x34f, 0x34f),
+            (0x61c, 0x61c),
+            (0x115f, 0x1160),
+            (0x17b4, 0x17b5),
+            (0x180b, 0x180f),
+            (0x200b, 0x200f),
+            (0x202a, 0x202e),
+            (0x2060, 0x206f),
+            (0x3164, 0x3164),
+            (0xfe00, 0xfe0f),
+            (0xfeff, 0xfeff),
+            (0xffa0, 0xffa0),
+            (0xfff0, 0xfff8),
+            (0x1bca0, 0x1bca3),
+            (0x1d173, 0x1d17a),
+            (0xe0000, 0xe0fff),
+        ],
+        63 => &[
+            (0x0, 0xac),
+            (0xae, 0x34e),
+            (0x350, 0x61b),
+            (0x61d, 0x115e),
+            (0x1161, 0x17b3),
+            (0x17b6, 0x180a),
+            (0x1810, 0x200a),
+            (0x2010, 0x2029),
+            (0x202f, 0x205f),
+            (0x2070, 0x3163),
+            (0x3165, 0xfdff),
+            (0xfe10, 0xfefe),
+            (0xff00, 0xff9f),
+            (0xffa1, 0xffef),
+            (0xfff9, 0x1bc9f),
+            (0x1bca4, 0x1d172),
+            (0x1d17b, 0xdffff),
+            (0xe1000, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -20130,6 +20204,284 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{CI}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_default_ignorable_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (173usize, 173usize),
+            (847usize, 847usize),
+            (1564usize, 1564usize),
+            (4447usize, 4448usize),
+            (6068usize, 6069usize),
+            (6155usize, 6157usize),
+            (6158usize, 6158usize),
+            (6159usize, 6159usize),
+            (8203usize, 8207usize),
+            (8234usize, 8238usize),
+            (8288usize, 8292usize),
+            (8293usize, 8293usize),
+            (8294usize, 8303usize),
+            (12644usize, 12644usize),
+            (65024usize, 65039usize),
+            (65279usize, 65279usize),
+            (65440usize, 65440usize),
+            (65520usize, 65528usize),
+            (113824usize, 113827usize),
+            (119155usize, 119162usize),
+            (917504usize, 917504usize),
+            (917505usize, 917505usize),
+            (917506usize, 917535usize),
+            (917536usize, 917631usize),
+            (917632usize, 917759usize),
+            (917760usize, 917999usize),
+            (918000usize, 921599usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Default_Ignorable_Code_Point}",
+                    r"\P{DI}",
+                    r"[\p{DI}]",
+                    r"[^\p{Default_Ignorable_Code_Point}]",
+                    r"[\P{DI}K]",
+                    r"[\p{DI}K]",
+                    r"[\p{DI}\P{Default_Ignorable_Code_Point}]",
+                    r"[^\P{DI}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let default_ignorable = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Default_Ignorable_Code_Point}" | r"[\p{DI}]" => default_ignorable,
+                            r"\P{DI}" | r"[^\p{Default_Ignorable_Code_Point}]" => {
+                                !default_ignorable
+                            }
+                            r"[\P{DI}K]" => !default_ignorable || k,
+                            r"[\p{DI}K]" => default_ignorable || k,
+                            r"[\p{DI}\P{Default_Ignorable_Code_Point}]" => true,
+                            r"[^\P{DI}K]" => default_ignorable && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_default_ignorable_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{DI}",
+            r"\P{Default_Ignorable_Code_Point}",
+            r"^[\p{Default_Ignorable_Code_Point}]$",
+            r"[\P{DI}K]",
+            r"[^\P{DI}K]",
+            r"[\p{Default_Ignorable_Code_Point}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{ac}\u{ad}\u{ae}\u{34e}\u{34f}\u{350}\u{61b}\u{61c}\u{61d}\u{115e}\u{115f}\u{1160}\u{1161}\u{17b3}\u{17b4}\u{17b5}\u{17b6}\u{180a}\u{180b}\u{180f}\u{1810}\u{200a}\u{200b}\u{200f}\u{2010}\u{2029}\u{202a}\u{202e}\u{202f}\u{205f}\u{2060}\u{206f}\u{2070}\u{3163}\u{3164}\u{3165}\u{fdff}\u{fe00}\u{fe0f}\u{fe10}\u{fefe}\u{feff}\u{ff00}\u{ff9f}\u{ffa0}\u{ffa1}\u{ffef}\u{fff0}\u{fff8}\u{fff9}\u{1bc9f}\u{1bca0}\u{1bca3}\u{1bca4}\u{1d172}\u{1d173}\u{1d17a}\u{1d17b}\u{dffff}\u{e0000}\u{e0fff}\u{e1000}\u{feff}ſK\n",
+                            "X\r\n\u{200c}\u{2028}\u{200d}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_default_ignorable_property_work_deduplication_and_contracts() {
+        // New tags 62/63 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let highest = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\P{DI}\p{ASCII}\p{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x200c, false),
+                (0x200d, false),
+                (0x1f600, true),
+            ] {
+                assert_eq!(highest.matches(point), expected, "highest bit U+{point:X}");
+            }
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{DI}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x200c, true),
+                (0x200d, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{DI}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x200c, false),
+                (0x200d, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(
+            format!(
+                "[{}]",
+                r"\p{DI}\P{Default_Ignorable_Code_Point}".repeat(10000)
+            )
+            .as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{DI}$", r"^[\P{Default_Ignorable_Code_Point}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{200c}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{DI}--A]",
+            r"[\p{DI}&&A]",
+            r"[[\p{DI}]]",
+            r"[A-\p{DI}]",
+            r"[\p{DI}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{DI}]"),
                 true,
                 true,
                 false
