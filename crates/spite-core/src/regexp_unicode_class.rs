@@ -28,6 +28,7 @@ use std::{ops::Range, sync::Arc};
 /// Sentence_Terminal/STerm uses UCD 18 sentence-terminal membership.
 /// Terminal_Punctuation/Term uses UCD 18 terminal-punctuation membership.
 /// IDS_Binary_Operator/IDSB uses UCD 18 binary-operator membership.
+/// IDS_Trinary_Operator/IDST uses UCD 18 trinary-operator membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -221,6 +222,7 @@ impl RegExpUnicodeClassMatcher {
             34 => 90,
             36 => 118,
             38 => 4,
+            40 => 2,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -336,7 +338,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..40 {
+        for kind in 0..42 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -352,6 +354,7 @@ impl RegExpUnicodeClassMatcher {
                     34..=35 => 360,
                     36..=37 => 472,
                     38..=39 => 16,
+                    40..=41 => 8,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -870,6 +873,29 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x72,
         ] => 38,
+        [0x49, 0x44, 0x53, 0x54]
+        | [
+            0x49,
+            0x44,
+            0x53,
+            0x5f,
+            0x54,
+            0x72,
+            0x69,
+            0x6e,
+            0x61,
+            0x72,
+            0x79,
+            0x5f,
+            0x4f,
+            0x70,
+            0x65,
+            0x72,
+            0x61,
+            0x74,
+            0x6f,
+            0x72,
+        ] => 40,
         _ => return None,
     })
 }
@@ -2008,6 +2034,9 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x2ffe, 0x31ee),
             (0x31f0, 0x10ffff),
         ],
+        // UCD 18 IDS_Trinary_Operator: 2 members, invariant under C/S folding.
+        40 => &[(0x2ff2, 0x2ff3)],
+        41 => &[(0x0, 0x2ff1), (0x2ff4, 0x10ffff)],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -8005,6 +8034,232 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{IDSB}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_ids_trinary_operator_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        membership[12274..=12275].fill(true);
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{IDS_Trinary_Operator}",
+                    r"\P{IDST}",
+                    r"[\p{IDST}]",
+                    r"[^\p{IDS_Trinary_Operator}]",
+                    r"[\P{IDST}K]",
+                    r"[\p{IDST}K]",
+                    r"[\p{IDST}\P{IDS_Trinary_Operator}]",
+                    r"[^\P{IDST}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let ids_trinary_operator = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{IDS_Trinary_Operator}" | r"[\p{IDST}]" => ids_trinary_operator,
+                            r"\P{IDST}" | r"[^\p{IDS_Trinary_Operator}]" => !ids_trinary_operator,
+                            r"[\P{IDST}K]" => !ids_trinary_operator || k,
+                            r"[\p{IDST}K]" => ids_trinary_operator || k,
+                            r"[\p{IDST}\P{IDS_Trinary_Operator}]" => true,
+                            r"[^\P{IDST}K]" => ids_trinary_operator && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_ids_trinary_operator_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{IDST}",
+            r"\P{IDS_Trinary_Operator}",
+            r"^[\p{IDS_Trinary_Operator}]$",
+            r"[\P{IDST}K]",
+            r"[^\P{IDST}K]",
+            r"[\p{IDS_Trinary_Operator}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{2ff1}\u{2ff2}\u{2ff3}\u{2ff4}\u{feff}ſK\n",
+                            "X\r\n\u{2ff2}\u{2028}\u{2ff3}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_ids_trinary_operator_property_work_deduplication_and_contracts() {
+        // New tags 40/41 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{IDST}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x2ff2, true),
+                (0x2ff3, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{IDST}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x2ff2, false),
+                (0x2ff3, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(
+            format!("[{}]", r"\p{IDST}\P{IDS_Trinary_Operator}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{IDST}$", r"^[\P{IDS_Trinary_Operator}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{2ff2}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{IDST}--A]",
+            r"[\p{IDST}&&A]",
+            r"[[\p{IDST}]]",
+            r"[A-\p{IDST}]",
+            r"[\p{IDST}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{IDST}]"),
                 true,
                 true,
                 false

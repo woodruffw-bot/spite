@@ -4279,6 +4279,20 @@ charge each distinct set. No dependency, recursion or default quota is added.
 The pinned Unicode 17 Test262 fixture has the same full positive and negative
 sets. Its unchanged provenance is reviewed separately from implementation.
 
+
+IDS_Trinary_Operator and its exact IDST alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty): two members in one positive and
+two complementary intervals. Every common/simple folding preimage preserves
+membership. Both Unicode complement orders, property atoms and class unions
+use the existing complete-character matcher.
+
+Tags 40/41 fit the existing temporary u64 property mask; the bounded scan
+stops below 42. Earlier tables, charges and matcher fields remain unchanged.
+Construction charges the two-interval append before allocation; classes
+charge each distinct set. No dependency, recursion or default quota is added.
+The pinned Unicode 17 Test262 fixture has the same full positive and negative
+sets. Its unchanged provenance is reviewed separately from implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
