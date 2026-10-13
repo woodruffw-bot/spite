@@ -8643,6 +8643,28 @@ Stable and MSRV pass all 14,622 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Regional_Indicator/RI adds three Core and nine runtime tests. Independent raw
+data checks 35,651,584 code-point/form/flag combinations; all 17,825,792 Node
+membership comparisons agree. The 1920 Core and 560 runtime snapshot rows
+agree with independent UTF-16 evaluation and Node. Thirty-two whole Boolean
+programs cover both aliases, complements, consumers, captures and pair starts.
+
+Explicit supplementary-character expectations verify capture indices, lastIndex,
+replacement offsets, sticky starts inside a property member and collection of
+deep captured classes. Mixed earlier/new mask bits, deduplication, fallible work,
+strict writes, clones, large sources and inputs retain unlimited defaults.
+All 760 Core tests and 268 related runtime targets pass. The 592 earlier
+snapshots are byte-identical and two reviewed snapshots are added. The
+1265-program gap audit has no admissions. Whole fixture outcomes retain
+204 passed and 26 Unsupported variants in the 115-source review. Inventories,
+pins and dependencies remain unchanged; the original compatible fixture is
+reviewed and published separately.
+
+Stable and MSRV pass all 14,622 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

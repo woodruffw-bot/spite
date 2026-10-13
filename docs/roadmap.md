@@ -529,6 +529,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match IDS_Binary_Operator/IDSB Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [x] Match IDS_Trinary_Operator/IDST Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [x] Match Radical Unicode property atoms and classes with exact complements and UCD 18 membership.
+- [x] Match Regional_Indicator/RI Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

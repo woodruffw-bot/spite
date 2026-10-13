@@ -4307,6 +4307,20 @@ charge each distinct set. No dependency, recursion or default quota is added.
 The pinned Unicode 17 Test262 fixture has the same full positive and negative
 sets. Its unchanged provenance is reviewed separately from implementation.
 
+
+Regional_Indicator and its exact RI alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty). Its 26 members, U+1F1E6 through U+1F1FF,
+form one positive and two complementary intervals. Every common/simple fold
+preserves membership. Atoms, class unions and complements use the existing
+complete-character matcher and retain UTF-16 boundaries. The existing narrowly
+approved leading-boundary rule also covers starts inside these surrogate pairs.
+
+Tags 44/45 fit the existing temporary u64 mask, with a bounded scan below 46.
+Earlier tables, charges and matcher fields remain unchanged. Construction
+charges the two-interval append before allocation; classes charge each distinct
+set. No dependency, recursion or default quota is added. The complete positive
+and negative sets match the pinned Unicode 17 fixture, reviewed separately.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
