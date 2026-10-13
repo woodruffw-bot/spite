@@ -4504,6 +4504,22 @@ quota is added. UCD 18 adds 165 members absent from the pinned Unicode 17
 fixture, which remains unchanged and unvendored. The version difference
 is separate from the approved Node/V8 inside-pair boundary behavior.
 
+
+Alphabetic and its exact Alpha alias use pinned UCD 18 DerivedCoreProperties
+membership (22.2.2.9 and UnicodeMatchProperty): 160,254 members in 775
+positive and 776 complementary intervals. Common/simple folds preserve
+membership, so Unicode complement orders retain identical sets. Atoms,
+classes, unions, inversion, captures, assertions, repetitions and captured
+property/dot patterns retain complete characters and original UTF-16 ranges.
+
+Tags 66/67 fit the temporary u128 property mask; the bounded scan stops below
+68. All earlier tables and matcher fields remain unchanged. Standalone
+construction charges 776 intervals before allocation and each distinct
+class set charges 3,104. No dependency, recursion or default quota is added.
+Unicode 18 adds 12,833 members in 32 ranges absent from the pinned Unicode 17
+fixture, which remains unchanged and unvendored. Data-version differences
+are separate from the approved Node/V8 inside-pair boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
