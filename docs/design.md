@@ -4389,6 +4389,24 @@ UCD 18 adds 87 members absent from the pinned Unicode 17 fixture, which
 remains unchanged and unvendored. This version difference is documented
 separately from the narrowly approved inside-pair Node/V8 boundary behavior.
 
+
+Soft_Dotted and its exact SD alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty): 54 members in 36 positive and 37 raw
+complementary intervals. Twelve nonmembers fold to members. Under u+i,
+complement before folding admits both ends of each crossing pair in both
+p and P; under v+i, complement after folding excludes them from P. The
+43-interval v+i complement removes every additional preimage before union,
+folding and class inversion. Captures, assertions, repetitions and property/dot
+patterns retain complete-character matching and UTF-16 boundaries.
+
+Tags 54/55 fit the temporary u64 property mask; the bounded scan stops
+below 56. Earlier tables and matcher fields remain unchanged. Standalone
+construction charges 43 intervals before allocation; each distinct class set
+charges 172. No dependency, recursion or default quota is added. UCD 18
+adds four members absent from the pinned Unicode 17 fixture, which remains
+unchanged and unvendored. The new U+1DF6F member also changes folded
+membership for its uppercase U+1DF6E preimage.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

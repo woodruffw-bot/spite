@@ -35,6 +35,7 @@ use std::{ops::Range, sync::Arc};
 /// Ideographic/Ideo uses UCD 18 ideographic membership.
 /// Deprecated/Dep uses UCD 18 deprecated membership.
 /// Diacritic/Dia uses UCD 18 diacritic membership.
+/// Soft_Dotted/SD uses UCD 18 soft-dotted membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -235,6 +236,7 @@ impl RegExpUnicodeClassMatcher {
             48 => 25,
             50 => 9,
             52 => 230,
+            54 => 43,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -350,7 +352,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..54 {
+        for kind in 0..56 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -373,6 +375,7 @@ impl RegExpUnicodeClassMatcher {
                     48..=49 => 100,
                     50..=51 => 36,
                     52..=53 => 920,
+                    54..=55 => 172,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -972,6 +975,20 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
         ] => 48,
         [0x44, 0x65, 0x70] | [0x44, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64] => 50,
         [0x44, 0x69, 0x61] | [0x44, 0x69, 0x61, 0x63, 0x72, 0x69, 0x74, 0x69, 0x63] => 52,
+        [0x53, 0x44]
+        | [
+            0x53,
+            0x6f,
+            0x66,
+            0x74,
+            0x5f,
+            0x44,
+            0x6f,
+            0x74,
+            0x74,
+            0x65,
+            0x64,
+        ] => 54,
         _ => return None,
     })
 }
@@ -2932,6 +2949,130 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1e8d7, 0x1e943),
             (0x1e947, 0x1e947),
             (0x1e94b, 0x10ffff),
+        ],
+        // UCD 18 Soft_Dotted: 54 members; twelve nonmembers fold to members.
+        54 => &[
+            (0x69, 0x6a),
+            (0x12f, 0x12f),
+            (0x249, 0x249),
+            (0x268, 0x268),
+            (0x29d, 0x29d),
+            (0x2b2, 0x2b2),
+            (0x3f3, 0x3f3),
+            (0x456, 0x456),
+            (0x458, 0x458),
+            (0x1d62, 0x1d62),
+            (0x1d96, 0x1d96),
+            (0x1da4, 0x1da4),
+            (0x1da8, 0x1da8),
+            (0x1e2d, 0x1e2d),
+            (0x1ecb, 0x1ecb),
+            (0x2071, 0x2071),
+            (0x2148, 0x2149),
+            (0x2c7c, 0x2c7c),
+            (0x1d422, 0x1d423),
+            (0x1d456, 0x1d457),
+            (0x1d48a, 0x1d48b),
+            (0x1d4be, 0x1d4bf),
+            (0x1d4f2, 0x1d4f3),
+            (0x1d526, 0x1d527),
+            (0x1d55a, 0x1d55b),
+            (0x1d58e, 0x1d58f),
+            (0x1d5c2, 0x1d5c3),
+            (0x1d5f6, 0x1d5f7),
+            (0x1d62a, 0x1d62b),
+            (0x1d65e, 0x1d65f),
+            (0x1d692, 0x1d693),
+            (0x1df1a, 0x1df1a),
+            (0x1df6f, 0x1df71),
+            (0x1dfd9, 0x1dfd9),
+            (0x1e04c, 0x1e04d),
+            (0x1e068, 0x1e068),
+        ],
+        // v+i complements after folding; exclude all additional simple/common-fold preimages.
+        55 if unicode_sets && ignore_case => &[
+            (0x0, 0x48),
+            (0x4b, 0x68),
+            (0x6b, 0x12d),
+            (0x130, 0x196),
+            (0x198, 0x247),
+            (0x24a, 0x267),
+            (0x269, 0x29c),
+            (0x29e, 0x2b1),
+            (0x2b3, 0x37e),
+            (0x380, 0x3f2),
+            (0x3f4, 0x405),
+            (0x407, 0x407),
+            (0x409, 0x455),
+            (0x457, 0x457),
+            (0x459, 0x1d61),
+            (0x1d63, 0x1d95),
+            (0x1d97, 0x1da3),
+            (0x1da5, 0x1da7),
+            (0x1da9, 0x1e2b),
+            (0x1e2e, 0x1ec9),
+            (0x1ecc, 0x2070),
+            (0x2072, 0x2147),
+            (0x214a, 0x2c7b),
+            (0x2c7d, 0xa7b1),
+            (0xa7b3, 0x1d421),
+            (0x1d424, 0x1d455),
+            (0x1d458, 0x1d489),
+            (0x1d48c, 0x1d4bd),
+            (0x1d4c0, 0x1d4f1),
+            (0x1d4f4, 0x1d525),
+            (0x1d528, 0x1d559),
+            (0x1d55c, 0x1d58d),
+            (0x1d590, 0x1d5c1),
+            (0x1d5c4, 0x1d5f5),
+            (0x1d5f8, 0x1d629),
+            (0x1d62c, 0x1d65d),
+            (0x1d660, 0x1d691),
+            (0x1d694, 0x1df19),
+            (0x1df1b, 0x1df6d),
+            (0x1df72, 0x1dfd8),
+            (0x1dfda, 0x1e04b),
+            (0x1e04e, 0x1e067),
+            (0x1e069, 0x10ffff),
+        ],
+        55 => &[
+            (0x0, 0x68),
+            (0x6b, 0x12e),
+            (0x130, 0x248),
+            (0x24a, 0x267),
+            (0x269, 0x29c),
+            (0x29e, 0x2b1),
+            (0x2b3, 0x3f2),
+            (0x3f4, 0x455),
+            (0x457, 0x457),
+            (0x459, 0x1d61),
+            (0x1d63, 0x1d95),
+            (0x1d97, 0x1da3),
+            (0x1da5, 0x1da7),
+            (0x1da9, 0x1e2c),
+            (0x1e2e, 0x1eca),
+            (0x1ecc, 0x2070),
+            (0x2072, 0x2147),
+            (0x214a, 0x2c7b),
+            (0x2c7d, 0x1d421),
+            (0x1d424, 0x1d455),
+            (0x1d458, 0x1d489),
+            (0x1d48c, 0x1d4bd),
+            (0x1d4c0, 0x1d4f1),
+            (0x1d4f4, 0x1d525),
+            (0x1d528, 0x1d559),
+            (0x1d55c, 0x1d58d),
+            (0x1d590, 0x1d5c1),
+            (0x1d5c4, 0x1d5f5),
+            (0x1d5f8, 0x1d629),
+            (0x1d62c, 0x1d65d),
+            (0x1d660, 0x1d691),
+            (0x1d694, 0x1df19),
+            (0x1df1b, 0x1df6e),
+            (0x1df72, 0x1dfd8),
+            (0x1dfda, 0x1e04b),
+            (0x1e04e, 0x1e067),
+            (0x1e069, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -10854,6 +10995,280 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Dia}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_soft_dotted_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (105usize, 106usize),
+            (303usize, 303usize),
+            (585usize, 585usize),
+            (616usize, 616usize),
+            (669usize, 669usize),
+            (690usize, 690usize),
+            (1011usize, 1011usize),
+            (1110usize, 1110usize),
+            (1112usize, 1112usize),
+            (7522usize, 7522usize),
+            (7574usize, 7574usize),
+            (7588usize, 7588usize),
+            (7592usize, 7592usize),
+            (7725usize, 7725usize),
+            (7883usize, 7883usize),
+            (8305usize, 8305usize),
+            (8520usize, 8521usize),
+            (11388usize, 11388usize),
+            (119842usize, 119843usize),
+            (119894usize, 119895usize),
+            (119946usize, 119947usize),
+            (119998usize, 119999usize),
+            (120050usize, 120051usize),
+            (120102usize, 120103usize),
+            (120154usize, 120155usize),
+            (120206usize, 120207usize),
+            (120258usize, 120259usize),
+            (120310usize, 120311usize),
+            (120362usize, 120363usize),
+            (120414usize, 120415usize),
+            (120466usize, 120467usize),
+            (122650usize, 122650usize),
+            (122735usize, 122737usize),
+            (122841usize, 122841usize),
+            (122956usize, 122957usize),
+            (122984usize, 122984usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Soft_Dotted}",
+                    r"\P{SD}",
+                    r"[\p{SD}]",
+                    r"[^\p{Soft_Dotted}]",
+                    r"[\P{SD}K]",
+                    r"[\p{SD}K]",
+                    r"[\p{SD}\P{Soft_Dotted}]",
+                    r"[^\P{SD}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let raw = membership[point as usize];
+                        let greek = [
+                            0x49u32, 0x4au32, 0x69u32, 0x6au32, 0x12eu32, 0x12fu32, 0x197u32,
+                            0x248u32, 0x249u32, 0x268u32, 0x29du32, 0x37fu32, 0x3f3u32, 0x406u32,
+                            0x408u32, 0x456u32, 0x458u32, 0x1e2cu32, 0x1e2du32, 0x1ecau32,
+                            0x1ecbu32, 0xa7b2u32, 0x1df6eu32, 0x1df6fu32,
+                        ]
+                        .contains(&point);
+                        let soft_dotted = raw || (ignore_case && greek);
+                        let negative = if ignore_case && greek { !sets } else { !raw };
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Soft_Dotted}" | r"[\p{SD}]" => soft_dotted,
+                            r"\P{SD}" => negative,
+                            r"[^\p{Soft_Dotted}]" => !soft_dotted,
+                            r"[\P{SD}K]" => negative || k,
+                            r"[\p{SD}K]" => soft_dotted || k,
+                            r"[\p{SD}\P{Soft_Dotted}]" => true,
+                            r"[^\P{SD}K]" => !negative && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_soft_dotted_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{SD}",
+            r"\P{Soft_Dotted}",
+            r"^[\p{Soft_Dotted}]$",
+            r"[\P{SD}K]",
+            r"[^\P{SD}K]",
+            r"[\p{Soft_Dotted}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{49}\u{4a}\u{68}\u{69}\u{6a}\u{6b}\u{12e}\u{12f}\u{130}\u{197}\u{248}\u{249}\u{24a}\u{267}\u{268}\u{269}\u{29c}\u{29d}\u{29e}\u{2b1}\u{2b2}\u{2b3}\u{37f}\u{3f2}\u{3f3}\u{3f4}\u{406}\u{408}\u{455}\u{456}\u{457}\u{458}\u{459}\u{1d61}\u{1d62}\u{1d63}\u{1d95}\u{1d96}\u{1d97}\u{1da3}\u{1da4}\u{1da5}\u{1da7}\u{1da8}\u{1da9}\u{1e2c}\u{1e2d}\u{1e2e}\u{1eca}\u{1ecb}\u{1ecc}\u{2070}\u{2071}\u{2072}\u{2147}\u{2148}\u{2149}\u{214a}\u{2c7b}\u{2c7c}\u{2c7d}\u{a7b2}\u{1d421}\u{1d422}\u{1d423}\u{1d424}\u{1d455}\u{1d456}\u{1d457}\u{1d458}\u{1d489}\u{1d48a}\u{1d48b}\u{1d48c}\u{1d4bd}\u{1d4be}\u{1d4bf}\u{1d4c0}\u{1d4f1}\u{1d4f2}\u{1d4f3}\u{1d4f4}\u{1d525}\u{1d526}\u{1d527}\u{1d528}\u{1d559}\u{1d55a}\u{1d55b}\u{1d55c}\u{1d58d}\u{1d58e}\u{1d58f}\u{1d590}\u{1d5c1}\u{1d5c2}\u{1d5c3}\u{1d5c4}\u{1d5f5}\u{1d5f6}\u{1d5f7}\u{1d5f8}\u{1d629}\u{1d62a}\u{1d62b}\u{1d62c}\u{1d65d}\u{1d65e}\u{1d65f}\u{1d660}\u{1d691}\u{1d692}\u{1d693}\u{1d694}\u{1df19}\u{1df1a}\u{1df1b}\u{1df72}\u{1dfd8}\u{1dfda}\u{1e04b}\u{1e04c}\u{1e04d}\u{1e04e}\u{1e067}\u{1e068}\u{1e069}\u{feff}ſK\n",
+                            "X\r\n\u{69}\u{2028}\u{6a}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_soft_dotted_property_work_deduplication_and_contracts() {
+        // New tags 54/55 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{SD}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x69, true),
+                (0x6a, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{SD}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x69, false),
+                (0x6a, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source =
+            JsString::from(format!("[{}]", r"\p{SD}\P{Soft_Dotted}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert!(!plan.ranges.is_empty());
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{SD}$", r"^[\P{Soft_Dotted}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{69}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{SD}--A]",
+            r"[\p{SD}&&A]",
+            r"[[\p{SD}]]",
+            r"[A-\p{SD}]",
+            r"[\p{SD}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{SD}]"),
                 true,
                 true,
                 false
