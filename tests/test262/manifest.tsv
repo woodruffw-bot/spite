@@ -7597,3 +7597,4 @@ script-pass	45e25e2815ec8b855b528c1270438a7f0925e6efb3731fe9a2fbde0b529011e0	tes
 script-pass	b31297b1b8e508b6b7840ea05741c57cbc83e4e8aff1a98592668ec44b260401	test/built-ins/RegExp/property-escapes/generated/Noncharacter_Code_Point.js
 script-pass	903bf95f6373782c2daf0c64b6b352b531e90ad5f8ad0f7dc09429e2069fd3c0	test/built-ins/RegExp/property-escapes/generated/Variation_Selector.js
 script-pass	8be965b6cf787cf85f25e20e6b7812ad7d54c9b461c276d3d91ba676def107e6	test/built-ins/RegExp/property-escapes/generated/Dash.js
+script-pass	eb8be5ae591f743898c280242501b9997d9597635a0054ff328b3d538dbf84a1	test/built-ins/RegExp/prototype/exec/regexp-builtin-exec-v-u-flag.js

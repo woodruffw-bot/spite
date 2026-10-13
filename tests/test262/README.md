@@ -1,11 +1,35 @@
 # Test262 regression fixtures
 
-These 7586 unmodified test fixtures and twelve harness files come from
+These 7587 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Unicode RegExp exec flag fixture
+
+One unchanged whole Test262 source checks u/v exec with supplementary literals,
+dot, Script=Han, ASCII and complementary properties. Its two distinct property
+and dot capture groups retain original UTF-16 text and the leading match index.
+All original helper calls, positive and negative assertions, metadata and BSD
+notice remain unchanged.
+
+This is the final previously unrepresented source in the pinned
+RegExp.prototype.exec directory. No upstream revision or source is changed.
+Both whole normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. Git blob identity and manifest
+SHA-256 verify original bytes; all twelve helpers remain unchanged.
+
+The corpus contains 7587 fixtures, twelve helpers, 7568 reviewed Script sources
+and 14614 variants: 13081 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 701 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The implementation roadmap remains focused on concrete spec work.
+
+Stable and MSRV pass the complete 14614-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Generated Dash property fixture
 

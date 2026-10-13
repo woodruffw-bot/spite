@@ -7566,3 +7566,4 @@ test/built-ins/RegExp/property-escapes/generated/Join_Control.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Noncharacter_Code_Point.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Variation_Selector.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Dash.js	-	-	-
+test/built-ins/RegExp/prototype/exec/regexp-builtin-exec-v-u-flag.js	-	-	-
