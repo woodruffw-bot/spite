@@ -8594,6 +8594,28 @@ Stable and MSRV pass all 14,620 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Radical adds three Core and eight runtime tests. Independent
+raw data checks 35,651,584 code-point/form/flag combinations. All 8,912,896
+Node membership comparisons agree, including complements and its one exact name.
+The 1920 Core and 560 runtime snapshot rows agree with independent UTF-16
+evaluation and Node; thirty whole Boolean programs agree as well.
+
+Mixed earlier and new mask bits, deduplication, fallible construction, capture
+indices, complete-character boundaries, assertions, consumers, clones, strict
+writes and collection retain their contracts. Large sources and inputs keep
+unlimited defaults, and explicit work quotas preserve host-failure ordering.
+All 757 Core tests and 267 related runtime targets pass. The 590 earlier
+snapshots are byte-identical and two reviewed snapshots are added. The
+1260-program gap audit has no admissions, and whole fixture outcomes retain
+204 passed and 26 Unsupported variants in the 115-source review. Inventories,
+pins and dependencies remain unchanged. The compatible original Radical fixture
+will be published separately after its unchanged-fixture review.
+
+Stable and MSRV pass all 14,620 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -29,6 +29,7 @@ use std::{ops::Range, sync::Arc};
 /// Terminal_Punctuation/Term uses UCD 18 terminal-punctuation membership.
 /// IDS_Binary_Operator/IDSB uses UCD 18 binary-operator membership.
 /// IDS_Trinary_Operator/IDST uses UCD 18 trinary-operator membership.
+/// Radical uses UCD 18 radical membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -223,6 +224,7 @@ impl RegExpUnicodeClassMatcher {
             36 => 118,
             38 => 4,
             40 => 2,
+            42 => 4,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -338,7 +340,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..42 {
+        for kind in 0..44 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -355,6 +357,7 @@ impl RegExpUnicodeClassMatcher {
                     36..=37 => 472,
                     38..=39 => 16,
                     40..=41 => 8,
+                    42..=43 => 16,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -896,6 +899,7 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x72,
         ] => 40,
+        [0x52, 0x61, 0x64, 0x69, 0x63, 0x61, 0x6c] => 42,
         _ => return None,
     })
 }
@@ -2037,6 +2041,14 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
         // UCD 18 IDS_Trinary_Operator: 2 members, invariant under C/S folding.
         40 => &[(0x2ff2, 0x2ff3)],
         41 => &[(0x0, 0x2ff1), (0x2ff4, 0x10ffff)],
+        // UCD 18 Radical: 329 members, invariant under C/S folding.
+        42 => &[(0x2e80, 0x2e99), (0x2e9b, 0x2ef3), (0x2f00, 0x2fd5)],
+        43 => &[
+            (0x0, 0x2e7f),
+            (0x2e9a, 0x2e9a),
+            (0x2ef4, 0x2eff),
+            (0x2fd6, 0x10ffff),
+        ],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -8260,6 +8272,237 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{IDST}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_radical_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (11904usize, 11929usize),
+            (11931usize, 12019usize),
+            (12032usize, 12245usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Radical}",
+                    r"\P{Radical}",
+                    r"[\p{Radical}]",
+                    r"[^\p{Radical}]",
+                    r"[\P{Radical}K]",
+                    r"[\p{Radical}K]",
+                    r"[\p{Radical}\P{Radical}]",
+                    r"[^\P{Radical}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let radical = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Radical}" | r"[\p{Radical}]" => radical,
+                            r"\P{Radical}" | r"[^\p{Radical}]" => !radical,
+                            r"[\P{Radical}K]" => !radical || k,
+                            r"[\p{Radical}K]" => radical || k,
+                            r"[\p{Radical}\P{Radical}]" => true,
+                            r"[^\P{Radical}K]" => radical && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_radical_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Radical}",
+            r"\P{Radical}",
+            r"^[\p{Radical}]$",
+            r"[\P{Radical}K]",
+            r"[^\P{Radical}K]",
+            r"[\p{Radical}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{2e7f}\u{2e80}\u{2e99}\u{2e9a}\u{2e9b}\u{2ef3}\u{2ef4}\u{2eff}\u{2f00}\u{2fd5}\u{2fd6}\u{feff}ſK\n",
+                            "X\r\n\u{2e80}\u{2028}\u{2fd5}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_radical_property_work_deduplication_and_contracts() {
+        // New tags 42/43 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{Radical}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x2e80, true),
+                (0x2fd5, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{Radical}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x2e80, false),
+                (0x2fd5, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source =
+            JsString::from(format!("[{}]", r"\p{Radical}\P{Radical}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Radical}$", r"^[\P{Radical}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{2e80}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{Radical}--A]",
+            r"[\p{Radical}&&A]",
+            r"[[\p{Radical}]]",
+            r"[A-\p{Radical}]",
+            r"[\p{Radical}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Radical}]"),
                 true,
                 true,
                 false
