@@ -8332,6 +8332,31 @@ Stable and MSRV pass all 14,614 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Pattern_Syntax/Pat_Syn adds three core and eight runtime tests. Independent
+membership built from all 259 original PropList records checks 35,651,584
+code-point/form/flag combinations. The exact two aliases and their complements
+also agree with Node over 17,825,792 complete comparisons. All 1920 core and 560
+runtime snapshot rows agree with independent UTF-16/property evaluation and
+Node; thirty complete Boolean programs agree with Node.
+
+Boundary neighbors, class unions/inversion, multiline anchors, surrogate-pair
+starts, captures/indices/names, consumers, coercion order and strict lastIndex
+writes retain their specified behavior. Cloning and collection preserve large
+source/input/capture cases under unlimited defaults. Explicit work quotas and
+fallible construction callbacks stop before lastIndex writes or language handlers.
+
+All 736 core tests and 260 related runtime targets pass. All 576 earlier
+snapshots remain byte-identical; two reviewed snapshots are added. The current
+1225-program gap audit has zero admissions. Ordered/direct eval checks and
+whole fixture outcomes retain their counts without failures or limits. The
+115-source review retains 204 passed and 26 Unsupported variants; its outcomes
+remain distinct. Corpus inventories, the Test262 pin and dependencies are unchanged.
+
+Stable and MSRV pass all 14,614 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

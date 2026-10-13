@@ -4168,6 +4168,21 @@ one-unit rewind. Sticky search examines at most four input units. Construction
 and an additional search charge may abort before state writes. Dependencies,
 default quotas and other concatenation proofs retain their existing contracts.
 
+
+Pattern_Syntax and its exact Pat_Syn alias use the pinned UCD 18 PropList
+definition (22.2.2.9 and UnicodeMatchProperty). The 259 source records contain
+2760 members and normalize to 28 positive intervals; their complement has 29
+intervals. All common/simple case-fold preimages preserve membership, so both
+Unicode complement orders retain these intervals. Standalone atoms, flat unions,
+class inversion, captures, assertions and the existing repetition and captured
+property/dot proofs share the same complete-character matcher.
+
+Two additional tags fit the existing 32-bit property mask. Earlier tag tables,
+work charges and matcher fields remain unchanged. Construction precharges the
+fixed intervals and any moved source intervals; repeated property spellings add
+each fixed set once. No dependency, search kernel, default quota or input-sized
+search storage is introduced.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
