@@ -8442,6 +8442,33 @@ Stable and MSRV pass all 14,616 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Sentence_Terminal/STerm adds three Core and nine runtime tests. Independent
+raw records check 35,651,584 code-point/form/flag combinations. The full Node
+audit checks 17,825,792 combinations and confirms exactly thirty-two expected
+data differences at the two Unicode 18 additions, with no other differences.
+All 1920 Core and 560 runtime snapshot rows agree with independent UTF-16 and
+property evaluation and Node on shared data. Thirty complete Boolean programs
+agree with Node; sixteen native programs cover both additions with both aliases,
+complements and all four Unicode/case flag combinations.
+
+Mixed earlier and new property bits, deduplication, fallible construction,
+boundaries, surrogate starts, anchors, captures/indices, consumers, coercions,
+strict writes, clones and collection retain their contracts. Large source,
+input and capture cases preserve unlimited defaults. Explicit work quotas
+preserve host-failure ordering without language handlers or lastIndex writes.
+
+All 745 Core tests and 263 related runtime targets pass. All 582 earlier
+snapshots remain byte-identical; two reviewed snapshots are added. The current
+1240-program gap audit has zero admissions. Whole fixture counts remain
+unchanged without failures or limits, including 204 passed and 26 Unsupported
+variants in the 115-source review. Inventories, pins and dependencies are
+unchanged. The incompatible Unicode 17 Sentence_Terminal fixture is unvendored.
+
+Stable and MSRV pass all 14,616 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

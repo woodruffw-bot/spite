@@ -25,6 +25,7 @@ use std::{ops::Range, sync::Arc};
 /// Pattern_Syntax/Pat_Syn uses its exact fixed property intervals.
 /// Bidi_Mirrored/Bidi_M uses UCD 18 mirrored membership.
 /// Extender/Ext uses UCD 18 extender membership.
+/// Sentence_Terminal/STerm uses UCD 18 sentence-terminal membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -215,6 +216,7 @@ impl RegExpUnicodeClassMatcher {
             28 => 29,
             30 => 121,
             32 => 44,
+            34 => 90,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -330,7 +332,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..34 {
+        for kind in 0..36 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -343,6 +345,7 @@ impl RegExpUnicodeClassMatcher {
                     28..=29 => 116,
                     30..=31 => 484,
                     32..=33 => 176,
+                    34..=35 => 360,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -796,6 +799,26 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x64,
         ] => 30,
         [0x45, 0x78, 0x74] | [0x45, 0x78, 0x74, 0x65, 0x6e, 0x64, 0x65, 0x72] => 32,
+        [0x53, 0x54, 0x65, 0x72, 0x6d]
+        | [
+            0x53,
+            0x65,
+            0x6e,
+            0x74,
+            0x65,
+            0x6e,
+            0x63,
+            0x65,
+            0x5f,
+            0x54,
+            0x65,
+            0x72,
+            0x6d,
+            0x69,
+            0x6e,
+            0x61,
+            0x6c,
+        ] => 34,
         _ => return None,
     })
 }
@@ -1501,6 +1524,190 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1e13e, 0x1e5ee),
             (0x1e5f0, 0x1e943),
             (0x1e947, 0x10ffff),
+        ],
+        // UCD 18 Sentence_Terminal: 172 members, invariant under C/S folding.
+        34 => &[
+            (0x21, 0x21),
+            (0x2e, 0x2e),
+            (0x3f, 0x3f),
+            (0x589, 0x589),
+            (0x61d, 0x61f),
+            (0x6d4, 0x6d4),
+            (0x700, 0x702),
+            (0x7f9, 0x7f9),
+            (0x837, 0x837),
+            (0x839, 0x839),
+            (0x83d, 0x83e),
+            (0x964, 0x965),
+            (0x104a, 0x104b),
+            (0x1362, 0x1362),
+            (0x1367, 0x1368),
+            (0x166e, 0x166e),
+            (0x1735, 0x1736),
+            (0x17d4, 0x17d5),
+            (0x1803, 0x1803),
+            (0x1809, 0x1809),
+            (0x1944, 0x1945),
+            (0x1aa8, 0x1aab),
+            (0x1b4e, 0x1b4f),
+            (0x1b5a, 0x1b5b),
+            (0x1b5e, 0x1b5f),
+            (0x1b7d, 0x1b7f),
+            (0x1c3b, 0x1c3c),
+            (0x1c7e, 0x1c7f),
+            (0x2024, 0x2024),
+            (0x203c, 0x203d),
+            (0x2047, 0x2049),
+            (0x2cf9, 0x2cfb),
+            (0x2e2e, 0x2e2e),
+            (0x2e3c, 0x2e3c),
+            (0x2e53, 0x2e54),
+            (0x2e60, 0x2e61),
+            (0x3002, 0x3002),
+            (0xa4ff, 0xa4ff),
+            (0xa60e, 0xa60f),
+            (0xa6f3, 0xa6f3),
+            (0xa6f7, 0xa6f7),
+            (0xa876, 0xa877),
+            (0xa8ce, 0xa8cf),
+            (0xa92f, 0xa92f),
+            (0xa9c8, 0xa9c9),
+            (0xaa5d, 0xaa5f),
+            (0xaaf0, 0xaaf1),
+            (0xabeb, 0xabeb),
+            (0xfe12, 0xfe12),
+            (0xfe15, 0xfe16),
+            (0xfe52, 0xfe52),
+            (0xfe56, 0xfe57),
+            (0xff01, 0xff01),
+            (0xff0e, 0xff0e),
+            (0xff1f, 0xff1f),
+            (0xff61, 0xff61),
+            (0x10a56, 0x10a57),
+            (0x10f55, 0x10f59),
+            (0x10f86, 0x10f89),
+            (0x11047, 0x11048),
+            (0x110be, 0x110c1),
+            (0x11141, 0x11143),
+            (0x111c5, 0x111c6),
+            (0x111cd, 0x111cd),
+            (0x111de, 0x111df),
+            (0x11238, 0x11239),
+            (0x1123b, 0x1123c),
+            (0x112a9, 0x112a9),
+            (0x113d4, 0x113d5),
+            (0x1144b, 0x1144c),
+            (0x115c2, 0x115c3),
+            (0x115c9, 0x115d7),
+            (0x11641, 0x11642),
+            (0x1173c, 0x1173e),
+            (0x11944, 0x11944),
+            (0x11946, 0x11946),
+            (0x11a42, 0x11a43),
+            (0x11a9b, 0x11a9c),
+            (0x11c41, 0x11c42),
+            (0x11ef7, 0x11ef8),
+            (0x11f43, 0x11f44),
+            (0x16a6e, 0x16a6f),
+            (0x16af5, 0x16af5),
+            (0x16b37, 0x16b38),
+            (0x16b44, 0x16b44),
+            (0x16d6e, 0x16d6f),
+            (0x16e98, 0x16e98),
+            (0x1bc9f, 0x1bc9f),
+            (0x1da88, 0x1da88),
+        ],
+        35 => &[
+            (0x0, 0x20),
+            (0x22, 0x2d),
+            (0x2f, 0x3e),
+            (0x40, 0x588),
+            (0x58a, 0x61c),
+            (0x620, 0x6d3),
+            (0x6d5, 0x6ff),
+            (0x703, 0x7f8),
+            (0x7fa, 0x836),
+            (0x838, 0x838),
+            (0x83a, 0x83c),
+            (0x83f, 0x963),
+            (0x966, 0x1049),
+            (0x104c, 0x1361),
+            (0x1363, 0x1366),
+            (0x1369, 0x166d),
+            (0x166f, 0x1734),
+            (0x1737, 0x17d3),
+            (0x17d6, 0x1802),
+            (0x1804, 0x1808),
+            (0x180a, 0x1943),
+            (0x1946, 0x1aa7),
+            (0x1aac, 0x1b4d),
+            (0x1b50, 0x1b59),
+            (0x1b5c, 0x1b5d),
+            (0x1b60, 0x1b7c),
+            (0x1b80, 0x1c3a),
+            (0x1c3d, 0x1c7d),
+            (0x1c80, 0x2023),
+            (0x2025, 0x203b),
+            (0x203e, 0x2046),
+            (0x204a, 0x2cf8),
+            (0x2cfc, 0x2e2d),
+            (0x2e2f, 0x2e3b),
+            (0x2e3d, 0x2e52),
+            (0x2e55, 0x2e5f),
+            (0x2e62, 0x3001),
+            (0x3003, 0xa4fe),
+            (0xa500, 0xa60d),
+            (0xa610, 0xa6f2),
+            (0xa6f4, 0xa6f6),
+            (0xa6f8, 0xa875),
+            (0xa878, 0xa8cd),
+            (0xa8d0, 0xa92e),
+            (0xa930, 0xa9c7),
+            (0xa9ca, 0xaa5c),
+            (0xaa60, 0xaaef),
+            (0xaaf2, 0xabea),
+            (0xabec, 0xfe11),
+            (0xfe13, 0xfe14),
+            (0xfe17, 0xfe51),
+            (0xfe53, 0xfe55),
+            (0xfe58, 0xff00),
+            (0xff02, 0xff0d),
+            (0xff0f, 0xff1e),
+            (0xff20, 0xff60),
+            (0xff62, 0x10a55),
+            (0x10a58, 0x10f54),
+            (0x10f5a, 0x10f85),
+            (0x10f8a, 0x11046),
+            (0x11049, 0x110bd),
+            (0x110c2, 0x11140),
+            (0x11144, 0x111c4),
+            (0x111c7, 0x111cc),
+            (0x111ce, 0x111dd),
+            (0x111e0, 0x11237),
+            (0x1123a, 0x1123a),
+            (0x1123d, 0x112a8),
+            (0x112aa, 0x113d3),
+            (0x113d6, 0x1144a),
+            (0x1144d, 0x115c1),
+            (0x115c4, 0x115c8),
+            (0x115d8, 0x11640),
+            (0x11643, 0x1173b),
+            (0x1173f, 0x11943),
+            (0x11945, 0x11945),
+            (0x11947, 0x11a41),
+            (0x11a44, 0x11a9a),
+            (0x11a9d, 0x11c40),
+            (0x11c43, 0x11ef6),
+            (0x11ef9, 0x11f42),
+            (0x11f45, 0x16a6d),
+            (0x16a70, 0x16af4),
+            (0x16af6, 0x16b36),
+            (0x16b39, 0x16b43),
+            (0x16b45, 0x16d6d),
+            (0x16d70, 0x16e97),
+            (0x16e99, 0x1bc9e),
+            (0x1bca0, 0x1da87),
+            (0x1da89, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -6603,6 +6810,324 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Ext}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_sentence_terminal_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (33usize, 33usize),
+            (46usize, 46usize),
+            (63usize, 63usize),
+            (1417usize, 1417usize),
+            (1565usize, 1567usize),
+            (1748usize, 1748usize),
+            (1792usize, 1794usize),
+            (2041usize, 2041usize),
+            (2103usize, 2103usize),
+            (2105usize, 2105usize),
+            (2109usize, 2110usize),
+            (2404usize, 2405usize),
+            (4170usize, 4171usize),
+            (4962usize, 4962usize),
+            (4967usize, 4968usize),
+            (5742usize, 5742usize),
+            (5941usize, 5942usize),
+            (6100usize, 6101usize),
+            (6147usize, 6147usize),
+            (6153usize, 6153usize),
+            (6468usize, 6469usize),
+            (6824usize, 6827usize),
+            (6990usize, 6991usize),
+            (7002usize, 7003usize),
+            (7006usize, 7007usize),
+            (7037usize, 7039usize),
+            (7227usize, 7228usize),
+            (7294usize, 7295usize),
+            (8228usize, 8228usize),
+            (8252usize, 8253usize),
+            (8263usize, 8265usize),
+            (11513usize, 11515usize),
+            (11822usize, 11822usize),
+            (11836usize, 11836usize),
+            (11859usize, 11860usize),
+            (11872usize, 11873usize),
+            (12290usize, 12290usize),
+            (42239usize, 42239usize),
+            (42510usize, 42511usize),
+            (42739usize, 42739usize),
+            (42743usize, 42743usize),
+            (43126usize, 43127usize),
+            (43214usize, 43215usize),
+            (43311usize, 43311usize),
+            (43464usize, 43465usize),
+            (43613usize, 43615usize),
+            (43760usize, 43761usize),
+            (44011usize, 44011usize),
+            (65042usize, 65042usize),
+            (65045usize, 65046usize),
+            (65106usize, 65106usize),
+            (65110usize, 65111usize),
+            (65281usize, 65281usize),
+            (65294usize, 65294usize),
+            (65311usize, 65311usize),
+            (65377usize, 65377usize),
+            (68182usize, 68183usize),
+            (69461usize, 69465usize),
+            (69510usize, 69513usize),
+            (69703usize, 69704usize),
+            (69822usize, 69825usize),
+            (69953usize, 69955usize),
+            (70085usize, 70086usize),
+            (70093usize, 70093usize),
+            (70110usize, 70111usize),
+            (70200usize, 70201usize),
+            (70203usize, 70204usize),
+            (70313usize, 70313usize),
+            (70612usize, 70613usize),
+            (70731usize, 70732usize),
+            (71106usize, 71107usize),
+            (71113usize, 71127usize),
+            (71233usize, 71234usize),
+            (71484usize, 71486usize),
+            (72004usize, 72004usize),
+            (72006usize, 72006usize),
+            (72258usize, 72259usize),
+            (72347usize, 72348usize),
+            (72769usize, 72770usize),
+            (73463usize, 73464usize),
+            (73539usize, 73540usize),
+            (92782usize, 92783usize),
+            (92917usize, 92917usize),
+            (92983usize, 92984usize),
+            (92996usize, 92996usize),
+            (93550usize, 93551usize),
+            (93848usize, 93848usize),
+            (113823usize, 113823usize),
+            (121480usize, 121480usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Sentence_Terminal}",
+                    r"\P{STerm}",
+                    r"[\p{STerm}]",
+                    r"[^\p{Sentence_Terminal}]",
+                    r"[\P{STerm}K]",
+                    r"[\p{STerm}K]",
+                    r"[\p{STerm}\P{Sentence_Terminal}]",
+                    r"[^\P{STerm}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let sentence_terminal = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Sentence_Terminal}" | r"[\p{STerm}]" => sentence_terminal,
+                            r"\P{STerm}" | r"[^\p{Sentence_Terminal}]" => !sentence_terminal,
+                            r"[\P{STerm}K]" => !sentence_terminal || k,
+                            r"[\p{STerm}K]" => sentence_terminal || k,
+                            r"[\p{STerm}\P{Sentence_Terminal}]" => true,
+                            r"[^\P{STerm}K]" => sentence_terminal && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_sentence_terminal_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{STerm}",
+            r"\P{Sentence_Terminal}",
+            r"^[\p{Sentence_Terminal}]$",
+            r"[\P{STerm}K]",
+            r"[^\P{STerm}K]",
+            r"[\p{Sentence_Terminal}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{20}\u{21}\u{22}\u{2d}\u{2e}\u{2f}\u{3e}\u{3f}\u{40}\u{588}\u{589}\u{58a}\u{61c}\u{61d}\u{61f}\u{620}\u{6d3}\u{6d4}\u{6d5}\u{6ff}\u{700}\u{702}\u{703}\u{7f8}\u{7f9}\u{7fa}\u{836}\u{837}\u{838}\u{839}\u{83a}\u{83c}\u{83d}\u{83e}\u{83f}\u{963}\u{964}\u{965}\u{966}\u{1049}\u{104a}\u{104b}\u{104c}\u{1361}\u{1362}\u{1363}\u{1366}\u{1367}\u{1368}\u{1369}\u{166d}\u{166e}\u{166f}\u{1734}\u{1735}\u{1736}\u{1737}\u{17d3}\u{17d4}\u{17d5}\u{17d6}\u{1802}\u{1803}\u{1804}\u{1808}\u{1809}\u{180a}\u{1943}\u{1944}\u{1945}\u{1946}\u{1aa7}\u{1aa8}\u{1aab}\u{1aac}\u{1b4d}\u{1b4e}\u{1b4f}\u{1b50}\u{1b59}\u{1b5a}\u{1b5b}\u{1b5c}\u{1b5d}\u{1b5e}\u{1b5f}\u{1b60}\u{1b7c}\u{1b7d}\u{1b7f}\u{1b80}\u{1c3a}\u{1c3b}\u{1c3c}\u{1c3d}\u{1c7d}\u{1c7e}\u{1c7f}\u{1c80}\u{2023}\u{2024}\u{2025}\u{203b}\u{203c}\u{203d}\u{203e}\u{2046}\u{2047}\u{2049}\u{204a}\u{2cf8}\u{2cf9}\u{2cfb}\u{2cfc}\u{2e2d}\u{2e2e}\u{2e2f}\u{2e3b}\u{2e3c}\u{2e3d}\u{2e52}\u{2e53}\u{2e54}\u{2e55}\u{2e5f}\u{2e62}\u{3001}\u{3002}\u{3003}\u{a4fe}\u{a4ff}\u{a500}\u{a60d}\u{a60e}\u{a60f}\u{a610}\u{a6f2}\u{a6f3}\u{a6f4}\u{a6f6}\u{a6f7}\u{a6f8}\u{a875}\u{a876}\u{a877}\u{a878}\u{a8cd}\u{a8ce}\u{a8cf}\u{a8d0}\u{a92e}\u{a92f}\u{a930}\u{a9c7}\u{a9c8}\u{a9c9}\u{a9ca}\u{aa5c}\u{aa5d}\u{aa5f}\u{aa60}\u{aaef}\u{aaf0}\u{aaf1}\u{aaf2}\u{abea}\u{abeb}\u{abec}\u{fe11}\u{fe12}\u{fe13}\u{fe14}\u{fe15}\u{fe16}\u{fe17}\u{fe51}\u{fe52}\u{fe53}\u{fe55}\u{fe56}\u{fe57}\u{fe58}\u{ff00}\u{ff01}\u{ff02}\u{ff0d}\u{ff0e}\u{ff0f}\u{ff1e}\u{ff1f}\u{ff20}\u{ff60}\u{ff61}\u{ff62}\u{10a55}\u{10a56}\u{10a57}\u{10a58}\u{10f54}\u{10f55}\u{10f59}\u{10f5a}\u{10f85}\u{10f86}\u{10f89}\u{10f8a}\u{11046}\u{11047}\u{11048}\u{11049}\u{110bd}\u{110be}\u{110c1}\u{110c2}\u{11140}\u{11141}\u{11143}\u{11144}\u{111c4}\u{111c5}\u{111c6}\u{111c7}\u{111cc}\u{111cd}\u{111ce}\u{111dd}\u{111de}\u{111df}\u{111e0}\u{11237}\u{11238}\u{11239}\u{1123a}\u{1123b}\u{1123c}\u{1123d}\u{112a8}\u{112a9}\u{112aa}\u{113d3}\u{113d4}\u{113d5}\u{113d6}\u{1144a}\u{1144b}\u{1144c}\u{1144d}\u{115c1}\u{115c2}\u{115c3}\u{115c4}\u{115c8}\u{115c9}\u{115d7}\u{115d8}\u{11640}\u{11641}\u{11642}\u{11643}\u{1173b}\u{1173c}\u{1173e}\u{1173f}\u{11943}\u{11944}\u{11945}\u{11946}\u{11947}\u{11a41}\u{11a42}\u{11a43}\u{11a44}\u{11a9a}\u{11a9b}\u{11a9c}\u{11a9d}\u{11c40}\u{11c41}\u{11c42}\u{11c43}\u{11ef6}\u{11ef7}\u{11ef8}\u{11ef9}\u{11f42}\u{11f43}\u{11f44}\u{11f45}\u{16a6d}\u{16a6e}\u{16a6f}\u{16a70}\u{16af4}\u{16af5}\u{16af6}\u{16b36}\u{16b37}\u{16b38}\u{16b39}\u{16b43}\u{16b44}\u{16b45}\u{16d6d}\u{16d6e}\u{16d6f}\u{16d70}\u{16e97}\u{16e98}\u{16e99}\u{1bc9e}\u{1bc9f}\u{1bca0}\u{1da87}\u{1da88}\u{1da89}\u{feff}ſK\n",
+                            "X\r\n\u{21}\u{2028}\u{3002}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_sentence_terminal_property_work_deduplication_and_contracts() {
+        // New tags 34/35 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{STerm}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x2e60, true),
+                (0x3002, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{STerm}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x2e60, false),
+                (0x3002, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(
+            format!("[{}]", r"\p{STerm}\P{Sentence_Terminal}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{STerm}$", r"^[\P{Sentence_Terminal}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{21}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{STerm}--A]",
+            r"[\p{STerm}&&A]",
+            r"[[\p{STerm}]]",
+            r"[A-\p{STerm}]",
+            r"[\p{STerm}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{STerm}]"),
                 true,
                 true,
                 false

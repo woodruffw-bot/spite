@@ -4225,6 +4225,26 @@ retain Node's results, and an independent native test covers the addition with
 both aliases and complements. The original Unicode 17 fixture is unchanged and
 remains unvendored because its complementary set still includes U+0B54.
 
+
+Sentence_Terminal and its exact STerm alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty). The 172 members use 89 positive and
+90 complementary intervals. Every common/simple case-fold preimage preserves
+membership, so both Unicode complement orders retain the fixed sets. Atoms,
+flat unions, inversion, captures, assertions, repetitions and the captured
+property/dot proof share the existing complete-character matcher.
+
+Tags 34 and 35 fit the existing temporary u64 property mask. The bounded tag
+scan stops below 36. All earlier property tables, work charges and matcher
+fields remain unchanged. Standalone construction charges the bounded 90-interval
+append; classes charge each distinct set before allocating. No dependency,
+search kernel, recursion, default quota or input-sized storage is added.
+
+UCD 18 adds U+2E60 and U+2E61 to the Unicode 17 definition in installed Node
+and the pinned Test262 fixture. Native membership follows UCD 18. Shared-data
+checks agree with Node; independent membership and native tests cover both
+additions. The original Unicode 17 fixture remains unchanged and unvendored
+because its complementary set still contains those two characters.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
