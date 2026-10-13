@@ -1,11 +1,39 @@
 # Test262 regression fixtures
 
-These 7587 unmodified test fixtures and twelve harness files come from
+These 7588 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Generated Pattern_Syntax property fixture
+
+One unchanged complete Test262 source checks Pattern_Syntax and its exact
+Pat_Syn alias, including both property complements. The positive string contains
+all 2760 members; its complement contains the remaining 1111352 code points
+with original surrogate ordering. All four original anchored positive-minimum
+property repetitions, helper calls, fallback checks, metadata and BSD notice
+are preserved.
+
+The source records Unicode 17.0.0, while the runtime retains its existing pinned
+Unicode 18.0.0 data. All 2760 members and both complements are identical in
+the two inputs. Source and data pins remain unchanged.
+
+Both complete normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. Git blob identity and manifest
+SHA-256 verify the original bytes. All twelve existing helpers, including the
+unchanged regExpUtils.js, and the Test262 revision remain unchanged.
+
+The corpus contains 7588 fixtures, twelve helpers, 7569 reviewed Script sources
+and 14616 variants: 13083 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 702 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives.
+
+Stable and MSRV pass the complete 14616-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Unicode RegExp exec flag fixture
 
