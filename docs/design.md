@@ -4127,6 +4127,26 @@ kinds retain their work charges. Repeated fixed sets are added once with
 source-sized storage. No matcher field, search kernel, dependency or default
 quota is added.
 
+
+Han script matching (22.2.2.9) admits the exact Script/sc property names and
+Han/Hani value aliases. Unicode 18 Scripts.txt, SHA-256
+0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a,
+defines 103352 members in 25 raw records, normalized into 21 positive and 22
+complementary intervals. Complete pinned common/simple folding preserves
+membership in both directions, so u/v complement ordering agrees under i.
+The existing property class matcher stores intervals and appends each set once;
+earlier property kinds and charges keep their meanings. Matching, enclosing and
+final repeated captures preserve original UTF-16 text, including supplementary
+members and leading-boundary lastIndex behavior. Storage scales with Pattern
+source, without member or repetition expansion, new dependencies or default quotas.
+
+Unicode 18 adds U+2B81E to Han compared with Node's Unicode 17 data. The pinned
+Unicode 18 baseline remains authoritative. Shared-data results agree with Node;
+the new member is verified independently against Scripts.txt. Other scripts,
+Script_Extensions, set operators and concatenated consuming terms remain separate
+implementation work. Two original unsupported Han examples now have positive
+whole-program regressions; their prior gap cases use Script=Greek.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

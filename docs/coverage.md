@@ -8251,6 +8251,34 @@ Stable and MSRV pass all 14,612 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Han execution has three core and nine runtime tests. All 142606336 combinations
+of every Unicode code point, four exact property/value aliases, u/v, i and eight
+property forms agree with separate raw Scripts.txt records. All 1533 pinned
+common/simple folding preimages preserve membership. Every earlier interval and
+all 571 earlier snapshots remain unchanged. Two core and two runtime negative
+Han cases now use unsupported Greek; the two original whole programs have
+positive result snapshots.
+
+All 1920 core snapshot rows agree with independent UTF-16 evaluation, including
+the Unicode 18-only member U+2B81E. All 1440 shared-data core rows, 560 native
+result rows, 28 complete Boolean programs and both original whole programs agree
+with Node. Two additional native Boolean programs verify the Unicode 18 addition
+without claiming agreement with Node's older data. A full 35651584-comparison
+Node alias/flag/complement scan reports exactly that one data addition.
+
+Unlimited defaults handle 10000 repeated property escapes, 3000 captures and
+200003 input units with cloning and collection. Opt-in search quotas abort before
+lastIndex mutation and JavaScript handlers; every construction charge can abort.
+All 730 core tests and 258 related runtime targets pass. Three snapshots are
+added; the 1215-program current-build gap audit has zero admissions. Ordered and
+direct eval and whole fixture reviews retain their prior outcomes. Corpus pin,
+inventories, dependencies and default quotas are unchanged.
+
+Stable and MSRV pass all 14,612 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

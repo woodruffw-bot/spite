@@ -519,6 +519,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match Logical_Order_Exception and its LOE alias as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [x] Match Variation_Selector and its VS alias as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [x] Match Dash as a Unicode property atom and flat class member, retaining complements, folding and complete-character captures.
+- [x] Match Script/sc=Han/Hani as Unicode property atoms and flat class members, retaining complements, folding and complete-character captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

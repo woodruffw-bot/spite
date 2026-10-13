@@ -21,6 +21,7 @@ use std::{ops::Range, sync::Arc};
 /// Logical_Order_Exception, Variation_Selector and Dash
 /// properties are admitted in flat unions
 /// and through the standalone binary-property API.
+/// Han/Hani with exact Script/sc names also reuses these fixed intervals.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -133,7 +134,7 @@ impl RegExpUnicodeClassMatcher {
         )
     }
 
-    /// Compiles standalone fixed binary Unicode properties and boundaries.
+    /// Compiles standalone supported Unicode properties and boundaries.
     ///
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space
     /// Join_Control/Join_C, Noncharacter_Code_Point/NChar, Bidi_Control/Bidi_C
@@ -207,6 +208,7 @@ impl RegExpUnicodeClassMatcher {
             20 => 8,
             22 => 5,
             24 => 25,
+            26 => 22,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -322,7 +324,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..26 {
+        for kind in 0..28 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -331,6 +333,7 @@ impl RegExpUnicodeClassMatcher {
                     8..=11 | 14..=15 | 18..=19 | 22..=23 => 24,
                     20..=21 => 32,
                     24..=25 => 100,
+                    26..=27 => 88,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -734,6 +737,22 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x72,
         ] => 22,
         [0x44, 0x61, 0x73, 0x68] => 24,
+        [0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x3d, 0x48, 0x61, 0x6e]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x48,
+            0x61,
+            0x6e,
+            0x69,
+        ]
+        | [0x73, 0x63, 0x3d, 0x48, 0x61, 0x6e]
+        | [0x73, 0x63, 0x3d, 0x48, 0x61, 0x6e, 0x69] => 26,
         _ => return None,
     })
 }
@@ -988,6 +1007,57 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xff0e, 0x10d6d),
             (0x10d6f, 0x10eac),
             (0x10eae, 0x10ffff),
+        ],
+        // Unicode 18 Scripts.txt: Han/Hani, invariant under C/S folding.
+        // Source: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // Copyright 2026 Unicode, Inc. See third-party/unicode/LICENSE.
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        26 => &[
+            (0x2e80, 0x2e99),
+            (0x2e9b, 0x2ef3),
+            (0x2f00, 0x2fd5),
+            (0x3005, 0x3005),
+            (0x3007, 0x3007),
+            (0x3021, 0x3029),
+            (0x3038, 0x303b),
+            (0x3400, 0x4dbf),
+            (0x4e00, 0x9fff),
+            (0xf900, 0xfa6d),
+            (0xfa70, 0xfad9),
+            (0x16fe2, 0x16fe3),
+            (0x16ff0, 0x16ff6),
+            (0x20000, 0x2a6df),
+            (0x2a700, 0x2b81e),
+            (0x2b820, 0x2cead),
+            (0x2ceb0, 0x2ebe0),
+            (0x2ebf0, 0x2ee5d),
+            (0x2f800, 0x2fa1d),
+            (0x30000, 0x3134a),
+            (0x31350, 0x33479),
+        ],
+        27 => &[
+            (0x0, 0x2e7f),
+            (0x2e9a, 0x2e9a),
+            (0x2ef4, 0x2eff),
+            (0x2fd6, 0x3004),
+            (0x3006, 0x3006),
+            (0x3008, 0x3020),
+            (0x302a, 0x3037),
+            (0x303c, 0x33ff),
+            (0x4dc0, 0x4dff),
+            (0xa000, 0xf8ff),
+            (0xfa6e, 0xfa6f),
+            (0xfada, 0x16fe1),
+            (0x16fe4, 0x16fef),
+            (0x16ff7, 0x1ffff),
+            (0x2a6e0, 0x2a6ff),
+            (0x2b81f, 0x2b81f),
+            (0x2ceae, 0x2ceaf),
+            (0x2ebe1, 0x2ebef),
+            (0x2ee5e, 0x2f7ff),
+            (0x2fa1e, 0x2ffff),
+            (0x3134b, 0x3134f),
+            (0x3347a, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -1769,7 +1839,7 @@ mod tests {
         for source in [
             r"\p{ascii}",
             r"\p{Assigned}",
-            r"\p{Script=Han}",
+            r"\p{Script=Greek}",
             r"\p{RGI_Emoji}",
             r"[\p{ASCII}]",
             r"(\p{ASCII})",
@@ -1994,7 +2064,7 @@ mod tests {
         assert_eq!(plan.find(&JsString::from("x\nſ\n"), 0, false), None);
         for source in [
             r"[\p{Assigned}]",
-            r"[\p{Script=Han}]",
+            r"[\p{Script=Greek}]",
             r"[\p{RGI_Emoji}]",
             r"[\p{ASCII}--K]",
             r"[\p{ASCII}&&K]",
@@ -4403,5 +4473,213 @@ mod tests {
             )
             .is_none()
         );
+    }
+    #[test]
+    fn unicode_han_script_membership_over_every_code_point() {
+        // Separate UCD raw records, rather than the normalized production ranges.
+        let records: &[(u32, u32)] = &[
+            (0x2e80, 0x2e99),
+            (0x2e9b, 0x2ef3),
+            (0x2f00, 0x2fd5),
+            (0x3005, 0x3005),
+            (0x3007, 0x3007),
+            (0x3021, 0x3029),
+            (0x3038, 0x303a),
+            (0x303b, 0x303b),
+            (0x3400, 0x4dbf),
+            (0x4e00, 0x9fff),
+            (0xf900, 0xfa6d),
+            (0xfa70, 0xfad9),
+            (0x16fe2, 0x16fe2),
+            (0x16fe3, 0x16fe3),
+            (0x16ff0, 0x16ff1),
+            (0x16ff2, 0x16ff3),
+            (0x16ff4, 0x16ff6),
+            (0x20000, 0x2a6df),
+            (0x2a700, 0x2b81e),
+            (0x2b820, 0x2cead),
+            (0x2ceb0, 0x2ebe0),
+            (0x2ebf0, 0x2ee5d),
+            (0x2f800, 0x2fa1d),
+            (0x30000, 0x3134a),
+            (0x31350, 0x33479),
+        ];
+        for name in ["Script=Han", "Script=Hani", "sc=Han", "sc=Hani"] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for form in 0..8 {
+                        let source = match form {
+                            0 => format!(r"\p{{{name}}}"),
+                            1 => format!(r"\P{{{name}}}"),
+                            2 => format!(r"[\p{{{name}}}]"),
+                            3 => format!(r"[^\p{{{name}}}]"),
+                            4 => format!(r"[\P{{{name}}}K]"),
+                            5 => format!(r"[\p{{{name}}}K]"),
+                            6 => format!(r"[\p{{{name}}}\P{{{name}}}]"),
+                            _ => format!(r"[^\P{{{name}}}K]"),
+                        };
+                        let pattern = JsString::from(source.as_str());
+                        let plan = if form < 2 {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                false,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                false,
+                            )
+                        }
+                        .unwrap();
+                        for point in 0..=0x10ffff {
+                            let han = records.iter().any(|(a, b)| *a <= point && point <= *b);
+                            let k =
+                                point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                            let expected = match form {
+                                0 | 2 => han,
+                                1 | 3 => !han,
+                                4 => !han || k,
+                                5 => han || k,
+                                6 => true,
+                                _ => han && !k,
+                            };
+                            assert_eq!(
+                                plan.matches(point),
+                                expected,
+                                "{source} v={sets} i={ignore_case} U+{point:X}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_han_script_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Script=Han}",
+            r"\P{sc=Hani}",
+            r"^[\p{sc=Han}]$",
+            r"[\P{Script=Hani}K]",
+            r"[^\P{sc=Han}K]",
+            r"[\p{Script=Hani}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "𠮷a一々〆〇⺀⻳⿕\u{2b81e}😀ſK\n",
+                            "X\r\n𠮷\u{2028}一\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_han_script_charges_deduplication_and_contracts() {
+        let source =
+            JsString::from(format!("[{}]", r"\p{Script=Han}\P{sc=Hani}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("𠮷"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\p{sc=Han}$", r"^[\p{Script=Hani}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            for fail in 1..=calls {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(plan.find(&JsString::from("😀\n𠮷\n"), 0, false), Some(3..5));
+        }
+        for source in [
+            r"[\p{sc=Han}--A]",
+            r"[\p{Script=Han}&&A]",
+            r"[[\p{sc=Han}]]",
+            r"[A-\p{sc=Han}]",
+            r"[\p{sc=Han}-A]",
+            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Han}]",
+            r"[\p{sc=han}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none(),
+                "{source}"
+            );
+        }
     }
 }
