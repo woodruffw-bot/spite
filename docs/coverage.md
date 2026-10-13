@@ -8864,6 +8864,34 @@ Stable and MSRV pass all 14,626 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Grapheme_Base/Gr_Base adds three Core and nine runtime tests. Independent
+pinned raw data checks all 35,651,584 code-point/form/flag combinations,
+including every one of the 12,970 additions and both complement orders.
+The 17,825,792 independent Node comparisons use matching Unicode 17
+and 18 fold tables; 207,520 expected comparisons differ only at the new
+members. Native runtime checks exercise 121 endpoints, interiors and
+new folding sources across all 47 added ranges, both aliases and all
+four Unicode/ignore-case modes, for 968 programs. The 1,920 Core and
+560 runtime insta rows agree with independent UTF-16 evaluation and Node;
+thirty-six complete Boolean programs agree.
+
+ASCII word boundaries, supplementary members and nonmembers, consumers
+and documented inside-pair consuming matches have explicit coverage.
+Mixed mask bits, fallible construction, deduplication, original capture
+indices, assertions, clones, strict writes and collection retain contracts.
+Large inputs and sources keep unlimited defaults; explicit work quotas
+preserve host-failure ordering. All 781 Core tests and 275 related runtime
+targets pass. The 606 earlier snapshots remain exact and two reviewed
+snapshots are added. The 1300-program gap audit has no admissions. Whole
+fixtures retain 204 passed and 26 Unsupported variants in the 115-source
+review. Inventories, pins and dependencies remain unchanged. The incompatible
+pinned Unicode 17 Grapheme_Base fixture remains unvendored.
+
+Stable and MSRV pass all 14,626 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

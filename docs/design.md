@@ -4426,6 +4426,27 @@ UCD 18 adds 37 members absent from the pinned Unicode 17 fixture, which
 remains unchanged and unvendored. This data-version difference is separate
 from the documented, narrowly approved inside-pair Node/V8 boundary behavior.
 
+
+Grapheme_Base and its exact Gr_Base alias use pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+170,464 members in 910 positive and 911 raw complementary intervals.
+Nonmember U+0345 folds to member U+03B9. Complement before folding
+under u+i admits every iota equivalent in both p and P; complement after
+folding under v+i excludes them from P. Its 912-interval v+i complement
+removes the additional U+0345 preimage before union, folding and inversion.
+Captures, assertions, repetitions and property/dot patterns keep complete
+characters, original UTF-16 ranges and ASCII word-boundary semantics.
+
+Tags 58/59 fit the temporary u64 property mask; the bounded scan stops
+below 60. Earlier tables and matcher fields remain unchanged. Standalone
+construction charges 912 intervals before allocation; each distinct class
+set charges 3,648. No dependency, recursion or default quota is added.
+UCD 18 adds 12,970 members absent from the pinned Unicode 17 fixture,
+which remains unchanged and unvendored. Independent comparisons use
+Unicode 17 folding for Node and Unicode 18 folding for this implementation.
+This data-version difference is separate from the narrowly approved
+inside-pair Node/V8 whole-match boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
