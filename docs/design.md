@@ -4321,6 +4321,23 @@ charges the two-interval append before allocation; classes charge each distinct
 set. No dependency, recursion or default quota is added. The complete positive
 and negative sets match the pinned Unicode 17 fixture, reviewed separately.
 
+
+Unified_Ideograph and its exact UIdeo alias use UCD 18 PropList membership
+(22.2.2.9 and UnicodeMatchProperty): 101997 members in sixteen positive and
+seventeen complementary intervals. Every common/simple fold preserves
+membership. Atoms, unions, inversion, captures, assertions, repetitions and
+captured property/dot patterns use the existing complete-character matcher.
+
+Tags 46/47 fit the existing temporary u64 mask; the bounded scan stops below 48.
+Earlier tables, charges and matcher fields remain unchanged. Construction
+charges the seventeen-interval append before allocation; classes charge each
+distinct set. No dependency, recursion or default quota is added.
+
+UCD 18 adds U+2B81E to the Unicode 17 set used by Node and the pinned Test262
+fixture. Native membership follows UCD 18. Shared data agrees with Node, and
+native tests cover both aliases and complements at the addition. The original
+fixture remains unchanged and unvendored because its complement contains U+2B81E.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

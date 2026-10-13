@@ -8692,6 +8692,29 @@ Stable and MSRV pass all 14,624 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Unified_Ideograph/UIdeo adds three Core and nine runtime tests. Raw UCD data
+checks 35,651,584 code-point/form/flag combinations. The 17,825,792 Node
+comparisons confirm exactly sixteen expected differences at U+2B81E and none
+elsewhere. All 1920 Core and 560 runtime snapshot rows agree with independent
+UTF-16 evaluation and Node on shared data. Thirty whole Boolean programs agree
+with Node; eight native programs cover the Unicode 18 addition across both
+aliases, complements and all Unicode/case flag forms.
+
+Mixed earlier/new mask bits, deduplication, fallible work, complete-character
+boundaries, captures/indices, consumers, clones, strict writes and collection
+retain their contracts. Large sources and inputs keep unlimited defaults;
+explicit work quotas retain host-failure ordering. All 763 Core tests and 269
+related runtime targets pass. The 594 earlier snapshots remain byte-identical
+and two reviewed snapshots are added. The 1270-program gap audit has no
+admissions, and whole fixture outcomes retain 204 passed and 26 Unsupported
+variants in the 115-source review. Inventories, pins and dependencies remain
+unchanged. The incompatible original Unicode 17 fixture is unvendored.
+
+Stable and MSRV pass all 14,624 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

@@ -31,6 +31,7 @@ use std::{ops::Range, sync::Arc};
 /// IDS_Trinary_Operator/IDST uses UCD 18 trinary-operator membership.
 /// Radical uses UCD 18 radical membership.
 /// Regional_Indicator/RI uses UCD 18 regional-indicator membership.
+/// Unified_Ideograph/UIdeo uses UCD 18 unified-ideograph membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -227,6 +228,7 @@ impl RegExpUnicodeClassMatcher {
             40 => 2,
             42 => 4,
             44 => 2,
+            46 => 17,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -342,7 +344,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..46 {
+        for kind in 0..48 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -361,6 +363,7 @@ impl RegExpUnicodeClassMatcher {
                     40..=41 => 8,
                     42..=43 => 16,
                     44..=45 => 8,
+                    46..=47 => 68,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -924,6 +927,26 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6f,
             0x72,
         ] => 44,
+        [0x55, 0x49, 0x64, 0x65, 0x6f]
+        | [
+            0x55,
+            0x6e,
+            0x69,
+            0x66,
+            0x69,
+            0x65,
+            0x64,
+            0x5f,
+            0x49,
+            0x64,
+            0x65,
+            0x6f,
+            0x67,
+            0x72,
+            0x61,
+            0x70,
+            0x68,
+        ] => 46,
         _ => return None,
     })
 }
@@ -2076,6 +2099,44 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
         // UCD 18 Regional_Indicator: 26 members, invariant under C/S folding.
         44 => &[(0x1f1e6, 0x1f1ff)],
         45 => &[(0x0, 0x1f1e5), (0x1f200, 0x10ffff)],
+        // UCD 18 Unified_Ideograph: 101997 members, invariant under C/S folding.
+        46 => &[
+            (0x3400, 0x4dbf),
+            (0x4e00, 0x9fff),
+            (0xfa0e, 0xfa0f),
+            (0xfa11, 0xfa11),
+            (0xfa13, 0xfa14),
+            (0xfa1f, 0xfa1f),
+            (0xfa21, 0xfa21),
+            (0xfa23, 0xfa24),
+            (0xfa27, 0xfa29),
+            (0x20000, 0x2a6df),
+            (0x2a700, 0x2b81e),
+            (0x2b820, 0x2cead),
+            (0x2ceb0, 0x2ebe0),
+            (0x2ebf0, 0x2ee5d),
+            (0x30000, 0x3134a),
+            (0x31350, 0x33479),
+        ],
+        47 => &[
+            (0x0, 0x33ff),
+            (0x4dc0, 0x4dff),
+            (0xa000, 0xfa0d),
+            (0xfa10, 0xfa10),
+            (0xfa12, 0xfa12),
+            (0xfa15, 0xfa1e),
+            (0xfa20, 0xfa20),
+            (0xfa22, 0xfa22),
+            (0xfa25, 0xfa26),
+            (0xfa2a, 0x1ffff),
+            (0x2a6e0, 0x2a6ff),
+            (0x2b81f, 0x2b81f),
+            (0x2ceae, 0x2ceaf),
+            (0x2ebe1, 0x2ebef),
+            (0x2ee5e, 0x2ffff),
+            (0x3134b, 0x3134f),
+            (0x3347a, 0x10ffff),
+        ],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -8755,6 +8816,251 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{RI}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_unified_ideograph_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (13312usize, 19903usize),
+            (19968usize, 40959usize),
+            (64014usize, 64015usize),
+            (64017usize, 64017usize),
+            (64019usize, 64020usize),
+            (64031usize, 64031usize),
+            (64033usize, 64033usize),
+            (64035usize, 64036usize),
+            (64039usize, 64041usize),
+            (131072usize, 173791usize),
+            (173824usize, 178206usize),
+            (178208usize, 183981usize),
+            (183984usize, 191456usize),
+            (191472usize, 192093usize),
+            (196608usize, 201546usize),
+            (201552usize, 210041usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Unified_Ideograph}",
+                    r"\P{UIdeo}",
+                    r"[\p{UIdeo}]",
+                    r"[^\p{Unified_Ideograph}]",
+                    r"[\P{UIdeo}K]",
+                    r"[\p{UIdeo}K]",
+                    r"[\p{UIdeo}\P{Unified_Ideograph}]",
+                    r"[^\P{UIdeo}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let unified_ideograph = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Unified_Ideograph}" | r"[\p{UIdeo}]" => unified_ideograph,
+                            r"\P{UIdeo}" | r"[^\p{Unified_Ideograph}]" => !unified_ideograph,
+                            r"[\P{UIdeo}K]" => !unified_ideograph || k,
+                            r"[\p{UIdeo}K]" => unified_ideograph || k,
+                            r"[\p{UIdeo}\P{Unified_Ideograph}]" => true,
+                            r"[^\P{UIdeo}K]" => unified_ideograph && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_unified_ideograph_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{UIdeo}",
+            r"\P{Unified_Ideograph}",
+            r"^[\p{Unified_Ideograph}]$",
+            r"[\P{UIdeo}K]",
+            r"[^\P{UIdeo}K]",
+            r"[\p{Unified_Ideograph}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{33ff}\u{3400}\u{4dbf}\u{4dc0}\u{4dff}\u{4e00}\u{9fff}\u{a000}\u{fa0d}\u{fa0e}\u{fa0f}\u{fa10}\u{fa11}\u{fa12}\u{fa13}\u{fa14}\u{fa15}\u{fa1e}\u{fa1f}\u{fa20}\u{fa21}\u{fa22}\u{fa23}\u{fa24}\u{fa25}\u{fa26}\u{fa27}\u{fa29}\u{fa2a}\u{1ffff}\u{20000}\u{2a6df}\u{2a6e0}\u{2a6ff}\u{2a700}\u{2b81f}\u{2b820}\u{2cead}\u{2ceae}\u{2ceaf}\u{2ceb0}\u{2ebe0}\u{2ebe1}\u{2ebef}\u{2ebf0}\u{2ee5d}\u{2ee5e}\u{2ffff}\u{30000}\u{3134a}\u{3134b}\u{3134f}\u{31350}\u{33479}\u{3347a}\u{feff}ſK\n",
+                            "X\r\n\u{4e00}\u{2028}\u{4e09}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_unified_ideograph_property_work_deduplication_and_contracts() {
+        // New tags 46/47 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{UIdeo}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x4e00, true),
+                (0x4e8c, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{UIdeo}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x4e00, false),
+                (0x4e8c, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(
+            format!("[{}]", r"\p{UIdeo}\P{Unified_Ideograph}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{UIdeo}$", r"^[\P{Unified_Ideograph}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{4e00}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{UIdeo}--A]",
+            r"[\p{UIdeo}&&A]",
+            r"[[\p{UIdeo}]]",
+            r"[A-\p{UIdeo}]",
+            r"[\p{UIdeo}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{UIdeo}]"),
                 true,
                 true,
                 false
