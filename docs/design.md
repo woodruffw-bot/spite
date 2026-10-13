@@ -4147,6 +4147,27 @@ Script_Extensions, set operators and concatenated consuming terms remain separat
 implementation work. Two original unsupported Han examples now have positive
 whole-program regressions; their prior gap cases use Script=Greek.
 
+
+Captured Unicode property/dot concatenation (22.2.2.3, 22.2.7.2) proves exactly
+one ordinary capturing group around an admitted property escape followed by
+one ordinary capturing group around dot. Named groups use the existing validated
+normalization and metadata; complete enclosing groups retain the whole range.
+Each delegated atom proof consumes one complete original character. Dot retains
+s behavior, and properties retain exact aliases and the pinned folding/complement
+rules, including the documented ASCII iv difference from Node.
+
+Search considers complete-character candidates in order. If dot fails, the next
+candidate begins at the preceding property character's end, so the input prefix
+is not rescanned. The two inner captures retain distinct widths, including
+supplementary/lone-surrogate input and the approved leading boundary for initial
+surrogate-pair offsets. Core returns two constant capture ranges. Runtime reuses
+its existing final-atom range field for the first capture and derives the adjacent
+second range from the whole end; no match field or capture allocation is added.
+Conservative optional work covers both scans, membership/folding and a possible
+one-unit rewind. Sticky search examines at most four input units. Construction
+and an additional search charge may abort before state writes. Dependencies,
+default quotas and other concatenation proofs retain their existing contracts.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

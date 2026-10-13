@@ -27,6 +27,7 @@ mod regexp_sequence;
 mod regexp_unicode_character;
 mod regexp_unicode_class;
 mod regexp_unicode_folded_literal;
+mod regexp_unicode_property_dot;
 mod regexp_unicode_repeated_atom;
 mod replacement;
 mod symbol;
@@ -65,6 +66,9 @@ pub use regexp_unicode_character::RegExpUnicodeCharacterMatcher;
 pub use regexp_unicode_class::RegExpUnicodeClassMatcher;
 pub use regexp_unicode_folded_literal::{
     RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
+};
+pub use regexp_unicode_property_dot::{
+    RegExpUnicodePropertyDotMatch, RegExpUnicodePropertyDotMatcher,
 };
 pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher,

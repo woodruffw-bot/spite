@@ -7,7 +7,8 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
-    RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodePropertyDotMatcher,
+    RegExpUnicodeRepeatedAtomMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -24,6 +25,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeClass(RegExpUnicodeClassMatcher),
     UnicodeFoldedLiteral(RegExpUnicodeFoldedLiteralMatcher),
     UnicodeRepeatedAtom(RegExpUnicodeRepeatedAtomMatcher),
+    UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
     Quantified(RegExpQuantifiedMatcher),
@@ -57,6 +59,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeCharacter(_)
             | RegExpMatcherBody::UnicodeClass(_) => 0,
             RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
+            RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedSequence(m) => m.capture_count(),
@@ -128,6 +131,20 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodePropertyDot(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: Some(found.captures[0].clone()),
+                    })
+                });
+        }
         Ok(self.find_precharged(input, start, sticky))
     }
 
@@ -140,7 +157,8 @@ impl RegExpMatcher {
         let (range, branch) = match &self.body {
             RegExpMatcherBody::Backreferences(_)
             | RegExpMatcherBody::UnicodeFoldedLiteral(_)
-            | RegExpMatcherBody::UnicodeRepeatedAtom(_) => {
+            | RegExpMatcherBody::UnicodeRepeatedAtom(_)
+            | RegExpMatcherBody::UnicodePropertyDot(_) => {
                 unreachable!("fallible matching dispatch")
             }
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
@@ -206,6 +224,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Character(_) => 1,
             RegExpMatcherBody::UnicodeCharacter(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClass(matcher) => matcher.search_passes(),
+            RegExpMatcherBody::UnicodePropertyDot(matcher) => matcher.search_passes(),
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
             RegExpMatcherBody::RepeatedLiteral(m) => m.search_passes(),
@@ -221,6 +240,11 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        if matches!(self.body, RegExpMatcherBody::UnicodePropertyDot(_)) {
+            let remaining = remaining.saturating_add(1);
+            return if sticky { 4.min(remaining) } else { remaining };
+        }
+
         if matches!(
             self.body,
             RegExpMatcherBody::UnicodeCharacter(_) | RegExpMatcherBody::UnicodeClass(_)
@@ -297,6 +321,17 @@ impl RegExpMatch<'_> {
                 return None;
             }
             RegExpMatcherBody::UnicodeRepeatedAtom(_) => return self.atom_capture.clone(),
+            RegExpMatcherBody::UnicodePropertyDot(_) => {
+                return match index {
+                    0 => self.atom_capture.clone(),
+                    1 => self
+                        .atom_capture
+                        .as_ref()
+                        .map(|first| first.end..self.range.end),
+                    _ => None,
+                };
+            }
+
             RegExpMatcherBody::Prefixed(matcher) => {
                 return matcher.capture_range(index, &self.range);
             }
