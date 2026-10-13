@@ -8967,6 +8967,30 @@ Stable and MSRV pass all 14,628 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Cased adds three Core and nine runtime tests. Independent raw membership
+checks all 35,651,584 code-point/form/flag combinations. The 8,912,896
+single-name Node comparisons agree on shared data; the 1,320 expected
+differences occur only at the 165 Unicode 18 additions. All additions
+also receive 660 native runtime programs. The 1,920 Core and 560 runtime
+insta rows agree with independent UTF-16 evaluation and Node, and all
+thirty shared complete Boolean programs agree.
+
+Mixed unions and inverted classes cover old bits 0, 30, 62 and 63 beside
+new bits 64/65. Fallible construction, deduplication, captures, consumers,
+clones, strict writes and collection retain their contracts. Large sources
+and inputs retain unlimited defaults; opt-in work quotas retain host-failure
+ordering. All 790 Core tests and 278 related runtime targets pass.
+All 612 previous snapshots remain exact and two snapshots are added.
+The 1315-program gap audit has no admissions. Whole fixtures retain
+204 passed and 26 Unsupported variants in the 115-source review.
+Inventories, pins and dependencies remain unchanged. The incompatible
+original Cased fixture is unchanged and unvendored.
+
+Stable and MSRV pass all 14,628 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

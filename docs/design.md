@@ -4486,6 +4486,24 @@ No dependency, recursion or default quota is added. The pinned Unicode 17
 fixture has identical complete positive and negative sets; its unchanged
 provenance is reviewed separately from this implementation.
 
+
+Cased uses the exact ECMA property name and pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+4,797 members in 163 positive and 164 complementary intervals.
+Common/simple case folds preserve membership; u+i and v+i complements
+therefore describe the same set. Atoms, classes, unions, inversion,
+captures, assertions, repetitions and property/dot captures retain
+complete characters and original UTF-16 ranges.
+
+The temporary class-property mask widens from u64 to u128 before adding
+tags 64/65. Its bounded scan stops below 66, preserving all earlier
+property bits and interval tables without a shift at the mask width.
+Standalone construction charges 164 intervals before allocation; each
+distinct class set charges 656. No recursion, dependency or default
+quota is added. UCD 18 adds 165 members absent from the pinned Unicode 17
+fixture, which remains unchanged and unvendored. The version difference
+is separate from the approved Node/V8 inside-pair boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
