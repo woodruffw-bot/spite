@@ -8892,6 +8892,31 @@ Stable and MSRV pass all 14,626 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Case_Ignorable/CI adds three Core and nine runtime tests. Independent
+pinned data checks all 35,651,584 code-point/form/flag combinations,
+including different u+i and v+i complement orders and all iota preimages.
+The 17,825,792 independent Node comparisons use matching Unicode 17
+and 18 fold tables; 1,536 expected comparisons differ only at the 96
+new members. All additions receive 768 dedicated native runtime programs.
+The 1,920 Core and 560 runtime insta rows agree with independent UTF-16
+evaluation and Node; thirty-eight complete Boolean programs agree.
+
+Supplementary consuming matches cover documented inside-pair boundaries.
+Mixed mask bits, fallible construction, deduplication, original captures,
+assertions, consumers, clones, strict writes and collection retain contracts.
+Large inputs and sources keep unlimited defaults; explicit work quotas
+preserve host-failure ordering. All 784 Core tests and 276 related runtime
+targets pass. The 608 earlier snapshots remain exact and two reviewed
+snapshots are added. The 1305-program gap audit has no admissions. Whole
+fixtures retain 204 passed and 26 Unsupported variants in the 115-source
+review. Inventories, pins and dependencies remain unchanged. The incompatible
+pinned Unicode 17 Case_Ignorable fixture remains unvendored.
+
+Stable and MSRV pass all 14,626 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

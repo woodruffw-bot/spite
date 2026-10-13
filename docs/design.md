@@ -4447,6 +4447,27 @@ Unicode 17 folding for Node and Unicode 18 folding for this implementation.
 This data-version difference is separate from the narrowly approved
 inside-pair Node/V8 whole-match boundary behavior.
 
+
+Case_Ignorable and its exact CI alias use pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+2,890 members in 468 positive and 469 raw complementary intervals.
+U+0345 folds to nonmember U+03B9. Complement before folding under u+i
+admits all four iota equivalents in both p and P; complement after folding
+under v+i excludes them from P. Its 470-interval v+i complement removes
+the full preimage before union, folding and inversion. Captures, assertions,
+repetitions and property/dot patterns retain complete characters and
+original UTF-16 boundaries. Joiners and BOM are members, independent
+of ASCII word membership and the RegExp whitespace escape.
+
+Tags 60/61 fit the temporary u64 property mask; the bounded scan stops
+below 62. Earlier tables and matcher fields remain unchanged. Standalone
+construction charges 470 intervals before allocation; each distinct class
+set charges 1,880. No dependency, recursion or default quota is added.
+UCD 18 adds 96 members absent from the pinned Unicode 17 fixture, which
+remains unchanged and unvendored. Independent Node comparisons use
+matching Unicode 17 folding data. The production Unicode 18 pin and
+the narrowly approved inside-pair Node/V8 exception remain unchanged.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
