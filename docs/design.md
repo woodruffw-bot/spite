@@ -4661,6 +4661,31 @@ Reference comparisons use Unicode 17 folding for Node and Unicode 18 folding
 for the implementation. These data version differences remain separate from
 the approved Node/V8 inside-pair behavior.
 
+
+Changes_When_Casefolded and its exact CWCF alias use pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+1,582 members in 649 positive and 650 raw complementary intervals.
+The derived property compares case folding of NFD(X) with NFD(X); matching
+uses its published membership and the RegExp simple common canonicalization.
+Of the 1,500 membership-changing simple folds, 1,500 map members to nonmembers
+and 0 map nonmembers to members. Mixed families contain 2,972 points, with
+1,472 additional preimages outside raw membership. Under u+i, complementing
+before folding admits mixed families in both p and P; under v+i, complementing
+after folding excludes them from P. The 153-interval v+i complement excludes
+all preimages before union, folding and inversion. Captures, assertions,
+repetitions and captured property/dot patterns retain complete characters
+and original UTF-16 ranges.
+
+Tags 82/83 fit the temporary u128 property mask; the bounded scan stops below
+84. Earlier property tables and matcher fields remain unchanged. Standalone
+construction charges at most 650 intervals before allocation, and each distinct
+class set charges 2,600. No dependency, recursion or default quota is added.
+UCD 18 adds 21 members in twenty ranges. New folding rules also affect twenty
+older characters. The pinned Unicode 17 fixture stays unchanged and unvendored.
+Reference comparisons use Unicode 17 folding for Node and Unicode 18 folding
+for the implementation. These data version differences remain separate from
+the approved Node/V8 inside-pair behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
