@@ -4686,6 +4686,29 @@ Reference comparisons use Unicode 17 folding for Node and Unicode 18 folding
 for the implementation. These data version differences remain separate from
 the approved Node/V8 inside-pair behavior.
 
+
+Changes_When_Lowercased and its exact CWL alias use pinned UCD 18
+DerivedCoreProperties membership (22.2.2.9 and UnicodeMatchProperty):
+1,508 members in 636 positive and 637 raw complementary intervals.
+Of the 1,507 membership-changing simple folds, 1,421 map members to nonmembers
+and 86 map nonmembers to members. Mixed families contain 3,029 points,
+including membership-preserving folds; 1,522 further preimages lie outside
+raw membership. Under u+i, complementing before folding admits mixed families
+in both p and P; under v+i, complementing after folding excludes them from P.
+The 153-interval v+i complement excludes all preimages before union, folding
+and inversion. Captures, assertions, repetitions and captured property/dot
+patterns retain complete characters and original UTF-16 ranges.
+
+Tags 84/85 fit the temporary u128 property mask; the bounded scan stops below
+86. Earlier property tables and matcher fields remain unchanged. Standalone
+construction charges at most 637 intervals before allocation, and each distinct
+class set charges 2,548. No dependency, recursion or default quota is added.
+UCD 18 adds twenty members in nineteen ranges. New folding rules also affect
+21 older characters. The pinned Unicode 17 fixture stays unchanged and unvendored.
+Reference comparisons use Unicode 17 folding for Node and Unicode 18 folding
+for the implementation. These data version differences remain separate from
+the approved Node/V8 inside-pair behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
