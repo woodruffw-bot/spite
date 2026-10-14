@@ -4833,6 +4833,27 @@ these data differences remain separate from the approved Node/V8 inside-pair
 behavior. The pinned emoji-data source and SHA-256 are recorded with the static
 tables and Emoji_Component implementation.
 
+
+Extended_Pictographic and its exact ExtPict alias use pinned UCD 18 emoji-data
+membership (22.2.2.9 and UnicodeMatchProperty): 2,830 members in 156 positive
+and 157 raw complementary intervals. The circled capital M (U+24C2) is a member;
+the circled small m (U+24DC) is its simple common fold and a nonmember. Under
+u+i, complementing before folding admits both characters in p and P; under
+v+i, complementing after folding excludes both from P. The 158-interval v+i
+complement excludes the extra preimage before union and inversion. Captures,
+assertions, repetitions and captured property/dot patterns retain complete
+characters and original UTF-16 ranges. This binary property matches a character,
+not a complete emoji sequence.
+
+Tags 98/99 fit the temporary u128 property mask; the bounded scan stops below
+100. Earlier tables and matcher fields remain unchanged. Standalone construction
+charges 158 intervals before allocation; each distinct class set charges 632.
+No dependency, recursion or default quota is added. Unicode 18 removes eighteen
+members and adds none. The pinned Unicode 17 fixture stays unchanged and unvendored.
+These data differences remain separate from the approved Node/V8 inside-pair
+behavior. The pinned emoji-data source and SHA-256 are recorded with the static
+tables and Emoji_Component implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
