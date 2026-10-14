@@ -4772,6 +4772,29 @@ unchanged and unvendored. Reference comparisons use Unicode 17 folding for
 Node and Unicode 18 folding for the implementation. These data differences
 remain separate from the approved Node/V8 inside-pair behavior.
 
+
+Changes_When_NFKC_Casefolded and its exact CWKCF alias use pinned UCD 18
+DerivedNormalizationProps membership (22.2.2.9 and UnicodeMatchProperty):
+10,671 members in 871 positive and 872 raw complementary intervals. Matching
+uses the published binary property, rather than normalizing input. All 1,417
+membership-changing simple folds map members to nonmembers. Mixed families
+contain 2,808 points, including 1,391 preimages outside raw membership.
+Under u+i, complementing before folding admits mixed families in both p and
+P; under v+i, complementing after folding excludes them from P. The
+361-interval v+i complement excludes every preimage before union and inversion.
+Captures, assertions, repetitions and captured property/dot patterns retain
+complete characters and original UTF-16 ranges.
+
+Tags 92/93 fit the temporary u128 property mask; the bounded scan stops below
+94. Earlier property tables and matcher fields remain unchanged. Standalone
+construction charges at most 872 intervals before allocation, and each distinct
+class set charges 3,488. No dependency, recursion or default quota is added.
+UCD 18 adds 88 members in twenty-seven ranges. New folding rules also affect
+twenty older characters. The pinned Unicode 17 fixture stays unchanged and
+unvendored. Reference comparisons use Unicode 17 folding for Node and Unicode
+18 folding for the implementation. These data differences remain separate
+from the approved Node/V8 inside-pair behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
