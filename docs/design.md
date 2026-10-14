@@ -4538,6 +4538,24 @@ Unicode 18 adds 12,860 members in 38 ranges absent from the pinned Unicode 17
 fixture, which remains unchanged and unvendored. Data-version differences
 are separate from the approved Node/V8 inside-pair boundary behavior.
 
+
+XID_Continue and its exact XIDC alias use pinned UCD 18 DerivedCoreProperties
+membership (22.2.2.9 and UnicodeMatchProperty): 162,081 members in 821 positive
+and 822 complementary intervals. Common/simple folds preserve membership,
+so both Unicode complement orders retain identical sets. The normalization-
+stable property retains its own membership tables; ID_Continue stays unchanged.
+Word and identifier grammar rules retain their separate definitions. Atoms,
+classes, unions, inversion, captures, assertions, repetitions and property/dot
+captures preserve complete characters and original UTF-16 boundaries.
+
+Tags 70/71 fit the temporary u128 property mask; the scan stops below 72.
+All earlier tables and matcher fields remain unchanged. Standalone
+construction charges 822 intervals before allocation, and each distinct
+class set charges 3,288. No dependency, recursion or default quota is added.
+Unicode 18 adds 12,860 members in 38 ranges absent from the pinned Unicode 17
+fixture, which remains unchanged and unvendored. Data-version differences
+remain separate from the approved Node/V8 inside-pair boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
