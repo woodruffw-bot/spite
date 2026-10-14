@@ -56,6 +56,7 @@ use std::{ops::Range, sync::Arc};
 /// Changes_When_Casemapped/CWCM uses fold-invariant pinned UCD 18 case-change membership.
 /// Changes_When_NFKC_Casefolded/CWKCF uses pinned UCD 18 case-fold-change membership.
 /// Emoji_Component/EComp uses UCD 18 emoji-component membership.
+/// Emoji_Presentation/EPres uses UCD 18 emoji-presentation membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -277,6 +278,7 @@ impl RegExpUnicodeClassMatcher {
             90 => 143,
             92 => 872,
             94 => 11,
+            96 => 81,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -392,7 +394,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..96 {
+        for kind in 0..98 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -436,6 +438,7 @@ impl RegExpUnicodeClassMatcher {
                     90..=91 => 572,
                     92..=93 => 3488,
                     94..=95 => 44,
+                    96..=97 => 324,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -1351,6 +1354,27 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x6e,
             0x74,
         ] => 94,
+        [0x45, 0x50, 0x72, 0x65, 0x73]
+        | [
+            0x45,
+            0x6d,
+            0x6f,
+            0x6a,
+            0x69,
+            0x5f,
+            0x50,
+            0x72,
+            0x65,
+            0x73,
+            0x65,
+            0x6e,
+            0x74,
+            0x61,
+            0x74,
+            0x69,
+            0x6f,
+            0x6e,
+        ] => 96,
         _ => return None,
     })
 }
@@ -30005,6 +30029,174 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1f400, 0x1f9af),
             (0x1f9b4, 0xe001f),
             (0xe0080, 0x10ffff),
+        ],
+        // Source: https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
+        // SHA-256: 80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1
+        // UCD 18 Emoji_Presentation: 1228 members, invariant under C/S folding.
+        96 => &[
+            (0x231a, 0x231b),
+            (0x23e9, 0x23ec),
+            (0x23f0, 0x23f0),
+            (0x23f3, 0x23f3),
+            (0x25fd, 0x25fe),
+            (0x2614, 0x2615),
+            (0x2648, 0x2653),
+            (0x267f, 0x267f),
+            (0x2693, 0x2693),
+            (0x26a1, 0x26a1),
+            (0x26aa, 0x26ab),
+            (0x26bd, 0x26be),
+            (0x26c4, 0x26c5),
+            (0x26ce, 0x26ce),
+            (0x26d4, 0x26d4),
+            (0x26ea, 0x26ea),
+            (0x26f2, 0x26f3),
+            (0x26f5, 0x26f5),
+            (0x26fa, 0x26fa),
+            (0x26fd, 0x26fd),
+            (0x2705, 0x2705),
+            (0x270a, 0x270b),
+            (0x2728, 0x2728),
+            (0x274c, 0x274c),
+            (0x274e, 0x274e),
+            (0x2753, 0x2755),
+            (0x2757, 0x2757),
+            (0x2795, 0x2797),
+            (0x27b0, 0x27b0),
+            (0x27bf, 0x27bf),
+            (0x2b1b, 0x2b1c),
+            (0x2b50, 0x2b50),
+            (0x2b55, 0x2b55),
+            (0x1f004, 0x1f004),
+            (0x1f0cf, 0x1f0cf),
+            (0x1f18e, 0x1f18e),
+            (0x1f191, 0x1f19a),
+            (0x1f1e6, 0x1f1ff),
+            (0x1f201, 0x1f201),
+            (0x1f21a, 0x1f21a),
+            (0x1f22f, 0x1f22f),
+            (0x1f232, 0x1f236),
+            (0x1f238, 0x1f23a),
+            (0x1f250, 0x1f251),
+            (0x1f300, 0x1f320),
+            (0x1f32d, 0x1f335),
+            (0x1f337, 0x1f37c),
+            (0x1f37e, 0x1f393),
+            (0x1f3a0, 0x1f3ca),
+            (0x1f3cf, 0x1f3d3),
+            (0x1f3e0, 0x1f3f0),
+            (0x1f3f4, 0x1f3f4),
+            (0x1f3f8, 0x1f43e),
+            (0x1f440, 0x1f440),
+            (0x1f442, 0x1f4fc),
+            (0x1f4ff, 0x1f53d),
+            (0x1f54b, 0x1f54e),
+            (0x1f550, 0x1f567),
+            (0x1f57a, 0x1f57a),
+            (0x1f595, 0x1f596),
+            (0x1f5a4, 0x1f5a4),
+            (0x1f5fb, 0x1f64f),
+            (0x1f680, 0x1f6c5),
+            (0x1f6cc, 0x1f6cc),
+            (0x1f6d0, 0x1f6d2),
+            (0x1f6d5, 0x1f6d9),
+            (0x1f6dc, 0x1f6df),
+            (0x1f6eb, 0x1f6ec),
+            (0x1f6f4, 0x1f6fc),
+            (0x1f7e0, 0x1f7eb),
+            (0x1f7f0, 0x1f7f0),
+            (0x1f90c, 0x1f93a),
+            (0x1f93c, 0x1f945),
+            (0x1f947, 0x1f9ff),
+            (0x1fa70, 0x1fa7c),
+            (0x1fa80, 0x1fac6),
+            (0x1fac8, 0x1fac8),
+            (0x1facc, 0x1fadd),
+            (0x1fadf, 0x1faeb),
+            (0x1faef, 0x1fafa),
+        ],
+        97 => &[
+            (0x0, 0x2319),
+            (0x231c, 0x23e8),
+            (0x23ed, 0x23ef),
+            (0x23f1, 0x23f2),
+            (0x23f4, 0x25fc),
+            (0x25ff, 0x2613),
+            (0x2616, 0x2647),
+            (0x2654, 0x267e),
+            (0x2680, 0x2692),
+            (0x2694, 0x26a0),
+            (0x26a2, 0x26a9),
+            (0x26ac, 0x26bc),
+            (0x26bf, 0x26c3),
+            (0x26c6, 0x26cd),
+            (0x26cf, 0x26d3),
+            (0x26d5, 0x26e9),
+            (0x26eb, 0x26f1),
+            (0x26f4, 0x26f4),
+            (0x26f6, 0x26f9),
+            (0x26fb, 0x26fc),
+            (0x26fe, 0x2704),
+            (0x2706, 0x2709),
+            (0x270c, 0x2727),
+            (0x2729, 0x274b),
+            (0x274d, 0x274d),
+            (0x274f, 0x2752),
+            (0x2756, 0x2756),
+            (0x2758, 0x2794),
+            (0x2798, 0x27af),
+            (0x27b1, 0x27be),
+            (0x27c0, 0x2b1a),
+            (0x2b1d, 0x2b4f),
+            (0x2b51, 0x2b54),
+            (0x2b56, 0x1f003),
+            (0x1f005, 0x1f0ce),
+            (0x1f0d0, 0x1f18d),
+            (0x1f18f, 0x1f190),
+            (0x1f19b, 0x1f1e5),
+            (0x1f200, 0x1f200),
+            (0x1f202, 0x1f219),
+            (0x1f21b, 0x1f22e),
+            (0x1f230, 0x1f231),
+            (0x1f237, 0x1f237),
+            (0x1f23b, 0x1f24f),
+            (0x1f252, 0x1f2ff),
+            (0x1f321, 0x1f32c),
+            (0x1f336, 0x1f336),
+            (0x1f37d, 0x1f37d),
+            (0x1f394, 0x1f39f),
+            (0x1f3cb, 0x1f3ce),
+            (0x1f3d4, 0x1f3df),
+            (0x1f3f1, 0x1f3f3),
+            (0x1f3f5, 0x1f3f7),
+            (0x1f43f, 0x1f43f),
+            (0x1f441, 0x1f441),
+            (0x1f4fd, 0x1f4fe),
+            (0x1f53e, 0x1f54a),
+            (0x1f54f, 0x1f54f),
+            (0x1f568, 0x1f579),
+            (0x1f57b, 0x1f594),
+            (0x1f597, 0x1f5a3),
+            (0x1f5a5, 0x1f5fa),
+            (0x1f650, 0x1f67f),
+            (0x1f6c6, 0x1f6cb),
+            (0x1f6cd, 0x1f6cf),
+            (0x1f6d3, 0x1f6d4),
+            (0x1f6da, 0x1f6db),
+            (0x1f6e0, 0x1f6ea),
+            (0x1f6ed, 0x1f6f3),
+            (0x1f6fd, 0x1f7df),
+            (0x1f7ec, 0x1f7ef),
+            (0x1f7f1, 0x1f90b),
+            (0x1f93b, 0x1f93b),
+            (0x1f946, 0x1f946),
+            (0x1fa00, 0x1fa6f),
+            (0x1fa7d, 0x1fa7f),
+            (0x1fac7, 0x1fac7),
+            (0x1fac9, 0x1facb),
+            (0x1fade, 0x1fade),
+            (0x1faec, 0x1faee),
+            (0x1fafb, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -77751,6 +77943,553 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{EComp}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_emoji_presentation_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (8986usize, 8987usize),
+            (9193usize, 9196usize),
+            (9200usize, 9200usize),
+            (9203usize, 9203usize),
+            (9725usize, 9726usize),
+            (9748usize, 9749usize),
+            (9800usize, 9811usize),
+            (9855usize, 9855usize),
+            (9875usize, 9875usize),
+            (9889usize, 9889usize),
+            (9898usize, 9899usize),
+            (9917usize, 9918usize),
+            (9924usize, 9925usize),
+            (9934usize, 9934usize),
+            (9940usize, 9940usize),
+            (9962usize, 9962usize),
+            (9970usize, 9971usize),
+            (9973usize, 9973usize),
+            (9978usize, 9978usize),
+            (9981usize, 9981usize),
+            (9989usize, 9989usize),
+            (9994usize, 9995usize),
+            (10024usize, 10024usize),
+            (10060usize, 10060usize),
+            (10062usize, 10062usize),
+            (10067usize, 10069usize),
+            (10071usize, 10071usize),
+            (10133usize, 10135usize),
+            (10160usize, 10160usize),
+            (10175usize, 10175usize),
+            (11035usize, 11036usize),
+            (11088usize, 11088usize),
+            (11093usize, 11093usize),
+            (126980usize, 126980usize),
+            (127183usize, 127183usize),
+            (127374usize, 127374usize),
+            (127377usize, 127386usize),
+            (127462usize, 127487usize),
+            (127489usize, 127489usize),
+            (127514usize, 127514usize),
+            (127535usize, 127535usize),
+            (127538usize, 127542usize),
+            (127544usize, 127546usize),
+            (127568usize, 127569usize),
+            (127744usize, 127756usize),
+            (127757usize, 127758usize),
+            (127759usize, 127759usize),
+            (127760usize, 127760usize),
+            (127761usize, 127761usize),
+            (127762usize, 127762usize),
+            (127763usize, 127765usize),
+            (127766usize, 127768usize),
+            (127769usize, 127769usize),
+            (127770usize, 127770usize),
+            (127771usize, 127771usize),
+            (127772usize, 127772usize),
+            (127773usize, 127774usize),
+            (127775usize, 127776usize),
+            (127789usize, 127791usize),
+            (127792usize, 127793usize),
+            (127794usize, 127795usize),
+            (127796usize, 127797usize),
+            (127799usize, 127818usize),
+            (127819usize, 127819usize),
+            (127820usize, 127823usize),
+            (127824usize, 127824usize),
+            (127825usize, 127867usize),
+            (127868usize, 127868usize),
+            (127870usize, 127871usize),
+            (127872usize, 127891usize),
+            (127904usize, 127940usize),
+            (127941usize, 127941usize),
+            (127942usize, 127942usize),
+            (127943usize, 127943usize),
+            (127944usize, 127944usize),
+            (127945usize, 127945usize),
+            (127946usize, 127946usize),
+            (127951usize, 127955usize),
+            (127968usize, 127971usize),
+            (127972usize, 127972usize),
+            (127973usize, 127984usize),
+            (127988usize, 127988usize),
+            (127992usize, 128007usize),
+            (128008usize, 128008usize),
+            (128009usize, 128011usize),
+            (128012usize, 128014usize),
+            (128015usize, 128016usize),
+            (128017usize, 128018usize),
+            (128019usize, 128019usize),
+            (128020usize, 128020usize),
+            (128021usize, 128021usize),
+            (128022usize, 128022usize),
+            (128023usize, 128041usize),
+            (128042usize, 128042usize),
+            (128043usize, 128062usize),
+            (128064usize, 128064usize),
+            (128066usize, 128100usize),
+            (128101usize, 128101usize),
+            (128102usize, 128107usize),
+            (128108usize, 128109usize),
+            (128110usize, 128172usize),
+            (128173usize, 128173usize),
+            (128174usize, 128181usize),
+            (128182usize, 128183usize),
+            (128184usize, 128235usize),
+            (128236usize, 128237usize),
+            (128238usize, 128238usize),
+            (128239usize, 128239usize),
+            (128240usize, 128244usize),
+            (128245usize, 128245usize),
+            (128246usize, 128247usize),
+            (128248usize, 128248usize),
+            (128249usize, 128252usize),
+            (128255usize, 128258usize),
+            (128259usize, 128259usize),
+            (128260usize, 128263usize),
+            (128264usize, 128264usize),
+            (128265usize, 128265usize),
+            (128266usize, 128276usize),
+            (128277usize, 128277usize),
+            (128278usize, 128299usize),
+            (128300usize, 128301usize),
+            (128302usize, 128317usize),
+            (128331usize, 128334usize),
+            (128336usize, 128347usize),
+            (128348usize, 128359usize),
+            (128378usize, 128378usize),
+            (128405usize, 128406usize),
+            (128420usize, 128420usize),
+            (128507usize, 128511usize),
+            (128512usize, 128512usize),
+            (128513usize, 128518usize),
+            (128519usize, 128520usize),
+            (128521usize, 128525usize),
+            (128526usize, 128526usize),
+            (128527usize, 128527usize),
+            (128528usize, 128528usize),
+            (128529usize, 128529usize),
+            (128530usize, 128532usize),
+            (128533usize, 128533usize),
+            (128534usize, 128534usize),
+            (128535usize, 128535usize),
+            (128536usize, 128536usize),
+            (128537usize, 128537usize),
+            (128538usize, 128538usize),
+            (128539usize, 128539usize),
+            (128540usize, 128542usize),
+            (128543usize, 128543usize),
+            (128544usize, 128549usize),
+            (128550usize, 128551usize),
+            (128552usize, 128555usize),
+            (128556usize, 128556usize),
+            (128557usize, 128557usize),
+            (128558usize, 128559usize),
+            (128560usize, 128563usize),
+            (128564usize, 128564usize),
+            (128565usize, 128565usize),
+            (128566usize, 128566usize),
+            (128567usize, 128576usize),
+            (128577usize, 128580usize),
+            (128581usize, 128591usize),
+            (128640usize, 128640usize),
+            (128641usize, 128642usize),
+            (128643usize, 128645usize),
+            (128646usize, 128646usize),
+            (128647usize, 128647usize),
+            (128648usize, 128648usize),
+            (128649usize, 128649usize),
+            (128650usize, 128651usize),
+            (128652usize, 128652usize),
+            (128653usize, 128653usize),
+            (128654usize, 128654usize),
+            (128655usize, 128655usize),
+            (128656usize, 128656usize),
+            (128657usize, 128659usize),
+            (128660usize, 128660usize),
+            (128661usize, 128661usize),
+            (128662usize, 128662usize),
+            (128663usize, 128663usize),
+            (128664usize, 128664usize),
+            (128665usize, 128666usize),
+            (128667usize, 128673usize),
+            (128674usize, 128674usize),
+            (128675usize, 128675usize),
+            (128676usize, 128677usize),
+            (128678usize, 128678usize),
+            (128679usize, 128685usize),
+            (128686usize, 128689usize),
+            (128690usize, 128690usize),
+            (128691usize, 128693usize),
+            (128694usize, 128694usize),
+            (128695usize, 128696usize),
+            (128697usize, 128702usize),
+            (128703usize, 128703usize),
+            (128704usize, 128704usize),
+            (128705usize, 128709usize),
+            (128716usize, 128716usize),
+            (128720usize, 128720usize),
+            (128721usize, 128722usize),
+            (128725usize, 128725usize),
+            (128726usize, 128727usize),
+            (128728usize, 128728usize),
+            (128729usize, 128729usize),
+            (128732usize, 128732usize),
+            (128733usize, 128735usize),
+            (128747usize, 128748usize),
+            (128756usize, 128758usize),
+            (128759usize, 128760usize),
+            (128761usize, 128761usize),
+            (128762usize, 128762usize),
+            (128763usize, 128764usize),
+            (128992usize, 129003usize),
+            (129008usize, 129008usize),
+            (129292usize, 129292usize),
+            (129293usize, 129295usize),
+            (129296usize, 129304usize),
+            (129305usize, 129310usize),
+            (129311usize, 129311usize),
+            (129312usize, 129319usize),
+            (129320usize, 129327usize),
+            (129328usize, 129328usize),
+            (129329usize, 129330usize),
+            (129331usize, 129338usize),
+            (129340usize, 129342usize),
+            (129343usize, 129343usize),
+            (129344usize, 129349usize),
+            (129351usize, 129355usize),
+            (129356usize, 129356usize),
+            (129357usize, 129359usize),
+            (129360usize, 129374usize),
+            (129375usize, 129387usize),
+            (129388usize, 129392usize),
+            (129393usize, 129393usize),
+            (129394usize, 129394usize),
+            (129395usize, 129398usize),
+            (129399usize, 129400usize),
+            (129401usize, 129401usize),
+            (129402usize, 129402usize),
+            (129403usize, 129403usize),
+            (129404usize, 129407usize),
+            (129408usize, 129412usize),
+            (129413usize, 129425usize),
+            (129426usize, 129431usize),
+            (129432usize, 129442usize),
+            (129443usize, 129444usize),
+            (129445usize, 129450usize),
+            (129451usize, 129453usize),
+            (129454usize, 129455usize),
+            (129456usize, 129465usize),
+            (129466usize, 129471usize),
+            (129472usize, 129472usize),
+            (129473usize, 129474usize),
+            (129475usize, 129482usize),
+            (129483usize, 129483usize),
+            (129484usize, 129484usize),
+            (129485usize, 129487usize),
+            (129488usize, 129510usize),
+            (129511usize, 129535usize),
+            (129648usize, 129651usize),
+            (129652usize, 129652usize),
+            (129653usize, 129655usize),
+            (129656usize, 129658usize),
+            (129659usize, 129660usize),
+            (129664usize, 129666usize),
+            (129667usize, 129670usize),
+            (129671usize, 129672usize),
+            (129673usize, 129673usize),
+            (129674usize, 129674usize),
+            (129675usize, 129677usize),
+            (129678usize, 129678usize),
+            (129679usize, 129679usize),
+            (129680usize, 129685usize),
+            (129686usize, 129704usize),
+            (129705usize, 129708usize),
+            (129709usize, 129711usize),
+            (129712usize, 129718usize),
+            (129719usize, 129722usize),
+            (129723usize, 129725usize),
+            (129726usize, 129726usize),
+            (129727usize, 129727usize),
+            (129728usize, 129730usize),
+            (129731usize, 129733usize),
+            (129734usize, 129734usize),
+            (129736usize, 129736usize),
+            (129740usize, 129740usize),
+            (129741usize, 129741usize),
+            (129742usize, 129743usize),
+            (129744usize, 129750usize),
+            (129751usize, 129753usize),
+            (129754usize, 129755usize),
+            (129756usize, 129756usize),
+            (129757usize, 129757usize),
+            (129759usize, 129759usize),
+            (129760usize, 129767usize),
+            (129768usize, 129768usize),
+            (129769usize, 129769usize),
+            (129770usize, 129770usize),
+            (129771usize, 129771usize),
+            (129775usize, 129775usize),
+            (129776usize, 129782usize),
+            (129783usize, 129784usize),
+            (129785usize, 129786usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Emoji_Presentation}",
+                    r"\P{EPres}",
+                    r"[\p{EPres}]",
+                    r"[^\p{Emoji_Presentation}]",
+                    r"[\P{EPres}K]",
+                    r"[\p{EPres}K]",
+                    r"[\p{EPres}\P{Emoji_Presentation}]",
+                    r"[^\P{EPres}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let emoji_presentation = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Emoji_Presentation}" | r"[\p{EPres}]" => emoji_presentation,
+                            r"\P{EPres}" | r"[^\p{Emoji_Presentation}]" => !emoji_presentation,
+                            r"[\P{EPres}K]" => !emoji_presentation || k,
+                            r"[\p{EPres}K]" => emoji_presentation || k,
+                            r"[\p{EPres}\P{Emoji_Presentation}]" => true,
+                            r"[^\P{EPres}K]" => emoji_presentation && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_emoji_presentation_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{EPres}",
+            r"\P{Emoji_Presentation}",
+            r"^[\p{Emoji_Presentation}]$",
+            r"[\P{EPres}K]",
+            r"[^\P{EPres}K]",
+            r"[\p{Emoji_Presentation}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "\u{e0001}\u{2319}\u{231a}\u{231b}\u{231c}\u{23e8}\u{23e9}\u{23ec}\u{23ed}\u{23ef}\u{23f0}\u{23f1}\u{23f2}\u{23f3}\u{23f4}\u{25fc}\u{25fd}\u{25fe}\u{25ff}\u{2613}\u{2614}\u{2615}\u{2616}\u{2647}\u{2648}\u{2653}\u{2654}\u{267e}\u{267f}\u{2680}\u{2692}\u{2693}\u{2694}\u{26a0}\u{26a1}\u{26a2}\u{26a9}\u{26aa}\u{26ab}\u{26ac}\u{26bc}\u{26bd}\u{26be}\u{26bf}\u{26c3}\u{26c4}\u{26c5}\u{26c6}\u{26cd}\u{26ce}\u{26cf}\u{26d3}\u{26d4}\u{26d5}\u{26e9}\u{26ea}\u{26eb}\u{26f1}\u{26f2}\u{26f3}\u{26f4}\u{26f5}\u{26f6}\u{26f9}\u{26fa}\u{26fb}\u{26fc}\u{26fd}\u{26fe}\u{2704}\u{2705}\u{2706}\u{2709}\u{270a}\u{270b}\u{270c}\u{2727}\u{2728}\u{2729}\u{274b}\u{274c}\u{274d}\u{274e}\u{274f}\u{2752}\u{2753}\u{2755}\u{2756}\u{2757}\u{2758}\u{2794}\u{2795}\u{2797}\u{2798}\u{27af}\u{27b0}\u{27b1}\u{27be}\u{27bf}\u{27c0}\u{2b1a}\u{2b1b}\u{2b1c}\u{2b1d}\u{2b4f}\u{2b50}\u{2b51}\u{2b54}\u{2b55}\u{2b56}\u{1f003}\u{1f004}\u{1f005}\u{1f0ce}\u{1f0cf}\u{1f0d0}\u{1f18d}\u{1f18e}\u{1f18f}\u{1f190}\u{1f191}\u{1f19a}\u{1f19b}\u{1f1e5}\u{1f1e6}\u{1f1ff}\u{1f200}\u{1f201}\u{1f202}\u{1f219}\u{1f21a}\u{1f21b}\u{1f22e}\u{1f22f}\u{1f230}\u{1f231}\u{1f232}\u{1f236}\u{1f237}\u{1f238}\u{1f23a}\u{1f23b}\u{1f24f}\u{1f250}\u{1f251}\u{1f252}\u{1f2ff}\u{1f300}\u{1f320}\u{1f321}\u{1f32c}\u{1f32d}\u{1f335}\u{1f336}\u{1f337}\u{1f37c}\u{1f37d}\u{1f37e}\u{1f393}\u{1f394}\u{1f39f}\u{1f3a0}\u{1f3ca}\u{1f3cb}\u{1f3ce}\u{1f3cf}\u{1f3d3}\u{1f3d4}\u{1f3df}\u{1f3e0}\u{1f3f0}\u{1f3f1}\u{1f3f3}\u{1f3f4}\u{1f3f5}\u{1f3f7}\u{1f3f8}\u{1f43e}\u{1f43f}\u{1f440}\u{1f441}\u{1f442}\u{1f4fc}\u{1f4fd}\u{1f4fe}\u{1f4ff}\u{1f53d}\u{1f53e}\u{1f54a}\u{1f54b}\u{1f54e}\u{1f54f}\u{1f550}\u{1f567}\u{1f568}\u{1f579}\u{1f57a}\u{1f57b}\u{1f594}\u{1f595}\u{1f596}\u{1f597}\u{1f5a3}\u{1f5a4}\u{1f5a5}\u{1f5fa}\u{1f5fb}\u{1f64f}\u{1f650}\u{1f67f}\u{1f680}\u{1f6c5}\u{1f6c6}\u{1f6cb}\u{1f6cc}\u{1f6cd}\u{1f6cf}\u{1f6d0}\u{1f6d2}\u{1f6d3}\u{1f6d4}\u{1f6d5}\u{1f6da}\u{1f6db}\u{1f6dc}\u{1f6df}\u{1f6e0}\u{1f6ea}\u{1f6eb}\u{1f6ec}\u{1f6ed}\u{1f6f3}\u{1f6f4}\u{1f6fc}\u{1f6fd}\u{1f7df}\u{1f7e0}\u{1f7eb}\u{1f7ec}\u{1f7ef}\u{1f7f0}\u{1f7f1}\u{1f90b}\u{1f90c}\u{1f93a}\u{1f93b}\u{1f93c}\u{1f945}\u{1f946}\u{1f947}\u{1f9ff}\u{1fa00}\u{1fa6f}\u{1fa70}\u{1fa7c}\u{1fa7d}\u{1fa7f}\u{1fa80}\u{1fac6}\u{1fac7}\u{1fac8}\u{1fac9}\u{1facb}\u{1fade}\u{1fadf}\u{1faec}\u{1faee}\u{1faef}\u{1fafb}\u{feff}ſK\n",
+                            "X\r\n\u{231a}\u{2028}\u{23f3}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_emoji_presentation_property_work_deduplication_and_contracts() {
+        // New tags 96/97 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let highest = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\P{EPres}\p{ASCII}\p{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x231a, false),
+                (0x23f3, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(highest.matches(point), expected, "highest bit U+{point:X}");
+            }
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{EPres}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x231a, true),
+                (0x23f3, true),
+                (0x1f600, true),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{EPres}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x231a, false),
+                (0x23f3, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(
+            format!("[{}]", r"\p{EPres}\P{Emoji_Presentation}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("\u{e0001}"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{EPres}$", r"^[\P{Emoji_Presentation}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{231a}\n\u{e0001}\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{EPres}--A]",
+            r"[\p{EPres}&&A]",
+            r"[[\p{EPres}]]",
+            r"[A-\p{EPres}]",
+            r"[\p{EPres}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{EPres}]"),
                 true,
                 true,
                 false

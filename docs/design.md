@@ -4815,6 +4815,24 @@ reviewed separately from this implementation.
 The static data source is https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
 with SHA-256 80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1.
 
+
+Emoji_Presentation and its exact EPres alias use pinned UCD 18 emoji-data
+membership (22.2.2.9 and UnicodeMatchProperty): 1,228 members in eighty positive
+and eighty-one complementary intervals. All 1,533 simple common folds preserve
+membership, so both complement orders retain these exact sets. Each binary
+property atom consumes one complete character, preserving captures, assertions,
+repetitions, captured property/dot patterns and original UTF-16 ranges.
+This property is distinct from emoji components and does not match sequences.
+
+Tags 96/97 fit the temporary u128 property mask; the bounded scan stops below
+98. Earlier tables and matcher fields remain unchanged. Standalone construction
+charges eighty-one intervals before allocation; each distinct class set charges
+324. No dependency, recursion or default quota is added. UCD 18 adds nine members
+in six ranges. The pinned Unicode 17 fixture stays unchanged and unvendored;
+these data differences remain separate from the approved Node/V8 inside-pair
+behavior. The pinned emoji-data source and SHA-256 are recorded with the static
+tables and Emoji_Component implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
