@@ -4556,6 +4556,26 @@ Unicode 18 adds 12,860 members in 38 ranges absent from the pinned Unicode 17
 fixture, which remains unchanged and unvendored. Data-version differences
 remain separate from the approved Node/V8 inside-pair boundary behavior.
 
+
+ID_Start and its exact IDS alias use pinned UCD 18 DerivedCoreProperties
+membership (22.2.2.9 and UnicodeMatchProperty): 158,739 members in 695 positive
+and 696 raw complementary intervals. Nonmember U+0345 folds to member U+03B9.
+Complement before folding under u+i admits all Greek iota equivalents in
+both p and P; complement after folding under v+i excludes them from P.
+The 697-interval v+i complement removes the additional U+0345 preimage before
+union, folding and inversion. Captures, assertions, repetitions and captured
+property/dot patterns retain complete characters and original UTF-16 ranges.
+
+Tags 72/73 fit the temporary u128 property mask; the bounded scan stops below
+74. Earlier property tables and matcher fields remain unchanged. Standalone
+construction charges 697 intervals before allocation, and each distinct
+class set charges 2,788. No dependency, recursion or default quota is added.
+UCD 18 adds 12,823 members in 27 ranges absent from the pinned Unicode 17
+fixture, which stays unchanged and unvendored. Reference comparisons use
+Unicode 17 folding for Node and Unicode 18 folding for the implementation.
+Data-version differences remain separate from the approved Node/V8
+inside-pair boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
