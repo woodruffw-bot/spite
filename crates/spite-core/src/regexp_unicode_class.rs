@@ -55,6 +55,7 @@ use std::{ops::Range, sync::Arc};
 /// Changes_When_Titlecased/CWT uses pinned UCD 18 titlecase-change membership.
 /// Changes_When_Casemapped/CWCM uses fold-invariant pinned UCD 18 case-change membership.
 /// Changes_When_NFKC_Casefolded/CWKCF uses pinned UCD 18 case-fold-change membership.
+/// Emoji_Component/EComp uses UCD 18 emoji-component membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -275,6 +276,7 @@ impl RegExpUnicodeClassMatcher {
             88 => 653,
             90 => 143,
             92 => 872,
+            94 => 11,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -390,7 +392,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..94 {
+        for kind in 0..96 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -433,6 +435,7 @@ impl RegExpUnicodeClassMatcher {
                     88..=89 => 2612,
                     90..=91 => 572,
                     92..=93 => 3488,
+                    94..=95 => 44,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -1330,6 +1333,24 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x65,
             0x64,
         ] => 92,
+        [0x45, 0x43, 0x6f, 0x6d, 0x70]
+        | [
+            0x45,
+            0x6d,
+            0x6f,
+            0x6a,
+            0x69,
+            0x5f,
+            0x43,
+            0x6f,
+            0x6d,
+            0x70,
+            0x6f,
+            0x6e,
+            0x65,
+            0x6e,
+            0x74,
+        ] => 94,
         _ => return None,
     })
 }
@@ -29956,6 +29977,34 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1fbfa, 0x2f7ff),
             (0x2fa1e, 0xdffff),
             (0xe1000, 0x10ffff),
+        ],
+        // Source: https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
+        // SHA-256: 80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1
+        // UCD 18 Emoji_Component: 146 members, invariant under C/S folding.
+        94 => &[
+            (0x23, 0x23),
+            (0x2a, 0x2a),
+            (0x30, 0x39),
+            (0x200d, 0x200d),
+            (0x20e3, 0x20e3),
+            (0xfe0f, 0xfe0f),
+            (0x1f1e6, 0x1f1ff),
+            (0x1f3fb, 0x1f3ff),
+            (0x1f9b0, 0x1f9b3),
+            (0xe0020, 0xe007f),
+        ],
+        95 => &[
+            (0x0, 0x22),
+            (0x24, 0x29),
+            (0x2b, 0x2f),
+            (0x3a, 0x200c),
+            (0x200e, 0x20e2),
+            (0x20e4, 0xfe0e),
+            (0xfe10, 0x1f1e5),
+            (0x1f200, 0x1f3fa),
+            (0x1f400, 0x1f9af),
+            (0x1f9b4, 0xe001f),
+            (0xe0080, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -77448,6 +77497,260 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{CWKCF}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_emoji_component_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (35usize, 35usize),
+            (42usize, 42usize),
+            (48usize, 57usize),
+            (8205usize, 8205usize),
+            (8419usize, 8419usize),
+            (65039usize, 65039usize),
+            (127462usize, 127487usize),
+            (127995usize, 127999usize),
+            (129456usize, 129459usize),
+            (917536usize, 917631usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Emoji_Component}",
+                    r"\P{EComp}",
+                    r"[\p{EComp}]",
+                    r"[^\p{Emoji_Component}]",
+                    r"[\P{EComp}K]",
+                    r"[\p{EComp}K]",
+                    r"[\p{EComp}\P{Emoji_Component}]",
+                    r"[^\P{EComp}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let emoji_component = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Emoji_Component}" | r"[\p{EComp}]" => emoji_component,
+                            r"\P{EComp}" | r"[^\p{Emoji_Component}]" => !emoji_component,
+                            r"[\P{EComp}K]" => !emoji_component || k,
+                            r"[\p{EComp}K]" => emoji_component || k,
+                            r"[\p{EComp}\P{Emoji_Component}]" => true,
+                            r"[^\P{EComp}K]" => emoji_component && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_emoji_component_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{EComp}",
+            r"\P{Emoji_Component}",
+            r"^[\p{Emoji_Component}]$",
+            r"[\P{EComp}K]",
+            r"[^\P{EComp}K]",
+            r"[\p{Emoji_Component}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{22}\u{23}\u{24}\u{29}\u{2a}\u{2b}\u{2f}\u{30}\u{39}\u{3a}\u{200c}\u{200d}\u{200d}\u{20e2}\u{20e3}\u{20e4}\u{fe0e}\u{fe0f}\u{fe10}\u{1f1e5}\u{1f1e6}\u{1f1ff}\u{1f200}\u{1f3fa}\u{1f3fb}\u{1f3ff}\u{1f400}\u{1f9af}\u{1f9b0}\u{1f9b3}\u{1f9b4}\u{e001f}\u{e0020}\u{e007f}\u{e0080}\u{feff}ſK\n",
+                            "X\r\n\u{200d}\u{2028}\u{fe0f}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_emoji_component_property_work_deduplication_and_contracts() {
+        // New tags 94/95 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let highest = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\P{EComp}\p{ASCII}\p{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x200d, false),
+                (0xfe0f, false),
+                (0x1f600, true),
+            ] {
+                assert_eq!(highest.matches(point), expected, "highest bit U+{point:X}");
+            }
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{EComp}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x200d, true),
+                (0xfe0f, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{EComp}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x200d, false),
+                (0xfe0f, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source =
+            JsString::from(format!("[{}]", r"\p{EComp}\P{Emoji_Component}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{EComp}$", r"^[\P{Emoji_Component}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{200d}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{EComp}--A]",
+            r"[\p{EComp}&&A]",
+            r"[[\p{EComp}]]",
+            r"[A-\p{EComp}]",
+            r"[\p{EComp}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{EComp}]"),
                 true,
                 true,
                 false

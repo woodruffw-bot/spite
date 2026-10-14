@@ -4795,6 +4795,26 @@ unvendored. Reference comparisons use Unicode 17 folding for Node and Unicode
 18 folding for the implementation. These data differences remain separate
 from the approved Node/V8 inside-pair behavior.
 
+
+Emoji_Component and its exact EComp alias use pinned UCD 18 emoji-data
+membership (22.2.2.9 and UnicodeMatchProperty): 146 members in ten positive
+and eleven complementary intervals. All 1,533 simple common folds preserve
+membership, so both complement orders retain these exact sets. This binary
+property consumes one complete character, including supplementary modifiers
+and tag characters; it does not match whole emoji sequences. Captures,
+assertions, repetitions and captured property/dot patterns retain original
+UTF-16 ranges. Digits, ZWJ and variation selectors are members; underscore
+and ASCII space are nonmembers.
+
+Tags 94/95 fit the temporary u128 property mask; the bounded scan stops below
+96. Earlier tables and matcher fields remain unchanged. Standalone construction
+charges eleven intervals before allocation; each distinct class set charges
+44. No dependency, recursion or default quota is added. The unchanged pinned
+Unicode 17 fixture has identical complete positive and negative sets and is
+reviewed separately from this implementation.
+The static data source is https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
+with SHA-256 80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
