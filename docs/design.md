@@ -4520,6 +4520,24 @@ Unicode 18 adds 12,833 members in 32 ranges absent from the pinned Unicode 17
 fixture, which remains unchanged and unvendored. Data-version differences
 are separate from the approved Node/V8 inside-pair boundary behavior.
 
+
+ID_Continue and its exact IDC alias use pinned UCD 18 DerivedCoreProperties
+membership (22.2.2.9 and UnicodeMatchProperty): 162,100 members in 814 positive
+and 815 complementary intervals. Common/simple folds preserve membership,
+so both Unicode complement orders retain identical sets. Letters, digits,
+underscore and joining controls are members; BOM is a nonmember. RegExp
+word-character membership retains its separate ASCII and folding rules.
+Atoms, classes, unions, inversion, captures, assertions, repetitions and
+property/dot captures preserve complete characters and UTF-16 boundaries.
+
+Tags 68/69 fit the temporary u128 property mask and the scan stops below 70.
+All earlier tables and matcher fields remain unchanged. Standalone
+construction charges 815 intervals before allocation; each distinct class
+set charges 3,260. No dependency, recursion or default quota is added.
+Unicode 18 adds 12,860 members in 38 ranges absent from the pinned Unicode 17
+fixture, which remains unchanged and unvendored. Data-version differences
+are separate from the approved Node/V8 inside-pair boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
