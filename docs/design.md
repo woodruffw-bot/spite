@@ -4596,6 +4596,27 @@ Unicode 17 folding for Node and Unicode 18 folding for the implementation.
 Data-version differences remain separate from the approved Node/V8
 inside-pair boundary behavior.
 
+
+Math uses pinned UCD 18 DerivedCoreProperties membership (22.2.2.9 and
+UnicodeMatchProperty): 2,384 members in 145 positive and 146 raw complementary
+intervals. Seven mathematical Greek variants fold to nonmembers. Folding
+admits twelve further preimages in their case equivalence classes. Under u+i,
+complementing before folding admits these families in both p and P; under v+i,
+complementing after folding excludes them from P. The 158-interval v+i
+complement excludes all such preimages before union, folding and inversion.
+Captures, assertions, repetitions and captured property/dot patterns retain
+complete characters and original UTF-16 ranges.
+
+Tags 76/77 fit the temporary u128 property mask; the bounded scan stops below
+78. Earlier property tables and matcher fields remain unchanged. Standalone
+construction charges 158 intervals before allocation, and each distinct class
+set charges 632. No dependency, recursion or default quota is added.
+UCD 18 adds 62 members in six ranges absent from the pinned Unicode 17 fixture,
+which stays unchanged and unvendored. Reference comparisons use Unicode 17
+folding for Node and Unicode 18 folding for the implementation. These data
+version differences remain separate from the approved Node/V8 inside-pair
+boundary behavior.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

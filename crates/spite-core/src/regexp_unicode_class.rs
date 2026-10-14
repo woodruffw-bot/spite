@@ -46,6 +46,7 @@ use std::{ops::Range, sync::Arc};
 /// XID_Continue/XIDC uses UCD 18 normalization-stable identifier-continue membership.
 /// ID_Start/IDS uses UCD 18 identifier-start membership.
 /// XID_Start/XIDS uses UCD 18 normalization-stable identifier-start membership.
+/// Math uses UCD 18 mathematical-character membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -257,6 +258,7 @@ impl RegExpUnicodeClassMatcher {
             70 => 822,
             72 => 697,
             74 => 704,
+            76 => 158,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -372,7 +374,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..76 {
+        for kind in 0..78 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -406,6 +408,7 @@ impl RegExpUnicodeClassMatcher {
                     70..=71 => 3288,
                     72..=73 => 2788,
                     74..=75 => 2816,
+                    76..=77 => 632,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -1135,6 +1138,7 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
         ] => 70,
         [0x49, 0x44, 0x53] | [0x49, 0x44, 0x5f, 0x53, 0x74, 0x61, 0x72, 0x74] => 72,
         [0x58, 0x49, 0x44, 0x53] | [0x58, 0x49, 0x44, 0x5f, 0x53, 0x74, 0x61, 0x72, 0x74] => 74,
+        [0x4d, 0x61, 0x74, 0x68] => 76,
         _ => return None,
     })
 }
@@ -17978,6 +17982,463 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x3134b, 0x3134f),
             (0x3347a, 0x3cfff),
             (0x3fc40, 0x10ffff),
+        ],
+        // UCD 18 Math: 2384 members; seven mathematical Greek variants fold to nonmembers.
+        76 => &[
+            (0x2b, 0x2b),
+            (0x3c, 0x3e),
+            (0x5e, 0x5e),
+            (0x7c, 0x7c),
+            (0x7e, 0x7e),
+            (0xac, 0xac),
+            (0xb1, 0xb1),
+            (0xd7, 0xd7),
+            (0xf7, 0xf7),
+            (0x3d0, 0x3d2),
+            (0x3d5, 0x3d5),
+            (0x3f0, 0x3f1),
+            (0x3f4, 0x3f6),
+            (0x606, 0x608),
+            (0x2016, 0x2016),
+            (0x2032, 0x2034),
+            (0x2040, 0x2040),
+            (0x2044, 0x2044),
+            (0x2052, 0x2052),
+            (0x2061, 0x2064),
+            (0x207a, 0x207e),
+            (0x208a, 0x208e),
+            (0x20d0, 0x20dc),
+            (0x20e1, 0x20e1),
+            (0x20e5, 0x20e6),
+            (0x20eb, 0x20ef),
+            (0x2102, 0x2102),
+            (0x2107, 0x2107),
+            (0x210a, 0x2113),
+            (0x2115, 0x2115),
+            (0x2118, 0x211d),
+            (0x2124, 0x2124),
+            (0x2128, 0x2129),
+            (0x212c, 0x212d),
+            (0x212f, 0x2131),
+            (0x2133, 0x2138),
+            (0x213c, 0x2149),
+            (0x214b, 0x214b),
+            (0x2190, 0x21a7),
+            (0x21a9, 0x21ae),
+            (0x21b0, 0x21b1),
+            (0x21b6, 0x21b7),
+            (0x21bc, 0x21db),
+            (0x21dd, 0x21dd),
+            (0x21e4, 0x21e5),
+            (0x21f4, 0x22ff),
+            (0x2308, 0x230b),
+            (0x2320, 0x2321),
+            (0x237c, 0x237c),
+            (0x239b, 0x23b5),
+            (0x23b7, 0x23b7),
+            (0x23d0, 0x23d0),
+            (0x23dc, 0x23e2),
+            (0x25a0, 0x25a1),
+            (0x25ae, 0x25b7),
+            (0x25bc, 0x25c1),
+            (0x25c6, 0x25c7),
+            (0x25ca, 0x25cb),
+            (0x25cf, 0x25d3),
+            (0x25e2, 0x25e2),
+            (0x25e4, 0x25e4),
+            (0x25e7, 0x25ec),
+            (0x25f8, 0x25ff),
+            (0x2605, 0x2606),
+            (0x2640, 0x2640),
+            (0x2642, 0x2642),
+            (0x2660, 0x2663),
+            (0x266d, 0x266f),
+            (0x27c0, 0x27ff),
+            (0x2900, 0x2aff),
+            (0x2b30, 0x2b44),
+            (0x2b47, 0x2b4c),
+            (0xfb29, 0xfb29),
+            (0xfe61, 0xfe66),
+            (0xfe68, 0xfe68),
+            (0xff0b, 0xff0b),
+            (0xff1c, 0xff1e),
+            (0xff3c, 0xff3c),
+            (0xff3e, 0xff3e),
+            (0xff5c, 0xff5c),
+            (0xff5e, 0xff5e),
+            (0xffe2, 0xffe2),
+            (0xffe9, 0xffec),
+            (0x10d8e, 0x10d8f),
+            (0x1cedd, 0x1cedf),
+            (0x1cef0, 0x1cefd),
+            (0x1d400, 0x1d454),
+            (0x1d456, 0x1d49c),
+            (0x1d49e, 0x1d49f),
+            (0x1d4a2, 0x1d4a2),
+            (0x1d4a5, 0x1d4a6),
+            (0x1d4a9, 0x1d4ac),
+            (0x1d4ae, 0x1d4b9),
+            (0x1d4bb, 0x1d4bb),
+            (0x1d4bd, 0x1d4c3),
+            (0x1d4c5, 0x1d505),
+            (0x1d507, 0x1d50a),
+            (0x1d50d, 0x1d514),
+            (0x1d516, 0x1d51c),
+            (0x1d51e, 0x1d539),
+            (0x1d53b, 0x1d53e),
+            (0x1d540, 0x1d544),
+            (0x1d546, 0x1d546),
+            (0x1d54a, 0x1d550),
+            (0x1d552, 0x1d6a6),
+            (0x1d6a8, 0x1d7cb),
+            (0x1d7ce, 0x1d7ff),
+            (0x1db00, 0x1db1c),
+            (0x1ee00, 0x1ee03),
+            (0x1ee05, 0x1ee1f),
+            (0x1ee21, 0x1ee22),
+            (0x1ee24, 0x1ee24),
+            (0x1ee27, 0x1ee27),
+            (0x1ee29, 0x1ee32),
+            (0x1ee34, 0x1ee37),
+            (0x1ee39, 0x1ee39),
+            (0x1ee3b, 0x1ee3b),
+            (0x1ee42, 0x1ee42),
+            (0x1ee47, 0x1ee47),
+            (0x1ee49, 0x1ee49),
+            (0x1ee4b, 0x1ee4b),
+            (0x1ee4d, 0x1ee4f),
+            (0x1ee51, 0x1ee52),
+            (0x1ee54, 0x1ee54),
+            (0x1ee57, 0x1ee57),
+            (0x1ee59, 0x1ee59),
+            (0x1ee5b, 0x1ee5b),
+            (0x1ee5d, 0x1ee5d),
+            (0x1ee5f, 0x1ee5f),
+            (0x1ee61, 0x1ee62),
+            (0x1ee64, 0x1ee64),
+            (0x1ee67, 0x1ee6a),
+            (0x1ee6c, 0x1ee72),
+            (0x1ee74, 0x1ee77),
+            (0x1ee79, 0x1ee7c),
+            (0x1ee7e, 0x1ee7e),
+            (0x1ee80, 0x1ee89),
+            (0x1ee8b, 0x1ee9b),
+            (0x1eea1, 0x1eea3),
+            (0x1eea5, 0x1eea9),
+            (0x1eeab, 0x1eebb),
+            (0x1eef0, 0x1eef1),
+            (0x1f7db, 0x1f7db),
+            (0x1f7f1, 0x1f7ff),
+            (0x1f8d0, 0x1f8d8),
+        ],
+        // v+i complements after folding; exclude all twelve additional Greek preimages.
+        77 if unicode_sets && ignore_case => &[
+            (0x0, 0x2a),
+            (0x2c, 0x3b),
+            (0x3f, 0x5d),
+            (0x5f, 0x7b),
+            (0x7d, 0x7d),
+            (0x7f, 0xab),
+            (0xad, 0xb0),
+            (0xb2, 0xd6),
+            (0xd8, 0xf6),
+            (0xf8, 0x391),
+            (0x393, 0x394),
+            (0x396, 0x397),
+            (0x399, 0x399),
+            (0x39b, 0x3a0),
+            (0x3a2, 0x3a5),
+            (0x3a7, 0x3b1),
+            (0x3b3, 0x3b4),
+            (0x3b6, 0x3b7),
+            (0x3b9, 0x3b9),
+            (0x3bb, 0x3c0),
+            (0x3c2, 0x3c5),
+            (0x3c7, 0x3cf),
+            (0x3d3, 0x3d4),
+            (0x3d6, 0x3ef),
+            (0x3f2, 0x3f3),
+            (0x3f7, 0x605),
+            (0x609, 0x2015),
+            (0x2017, 0x2031),
+            (0x2035, 0x203f),
+            (0x2041, 0x2043),
+            (0x2045, 0x2051),
+            (0x2053, 0x2060),
+            (0x2065, 0x2079),
+            (0x207f, 0x2089),
+            (0x208f, 0x20cf),
+            (0x20dd, 0x20e0),
+            (0x20e2, 0x20e4),
+            (0x20e7, 0x20ea),
+            (0x20f0, 0x2101),
+            (0x2103, 0x2106),
+            (0x2108, 0x2109),
+            (0x2114, 0x2114),
+            (0x2116, 0x2117),
+            (0x211e, 0x2123),
+            (0x2125, 0x2127),
+            (0x212a, 0x212b),
+            (0x212e, 0x212e),
+            (0x2132, 0x2132),
+            (0x2139, 0x213b),
+            (0x214a, 0x214a),
+            (0x214c, 0x218f),
+            (0x21a8, 0x21a8),
+            (0x21af, 0x21af),
+            (0x21b2, 0x21b5),
+            (0x21b8, 0x21bb),
+            (0x21dc, 0x21dc),
+            (0x21de, 0x21e3),
+            (0x21e6, 0x21f3),
+            (0x2300, 0x2307),
+            (0x230c, 0x231f),
+            (0x2322, 0x237b),
+            (0x237d, 0x239a),
+            (0x23b6, 0x23b6),
+            (0x23b8, 0x23cf),
+            (0x23d1, 0x23db),
+            (0x23e3, 0x259f),
+            (0x25a2, 0x25ad),
+            (0x25b8, 0x25bb),
+            (0x25c2, 0x25c5),
+            (0x25c8, 0x25c9),
+            (0x25cc, 0x25ce),
+            (0x25d4, 0x25e1),
+            (0x25e3, 0x25e3),
+            (0x25e5, 0x25e6),
+            (0x25ed, 0x25f7),
+            (0x2600, 0x2604),
+            (0x2607, 0x263f),
+            (0x2641, 0x2641),
+            (0x2643, 0x265f),
+            (0x2664, 0x266c),
+            (0x2670, 0x27bf),
+            (0x2800, 0x28ff),
+            (0x2b00, 0x2b2f),
+            (0x2b45, 0x2b46),
+            (0x2b4d, 0xfb28),
+            (0xfb2a, 0xfe60),
+            (0xfe67, 0xfe67),
+            (0xfe69, 0xff0a),
+            (0xff0c, 0xff1b),
+            (0xff1f, 0xff3b),
+            (0xff3d, 0xff3d),
+            (0xff3f, 0xff5b),
+            (0xff5d, 0xff5d),
+            (0xff5f, 0xffe1),
+            (0xffe3, 0xffe8),
+            (0xffed, 0x10d8d),
+            (0x10d90, 0x1cedc),
+            (0x1cee0, 0x1ceef),
+            (0x1cefe, 0x1d3ff),
+            (0x1d455, 0x1d455),
+            (0x1d49d, 0x1d49d),
+            (0x1d4a0, 0x1d4a1),
+            (0x1d4a3, 0x1d4a4),
+            (0x1d4a7, 0x1d4a8),
+            (0x1d4ad, 0x1d4ad),
+            (0x1d4ba, 0x1d4ba),
+            (0x1d4bc, 0x1d4bc),
+            (0x1d4c4, 0x1d4c4),
+            (0x1d506, 0x1d506),
+            (0x1d50b, 0x1d50c),
+            (0x1d515, 0x1d515),
+            (0x1d51d, 0x1d51d),
+            (0x1d53a, 0x1d53a),
+            (0x1d53f, 0x1d53f),
+            (0x1d545, 0x1d545),
+            (0x1d547, 0x1d549),
+            (0x1d551, 0x1d551),
+            (0x1d6a7, 0x1d6a7),
+            (0x1d7cc, 0x1d7cd),
+            (0x1d800, 0x1daff),
+            (0x1db1d, 0x1edff),
+            (0x1ee04, 0x1ee04),
+            (0x1ee20, 0x1ee20),
+            (0x1ee23, 0x1ee23),
+            (0x1ee25, 0x1ee26),
+            (0x1ee28, 0x1ee28),
+            (0x1ee33, 0x1ee33),
+            (0x1ee38, 0x1ee38),
+            (0x1ee3a, 0x1ee3a),
+            (0x1ee3c, 0x1ee41),
+            (0x1ee43, 0x1ee46),
+            (0x1ee48, 0x1ee48),
+            (0x1ee4a, 0x1ee4a),
+            (0x1ee4c, 0x1ee4c),
+            (0x1ee50, 0x1ee50),
+            (0x1ee53, 0x1ee53),
+            (0x1ee55, 0x1ee56),
+            (0x1ee58, 0x1ee58),
+            (0x1ee5a, 0x1ee5a),
+            (0x1ee5c, 0x1ee5c),
+            (0x1ee5e, 0x1ee5e),
+            (0x1ee60, 0x1ee60),
+            (0x1ee63, 0x1ee63),
+            (0x1ee65, 0x1ee66),
+            (0x1ee6b, 0x1ee6b),
+            (0x1ee73, 0x1ee73),
+            (0x1ee78, 0x1ee78),
+            (0x1ee7d, 0x1ee7d),
+            (0x1ee7f, 0x1ee7f),
+            (0x1ee8a, 0x1ee8a),
+            (0x1ee9c, 0x1eea0),
+            (0x1eea4, 0x1eea4),
+            (0x1eeaa, 0x1eeaa),
+            (0x1eebc, 0x1eeef),
+            (0x1eef2, 0x1f7da),
+            (0x1f7dc, 0x1f7f0),
+            (0x1f800, 0x1f8cf),
+            (0x1f8d9, 0x10ffff),
+        ],
+        77 => &[
+            (0x0, 0x2a),
+            (0x2c, 0x3b),
+            (0x3f, 0x5d),
+            (0x5f, 0x7b),
+            (0x7d, 0x7d),
+            (0x7f, 0xab),
+            (0xad, 0xb0),
+            (0xb2, 0xd6),
+            (0xd8, 0xf6),
+            (0xf8, 0x3cf),
+            (0x3d3, 0x3d4),
+            (0x3d6, 0x3ef),
+            (0x3f2, 0x3f3),
+            (0x3f7, 0x605),
+            (0x609, 0x2015),
+            (0x2017, 0x2031),
+            (0x2035, 0x203f),
+            (0x2041, 0x2043),
+            (0x2045, 0x2051),
+            (0x2053, 0x2060),
+            (0x2065, 0x2079),
+            (0x207f, 0x2089),
+            (0x208f, 0x20cf),
+            (0x20dd, 0x20e0),
+            (0x20e2, 0x20e4),
+            (0x20e7, 0x20ea),
+            (0x20f0, 0x2101),
+            (0x2103, 0x2106),
+            (0x2108, 0x2109),
+            (0x2114, 0x2114),
+            (0x2116, 0x2117),
+            (0x211e, 0x2123),
+            (0x2125, 0x2127),
+            (0x212a, 0x212b),
+            (0x212e, 0x212e),
+            (0x2132, 0x2132),
+            (0x2139, 0x213b),
+            (0x214a, 0x214a),
+            (0x214c, 0x218f),
+            (0x21a8, 0x21a8),
+            (0x21af, 0x21af),
+            (0x21b2, 0x21b5),
+            (0x21b8, 0x21bb),
+            (0x21dc, 0x21dc),
+            (0x21de, 0x21e3),
+            (0x21e6, 0x21f3),
+            (0x2300, 0x2307),
+            (0x230c, 0x231f),
+            (0x2322, 0x237b),
+            (0x237d, 0x239a),
+            (0x23b6, 0x23b6),
+            (0x23b8, 0x23cf),
+            (0x23d1, 0x23db),
+            (0x23e3, 0x259f),
+            (0x25a2, 0x25ad),
+            (0x25b8, 0x25bb),
+            (0x25c2, 0x25c5),
+            (0x25c8, 0x25c9),
+            (0x25cc, 0x25ce),
+            (0x25d4, 0x25e1),
+            (0x25e3, 0x25e3),
+            (0x25e5, 0x25e6),
+            (0x25ed, 0x25f7),
+            (0x2600, 0x2604),
+            (0x2607, 0x263f),
+            (0x2641, 0x2641),
+            (0x2643, 0x265f),
+            (0x2664, 0x266c),
+            (0x2670, 0x27bf),
+            (0x2800, 0x28ff),
+            (0x2b00, 0x2b2f),
+            (0x2b45, 0x2b46),
+            (0x2b4d, 0xfb28),
+            (0xfb2a, 0xfe60),
+            (0xfe67, 0xfe67),
+            (0xfe69, 0xff0a),
+            (0xff0c, 0xff1b),
+            (0xff1f, 0xff3b),
+            (0xff3d, 0xff3d),
+            (0xff3f, 0xff5b),
+            (0xff5d, 0xff5d),
+            (0xff5f, 0xffe1),
+            (0xffe3, 0xffe8),
+            (0xffed, 0x10d8d),
+            (0x10d90, 0x1cedc),
+            (0x1cee0, 0x1ceef),
+            (0x1cefe, 0x1d3ff),
+            (0x1d455, 0x1d455),
+            (0x1d49d, 0x1d49d),
+            (0x1d4a0, 0x1d4a1),
+            (0x1d4a3, 0x1d4a4),
+            (0x1d4a7, 0x1d4a8),
+            (0x1d4ad, 0x1d4ad),
+            (0x1d4ba, 0x1d4ba),
+            (0x1d4bc, 0x1d4bc),
+            (0x1d4c4, 0x1d4c4),
+            (0x1d506, 0x1d506),
+            (0x1d50b, 0x1d50c),
+            (0x1d515, 0x1d515),
+            (0x1d51d, 0x1d51d),
+            (0x1d53a, 0x1d53a),
+            (0x1d53f, 0x1d53f),
+            (0x1d545, 0x1d545),
+            (0x1d547, 0x1d549),
+            (0x1d551, 0x1d551),
+            (0x1d6a7, 0x1d6a7),
+            (0x1d7cc, 0x1d7cd),
+            (0x1d800, 0x1daff),
+            (0x1db1d, 0x1edff),
+            (0x1ee04, 0x1ee04),
+            (0x1ee20, 0x1ee20),
+            (0x1ee23, 0x1ee23),
+            (0x1ee25, 0x1ee26),
+            (0x1ee28, 0x1ee28),
+            (0x1ee33, 0x1ee33),
+            (0x1ee38, 0x1ee38),
+            (0x1ee3a, 0x1ee3a),
+            (0x1ee3c, 0x1ee41),
+            (0x1ee43, 0x1ee46),
+            (0x1ee48, 0x1ee48),
+            (0x1ee4a, 0x1ee4a),
+            (0x1ee4c, 0x1ee4c),
+            (0x1ee50, 0x1ee50),
+            (0x1ee53, 0x1ee53),
+            (0x1ee55, 0x1ee56),
+            (0x1ee58, 0x1ee58),
+            (0x1ee5a, 0x1ee5a),
+            (0x1ee5c, 0x1ee5c),
+            (0x1ee5e, 0x1ee5e),
+            (0x1ee60, 0x1ee60),
+            (0x1ee63, 0x1ee63),
+            (0x1ee65, 0x1ee66),
+            (0x1ee6b, 0x1ee6b),
+            (0x1ee73, 0x1ee73),
+            (0x1ee78, 0x1ee78),
+            (0x1ee7d, 0x1ee7d),
+            (0x1ee7f, 0x1ee7f),
+            (0x1ee8a, 0x1ee8a),
+            (0x1ee9c, 0x1eea0),
+            (0x1eea4, 0x1eea4),
+            (0x1eeaa, 0x1eeaa),
+            (0x1eebc, 0x1eeef),
+            (0x1eef2, 0x1f7da),
+            (0x1f7dc, 0x1f7f0),
+            (0x1f800, 0x1f8cf),
+            (0x1f8d9, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -37198,6 +37659,507 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{XIDS}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_math_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (43usize, 43usize),
+            (60usize, 62usize),
+            (94usize, 94usize),
+            (124usize, 124usize),
+            (126usize, 126usize),
+            (172usize, 172usize),
+            (177usize, 177usize),
+            (215usize, 215usize),
+            (247usize, 247usize),
+            (976usize, 978usize),
+            (981usize, 981usize),
+            (1008usize, 1009usize),
+            (1012usize, 1013usize),
+            (1014usize, 1014usize),
+            (1542usize, 1544usize),
+            (8214usize, 8214usize),
+            (8242usize, 8244usize),
+            (8256usize, 8256usize),
+            (8260usize, 8260usize),
+            (8274usize, 8274usize),
+            (8289usize, 8292usize),
+            (8314usize, 8316usize),
+            (8317usize, 8317usize),
+            (8318usize, 8318usize),
+            (8330usize, 8332usize),
+            (8333usize, 8333usize),
+            (8334usize, 8334usize),
+            (8400usize, 8412usize),
+            (8417usize, 8417usize),
+            (8421usize, 8422usize),
+            (8427usize, 8431usize),
+            (8450usize, 8450usize),
+            (8455usize, 8455usize),
+            (8458usize, 8467usize),
+            (8469usize, 8469usize),
+            (8472usize, 8472usize),
+            (8473usize, 8477usize),
+            (8484usize, 8484usize),
+            (8488usize, 8488usize),
+            (8489usize, 8489usize),
+            (8492usize, 8493usize),
+            (8495usize, 8497usize),
+            (8499usize, 8500usize),
+            (8501usize, 8504usize),
+            (8508usize, 8511usize),
+            (8512usize, 8516usize),
+            (8517usize, 8521usize),
+            (8523usize, 8523usize),
+            (8592usize, 8596usize),
+            (8597usize, 8601usize),
+            (8602usize, 8603usize),
+            (8604usize, 8607usize),
+            (8608usize, 8608usize),
+            (8609usize, 8610usize),
+            (8611usize, 8611usize),
+            (8612usize, 8613usize),
+            (8614usize, 8614usize),
+            (8615usize, 8615usize),
+            (8617usize, 8621usize),
+            (8622usize, 8622usize),
+            (8624usize, 8625usize),
+            (8630usize, 8631usize),
+            (8636usize, 8653usize),
+            (8654usize, 8655usize),
+            (8656usize, 8657usize),
+            (8658usize, 8658usize),
+            (8659usize, 8659usize),
+            (8660usize, 8660usize),
+            (8661usize, 8667usize),
+            (8669usize, 8669usize),
+            (8676usize, 8677usize),
+            (8692usize, 8959usize),
+            (8968usize, 8968usize),
+            (8969usize, 8969usize),
+            (8970usize, 8970usize),
+            (8971usize, 8971usize),
+            (8992usize, 8993usize),
+            (9084usize, 9084usize),
+            (9115usize, 9139usize),
+            (9140usize, 9141usize),
+            (9143usize, 9143usize),
+            (9168usize, 9168usize),
+            (9180usize, 9185usize),
+            (9186usize, 9186usize),
+            (9632usize, 9633usize),
+            (9646usize, 9654usize),
+            (9655usize, 9655usize),
+            (9660usize, 9664usize),
+            (9665usize, 9665usize),
+            (9670usize, 9671usize),
+            (9674usize, 9675usize),
+            (9679usize, 9683usize),
+            (9698usize, 9698usize),
+            (9700usize, 9700usize),
+            (9703usize, 9708usize),
+            (9720usize, 9727usize),
+            (9733usize, 9734usize),
+            (9792usize, 9792usize),
+            (9794usize, 9794usize),
+            (9824usize, 9827usize),
+            (9837usize, 9838usize),
+            (9839usize, 9839usize),
+            (10176usize, 10180usize),
+            (10181usize, 10181usize),
+            (10182usize, 10182usize),
+            (10183usize, 10213usize),
+            (10214usize, 10214usize),
+            (10215usize, 10215usize),
+            (10216usize, 10216usize),
+            (10217usize, 10217usize),
+            (10218usize, 10218usize),
+            (10219usize, 10219usize),
+            (10220usize, 10220usize),
+            (10221usize, 10221usize),
+            (10222usize, 10222usize),
+            (10223usize, 10223usize),
+            (10224usize, 10239usize),
+            (10496usize, 10626usize),
+            (10627usize, 10627usize),
+            (10628usize, 10628usize),
+            (10629usize, 10629usize),
+            (10630usize, 10630usize),
+            (10631usize, 10631usize),
+            (10632usize, 10632usize),
+            (10633usize, 10633usize),
+            (10634usize, 10634usize),
+            (10635usize, 10635usize),
+            (10636usize, 10636usize),
+            (10637usize, 10637usize),
+            (10638usize, 10638usize),
+            (10639usize, 10639usize),
+            (10640usize, 10640usize),
+            (10641usize, 10641usize),
+            (10642usize, 10642usize),
+            (10643usize, 10643usize),
+            (10644usize, 10644usize),
+            (10645usize, 10645usize),
+            (10646usize, 10646usize),
+            (10647usize, 10647usize),
+            (10648usize, 10648usize),
+            (10649usize, 10711usize),
+            (10712usize, 10712usize),
+            (10713usize, 10713usize),
+            (10714usize, 10714usize),
+            (10715usize, 10715usize),
+            (10716usize, 10747usize),
+            (10748usize, 10748usize),
+            (10749usize, 10749usize),
+            (10750usize, 11007usize),
+            (11056usize, 11076usize),
+            (11079usize, 11084usize),
+            (64297usize, 64297usize),
+            (65121usize, 65121usize),
+            (65122usize, 65122usize),
+            (65123usize, 65123usize),
+            (65124usize, 65126usize),
+            (65128usize, 65128usize),
+            (65291usize, 65291usize),
+            (65308usize, 65310usize),
+            (65340usize, 65340usize),
+            (65342usize, 65342usize),
+            (65372usize, 65372usize),
+            (65374usize, 65374usize),
+            (65506usize, 65506usize),
+            (65513usize, 65516usize),
+            (69006usize, 69007usize),
+            (118493usize, 118495usize),
+            (118512usize, 118525usize),
+            (119808usize, 119892usize),
+            (119894usize, 119964usize),
+            (119966usize, 119967usize),
+            (119970usize, 119970usize),
+            (119973usize, 119974usize),
+            (119977usize, 119980usize),
+            (119982usize, 119993usize),
+            (119995usize, 119995usize),
+            (119997usize, 120003usize),
+            (120005usize, 120069usize),
+            (120071usize, 120074usize),
+            (120077usize, 120084usize),
+            (120086usize, 120092usize),
+            (120094usize, 120121usize),
+            (120123usize, 120126usize),
+            (120128usize, 120132usize),
+            (120134usize, 120134usize),
+            (120138usize, 120144usize),
+            (120146usize, 120486usize),
+            (120488usize, 120512usize),
+            (120513usize, 120513usize),
+            (120514usize, 120538usize),
+            (120539usize, 120539usize),
+            (120540usize, 120570usize),
+            (120571usize, 120571usize),
+            (120572usize, 120596usize),
+            (120597usize, 120597usize),
+            (120598usize, 120628usize),
+            (120629usize, 120629usize),
+            (120630usize, 120654usize),
+            (120655usize, 120655usize),
+            (120656usize, 120686usize),
+            (120687usize, 120687usize),
+            (120688usize, 120712usize),
+            (120713usize, 120713usize),
+            (120714usize, 120744usize),
+            (120745usize, 120745usize),
+            (120746usize, 120770usize),
+            (120771usize, 120771usize),
+            (120772usize, 120779usize),
+            (120782usize, 120831usize),
+            (121600usize, 121628usize),
+            (126464usize, 126467usize),
+            (126469usize, 126495usize),
+            (126497usize, 126498usize),
+            (126500usize, 126500usize),
+            (126503usize, 126503usize),
+            (126505usize, 126514usize),
+            (126516usize, 126519usize),
+            (126521usize, 126521usize),
+            (126523usize, 126523usize),
+            (126530usize, 126530usize),
+            (126535usize, 126535usize),
+            (126537usize, 126537usize),
+            (126539usize, 126539usize),
+            (126541usize, 126543usize),
+            (126545usize, 126546usize),
+            (126548usize, 126548usize),
+            (126551usize, 126551usize),
+            (126553usize, 126553usize),
+            (126555usize, 126555usize),
+            (126557usize, 126557usize),
+            (126559usize, 126559usize),
+            (126561usize, 126562usize),
+            (126564usize, 126564usize),
+            (126567usize, 126570usize),
+            (126572usize, 126578usize),
+            (126580usize, 126583usize),
+            (126585usize, 126588usize),
+            (126590usize, 126590usize),
+            (126592usize, 126601usize),
+            (126603usize, 126619usize),
+            (126625usize, 126627usize),
+            (126629usize, 126633usize),
+            (126635usize, 126651usize),
+            (126704usize, 126705usize),
+            (128987usize, 128987usize),
+            (129009usize, 129023usize),
+            (129232usize, 129240usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Math}",
+                    r"\P{Math}",
+                    r"[\p{Math}]",
+                    r"[^\p{Math}]",
+                    r"[\P{Math}K]",
+                    r"[\p{Math}K]",
+                    r"[\p{Math}\P{Math}]",
+                    r"[^\P{Math}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let raw = membership[point as usize];
+                        let greek = matches!(
+                            point,
+                            0x392
+                                | 0x395
+                                | 0x398
+                                | 0x39a
+                                | 0x3a1
+                                | 0x3a6
+                                | 0x3b2
+                                | 0x3b5
+                                | 0x3b8
+                                | 0x3ba
+                                | 0x3c1
+                                | 0x3c6
+                                | 0x3d0
+                                | 0x3d1
+                                | 0x3d5
+                                | 0x3f0
+                                | 0x3f1
+                                | 0x3f4
+                                | 0x3f5
+                        );
+                        let math = raw || (ignore_case && greek);
+                        let negative = if ignore_case && greek { !sets } else { !raw };
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Math}" | r"[\p{Math}]" => math,
+                            r"\P{Math}" => negative,
+                            r"[^\p{Math}]" => !math,
+                            r"[\P{Math}K]" => negative || k,
+                            r"[\p{Math}K]" => math || k,
+                            r"[\p{Math}\P{Math}]" => true,
+                            r"[^\P{Math}K]" => !negative && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_math_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{Math}",
+            r"\P{Math}",
+            r"^[\p{Math}]$",
+            r"[\P{Math}K]",
+            r"[^\P{Math}K]",
+            r"[\p{Math}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{2a}\u{2b}\u{2c}\u{3b}\u{3c}\u{3e}\u{3f}\u{5d}\u{5e}\u{5f}\u{7b}\u{7c}\u{7d}\u{7e}\u{7f}\u{ab}\u{ac}\u{ad}\u{b0}\u{b1}\u{b2}\u{d6}\u{d7}\u{d8}\u{f6}\u{f7}\u{f8}\u{392}\u{395}\u{398}\u{39a}\u{3a1}\u{3a6}\u{3b2}\u{3b5}\u{3b8}\u{3ba}\u{3c1}\u{3c6}\u{3cf}\u{3d0}\u{3d1}\u{3d2}\u{3d3}\u{3d4}\u{3d5}\u{3d6}\u{3ef}\u{3f0}\u{3f1}\u{3f2}\u{3f3}\u{3f4}\u{3f5}\u{3f6}\u{3f7}\u{605}\u{606}\u{608}\u{609}\u{2015}\u{2016}\u{2017}\u{2031}\u{2032}\u{2034}\u{2035}\u{203f}\u{2040}\u{2041}\u{2043}\u{2044}\u{2045}\u{2051}\u{2052}\u{2053}\u{2060}\u{2061}\u{2064}\u{2065}\u{2079}\u{207a}\u{207e}\u{207f}\u{2089}\u{208a}\u{208e}\u{208f}\u{20cf}\u{20d0}\u{20dc}\u{20dd}\u{20e0}\u{20e1}\u{20e2}\u{20e4}\u{20e5}\u{20e6}\u{20e7}\u{20ea}\u{20eb}\u{20ef}\u{20f0}\u{2101}\u{2102}\u{2103}\u{2106}\u{2107}\u{2108}\u{2109}\u{210a}\u{2113}\u{2114}\u{2115}\u{2116}\u{2117}\u{2118}\u{211d}\u{211e}\u{2123}\u{2124}\u{2125}\u{2127}\u{2128}\u{2129}\u{212a}\u{212b}\u{212c}\u{212d}\u{212e}\u{212f}\u{2131}\u{2132}\u{2133}\u{2138}\u{2139}\u{213b}\u{213c}\u{2149}\u{214a}\u{214b}\u{214c}\u{218f}\u{2190}\u{21a7}\u{21a8}\u{21a9}\u{21ae}\u{21af}\u{21b0}\u{21b1}\u{21b2}\u{21b5}\u{21b6}\u{21b7}\u{21b8}\u{21bb}\u{21bc}\u{21db}\u{21dc}\u{21dd}\u{21de}\u{21e3}\u{21e4}\u{21e5}\u{21e6}\u{21f3}\u{21f4}\u{22ff}\u{2300}\u{2307}\u{2308}\u{230b}\u{230c}\u{231f}\u{2320}\u{2321}\u{2322}\u{237b}\u{237c}\u{237d}\u{239a}\u{239b}\u{23b5}\u{23b6}\u{23b7}\u{23b8}\u{23cf}\u{23d0}\u{23d1}\u{23db}\u{23dc}\u{23e2}\u{23e3}\u{259f}\u{25a0}\u{25a1}\u{25a2}\u{25ad}\u{25ae}\u{25b7}\u{25b8}\u{25bb}\u{25bc}\u{25c1}\u{25c2}\u{25c5}\u{25c6}\u{25c7}\u{25c8}\u{25c9}\u{25ca}\u{25cb}\u{25cc}\u{25ce}\u{25cf}\u{25d3}\u{25d4}\u{25e1}\u{25e2}\u{25e3}\u{25e4}\u{25e5}\u{25e6}\u{25e7}\u{25ec}\u{25ed}\u{25f7}\u{25f8}\u{25ff}\u{2600}\u{2604}\u{2605}\u{2606}\u{2607}\u{263f}\u{2640}\u{2641}\u{2642}\u{2643}\u{265f}\u{2660}\u{2663}\u{2664}\u{266c}\u{266d}\u{266f}\u{2670}\u{27bf}\u{27c0}\u{27ff}\u{2800}\u{28ff}\u{2900}\u{2aff}\u{2b00}\u{2b2f}\u{2b30}\u{2b44}\u{2b45}\u{2b46}\u{2b47}\u{2b4c}\u{2b4d}\u{fb28}\u{fb29}\u{fb2a}\u{fe60}\u{fe61}\u{fe66}\u{fe67}\u{fe68}\u{fe69}\u{ff0a}\u{ff0b}\u{ff0c}\u{ff1b}\u{ff1c}\u{ff1e}\u{ff1f}\u{ff3b}\u{ff3c}\u{ff3d}\u{ff3e}\u{ff3f}\u{ff5b}\u{ff5c}\u{ff5d}\u{ff5e}\u{ff5f}\u{ffe1}\u{ffe2}\u{ffe3}\u{ffe8}\u{ffe9}\u{ffec}\u{ffed}\u{10d8d}\u{10d8e}\u{10d8f}\u{10d90}\u{1cedc}\u{1cee0}\u{1ceef}\u{1cef0}\u{1cefe}\u{1d3ff}\u{1d400}\u{1d454}\u{1d455}\u{1d456}\u{1d49c}\u{1d49d}\u{1d49e}\u{1d49f}\u{1d4a0}\u{1d4a1}\u{1d4a2}\u{1d4a3}\u{1d4a4}\u{1d4a5}\u{1d4a6}\u{1d4a7}\u{1d4a8}\u{1d4a9}\u{1d4ac}\u{1d4ad}\u{1d4ae}\u{1d4b9}\u{1d4ba}\u{1d4bb}\u{1d4bc}\u{1d4bd}\u{1d4c3}\u{1d4c4}\u{1d4c5}\u{1d505}\u{1d506}\u{1d507}\u{1d50a}\u{1d50b}\u{1d50c}\u{1d50d}\u{1d514}\u{1d515}\u{1d516}\u{1d51c}\u{1d51d}\u{1d51e}\u{1d539}\u{1d53a}\u{1d53b}\u{1d53e}\u{1d53f}\u{1d540}\u{1d544}\u{1d545}\u{1d546}\u{1d547}\u{1d549}\u{1d54a}\u{1d550}\u{1d551}\u{1d552}\u{1d6a7}\u{1d6a8}\u{1d7cb}\u{1d7cc}\u{1d7cd}\u{1d7ce}\u{1d7ff}\u{1d800}\u{1daff}\u{1db1d}\u{1edff}\u{1ee00}\u{1ee03}\u{1ee04}\u{1ee05}\u{1ee1f}\u{1ee20}\u{1ee21}\u{1ee22}\u{1ee23}\u{1ee24}\u{1ee25}\u{1ee26}\u{1ee27}\u{1ee28}\u{1ee29}\u{1ee32}\u{1ee33}\u{1ee34}\u{1ee37}\u{1ee38}\u{1ee39}\u{1ee3a}\u{1ee3b}\u{1ee3c}\u{1ee41}\u{1ee42}\u{1ee43}\u{1ee46}\u{1ee47}\u{1ee48}\u{1ee49}\u{1ee4a}\u{1ee4b}\u{1ee4c}\u{1ee4d}\u{1ee4f}\u{1ee50}\u{1ee51}\u{1ee52}\u{1ee53}\u{1ee54}\u{1ee55}\u{1ee56}\u{1ee57}\u{1ee58}\u{1ee59}\u{1ee5a}\u{1ee5b}\u{1ee5c}\u{1ee5d}\u{1ee5e}\u{1ee5f}\u{1ee60}\u{1ee61}\u{1ee62}\u{1ee63}\u{1ee64}\u{1ee65}\u{1ee66}\u{1ee67}\u{1ee6a}\u{1ee6b}\u{1ee6c}\u{1ee72}\u{1ee73}\u{1ee74}\u{1ee77}\u{1ee78}\u{1ee79}\u{1ee7c}\u{1ee7d}\u{1ee7e}\u{1ee7f}\u{1ee80}\u{1ee89}\u{1ee8a}\u{1ee8b}\u{1ee9b}\u{1ee9c}\u{1eea0}\u{1eea1}\u{1eea3}\u{1eea4}\u{1eea5}\u{1eea9}\u{1eeaa}\u{1eeab}\u{1eebb}\u{1eebc}\u{1eeef}\u{1eef0}\u{1eef1}\u{1eef2}\u{1f7da}\u{1f7dc}\u{1f7f0}\u{1f800}\u{1f8cf}\u{1f8d0}\u{1f8d8}\u{1f8d9}\u{feff}ſK\n",
+                            "X\r\n\u{2b}\u{2028}\u{d7}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_math_property_work_deduplication_and_contracts() {
+        // New tags 76/77 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{Math}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x2b, true),
+                (0xd7, true),
+                (0x1d400, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{Math}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x2b, false),
+                (0xd7, false),
+                (0x1d400, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(format!("[{}]", r"\p{Math}\P{Math}".repeat(10000)).as_str());
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert!(!plan.ranges.is_empty());
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{Math}$", r"^[\P{Math}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{2b}\n\u{e0001}\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{Math}--A]",
+            r"[\p{Math}&&A]",
+            r"[[\p{Math}]]",
+            r"[A-\p{Math}]",
+            r"[\p{Math}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{Math}]"),
                 true,
                 true,
                 false
