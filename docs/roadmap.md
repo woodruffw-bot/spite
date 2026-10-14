@@ -550,6 +550,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match Lowercase/Lower Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [x] Match Changes_When_Casefolded/CWCF Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [x] Match Changes_When_Lowercased/CWL Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
+- [x] Match Changes_When_Uppercased/CWU Unicode property atoms and classes with exact complements, aliases and UCD 18 membership.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
