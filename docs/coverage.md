@@ -9645,6 +9645,29 @@ Stable and MSRV pass all 14,664 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Greek Script adds four Core and ten runtime tests. Unchanged original Scripts
+and CaseFolding files independently validate 106,954,752 complete code-point
+comparisons for four exact keys, six standalone/class forms and four flag
+combinations. All 35,651,584 exhaustive Node comparisons agree with its Unicode
+17 data; the 64 expected differences cover exactly the two Unicode 18 additions.
+
+All 1,728 Core and 432 runtime insta rows agree with Node. Native runtime checks
+16 membership programs, 23 consumer/context programs, two exact former Greek
+unsupported contexts and four programs covering both added characters, with 48 expected version differences. Tests cover the
+micro-sign and combining-iota complement orders, mixed property mask bits,
+lone surrogates, supplementary pair starts, captures, consumers, strict
+lastIndex writes, cloning, collection, repeated sources, every fallible
+construction prefix and opt-in work. Defaults remain unlimited. All 866 Core
+tests and 302 related runtime targets pass; 660 earlier snapshots remain
+byte-identical and two reviewed snapshots are added. The 1,435-program gap audit
+has no admissions. Original fixture bytes, corpus inventories, upstream pins
+and dependencies are unchanged.
+
+Stable and MSRV pass all 14,664 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

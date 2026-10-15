@@ -12,3 +12,5 @@ Tests parse these original files independently; no build-time download is needed
 
 Scripts-18.0.0.txt: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
 SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+
+Greek Script tests independently check both complement orders and all common/simple fold preimages using these same unchanged references.

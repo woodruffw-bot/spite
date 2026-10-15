@@ -4969,6 +4969,28 @@ set excludes these Unicode 18 additions. Earlier unsupported-property controls
 now use valid, still-unsupported Script_Extensions=Latin; exact former Latin
 patterns have positive execution regressions.
 
+
+Greek Script escapes admit exactly Script=Greek, Script=Grek, sc=Greek and
+sc=Grek (22.2.2.9 and UnicodeMatchPropertyValue). Bare Greek names are invalid;
+Script_Extensions remains a separate unsupported namespace. The pinned Unicode
+18 Scripts file defines 520 Greek characters in 37 merged intervals. Its
+38-interval complement includes lone surrogates.
+
+The non-Greek micro sign (U+00B5) and combining iota (U+0345) fold to Greek
+characters. In u+i, complementing before folding can admit both positive and
+negative matches. In v+i, the 40-interval complement excludes these additional
+preimages before class union and the shared fold closure. Standalone escapes
+and classes retain the same complement order and exact UTF-16 boundaries.
+
+Two additional finite kinds retain the three-word temporary mask. Construction
+reserves and charges intervals before appending; repeated properties are
+deduplicated. Earlier general categories, binary properties and Latin keep
+their kind numbers and tables. No recursion, dependency or default JavaScript
+quota is added. Node's Unicode 17 data lacks two Greek additions (U+1DFF3 and
+U+1DFF4); matching tests document those differences separately. The unchanged
+original Greek Test262 fixture remains unvendored because its negative set
+includes those newly assigned Greek characters.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

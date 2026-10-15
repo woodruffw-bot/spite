@@ -64,6 +64,7 @@ use std::{ops::Range, sync::Arc};
 /// Assigned uses UCD 18 General_Category membership other than Cn, including Cs/Co.
 /// All General_Category values and exact aliases use pinned UCD 18 data.
 /// Latin/Latn with exact Script/sc prefixes also uses pinned UCD 18 data.
+/// Greek/Grek uses pinned UCD 18 data with common/simple fold preimages.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -292,6 +293,7 @@ impl RegExpUnicodeClassMatcher {
             104 => 2,
             106 => 735,
             184 => 41,
+            186 => 40,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -365,7 +367,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 2;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 4;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -464,6 +466,7 @@ impl RegExpUnicodeClassMatcher {
                         104..=105 => 8,
                         106..=107 => 2940,
                         184..=185 => 164,
+                        186..=187 => 160,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1497,6 +1500,35 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
         ]
         | [0x73, 0x63, 0x3d, 0x4c, 0x61, 0x74, 0x6e]
         | [0x73, 0x63, 0x3d, 0x4c, 0x61, 0x74, 0x69, 0x6e] => 184,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x47,
+            0x72,
+            0x65,
+            0x6b,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x47,
+            0x72,
+            0x65,
+            0x65,
+            0x6b,
+        ]
+        | [0x73, 0x63, 0x3d, 0x47, 0x72, 0x65, 0x6b]
+        | [0x73, 0x63, 0x3d, 0x47, 0x72, 0x65, 0x65, 0x6b] => 186,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -32924,6 +32956,130 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1dff3, 0x1dff4),
             (0x1e000, 0x10ffff),
         ],
+        // Greek/Grek: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        186 => &[
+            (0x370, 0x373),
+            (0x375, 0x377),
+            (0x37a, 0x37d),
+            (0x37f, 0x37f),
+            (0x384, 0x384),
+            (0x386, 0x386),
+            (0x388, 0x38a),
+            (0x38c, 0x38c),
+            (0x38e, 0x3a1),
+            (0x3a3, 0x3e1),
+            (0x3f0, 0x3ff),
+            (0x1d26, 0x1d2a),
+            (0x1d5d, 0x1d61),
+            (0x1d66, 0x1d6a),
+            (0x1dbf, 0x1dbf),
+            (0x1f00, 0x1f15),
+            (0x1f18, 0x1f1d),
+            (0x1f20, 0x1f45),
+            (0x1f48, 0x1f4d),
+            (0x1f50, 0x1f57),
+            (0x1f59, 0x1f59),
+            (0x1f5b, 0x1f5b),
+            (0x1f5d, 0x1f5d),
+            (0x1f5f, 0x1f7d),
+            (0x1f80, 0x1fb4),
+            (0x1fb6, 0x1fc4),
+            (0x1fc6, 0x1fd3),
+            (0x1fd6, 0x1fdb),
+            (0x1fdd, 0x1fef),
+            (0x1ff2, 0x1ff4),
+            (0x1ff6, 0x1ffe),
+            (0x2126, 0x2126),
+            (0xab65, 0xab65),
+            (0x10140, 0x1018e),
+            (0x101a0, 0x101a0),
+            (0x1d200, 0x1d245),
+            (0x1dff3, 0x1dff4),
+        ],
+        // v+i excludes the non-Greek micro-sign and combining-iota preimages.
+        187 if unicode_sets && ignore_case => &[
+            (0x0, 0xb4),
+            (0xb6, 0x344),
+            (0x346, 0x36f),
+            (0x374, 0x374),
+            (0x378, 0x379),
+            (0x37e, 0x37e),
+            (0x380, 0x383),
+            (0x385, 0x385),
+            (0x387, 0x387),
+            (0x38b, 0x38b),
+            (0x38d, 0x38d),
+            (0x3a2, 0x3a2),
+            (0x3e2, 0x3ef),
+            (0x400, 0x1d25),
+            (0x1d2b, 0x1d5c),
+            (0x1d62, 0x1d65),
+            (0x1d6b, 0x1dbe),
+            (0x1dc0, 0x1eff),
+            (0x1f16, 0x1f17),
+            (0x1f1e, 0x1f1f),
+            (0x1f46, 0x1f47),
+            (0x1f4e, 0x1f4f),
+            (0x1f58, 0x1f58),
+            (0x1f5a, 0x1f5a),
+            (0x1f5c, 0x1f5c),
+            (0x1f5e, 0x1f5e),
+            (0x1f7e, 0x1f7f),
+            (0x1fb5, 0x1fb5),
+            (0x1fc5, 0x1fc5),
+            (0x1fd4, 0x1fd5),
+            (0x1fdc, 0x1fdc),
+            (0x1ff0, 0x1ff1),
+            (0x1ff5, 0x1ff5),
+            (0x1fff, 0x2125),
+            (0x2127, 0xab64),
+            (0xab66, 0x1013f),
+            (0x1018f, 0x1019f),
+            (0x101a1, 0x1d1ff),
+            (0x1d246, 0x1dff2),
+            (0x1dff5, 0x10ffff),
+        ],
+        187 => &[
+            (0x0, 0x36f),
+            (0x374, 0x374),
+            (0x378, 0x379),
+            (0x37e, 0x37e),
+            (0x380, 0x383),
+            (0x385, 0x385),
+            (0x387, 0x387),
+            (0x38b, 0x38b),
+            (0x38d, 0x38d),
+            (0x3a2, 0x3a2),
+            (0x3e2, 0x3ef),
+            (0x400, 0x1d25),
+            (0x1d2b, 0x1d5c),
+            (0x1d62, 0x1d65),
+            (0x1d6b, 0x1dbe),
+            (0x1dc0, 0x1eff),
+            (0x1f16, 0x1f17),
+            (0x1f1e, 0x1f1f),
+            (0x1f46, 0x1f47),
+            (0x1f4e, 0x1f4f),
+            (0x1f58, 0x1f58),
+            (0x1f5a, 0x1f5a),
+            (0x1f5c, 0x1f5c),
+            (0x1f5e, 0x1f5e),
+            (0x1f7e, 0x1f7f),
+            (0x1fb5, 0x1fb5),
+            (0x1fc5, 0x1fc5),
+            (0x1fd4, 0x1fd5),
+            (0x1fdc, 0x1fdc),
+            (0x1ff0, 0x1ff1),
+            (0x1ff5, 0x1ff5),
+            (0x1fff, 0x2125),
+            (0x2127, 0xab64),
+            (0xab66, 0x1013f),
+            (0x1018f, 0x1019f),
+            (0x101a1, 0x1d1ff),
+            (0x1d246, 0x1dff2),
+            (0x1dff5, 0x10ffff),
+        ],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -33704,7 +33860,7 @@ mod tests {
         for source in [
             r"\p{ascii}",
             r"\p{Script_Extensions=Latin}",
-            r"\p{Script=Greek}",
+            r"\p{Script_Extensions=Greek}",
             r"\p{RGI_Emoji}",
             r"[\p{ASCII}]",
             r"(\p{ASCII})",
@@ -33929,7 +34085,7 @@ mod tests {
         assert_eq!(plan.find(&JsString::from("x\nſ\n"), 0, false), None);
         for source in [
             r"[\p{Script_Extensions=Latin}]",
-            r"[\p{Script=Greek}]",
+            r"[\p{Script_Extensions=Greek}]",
             r"[\p{RGI_Emoji}]",
             r"[\p{ASCII}--K]",
             r"[\p{ASCII}&&K]",
@@ -126879,3 +127035,7 @@ mod general_category_membership_tests;
 #[cfg(test)]
 #[path = "regexp_latin_script_tests.rs"]
 mod latin_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_greek_script_tests.rs"]
+mod greek_script_tests;

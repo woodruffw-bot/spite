@@ -151,7 +151,7 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
     );
     for source in [
         r"/\p{Script_Extensions=Latin}/u.exec('A')",
-        r"/\p{Script=Greek}/v.exec('𠮷')",
+        r"/\p{Script_Extensions=Greek}/v.exec('𠮷')",
         r"/\p{RGI_Emoji}/v.exec('😀')",
         r"/[\p{Script_Extensions=Latin}]/u.exec('A')",
         r"/\p{ASCII}+b/v.exec('A')",
