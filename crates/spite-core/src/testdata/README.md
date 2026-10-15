@@ -22,3 +22,5 @@ Arabic Script tests independently check raw membership and its invariant common/
 Hebrew Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
 
 Common Script tests independently check raw membership and its common/simple fold images and distinct u+i/v+i complements using these same unchanged references.
+
+Inherited Script tests independently check raw membership and its common/simple fold images and distinct u+i/v+i complements using these same unchanged references.

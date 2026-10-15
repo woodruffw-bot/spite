@@ -69,6 +69,7 @@ use std::{ops::Range, sync::Arc};
 /// Arabic/Arab uses pinned UCD 18 data invariant under common/simple folds.
 /// Hebrew/Hebr uses pinned UCD 18 data invariant under common/simple folds.
 /// Common/Zyyy uses pinned UCD 18 data with canonical targets and fold preimages.
+/// Inherited/Zinh/Qaai uses pinned UCD 18 data with canonical targets and fold preimages.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -302,6 +303,7 @@ impl RegExpUnicodeClassMatcher {
             190 => 57,
             192 => 10,
             194 => 181,
+            196 => 35,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -375,7 +377,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 12;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 14;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -479,6 +481,7 @@ impl RegExpUnicodeClassMatcher {
                         190..=191 => 228,
                         192..=193 => 40,
                         194..=195 => 724,
+                        196..=197 => 140,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1675,6 +1678,66 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
         ]
         | [0x73, 0x63, 0x3d, 0x5a, 0x79, 0x79, 0x79]
         | [0x73, 0x63, 0x3d, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e] => 194,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x5a,
+            0x69,
+            0x6e,
+            0x68,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x49,
+            0x6e,
+            0x68,
+            0x65,
+            0x72,
+            0x69,
+            0x74,
+            0x65,
+            0x64,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x51,
+            0x61,
+            0x61,
+            0x69,
+        ]
+        | [0x73, 0x63, 0x3d, 0x5a, 0x69, 0x6e, 0x68]
+        | [
+            0x73,
+            0x63,
+            0x3d,
+            0x49,
+            0x6e,
+            0x68,
+            0x65,
+            0x72,
+            0x69,
+            0x74,
+            0x65,
+            0x64,
+        ]
+        | [0x73, 0x63, 0x3d, 0x51, 0x61, 0x61, 0x69] => 196,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -33944,6 +34007,113 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1fbfb, 0xe0000),
             (0xe0002, 0xe001f),
             (0xe0080, 0x10ffff),
+        ],
+        // Inherited/Zinh/Qaai: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        196 => &[
+            (0x300, 0x36f),
+            (0x485, 0x486),
+            (0x64b, 0x655),
+            (0x670, 0x670),
+            (0x951, 0x954),
+            (0x1ab0, 0x1af0),
+            (0x1cd0, 0x1cd2),
+            (0x1cd4, 0x1ce0),
+            (0x1ce2, 0x1ce8),
+            (0x1ced, 0x1ced),
+            (0x1cf4, 0x1cf4),
+            (0x1cf8, 0x1cf9),
+            (0x1dc0, 0x1dff),
+            (0x200c, 0x200d),
+            (0x20d0, 0x20f0),
+            (0x302a, 0x302d),
+            (0x3099, 0x309a),
+            (0xfe00, 0xfe0f),
+            (0xfe20, 0xfe2d),
+            (0x101fd, 0x101fd),
+            (0x102e0, 0x102e0),
+            (0x1133b, 0x1133b),
+            (0x1cf00, 0x1cf2d),
+            (0x1cf30, 0x1cf46),
+            (0x1d127, 0x1d128),
+            (0x1d167, 0x1d169),
+            (0x1d17b, 0x1d182),
+            (0x1d185, 0x1d18b),
+            (0x1d1aa, 0x1d1ad),
+            (0x1d25b, 0x1d25c),
+            (0xe0100, 0xe01ef),
+        ],
+        // v+i excludes the non-Inherited Greek-iota target and its preimages.
+        197 if unicode_sets && ignore_case => &[
+            (0x0, 0x2ff),
+            (0x370, 0x398),
+            (0x39a, 0x3b8),
+            (0x3ba, 0x484),
+            (0x487, 0x64a),
+            (0x656, 0x66f),
+            (0x671, 0x950),
+            (0x955, 0x1aaf),
+            (0x1af1, 0x1ccf),
+            (0x1cd3, 0x1cd3),
+            (0x1ce1, 0x1ce1),
+            (0x1ce9, 0x1cec),
+            (0x1cee, 0x1cf3),
+            (0x1cf5, 0x1cf7),
+            (0x1cfa, 0x1dbf),
+            (0x1e00, 0x1fbd),
+            (0x1fbf, 0x200b),
+            (0x200e, 0x20cf),
+            (0x20f1, 0x3029),
+            (0x302e, 0x3098),
+            (0x309b, 0xfdff),
+            (0xfe10, 0xfe1f),
+            (0xfe2e, 0x101fc),
+            (0x101fe, 0x102df),
+            (0x102e1, 0x1133a),
+            (0x1133c, 0x1ceff),
+            (0x1cf2e, 0x1cf2f),
+            (0x1cf47, 0x1d126),
+            (0x1d129, 0x1d166),
+            (0x1d16a, 0x1d17a),
+            (0x1d183, 0x1d184),
+            (0x1d18c, 0x1d1a9),
+            (0x1d1ae, 0x1d25a),
+            (0x1d25d, 0xe00ff),
+            (0xe01f0, 0x10ffff),
+        ],
+        197 => &[
+            (0x0, 0x2ff),
+            (0x370, 0x484),
+            (0x487, 0x64a),
+            (0x656, 0x66f),
+            (0x671, 0x950),
+            (0x955, 0x1aaf),
+            (0x1af1, 0x1ccf),
+            (0x1cd3, 0x1cd3),
+            (0x1ce1, 0x1ce1),
+            (0x1ce9, 0x1cec),
+            (0x1cee, 0x1cf3),
+            (0x1cf5, 0x1cf7),
+            (0x1cfa, 0x1dbf),
+            (0x1e00, 0x200b),
+            (0x200e, 0x20cf),
+            (0x20f1, 0x3029),
+            (0x302e, 0x3098),
+            (0x309b, 0xfdff),
+            (0xfe10, 0xfe1f),
+            (0xfe2e, 0x101fc),
+            (0x101fe, 0x102df),
+            (0x102e1, 0x1133a),
+            (0x1133c, 0x1ceff),
+            (0x1cf2e, 0x1cf2f),
+            (0x1cf47, 0x1d126),
+            (0x1d129, 0x1d166),
+            (0x1d16a, 0x1d17a),
+            (0x1d183, 0x1d184),
+            (0x1d18c, 0x1d1a9),
+            (0x1d1ae, 0x1d25a),
+            (0x1d25d, 0xe00ff),
+            (0xe01f0, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -127920,3 +128090,7 @@ mod hebrew_script_tests;
 #[cfg(test)]
 #[path = "regexp_common_script_tests.rs"]
 mod common_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_inherited_script_tests.rs"]
+mod inherited_script_tests;

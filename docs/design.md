@@ -5063,6 +5063,27 @@ lacks 153 Common characters in the existing Unicode 18 pin. Shared membership
 and folding cases agree. The older original Test262 fixture remains unchanged
 and unvendored.
 
+
+Inherited Script escapes admit exactly Script=Inherited, Script=Zinh,
+Script=Qaai, sc=Inherited, sc=Zinh and sc=Qaai (22.2.2.9 and
+UnicodeMatchPropertyValue). Bare names are invalid; Script_Extensions remains
+a separate unsupported namespace. The unchanged Unicode 18 Scripts file
+defines 695 Inherited characters in 31 merged intervals. The raw complement
+has 32 intervals; the v+i complement has 35.
+
+Inherited U+0345 folds to Greek U+03B9 outside the raw set. Positive ignore-case
+matching uses the canonical image. Negation precedes canonicalization for u+i
+and follows it for v+i. The v+i complement additionally removes Greek iota
+preimages U+0399, U+03B9 and U+1FBE.
+
+Two new kinds use the existing fourth temporary mask word. Construction
+reserves and charges intervals before appending, deduplicating repeated
+properties. Earlier kinds and tables are preserved. No recursion, dependency or
+default JavaScript quota is added. Node uses Unicode 17 data and lacks 11
+Inherited characters in the existing Unicode 18 pin. Shared membership and
+folding cases agree. The older original Test262 fixture remains unchanged and
+unvendored.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

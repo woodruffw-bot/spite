@@ -9781,6 +9781,29 @@ Stable and MSRV pass all 14,666 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+
+Inherited Script adds four Core and ten runtime tests. Independent unchanged
+Scripts and CaseFolding files validate 160,432,128 complete code-point comparisons
+for all six exact keys, six standalone/class forms and four flag combinations.
+The 53,477,376 exhaustive Node comparisons differ only on the 11 Unicode 18
+additions, accounting for 528 individual results.
+
+All 2,592 Core and 648 runtime insta rows agree with Node on shared data. Native
+runtime checks 24 membership programs, 23 consumer/context programs and four
+version programs checking every addition in six forms and four flag modes.
+Those version programs account for 264 expected results. Tests cover the
+combining-iota fold boundary, fourth mask word, lone surrogates, supplementary
+pair starts, captures, consumers, strict lastIndex writes, cloning, collection,
+repeated sources, every fallible construction prefix and opt-in work. Defaults
+remain unlimited. All 886 Core tests and 307 related runtime targets pass; 670
+earlier snapshots remain byte-identical and two reviewed snapshots are added.
+The 1,460-program gap audit has no admissions. Fixture bytes, corpus inventories,
+upstream pins and dependencies are unchanged.
+
+Stable and MSRV pass all 14,666 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
