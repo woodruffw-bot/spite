@@ -62,6 +62,7 @@ use std::{ops::Range, sync::Arc};
 /// Emoji_Modifier_Base/EBase uses UCD 18 emoji-modifier-base membership.
 /// Emoji_Modifier/EMod uses UCD 18 emoji-modifier membership.
 /// Assigned uses UCD 18 General_Category membership other than Cn, including Cs/Co.
+/// All General_Category values and exact aliases use pinned UCD 18 data.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -289,6 +290,7 @@ impl RegExpUnicodeClassMatcher {
             102 => 41,
             104 => 2,
             106 => 735,
+            108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -361,7 +363,9 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        let mut properties = 0u128;
+        const WORDS: usize =
+            (crate::regexp_general_category_data::KIND_COUNT as usize).div_ceil(64);
+        let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
             let Some(first) = class_atom(units, &mut index, unicode_sets) else {
                 return Ok(None);
@@ -388,7 +392,9 @@ impl RegExpUnicodeClassMatcher {
                 match first {
                     ClassAtom::Point(point) => ranges.push((point, point)),
                     ClassAtom::Escape(kind) => escapes |= 1 << kind,
-                    ClassAtom::Property(kind) => properties |= 1 << kind,
+                    ClassAtom::Property(kind) => {
+                        properties[usize::from(kind) / 64] |= 1u64 << (kind % 64);
+                    }
                 }
             }
             if index > units.len() - 1 {
@@ -404,58 +410,62 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..108 {
-            if properties & (1 << kind) != 0 {
+        for kind in 0..crate::regexp_general_category_data::KIND_COUNT {
+            if properties[usize::from(kind) / 64] & (1u64 << (kind % 64)) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
-                charge(ranges.len().saturating_add(match kind {
-                    12..=13 | 16..=17 => 40,
-                    8..=11 | 14..=15 | 18..=19 | 22..=23 => 24,
-                    20..=21 => 32,
-                    24..=25 => 100,
-                    26..=27 => 88,
-                    28..=29 => 116,
-                    30..=31 => 484,
-                    32..=33 => 176,
-                    34..=35 => 360,
-                    36..=37 => 472,
-                    38..=39 => 16,
-                    40..=41 => 8,
-                    42..=43 => 16,
-                    44..=45 => 8,
-                    46..=47 => 68,
-                    48..=49 => 100,
-                    50..=51 => 36,
-                    52..=53 => 920,
-                    54..=55 => 172,
-                    56..=57 => 1572,
-                    58..=59 => 3648,
-                    60..=61 => 1880,
-                    62..=63 => 72,
-                    64..=65 => 656,
-                    66..=67 => 3104,
-                    68..=69 => 3260,
-                    70..=71 => 3288,
-                    72..=73 => 2788,
-                    74..=75 => 2816,
-                    76..=77 => 632,
-                    78..=79 => 2716,
-                    80..=81 => 2788,
-                    82..=83 => 2600,
-                    84..=85 => 2548,
-                    86..=87 => 2616,
-                    88..=89 => 2612,
-                    90..=91 => 572,
-                    92..=93 => 3488,
-                    94..=95 => 44,
-                    96..=97 => 324,
-                    98..=99 => 632,
-                    100..=101 => 608,
-                    102..=103 => 164,
-                    104..=105 => 8,
-                    106..=107 => 2940,
-                    _ => 8,
-                }))?;
+                charge(
+                    ranges.len().saturating_add(match kind {
+                        12..=13 | 16..=17 => 40,
+                        8..=11 | 14..=15 | 18..=19 | 22..=23 => 24,
+                        20..=21 => 32,
+                        24..=25 => 100,
+                        26..=27 => 88,
+                        28..=29 => 116,
+                        30..=31 => 484,
+                        32..=33 => 176,
+                        34..=35 => 360,
+                        36..=37 => 472,
+                        38..=39 => 16,
+                        40..=41 => 8,
+                        42..=43 => 16,
+                        44..=45 => 8,
+                        46..=47 => 68,
+                        48..=49 => 100,
+                        50..=51 => 36,
+                        52..=53 => 920,
+                        54..=55 => 172,
+                        56..=57 => 1572,
+                        58..=59 => 3648,
+                        60..=61 => 1880,
+                        62..=63 => 72,
+                        64..=65 => 656,
+                        66..=67 => 3104,
+                        68..=69 => 3260,
+                        70..=71 => 3288,
+                        72..=73 => 2788,
+                        74..=75 => 2816,
+                        76..=77 => 632,
+                        78..=79 => 2716,
+                        80..=81 => 2788,
+                        82..=83 => 2600,
+                        84..=85 => 2548,
+                        86..=87 => 2616,
+                        88..=89 => 2612,
+                        90..=91 => 572,
+                        92..=93 => 3488,
+                        94..=95 => 44,
+                        96..=97 => 324,
+                        98..=99 => 632,
+                        100..=101 => 608,
+                        102..=103 => 164,
+                        104..=105 => 8,
+                        106..=107 => 2940,
+                        108.. => crate::regexp_general_category_data::construction_intervals(kind)
+                            .saturating_mul(4),
+                        _ => 8,
+                    }),
+                )?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
             }
         }
@@ -1455,7 +1465,7 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x72,
         ] => 104,
         [0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64] => 106,
-        _ => return None,
+        _ => return crate::regexp_general_category_data::kind(name),
     })
 }
 
@@ -1465,6 +1475,14 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
 // Both hex properties have no additional simple/common-fold preimages: uppercase
 // members already have lowercase partners. Both u/v complement orders agree.
 fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, ignore_case: bool) {
+    if kind >= crate::regexp_general_category_data::FIRST_KIND {
+        ranges.extend_from_slice(crate::regexp_general_category_data::ranges(
+            kind,
+            unicode_sets,
+            ignore_case,
+        ));
+        return;
+    }
     let intervals: &[(u32, u32)] = match kind {
         0 => &[(0, 0x7f)],
         1 if unicode_sets && ignore_case => &[(0x80, 0x17e), (0x180, 0x2129), (0x212b, 0x10ffff)],
@@ -124505,3 +124523,2233 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod general_category_tests {
+    use crate::regexp_general_category_data::kind;
+    use crate::{JsString, RegExpUnicodeClassMatcher};
+
+    #[test]
+    fn exact_aliases_flags_and_nested_names_have_correct_compiled_sets() {
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{C}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "C",
+                        "gc=C",
+                        "General_Category=C",
+                        "Other",
+                        "gc=Other",
+                        "General_Category=Other",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(108));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Cc}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Cc",
+                        "gc=Cc",
+                        "General_Category=Cc",
+                        "Control",
+                        "gc=Control",
+                        "General_Category=Control",
+                        "cntrl",
+                        "gc=cntrl",
+                        "General_Category=cntrl",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(110));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Cf}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Cf",
+                        "gc=Cf",
+                        "General_Category=Cf",
+                        "Format",
+                        "gc=Format",
+                        "General_Category=Format",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(112));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Cn}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Cn",
+                        "gc=Cn",
+                        "General_Category=Cn",
+                        "Unassigned",
+                        "gc=Unassigned",
+                        "General_Category=Unassigned",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(114));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Co}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Co",
+                        "gc=Co",
+                        "General_Category=Co",
+                        "Private_Use",
+                        "gc=Private_Use",
+                        "General_Category=Private_Use",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(116));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Cs}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Cs",
+                        "gc=Cs",
+                        "General_Category=Cs",
+                        "Surrogate",
+                        "gc=Surrogate",
+                        "General_Category=Surrogate",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(118));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{L}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "L",
+                        "gc=L",
+                        "General_Category=L",
+                        "Letter",
+                        "gc=Letter",
+                        "General_Category=Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(120));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{LC}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "LC",
+                        "gc=LC",
+                        "General_Category=LC",
+                        "Cased_Letter",
+                        "gc=Cased_Letter",
+                        "General_Category=Cased_Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(122));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Ll}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Ll",
+                        "gc=Ll",
+                        "General_Category=Ll",
+                        "Lowercase_Letter",
+                        "gc=Lowercase_Letter",
+                        "General_Category=Lowercase_Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(124));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Lm}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Lm",
+                        "gc=Lm",
+                        "General_Category=Lm",
+                        "Modifier_Letter",
+                        "gc=Modifier_Letter",
+                        "General_Category=Modifier_Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(126));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Lo}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Lo",
+                        "gc=Lo",
+                        "General_Category=Lo",
+                        "Other_Letter",
+                        "gc=Other_Letter",
+                        "General_Category=Other_Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(128));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Lt}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Lt",
+                        "gc=Lt",
+                        "General_Category=Lt",
+                        "Titlecase_Letter",
+                        "gc=Titlecase_Letter",
+                        "General_Category=Titlecase_Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(130));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Lu}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Lu",
+                        "gc=Lu",
+                        "General_Category=Lu",
+                        "Uppercase_Letter",
+                        "gc=Uppercase_Letter",
+                        "General_Category=Uppercase_Letter",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(132));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{M}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "M",
+                        "gc=M",
+                        "General_Category=M",
+                        "Mark",
+                        "gc=Mark",
+                        "General_Category=Mark",
+                        "Combining_Mark",
+                        "gc=Combining_Mark",
+                        "General_Category=Combining_Mark",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(134));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Mc}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Mc",
+                        "gc=Mc",
+                        "General_Category=Mc",
+                        "Spacing_Mark",
+                        "gc=Spacing_Mark",
+                        "General_Category=Spacing_Mark",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(136));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Me}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Me",
+                        "gc=Me",
+                        "General_Category=Me",
+                        "Enclosing_Mark",
+                        "gc=Enclosing_Mark",
+                        "General_Category=Enclosing_Mark",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(138));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Mn}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Mn",
+                        "gc=Mn",
+                        "General_Category=Mn",
+                        "Nonspacing_Mark",
+                        "gc=Nonspacing_Mark",
+                        "General_Category=Nonspacing_Mark",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(140));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{N}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "N",
+                        "gc=N",
+                        "General_Category=N",
+                        "Number",
+                        "gc=Number",
+                        "General_Category=Number",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(142));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Nd}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Nd",
+                        "gc=Nd",
+                        "General_Category=Nd",
+                        "Decimal_Number",
+                        "gc=Decimal_Number",
+                        "General_Category=Decimal_Number",
+                        "digit",
+                        "gc=digit",
+                        "General_Category=digit",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(144));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Nl}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Nl",
+                        "gc=Nl",
+                        "General_Category=Nl",
+                        "Letter_Number",
+                        "gc=Letter_Number",
+                        "General_Category=Letter_Number",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(146));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{No}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "No",
+                        "gc=No",
+                        "General_Category=No",
+                        "Other_Number",
+                        "gc=Other_Number",
+                        "General_Category=Other_Number",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(148));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{P}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "P",
+                        "gc=P",
+                        "General_Category=P",
+                        "Punctuation",
+                        "gc=Punctuation",
+                        "General_Category=Punctuation",
+                        "punct",
+                        "gc=punct",
+                        "General_Category=punct",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(150));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Pc}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Pc",
+                        "gc=Pc",
+                        "General_Category=Pc",
+                        "Connector_Punctuation",
+                        "gc=Connector_Punctuation",
+                        "General_Category=Connector_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(152));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Pd}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Pd",
+                        "gc=Pd",
+                        "General_Category=Pd",
+                        "Dash_Punctuation",
+                        "gc=Dash_Punctuation",
+                        "General_Category=Dash_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(154));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Pe}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Pe",
+                        "gc=Pe",
+                        "General_Category=Pe",
+                        "Close_Punctuation",
+                        "gc=Close_Punctuation",
+                        "General_Category=Close_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(156));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Pf}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Pf",
+                        "gc=Pf",
+                        "General_Category=Pf",
+                        "Final_Punctuation",
+                        "gc=Final_Punctuation",
+                        "General_Category=Final_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(158));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Pi}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Pi",
+                        "gc=Pi",
+                        "General_Category=Pi",
+                        "Initial_Punctuation",
+                        "gc=Initial_Punctuation",
+                        "General_Category=Initial_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(160));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Po}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Po",
+                        "gc=Po",
+                        "General_Category=Po",
+                        "Other_Punctuation",
+                        "gc=Other_Punctuation",
+                        "General_Category=Other_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(162));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Ps}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Ps",
+                        "gc=Ps",
+                        "General_Category=Ps",
+                        "Open_Punctuation",
+                        "gc=Open_Punctuation",
+                        "General_Category=Open_Punctuation",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(164));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{S}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "S",
+                        "gc=S",
+                        "General_Category=S",
+                        "Symbol",
+                        "gc=Symbol",
+                        "General_Category=Symbol",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(166));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Sc}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Sc",
+                        "gc=Sc",
+                        "General_Category=Sc",
+                        "Currency_Symbol",
+                        "gc=Currency_Symbol",
+                        "General_Category=Currency_Symbol",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(168));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Sk}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Sk",
+                        "gc=Sk",
+                        "General_Category=Sk",
+                        "Modifier_Symbol",
+                        "gc=Modifier_Symbol",
+                        "General_Category=Modifier_Symbol",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(170));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Sm}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Sm",
+                        "gc=Sm",
+                        "General_Category=Sm",
+                        "Math_Symbol",
+                        "gc=Math_Symbol",
+                        "General_Category=Math_Symbol",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(172));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{So}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "So",
+                        "gc=So",
+                        "General_Category=So",
+                        "Other_Symbol",
+                        "gc=Other_Symbol",
+                        "General_Category=Other_Symbol",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(174));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Z}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Z",
+                        "gc=Z",
+                        "General_Category=Z",
+                        "Separator",
+                        "gc=Separator",
+                        "General_Category=Separator",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(176));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Zl}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Zl",
+                        "gc=Zl",
+                        "General_Category=Zl",
+                        "Line_Separator",
+                        "gc=Line_Separator",
+                        "General_Category=Line_Separator",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(178));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Zp}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Zp",
+                        "gc=Zp",
+                        "General_Category=Zp",
+                        "Paragraph_Separator",
+                        "gc=Paragraph_Separator",
+                        "General_Category=Paragraph_Separator",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(180));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for prefix in ["p", "P"] {
+                    let expected = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                        &JsString::from(format!("\\{prefix}{{Zs}}").as_str()),
+                        sets,
+                        ic,
+                        false,
+                    )
+                    .unwrap();
+                    for name in [
+                        "Zs",
+                        "gc=Zs",
+                        "General_Category=Zs",
+                        "Space_Separator",
+                        "gc=Space_Separator",
+                        "General_Category=Space_Separator",
+                    ] {
+                        assert_eq!(kind(&name.encode_utf16().collect::<Vec<_>>()), Some(182));
+                        let actual = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &JsString::from(format!("\\{prefix}{{{name}}}").as_str()),
+                            sets,
+                            ic,
+                            false,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            actual.ranges, expected.ranges,
+                            "{name} sets={sets} i={ic} {prefix}"
+                        );
+                        assert_eq!(
+                            (
+                                actual.inverted,
+                                actual.start_anchor,
+                                actual.end_anchor,
+                                actual.multiline,
+                                actual.ignore_case,
+                                actual.start_word,
+                                actual.end_word
+                            ),
+                            (
+                                expected.inverted,
+                                expected.start_anchor,
+                                expected.end_anchor,
+                                expected.multiline,
+                                expected.ignore_case,
+                                expected.start_word,
+                                expected.end_word
+                            ),
+                            "{name}"
+                        );
+                    }
+                }
+            }
+        }
+        for bad in [
+            "general_category=Lu",
+            "GC=Lu",
+            "General_Category=gc=Lu",
+            "gc=General_Category=Lu",
+            "General_Category=ASCII",
+            "Lu ",
+            "Uppercase_letter",
+        ] {
+            assert_eq!(kind(&bad.encode_utf16().collect::<Vec<_>>()), None, "{bad}");
+        }
+    }
+
+    #[test]
+    fn high_mask_bits_mix_with_earlier_properties_and_reserve_work_before_appends() {
+        for sets in [false, true] {
+            for ic in [false, true] {
+                for (pattern, expectations) in [
+                    (
+                        r"[\p{ASCII}\p{Cs}\p{gc=Zs}]",
+                        [
+                            (0x41, true),
+                            (0xd800, true),
+                            (0x20, true),
+                            (0x2000, true),
+                            (0x378, false),
+                            (0x1f600, false),
+                        ],
+                    ),
+                    (
+                        r"[\p{ASCII}\P{General_Category=Zs}]",
+                        [
+                            (0x41, true),
+                            (0xd800, true),
+                            (0x20, true),
+                            (0x2000, false),
+                            (0x378, true),
+                            (0x1f600, true),
+                        ],
+                    ),
+                    (
+                        r"[^\P{ASCII}\p{General_Category=Zs}]",
+                        [
+                            (0x41, true),
+                            (0xd800, false),
+                            (0x20, false),
+                            (0x2000, false),
+                            (0x378, false),
+                            (0x1f600, false),
+                        ],
+                    ),
+                ] {
+                    let source = JsString::from(pattern);
+                    let plan =
+                        RegExpUnicodeClassMatcher::compile_with_flags(&source, sets, ic, false)
+                            .unwrap();
+                    for (cp, expected) in expectations {
+                        assert_eq!(plan.matches(cp), expected, "{pattern} U+{cp:X}");
+                    }
+                }
+                let source = JsString::from(
+                    format!(
+                        "[{}]",
+                        r"\p{Cs}\P{gc=Cs}\p{ASCII}\P{General_Category=Zs}".repeat(10000)
+                    )
+                    .as_str(),
+                );
+                let plan = RegExpUnicodeClassMatcher::compile_with_flags(&source, sets, ic, false)
+                    .unwrap();
+                for cp in [0, 0x20, 0x378, 0xd800, 0xe000, 0x1f600, 0x10ffff] {
+                    assert!(plan.matches(cp));
+                }
+            }
+        }
+        for pattern in [r"\P{gc=Lu}", r"[\P{General_Category=Lu}]"] {
+            let source = JsString::from(pattern);
+            let class = pattern.starts_with('[');
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, false, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, false, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            assert!(!plan.matches(0x41));
+            assert!(!plan.matches(0x61));
+            assert!(plan.matches(0x378));
+            for fail in 1..=calls {
+                let mut count = 0;
+                let charge = |_| {
+                    count += 1;
+                    if fail == count { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, false, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, false, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "regexp_general_category_tests.rs"]
+mod general_category_membership_tests;

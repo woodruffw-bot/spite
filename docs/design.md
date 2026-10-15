@@ -4926,6 +4926,27 @@ inside-pair behavior. UnicodeData uses the existing Unicode 18 input and SHA-256
 Older unsupported-property examples use valid, still-unsupported Script=Latin
 patterns; the corresponding unsupported-feature checks remain active.
 
+
+General_Category escapes admit all 38 pinned Unicode 18 values and 240 exact
+names: bare values and their gc=/General_Category= prefixes (22.2.2.9 and
+UnicodeMatchPropertyValue). UnicodeData First/Last ranges retain all 30 disjoint
+leaf categories; eight aggregate values include LC. Omitted code points are Cn,
+surrogates are Cs, and private-use characters are Co.
+
+The u+i complement is formed before folding. The v+i complement excludes every
+preimage of the canonical positive set, including identity canonical targets
+outside the raw category. Character classes and standalone escapes use the same
+sets. A three-word temporary mask tracks the finite 184-kind registry, preserving
+earlier properties while accommodating the new values. Construction charges
+interval reservation before appending, using existing fallible opt-in work.
+No dependency, recursion or default JavaScript quota is added.
+
+Independent tests use unchanged UnicodeData and CaseFolding files at the existing
+Unicode 18 pins. Node's Unicode 17 data differences are recorded separately from
+the approved inside-surrogate-pair whole-match boundary behavior. Twenty-two
+incompatible original Test262 category fixtures remain unchanged and unvendored.
+The sixteen compatible original fixtures are reviewed for a separate commit.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

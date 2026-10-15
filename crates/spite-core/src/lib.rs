@@ -12,6 +12,7 @@ mod regexp_canonicalize;
 mod regexp_character;
 mod regexp_disjunction;
 mod regexp_escape;
+mod regexp_general_category_data;
 mod regexp_literal;
 mod regexp_outer_noncapturing;
 mod regexp_pattern_source;

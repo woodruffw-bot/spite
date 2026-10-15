@@ -125,7 +125,7 @@ fn unicode_property_errors_precede_eval_effects_and_matching_remains_a_host_gap(
         ));
     }
     for (pattern, flags) in [
-        (r"\p{General_Category=Letter}", "u"),
+        (r"\p{Script=Latin}", "u"),
         (r"[\P{scx=Latin}]", "u"),
         (r"\p{RGI_Emoji}", "v"),
         (r"[^\p{Basic_Emoji}&&\p{Letter}]", "v"),
