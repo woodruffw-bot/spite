@@ -24,3 +24,5 @@ Hebrew Script tests independently check raw membership and its invariant common/
 Common Script tests independently check raw membership and its common/simple fold images and distinct u+i/v+i complements using these same unchanged references.
 
 Inherited Script tests independently check raw membership and its common/simple fold images and distinct u+i/v+i complements using these same unchanged references.
+
+Devanagari Script tests independently check raw membership and its common/simple fold images and distinct u+i/v+i complements using these same unchanged references.

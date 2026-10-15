@@ -70,6 +70,7 @@ use std::{ops::Range, sync::Arc};
 /// Hebrew/Hebr uses pinned UCD 18 data invariant under common/simple folds.
 /// Common/Zyyy uses pinned UCD 18 data with canonical targets and fold preimages.
 /// Inherited/Zinh/Qaai uses pinned UCD 18 data with canonical targets and fold preimages.
+/// Devanagari/Deva uses pinned UCD 18 data invariant under common/simple folds.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -304,6 +305,7 @@ impl RegExpUnicodeClassMatcher {
             192 => 10,
             194 => 181,
             196 => 35,
+            198 => 6,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -377,7 +379,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 14;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 16;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -482,6 +484,7 @@ impl RegExpUnicodeClassMatcher {
                         192..=193 => 40,
                         194..=195 => 724,
                         196..=197 => 140,
+                        198..=199 => 24,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1738,6 +1741,54 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x64,
         ]
         | [0x73, 0x63, 0x3d, 0x51, 0x61, 0x61, 0x69] => 196,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x44,
+            0x65,
+            0x76,
+            0x61,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x44,
+            0x65,
+            0x76,
+            0x61,
+            0x6e,
+            0x61,
+            0x67,
+            0x61,
+            0x72,
+            0x69,
+        ]
+        | [0x73, 0x63, 0x3d, 0x44, 0x65, 0x76, 0x61]
+        | [
+            0x73,
+            0x63,
+            0x3d,
+            0x44,
+            0x65,
+            0x76,
+            0x61,
+            0x6e,
+            0x61,
+            0x67,
+            0x61,
+            0x72,
+            0x69,
+        ] => 198,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -34114,6 +34165,23 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1d1ae, 0x1d25a),
             (0x1d25d, 0xe00ff),
             (0xe01f0, 0x10ffff),
+        ],
+        // Devanagari/Deva: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        198 => &[
+            (0x900, 0x950),
+            (0x955, 0x963),
+            (0x966, 0x97f),
+            (0xa8e0, 0xa8ff),
+            (0x11b00, 0x11b0a),
+        ],
+        199 => &[
+            (0x0, 0x8ff),
+            (0x951, 0x954),
+            (0x964, 0x965),
+            (0x980, 0xa8df),
+            (0xa900, 0x11aff),
+            (0x11b0b, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -128094,3 +128162,7 @@ mod common_script_tests;
 #[cfg(test)]
 #[path = "regexp_inherited_script_tests.rs"]
 mod inherited_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_devanagari_script_tests.rs"]
+mod devanagari_script_tests;
