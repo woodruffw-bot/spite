@@ -4892,6 +4892,21 @@ and unvendored; data differences remain separate from the approved Node/V8
 inside-pair behavior. The pinned emoji-data source and SHA-256 are recorded with
 the static tables and Emoji_Component implementation.
 
+
+Emoji_Modifier/EMod uses exact edition-17 property names and pinned UCD 18
+emoji-data membership (22.2.2.9 and UnicodeMatchProperty): five supplementary
+members in one positive and two complementary intervals. Membership is
+invariant under simple C/S case folding, so u+i and v+i complements agree.
+Every match consumes one complete character and preserves original UTF-16
+ranges, captures, assertions, repetition and captured property/dot behavior.
+
+Tags 104/105 fit the temporary u128 property mask; the bounded scan stops below
+106. Earlier tables and matcher fields remain unchanged. Standalone construction
+charges two intervals before allocation; each distinct class set charges eight.
+No dependency, recursion or default quota is added. The property has identical
+membership in Unicode 17 and 18. The pinned emoji-data source and SHA-256 are
+recorded with the static tables and Emoji_Component implementation.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
