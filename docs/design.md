@@ -4991,6 +4991,22 @@ U+1DFF4); matching tests document those differences separately. The unchanged
 original Greek Test262 fixture remains unvendored because its negative set
 includes those newly assigned Greek characters.
 
+
+Cyrillic Script escapes admit exactly Script=Cyrillic, Script=Cyrl, sc=Cyrillic
+and sc=Cyrl (22.2.2.9 and UnicodeMatchPropertyValue). Bare Cyrillic names are
+invalid; Script_Extensions remains a separate unsupported namespace. The pinned
+Unicode 18 Scripts file defines 508 Cyrillic characters in ten merged intervals.
+Its eleven-interval complement includes lone surrogates. Common/simple case
+folding preserves both sets, so u+i and v+i complement orders agree.
+
+The finite registry adds two kinds to the existing three-word temporary mask.
+Construction reserves and charges intervals before appending; repeated source
+properties are deduplicated. Earlier binary properties, general categories,
+Latin and Greek retain their kind numbers and tables. No recursion, dependency
+or default JavaScript quota is added. Node's Unicode 17 data agrees exactly with
+all Cyrillic membership and folding cases. The original Test262 fixture at the
+existing pin is reviewed unchanged for a separate vendoring commit.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

@@ -65,6 +65,7 @@ use std::{ops::Range, sync::Arc};
 /// All General_Category values and exact aliases use pinned UCD 18 data.
 /// Latin/Latn with exact Script/sc prefixes also uses pinned UCD 18 data.
 /// Greek/Grek uses pinned UCD 18 data with common/simple fold preimages.
+/// Cyrillic/Cyrl uses pinned UCD 18 data invariant under common/simple folds.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -294,6 +295,7 @@ impl RegExpUnicodeClassMatcher {
             106 => 735,
             184 => 41,
             186 => 40,
+            188 => 11,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -367,7 +369,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 4;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 6;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -467,6 +469,7 @@ impl RegExpUnicodeClassMatcher {
                         106..=107 => 2940,
                         184..=185 => 164,
                         186..=187 => 160,
+                        188..=189 => 44,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1529,6 +1532,50 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
         ]
         | [0x73, 0x63, 0x3d, 0x47, 0x72, 0x65, 0x6b]
         | [0x73, 0x63, 0x3d, 0x47, 0x72, 0x65, 0x65, 0x6b] => 186,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x43,
+            0x79,
+            0x72,
+            0x6c,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x43,
+            0x79,
+            0x72,
+            0x69,
+            0x6c,
+            0x6c,
+            0x69,
+            0x63,
+        ]
+        | [0x73, 0x63, 0x3d, 0x43, 0x79, 0x72, 0x6c]
+        | [
+            0x73,
+            0x63,
+            0x3d,
+            0x43,
+            0x79,
+            0x72,
+            0x69,
+            0x6c,
+            0x6c,
+            0x69,
+            0x63,
+        ] => 188,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -33079,6 +33126,33 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x101a1, 0x1d1ff),
             (0x1d246, 0x1dff2),
             (0x1dff5, 0x10ffff),
+        ],
+        // Cyrillic/Cyrl: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        188 => &[
+            (0x400, 0x484),
+            (0x487, 0x52f),
+            (0x1c80, 0x1c8a),
+            (0x1d2b, 0x1d2b),
+            (0x1d78, 0x1d78),
+            (0x2de0, 0x2dff),
+            (0xa640, 0xa69f),
+            (0xfe2e, 0xfe2f),
+            (0x1e030, 0x1e06d),
+            (0x1e08f, 0x1e08f),
+        ],
+        189 => &[
+            (0x0, 0x3ff),
+            (0x485, 0x486),
+            (0x530, 0x1c7f),
+            (0x1c8b, 0x1d2a),
+            (0x1d2c, 0x1d77),
+            (0x1d79, 0x2ddf),
+            (0x2e00, 0xa63f),
+            (0xa6a0, 0xfe2d),
+            (0xfe30, 0x1e02f),
+            (0x1e06e, 0x1e08e),
+            (0x1e090, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -127039,3 +127113,7 @@ mod latin_script_tests;
 #[cfg(test)]
 #[path = "regexp_greek_script_tests.rs"]
 mod greek_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_cyrillic_script_tests.rs"]
+mod cyrillic_script_tests;
