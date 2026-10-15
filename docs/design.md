@@ -5007,6 +5007,23 @@ or default JavaScript quota is added. Node's Unicode 17 data agrees exactly with
 all Cyrillic membership and folding cases. The original Test262 fixture at the
 existing pin is reviewed unchanged for a separate vendoring commit.
 
+
+Arabic Script escapes admit exactly Script=Arabic, Script=Arab, sc=Arabic and
+sc=Arab (22.2.2.9 and UnicodeMatchPropertyValue). Bare Arabic names are invalid;
+Script_Extensions remains a separate unsupported namespace. The pinned Unicode
+18 Scripts file defines 1,452 Arabic characters in 56 merged intervals. Its
+57-interval complement includes lone surrogates. Common/simple case folding
+preserves both sets, so u+i and v+i complement orders agree.
+
+The finite registry fills the last two kinds of its existing three-word mask,
+including the highest bit in its final word. Construction reserves and charges
+intervals before appending; repeated properties are deduplicated. Earlier binary
+properties, general categories, Latin, Greek and Cyrillic retain their kind
+numbers and tables. No recursion, dependency or default JavaScript quota is
+added. Node uses Unicode 17 data and lacks 39 Arabic characters added in the
+existing Unicode 18 pin. All shared membership and folding cases agree; the
+older original Test262 fixture remains unchanged and unvendored.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

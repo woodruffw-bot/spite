@@ -16,3 +16,5 @@ SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
 Greek Script tests independently check both complement orders and all common/simple fold preimages using these same unchanged references.
 
 Cyrillic Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
+
+Arabic Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.

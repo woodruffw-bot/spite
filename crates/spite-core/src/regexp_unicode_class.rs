@@ -66,6 +66,7 @@ use std::{ops::Range, sync::Arc};
 /// Latin/Latn with exact Script/sc prefixes also uses pinned UCD 18 data.
 /// Greek/Grek uses pinned UCD 18 data with common/simple fold preimages.
 /// Cyrillic/Cyrl uses pinned UCD 18 data invariant under common/simple folds.
+/// Arabic/Arab uses pinned UCD 18 data invariant under common/simple folds.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -296,6 +297,7 @@ impl RegExpUnicodeClassMatcher {
             184 => 41,
             186 => 40,
             188 => 11,
+            190 => 57,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -369,7 +371,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 6;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 8;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -470,6 +472,7 @@ impl RegExpUnicodeClassMatcher {
                         184..=185 => 164,
                         186..=187 => 160,
                         188..=189 => 44,
+                        190..=191 => 228,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1576,6 +1579,36 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x69,
             0x63,
         ] => 188,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x41,
+            0x72,
+            0x61,
+            0x62,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x41,
+            0x72,
+            0x61,
+            0x62,
+            0x69,
+            0x63,
+        ]
+        | [0x73, 0x63, 0x3d, 0x41, 0x72, 0x61, 0x62]
+        | [0x73, 0x63, 0x3d, 0x41, 0x72, 0x61, 0x62, 0x69, 0x63] => 190,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -33153,6 +33186,125 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xfe30, 0x1e02f),
             (0x1e06e, 0x1e08e),
             (0x1e090, 0x10ffff),
+        ],
+        // Arabic/Arab: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        190 => &[
+            (0x600, 0x604),
+            (0x606, 0x60b),
+            (0x60d, 0x61a),
+            (0x61c, 0x61e),
+            (0x620, 0x63f),
+            (0x641, 0x64a),
+            (0x656, 0x66f),
+            (0x671, 0x6dc),
+            (0x6de, 0x6ff),
+            (0x750, 0x77f),
+            (0x870, 0x891),
+            (0x897, 0x8e1),
+            (0x8e3, 0x8ff),
+            (0xfb50, 0xfd3d),
+            (0xfd40, 0xfdcf),
+            (0xfdf0, 0xfdff),
+            (0xfe70, 0xfe74),
+            (0xfe76, 0xfefc),
+            (0x10e60, 0x10e7e),
+            (0x10ec2, 0x10ec7),
+            (0x10ec9, 0x10eee),
+            (0x10ef0, 0x10eff),
+            (0x1ee00, 0x1ee03),
+            (0x1ee05, 0x1ee1f),
+            (0x1ee21, 0x1ee22),
+            (0x1ee24, 0x1ee24),
+            (0x1ee27, 0x1ee27),
+            (0x1ee29, 0x1ee32),
+            (0x1ee34, 0x1ee37),
+            (0x1ee39, 0x1ee39),
+            (0x1ee3b, 0x1ee3b),
+            (0x1ee42, 0x1ee42),
+            (0x1ee47, 0x1ee47),
+            (0x1ee49, 0x1ee49),
+            (0x1ee4b, 0x1ee4b),
+            (0x1ee4d, 0x1ee4f),
+            (0x1ee51, 0x1ee52),
+            (0x1ee54, 0x1ee54),
+            (0x1ee57, 0x1ee57),
+            (0x1ee59, 0x1ee59),
+            (0x1ee5b, 0x1ee5b),
+            (0x1ee5d, 0x1ee5d),
+            (0x1ee5f, 0x1ee5f),
+            (0x1ee61, 0x1ee62),
+            (0x1ee64, 0x1ee64),
+            (0x1ee67, 0x1ee6a),
+            (0x1ee6c, 0x1ee72),
+            (0x1ee74, 0x1ee77),
+            (0x1ee79, 0x1ee7c),
+            (0x1ee7e, 0x1ee7e),
+            (0x1ee80, 0x1ee89),
+            (0x1ee8b, 0x1ee9b),
+            (0x1eea1, 0x1eea3),
+            (0x1eea5, 0x1eea9),
+            (0x1eeab, 0x1eebb),
+            (0x1eef0, 0x1eef1),
+        ],
+        191 => &[
+            (0x0, 0x5ff),
+            (0x605, 0x605),
+            (0x60c, 0x60c),
+            (0x61b, 0x61b),
+            (0x61f, 0x61f),
+            (0x640, 0x640),
+            (0x64b, 0x655),
+            (0x670, 0x670),
+            (0x6dd, 0x6dd),
+            (0x700, 0x74f),
+            (0x780, 0x86f),
+            (0x892, 0x896),
+            (0x8e2, 0x8e2),
+            (0x900, 0xfb4f),
+            (0xfd3e, 0xfd3f),
+            (0xfdd0, 0xfdef),
+            (0xfe00, 0xfe6f),
+            (0xfe75, 0xfe75),
+            (0xfefd, 0x10e5f),
+            (0x10e7f, 0x10ec1),
+            (0x10ec8, 0x10ec8),
+            (0x10eef, 0x10eef),
+            (0x10f00, 0x1edff),
+            (0x1ee04, 0x1ee04),
+            (0x1ee20, 0x1ee20),
+            (0x1ee23, 0x1ee23),
+            (0x1ee25, 0x1ee26),
+            (0x1ee28, 0x1ee28),
+            (0x1ee33, 0x1ee33),
+            (0x1ee38, 0x1ee38),
+            (0x1ee3a, 0x1ee3a),
+            (0x1ee3c, 0x1ee41),
+            (0x1ee43, 0x1ee46),
+            (0x1ee48, 0x1ee48),
+            (0x1ee4a, 0x1ee4a),
+            (0x1ee4c, 0x1ee4c),
+            (0x1ee50, 0x1ee50),
+            (0x1ee53, 0x1ee53),
+            (0x1ee55, 0x1ee56),
+            (0x1ee58, 0x1ee58),
+            (0x1ee5a, 0x1ee5a),
+            (0x1ee5c, 0x1ee5c),
+            (0x1ee5e, 0x1ee5e),
+            (0x1ee60, 0x1ee60),
+            (0x1ee63, 0x1ee63),
+            (0x1ee65, 0x1ee66),
+            (0x1ee6b, 0x1ee6b),
+            (0x1ee73, 0x1ee73),
+            (0x1ee78, 0x1ee78),
+            (0x1ee7d, 0x1ee7d),
+            (0x1ee7f, 0x1ee7f),
+            (0x1ee8a, 0x1ee8a),
+            (0x1ee9c, 0x1eea0),
+            (0x1eea4, 0x1eea4),
+            (0x1eeaa, 0x1eeaa),
+            (0x1eebc, 0x1eeef),
+            (0x1eef2, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -127117,3 +127269,7 @@ mod greek_script_tests;
 #[cfg(test)]
 #[path = "regexp_cyrillic_script_tests.rs"]
 mod cyrillic_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_arabic_script_tests.rs"]
+mod arabic_script_tests;
