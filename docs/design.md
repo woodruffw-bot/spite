@@ -5024,6 +5024,24 @@ added. Node uses Unicode 17 data and lacks 39 Arabic characters added in the
 existing Unicode 18 pin. All shared membership and folding cases agree; the
 older original Test262 fixture remains unchanged and unvendored.
 
+
+Hebrew Script escapes admit exactly Script=Hebrew, Script=Hebr, sc=Hebrew and
+sc=Hebr (22.2.2.9 and UnicodeMatchPropertyValue). Bare Hebrew names are invalid;
+Script_Extensions remains a separate unsupported namespace. The pinned Unicode
+18 Scripts file defines 136 Hebrew characters in nine merged BMP intervals. Its
+ten-interval complement includes lone surrogates and all supplementary points.
+Common/simple case folding preserves both sets, so u+i and v+i complement orders
+agree.
+
+The finite registry adds a fourth temporary mask word for the two new kinds.
+Construction reserves and charges intervals before appending; repeated
+properties are deduplicated. Earlier binary properties, general categories and
+Script values retain their kind numbers and tables. No recursion, dependency or
+default JavaScript quota is added. Node uses Unicode 17 data and lacks the two
+Hebrew characters U+05C8 and U+05C9 added in the existing Unicode 18 pin. All
+shared membership and folding cases agree. The older original Test262 fixture
+remains unchanged and unvendored.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

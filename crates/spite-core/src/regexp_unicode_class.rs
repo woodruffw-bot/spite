@@ -67,6 +67,7 @@ use std::{ops::Range, sync::Arc};
 /// Greek/Grek uses pinned UCD 18 data with common/simple fold preimages.
 /// Cyrillic/Cyrl uses pinned UCD 18 data invariant under common/simple folds.
 /// Arabic/Arab uses pinned UCD 18 data invariant under common/simple folds.
+/// Hebrew/Hebr uses pinned UCD 18 data invariant under common/simple folds.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -298,6 +299,7 @@ impl RegExpUnicodeClassMatcher {
             186 => 40,
             188 => 11,
             190 => 57,
+            192 => 10,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -371,7 +373,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 8;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 10;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -473,6 +475,7 @@ impl RegExpUnicodeClassMatcher {
                         186..=187 => 160,
                         188..=189 => 44,
                         190..=191 => 228,
+                        192..=193 => 40,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1609,6 +1612,36 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
         ]
         | [0x73, 0x63, 0x3d, 0x41, 0x72, 0x61, 0x62]
         | [0x73, 0x63, 0x3d, 0x41, 0x72, 0x61, 0x62, 0x69, 0x63] => 190,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x48,
+            0x65,
+            0x62,
+            0x72,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x48,
+            0x65,
+            0x62,
+            0x72,
+            0x65,
+            0x77,
+        ]
+        | [0x73, 0x63, 0x3d, 0x48, 0x65, 0x62, 0x72]
+        | [0x73, 0x63, 0x3d, 0x48, 0x65, 0x62, 0x72, 0x65, 0x77] => 192,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -33305,6 +33338,31 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1eeaa, 0x1eeaa),
             (0x1eebc, 0x1eeef),
             (0x1eef2, 0x10ffff),
+        ],
+        // Hebrew/Hebr: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        192 => &[
+            (0x591, 0x5c9),
+            (0x5d0, 0x5ea),
+            (0x5ef, 0x5f4),
+            (0xfb1d, 0xfb36),
+            (0xfb38, 0xfb3c),
+            (0xfb3e, 0xfb3e),
+            (0xfb40, 0xfb41),
+            (0xfb43, 0xfb44),
+            (0xfb46, 0xfb4f),
+        ],
+        193 => &[
+            (0x0, 0x590),
+            (0x5ca, 0x5cf),
+            (0x5eb, 0x5ee),
+            (0x5f5, 0xfb1c),
+            (0xfb37, 0xfb37),
+            (0xfb3d, 0xfb3d),
+            (0xfb3f, 0xfb3f),
+            (0xfb42, 0xfb42),
+            (0xfb45, 0xfb45),
+            (0xfb50, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -127273,3 +127331,7 @@ mod cyrillic_script_tests;
 #[cfg(test)]
 #[path = "regexp_arabic_script_tests.rs"]
 mod arabic_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_hebrew_script_tests.rs"]
+mod hebrew_script_tests;

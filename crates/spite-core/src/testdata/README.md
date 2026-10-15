@@ -18,3 +18,5 @@ Greek Script tests independently check both complement orders and all common/sim
 Cyrillic Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
 
 Arabic Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
+
+Hebrew Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
