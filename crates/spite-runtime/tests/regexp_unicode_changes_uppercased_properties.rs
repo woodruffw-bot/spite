@@ -166,7 +166,7 @@ fn unicode_changes_uppercased_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Assigned}/u.exec('A')",
+        r"/\p{Script=Latin}/u.exec('A')",
         r"/[\p{CWU}&&A]/v.exec('A')",
         r"/[\p{CWU}--A]/v.exec('A')",
         r"/\p{CWU}+b/u.exec('AA')",

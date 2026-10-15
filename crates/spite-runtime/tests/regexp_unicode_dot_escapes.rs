@@ -157,7 +157,7 @@ fn unicode_dot_escapes_unproved_syntax_remains_unsupported() {
         r"/^../u.exec('a')",
         r"/([\D])+b/u.exec('a')",
         r"/([^a])+b/v.exec('b')",
-        r"/\p{Assigned}/u.exec('a')",
+        r"/\p{Script=Latin}/u.exec('a')",
         r"/[\q{ab}]/v.exec('ab')",
         r"/\d|a/u.exec('a')",
     ] {

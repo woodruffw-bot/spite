@@ -1536,7 +1536,7 @@ mod tests {
             r"\bA\\b",
             r"\b\bA\b",
             r"\b\B",
-            r"\b\p{Assigned}\b",
+            r"\b\p{Script=Latin}\b",
         ] {
             assert!(
                 RegExpUnicodeCharacterMatcher::compile_with_word_boundaries_and_work(

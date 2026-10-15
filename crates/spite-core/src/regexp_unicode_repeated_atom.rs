@@ -342,7 +342,7 @@ mod start_assertion_tests {
             "^(a)+",
             "^a+b",
             r"^[a--b]+",
-            r"^\p{Assigned}+",
+            r"^\p{Script=Latin}+",
         ] {
             assert!(
                 RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
@@ -4298,7 +4298,7 @@ mod tests {
             r"\ba+",
             r"[a--b]+",
             r"[\q{ab}]+",
-            r"\p{Assigned}+",
+            r"\p{Script=Latin}+",
             "a{2,1}",
         ] {
             assert!(

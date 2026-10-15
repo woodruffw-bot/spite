@@ -172,7 +172,7 @@ fn unicode_case_ignorable_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Assigned}/u.exec('A')",
+        r"/\p{Script=Latin}/u.exec('A')",
         r"/[\p{CI}&&A]/v.exec('A')",
         r"/[\p{CI}--A]/v.exec('A')",
         r"/\p{CI}+b/u.exec('AA')",

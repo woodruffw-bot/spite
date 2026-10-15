@@ -151,7 +151,7 @@ fn unicode_terminal_punctuation_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Assigned}/u.exec('A')",
+        r"/\p{Script=Latin}/u.exec('A')",
         r"/[\p{Term}&&A]/v.exec('A')",
         r"/[\p{Term}--A]/v.exec('A')",
         r"/\p{Term}+b/u.exec('AA')",

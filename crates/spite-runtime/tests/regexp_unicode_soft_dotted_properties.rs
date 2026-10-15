@@ -166,7 +166,7 @@ fn unicode_soft_dotted_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Assigned}/u.exec('A')",
+        r"/\p{Script=Latin}/u.exec('A')",
         r"/[\p{SD}&&A]/v.exec('A')",
         r"/[\p{SD}--A]/v.exec('A')",
         r"/\p{SD}+b/u.exec('AA')",

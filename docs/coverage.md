@@ -9547,6 +9547,32 @@ Stable and MSRV pass all 14,632 unchanged pinned-corpus variants and the
 complete workspace target and documentation checks. Formatting, denied-warning
 Clippy, dependency/fixture policy and all offline data checks pass.
 
+
+Assigned adds three Core and eleven runtime tests. Independent pinned raw data
+checks all 35,651,584 code-point/form/flag combinations, including all surrogates.
+All 8,912,896 Node comparisons agree on shared data; 104,056 expected differences
+occur only at 13,007 new Unicode 18 members. Native runtime tests add 528 programs
+covering all 51 added range endpoints and midpoints, new fold sources and all four
+flag combinations. The 1,920 Core and 560 runtime insta rows agree with independent
+UTF-16 evaluation and Node; thirty-two shared complete Boolean programs agree.
+
+Mixed u128 mask bits, supplementary and lone-surrogate membership, private use,
+noncharacters, documented inside-pair consuming matches, fallible construction,
+deduplication, original captures, assertions, consumers, clones, strict writes and
+collection retain their contracts. Large inputs and sources keep unlimited defaults;
+explicit work quotas preserve host-failure ordering. All 853 Core tests and 299
+related runtime targets pass. All 654 earlier snapshots remain exact and two
+reviewed snapshots are added. All eleven formerly unsupported Assigned contexts retain exact native results
+and agree with Node. Older valid unsupported-property examples move to
+Script=Latin without removing their checks. The 1420-program gap audit has no
+admissions. Whole fixtures retain 204 passed and 26 Unsupported variants in the
+115-source review. Inventories, pins and dependencies remain unchanged. The
+incompatible original Assigned fixture remains unchanged and unvendored.
+
+Stable and MSRV pass all 14,632 unchanged pinned-corpus variants, workspace
+targets and documentation, and the default-stack debug safety checks. Formatting,
+denied-warning Clippy, dependency policy and all offline data checks pass.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

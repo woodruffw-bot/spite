@@ -4907,6 +4907,25 @@ No dependency, recursion or default quota is added. The property has identical
 membership in Unicode 17 and 18. The pinned emoji-data source and SHA-256 are
 recorded with the static tables and Emoji_Component implementation.
 
+
+Assigned uses its one exact edition-17 name and pinned UCD 18 General_Category
+membership other than Cn (22.2.2.9 and UnicodeMatchProperty): 312,389 members
+in 735 positive and 735 complementary intervals. UnicodeData First/Last ranges
+include surrogate and private-use categories; noncharacters remain unassigned.
+Membership is invariant under simple C/S case folding, so u+i and v+i complements
+agree. Captures and repeated property/dot matches preserve complete characters
+and original UTF-16 ranges.
+
+Tags 106/107 fit the temporary u128 property mask; the bounded scan stops below
+108. Earlier tables and matcher fields remain unchanged. Standalone construction
+charges 735 intervals before allocation; each distinct class set charges 2,940.
+No dependency, recursion or default quota is added. Unicode 18 adds 13,007 members
+in 51 ranges and removes none. The pinned Unicode 17 fixture remains unchanged
+and unvendored. These data differences remain separate from the approved Node/V8
+inside-pair behavior. UnicodeData uses the existing Unicode 18 input and SHA-256.
+Older unsupported-property examples use valid, still-unsupported Script=Latin
+patterns; the corresponding unsupported-feature checks remain active.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
