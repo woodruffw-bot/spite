@@ -5042,6 +5042,27 @@ Hebrew characters U+05C8 and U+05C9 added in the existing Unicode 18 pin. All
 shared membership and folding cases agree. The older original Test262 fixture
 remains unchanged and unvendored.
 
+
+Common Script escapes admit exactly Script=Common, Script=Zyyy, sc=Common and
+sc=Zyyy (22.2.2.9 and UnicodeMatchPropertyValue). Bare names are invalid;
+Script_Extensions remains a separate unsupported namespace. The unchanged
+Unicode 18 Scripts file defines 9,276 Common characters. Merging the raw ranges yields
+179 positive intervals. The raw complement also has 179
+intervals; the v+i complement has 181 intervals.
+
+The Common member U+00B5 folds to Greek U+03BC outside the raw set. Positive
+ignore-case matching uses the canonical image. For u+i, negation precedes
+canonicalization; for v+i it follows canonicalization. The v+i complement removes
+U+039C and U+03BC preimages in addition to the raw Common set.
+
+The existing fourth temporary mask word admits two new kinds. Construction
+reserves and charges intervals before appending; repeated properties are
+deduplicated. Earlier property kinds and tables are preserved. No recursion,
+dependency or default JavaScript quota is added. Node uses Unicode 17 data and
+lacks 153 Common characters in the existing Unicode 18 pin. Shared membership
+and folding cases agree. The older original Test262 fixture remains unchanged
+and unvendored.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

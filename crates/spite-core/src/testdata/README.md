@@ -20,3 +20,5 @@ Cyrillic Script tests independently check raw membership and its invariant commo
 Arabic Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
 
 Hebrew Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
+
+Common Script tests independently check raw membership and its common/simple fold images and distinct u+i/v+i complements using these same unchanged references.
