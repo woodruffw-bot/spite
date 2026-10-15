@@ -150,14 +150,14 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Script=Latin}/u.exec('A')",
+        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/\p{Script=Greek}/v.exec('𠮷')",
         r"/\p{RGI_Emoji}/v.exec('😀')",
-        r"/[\p{Script=Latin}]/u.exec('A')",
+        r"/[\p{Script_Extensions=Latin}]/u.exec('A')",
         r"/\p{ASCII}+b/v.exec('A')",
         r"/\p{ASCII}x/u.exec('Ax')",
         r"/\p{ASCII}|x/v.exec('A')",
-        r"/^(\p{Script=Latin})$/u.exec('A')",
+        r"/^(\p{Script_Extensions=Latin})$/u.exec('A')",
     ] {
         assert!(
             matches!(

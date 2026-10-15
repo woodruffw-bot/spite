@@ -4947,6 +4947,28 @@ the approved inside-surrogate-pair whole-match boundary behavior. Twenty-two
 incompatible original Test262 category fixtures remain unchanged and unvendored.
 The sixteen compatible original fixtures are reviewed for a separate commit.
 
+
+Latin Script escapes admit exactly Script=Latin, Script=Latn, sc=Latin and
+sc=Latn (22.2.2.9 and UnicodeMatchPropertyValue). Bare Latin names are invalid;
+Script_Extensions remains a separate unsupported property namespace. The pinned
+Unicode 18 Scripts file defines 1,653 Latin characters in 40 merged intervals.
+Its 41-interval complement includes lone surrogates. Both sets are invariant
+under the reviewed simple/common case folds, preserving u+i and v+i semantics.
+
+The finite property registry adds two kinds to the existing three-word mask.
+Construction reserves and charges intervals before appending; repeated source
+properties are deduplicated. Earlier general categories and binary properties
+retain their kind numbers and tables. No recursion, dependency or default
+JavaScript quota is added. The existing narrowly approved whole-match boundary
+behavior also covers matches starting inside a Latin supplementary character.
+
+Node uses Unicode 17. Its 161 missing Latin additions are documented separately
+from matching semantics. The original Script=Latin Test262 fixture at the
+existing pin is reviewed unchanged and remains unvendored because its negative
+set excludes these Unicode 18 additions. Earlier unsupported-property controls
+now use valid, still-unsupported Script_Extensions=Latin; exact former Latin
+patterns have positive execution regressions.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

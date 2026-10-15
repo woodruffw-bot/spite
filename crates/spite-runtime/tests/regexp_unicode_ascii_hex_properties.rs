@@ -148,7 +148,7 @@ fn unicode_ascii_hex_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Script=Latin}/u.exec('A')",
+        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{AHex}&&A]/v.exec('A')",
         r"/[\p{AHex}--A]/v.exec('A')",
         r"/\p{AHex}+b/u.exec('AA')",

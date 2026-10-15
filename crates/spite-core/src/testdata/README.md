@@ -9,3 +9,6 @@ SHA-256: a004797658a457bec4dc11683e39f69249ea3b595b752dbea6721c4c9f587b0d
 License: https://www.unicode.org/license.txt (Unicode License v3).
 Production uses generated static intervals and the existing pinned case data.
 Tests parse these original files independently; no build-time download is needed.
+
+Scripts-18.0.0.txt: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a

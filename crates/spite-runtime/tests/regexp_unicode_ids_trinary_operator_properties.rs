@@ -151,7 +151,7 @@ fn unicode_ids_trinary_operator_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Script=Latin}/u.exec('A')",
+        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{IDST}&&A]/v.exec('A')",
         r"/[\p{IDST}--A]/v.exec('A')",
         r"/\p{IDST}+b/u.exec('AA')",

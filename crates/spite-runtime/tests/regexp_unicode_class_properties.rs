@@ -154,7 +154,7 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/[\p{Script=Latin}]/u.exec('A')",
+        r"/[\p{Script_Extensions=Latin}]/u.exec('A')",
         r"/[\p{Script=Greek}]/v.exec('𠮷')",
         r"/[\p{RGI_Emoji}]/v.exec('😀')",
         r"/[\p{ASCII}&&K]/v.exec('K')",

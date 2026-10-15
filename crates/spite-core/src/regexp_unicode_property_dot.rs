@@ -269,7 +269,7 @@ mod tests {
             r"(\p{sc=Han})(a)",
             r"(\p{sc=Han})(.)$",
             r"(\p{sc=Han})(.)x",
-            r"(\p{Script=Latin})(.)",
+            r"(\p{Script_Extensions=Latin})(.)",
         ] {
             assert!(
                 RegExpUnicodePropertyDotMatcher::compile_with_work(

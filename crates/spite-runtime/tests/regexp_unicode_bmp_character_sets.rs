@@ -142,7 +142,7 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
         r"/([a])+b/u.exec('a')",
         r"/[a]*b/u.exec('a')",
         r"/(.)+b/u.exec('a')",
-        r"/[\p{Script=Latin}]/u.exec('a')",
+        r"/[\p{Script_Extensions=Latin}]/u.exec('a')",
     ] {
         assert!(
             matches!(

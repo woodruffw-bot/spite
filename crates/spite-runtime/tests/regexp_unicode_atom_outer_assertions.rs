@@ -149,7 +149,7 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
     for source in [
         r"/^((.)+)b$/u.exec('A')",
         r"/^(.)(.)$/v.exec('AA')",
-        r"/^(\p{Script=Latin})$/u.exec('A')",
+        r"/^(\p{Script_Extensions=Latin})$/u.exec('A')",
         r"/^(a|b)$/v.exec('a')",
         r"/^(^.$)$/u.exec('A')",
         r"/^([\q{a\)b}])$/v.exec('a)b')",

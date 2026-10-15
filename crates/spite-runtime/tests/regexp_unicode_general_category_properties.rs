@@ -3474,7 +3474,7 @@ fn unicode_general_category_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Script=Latin}/u.exec('A')",
+        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{Lu}&&A]/v.exec('A')",
         r"/[\p{Lu}--A]/v.exec('A')",
         r"/\p{Lu}+b/u.exec('AA')",

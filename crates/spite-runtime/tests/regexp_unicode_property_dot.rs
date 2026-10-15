@@ -167,7 +167,7 @@ fn unicode_property_dot_opted_work_and_remaining_compositions() {
         r"/(\p{sc=Han})(.)+/v.exec('𠮷a')",
         r"/(\p{sc=Han}|a)(.)/u.exec('𠮷a')",
         r"/(\p{sc=Han})(.)x/v.exec('𠮷ax')",
-        r"/(\p{Script=Latin})(.)/v.exec('Aa')",
+        r"/(\p{Script_Extensions=Latin})(.)/v.exec('Aa')",
     ] {
         assert!(
             matches!(

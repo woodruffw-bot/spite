@@ -166,7 +166,7 @@ fn unicode_changes_titlecased_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Script=Latin}/u.exec('A')",
+        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{CWT}&&A]/v.exec('A')",
         r"/[\p{CWT}--A]/v.exec('A')",
         r"/\p{CWT}+b/u.exec('AA')",

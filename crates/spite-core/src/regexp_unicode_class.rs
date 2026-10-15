@@ -63,6 +63,7 @@ use std::{ops::Range, sync::Arc};
 /// Emoji_Modifier/EMod uses UCD 18 emoji-modifier membership.
 /// Assigned uses UCD 18 General_Category membership other than Cn, including Cs/Co.
 /// All General_Category values and exact aliases use pinned UCD 18 data.
+/// Latin/Latn with exact Script/sc prefixes also uses pinned UCD 18 data.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -290,6 +291,7 @@ impl RegExpUnicodeClassMatcher {
             102 => 41,
             104 => 2,
             106 => 735,
+            184 => 41,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -363,8 +365,8 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const WORDS: usize =
-            (crate::regexp_general_category_data::KIND_COUNT as usize).div_ceil(64);
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 2;
+        const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
             let Some(first) = class_atom(units, &mut index, unicode_sets) else {
@@ -410,7 +412,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..crate::regexp_general_category_data::KIND_COUNT {
+        for kind in 0..PROPERTY_KIND_COUNT {
             if properties[usize::from(kind) / 64] & (1u64 << (kind % 64)) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -461,6 +463,7 @@ impl RegExpUnicodeClassMatcher {
                         102..=103 => 164,
                         104..=105 => 8,
                         106..=107 => 2940,
+                        184..=185 => 164,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1465,6 +1468,35 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x72,
         ] => 104,
         [0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64] => 106,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x4c,
+            0x61,
+            0x74,
+            0x6e,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x4c,
+            0x61,
+            0x74,
+            0x69,
+            0x6e,
+        ]
+        | [0x73, 0x63, 0x3d, 0x4c, 0x61, 0x74, 0x6e]
+        | [0x73, 0x63, 0x3d, 0x4c, 0x61, 0x74, 0x69, 0x6e] => 184,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -1475,7 +1507,10 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
 // Both hex properties have no additional simple/common-fold preimages: uppercase
 // members already have lowercase partners. Both u/v complement orders agree.
 fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, ignore_case: bool) {
-    if kind >= crate::regexp_general_category_data::FIRST_KIND {
+    if (crate::regexp_general_category_data::FIRST_KIND
+        ..crate::regexp_general_category_data::KIND_COUNT)
+        .contains(&kind)
+    {
         ranges.extend_from_slice(crate::regexp_general_category_data::ranges(
             kind,
             unicode_sets,
@@ -32802,6 +32837,93 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xffffe, 0xfffff),
             (0x10fffe, 0x10ffff),
         ],
+        // Latin/Latn: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        184 => &[
+            (0x41, 0x5a),
+            (0x61, 0x7a),
+            (0xaa, 0xaa),
+            (0xba, 0xba),
+            (0xc0, 0xd6),
+            (0xd8, 0xf6),
+            (0xf8, 0x2b8),
+            (0x2e0, 0x2e4),
+            (0x1d00, 0x1d25),
+            (0x1d2c, 0x1d5c),
+            (0x1d62, 0x1d65),
+            (0x1d6b, 0x1d77),
+            (0x1d79, 0x1dbe),
+            (0x1e00, 0x1eff),
+            (0x2071, 0x2071),
+            (0x207f, 0x207f),
+            (0x2090, 0x209f),
+            (0x212a, 0x212b),
+            (0x2132, 0x2132),
+            (0x214e, 0x214e),
+            (0x2160, 0x2188),
+            (0x2c60, 0x2c7f),
+            (0xa722, 0xa787),
+            (0xa78b, 0xa7dd),
+            (0xa7e2, 0xa7e2),
+            (0xa7f1, 0xa7ff),
+            (0xab30, 0xab5a),
+            (0xab5c, 0xab64),
+            (0xab66, 0xab69),
+            (0xab6c, 0xab6d),
+            (0xfb00, 0xfb06),
+            (0xff21, 0xff3a),
+            (0xff41, 0xff5a),
+            (0x10780, 0x10785),
+            (0x10787, 0x107b0),
+            (0x107b2, 0x107bf),
+            (0x1df00, 0x1df81),
+            (0x1df90, 0x1df96),
+            (0x1dfcd, 0x1dff2),
+            (0x1dff5, 0x1dfff),
+        ],
+        185 => &[
+            (0x0, 0x40),
+            (0x5b, 0x60),
+            (0x7b, 0xa9),
+            (0xab, 0xb9),
+            (0xbb, 0xbf),
+            (0xd7, 0xd7),
+            (0xf7, 0xf7),
+            (0x2b9, 0x2df),
+            (0x2e5, 0x1cff),
+            (0x1d26, 0x1d2b),
+            (0x1d5d, 0x1d61),
+            (0x1d66, 0x1d6a),
+            (0x1d78, 0x1d78),
+            (0x1dbf, 0x1dff),
+            (0x1f00, 0x2070),
+            (0x2072, 0x207e),
+            (0x2080, 0x208f),
+            (0x20a0, 0x2129),
+            (0x212c, 0x2131),
+            (0x2133, 0x214d),
+            (0x214f, 0x215f),
+            (0x2189, 0x2c5f),
+            (0x2c80, 0xa721),
+            (0xa788, 0xa78a),
+            (0xa7de, 0xa7e1),
+            (0xa7e3, 0xa7f0),
+            (0xa800, 0xab2f),
+            (0xab5b, 0xab5b),
+            (0xab65, 0xab65),
+            (0xab6a, 0xab6b),
+            (0xab6e, 0xfaff),
+            (0xfb07, 0xff20),
+            (0xff3b, 0xff40),
+            (0xff5b, 0x1077f),
+            (0x10786, 0x10786),
+            (0x107b1, 0x107b1),
+            (0x107c0, 0x1deff),
+            (0x1df82, 0x1df8f),
+            (0x1df97, 0x1dfcc),
+            (0x1dff3, 0x1dff4),
+            (0x1e000, 0x10ffff),
+        ],
         _ => unreachable!("validated binary property kind"),
     };
     ranges.extend_from_slice(intervals);
@@ -33040,7 +33162,7 @@ mod tests {
             r"[\x00&&0]",
             "[[a]]",
             r"[\q{a|b}]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
             r"[^\q{a|b}]",
         ] {
             assert!(
@@ -33056,7 +33178,7 @@ mod tests {
             "[a]b",
             "([a])",
             "^[a]$",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile(&JsString::from(source), false).is_none(),
@@ -33236,7 +33358,7 @@ mod tests {
             "^[a]+$",
             "^[a]b$",
             "^[a&&b]$",
-            r"^[\p{Script=Latin}]$",
+            r"^[\p{Script_Extensions=Latin}]$",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_assertions(
@@ -33423,7 +33545,7 @@ mod tests {
         for source in [
             r"[a&&b]",
             r"[[a]]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
             r"[\q{a|b}]",
             r"([a])",
             r"[a]+",
@@ -33581,7 +33703,7 @@ mod tests {
         }
         for source in [
             r"\p{ascii}",
-            r"\p{Script=Latin}",
+            r"\p{Script_Extensions=Latin}",
             r"\p{Script=Greek}",
             r"\p{RGI_Emoji}",
             r"[\p{ASCII}]",
@@ -33806,7 +33928,7 @@ mod tests {
         assert_eq!(plan.find(&JsString::from("x\nK\n"), 0, false), Some(2..3));
         assert_eq!(plan.find(&JsString::from("x\nſ\n"), 0, false), None);
         for source in [
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
             r"[\p{Script=Greek}]",
             r"[\p{RGI_Emoji}]",
             r"[\p{ASCII}--K]",
@@ -33996,7 +34118,7 @@ mod tests {
             r"[[\p{AHex}]]",
             r"[A-\p{AHex}]",
             r"[\p{AHex}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -34180,7 +34302,7 @@ mod tests {
             r"[[\p{Hex}]]",
             r"[A-\p{Hex}]",
             r"[\p{Hex}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -34364,7 +34486,7 @@ mod tests {
             r"[[\p{space}]]",
             r"[A-\p{space}]",
             r"[\p{space}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -34625,7 +34747,7 @@ mod tests {
             r"\b[A]\\b",
             r"\b\b[A]\b",
             r"\b\B",
-            r"\b[\p{Script=Latin}]\b",
+            r"\b[\p{Script_Extensions=Latin}]\b",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_word_boundaries_and_work(
@@ -34815,7 +34937,7 @@ mod tests {
             r"[[\p{Join_C}]]",
             r"[A-\p{Join_C}]",
             r"[\p{Join_C}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -35008,7 +35130,7 @@ mod tests {
             r"[[\p{NChar}]]",
             r"[A-\p{NChar}]",
             r"[\p{NChar}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -35199,7 +35321,7 @@ mod tests {
             r"[[\p{Bidi_C}]]",
             r"[A-\p{Bidi_C}]",
             r"[\p{Bidi_C}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -35392,7 +35514,7 @@ mod tests {
             r"[[\p{QMark}]]",
             r"[A-\p{QMark}]",
             r"[\p{QMark}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -35583,7 +35705,7 @@ mod tests {
             r"[[\p{Pat_WS}]]",
             r"[A-\p{Pat_WS}]",
             r"[\p{Pat_WS}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -35779,7 +35901,7 @@ mod tests {
             r"[[\p{LOE}]]",
             r"[A-\p{LOE}]",
             r"[\p{LOE}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -36002,7 +36124,7 @@ mod tests {
             r"[[\p{VS}]]",
             r"[A-\p{VS}]",
             r"[\p{VS}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -36195,7 +36317,7 @@ mod tests {
             r"[[\p{Dash}]]",
             r"[A-\p{Dash}]",
             r"[\p{Dash}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -36409,7 +36531,7 @@ mod tests {
             r"[[\p{sc=Han}]]",
             r"[A-\p{sc=Han}]",
             r"[\p{sc=Han}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
             r"[\p{Script_Extensions=Han}]",
             r"[\p{sc=han}]",
         ] {
@@ -36855,7 +36977,7 @@ mod tests {
             r"[[\p{Pat_Syn}]]",
             r"[A-\p{Pat_Syn}]",
             r"[\p{Pat_Syn}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -37617,7 +37739,7 @@ mod tests {
             r"[[\p{Bidi_M}]]",
             r"[A-\p{Bidi_M}]",
             r"[\p{Bidi_M}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -37888,7 +38010,7 @@ mod tests {
             r"[[\p{Ext}]]",
             r"[A-\p{Ext}]",
             r"[\p{Ext}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -38206,7 +38328,7 @@ mod tests {
             r"[[\p{STerm}]]",
             r"[A-\p{STerm}]",
             r"[\p{STerm}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -38552,7 +38674,7 @@ mod tests {
             r"[[\p{Term}]]",
             r"[A-\p{Term}]",
             r"[\p{Term}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -38784,7 +38906,7 @@ mod tests {
             r"[[\p{IDSB}]]",
             r"[A-\p{IDSB}]",
             r"[\p{IDSB}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -39010,7 +39132,7 @@ mod tests {
             r"[[\p{IDST}]]",
             r"[A-\p{IDST}]",
             r"[\p{IDST}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -39241,7 +39363,7 @@ mod tests {
             r"[[\p{Radical}]]",
             r"[A-\p{Radical}]",
             r"[\p{Radical}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -39466,7 +39588,7 @@ mod tests {
             r"[[\p{RI}]]",
             r"[A-\p{RI}]",
             r"[\p{RI}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -39711,7 +39833,7 @@ mod tests {
             r"[[\p{UIdeo}]]",
             r"[A-\p{UIdeo}]",
             r"[\p{UIdeo}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -39965,7 +40087,7 @@ mod tests {
             r"[[\p{Ideo}]]",
             r"[A-\p{Ideo}]",
             r"[\p{Ideo}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -40202,7 +40324,7 @@ mod tests {
             r"[[\p{Dep}]]",
             r"[A-\p{Dep}]",
             r"[\p{Dep}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -40708,7 +40830,7 @@ mod tests {
             r"[[\p{Dia}]]",
             r"[A-\p{Dia}]",
             r"[\p{Dia}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -40982,7 +41104,7 @@ mod tests {
             r"[[\p{SD}]]",
             r"[A-\p{SD}]",
             r"[\p{SD}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -41640,7 +41762,7 @@ mod tests {
             r"[[\p{Gr_Ext}]]",
             r"[A-\p{Gr_Ext}]",
             r"[\p{Gr_Ext}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -43691,7 +43813,7 @@ mod tests {
             r"[[\p{Gr_Base}]]",
             r"[A-\p{Gr_Base}]",
             r"[\p{Gr_Base}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -44447,7 +44569,7 @@ mod tests {
             r"[[\p{CI}]]",
             r"[A-\p{CI}]",
             r"[\p{CI}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -44725,7 +44847,7 @@ mod tests {
             r"[[\p{DI}]]",
             r"[A-\p{DI}]",
             r"[\p{DI}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -45144,7 +45266,7 @@ mod tests {
             r"[[\p{Cased}]]",
             r"[A-\p{Cased}]",
             r"[\p{Cased}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -46604,7 +46726,7 @@ mod tests {
             r"[[\p{Alpha}]]",
             r"[A-\p{Alpha}]",
             r"[\p{Alpha}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -48281,7 +48403,7 @@ mod tests {
             r"[[\p{IDC}]]",
             r"[A-\p{IDC}]",
             r"[\p{IDC}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -49962,7 +50084,7 @@ mod tests {
             r"[[\p{XIDC}]]",
             r"[A-\p{XIDC}]",
             r"[\p{XIDC}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -50982,7 +51104,7 @@ mod tests {
             r"[[\p{IDS}]]",
             r"[A-\p{IDS}]",
             r"[\p{IDS}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -52006,7 +52128,7 @@ mod tests {
             r"[[\p{XIDS}]]",
             r"[A-\p{XIDS}]",
             r"[\p{XIDS}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -52507,7 +52629,7 @@ mod tests {
             r"[[\p{Math}]]",
             r"[A-\p{Math}]",
             r"[\p{Math}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -56395,7 +56517,7 @@ mod tests {
             r"[[\p{Upper}]]",
             r"[A-\p{Upper}]",
             r"[\p{Upper}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -60370,7 +60492,7 @@ mod tests {
             r"[[\p{Lower}]]",
             r"[A-\p{Lower}]",
             r"[\p{Lower}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -64227,7 +64349,7 @@ mod tests {
             r"[[\p{CWCF}]]",
             r"[A-\p{CWCF}]",
             r"[\p{CWCF}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -68128,7 +68250,7 @@ mod tests {
             r"[[\p{CWL}]]",
             r"[A-\p{CWL}]",
             r"[\p{CWL}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -71992,7 +72114,7 @@ mod tests {
             r"[[\p{CWU}]]",
             r"[A-\p{CWU}]",
             r"[\p{CWU}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -75817,7 +75939,7 @@ mod tests {
             r"[[\p{CWT}]]",
             r"[A-\p{CWT}]",
             r"[\p{CWT}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -76192,7 +76314,7 @@ mod tests {
             r"[[\p{CWCM}]]",
             r"[A-\p{CWCM}]",
             r"[\p{CWCM}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -80278,7 +80400,7 @@ mod tests {
             r"[[\p{CWKCF}]]",
             r"[A-\p{CWKCF}]",
             r"[\p{CWKCF}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -80532,7 +80654,7 @@ mod tests {
             r"[[\p{EComp}]]",
             r"[A-\p{EComp}]",
             r"[\p{EComp}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -81079,7 +81201,7 @@ mod tests {
             r"[[\p{EPres}]]",
             r"[A-\p{EPres}]",
             r"[\p{EPres}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -81775,7 +81897,7 @@ mod tests {
             r"[[\p{ExtPict}]]",
             r"[A-\p{ExtPict}]",
             r"[\p{ExtPict}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -82432,7 +82554,7 @@ mod tests {
             r"[[\p{Emoji}]]",
             r"[A-\p{Emoji}]",
             r"[\p{Emoji}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -82728,7 +82850,7 @@ mod tests {
             r"[[\p{EBase}]]",
             r"[A-\p{EBase}]",
             r"[\p{EBase}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -82953,7 +83075,7 @@ mod tests {
             r"[[\p{EMod}]]",
             r"[A-\p{EMod}]",
             r"[\p{EMod}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -124499,7 +124621,7 @@ mod tests {
             r"[[\p{Assigned}]]",
             r"[A-\p{Assigned}]",
             r"[\p{Assigned}-A]",
-            r"[\p{Script=Latin}]",
+            r"[\p{Script_Extensions=Latin}]",
         ] {
             assert!(
                 RegExpUnicodeClassMatcher::compile_with_flags(
@@ -126753,3 +126875,7 @@ mod general_category_tests {
 #[cfg(test)]
 #[path = "regexp_general_category_tests.rs"]
 mod general_category_membership_tests;
+
+#[cfg(test)]
+#[path = "regexp_latin_script_tests.rs"]
+mod latin_script_tests;

@@ -171,7 +171,7 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/\p{Script=Latin}/u.exec('A')",
+        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{sc=Han}&&A]/v.exec('A')",
         r"/[\p{sc=Han}--A]/v.exec('A')",
         r"/\p{sc=Han}+b/u.exec('一一')",
