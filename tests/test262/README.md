@@ -1,11 +1,36 @@
 # Test262 regression fixtures
 
-These 7596 unmodified test fixtures and twelve harness files come from
+These 7612 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Generated General_Category property fixtures
+
+Sixteen unchanged complete Test262 sources check Cc, Cf, Co, Cs, Lt, Me, Nd,
+No, Pc, Pd, Pf, Pi, Z, Zl, Zp and Zs, with all exact aliases and complementary
+sets. Their Unicode 17 membership agrees completely with the pinned Unicode 18
+data. Original buildString ranges preserve surrogate ordering; complete sources,
+anchored repetitions, helper calls, fallback checks, metadata and BSD notices
+retain exact upstream Git blob identity and SHA-256.
+
+All thirty-two original normal/strict variants pass native stable, MSRV and Node
+with unlimited defaults and no failures or host limits. The existing upstream
+pin and all twelve helpers remain unchanged. Twenty-two other original category
+fixtures have different Unicode 17 membership; they remain unchanged and
+unvendored. Independent implementation tests cover all 38 current categories.
+
+The corpus contains 7612 fixtures, twelve helpers, 7593 reviewed Script sources
+and 14664 variants: 13131 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 726 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives.
+
+Stable and MSRV pass the complete 14664-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Generated Emoji_Modifier property fixture
 
