@@ -1,11 +1,34 @@
 # Test262 regression fixtures
 
-These 7612 unmodified test fixtures and twelve harness files come from
+These 7613 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
 
+
+## Generated Cyrillic Script property fixture
+
+One unchanged complete Test262 source checks the four exact Cyrillic Script
+keys, their complementary sets and all 508 members. Unicode 17 membership and
+both complement orders agree with the pinned Unicode 18 data. Original positive
+and negative buildString ranges preserve surrogate ordering; all anchored
+repetitions, helper calls, fallback checks, metadata and BSD notice remain
+unchanged. Git blob identity and SHA-256 verify all 1873 original source bytes.
+
+Both complete normal/strict variants pass native stable, MSRV and Node with
+unlimited defaults and no failures or host limits. The Test262 revision and all
+twelve existing helpers, including regExpUtils.js, remain unchanged.
+
+The corpus contains 7613 fixtures, twelve helpers, 7594 reviewed Script sources
+and 14666 variants: 13133 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin execution reaches 727 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives.
+
+Stable and MSRV pass the complete 14666-variant corpus, workspace targets
+and documentation checks with unlimited defaults. Formatting, denied-warning
+Clippy, dependency/fixture policy and all offline data checks also pass.
 
 ## Generated General_Category property fixtures
 
