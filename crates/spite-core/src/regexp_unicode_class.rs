@@ -59,6 +59,7 @@ use std::{ops::Range, sync::Arc};
 /// Emoji_Presentation/EPres uses UCD 18 emoji-presentation membership.
 /// Extended_Pictographic/ExtPict uses pinned UCD 18 extended-pictographic membership.
 /// Emoji/Emoji uses pinned UCD 18 emoji membership.
+/// Emoji_Modifier_Base/EBase uses UCD 18 emoji-modifier-base membership.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -283,6 +284,7 @@ impl RegExpUnicodeClassMatcher {
             96 => 81,
             98 => 158,
             100 => 152,
+            102 => 41,
             _ => 1,
         })?;
         let mut ranges = Vec::new();
@@ -398,7 +400,7 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..102 {
+        for kind in 0..104 {
             if properties & (1 << kind) != 0 {
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
@@ -445,6 +447,7 @@ impl RegExpUnicodeClassMatcher {
                     96..=97 => 324,
                     98..=99 => 632,
                     100..=101 => 608,
+                    102..=103 => 164,
                     _ => 8,
                 }))?;
                 append_property(&mut ranges, kind, unicode_sets, ignore_case);
@@ -1406,6 +1409,28 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x63,
         ] => 98,
         [0x45, 0x6d, 0x6f, 0x6a, 0x69] => 100,
+        [0x45, 0x42, 0x61, 0x73, 0x65]
+        | [
+            0x45,
+            0x6d,
+            0x6f,
+            0x6a,
+            0x69,
+            0x5f,
+            0x4d,
+            0x6f,
+            0x64,
+            0x69,
+            0x66,
+            0x69,
+            0x65,
+            0x72,
+            0x5f,
+            0x42,
+            0x61,
+            0x73,
+            0x65,
+        ] => 102,
         _ => return None,
     })
 }
@@ -31165,6 +31190,94 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x1fac9, 0x1facb),
             (0x1fade, 0x1fade),
             (0x1faec, 0x1faee),
+            (0x1fafb, 0x10ffff),
+        ],
+        // Source: https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
+        // SHA-256: 80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1
+        // UCD 18 Emoji_Modifier_Base: 136 members, invariant under C/S folding.
+        102 => &[
+            (0x261d, 0x261d),
+            (0x26f9, 0x26f9),
+            (0x270a, 0x270d),
+            (0x1f385, 0x1f385),
+            (0x1f3c2, 0x1f3c4),
+            (0x1f3c7, 0x1f3c7),
+            (0x1f3ca, 0x1f3cc),
+            (0x1f442, 0x1f443),
+            (0x1f446, 0x1f450),
+            (0x1f466, 0x1f478),
+            (0x1f47c, 0x1f47c),
+            (0x1f481, 0x1f483),
+            (0x1f485, 0x1f487),
+            (0x1f48f, 0x1f48f),
+            (0x1f491, 0x1f491),
+            (0x1f4aa, 0x1f4aa),
+            (0x1f574, 0x1f575),
+            (0x1f57a, 0x1f57a),
+            (0x1f590, 0x1f590),
+            (0x1f595, 0x1f596),
+            (0x1f645, 0x1f647),
+            (0x1f64b, 0x1f64f),
+            (0x1f6a3, 0x1f6a3),
+            (0x1f6b4, 0x1f6b6),
+            (0x1f6c0, 0x1f6c0),
+            (0x1f6cc, 0x1f6cc),
+            (0x1f90c, 0x1f90c),
+            (0x1f90f, 0x1f90f),
+            (0x1f918, 0x1f91f),
+            (0x1f926, 0x1f926),
+            (0x1f930, 0x1f939),
+            (0x1f93c, 0x1f93e),
+            (0x1f977, 0x1f977),
+            (0x1f9b5, 0x1f9b6),
+            (0x1f9b8, 0x1f9b9),
+            (0x1f9bb, 0x1f9bb),
+            (0x1f9cd, 0x1f9cf),
+            (0x1f9d1, 0x1f9dd),
+            (0x1fac3, 0x1fac5),
+            (0x1faf0, 0x1fafa),
+        ],
+        103 => &[
+            (0x0, 0x261c),
+            (0x261e, 0x26f8),
+            (0x26fa, 0x2709),
+            (0x270e, 0x1f384),
+            (0x1f386, 0x1f3c1),
+            (0x1f3c5, 0x1f3c6),
+            (0x1f3c8, 0x1f3c9),
+            (0x1f3cd, 0x1f441),
+            (0x1f444, 0x1f445),
+            (0x1f451, 0x1f465),
+            (0x1f479, 0x1f47b),
+            (0x1f47d, 0x1f480),
+            (0x1f484, 0x1f484),
+            (0x1f488, 0x1f48e),
+            (0x1f490, 0x1f490),
+            (0x1f492, 0x1f4a9),
+            (0x1f4ab, 0x1f573),
+            (0x1f576, 0x1f579),
+            (0x1f57b, 0x1f58f),
+            (0x1f591, 0x1f594),
+            (0x1f597, 0x1f644),
+            (0x1f648, 0x1f64a),
+            (0x1f650, 0x1f6a2),
+            (0x1f6a4, 0x1f6b3),
+            (0x1f6b7, 0x1f6bf),
+            (0x1f6c1, 0x1f6cb),
+            (0x1f6cd, 0x1f90b),
+            (0x1f90d, 0x1f90e),
+            (0x1f910, 0x1f917),
+            (0x1f920, 0x1f925),
+            (0x1f927, 0x1f92f),
+            (0x1f93a, 0x1f93b),
+            (0x1f93f, 0x1f976),
+            (0x1f978, 0x1f9b4),
+            (0x1f9b7, 0x1f9b7),
+            (0x1f9ba, 0x1f9ba),
+            (0x1f9bc, 0x1f9cc),
+            (0x1f9d0, 0x1f9d0),
+            (0x1f9de, 0x1fac2),
+            (0x1fac6, 0x1faef),
             (0x1fafb, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
@@ -80812,6 +80925,302 @@ mod tests {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
                 &JsString::from(r"[\p{Emoji}]"),
+                true,
+                true,
+                false
+            )
+            .is_none()
+        );
+    }
+    #[test]
+    fn unicode_emoji_modifier_base_property_membership_over_every_code_point() {
+        let mut membership = vec![false; 0x110000];
+        for (a, b) in [
+            (9757usize, 9757usize),
+            (9977usize, 9977usize),
+            (9994usize, 9996usize),
+            (9997usize, 9997usize),
+            (127877usize, 127877usize),
+            (127938usize, 127940usize),
+            (127943usize, 127943usize),
+            (127946usize, 127946usize),
+            (127947usize, 127948usize),
+            (128066usize, 128067usize),
+            (128070usize, 128080usize),
+            (128102usize, 128107usize),
+            (128108usize, 128109usize),
+            (128110usize, 128120usize),
+            (128124usize, 128124usize),
+            (128129usize, 128131usize),
+            (128133usize, 128135usize),
+            (128143usize, 128143usize),
+            (128145usize, 128145usize),
+            (128170usize, 128170usize),
+            (128372usize, 128373usize),
+            (128378usize, 128378usize),
+            (128400usize, 128400usize),
+            (128405usize, 128406usize),
+            (128581usize, 128583usize),
+            (128587usize, 128591usize),
+            (128675usize, 128675usize),
+            (128692usize, 128693usize),
+            (128694usize, 128694usize),
+            (128704usize, 128704usize),
+            (128716usize, 128716usize),
+            (129292usize, 129292usize),
+            (129295usize, 129295usize),
+            (129304usize, 129304usize),
+            (129305usize, 129310usize),
+            (129311usize, 129311usize),
+            (129318usize, 129318usize),
+            (129328usize, 129328usize),
+            (129329usize, 129330usize),
+            (129331usize, 129337usize),
+            (129340usize, 129342usize),
+            (129399usize, 129399usize),
+            (129461usize, 129462usize),
+            (129464usize, 129465usize),
+            (129467usize, 129467usize),
+            (129485usize, 129487usize),
+            (129489usize, 129501usize),
+            (129731usize, 129733usize),
+            (129776usize, 129782usize),
+            (129783usize, 129784usize),
+            (129785usize, 129786usize),
+        ] {
+            membership[a..=b].fill(true);
+        }
+        for sets in [false, true] {
+            for ignore_case in [false, true] {
+                for source in [
+                    r"\p{Emoji_Modifier_Base}",
+                    r"\P{EBase}",
+                    r"[\p{EBase}]",
+                    r"[^\p{Emoji_Modifier_Base}]",
+                    r"[\P{EBase}K]",
+                    r"[\p{EBase}K]",
+                    r"[\p{EBase}\P{Emoji_Modifier_Base}]",
+                    r"[^\P{EBase}K]",
+                ] {
+                    let pattern = JsString::from(source);
+                    let plan = if source.starts_with('[') {
+                        RegExpUnicodeClassMatcher::compile_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    } else {
+                        RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                            &pattern,
+                            sets,
+                            ignore_case,
+                            false,
+                        )
+                    }
+                    .unwrap();
+                    for point in 0..=0x10ffff {
+                        let emoji_modifier_base = membership[point as usize];
+                        let k = point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
+                        let expected = match source {
+                            r"\p{Emoji_Modifier_Base}" | r"[\p{EBase}]" => emoji_modifier_base,
+                            r"\P{EBase}" | r"[^\p{Emoji_Modifier_Base}]" => !emoji_modifier_base,
+                            r"[\P{EBase}K]" => !emoji_modifier_base || k,
+                            r"[\p{EBase}K]" => emoji_modifier_base || k,
+                            r"[\p{EBase}\P{Emoji_Modifier_Base}]" => true,
+                            r"[^\P{EBase}K]" => emoji_modifier_base && !k,
+                            _ => unreachable!(),
+                        };
+                        assert_eq!(
+                            plan.matches(point),
+                            expected,
+                            "{source} v={sets} i={ignore_case} U+{point:X}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unicode_emoji_modifier_base_property_ranges_snapshot() {
+        use std::fmt::Write;
+        let mut rows = String::new();
+        for source in [
+            r"\p{EBase}",
+            r"\P{Emoji_Modifier_Base}",
+            r"^[\p{Emoji_Modifier_Base}]$",
+            r"[\P{EBase}K]",
+            r"[^\P{EBase}K]",
+            r"[\p{Emoji_Modifier_Base}]",
+        ] {
+            for sets in [false, true] {
+                for ignore_case in [false, true] {
+                    for multiline in [false, true] {
+                        let pattern = JsString::from(source);
+                        let plan = if source.contains('[') {
+                            RegExpUnicodeClassMatcher::compile_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        } else {
+                            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                                &pattern,
+                                sets,
+                                ignore_case,
+                                multiline,
+                            )
+                        }
+                        .unwrap();
+                        for input in [
+                            "😀\u{261c}\u{261d}\u{261e}\u{26f8}\u{26f9}\u{26fa}\u{2709}\u{270a}\u{270d}\u{270e}\u{1f384}\u{1f385}\u{1f386}\u{1f3c1}\u{1f3c2}\u{1f3c4}\u{1f3c5}\u{1f3c6}\u{1f3c7}\u{1f3c8}\u{1f3c9}\u{1f3ca}\u{1f3cc}\u{1f3cd}\u{1f441}\u{1f442}\u{1f443}\u{1f444}\u{1f445}\u{1f446}\u{1f450}\u{1f451}\u{1f465}\u{1f466}\u{1f478}\u{1f479}\u{1f47b}\u{1f47c}\u{1f47d}\u{1f480}\u{1f481}\u{1f483}\u{1f484}\u{1f485}\u{1f487}\u{1f488}\u{1f48e}\u{1f48f}\u{1f490}\u{1f491}\u{1f492}\u{1f4a9}\u{1f4aa}\u{1f4ab}\u{1f573}\u{1f574}\u{1f575}\u{1f576}\u{1f579}\u{1f57a}\u{1f57b}\u{1f58f}\u{1f590}\u{1f591}\u{1f594}\u{1f595}\u{1f596}\u{1f597}\u{1f644}\u{1f645}\u{1f647}\u{1f648}\u{1f64a}\u{1f64b}\u{1f64f}\u{1f650}\u{1f6a2}\u{1f6a3}\u{1f6a4}\u{1f6b3}\u{1f6b4}\u{1f6b6}\u{1f6b7}\u{1f6bf}\u{1f6c0}\u{1f6c1}\u{1f6cb}\u{1f6cc}\u{1f6cd}\u{1f90b}\u{1f90c}\u{1f90d}\u{1f90e}\u{1f90f}\u{1f910}\u{1f917}\u{1f918}\u{1f91f}\u{1f920}\u{1f925}\u{1f926}\u{1f927}\u{1f92f}\u{1f930}\u{1f939}\u{1f93a}\u{1f93b}\u{1f93c}\u{1f93e}\u{1f93f}\u{1f976}\u{1f977}\u{1f978}\u{1f9b4}\u{1f9b5}\u{1f9b6}\u{1f9b7}\u{1f9b8}\u{1f9b9}\u{1f9ba}\u{1f9bb}\u{1f9bc}\u{1f9cc}\u{1f9cd}\u{1f9cf}\u{1f9d0}\u{1f9d1}\u{1f9dd}\u{1f9de}\u{1fac2}\u{1fac3}\u{1fac5}\u{1fac6}\u{1faef}\u{1faf0}\u{1fafb}\u{feff}ſK\n",
+                            "X\r\n\u{261d}\u{2028}\u{270a}\u{2029}",
+                            "\u{ff10}\u{ff26}",
+                            "",
+                        ] {
+                            let input = JsString::from(input);
+                            for start in [0, 1, 2, input.len(), input.len() + 1] {
+                                for sticky in [false, true] {
+                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        insta::assert_snapshot!(rows);
+    }
+
+    #[test]
+    fn unicode_emoji_modifier_base_property_work_deduplication_and_contracts() {
+        // New tags 102/103 must coexist with earlier low and high mask bits.
+        for sets in [false, true] {
+            let highest = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\P{EBase}\p{ASCII}\p{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x261d, false),
+                (0x270a, false),
+                (0x1f600, true),
+            ] {
+                assert_eq!(highest.matches(point), expected, "highest bit U+{point:X}");
+            }
+            let union = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[\p{ASCII}\p{Bidi_M}\p{EBase}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, true),
+                (0x28, true),
+                (0x261d, true),
+                (0x270a, true),
+                (0x1f600, false),
+            ] {
+                assert_eq!(union.matches(point), expected, "U+{point:X}");
+            }
+            let complement = RegExpUnicodeClassMatcher::compile_with_flags(
+                &JsString::from(r"[^\P{ASCII}\p{EBase}\P{Bidi_M}]"),
+                sets,
+                false,
+                false,
+            )
+            .unwrap();
+            for (point, expected) in [
+                (0x41, false),
+                (0x28, true),
+                (0x261d, false),
+                (0x270a, false),
+                (0x1f600, false),
+            ] {
+                assert_eq!(complement.matches(point), expected, "U+{point:X}");
+            }
+        }
+
+        let source = JsString::from(
+            format!("[{}]", r"\p{EBase}\P{Emoji_Modifier_Base}".repeat(10000)).as_str(),
+        );
+        let plan =
+            RegExpUnicodeClassMatcher::compile_with_flags(&source, true, true, false).unwrap();
+        assert_eq!(plan.ranges.len(), 1);
+        assert_eq!(
+            plan.clone().find(&JsString::from("😀"), 1, true),
+            Some(0..2)
+        );
+        for source in [r"^\P{EBase}$", r"^[\P{Emoji_Modifier_Base}K]$"] {
+            let source = JsString::from(source);
+            let class = source.code_units().contains(&0x5b);
+            let mut calls = 0;
+            let charge = |_| {
+                calls += 1;
+                Ok::<(), ()>(())
+            };
+            let plan = if class {
+                RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                    &source, true, true, true, charge,
+                )
+            }
+            .unwrap()
+            .unwrap();
+            let count = calls;
+            for fail in 1..=count {
+                let mut n = 0;
+                let charge = |_| {
+                    n += 1;
+                    if fail == n { Err(()) } else { Ok(()) }
+                };
+                let result = if class {
+                    RegExpUnicodeClassMatcher::compile_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                } else {
+                    RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
+                        &source, true, true, true, charge,
+                    )
+                };
+                assert!(result.is_err());
+            }
+            assert_eq!(
+                plan.find(&JsString::from("\u{261d}\n😀\n"), 0, false),
+                Some(2..4)
+            );
+        }
+        for source in [
+            r"[\p{EBase}--A]",
+            r"[\p{EBase}&&A]",
+            r"[[\p{EBase}]]",
+            r"[A-\p{EBase}]",
+            r"[\p{EBase}-A]",
+            r"[\p{Assigned}]",
+        ] {
+            assert!(
+                RegExpUnicodeClassMatcher::compile_with_flags(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    false
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+                &JsString::from(r"[\p{EBase}]"),
                 true,
                 true,
                 false
