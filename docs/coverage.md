@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14668 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14670 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -9687,6 +9687,28 @@ and dependencies are unchanged; fixture vendoring is a separate step.
 Stable and MSRV pass all 14,664 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+## Generated Gujarati Script property fixture
+
+One unchanged complete Test262 source checks Script=Gujarati, Script=Gujr,
+sc=Gujarati and sc=Gujr, their complementary sets and all 91 members. Its
+Unicode 17 membership and full complement agree with the pinned Unicode 18
+Scripts data. Original buildString ranges preserve surrogate ordering; all
+anchored repetitions, helper calls, fallback checks, metadata and BSD notice
+retain the exact 2011 upstream bytes. Git blob identity and SHA-256 are verified.
+
+The corpus inventory contains 7615 fixtures, twelve helpers, 7596 reviewed Script
+sources and 14670 variants: 13137 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 729 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The Test262 pin and all twelve existing helpers are unchanged.
+
+Both complete normal and strict variants pass in ordinary debug and conformance
+builds on stable and Rust 1.85.0. Each toolchain also passes all 34 Test262 package
+cases across seven targets, documentation tests and the complete 14670-variant
+corpus with its existing two workers. Formatting, Clippy, dependency policy and
+fixture inventories pass. Production sources, all 680 snapshots, runtime defaults
+and native stacks retain their validated implementation bytes and settings.
 
 ## Generated Gurmukhi Script property fixture
 

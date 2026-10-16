@@ -7594,3 +7594,4 @@ test/built-ins/RegExp/property-escapes/generated/General_Category_-_Paragraph_Se
 test/built-ins/RegExp/property-escapes/generated/General_Category_-_Space_Separator.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_-_Cyrillic.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_-_Gurmukhi.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_-_Gujarati.js	-	-	-

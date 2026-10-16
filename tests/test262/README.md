@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7614 unmodified test fixtures and twelve harness files come from
+These 7615 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,28 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated Gujarati Script property fixture
+
+One unchanged complete Test262 source checks Script=Gujarati, Script=Gujr,
+sc=Gujarati and sc=Gujr, their complementary sets and all 91 members. Its
+Unicode 17 membership and full complement agree with the pinned Unicode 18
+Scripts data. Original buildString ranges preserve surrogate ordering; all
+anchored repetitions, helper calls, fallback checks, metadata and BSD notice
+retain the exact 2011 upstream bytes. Git blob identity and SHA-256 are verified.
+
+The corpus inventory contains 7615 fixtures, twelve helpers, 7596 reviewed Script
+sources and 14670 variants: 13137 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 729 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The Test262 pin and all twelve existing helpers are unchanged.
+
+Both complete normal and strict variants pass in ordinary debug and conformance
+builds on stable and Rust 1.85.0. Each toolchain also passes all 34 Test262 package
+cases across seven targets, documentation tests and the complete 14670-variant
+corpus with its existing two workers. Formatting, Clippy, dependency policy and
+fixture inventories pass. Production sources, all 680 snapshots, runtime defaults
+and native stacks retain their validated implementation bytes and settings.
 
 ## Generated Gurmukhi Script property fixture
 
