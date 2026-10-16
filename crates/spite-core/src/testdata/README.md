@@ -30,3 +30,5 @@ Devanagari Script tests independently check raw membership and its common/simple
 Bengali Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
 
 Gurmukhi Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
+
+Gujarati Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.

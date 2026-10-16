@@ -73,6 +73,7 @@ use std::{ops::Range, sync::Arc};
 /// Devanagari/Deva uses pinned UCD 18 data invariant under common/simple folds.
 /// Bengali/Beng uses pinned UCD 18 data invariant under common/simple folds.
 /// Gurmukhi/Guru uses pinned UCD 18 data invariant under common/simple folds.
+/// Gujarati/Gujr uses pinned UCD 18 data invariant under common/simple folds.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -310,6 +311,7 @@ impl RegExpUnicodeClassMatcher {
             198 => 6,
             200 => 16,
             202 => 17,
+            204 => 15,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -383,7 +385,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 20;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 22;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -491,6 +493,7 @@ impl RegExpUnicodeClassMatcher {
                         198..=199 => 24,
                         200..=201 => 64,
                         202..=203 => 68,
+                        204..=205 => 60,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1870,6 +1873,50 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x69,
         ]
         | [0x73, 0x63, 0x3d, 0x47, 0x75, 0x72, 0x75] => 202,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x47,
+            0x75,
+            0x6a,
+            0x61,
+            0x72,
+            0x61,
+            0x74,
+            0x69,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x47,
+            0x75,
+            0x6a,
+            0x72,
+        ]
+        | [
+            0x73,
+            0x63,
+            0x3d,
+            0x47,
+            0x75,
+            0x6a,
+            0x61,
+            0x72,
+            0x61,
+            0x74,
+            0x69,
+        ]
+        | [0x73, 0x63, 0x3d, 0x47, 0x75, 0x6a, 0x72] => 204,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -34339,6 +34386,41 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0xa5d, 0xa5d),
             (0xa5f, 0xa65),
             (0xa77, 0x10ffff),
+        ],
+        // Gujarati/Gujr: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        204 => &[
+            (0xa81, 0xa83),
+            (0xa85, 0xa8d),
+            (0xa8f, 0xa91),
+            (0xa93, 0xaa8),
+            (0xaaa, 0xab0),
+            (0xab2, 0xab3),
+            (0xab5, 0xab9),
+            (0xabc, 0xac5),
+            (0xac7, 0xac9),
+            (0xacb, 0xacd),
+            (0xad0, 0xad0),
+            (0xae0, 0xae3),
+            (0xae6, 0xaf1),
+            (0xaf9, 0xaff),
+        ],
+        205 => &[
+            (0x0, 0xa80),
+            (0xa84, 0xa84),
+            (0xa8e, 0xa8e),
+            (0xa92, 0xa92),
+            (0xaa9, 0xaa9),
+            (0xab1, 0xab1),
+            (0xab4, 0xab4),
+            (0xaba, 0xabb),
+            (0xac6, 0xac6),
+            (0xaca, 0xaca),
+            (0xace, 0xacf),
+            (0xad1, 0xadf),
+            (0xae4, 0xae5),
+            (0xaf2, 0xaf8),
+            (0xb00, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -128331,3 +128413,7 @@ mod bengali_script_tests;
 #[cfg(test)]
 #[path = "regexp_gurmukhi_script_tests.rs"]
 mod gurmukhi_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_gujarati_script_tests.rs"]
+mod gujarati_script_tests;

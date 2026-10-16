@@ -9884,6 +9884,19 @@ Stable and Rust 1.85.0 each pass 5,086 workspace cases across 95 invocations,
 including 898 Core and 3,457 runtime integration cases, plus documentation tests.
 Both toolchains also pass the complete unchanged 14,666-variant corpus.
 
+Gujarati Script adds four Core and nine runtime tests. Independent unchanged
+Scripts and CaseFolding references check all 1,114,112 code points in 106,954,752
+membership comparisons for four exact keys, six standalone/class forms and four
+flag combinations. Tests cover exact namespaces, repeated properties, work
+failures, UTF-16 boundaries, execution, captures, consumers and collection.
+The two new insta snapshots contain 1,728 Core and 432 runtime rows; all 2,160
+agree with Node, as do 39 standalone programs. All 678 earlier snapshots remain
+byte-identical. Stable and Rust 1.85.0 each pass 5,099 workspace cases across
+95 invocations, including 902 Core and 3,466 runtime integration cases, plus
+documentation tests and the complete unchanged 14,668-variant corpus. Fixture
+bytes, corpus inventories, upstream pins and dependencies are unchanged; fixture
+admission remains a separate step.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,

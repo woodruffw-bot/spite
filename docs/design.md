@@ -5124,6 +5124,16 @@ Construction charges intervals before appending and deduplicates repeated
 properties in the existing fourth temporary mask word. Earlier kinds and tables
 are preserved. No recursion, dependency or default JavaScript quota is added.
 
+Gujarati Script escapes admit exactly Script=Gujarati, Script=Gujr,
+sc=Gujarati and sc=Gujr (22.2.2.9 and UnicodeMatchPropertyValue). Bare names
+are invalid; Script_Extensions remains a separate unsupported namespace. The
+unchanged Unicode 18 Scripts file defines 91 Gujarati characters in 14 merged
+intervals. Its 15-interval complement includes lone surrogates. Both sets are
+invariant under common/simple case folding, so u+i and v+i complements agree.
+Construction charges intervals before appending and deduplicates repeated
+properties in the existing fourth temporary mask word. Earlier kinds and tables
+are preserved. No recursion, dependency or default JavaScript quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,
