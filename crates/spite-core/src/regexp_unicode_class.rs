@@ -37914,6 +37914,9 @@ mod tests {
             (0x30000, 0x3134a),
             (0x31350, 0x33479),
         ];
+        let membership: Vec<_> = (0..=0x10ffff)
+            .map(|point| records.iter().any(|(a, b)| *a <= point && point <= *b))
+            .collect();
         for name in ["Script=Han", "Script=Hani", "sc=Han", "sc=Hani"] {
             for sets in [false, true] {
                 for ignore_case in [false, true] {
@@ -37946,7 +37949,7 @@ mod tests {
                         }
                         .unwrap();
                         for point in 0..=0x10ffff {
-                            let han = records.iter().any(|(a, b)| *a <= point && point <= *b);
+                            let han = membership[point as usize];
                             let k =
                                 point == 0x4b || (ignore_case && matches!(point, 0x6b | 0x212a));
                             let expected = match form {

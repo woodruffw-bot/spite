@@ -12199,3 +12199,19 @@ Core pair takes 74.54 seconds before and 73.72 after; user CPU falls from 281.17
 to 272.72 seconds. Observed peak RSS is 488,540 versus 528,088 KiB. This single
 full-suite pair establishes no reliable overall CI or cold-build speedup;
 compilation and invocation collection are measured separately.
+
+
+## Exhaustive Han test membership
+
+The existing full-domain Han test caches its independent expected membership
+once using the same 25 literal ranges and unchanged range-search predicate.
+All 128 alias/form/flag compilations and all 142,606,336 matcher assertions
+remain, in their original order. The test uses about 1.06 MiB for the shared
+boolean reference; production code and JavaScript quotas are unchanged.
+
+Three sequential alternating original/candidate pairs preserve the exact named
+test on both Rust versions. Median time falls from 6.33 to 2.28 seconds on stable
+and from 4.14 to 2.30 seconds on Rust 1.85.0. Compiler/invocation collection costs
+are separate; these focused timings do not predict complete CI duration. The
+other 907 Core test bodies and all 682 snapshots remain unchanged from the
+preceding complete Core runs. Formatting, Clippy and dependency policy pass.
