@@ -117,6 +117,7 @@ def main():
                 print('::group::' + Path(row['command'][0]).name, flush=True)
                 print(output, end='' if output.endswith('\n') else '\n', flush=True)
                 print('::endgroup::', flush=True)
+                print(f'Cargo invocation elapsed: {Path(row["command"][0]).name} {row["seconds"]:.3f}s', flush=True)
         finished = time.monotonic()
         report = {'collection_seconds': collected - started,
                   'test_seconds': finished - collected, 'total_seconds': finished - started,
@@ -125,6 +126,8 @@ def main():
         if args.report:
             args.report.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
         failures = sum(row['status'] != 0 for row in results)
+        print(f'Workspace phase elapsed: collection {collected - started:.3f}s; '
+              f'tests {finished - collected:.3f}s; total {finished - started:.3f}s', flush=True)
         print(f'Ran all {len(results)} Cargo test invocations; {failures} failed', flush=True)
         return int(failures != 0)
 

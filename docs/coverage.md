@@ -12789,3 +12789,19 @@ byte-identical; the new snapshot makes 691. Both complete corpus gates pass
 zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
 and inventory probes, and all seven generators pass. No fixture, corpus,
 dependency, profile, default quota or native-stack changes accompany this item.
+
+## Workspace test timing diagnostics
+
+The workspace runner prints elapsed wall time for each selected Cargo invocation
+and the already computed collection, test-phase and total intervals. Invocation
+time includes launch/output-capture overhead; phase intervals include reporting
+and are not compiler-only or CPU measurements. No environment values are printed.
+Commands, cwd/environment reconstruction, features, filters, two process workers,
+report fields and the final invocation/failure summary retain their behavior.
+
+The change adds only two diagnostic print expressions. The nine existing
+Cargo-runner probes and normal quality checks pass. Rust code, tests, snapshots
+and corpus inputs retain the preceding complete proof; full Native suites are
+not repeated locally solely for diagnostic output.
+All thirteen ordinary hosted jobs and their full test coverage remain enabled.
+This output change establishes no execution or overall CI speedup.
