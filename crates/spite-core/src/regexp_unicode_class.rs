@@ -35549,6 +35549,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -35572,9 +35573,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -35733,6 +35735,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -35756,9 +35759,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -35917,6 +35921,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -35940,9 +35945,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -36365,6 +36371,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -36388,9 +36395,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -36553,6 +36561,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -36576,9 +36585,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -36749,6 +36759,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -36772,9 +36783,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -36942,6 +36954,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -36965,9 +36978,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -37132,6 +37146,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -37155,9 +37170,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -37328,6 +37344,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -37351,9 +37368,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -37552,6 +37570,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -37575,9 +37594,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -37746,6 +37766,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -37769,9 +37790,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -37963,6 +37985,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -37986,9 +38009,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -38404,6 +38428,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -38427,9 +38452,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -39167,6 +39193,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -39190,9 +39217,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -39403,6 +39431,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -39426,9 +39455,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -39719,6 +39749,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -39742,9 +39773,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -40065,6 +40097,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -40088,9 +40121,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -40297,6 +40331,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -40320,9 +40355,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -40523,6 +40559,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -40546,9 +40583,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -40755,6 +40793,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -40778,9 +40817,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -40980,6 +41020,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -41003,9 +41044,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -41224,6 +41266,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -41247,9 +41290,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -41479,6 +41523,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -41502,9 +41547,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -41716,6 +41762,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -41739,9 +41786,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -42222,6 +42270,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -42245,9 +42294,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -42496,6 +42546,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -42519,9 +42570,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -43153,6 +43205,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -43176,9 +43229,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -45205,6 +45259,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -45228,9 +45283,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -45961,6 +46017,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -45984,9 +46041,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -46218,6 +46276,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -46241,9 +46300,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -46647,6 +46707,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -46670,9 +46731,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -48106,6 +48168,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -48129,9 +48192,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -49783,6 +49847,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -49806,9 +49871,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -51464,6 +51530,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -51487,9 +51554,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -52497,6 +52565,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -52520,9 +52589,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -53520,6 +53590,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -53543,9 +53614,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -54020,6 +54092,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -54043,9 +54116,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -57907,6 +57981,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -57930,9 +58005,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -61882,6 +61958,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -61905,9 +61982,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -65738,6 +65816,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -65761,9 +65840,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -69639,6 +69719,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -69662,9 +69743,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -73503,6 +73585,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -73526,9 +73609,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -77328,6 +77412,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -77351,9 +77436,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -77703,6 +77789,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -77726,9 +77813,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -81785,6 +81873,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -81808,9 +81897,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -82030,6 +82120,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -82053,9 +82144,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -82576,6 +82668,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -82599,9 +82692,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -83282,6 +83376,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -83305,9 +83400,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -83945,6 +84041,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -83968,9 +84065,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -84225,6 +84323,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -84248,9 +84347,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -84467,6 +84567,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -84490,9 +84591,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }
@@ -126015,6 +126117,7 @@ mod tests {
                 for ignore_case in [false, true] {
                     for multiline in [false, true] {
                         let pattern = JsString::from(source);
+                        let pattern_debug = format!("{pattern:?}");
                         let plan = if source.contains('[') {
                             RegExpUnicodeClassMatcher::compile_with_flags(
                                 &pattern,
@@ -126038,9 +126141,10 @@ mod tests {
                             "",
                         ] {
                             let input = JsString::from(input);
+                            let input_debug = format!("{input:?}");
                             for start in [0, 1, 2, input.len(), input.len() + 1] {
                                 for sticky in [false, true] {
-                                    writeln!(rows,"{pattern:?} v={sets} i={ignore_case} m={multiline} input={input:?} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
+                                    writeln!(rows,"{pattern_debug} v={sets} i={ignore_case} m={multiline} input={input_debug} start={start} sticky={sticky} {:?}",plan.find(&input,start,sticky)).unwrap();
                                 }
                             }
                         }

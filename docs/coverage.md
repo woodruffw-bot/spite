@@ -12182,3 +12182,20 @@ documentation tests. All 680 snapshots remain byte-identical. Nine Cargo probes
 retain the original eight cases and verify actual per-package optimization,
 assertions, overflow checks, feature unification, invocation arguments and
 failure propagation for the optional path.
+
+
+## Core snapshot formatting
+
+Fifty-two existing Unicode snapshot matrices cache immutable pattern/input Debug
+text before their inner start/sticky loops. All 99,520 find calls, rows, ordering
+and snapshot identities remain; all 682 existing golds are byte-identical. The
+Runtime pilot was discarded after mixed timing results. Production code, Cargo
+profiles, runner settings and JavaScript quota defaults are unchanged.
+
+Three alternating original/candidate trials per selected Core matrix reduce
+median wall time by 28–54% on stable and 51–56% on Rust 1.85.0. Both toolchains
+also pass the complete unchanged 908-test Core suite. A separate full stable
+Core pair takes 74.54 seconds before and 73.72 after; user CPU falls from 281.17
+to 272.72 seconds. Observed peak RSS is 488,540 versus 528,088 KiB. This single
+full-suite pair establishes no reliable overall CI or cold-build speedup;
+compilation and invocation collection are measured separately.
