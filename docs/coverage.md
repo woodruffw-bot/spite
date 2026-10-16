@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14720 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14730 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -9687,6 +9687,41 @@ and dependencies are unchanged; fixture vendoring is a separate step.
 Stable and MSRV pass all 14,664 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+## Generated nested character-only v-set union fixtures
+
+Five unchanged whole originals cover nested digit-class union, nested class and
+literal union in both operand orders, and nested digit-class / ASCII_Hex_Digit
+union in both orders. They retain all 4432 upstream bytes, original metadata,
+features, helper calls, finite string lists and BSD notices at the existing pin.
+All sets contain only fixed ASCII members; the Unicode 17 and 18 ASCII_Hex_Digit
+ranges agree exactly. The existing twelve helpers and upstream revision are
+unchanged.
+
+The 76 positive and 28 nonmatching strings use the original batch/fallback
+regExpUtils.js helper. They are finite checks, not exhaustive membership proof.
+These programs use v without i and one nested class level, so they add no folding,
+arbitrary nested-operator, word-assertion, string-set or consuming-continuation
+coverage. They are ordinary harness-positive sources, with complete normal and
+strict execution required; no unsupported result can count as a passing test.
+
+The inventory contains 7645 fixtures, twelve helpers, 7626 reviewed
+sources and 14730 variants: 13197 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 759 whole
+positive sources; grammar remains 369 fixtures including twenty-three positives.
+Only the five originals, appended inventory rows, count assertions in two Rust
+test files and this fixture evidence change; the two-worker gate is retained.
+
+Stable and Rust 1.85.0 conformance builds pass all ten complete original normal
+and strict variants, with all eight non-passing outcome categories at zero.
+Both affected Test262 package runs pass 34 tests across seven invocations, and
+both documentation runs pass. Both expanded two-worker gates pass all 14730
+variants from 7626 sources, with no other outcomes. Formatting, denied-warning
+Clippy, dependency policy, fixture and integration inventories, and the pinned
+Script generator check pass. These runs use ordinary native stacks and runtime
+defaults with JavaScript quotas disabled. Production and all 686 implementation
+snapshots remain unchanged, retaining the published 5163-test implementation
+proof for this fixture-only change.
 
 ## Generated character-only v-set operation fixtures
 

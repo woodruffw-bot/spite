@@ -7651,3 +7651,8 @@ script-pass	d00a9a4b5758c9019a559331c01ba405f16f5453bcb7808e00c5f65acf10e26e	tes
 script-pass	c5eaa8d30edac61edb99847b97722e3b4ec47442f2408f09ef484ba9e02067cb	test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-character-class.js
 script-pass	1e33c8dbe371d33bef953b6c7f0133ee07eeb0a739074b148e1ae25751bc6343	test/built-ins/RegExp/unicodeSets/generated/character-property-escape-intersection-character-property-escape.js
 script-pass	5f9d3c81f7d2102b2cc5b5243f2badbdadeb243fe51d3cdb83bea5e9d1501e7f	test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-character-class-escape.js
+script-pass	d6805795d9d404acf3fb3af08186fbef3063a483baeadff885fb8195e3dddcb4	test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-class.js
+script-pass	b54a0565143eb847f08c0109a7e9e67ff76de2a3819210cb9ef90c6fda43459b	test/built-ins/RegExp/unicodeSets/generated/character-class-union-character.js
+script-pass	bdefee64d052db46df2db90f9990b3f1a1135f65e5e57956b12a122303d1b64f	test/built-ins/RegExp/unicodeSets/generated/character-union-character-class.js
+script-pass	2f2546007053aca5990e8bfbf1e3e53eb45e61dfd4344c7ff0b00c3c0c7ddef4	test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-property-escape.js
+script-pass	be0a291a0d1fa82c2a835446c1d403b942081945fc7628db78a73cc1884c2d51	test/built-ins/RegExp/unicodeSets/generated/character-property-escape-union-character-class.js

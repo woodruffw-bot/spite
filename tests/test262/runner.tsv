@@ -7620,3 +7620,8 @@ test/built-ins/RegExp/unicodeSets/generated/character-difference-character.js	-	
 test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-character-class.js	-	-	-
 test/built-ins/RegExp/unicodeSets/generated/character-property-escape-intersection-character-property-escape.js	-	-	-
 test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-character-class-escape.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-class.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-union-character.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-union-character-class.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-property-escape.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-property-escape-union-character-class.js	-	-	-

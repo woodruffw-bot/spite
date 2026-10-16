@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7640 unmodified test fixtures and twelve harness files come from
+These 7645 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,41 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated nested character-only v-set union fixtures
+
+Five unchanged whole originals cover nested digit-class union, nested class and
+literal union in both operand orders, and nested digit-class / ASCII_Hex_Digit
+union in both orders. They retain all 4432 upstream bytes, original metadata,
+features, helper calls, finite string lists and BSD notices at the existing pin.
+All sets contain only fixed ASCII members; the Unicode 17 and 18 ASCII_Hex_Digit
+ranges agree exactly. The existing twelve helpers and upstream revision are
+unchanged.
+
+The 76 positive and 28 nonmatching strings use the original batch/fallback
+regExpUtils.js helper. They are finite checks, not exhaustive membership proof.
+These programs use v without i and one nested class level, so they add no folding,
+arbitrary nested-operator, word-assertion, string-set or consuming-continuation
+coverage. They are ordinary harness-positive sources, with complete normal and
+strict execution required; no unsupported result can count as a passing test.
+
+The inventory contains 7645 fixtures, twelve helpers, 7626 reviewed
+sources and 14730 variants: 13197 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 759 whole
+positive sources; grammar remains 369 fixtures including twenty-three positives.
+Only the five originals, appended inventory rows, count assertions in two Rust
+test files and this fixture evidence change; the two-worker gate is retained.
+
+Stable and Rust 1.85.0 conformance builds pass all ten complete original normal
+and strict variants, with all eight non-passing outcome categories at zero.
+Both affected Test262 package runs pass 34 tests across seven invocations, and
+both documentation runs pass. Both expanded two-worker gates pass all 14730
+variants from 7626 sources, with no other outcomes. Formatting, denied-warning
+Clippy, dependency policy, fixture and integration inventories, and the pinned
+Script generator check pass. These runs use ordinary native stacks and runtime
+defaults with JavaScript quotas disabled. Production and all 686 implementation
+snapshots remain unchanged, retaining the published 5163-test implementation
+proof for this fixture-only change.
 
 ## Generated character-only v-set operation fixtures
 
