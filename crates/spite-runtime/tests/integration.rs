@@ -564,6 +564,8 @@ mod regexp_unicode_assigned_properties;
 mod regexp_unicode_atom_captures;
 #[path = "cases/regexp_unicode_atom_outer_assertions.rs"]
 mod regexp_unicode_atom_outer_assertions;
+#[path = "cases/regexp_unicode_bengali_script.rs"]
+mod regexp_unicode_bengali_script;
 #[path = "cases/regexp_unicode_bidi_control_properties.rs"]
 mod regexp_unicode_bidi_control_properties;
 #[path = "cases/regexp_unicode_bidi_mirrored_properties.rs"]

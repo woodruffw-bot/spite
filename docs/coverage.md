@@ -9827,6 +9827,26 @@ Stable and MSRV pass all 14,666 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
 
+Bengali Script adds four Core and ten runtime tests. Independent unchanged
+Scripts and CaseFolding files check all 1,114,112 code points for four exact
+keys, six standalone/class forms and four flag combinations: 106,954,752
+comparisons. All 1,728 Core and 432 runtime insta rows agree with Node on shared
+data, and earlier snapshots remain byte-identical. Node uses Unicode 17 and lacks
+the two Unicode 18 Bengali additions U+11DF0 and U+11DF1; their membership has
+48 separate native checks across six forms and four flag combinations.
+
+The original pinned Bengali fixture's negative set includes those two additions,
+so its four complement assertions conflict with the existing Unicode 18 pin.
+It remains unchanged and unvendored. Corpus inventories, fixture bytes, upstream
+pins and dependencies are unchanged.
+
+Stable and MSRV each pass all 5,070 workspace tests across 94 invocations,
+including 894 Core and 3,448 runtime integration tests, all 14,666 unchanged
+pinned-corpus variants, and documentation tests. All 674 earlier snapshot files
+remain byte-identical. Formatting, denied-warning Clippy, dependency policy and
+fixture/discovery checks pass; pinned data tables and their references are
+unchanged.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
@@ -11973,3 +11993,11 @@ including all 3,438 runtime integration cases, plus documentation tests. Both
 compiled harnesses list the exact 3,438 mapped names. Formatting, denied-warning
 Clippy, dependency policy, the eight runner probes, eleven inventory probes and
 all pinned-data checks pass. The full corpus remains independent and unchanged.
+
+All thirteen CI jobs pass for the consolidation, including both Rust versions
+on Linux and Windows and all four unchanged full-corpus runs. In single hosted
+comparisons, the stable remaining-workspace job falls from 588 to 248 seconds
+on Linux and 983 to 583 seconds on Windows. Linux stable Core compilation falls
+from 158.45 to 84.62 seconds and invocation recording from 19.51 to 2.92 seconds,
+with the same 890 Core tests. Other jobs vary; the longest job falls from 983 to
+872 seconds, with corpus execution now determining workflow duration.

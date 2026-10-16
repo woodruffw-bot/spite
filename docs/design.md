@@ -5100,6 +5100,20 @@ default JavaScript quota is added. Node uses Unicode 17 data and lacks U+11B0A
 in the existing Unicode 18 pin. Shared membership and folding cases agree. The
 older original Test262 fixture remains unchanged and unvendored.
 
+Bengali Script escapes admit exactly Script=Bengali, Script=Beng, sc=Bengali
+and sc=Beng (22.2.2.9 and UnicodeMatchPropertyValue). Bare names are invalid;
+Script_Extensions remains a separate unsupported namespace. The unchanged
+Unicode 18 Scripts file defines 98 Bengali characters in 15 merged intervals.
+Its 16-interval complement includes lone surrogates. Both sets are invariant
+under common/simple case folding, so u+i and v+i complement orders agree.
+
+Two new kinds use the existing fourth temporary mask word. Construction
+reserves and charges intervals before appending and deduplicates repeated
+properties. Earlier kinds and tables are preserved. No recursion, dependency or
+default JavaScript quota is added. Node uses Unicode 17 data and lacks U+11DF0
+and U+11DF1 in the existing Unicode 18 pin. Shared membership and folding cases
+agree. The older original Test262 fixture remains unchanged and unvendored.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

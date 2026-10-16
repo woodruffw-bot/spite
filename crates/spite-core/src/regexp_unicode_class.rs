@@ -71,6 +71,7 @@ use std::{ops::Range, sync::Arc};
 /// Common/Zyyy uses pinned UCD 18 data with canonical targets and fold preimages.
 /// Inherited/Zinh/Qaai uses pinned UCD 18 data with canonical targets and fold preimages.
 /// Devanagari/Deva uses pinned UCD 18 data invariant under common/simple folds.
+/// Bengali/Beng uses pinned UCD 18 data invariant under common/simple folds.
 /// Other property/string sets and v operators remain separate proofs.
 /// Matching always consumes complete input characters.
 #[derive(Clone, Debug)]
@@ -306,6 +307,7 @@ impl RegExpUnicodeClassMatcher {
             194 => 181,
             196 => 35,
             198 => 6,
+            200 => 16,
             108.. => crate::regexp_general_category_data::construction_intervals(kind),
             _ => 1,
         })?;
@@ -379,7 +381,7 @@ impl RegExpUnicodeClassMatcher {
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
         let mut escapes = 0u8;
-        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 16;
+        const PROPERTY_KIND_COUNT: u8 = crate::regexp_general_category_data::KIND_COUNT + 18;
         const WORDS: usize = (PROPERTY_KIND_COUNT as usize).div_ceil(64);
         let mut properties = [0u64; WORDS];
         while index < units.len() - 1 {
@@ -485,6 +487,7 @@ impl RegExpUnicodeClassMatcher {
                         194..=195 => 724,
                         196..=197 => 140,
                         198..=199 => 24,
+                        200..=201 => 64,
                         108.. => crate::regexp_general_category_data::construction_intervals(kind)
                             .saturating_mul(4),
                         _ => 8,
@@ -1789,6 +1792,37 @@ fn fixed_property_kind(name: &[u16]) -> Option<u8> {
             0x72,
             0x69,
         ] => 198,
+        [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x42,
+            0x65,
+            0x6e,
+            0x67,
+            0x61,
+            0x6c,
+            0x69,
+        ]
+        | [
+            0x53,
+            0x63,
+            0x72,
+            0x69,
+            0x70,
+            0x74,
+            0x3d,
+            0x42,
+            0x65,
+            0x6e,
+            0x67,
+        ]
+        | [0x73, 0x63, 0x3d, 0x42, 0x65, 0x6e, 0x67, 0x61, 0x6c, 0x69]
+        | [0x73, 0x63, 0x3d, 0x42, 0x65, 0x6e, 0x67] => 200,
         _ => return crate::regexp_general_category_data::kind(name),
     })
 }
@@ -34182,6 +34216,43 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u8, unicode_sets: bool, i
             (0x980, 0xa8df),
             (0xa900, 0x11aff),
             (0x11b0b, 0x10ffff),
+        ],
+        // Bengali/Beng: https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+        // SHA-256: 0071fd81b6aeae25f6e8bce8efec3066a6476a91b49bdb2f52dc76e817862a6a
+        200 => &[
+            (0x980, 0x983),
+            (0x985, 0x98c),
+            (0x98f, 0x990),
+            (0x993, 0x9a8),
+            (0x9aa, 0x9b0),
+            (0x9b2, 0x9b2),
+            (0x9b6, 0x9b9),
+            (0x9bc, 0x9c4),
+            (0x9c7, 0x9c8),
+            (0x9cb, 0x9ce),
+            (0x9d7, 0x9d7),
+            (0x9dc, 0x9dd),
+            (0x9df, 0x9e3),
+            (0x9e6, 0x9fe),
+            (0x11df0, 0x11df1),
+        ],
+        201 => &[
+            (0x0, 0x97f),
+            (0x984, 0x984),
+            (0x98d, 0x98e),
+            (0x991, 0x992),
+            (0x9a9, 0x9a9),
+            (0x9b1, 0x9b1),
+            (0x9b3, 0x9b5),
+            (0x9ba, 0x9bb),
+            (0x9c5, 0x9c6),
+            (0x9c9, 0x9ca),
+            (0x9cf, 0x9d6),
+            (0x9d8, 0x9db),
+            (0x9de, 0x9de),
+            (0x9e4, 0x9e5),
+            (0x9ff, 0x11def),
+            (0x11df2, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
     };
@@ -128166,3 +128237,7 @@ mod inherited_script_tests;
 #[cfg(test)]
 #[path = "regexp_devanagari_script_tests.rs"]
 mod devanagari_script_tests;
+
+#[cfg(test)]
+#[path = "regexp_bengali_script_tests.rs"]
+mod bengali_script_tests;
