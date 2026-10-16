@@ -27,6 +27,16 @@ unused_must_use = "deny"
 [workspace.lints.clippy]
 all = "warn"
 
+# Keep checks enabled while reducing test linking and exhaustive Unicode costs.
+[profile.test]
+debug = 1
+lto = "off"
+debug-assertions = true
+overflow-checks = true
+
+[profile.test.package.spite-core]
+opt-level = 1
+
 # Exhaustive Test262 loops need optimized execution without relaxing checks.
 [profile.conformance]
 inherits = "dev"

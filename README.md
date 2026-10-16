@@ -28,6 +28,24 @@ Host resource quotas are disabled by default. Supply `--max-steps N` before the 
 arguments to opt into a per-Script work limit. Work units count interpreter and
 builtin operations, rather than JavaScript statements or elapsed time.
 
+## Test
+
+Run the workspace tests, documentation tests, and complete reviewed Test262 corpus:
+
+```sh
+python3 tools/run-cargo-workspace-tests.py --toolchain stable
+cargo +stable test --workspace --doc --locked
+cargo +stable test -p spite-test262 --profile conformance --test corpus --locked pinned_corpus_runs_all_reviewed_variants -- --exact
+```
+
+The workspace runner executes Cargo's test invocations with their original
+arguments and environment, leaving the full corpus to the separate command.
+Core test builds optimize the exhaustive Unicode checks. Debug assertions and
+overflow checks remain enabled; interpreter and integration test builds retain
+their normal unoptimized profile. Test builds retain line and function debug
+information while omitting full variable and type details to reduce linking costs.
+Link-time optimization is disabled for test builds.
+
 ## Embed
 
 ```rust

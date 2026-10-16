@@ -11882,8 +11882,8 @@ Cargo supplies each invocation's arguments, working directory, and environment;
 the runner preserves these and reports failures from every binary. Compilation
 failures and an empty invocation list also fail the job. Documentation tests and
 the complete reviewed Test262 corpus retain their separate existing commands.
-Default debug information, test thread counts, native stacks, and opt-in quotas
-remain unchanged on both operating systems and Rust toolchains.
+Test thread counts, native stacks, and opt-in quotas remain unchanged on both
+operating systems and Rust toolchains.
 
 Core tests and the remaining workspace tests now run in separate CI jobs. Both
 jobs compile the complete workspace before selecting their recorded packages,
@@ -11915,3 +11915,27 @@ from one hosted pair; the unchanged corpus jobs also all passed.
 Four dependency-free runner regressions exercise Cargo environment and directory
 preservation, ignored and filtered tests, test and compiler failures, and missing
 invocations.
+
+
+## Test build profile
+
+Test builds retain line and function debug information while omitting full
+variable/type details. Link-time optimization, including local ThinLTO, is off.
+Only spite-core uses optimization level 1 for its exhaustive Unicode checks;
+interpreter and integration test code remains unoptimized. Debug assertions and
+overflow checks are explicitly enabled. All test targets, inputs, snapshots,
+runner arguments, native stack sizes and JavaScript quota defaults are retained.
+The separate full-corpus conformance profile and normal development builds are
+unchanged.
+
+The Core executable retains all 890 exact test names. An unchanged exhaustive
+Devanagari test still checks 106,954,752 cases and takes 1.50 seconds instead of
+13.97 seconds on the same host. Its executable is 113,390,992 bytes instead of
+216,954,624. Cold compilation increases from 49 seconds to about 140 seconds;
+this isolated execution improvement is not an end-to-end CI timing claim.
+
+Stable and Rust 1.85 pass all 553 workspace invocations and 5,056 tests, including
+all 890 Core tests and 3,438 runtime integration tests, plus documentation tests.
+The Core suite takes 91.05 seconds on stable and 156.18 seconds on MSRV in these
+runs. Formatting, denied-warning Clippy,
+the runner's eight Cargo probes, dependency policy and pinned-data checks pass.
