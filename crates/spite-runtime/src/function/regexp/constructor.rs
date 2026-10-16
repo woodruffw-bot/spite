@@ -1056,6 +1056,16 @@ impl Realm {
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeClassPair(body)));
                     }
+                    if let Some(body) = RegExpUnicodeClassPairMatcher::compile_flat_then_v_set_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClassPair(body)));
+                    }
                 }
                 Ok(None)
             })?;

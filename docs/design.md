@@ -7981,9 +7981,9 @@ the original nested-class/set-operator gate. A crate-private borrowed flat adapt
 preserves the public flat compiler's framing and initial source charge with
 UnicodeSets enabled, then uses the unchanged flat parser. Complete class
 boundaries prove there are exactly two atoms. The suffix rejects nested classes,
-operators and string leaves, including behind an empty checked prefix. Reverse
-order, outside word assertions, extra atoms, repetitions and partial captures
-remain separate work. Previous constructors retain their domains and callbacks.
+operators and string leaves, including behind an empty checked prefix. Outside
+word assertions, extra atoms, repetitions and partial captures remain separate
+work. Previous constructors retain their domains and callbacks.
 
 The existing two-matcher plan and zero-inner-capture Runtime variant are reused
 with absent outside-word metadata. The second match remains sticky at the first
@@ -7991,3 +7991,17 @@ end; search retries at that first end after failure. Original character and line
 boundaries, pinned case folding, opted-in work charges and the approved
 initial-low-pair behavior remain in use. No source/input buffer, dependency,
 default quota, profile or stack change is introduced.
+
+A separate constructor admits the reverse order: one flat UnicodeSets class
+followed by one checked character-only v/vi class (22.2.2.3, 22.2.2.7.3). Exact
+borrowed boundaries prove two unquantified atoms with optional outside ^/$.
+The existing flat adapter compiles the prefix before the checked compiler
+validates the suffix, retaining source-order work callbacks. An empty flat
+prefix still requires complete suffix validation, including rejection of
+string leaves. Earlier constructors retain their domains and callbacks.
+
+This order reuses the same pair plan with absent outside-word predicates,
+sticky second match and retry at the first end. Complete original characters,
+line context, folding, whole enclosing captures, Runtime representation and
+work bounds retain their existing behavior. Outside word assertions, extra
+atoms, repetition and partial captures remain separate work.
