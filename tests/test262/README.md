@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7613 unmodified test fixtures and twelve harness files come from
+These 7614 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,29 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated Gurmukhi Script property fixture
+
+One unchanged complete Test262 source checks Script=Gurmukhi, Script=Guru,
+sc=Gurmukhi and sc=Guru, their complementary sets and all 80 members. Its
+Unicode 17 membership and full complement agree with the pinned Unicode 18
+Scripts data. Original buildString ranges preserve surrogate ordering; all
+anchored repetitions, helper calls, fallback checks, metadata and BSD notice
+retain the exact 2103 upstream bytes. Git blob identity and SHA-256 are verified.
+
+The corpus inventory contains 7614 fixtures, twelve helpers, 7595 reviewed Script
+sources and 14668 variants: 13135 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 728 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. The Test262 pin and all twelve existing helpers are unchanged.
+
+Both complete normal and strict variants pass in ordinary debug and conformance
+builds on stable and Rust 1.85.0. Both toolchains pass all 34 Test262 package cases,
+documentation tests and the complete 14668-variant corpus. Production sources and
+all 678 snapshots retain their validated implementation bytes; its 5086 workspace
+cases passed on both toolchains. Formatting, denied-warning Clippy, dependency
+policy and fixture inventory checks pass. Runtime defaults and native stacks are
+unchanged.
 
 ## Generated Cyrillic Script property fixture
 
