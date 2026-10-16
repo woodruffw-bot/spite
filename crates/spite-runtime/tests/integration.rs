@@ -754,6 +754,8 @@ mod regexp_unicode_quotation_mark_properties;
 mod regexp_unicode_radical_properties;
 #[path = "cases/regexp_unicode_regional_indicator_properties.rs"]
 mod regexp_unicode_regional_indicator_properties;
+#[path = "cases/regexp_unicode_remaining_scripts.rs"]
+mod regexp_unicode_remaining_scripts;
 #[path = "cases/regexp_unicode_repeated_atom_alternatives.rs"]
 mod regexp_unicode_repeated_atom_alternatives;
 #[path = "cases/regexp_unicode_repeated_atom_composed_word.rs"]

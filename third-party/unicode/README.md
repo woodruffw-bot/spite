@@ -49,7 +49,7 @@ PropertyValueAliases.txt by SHA-256 and verifies the edition-17 binary property
 whitelist against them. Script_Extensions shares Script's value aliases. The
 whitelist excludes other UCD properties and aliases, including WSpace. Seven
 edition-17 string properties are allowed only in UnicodeSetsMode. These tables
-validate syntax; character membership and matching remain unimplemented.
+validate syntax; matching is implemented separately for the admitted property sets.
 
 ```sh
 python3 tools/generate-unicode.py --check
@@ -66,3 +66,20 @@ Omit `--check` to regenerate. The first form downloads the pinned source. The
 second uses a local copy. CI verifies the checked-in output against the pinned
 source. Updating Unicode requires an explicit version, source digest, generated
 table, and test update.
+
+The remaining Script matcher registry is generated offline by
+`tools/generate-regexp-scripts.py` from unchanged local Unicode 18
+PropertyValueAliases, Scripts, and CaseFolding references under
+`crates/spite-core/src/testdata/`. The alias reference has SHA-256
+`06c4c8eaf7b0bf34abe73b113da1215bd784ac254d4c223600b90267caa4bbbd`.
+The generator verifies all three pins and checks all 1,533 common/simple fold
+records to prove invariance of the 167 newly generated Script sets. It emits 652
+exact Script/sc keys and their positive/complement intervals. It includes
+Unknown's default membership and the empty Katakana_Or_Hiragana value. Earlier
+Script plans retain their existing IDs and fold handling. The local check needs
+no network access or build-time dependency:
+
+```sh
+python3 tools/generate-regexp-scripts.py --check
+python3 tools/generate-regexp-scripts.py /path/to/versioned-reference-directory --check
+```

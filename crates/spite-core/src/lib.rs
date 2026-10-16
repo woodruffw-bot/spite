@@ -24,6 +24,7 @@ mod regexp_repeated_continuation;
 mod regexp_repeated_literal;
 mod regexp_repeated_prefixed;
 mod regexp_repeated_sequence;
+mod regexp_script_data;
 mod regexp_sequence;
 mod regexp_unicode_character;
 mod regexp_unicode_class;

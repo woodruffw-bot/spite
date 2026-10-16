@@ -5134,6 +5134,35 @@ Construction charges intervals before appending and deduplicates repeated
 properties in the existing fourth temporary mask word. Earlier kinds and tables
 are preserved. No recursion, dependency or default JavaScript quota is added.
 
+The Script registry completes exact Script/sc value support in the admitted
+property and class plans (22.2.2.9 and UnicodeMatchPropertyValue). All 179
+canonical values accept 351 distinct value spellings under Script= and sc=,
+for 702 exact keys at the existing Unicode 18 pin. Existing kinds 0..205 and the
+specialized Latin/Greek/Common/Inherited complement plans are retained. The remaining 167
+values occupy internal u16 kinds 206..539; nine temporary u64 words deduplicate
+class properties. A bounded adapter preserves the existing u8 General_Category
+tables and excludes every later Script kind from that dispatch.
+
+The independent pinned ownership partition supplies Unknown/Zzzz for every
+unlisted code point, including lone surrogates and private use. The valid
+Katakana_Or_Hiragana/Hrkt value is empty. All 1,533 common/simple fold records
+preserve membership in each new Script and its complement, allowing the shared
+fold closure to retain exact u+i/v+i behavior. Full and Turkic folds remain
+excluded. Offline generation verifies exact aliases, the partition, and fold
+invariance before emitting static intervals. Construction charges the maximum
+positive/complement interval bound before appending and preserves optional work
+failure propagation and alias deduplication. No dependency or default quota is
+added. Fixture admission is separate.
+
+Edition 17 [UnicodeMatchPropertyValue (22.2.2.9.8)](https://tc39.es/ecma262/2026/multipage/text-processing.html#sec-runtime-semantics-unicodematchpropertyvalue-p-v) requires the values and aliases
+in PropertyValueAliases.txt for Script and Script_Extensions; the early errors
+in 22.2.1.1 use that same source. Unicode [UAX #44, 2.3.1](https://www.unicode.org/reports/tr44/tr44-38.html)
+identifies Katakana_Or_Hiragana as a Script value with no associated characters. Node
+24.19.0 with Unicode 17 rejects its Hrkt and long-name escapes with SyntaxError.
+Spite follows the specification and admits the empty set and its full complement.
+Differential checks record those Node syntax discrepancies separately, while the
+pinned-data oracle and native regressions cover their complete semantics.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

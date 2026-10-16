@@ -32,3 +32,12 @@ Bengali Script tests independently check raw membership and its invariant common
 Gurmukhi Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
 
 Gujarati Script tests independently check raw membership and its invariant common/simple fold images using these same unchanged references.
+
+PropertyValueAliases-18.0.0.txt: https://www.unicode.org/Public/18.0.0/ucd/PropertyValueAliases.txt
+SHA-256: 06c4c8eaf7b0bf34abe73b113da1215bd784ac254d4c223600b90267caa4bbbd
+
+The remaining Script registry uses this unchanged alias reference with Scripts
+and CaseFolding. Independent tests parse all 179 canonical values and 351 value
+spellings, honor Unknown's @missing default, and retain Katakana_Or_Hiragana as a
+valid empty set. The generator emits 167 new Script sets while preserving the
+earlier specialized plans.

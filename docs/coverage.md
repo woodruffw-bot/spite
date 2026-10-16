@@ -9919,6 +9919,35 @@ documentation tests and the complete unchanged 14,668-variant corpus. Fixture
 bytes, corpus inventories, upstream pins and dependencies are unchanged; fixture
 admission remains a separate step.
 
+The remaining Script registry adds 167 values and 652 exact Script/sc keys,
+completing all 179 canonical values and 351 accepted value spellings at the
+Unicode 18 pin. Independent tests parse the original PropertyValueAliases,
+Scripts and CaseFolding references. Exact interval equality covers the full
+code-point domain, and all 1,533 common/simple fold records preserve each new
+set and its complement. Six Core regressions include 15,648 key/form/flag
+compilations; fifteen runtime regressions include 2,608 positive/complement
+constructions across every new exact key in u/v modes. Shared cases cover
+Unknown's missing default, Hrkt's empty set, legacy fold preimages, u16/mask
+boundaries, UTF-16 widths, work precharges, deduplication and failure propagation.
+
+The two new insta golds contain 384 Core and 24 runtime rows. All 408 match the
+independent pinned-data oracle, and all 680 earlier golds remain byte-identical.
+Node 24.19.0 with Unicode 17 agrees on 2,904 comparable checks: 336 Core rows,
+16 runtime rows and 2,552 alias cases. Forty alias cases are excluded because
+their spellings are absent from Unicode 17. Node also rejects the four valid
+Hrkt keys with SyntaxError, confirmed
+by 96 separate syntax probes; the affected 56 snapshot rows and 16 alias cases
+are covered by the pinned oracle and native tests but are not Node agreements.
+These known Node discrepancies are recorded separately from version differences.
+
+Stable and Rust 1.85.0 pass all 95 workspace invocations and 5,120 cases,
+including 908 Core and 3,481 runtime integration cases, plus documentation tests.
+Both toolchains also pass all 14,670 full-corpus variants. Formatting, Clippy,
+dependency policy, inventories, generator reproduction and runner probes pass.
+This implementation
+changes no Test262 fixture bytes, source/variant inventories, upstream pin,
+dependency or default JavaScript quota; fixture admission is a separate step.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
