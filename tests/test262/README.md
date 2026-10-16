@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7615 unmodified test fixtures and twelve harness files come from
+These 7628 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,34 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated cased Script property fixtures
+
+Thirteen unchanged complete originals cover Adlam, Beria Erfe, Cherokee, Coptic,
+Deseret, Garay, Georgian, Glagolitic, Medefaidrin, Old Hungarian, Osage, Vithkuqi
+and Warang Citi. These are the newly supported Script values with pinned simple
+case-fold mappings whose Unicode 17 membership and full complements agree with
+the Unicode 18 Scripts data. The original expressions use u without i; this
+admission records case-sensitive Script membership, not case-folding coverage.
+
+All 20630 upstream bytes retain both Script/sc names, long and short value
+aliases, Coptic's Qaac alias, anchored repetitions, buildString ranges, helper
+calls, fallback checks, metadata and BSD notices. Positive and complement data
+partition every code point; original range order preserves lone surrogates.
+The Test262 pin, twelve harness files and all prior inventory rows are unchanged.
+
+The inventory contains 7628 fixtures, twelve helpers, 7609 reviewed Script
+sources and 14696 variants: 13163 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 742 whole
+positive sources. Grammar coverage remains 369 fixtures, including twenty-three
+positives. Production implementation and all 682 snapshots remain unchanged.
+
+Both stable and Rust 1.85.0 pass every normal and strict variant in grouped
+conformance runs: 26 outcomes per toolchain. Both also pass all 34 Test262
+package tests and documentation tests. Formatting, Clippy, dependency policy,
+inventory checks and offline Script generation pass; all 682 snapshots remain
+byte-identical. Both expanded full-corpus gates pass all 14696 variants. Runs use ordinary native stacks and
+runtime defaults, with JavaScript quotas disabled.
 
 ## Generated Gujarati Script property fixture
 
