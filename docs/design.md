@@ -5560,6 +5560,23 @@ of a stack index. Name lookup follows outer links with bounded work, preparing f
 closures that execute under a different caller. Per-iteration let environments
 copy bindings into a fresh identity with the same outer link (14.7.4.4).
 
+When execution-work and heap-slot quotas are both disabled, a three-clause let
+loop may retain its first iteration record for subsequent iterations. This
+requires initialized Number-valued identifier bindings and a complete positive
+syntax check that excludes captures, direct eval and unknown forms. Every write
+to a header binding must be increment/decrement or assignment of a Number
+literal. The check inspects initializers, test, update, body and computed keys;
+scratch allocation failure selects the original path. Initialization, the first
+copy, test/body/update order and completion handling remain unchanged. Opted-in
+execution-work or heap-slot quotas retain every original environment copy.
+
+The Number restriction prevents omitted records from owning historical object
+or Symbol values. Existing outside functions and property callbacks use their
+saved lexical contexts. Adding active-Realm host callbacks or ambient caller
+environment access requires reviewing this optimization. Allocation counts,
+opaque heap identities, Debug output and collection live/reclaimed/work costs
+can differ; finite collection-work results are not an equivalence guarantee.
+
 Non-strict with statements evaluate and box their expression before entering an
 Object Environment Record (14.11). Its binding object is traced alongside its
 outer environment. Name lookup checks own and inherited properties regardless of

@@ -77,7 +77,7 @@ mod tests {
         Error, Limits, Realm, Reference,
         object::{Budget, DataDescriptor, Error as ObjectError, Objects},
     };
-    use spite_core::{JsString, Span};
+    use spite_core::{JsString, JsSymbol, Span};
     use spite_parser::{
         ast::{ForInitializer, StatementKind},
         parse_script,
@@ -329,5 +329,156 @@ mod tests {
         assert_eq!(result.live, crate::test_support::REALM_ENTRIES);
         assert_eq!(result.reclaimed, 2);
         realm.eval("{ let transient = 2; }").unwrap();
+    }
+
+    #[test]
+    fn for_numeric_environment_reuse_checks_complete_syntax_and_actual_values() {
+        fn eligible(realm: &mut Realm, source: &str, value: Value) -> bool {
+            let script = parse_script(source).unwrap();
+            let StatementKind::For {
+                initializer: Some(ForInitializer::Lexical { bindings, .. }),
+                test,
+                update,
+                body,
+            } = &script.statements()[0].kind
+            else {
+                panic!("lexical for")
+            };
+            // Inspect initialized data without executing the parsed initializers.
+            let scope = bindings
+                .iter()
+                .flat_map(|binding| binding.pattern.bound_names())
+                .map(|(name, _)| (name.to_owned(), binding(value.clone())))
+                .collect();
+            realm.push_scope(scope, Span::new(0, 0)).unwrap();
+            let result =
+                realm.can_reuse_for_environment(bindings, test.as_ref(), update.as_ref(), body);
+            realm.scopes.pop();
+            result
+        }
+
+        let mut realm = Realm::default();
+        for source in [
+            "for (let length = 0, codePoint = start; codePoint <= end; codePoint++) {
+                codePoints[length++] = codePoint;
+                if (length === CHUNK_SIZE) {
+                    result += String.fromCodePoint.apply(null, codePoints);
+                    codePoints.length = length = 0;
+                }
+            }",
+            "for (let i = 2; 0 <= i; i--) box[(i)] = (i);",
+        ] {
+            assert!(eligible(&mut realm, source, Value::Number(0.0)), "{source}");
+        }
+        let simple = "for (let i = 0; i < 2; i++) ;";
+        let object = realm.objects.create(None).unwrap();
+        for value in [
+            Value::Undefined,
+            Value::Symbol(JsSymbol::new(None)),
+            Value::Object(object),
+        ] {
+            assert!(!eligible(&mut realm, simple, value));
+        }
+        for source in [
+            "for (let i = 0; i < 2; i++) i += 1;",
+            "for (let i = 0; i < 2; i++) i = next;",
+            "for (let i = 0; i < 2; i++) (i) = next;",
+            "for (let i = 0; i < 2; i++) (i)++;",
+            "for (let i = 0; i < 2; i++) box[i = next] = 0;",
+            "for (let i = 0; i < 2; i++) if (false) box.run(() => i);",
+            "for (let i = box.run(() => i); i < 2; i++) ;",
+            "for (let i = 0; eval('i < 2'); i++) ;",
+            "for (let i = 0; i < 2; box.run(() => i)) ;",
+            "for (let [i = box.run(() => i)] = box; i < 2; i++) ;",
+        ] {
+            assert!(
+                !eligible(&mut realm, source, Value::Number(0.0)),
+                "{source}"
+            );
+        }
+        for limits in [
+            Limits {
+                max_steps: Some(100),
+                ..Limits::default()
+            },
+            Limits {
+                max_heap_entries: Some(100),
+                ..Limits::default()
+            },
+        ] {
+            assert!(!eligible(
+                &mut Realm::new(limits),
+                simple,
+                Value::Number(0.0)
+            ));
+        }
+    }
+
+    #[test]
+    fn for_numeric_environment_reuse_preserves_fallback_lifetimes_and_limits() {
+        let mut realm = Realm::default();
+        let weak = {
+            let Value::Symbol(symbol) = realm.eval("var s = Symbol('kept'); s").unwrap() else {
+                panic!("symbol")
+            };
+            symbol.downgrade()
+        };
+        // Numeric initialization cannot permit a later Symbol header write.
+        realm
+            .eval("for (let x = 0, j = 0; j <= 1; j++) { x = s; s = undefined; }")
+            .unwrap();
+        assert!(weak.upgrade().is_some());
+        realm.collect(usize::MAX).unwrap();
+        assert!(weak.upgrade().is_none());
+        assert_eq!(
+            Realm::default().eval(
+                "let result = ''; const end = 2, CHUNK_SIZE = 2; let codePoints = [];
+                 for (let length = 0, codePoint = 0; codePoint <= end; codePoint++) {
+                     codePoints[length++] = codePoint;
+                     if (length === CHUNK_SIZE) {
+                         result += String.fromCodePoint.apply(null, codePoints);
+                         codePoints.length = length = 0;
+                     }
+                 }
+                 result += String.fromCodePoint.apply(null, codePoints); result;"
+            ),
+            Ok(Value::String(JsString::from_code_units(vec![0, 1, 2])))
+        );
+        assert_eq!(
+            Realm::default().eval("for (let i = 0; i < 2; i++) i;"),
+            Ok(Value::Number(1.0))
+        );
+        // Intentional failures under explicit caller-selected quotas.
+        let mut limited = Realm::new(Limits {
+            max_steps: Some(1000),
+            ..Limits::default()
+        });
+        limited
+            .eval("let marker = -1; let caught = false; let finalized = false;")
+            .unwrap();
+        assert!(matches!(
+            limited.eval(
+                "try { for (let i = 0;; i++) marker = i; }
+                 catch (e) { caught = true; } finally { finalized = true; }"
+            ),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(
+            limited.eval(
+                "marker >= 0 && caught === false && finalized === false && typeof i === 'undefined'"
+            ),
+            Ok(Value::Boolean(true))
+        );
+        let mut limited = Realm::new(Limits {
+            max_heap_entries: Some(crate::test_support::REALM_ENTRIES + 3),
+            ..Limits::default()
+        });
+        limited.eval("let marker = -1;").unwrap();
+        assert!(matches!(
+            limited.eval("for (let i = 0; i < 2; i++) marker = i;"),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(limited.eval("marker"), Ok(Value::Number(1.0)));
+        assert_eq!(limited.collect(usize::MAX).unwrap().reclaimed, 3);
     }
 }

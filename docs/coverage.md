@@ -12581,3 +12581,40 @@ input, dependency, profile or default limit changes accompany this feature.
 The bounded cached-pin scout found no natural new whole-program fixture fit;
 unavailable bodies remain unreviewed. Earlier feature and test-speed records
 retain their original scope.
+
+## Numeric noncapturing for-loop environments
+
+The runtime retains its first iteration record for a conservative Number-only,
+noncapturing subset of three-clause let loops with execution-work and heap-slot
+quotas disabled. It preserves the mandatory first copy and original quota paths.
+Two bounded Runtime unit tests cover complete syntax inspection, numeric resets,
+fallback captures and weak-Symbol lifetime, and opted-in resource boundaries.
+Both tests pass on stable and Rust 1.85.0; no default quota is introduced.
+
+One serial untraced pair per Rust runs the same three unchanged whole upstream
+programs in all six normal/strict modes. All modes pass, with every other outcome
+category zero. Stable execution wall time changes from 40.563 to 26.438 seconds
+(34.82% lower); Rust 1.85.0 changes from 39.867 to 27.424 seconds (31.21% lower).
+Total CPU time falls 34.80% and 31.22%, respectively. Peak RSS falls from 1,730,048
+to 457,332 KiB on stable and from 1,730,056 to 457,496 KiB on Rust 1.85.0 (about
+73.56% lower on both). Compilation is recorded separately. These are finite
+local observations, not statistical or overall CI results. Host allocation and
+collection statistics can change under the documented representation choice.
+
+The selected programs are under
+`tests/test262/upstream/test/built-ins/RegExp/`:
+
+- `CharacterClassEscapes/character-class-non-whitespace-class-escape-positive-cases.js`
+- `CharacterClassEscapes/character-class-whitespace-class-escape-negative-cases.js`
+- `property-escapes/generated/General_Category_-_Line_Separator.js`
+
+Stable and Rust 1.85.0 pass all 5,173 tests across 27 workspace invocations,
+including 930 Core, 347 Parser, 3,510 Runtime integration and 279 Runtime unit
+tests, plus one documentation test. Both full two-worker corpus gates pass all
+14,730 variants from 7,626 reviewed sources; every non-passing outcome category
+is zero. All 688 previous snapshot files retain their bytes. Formatting,
+denied-warning Clippy, policy, inventories, all 39 runner/discovery probes and
+all seven generator checks pass.
+
+No fixture, dependency, profile, native-stack or default limit changes accompany
+this implementation. Earlier feature and test-speed records retain their scope.

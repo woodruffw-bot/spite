@@ -990,6 +990,7 @@ impl Realm {
         per_iteration: &[BindingElement],
         labels: &[&str],
     ) -> Result<Completion, Error> {
+        let reuse_environment = self.can_reuse_for_environment(per_iteration, test, update, body);
         let mut value = Value::Undefined;
         self.create_per_iteration_environment(per_iteration)?;
         loop {
@@ -1004,11 +1005,181 @@ impl Realm {
                 return Ok(result.consume_unlabelled_break());
             }
             value = result.value.expect("loop UpdateEmpty supplies a value");
-            self.create_per_iteration_environment(per_iteration)?;
+            if !reuse_environment {
+                self.create_per_iteration_environment(per_iteration)?;
+            }
             if let Some(update) = update {
                 self.expression(update)?;
             }
         }
+    }
+
+    // Only Number-valued, noncapturing loop records can omit later copies.
+    // Keep the first copy and the complete original path for either host quota.
+    fn can_reuse_for_environment(
+        &self,
+        bindings: &[BindingElement],
+        test: Option<&Expr>,
+        update: Option<&Expr>,
+        body: &Statement,
+    ) -> bool {
+        if self.limits.max_steps.is_some()
+            || self.limits.max_heap_entries.is_some()
+            || bindings.is_empty()
+        {
+            return false;
+        }
+        let Some(current) = self.scopes.last() else {
+            return false;
+        };
+        let Ok(environment) = self.objects.environment(current) else {
+            return false;
+        };
+        for binding in bindings {
+            let BindingPatternKind::Identifier(name) = &binding.pattern.kind else {
+                return false;
+            };
+            if name == "eval"
+                || !environment
+                    .bindings
+                    .get(name)
+                    .is_some_and(|binding| matches!(&binding.value, Some(Value::Number(_))))
+            {
+                return false;
+            }
+        }
+        // The visitor excludes captures and keeps every header write numeric,
+        // so omitted records cannot retain historical object or Symbol values.
+        let header = |name: &str| {
+            bindings.iter().any(|binding| {
+                matches!(&binding.pattern.kind, BindingPatternKind::Identifier(value) if value == name)
+            })
+        };
+        enum Node<'a> {
+            Expression(&'a Expr),
+            Statement(&'a Statement),
+        }
+        let mut pending = Vec::new();
+        macro_rules! push {
+            ($node:expr) => {
+                if pending.try_reserve(1).is_err() {
+                    return false;
+                }
+                pending.push($node);
+            };
+        }
+        for binding in bindings {
+            if let Some(initializer) = &binding.initializer {
+                push!(Node::Expression(initializer));
+            }
+        }
+        for expression in [test, update].into_iter().flatten() {
+            push!(Node::Expression(expression));
+        }
+        push!(Node::Statement(body));
+        while let Some(node) = pending.pop() {
+            match node {
+                Node::Statement(statement) => match &statement.kind {
+                    StatementKind::Empty => {}
+                    StatementKind::Expression(expression) => {
+                        push!(Node::Expression(expression));
+                    }
+                    StatementKind::Block(statements) => {
+                        for statement in statements {
+                            push!(Node::Statement(statement));
+                        }
+                    }
+                    StatementKind::If {
+                        test,
+                        consequent,
+                        alternate,
+                    } => {
+                        push!(Node::Expression(test));
+                        push!(Node::Statement(consequent));
+                        if let Some(alternate) = alternate {
+                            push!(Node::Statement(alternate));
+                        }
+                    }
+                    _ => return false,
+                },
+                Node::Expression(expression) => match &expression.kind {
+                    ExprKind::Literal(Literal::RegExp { .. }) => return false,
+                    ExprKind::Literal(_) => {}
+                    ExprKind::Identifier(name) if name != "eval" => {}
+                    ExprKind::Parenthesized(inner) => {
+                        push!(Node::Expression(inner));
+                    }
+                    ExprKind::Member(object, property) => {
+                        push!(Node::Expression(object));
+                        match property {
+                            PropertyName::Literal(_) => {}
+                            PropertyName::Computed(key) => {
+                                push!(Node::Expression(key));
+                            }
+                            PropertyName::Private(_) => return false,
+                        }
+                    }
+                    ExprKind::Binary(
+                        BinaryOp::StrictEqual
+                        | BinaryOp::StrictNotEqual
+                        | BinaryOp::Less
+                        | BinaryOp::LessEqual
+                        | BinaryOp::Greater
+                        | BinaryOp::GreaterEqual,
+                        left,
+                        right,
+                    ) => {
+                        push!(Node::Expression(left));
+                        push!(Node::Expression(right));
+                    }
+                    ExprKind::Assign(target, value) => {
+                        match &target.kind {
+                            ExprKind::Identifier(name) if header(name) => {
+                                if !matches!(&value.kind, ExprKind::Literal(Literal::Number(_))) {
+                                    return false;
+                                }
+                            }
+                            ExprKind::Identifier(_) | ExprKind::Member(_, _) => {}
+                            _ => return false,
+                        }
+                        push!(Node::Expression(target));
+                        push!(Node::Expression(value));
+                    }
+                    ExprKind::CompoundAssign(BinaryOp::Add, target, value) => {
+                        match &target.kind {
+                            ExprKind::Identifier(name) if !header(name) => {}
+                            ExprKind::Member(_, _) => {}
+                            _ => return false,
+                        }
+                        push!(Node::Expression(target));
+                        push!(Node::Expression(value));
+                    }
+                    ExprKind::Update { argument, .. } => {
+                        if !matches!(
+                            &argument.kind,
+                            ExprKind::Identifier(_) | ExprKind::Member(_, _)
+                        ) {
+                            return false;
+                        }
+                        push!(Node::Expression(argument));
+                    }
+                    ExprKind::Call { callee, arguments } => {
+                        if !matches!(&callee.kind, ExprKind::Member(_, _)) {
+                            return false;
+                        }
+                        push!(Node::Expression(callee));
+                        for argument in arguments {
+                            let Argument::Expression(expression) = argument else {
+                                return false;
+                            };
+                            push!(Node::Expression(expression));
+                        }
+                    }
+                    _ => return false,
+                },
+            }
+        }
+        true
     }
 
     // ECMA-262 14.7.4.4: copy let values into a fresh environment with the
