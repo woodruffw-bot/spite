@@ -12698,3 +12698,38 @@ The corpus remains at 7,650 original fixtures and 12 helpers at its existing
 pin. No fixture, dependency, profile, native-stack or default limit changes
 accompany this extension. Earlier feature and test-speed records retain their
 original scope.
+
+## General Category test literals and compiler work
+
+One General Category test now iterates a borrowed table containing its exact
+960 original Rust string literals, in the same order. Each script still uses a
+fresh Realm and the same evaluation/assertion helper. The passing run retains
+all 5,760 RegExp constructions and 155,520 point tests; the ten test names and
+all snapshot expectations are unchanged. Only Rust call layout changes from
+960 call sites to one loop body. No production behavior, dependency, profile,
+fixture, native-stack setting or default resource limit changes.
+
+One controlled local Linux rebuild pair per compiler measures the cold Runtime
+integration test crate with warm unchanged workspace prerequisites and normal
+Runtime test opt1. Both builds retain the full workspace feature graph and
+ordinary assertions, overflow checks, stacks and thread settings. Rust 1.85
+compile wall time decreases from 69.055 to 52.361 seconds (24.18%), and CPU time
+from 108.119 to 81.719 seconds (24.42%). Stable CPU time is effectively unchanged
+(71.853 to 71.828 seconds), while wall time increases from 47.080 to 48.017
+seconds (1.99%). There is no demonstrated stable compile improvement. These are
+one-pair test-crate measurements, not cold-workspace or Windows CI results.
+
+The exact 960-script case passes in all four measurement phases. Its Native
+timings vary with cache/order and are not evidence of an execution speedup.
+Fresh complete Runtime runs pass 3,512 integration and 279 unit tests on both
+Rust versions. All 689 snapshots remain byte-identical. Formatting,
+denied-warning Clippy, dependency policy and Runtime inventory checks pass.
+
+The preceding published full-workspace proof remains 27 invocations and 5,177
+cases per Rust version, including 932 Core and 347 Parser cases, plus one
+documentation example. The preceding full conformance proof remains 14,740
+variants from 7,631 reviewed sources with every other outcome category zero.
+Those unchanged components retain their source/artifact and corpus-input
+identity proofs; they were not re-executed for this test-body-only rewrite.
+Actual hosted CI results must be assessed separately before any overall CI
+speedup claim. Earlier feature and measurement records retain their scope.
