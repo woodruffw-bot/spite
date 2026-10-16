@@ -1,12 +1,14 @@
-//! One checked UnicodeSets class followed by one literal character (22.2.2.3).
+//! One checked UnicodeSets class and one literal character (22.2.2.3).
 
 use crate::{
     JsString, RegExpUnicodeCharacterMatcher, RegExpUnicodeClassMatcher,
-    RegExpUnicodeSetCompileError,
+    RegExpUnicodeSetCompileError, regexp_literal::unicode_literal_atom,
 };
 use std::ops::Range;
 
 /// One unquantified checked v-mode class and one literal Unicode character.
+///
+/// Separate constructors prove class-then-literal and literal-then-class order.
 ///
 /// Requires complete validated v/vi Pattern input. Optional outside ^/$ use
 /// original line context. Groups, word assertions, quantifiers, additional
@@ -18,6 +20,13 @@ use std::ops::Range;
 pub struct RegExpUnicodeClassLiteralMatcher {
     class: RegExpUnicodeClassMatcher,
     literal: RegExpUnicodeCharacterMatcher,
+    order: Order,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum Order {
+    ClassThenLiteral,
+    LiteralThenClass,
 }
 
 impl RegExpUnicodeClassLiteralMatcher {
@@ -68,7 +77,64 @@ impl RegExpUnicodeClassLiteralMatcher {
         else {
             return Ok(None);
         };
-        Ok(Some(Self { class, literal }))
+        Ok(Some(Self {
+            class,
+            literal,
+            order: Order::ClassThenLiteral,
+        }))
+    }
+
+    /// Compiles one literal Unicode atom followed by one checked v-mode class.
+    ///
+    /// The complete Pattern must already be validated in v/vi mode. An optional
+    /// leading ^ belongs to the literal and an optional trailing $ to the class;
+    /// internal assertions, groups, repetitions and extra atoms are excluded.
+    /// At least one nested class or set operator is required. The complete class
+    /// is compiled even if empty, so string leaves never acquire substitute
+    /// semantics. Source slices are borrowed; no new buffer or shared allocation
+    /// is introduced. The class-first constructor keeps its domain and callbacks.
+    pub fn compile_literal_then_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Braced escapes may contain source-sized runs of leading zeroes.
+        charge(units.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut end = usize::from(units.first() == Some(&0x5e));
+        let Some(&first) = units.get(end) else {
+            return Ok(None);
+        };
+        end += 1;
+        if unicode_literal_atom(units, &mut end, first).is_none() || units.get(end) != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &units[..end],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(class) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+            &units[end..],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            literal,
+            order: Order::LiteralThenClass,
+        }))
     }
 
     /// Bounds complete input scans and both predicates for opt-in search work.
@@ -98,15 +164,22 @@ impl RegExpUnicodeClassLiteralMatcher {
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
         let mut cursor = start;
         loop {
-            let first = self.class.find(input, cursor, sticky)?;
-            if let Some(second) = self.literal.find(input, first.end, true) {
+            let first = match self.order {
+                Order::ClassThenLiteral => self.class.find(input, cursor, sticky),
+                Order::LiteralThenClass => self.literal.find(input, cursor, sticky),
+            }?;
+            let second = match self.order {
+                Order::ClassThenLiteral => self.literal.find(input, first.end, true),
+                Order::LiteralThenClass => self.class.find(input, first.end, true),
+            };
+            if let Some(second) = second {
                 return Some(first.start..second.end);
             }
             if sticky {
                 return None;
             }
-            // A checked class consumes exactly one complete character. Its end
-            // is the next candidate, and a safe boundary for the literal suffix.
+            // Either first term consumes exactly one complete character. Its
+            // end is the next candidate and a safe boundary for the second term.
             cursor = first.end;
         }
     }
@@ -480,3 +553,7 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "regexp_unicode_literal_class_tests.rs"]
+mod literal_first_tests;

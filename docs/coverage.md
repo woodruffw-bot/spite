@@ -12733,3 +12733,29 @@ Those unchanged components retain their source/artifact and corpus-input
 identity proofs; they were not re-executed for this test-body-only rewrite.
 Actual hosted CI results must be assessed separately before any overall CI
 speedup claim. Earlier feature and measurement records retain their scope.
+
+## One literal prefix before a checked UnicodeSets class
+
+The v/vi constructor admits one literal Unicode atom before one unquantified
+nested/operator character-only class, with optional outside line assertions and
+complete whole-body captures. The class-first constructor retains its domain
+and work callbacks. The exact `/c[a--b]/v.test('ca')` Unsupported control now
+has positive, nonmatching and normal-completion assertions.
+
+Two new Core tests cover an independent UTF-16 oracle (16 plans, 36 inputs,
+5,568 comparisons), rejected domains and opt-in construction/search work. Two
+Runtime tests cover retry and sticky/global state, captures/indices, folding,
+escaped prefixes, supplementary/lone surrogates, line context, source/cloning,
+consumers, coercion and host failures. The new insta snapshot has ten reviewed
+rows; all ten agree with Node for their full result data and UTF-16 ranges.
+These finite inputs avoid version-sensitive Script membership and do not claim
+agreement between Node Unicode 17 and the pinned Unicode 18 tables generally.
+
+Stable and Rust 1.85 each pass all 27 workspace invocations and 5,181 tests,
+including 934 Core, 347 Parser, 3,514 Runtime integration and 279 Runtime unit
+tests, plus one documentation example. All 689 earlier snapshots remain
+byte-identical; the new snapshot makes 690. Both complete corpus gates pass
+14,740 variants from 7,631 reviewed sources, with every other outcome category
+zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
+and inventory probes, and all seven generator checks pass. No fixture, corpus,
+dependency, profile, native-stack or default quota changes accompany this item.

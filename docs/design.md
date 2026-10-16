@@ -7878,3 +7878,34 @@ handling. Search accounts for class checks, literal checks and attached line
 assertions before publishing success or lastIndex. Existing Runtime coercion,
 consumer and host-error boundaries remain in force. This extension adds
 no default work, heap or depth limit, dependency, profile or fixture change.
+
+## One literal prefix before a checked UnicodeSets class
+
+A separate typed `compile_literal_then_v_set_with_work` constructor admits one
+literal Unicode atom followed by one unquantified checked character-only v/vi
+class (22.2.2.3, 22.2.2.9). Optional outside ^/$ constrain the complete pair.
+Runtime tries it only after the existing class-then-literal constructor and all
+earlier dispatch paths. Both constructors use one private source-order enum in
+the same zero-inner-capture plan. Existing complete whole-body wrappers retain
+their separate capture proof; partial captures are excluded.
+
+The prefix boundary comes from the existing Unicode literal-atom decoder, after
+source-sized work is charged. It is never found by scanning for an unescaped
+bracket. Borrowed prefix units must compile as exactly one literal, with only an
+optional leading ^. The entire remaining suffix must compile as a checked class,
+with only an optional trailing $. A nested class or set operator is required.
+Every string leaf remains unsupported, including leaves behind empty algebra.
+Internal assertions, word gates, quantifiers and additional atoms or classes
+remain outside this proof.
+
+Matching checks the literal first and the class sticky at its end. A failed
+class resumes search at the literal's complete-character end. Folding, line
+context and UTF-16 ranges use the original input; the existing approved Unicode
+start normalization is unchanged. The existing two-character search bound and
+four-unit sticky bound also apply to this order. The class-first constructor's
+domain and work-callback sequence remain unchanged.
+
+The adapter adds no source buffer, input-sized state, native recursion, default
+quota, dependency or profile change. Existing checked class reservations and
+Work(E)/Capacity distinctions remain in force; no existing final shared-storage
+allocation boundary changes.
