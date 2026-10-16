@@ -8005,3 +8005,23 @@ sticky second match and retry at the first end. Complete original characters,
 line context, folding, whole enclosing captures, Runtime representation and
 work bounds retain their existing behavior. Outside word assertions, extra
 atoms, repetition and partial captures remain separate work.
+
+A separate typed constructor admits canonical outside word assertions around a
+checked-then-flat v/vi pair (22.2.2.3, 22.2.2.4). The exact borrowed order is
+^? word? CHECKED FLAT word? $?, with at least one \b/\B. The prefix retains the
+nested-class/set-operator gate; the suffix retains the existing flat proof.
+Both compile fully before predicates are attached, including behind an empty
+prefix. String leaves, reverse order, flat-flat, inner/reordered assertions,
+extra atoms, repetition and partial captures remain outside this constructor.
+Previous constructors retain their domains and exact callback bodies.
+
+The existing endpoint record checks actual i WordCharacters, including Kelvin
+and long-s, and original m line context. Fold-invariant class membership does
+not remove the i word-fold requirement. A failed outside gate after two matched
+characters retries at the first end, preserving the 1..3 overlap of
+\B[[a]][a]\b on aaa!. Complete original UTF-16 characters and the documented
+initial-low-pair boundary remain unchanged. Borrowed framing precharges 3N;
+component callbacks retain checked-then-flat source order. Existing predicate
+allowances, one entry charge, four-unit sticky bound, Runtime representation and
+whole-body capture proof are reused. No source/input buffer, parser refactor,
+dependency, default quota, profile or native-stack change is introduced.

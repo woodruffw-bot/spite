@@ -12,8 +12,8 @@ use std::ops::Range;
 /// Requires complete validated v/vi Pattern input. Checked-pair entry points
 /// require both nested/operator gates; mixed-order entry points prove one flat
 /// and one checked component separately. Optional outside
-/// ^/$ use original input line context. A separate constructor admits canonical
-/// outside word gates only for two checked components. Inner captures/assertions,
+/// ^/$ use original input line context. Separate constructors admit canonical
+/// outside word gates for two checked components or a checked-then-flat pair. Inner captures/assertions,
 /// extra atoms, repetitions and
 /// string-set leaves remain separate proofs. Callers may prove
 /// complete enclosing captures separately. Both classes consume complete original
@@ -329,6 +329,106 @@ impl RegExpUnicodeClassPairMatcher {
         }))
     }
 
+    /// Compiles canonical outside word gates around a checked-then-flat pair.
+    ///
+    /// Requires complete validated v/vi Pattern input and at least one outside
+    /// \b/\B. The checked prefix and flat suffix retain their separate proofs.
+    /// Optional outside ^/$ use original context. Both components compile fully,
+    /// including empty first sets. Reverse order, flat-flat, inner/reordered
+    /// assertions, captures, repetitions, extra atoms and string leaves remain
+    /// separate proofs. Source slices are borrowed; old callbacks are unchanged.
+    pub fn compile_v_set_then_flat_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Bound framing and both borrowed class-end walks before those scans.
+        charge(units.len().saturating_mul(3)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        if start_word.is_none() && end_word.is_none() {
+            return Ok(None);
+        }
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(split) = class_end(body, 0) else {
+            return Ok(None);
+        };
+        if body.get(split) != Some(&0x5b) || class_end(body, split) != Some(body.len()) {
+            return Ok(None);
+        }
+        let Some(first) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+            &body[..split],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let Some(second) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &body[split..],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            classes: [first, second],
+            assertions: Some(OutsideAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            }),
+        }))
+    }
+
     /// Bounds pair traversal and both existing membership predicates.
     pub fn search_passes(&self) -> usize {
         self.classes[0]
@@ -396,3 +496,7 @@ mod checked_flat_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_flat_class_pair_tests.rs"]
 mod flat_checked_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_class_flat_pair_word_tests.rs"]
+mod checked_flat_word_tests;
