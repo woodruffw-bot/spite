@@ -5114,6 +5114,16 @@ default JavaScript quota is added. Node uses Unicode 17 data and lacks U+11DF0
 and U+11DF1 in the existing Unicode 18 pin. Shared membership and folding cases
 agree. The older original Test262 fixture remains unchanged and unvendored.
 
+Gurmukhi Script escapes admit exactly Script=Gurmukhi, Script=Guru,
+sc=Gurmukhi and sc=Guru (22.2.2.9 and UnicodeMatchPropertyValue). Bare names
+are invalid; Script_Extensions remains a separate unsupported namespace. The
+unchanged Unicode 18 Scripts file defines 80 Gurmukhi characters in 16 merged
+intervals. Its 17-interval complement includes lone surrogates. Both sets are
+invariant under common/simple case folding, so u+i and v+i complements agree.
+Construction charges intervals before appending and deduplicates repeated
+properties in the existing fourth temporary mask word. Earlier kinds and tables
+are preserved. No recursion, dependency or default JavaScript quota is added.
+
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional
 steps for null or undefined. A nullish check skips the entire ungrouped suffix,

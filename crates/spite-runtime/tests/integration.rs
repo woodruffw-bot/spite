@@ -660,6 +660,8 @@ mod regexp_unicode_grapheme_base_properties;
 mod regexp_unicode_grapheme_extend_properties;
 #[path = "cases/regexp_unicode_greek_script.rs"]
 mod regexp_unicode_greek_script;
+#[path = "cases/regexp_unicode_gurmukhi_script.rs"]
+mod regexp_unicode_gurmukhi_script;
 #[path = "cases/regexp_unicode_han_script_properties.rs"]
 mod regexp_unicode_han_script_properties;
 #[path = "cases/regexp_unicode_hebrew_script.rs"]

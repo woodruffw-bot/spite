@@ -9847,6 +9847,20 @@ remain byte-identical. Formatting, denied-warning Clippy, dependency policy and
 fixture/discovery checks pass; pinned data tables and their references are
 unchanged.
 
+Gurmukhi Script adds independent raw membership and common/simple fold checks
+using the unchanged pinned Unicode 18 references. Four exact aliases cover both
+complement orders and standalone/class forms. Corpus inventories, fixture bytes,
+upstream pins and dependencies are unchanged.
+
+Four Core regressions check all 1,114,112 code points in 106,954,752 membership
+comparisons, exact namespaces, repeated properties, work failures and UTF-16
+boundaries. Nine runtime regressions cover execution, captures, consumers and
+collection. The two new insta snapshots contain 1,728 Core and 432 runtime rows;
+all 2,160 agree with Node, and all 676 earlier snapshots remain byte-identical.
+Stable and Rust 1.85.0 each pass 5,086 workspace cases across 95 invocations,
+including 898 Core and 3,457 runtime integration cases, plus documentation tests.
+Both toolchains also pass the complete unchanged 14,666-variant corpus.
+
 Native RegExp construction now validates constructor Patterns, preserves original
 source/flags, sets the specified lastIndex descriptor and supports subclasses.
 Thirteen focused runtime regressions cover call identity, regexp-like getter order,
