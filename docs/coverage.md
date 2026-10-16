@@ -13022,3 +13022,26 @@ are byte-identical; the new snapshot makes 697. Two new Core and two new Runtime
 tests bring the registered workspace inventory to 5,209, including 948 Core and
 3,528 Runtime integration tests. Full workspace, documentation and all 14,740
 reviewed corpus variants remain required in the unchanged thirteen-job CI matrix.
+
+## General-category alias test structure
+
+The category-alias test shares one borrowed table and loop in place of 38
+repeated blocks. All 240 alias literals retain their order, flag and prefix
+combinations, 2,224 fresh matcher constructions and 5,767 assertions. The seven
+rejected aliases and all other source remain unchanged.
+
+One local cold compilation pair per Rust version used nonincremental builds
+with 256 codegen units for both source versions. Only the Core test unit rebuilt;
+all prerequisites were fresh. Stable changed from 212.681 to 208.940 seconds
+(CPU 398.232 to 388.000), while Rust 1.85 changed from 268.254 to 268.027 seconds
+(CPU 503.980 to 503.391), effectively flat. Both preserved the exact 948-test
+inventory and passed the same category test. These are experimental local
+compile times; Cargo and CI retain their existing settings.
+
+Normal validation covers the five related category tests on both Rust versions,
+including the existing insta snapshot and exhaustive membership checks, together
+with formatting, Clippy, policy/inventory checks, 39 runner/inventory probes and
+all seven generators. All 697 existing snapshots remain byte-identical. The
+registered inventory remains 5,209 tests, including 948 Core and 3,528 Runtime
+integration tests. Full workspace, documentation and all 14,740 reviewed corpus
+variants remain required in the unchanged thirteen-job CI matrix.
