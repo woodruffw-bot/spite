@@ -7909,3 +7909,34 @@ The adapter adds no source buffer, input-sized state, native recursion, default
 quota, dependency or profile change. Existing checked class reservations and
 Work(E)/Capacity distinctions remain in force; no existing final shared-storage
 allocation boundary changes.
+
+## Outside word assertions around checked class/literal pairs
+
+A separate typed v/vi constructor admits canonical outside word assertions
+around either existing two-atom class/literal order (22.2.2.3, 22.2.2.4). Its
+grammar is optional ^, at most one leading \b/\B, one complete bare pair, at most
+one trailing \b/\B, optional $. At least one word gate is required. The class
+must contain a nested class or set operator and remain character-only. Existing
+complete whole-body wrappers retain their capture proof; component captures,
+quantifiers, additional atoms and other assertion orders remain unimplemented.
+
+Framing and both component proofs borrow the original units. Escape parity
+distinguishes an outside $ or word gate from literal escapes. The complete bare
+pair is proved before outside flags are attached, so retained internal ^/$ or
+duplicate/reordered word gates cannot lose meaning. Every checked class compiles
+fully even when empty; hidden string leaves never become admitted by an
+impossible match or endpoint condition. The two old public constructors retain
+their exact recognition and work-callback bodies, with absent outside predicates.
+
+The existing plan checks outside line and word predicates only at the complete
+pair's original endpoints. WordCharacters uses actual i, including Kelvin and
+long-s, independently of whether a consuming class is fold-invariant. If either
+word gate fails after both characters match, search resumes at the first
+character's end, preserving overlapping candidates. Original line context,
+UTF-16 ranges and approved Unicode start normalization remain unchanged.
+
+Only new plans add word/line predicate allowances to the existing precharged
+search passes; the four-unit sticky consumption bound and entry callback remain.
+There is no new source buffer, input-sized state, recursion, allocation boundary,
+dependency, default quota or stack setting. Existing checked Work(E)/Capacity
+failures keep their host-error distinction.

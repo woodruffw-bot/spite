@@ -556,7 +556,6 @@ fn checked_v_set_literal_state_context_and_consumers() {
         r"/([a--b])c/v.test('ac')",
         r"/[a--b](c)/v.test('ac')",
         r"/([a--b]c)+/v.test('ac')",
-        r"/\b[a--b]c/v.test('ac')",
         r"/[a--b]^c/v.test('ac')",
         r"/[a--b]$c/v.test('ac')",
         r"/[a--a--\q{a}]c/v.test('ac')",
@@ -701,7 +700,6 @@ fn checked_literal_v_set_state_context_and_consumers() {
         r"/(c)[a--b]/v.test('ca')",
         r"/c([a--b])/v.test('ca')",
         r"/(c[a--b])+/v.test('ca')",
-        r"/\bc[a--b]/v.test('ca')",
         r"/c^[a--b]/v.test('ca')",
         r"/c$[a--b]/v.test('ca')",
         r"/c[a--a--\q{a}]/v.test('ca')",
@@ -780,6 +778,206 @@ fn checked_literal_v_set_results() {
         writeln!(
             rows,
             "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+        )
+        .unwrap();
+        row_count += 1;
+    }
+    assert_eq!(row_count, 10);
+    insta::assert_snapshot!(rows);
+}
+
+#[test]
+fn checked_v_set_pair_word_state_context_and_consumers() {
+    // ECMA-262 22.2.2.4 tests these assertions at the complete pair's edges.
+    // A failed assertion must retry at the first character's end: the valid
+    // overlapping pair begins at 1, although the first pair ends at 2.
+    check(
+        r"let a=/\B[[a]]a\b/dvg,b=/\Ba[[a]]\b/dvg,x=a.exec('aaa!'),y=b.exec('aaa!');x[0]==='aa'&&x.index===1&&x.indices[0][1]===3&&a.lastIndex===3&&y[0]==='aa'&&y.index===1&&y.indices[0][1]===3&&b.lastIndex===3&&a.exec('aaa!')===null&&a.lastIndex===0&&b.exec('aaa!')===null&&b.lastIndex===0",
+    );
+    check(
+        r"let a=/\B[[a]]a\b/vy,b=/\Ba[[a]]\b/vy;a.exec('aaa!')===null&&a.lastIndex===0&&b.exec('aaa!')===null&&b.lastIndex===0&&(a.lastIndex=1,b.lastIndex=1,a.exec('aaa!')[0]==='aa')&&a.lastIndex===3&&b.exec('aaa!')[0]==='aa'&&b.lastIndex===3",
+    );
+    for (source, input, nonmember) in [(r"\b[a--b]c", "ac", "bc"), (r"\bc[a--b]", "ca", "cb")] {
+        let code = JsString::from(format!("marker=1; /{source}/v.test('{input}');").as_str());
+        check(&format!(
+            "let marker=0,result,caught=false;try{{result=eval({code:?})}}catch{{caught=true}}finally{{marker=3}}!caught&&marker===3&&result&&!/{source}/v.test('{nonmember}')"
+        ));
+    }
+    // Any is fold-invariant, but WordCharacters still depends on actual i.
+    check(
+        r"/\B[[\p{Any}]]a\b/v.test('Ka!')&&!/\B[[\p{Any}]]a\b/iv.test('Ka!')&&!/\b[[\p{Any}]]a\b/v.test('Ka!')&&/\b[[\p{Any}]]a\b/iv.test('Ka!')&&/\b[[\p{Any}]]a\b/iv.test('ſa!')&&!/\b[[\p{Any}]]a\b/v.test('ſa!')",
+    );
+    check(
+        r"!/\ba[[\p{Any}]]\b/v.test('aK!')&&/\ba[[\p{Any}]]\b/iv.test('aK!')&&!/\ba[[\p{Any}]]\b/v.test('aſ!')&&/\ba[[\p{Any}]]\b/iv.test('aſ!')&&/\b[[K]]s\b/iv.test('Kſ!')&&/\bk[[s]]\b/iv.test('Kſ!')&&!/\b[[K]]s\b/v.test('Kſ!')&&!/\bk[[s]]\b/v.test('Ks!')",
+    );
+    check(
+        r"/[[a]]c\b/v.exec('xac!').index===1&&/a[[a]]\b/v.exec('aaa!').index===1&&/\B[[!]]\?\B/v.test('!?')&&/\B\?[[!]]\B/v.test('?!')&&!/\b[a--a]c/v.test('ac')&&!/\bc[a--a]/v.test('ca')",
+    );
+    check(
+        r"let a=/\B[[\p{Any}]]a\b/dvy,b=/\B\u{1f600}[[a]]\b/dvy;a.lastIndex=1;b.lastIndex=1;let x=a.exec('😀a!'),y=b.exec('😀a!');x.index===0&&x[0]==='😀a'&&x.indices[0][0]===0&&x.indices[0][1]===3&&a.lastIndex===3&&y.index===0&&y[0]==='😀a'&&y.indices[0][1]===3&&b.lastIndex===3",
+    );
+    check(
+        r"let a=/\b[[\uD800]]a\b/dv,b=/\b\uD800[[a]]\b/dv,x=a.exec('A\uD800a!'),y=b.exec('A\uD800a!');x.index===1&&x[0]==='\uD800a'&&x.indices[0][1]===3&&y.index===1&&y[0]==='\uD800a'&&y.indices[0][1]===3&&/\B[[\uD83D]]\uDE00\B/v.exec('😀')===null&&/\B\uD83D[[\uDE00]]\B/v.exec('😀')===null",
+    );
+    check(
+        r"/^\b[[a]]\$\B$/v.test('a$')&&!/^\b[[a]]\$\B$/v.test('a$\n')&&/^\B\$[[a]]\b$/v.test('$a')&&!/^\B\$[[a]]\b$/v.test('$a\n')",
+    );
+    check(
+        r"let a=/^\b[[a]]c\b$/dvmg,b=/^\bc[[a]]\b$/dvmg,x=a.exec('x\r\nac\u2028bc'),y=b.exec('x\r\nca\u2028cb');x.index===3&&x[0]==='ac'&&x.indices[0][1]===5&&a.lastIndex===5&&y.index===3&&y[0]==='ca'&&y.indices[0][1]===5&&b.lastIndex===5&&a.exec('x\r\nac\u2028bc')===null&&a.lastIndex===0&&b.exec('x\r\nca\u2028cb')===null&&b.lastIndex===0",
+    );
+    check(
+        r"let r=/(?<whole>(\B[[a]]a\b))/dvg,a=[...'aaa! aaa!'.matchAll(r)];a.length===2&&a[0][0]==='aa'&&a[0][1]==='aa'&&a[0][2]==='aa'&&a[0].index===1&&a[0].indices.groups.whole===a[0].indices[1]&&a[0].indices[2][1]===3&&a[1].groups.whole==='aa'&&a[1].index===6&&a[1].indices[2][1]===8&&r.lastIndex===0",
+    );
+    check(
+        r"'aaa! aaa!'.replace(/(?<whole>(\B[[a]]a\b))/vg,'<$1:$<whole>>')==='a<aa:aa>! a<aa:aa>!'&&'aaa!'.split(/(\Ba[[a]]\b)/v).join('|')==='a|aa|!'&&'aaa!'.match(/\Ba[[a]]\b/v)[0]==='aa'",
+    );
+    check(
+        r"let seen='',out='aaa! aaa!'.replace(/(?<whole>(\Ba[[a]]\b))/vg,(m,c1,c2,p,text,g)=>{seen+=p+':'+g.whole+';';return 'X'});out==='aX! aX!'&&seen==='1:aa;6:aa;'",
+    );
+    check(r"let r=/\B[[a]]a\b/vg;r.lastIndex=4;'aaa!'.search(r)===1&&r.lastIndex===4");
+    check(
+        r"let trace='',r=/\B\u{1f600}[[a]]\b/vy;r.lastIndex={valueOf(){trace+='i';return 1}};let m=r.exec({toString(){trace+='s';return '😀a!'}});trace==='si'&&m.index===0&&m[0]==='😀a'&&r.lastIndex===3",
+    );
+    check(
+        r"let seen=0,r=/\B[[a]]a\b/v;r.lastIndex={valueOf(){seen++;return 1}};let m=r.exec('aaa!');m.index===1&&m[0]==='aa'&&seen===1&&typeof r.lastIndex==='object'",
+    );
+    check(
+        r"let r=/\b[[K]]s\b/iv,c=new RegExp(r,'dvy');c.source===r.source&&r.source==='\\b[[K]]s\\b'&&c.unicodeSets&&!c.ignoreCase&&c.exec('Kſ')===null&&c.lastIndex===0&&r.exec('Kſ')[0]==='Kſ'",
+    );
+    check(
+        r"let a=/\B[[a]]a\b/vy,b=/\Ba[[a]]\b/vy;a.lastIndex=1;Object.defineProperty(a,'lastIndex',{writable:false});Object.defineProperty(b,'lastIndex',{writable:false});let x=false,y=false;try{a.exec('aaa!')}catch(e){x=e instanceof TypeError}try{b.exec('aaa!')}catch(e){y=e instanceof TypeError}x&&y&&a.lastIndex===1&&b.lastIndex===0",
+    );
+    for source in [
+        r"/\b^[[a]]c/v.test('ac')",
+        r"/[[a]]c$\b/v.test('ac')",
+        r"/\b\b[[a]]c/v.test('ac')",
+        r"/\b[[a]]\Bc/v.test('ac')",
+        r"/\ba[[a]]+/v.test('aa')",
+        r"/(\b[[a]])c/v.test('ac')",
+        r"/\ba([[a]])/v.test('aa')",
+        r"/(\b[[a]]c)+/v.test('ac')",
+        r"/\b[[a]]cd/v.test('acd')",
+        r"/\ba[[a]][c]/v.test('aac')",
+        r"/\b[[a--a]&&[\q{a}]]c/v.test('ac')",
+        r"/\ba[[a--a]&&[\p{RGI_Emoji}]]/v.test('aa')",
+    ] {
+        assert!(
+            matches!(
+                Realm::default().eval(source),
+                Err(Error::Unsupported { .. })
+            ),
+            "{source}"
+        );
+    }
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30000),
+        ..Limits::default()
+    });
+    realm.eval(r"var r=/\B[[a]]a\b/vg,marker=0").unwrap();
+    // Every pair before the final one fails an outside assertion. Build this
+    // input outside JavaScript's opted-in string-construction work.
+    let setup = format!("var text='{}';r.lastIndex=1", "a".repeat(20_000));
+    realm.eval(&setup).unwrap();
+    assert!(matches!(
+        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(
+        realm.eval("marker===0&&r.lastIndex===1"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn checked_v_set_pair_word_results() {
+    let mut rows = String::new();
+    let mut row_count = 0;
+    // These full expected objects are specified independently of the matcher.
+    // Explicit UTF-16 input units keep lone surrogates and start offsets visible.
+    for (pattern, input, flags, start, expected) in [
+        (
+            r"(?<whole>(\B[[a]]a\b))",
+            JsString::from("aaa!"),
+            "dvg",
+            0,
+            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[[a]]a\\b))"}"#,
+        ),
+        (
+            r"(?<whole>(\Ba[[a]]\b))",
+            JsString::from("aaa!"),
+            "dvg",
+            0,
+            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\Ba[[a]]\\b))"}"#,
+        ),
+        (
+            r"(?<whole>(\B[[a]]a\b))",
+            JsString::from("aaa!"),
+            "dvy",
+            0,
+            r#"{"match":null,"lastIndex":0}"#,
+        ),
+        (
+            r"(?<whole>(\B[[\p{Any}]]a\b))",
+            JsString::from("Ka!"),
+            "dvg",
+            0,
+            r#"{"matches":["Ka","Ka","Ka"],"index":0,"input":"Ka!","groups":{"whole":"Ka"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\B[[\\p{Any}]]a\\b))"}"#,
+        ),
+        (
+            r"(?<whole>(\B[[\p{Any}]]a\b))",
+            JsString::from("Ka!"),
+            "divg",
+            0,
+            r#"{"match":null,"lastIndex":0}"#,
+        ),
+        (
+            r"(?<whole>(\B\u{1f600}[[a]]\b))",
+            JsString::from("😀a!"),
+            "dvy",
+            1,
+            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\B\\u{1f600}[[a]]\\b))"}"#,
+        ),
+        (
+            r"(?<whole>(\b[[\uD800]]a\b))",
+            JsString::from_code_units(vec![0x41, 0xd800, 0x61, 0x21]),
+            "dvg",
+            0,
+            r#"{"matches":["\ud800a","\ud800a","\ud800a"],"index":1,"input":"A\ud800a!","groups":{"whole":"\ud800a"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[[\\uD800]]a\\b))"}"#,
+        ),
+        (
+            r"(?<whole>(\b[[a]]\$\B))",
+            JsString::from("a$!"),
+            "dvg",
+            0,
+            r#"{"matches":["a$","a$","a$"],"index":0,"input":"a$!","groups":{"whole":"a$"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[[a]]\\$\\B))"}"#,
+        ),
+        (
+            r"(?<whole>(\B\$[[a]]\b))",
+            JsString::from("$a!"),
+            "dvg",
+            0,
+            r#"{"matches":["$a","$a","$a"],"index":0,"input":"$a!","groups":{"whole":"$a"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\B\\$[[a]]\\b))"}"#,
+        ),
+        (
+            r"^(?<whole>(\b[[a]]c\b))$",
+            JsString::from("x\r\nac\u{2028}bc"),
+            "dvmg",
+            0,
+            r#"{"matches":["ac","ac","ac"],"index":3,"input":"x\r\nac bc","groups":{"whole":"ac"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[[a]]c\\b))$"}"#,
+        ),
+    ] {
+        let pattern = JsString::from(pattern);
+        let script = format!(
+            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+        );
+        let Value::String(result) = Realm::default().eval(&script).unwrap() else {
+            panic!("{script}")
+        };
+        assert_eq!(result, JsString::from(expected), "{script}");
+        writeln!(
+            rows,
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
+            input.code_units(),
         )
         .unwrap();
         row_count += 1;

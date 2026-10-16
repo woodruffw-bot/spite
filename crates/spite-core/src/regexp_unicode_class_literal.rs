@@ -2,7 +2,9 @@
 
 use crate::{
     JsString, RegExpUnicodeCharacterMatcher, RegExpUnicodeClassMatcher,
-    RegExpUnicodeSetCompileError, regexp_literal::unicode_literal_atom,
+    RegExpUnicodeSetCompileError,
+    regexp_literal::unicode_literal_atom,
+    regexp_unicode_character::{unicode_assertions_match, unicode_word_boundary},
 };
 use std::ops::Range;
 
@@ -11,8 +13,9 @@ use std::ops::Range;
 /// Separate constructors prove class-then-literal and literal-then-class order.
 ///
 /// Requires complete validated v/vi Pattern input. Optional outside ^/$ use
-/// original line context. Groups, word assertions, quantifiers, additional
-/// characters, and string-set leaves remain separate caller proofs. Complete
+/// original line context. A separate entry admits canonical outside word gates.
+/// Groups, quantifiers, additional characters and string-set leaves remain
+/// separate caller proofs. Complete
 /// enclosing captures may be proved by the caller; this plan has no captures.
 /// Both terms consume complete original characters without flattening surrogate
 /// atoms or allocating input-sized state. Existing compiler domains are unchanged.
@@ -21,12 +24,47 @@ pub struct RegExpUnicodeClassLiteralMatcher {
     class: RegExpUnicodeClassMatcher,
     literal: RegExpUnicodeCharacterMatcher,
     order: Order,
+    assertions: Option<OutsideAssertions>,
 }
 
 #[derive(Clone, Copy, Debug)]
 enum Order {
     ClassThenLiteral,
     LiteralThenClass,
+}
+
+#[derive(Clone, Debug)]
+struct OutsideAssertions {
+    start_word: Option<bool>,
+    end_word: Option<bool>,
+    start_anchor: bool,
+    end_anchor: bool,
+    ignore_case: bool,
+    multiline: bool,
+}
+
+impl OutsideAssertions {
+    fn matches(&self, input: &JsString, start: usize, end: usize) -> bool {
+        let units = input.code_units();
+        unicode_assertions_match(
+            units,
+            start,
+            end,
+            self.start_anchor,
+            self.end_anchor,
+            self.multiline,
+        ) && self.start_word.is_none_or(|expected| {
+            unicode_word_boundary(units, start, self.ignore_case) == expected
+        }) && self
+            .end_word
+            .is_none_or(|expected| unicode_word_boundary(units, end, self.ignore_case) == expected)
+    }
+
+    fn search_passes(&self) -> usize {
+        usize::from(self.start_anchor)
+            + usize::from(self.end_anchor)
+            + 8 * (usize::from(self.start_word.is_some()) + usize::from(self.end_word.is_some()))
+    }
 }
 
 impl RegExpUnicodeClassLiteralMatcher {
@@ -81,6 +119,7 @@ impl RegExpUnicodeClassLiteralMatcher {
             class,
             literal,
             order: Order::ClassThenLiteral,
+            assertions: None,
         }))
     }
 
@@ -134,6 +173,126 @@ impl RegExpUnicodeClassLiteralMatcher {
             class,
             literal,
             order: Order::LiteralThenClass,
+            assertions: None,
+        }))
+    }
+
+    /// Compiles outside word assertions around either existing two-atom order.
+    ///
+    /// Requires complete v/vi validation and at least one outside \b/\B. The
+    /// exact order is optional ^, optional word gate, the bare complete pair,
+    /// optional word gate, optional $. Retained/reordered inner line assertions,
+    /// captures, repetitions, extra atoms and all string leaves are excluded.
+    /// Source units are borrowed and both components compile in full before any
+    /// endpoint predicate can reject a match. Existing constructors are unchanged.
+    pub fn compile_v_set_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Bound framing, the class scan and literal decoding before those walks.
+        charge(units.len().saturating_mul(3)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        if start_word.is_none() && end_word.is_none() {
+            return Ok(None);
+        }
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        let Some(&first) = body.first() else {
+            return Ok(None);
+        };
+        let (class_units, literal_units, order) = if first == 0x5b {
+            let Some(split) = class_end(body, 0) else {
+                return Ok(None);
+            };
+            let Some(&literal) = body.get(split) else {
+                return Ok(None);
+            };
+            let mut at = split + 1;
+            if unicode_literal_atom(body, &mut at, literal).is_none() || at != body.len() {
+                return Ok(None);
+            }
+            (&body[..split], &body[split..], Order::ClassThenLiteral)
+        } else {
+            let mut split = 1;
+            if unicode_literal_atom(body, &mut split, first).is_none()
+                || body.get(split) != Some(&0x5b)
+                || class_end(body, split) != Some(body.len())
+            {
+                return Ok(None);
+            }
+            (&body[split..], &body[..split], Order::LiteralThenClass)
+        };
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                literal_units,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(class) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+            class_units,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            literal,
+            order,
+            assertions: Some(OutsideAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            }),
         }))
     }
 
@@ -143,6 +302,11 @@ impl RegExpUnicodeClassLiteralMatcher {
             .search_passes()
             .saturating_add(self.literal.search_passes())
             .saturating_add(2)
+            .saturating_add(
+                self.assertions
+                    .as_ref()
+                    .map_or(0, OutsideAssertions::search_passes),
+            )
     }
 
     /// Searches a precharged suffix with one additional fallible entry charge.
@@ -173,7 +337,13 @@ impl RegExpUnicodeClassLiteralMatcher {
                 Order::LiteralThenClass => self.class.find(input, first.end, true),
             };
             if let Some(second) = second {
-                return Some(first.start..second.end);
+                if self
+                    .assertions
+                    .as_ref()
+                    .is_none_or(|gates| gates.matches(input, first.start, second.end))
+                {
+                    return Some(first.start..second.end);
+                }
             }
             if sticky {
                 return None;
@@ -557,3 +727,7 @@ mod tests {
 #[cfg(test)]
 #[path = "regexp_unicode_literal_class_tests.rs"]
 mod literal_first_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_pair_word_tests.rs"]
+mod outside_word_tests;

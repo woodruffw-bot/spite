@@ -12759,3 +12759,33 @@ byte-identical; the new snapshot makes 690. Both complete corpus gates pass
 zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
 and inventory probes, and all seven generator checks pass. No fixture, corpus,
 dependency, profile, native-stack or default quota changes accompany this item.
+
+## Outside word assertions around checked class/literal pairs
+
+A separate v/vi constructor admits canonical outside word assertions around
+both checked class/literal orders, with optional outside line assertions and
+existing complete whole-body captures. Word membership uses the actual i flag
+and original neighboring characters. Failed outside predicates retry at the
+first character end, preserving overlapping pairs. Complete class compilation
+remains mandatory, including empty sets with hidden string leaves. The two old
+constructors retain their domains and work callbacks. Exactly the two existing
+word-prefixed pair controls migrate from Unsupported to execution assertions.
+
+Two new Core tests check an independent UTF-16 oracle (16 plans, 28 inputs,
+4,608 comparisons), rejected domains and opt-in construction/search cancellation.
+Two Runtime tests cover overlap, g/y state, full captures/indices, Kelvin/long-s
+word membership, escaped dollars, line context, supplementary/lone surrogates,
+consumers, coercion, cloning, read-only lastIndex and host failures. The new
+insta snapshot has ten reviewed full-JSON rows; every row agrees with Node,
+including the approved start inside a surrogate pair. The finite witness uses
+stable ASCII/Any and word-fold facts shared by Unicode 17 and pinned Unicode 18;
+it does not assert general Unicode-version equivalence.
+
+Stable and Rust 1.85 each pass all 27 workspace invocations and 5,185 tests,
+including 936 Core, 347 Parser, 3,516 Runtime integration and 279 Runtime unit
+tests, plus one documentation example. All 690 preceding snapshots are
+byte-identical; the new snapshot makes 691. Both complete corpus gates pass
+14,740 variants from 7,631 reviewed sources with every other outcome category
+zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
+and inventory probes, and all seven generators pass. No fixture, corpus,
+dependency, profile, default quota or native-stack changes accompany this item.
