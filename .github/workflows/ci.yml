@@ -55,7 +55,13 @@ jobs:
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
-        run: cargo +"$TOOLCHAIN" test --workspace --doc --locked
+        # Match Linux REST's Runtime profile so docs can reuse its dependencies.
+        run: |
+          extra_args=()
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            extra_args+=(--config profile.test.package.spite-runtime.opt-level=1)
+          fi
+          cargo +"$TOOLCHAIN" test --workspace --doc --locked "${extra_args[@]}"
       - name: Run reviewed Test262 corpus
         if: matrix.suite == 'test262'
         shell: bash
