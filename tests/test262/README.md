@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7628 unmodified test fixtures and twelve harness files come from
+These 7635 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,39 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated Script_Extensions shared-mark fixtures
+
+Seven unchanged complete Test262 originals cover Cherokee, Coptic, Cyrillic,
+Deseret, Old Permic, Sunuwar and Tai Le. The six compatible owners of U+0300 share
+that explicit Script_Extensions mark; Deseret supplies a singleton Script fallback
+contrast. All positive members and full complements agree exactly between the
+original Unicode 17 programs and the pinned Unicode 18 data. The seven programs
+retain all 13404 upstream bytes, including Script_Extensions/scx names, every
+long/short alias and Coptic's Qaac, anchored u-mode repetitions, helper calls,
+fallback assertions, metadata, surrogate ordering and BSD notices.
+
+These whole programs check case-sensitive membership and complements. They do
+not add i/v folding or Common/Inherited removal-side coverage. Unchanged Common,
+Inherited, Greek and Latin originals require different Unicode 18 sets and remain
+excluded. Hrkt has no original fixture at the existing pin; no replacement is
+invented. The separate Unknown literal-construction original is deferred.
+
+The inventory contains 7635 fixtures, twelve helpers, 7616 reviewed Script
+sources and 14710 variants: 13177 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 749 whole
+positive sources. Grammar remains 369 fixtures, including twenty-three positives.
+All prior inventory rows, twelve helpers, the pin and production sources remain
+unchanged; all 684 snapshots retain the validated SCX implementation bytes.
+
+The seven complete programs pass all fourteen normal/strict variants on both
+stable and Rust 1.85.0 conformance builds, with every non-pass category zero.
+Both Test262 package suites pass all 34 cases and documentation checks; both
+complete 14710-variant corpus gates pass. Formatting, Clippy, policy, inventories
+and offline generation checks pass. All 684 snapshots and production bytes
+remain unchanged. The existing 5141-test workspace proof is retained for that
+unchanged implementation. Execution uses ordinary native stacks and unlimited
+JavaScript defaults.
 
 ## Generated cased Script property fixtures
 

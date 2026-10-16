@@ -7608,3 +7608,10 @@ test/built-ins/RegExp/property-escapes/generated/Script_-_Old_Hungarian.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_-_Osage.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_-_Vithkuqi.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_-_Warang_Citi.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Cherokee.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Coptic.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Cyrillic.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Deseret.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Old_Permic.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Sunuwar.js	-	-	-
+test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Tai_Le.js	-	-	-
