@@ -43,7 +43,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14710 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14720 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -9687,6 +9687,42 @@ and dependencies are unchanged; fixture vendoring is a separate step.
 Stable and MSRV pass all 14,664 unchanged pinned-corpus variants, workspace
 targets and documentation, and the default-stack debug safety checks. Formatting,
 denied-warning Clippy, dependency policy and all offline data checks pass.
+
+## Generated character-only v-set operation fixtures
+
+Five unchanged whole Test262 originals cover literal intersection and subtraction,
+nested flat digit-range intersection, ASCII_Hex_Digit intersection and digit-escape
+subtraction. Their anchored single-class + repetitions fit the character-only
+v-set compiler and retain all 4126 upstream bytes, original finite string lists,
+batch/fallback helper checks, features, metadata and BSD notices. Literal ASCII,
+ECMAScript digit escapes and all 22 ASCII_Hex_Digit members agree between the
+original Unicode 17 data and Unicode 18; no version-dependent membership changes
+are involved. The Test262 pin and all twelve existing helpers remain unchanged.
+
+The two subtraction programs have empty positive lists. These remain ordinary
+harness-positive programs with nonmatching controls; they add no independent
+positive subtraction witness or empty-input rejection assertion. The fixtures use
+v without i and two operands only, so they add no folding, longer-chain, deeper
+nesting or string-set coverage. The original character/string intersection remains
+excluded because its string operand is outside this implementation's scope.
+
+The inventory contains 7640 fixtures, twelve helpers, 7621 reviewed Script
+sources and 14720 variants: 13187 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 754 whole
+positive sources. Grammar remains 369 fixtures, including twenty-three positives.
+All prior inventory rows remain unchanged. Production sources and the validated
+685-snapshot implementation baseline are outside this fixture-only change; the
+complete corpus retains its existing two workers.
+
+All ten complete normal/strict original-program variants passed on stable and
+Rust 1.85.0 conformance builds, with zero outcomes in the other eight categories.
+Both expanded 14720-variant / 7621-source gates passed, as did both affected
+Test262 package runs (34 cases each), their documentation tests, formatting,
+Clippy, policy, inventories and local Script generator reproduction. The published
+implementation's complete 5160-test proof is retained: production and existing
+test bodies are unchanged, and all 685 snapshots remain byte-identical. Execution
+used ordinary native stacks and runtime defaults with JavaScript quotas disabled.
+No unsupported result counts as a passing test.
 
 ## Generated Script_Extensions shared-mark fixtures
 

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7635 unmodified test fixtures and twelve harness files come from
+These 7640 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,42 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated character-only v-set operation fixtures
+
+Five unchanged whole Test262 originals cover literal intersection and subtraction,
+nested flat digit-range intersection, ASCII_Hex_Digit intersection and digit-escape
+subtraction. Their anchored single-class + repetitions fit the character-only
+v-set compiler and retain all 4126 upstream bytes, original finite string lists,
+batch/fallback helper checks, features, metadata and BSD notices. Literal ASCII,
+ECMAScript digit escapes and all 22 ASCII_Hex_Digit members agree between the
+original Unicode 17 data and Unicode 18; no version-dependent membership changes
+are involved. The Test262 pin and all twelve existing helpers remain unchanged.
+
+The two subtraction programs have empty positive lists. These remain ordinary
+harness-positive programs with nonmatching controls; they add no independent
+positive subtraction witness or empty-input rejection assertion. The fixtures use
+v without i and two operands only, so they add no folding, longer-chain, deeper
+nesting or string-set coverage. The original character/string intersection remains
+excluded because its string operand is outside this implementation's scope.
+
+The inventory contains 7640 fixtures, twelve helpers, 7621 reviewed Script
+sources and 14720 variants: 13187 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. RegExp builtin inventory has 754 whole
+positive sources. Grammar remains 369 fixtures, including twenty-three positives.
+All prior inventory rows remain unchanged. Production sources and the validated
+685-snapshot implementation baseline are outside this fixture-only change; the
+complete corpus retains its existing two workers.
+
+All ten complete normal/strict original-program variants passed on stable and
+Rust 1.85.0 conformance builds, with zero outcomes in the other eight categories.
+Both expanded 14720-variant / 7621-source gates passed, as did both affected
+Test262 package runs (34 cases each), their documentation tests, formatting,
+Clippy, policy, inventories and local Script generator reproduction. The published
+implementation's complete 5160-test proof is retained: production and existing
+test bodies are unchanged, and all 685 snapshots remain byte-identical. Execution
+used ordinary native stacks and runtime defaults with JavaScript quotas disabled.
+No unsupported result counts as a passing test.
 
 ## Generated Script_Extensions shared-mark fixtures
 
