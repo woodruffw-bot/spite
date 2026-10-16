@@ -13081,3 +13081,39 @@ makes 698. Two new Core and two new Runtime tests bring the registered workspace
 inventory to 5,213, including 950 Core and 3,530 Runtime integration tests.
 Full workspace, documentation and all 14,740 reviewed corpus variants remain
 required in the unchanged thirteen-job CI matrix.
+
+## Outside word assertions around two flat UnicodeSets classes
+
+Canonical outside \b/\B assertions compose with exactly two unquantified flat
+character-only v/vi classes, optional outside line assertions and existing
+complete whole-body captures. Both components compile fully in source order,
+even behind an empty first set. Earlier constructors retain their domains and
+callbacks. Original endpoint checks use actual i WordCharacters and m context;
+a failed gate retries at the first character's end to preserve overlaps.
+Nested/operator components, inner/reordered assertions, extra atoms, repetition,
+partial captures and string leaves remain separate work.
+
+Two Core tests independently check 16 plans over 20 tiny UTF-16 inputs, every
+initial offset and both sticky modes: 3,488 range comparisons. Domain and work
+checks cover old APIs, source-order traces, every cancellation prefix, hidden
+strings, empty components and endpoint allowances. Two Runtime tests cover
+consumers, full captures/groups/indices, overlap, global/sticky state, coercion,
+read-only lastIndex, original line context, complete supplementary/lone-surrogate
+boundaries and opted-in cancellation. Three prior Unsupported controls become
+precise word-boundary and nonmember checks.
+
+All ten full JSON rows in the new insta snapshot agree with handwritten
+expectations and Node. Complete UTF-16 metadata and result units compare with
+no exclusions, including the documented initial-low-pair behavior. Independent
+raw Unicode 17/18 finite witnesses agree on the complete 65-point Unicode-i
+ASCIIWord preimage and selected fold/category facts; this establishes no general
+Unicode-version equivalence.
+
+Stable and Rust 1.85 each pass all 22 focused Core tests with 930 filtered and
+all 36 related Runtime tests with 3,496 filtered. Formatting, denied-warning
+Clippy, policy/inventory checks, all 39 runner and inventory probes, and all seven
+generators pass. All 698 preceding snapshots are byte-identical; the new snapshot
+makes 699. Two new Core and two new Runtime tests bring the registered workspace
+inventory to 5,217, including 952 Core and 3,532 Runtime integration tests.
+Full workspace, documentation and all 14,740 reviewed corpus variants remain
+required in the unchanged thirteen-job CI matrix.

@@ -8066,3 +8066,22 @@ remain unchanged. Runtime reuses the same representation and separately proved
 complete whole-body captures. The existing entry charge, work bounds and
 four-unit sticky allowance remain in use. No source/input buffer, parser
 refactor, dependency, default quota, profile, stack or worker change is added.
+
+A separate typed constructor admits canonical outside word assertions around
+exactly two flat character-only v/vi classes (22.2.2.3, 22.2.2.4). The borrowed
+order is ^? word? FLAT FLAT word? $?, with at least one \b/\B. Both existing
+flat proofs run fully in source order, including validation of the second behind
+an empty first set. Nested/operator classes, string leaves, inner/reordered
+assertions, extra atoms, repetitions and partial captures remain outside this
+constructor. Earlier constructors retain their domains and callback bodies.
+
+Construction charges 3N before borrowed framing and both class-end walks. The
+existing endpoint record uses actual i WordCharacters even when a flat Any
+predicate is fold invariant, and original m line context. Failure after both
+characters match retries at the first end, preserving the 1..3 overlap of
+\B[a][a]\b on aaa!. Complete original UTF-16 characters, lone surrogates and
+the documented initial-low-pair boundary retain their existing behavior.
+Runtime reuses the same representation and complete whole-body capture proof.
+Existing endpoint allowances, one entry charge and four-unit sticky bound remain
+in use. No source/input buffer, parser refactor, dependency, default quota,
+profile, stack or worker-policy change is introduced.

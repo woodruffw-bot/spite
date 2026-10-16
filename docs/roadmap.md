@@ -591,6 +591,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match canonical outside word assertions around a checked character-only v/vi class followed by one flat class, with optional outside line assertions and complete whole-body captures.
 - [x] Match canonical outside word assertions around a flat v/vi class followed by a checked character-only class, with optional outside line assertions and complete whole-body captures.
 - [x] Match exactly two unquantified flat v/vi classes in sequence, with optional outside line assertions and complete whole-body captures.
+- [x] Match canonical outside word assertions around exactly two flat v/vi classes, with optional outside line assertions and complete whole-body captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
