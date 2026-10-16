@@ -340,28 +340,32 @@ impl Realm {
         Ok(())
     }
 
-    pub(super) fn get_global(&mut self, name: &str, span: Span) -> Result<Value, Error> {
+    pub(super) fn get_global(
+        &mut self,
+        name: &str,
+        key: &JsString,
+        span: Span,
+    ) -> Result<Value, Error> {
         let object = self.global_object();
-        let key = JsString::from(name);
-        if !self.has_property(&object, &key, span)? && self.strict {
+        if !self.has_property(&object, key, span)? && self.strict {
             return Err(Self::exception(
                 ExceptionKind::ReferenceError,
                 span,
                 format!("{name} is not defined"),
             ));
         }
-        self.get_property(&object, &key, span)
+        self.get_property(&object, key, span)
     }
 
     pub(super) fn put_global(
         &mut self,
         name: &str,
+        key: JsString,
         value: Value,
         resolved: bool,
         span: Span,
     ) -> Result<(), Error> {
         let object = self.global_object();
-        let key = JsString::from(name);
         // An RHS can delete an already-resolved property (9.1.1.2.5).
         if resolved && self.strict && !self.has_property(&object, &key, span)? {
             return Err(Self::exception(
@@ -645,12 +649,24 @@ mod tests {
         realm.eval("this.x=1;delete this.x").unwrap();
         let span = Span::new(0, 0);
         assert_eq!(
-            realm.get(&mut Reference::Global("x"), span),
+            realm.get(
+                &mut Reference::Global {
+                    name: "x",
+                    key: JsString::from("x"),
+                },
+                span,
+            ),
             Ok(Value::Undefined)
         );
         realm.strict = true;
         assert!(matches!(
-            realm.get(&mut Reference::Global("x"), span),
+            realm.get(
+                &mut Reference::Global {
+                    name: "x",
+                    key: JsString::from("x"),
+                },
+                span,
+            ),
             Err(Error::Exception {
                 kind: ExceptionKind::ReferenceError,
                 ..

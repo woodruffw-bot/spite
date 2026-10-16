@@ -164,7 +164,10 @@ enum Reference<'a> {
         object: ObjectHandle,
         name: &'a str,
     },
-    Global(&'a str),
+    Global {
+        name: &'a str,
+        key: JsString,
+    },
     Unresolvable(&'a str),
     UnsupportedGlobal(&'a str),
     Property {
@@ -190,7 +193,7 @@ impl Reference<'_> {
             self,
             Self::Lexical(_, "eval")
                 | Self::ObjectBinding { name: "eval", .. }
-                | Self::Global("eval")
+                | Self::Global { name: "eval", .. }
         )
     }
     // ECMA-262 13.3.6.2 / 9.1.1.2.10: environment calls use WithBaseObject.
@@ -1086,13 +1089,12 @@ impl Realm {
             return Ok(Reference::UnsupportedGlobal(name));
         }
         let object = self.global_object();
-        Ok(
-            if self.has_property(&object, &JsString::from(name), span)? {
-                Reference::Global(name)
-            } else {
-                Reference::Unresolvable(name)
-            },
-        )
+        let key = JsString::from(name);
+        Ok(if self.has_property(&object, &key, span)? {
+            Reference::Global { name, key }
+        } else {
+            Reference::Unresolvable(name)
+        })
     }
 
     fn reference<'a>(&mut self, target: &'a Expr) -> Result<Reference<'a>, Error> {
@@ -1155,7 +1157,7 @@ impl Realm {
                         format!("{name} is uninitialized"),
                     )
                 }),
-            Reference::Global(name) => self.get_global(name, span),
+            Reference::Global { name, key } => self.get_global(name, key, span),
             Reference::Unresolvable(name) => Err(Self::exception(
                 ExceptionKind::ReferenceError,
                 span,
@@ -1240,8 +1242,10 @@ impl Realm {
                     format!("{name} is not defined"),
                 ));
             }
-            Reference::Global(name) => self.put_global(name, value, true, span)?,
-            Reference::Unresolvable(name) => self.put_global(name, value, false, span)?,
+            Reference::Global { name, key } => self.put_global(name, key, value, true, span)?,
+            Reference::Unresolvable(name) => {
+                self.put_global(name, JsString::from(name), value, false, span)?;
+            }
             Reference::UnsupportedGlobal(name) => {
                 return Err(Self::unsupported(
                     span,
@@ -1526,9 +1530,9 @@ impl Realm {
                             &JsString::from(name),
                             inner.span,
                         )?,
-                        Reference::Global(name) => {
+                        Reference::Global { key, .. } => {
                             let object = Value::Object(self.global_object());
-                            self.delete_property_value(&object, &JsString::from(name), inner.span)?
+                            self.delete_property_value(&object, &key, inner.span)?
                         }
                         Reference::Unresolvable(_) => true,
                         Reference::UnsupportedGlobal(name) => {

@@ -12456,3 +12456,25 @@ Node v24.19.0 (Unicode 17), with no exclusions or discrepancies. Formatting,
 denied-warning Clippy, policy, inventories, all 39 runner/discovery probes and all
 seven generator checks pass. No fixture, dependency, profile, default quota or
 native-stack allowance changes belong to this implementation.
+
+## Reuse resolved global property keys
+
+Global identifier references retain the immutable UTF-16 property key created
+during resolution and reuse it for Get/Put/Delete. Live property lookup,
+strict-mode checks, call receivers, direct eval and work charging retain their
+existing behavior.
+
+One untraced, sequential comparison of two unchanged whole URI fixtures passed
+all four normal/strict variants on each toolchain. Stable wall time changed from
+170.511 to 158.045 seconds (7.31% lower); Rust 1.85.0 changed from 169.563 to
+170.205 seconds (0.38% higher). User CPU time changed from 158.630 to 137.703
+seconds (13.19% lower) and from 156.143 to 153.284 seconds (1.83% lower),
+respectively. A single pair per toolchain does not establish an overall CI gain.
+
+Both toolchains pass all 27 workspace invocations / 5163 tests, including 926
+Core, 347 Parser and 3506 Runtime integration tests, plus the documentation test.
+Both complete 14720-variant / 7621-source corpus gates pass with the existing two
+workers. All 686 snapshots remain byte-identical. Formatting, denied-warning
+Clippy, policy, inventories, all 39 runner/discovery probes and all seven generator
+checks pass. No fixture, dependency, profile or default quota changes accompany
+this implementation.
