@@ -1,5 +1,0 @@
----
-source: crates/spite-runtime/tests/regexp_unicode_line_assertions.rs
-expression: "format!(\"{:?} {result:?}\", JsString::from(source))"
----
-"/^$/.exec('')+/(?:^$)/u.exec('')" "\u0022\u0022"

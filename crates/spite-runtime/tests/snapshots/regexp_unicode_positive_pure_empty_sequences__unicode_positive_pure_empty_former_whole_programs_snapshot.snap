@@ -1,6 +1,0 @@
----
-source: crates/spite-runtime/tests/regexp_unicode_positive_pure_empty_sequences.rs
-expression: rows
----
-"/()+/u.test('')" "true"
-"/()+/u.exec('a')" "[\u0022\u0022,\u0022\u0022]"

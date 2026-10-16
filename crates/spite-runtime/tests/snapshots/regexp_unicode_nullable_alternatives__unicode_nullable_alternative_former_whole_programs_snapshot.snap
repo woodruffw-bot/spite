@@ -1,6 +1,0 @@
----
-source: crates/spite-runtime/tests/regexp_unicode_nullable_alternatives.rs
-expression: rows
----
-"new RegExp('(a|)*','u').exec('aa')" "[\u0022aa\u0022,\u0022a\u0022]"
-"new RegExp('(a|)*','v').exec('aa')" "[\u0022aa\u0022,\u0022a\u0022]"

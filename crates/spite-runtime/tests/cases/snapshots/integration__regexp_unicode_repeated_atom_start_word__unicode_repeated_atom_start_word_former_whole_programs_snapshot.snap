@@ -1,0 +1,8 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_repeated_atom_start_word.rs
+expression: rows
+---
+/\ba+$/u.exec('a') "[\u0022a\u0022]"
+/\ba+$/um.exec('a') "[\u0022a\u0022]"
+/^\ba+/u.exec('a') "[\u0022a\u0022]"
+/\ba+/u.exec('a') "[\u0022a\u0022]"

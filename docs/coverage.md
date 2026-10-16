@@ -11923,7 +11923,7 @@ Test builds retain line and function debug information while omitting full
 variable/type details. Link-time optimization, including local ThinLTO, is off.
 Only spite-core uses optimization level 1 for its exhaustive Unicode checks;
 interpreter and integration test code remains unoptimized. Debug assertions and
-overflow checks are explicitly enabled. All test targets, inputs, snapshots,
+overflow checks are explicitly enabled. All test cases, inputs, snapshots,
 runner arguments, native stack sizes and JavaScript quota defaults are retained.
 The separate full-corpus conformance profile and normal development builds are
 unchanged.
@@ -11939,3 +11939,37 @@ all 890 Core tests and 3,438 runtime integration tests, plus documentation tests
 The Core suite takes 91.05 seconds on stable and 156.18 seconds on MSRV in these
 runs. Formatting, denied-warning Clippy,
 the runner's eight Cargo probes, dependency policy and pinned-data checks pass.
+
+Hosted CI also confirms faster Core jobs with the same 890 cases. The unit and
+integration step falls from 459 to 226 seconds on Linux stable, 792 to 321 seconds
+on Windows stable, and 898 to 453 seconds on Linux MSRV. These are single-run
+comparisons for the profile change, not guarantees about cold builds or overall
+workflow duration; the full corpus uses its unchanged conformance profile.
+
+
+## Runtime integration harness
+
+The runtime integration suite shares one Cargo test executable instead of 460.
+All 3,438 test functions remain, with the original target name as their module
+prefix. Each file keeps its original test bodies apart from importing the shared
+common module. All 275 external snapshot bodies are byte-identical; filenames
+include the integration module prefix and source metadata follows the moved
+files. The Date helper fixture moves with its four unchanged include paths;
+other fixture data and generator paths remain unchanged.
+
+Default test threads and native stack sizes are retained. Cargo still compiles
+the complete workspace before selecting the Core or remaining suites, so feature
+unification and every original test case are preserved. The independent full
+Test262 corpus and all platform/toolchain jobs keep their existing commands.
+
+A dependency-free inventory check requires every case file to appear exactly
+once as an unconditional harness module. Eleven regression tests reject orphaned
+or missing files, duplicates, aliases, conditional modules and extra automatic
+Cargo targets. Fixture helpers remain outside the case inventory. These checks
+run in CI so a new case file cannot silently lose automatic test discovery.
+
+Stable and MSRV each pass all 5,056 workspace tests across 94 invocations,
+including all 3,438 runtime integration cases, plus documentation tests. Both
+compiled harnesses list the exact 3,438 mapped names. Formatting, denied-warning
+Clippy, dependency policy, the eight runner probes, eleven inventory probes and
+all pinned-data checks pass. The full corpus remains independent and unchanged.

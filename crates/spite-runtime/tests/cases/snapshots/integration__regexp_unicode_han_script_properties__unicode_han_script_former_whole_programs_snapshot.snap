@@ -1,0 +1,6 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_han_script_properties.rs
+expression: rows
+---
+"/\\p{Script=Han}/v.exec('𠮷')" "[\u0022\ud842\udfb7\u0022]"
+"/[\\p{Script=Han}]/v.exec('𠮷')" "[\u0022\ud842\udfb7\u0022]"

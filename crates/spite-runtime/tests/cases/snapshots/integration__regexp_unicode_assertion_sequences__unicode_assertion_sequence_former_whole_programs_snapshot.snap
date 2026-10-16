@@ -1,0 +1,9 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_assertion_sequences.rs
+expression: rows
+---
+"/^^/u.test('A')" "true"
+"/$$/u.test('A')" "true"
+"/$^/u.test('A')" "false"
+"/\u005cb\u005cb/u.test('A')" "true"
+"/\u005cb\u005cB/u.test('A')" "false"

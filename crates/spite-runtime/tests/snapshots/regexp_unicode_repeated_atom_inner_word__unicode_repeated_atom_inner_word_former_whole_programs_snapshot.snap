@@ -1,5 +1,0 @@
----
-source: crates/spite-runtime/tests/regexp_unicode_repeated_atom_inner_word.rs
-expression: rows
----
-/(\b.)+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"

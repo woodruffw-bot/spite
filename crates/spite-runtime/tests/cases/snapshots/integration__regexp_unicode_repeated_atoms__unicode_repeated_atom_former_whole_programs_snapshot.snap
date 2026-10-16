@@ -1,0 +1,26 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_repeated_atoms.rs
+expression: rows
+---
+/a+/u.test('a') "true"
+/[a]+/v.test('a') "true"
+/\p{AHex}+/u.exec('AA') "[\u0022AA\u0022]"
+/\p{ASCII}+/v.exec('A') "[\u0022A\u0022]"
+/[a]*/u.exec('a') "[\u0022a\u0022]"
+/(?:a?)/u.exec('a') "[\u0022a\u0022]"
+/[\u{61}]*/u.exec('a') "[\u0022a\u0022]"
+/\u{61}+/v.exec('aa') "[\u0022aa\u0022]"
+/\w+/iv.exec('a') "[\u0022a\u0022]"
+/[a]+/iv.exec('a') "[\u0022a\u0022]"
+/[\p{ASCII}]+/v.exec('A') "[\u0022A\u0022]"
+/\D+/u.exec('a') "[\u0022a\u0022]"
+/\p{Hex}+/u.exec('AA') "[\u0022AA\u0022]"
+/\p{Join_C}+/u.exec('AA') "null"
+/a+/iv.exec('A') "[\u0022A\u0022]"
+/\p{NChar}+/u.exec('AA') "null"
+/[a]+/u.exec('a') "[\u0022a\u0022]"
+/😀+/u.exec('😀') "[\u0022\ud83d\ude00\u0022]"
+/[a]*/v.exec('a') "[\u0022a\u0022]"
+/(?:a?)/v.exec('a') "[\u0022a\u0022]"
+/\uDE00+/u.exec('\uDE00') "[\u0022\u005cude00\u0022]"
+/\p{space}+/u.exec('AA') "null"

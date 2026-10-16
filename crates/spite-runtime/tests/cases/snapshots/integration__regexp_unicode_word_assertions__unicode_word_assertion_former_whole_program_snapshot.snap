@@ -1,0 +1,5 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_word_assertions.rs
+expression: "format!(\"{:?} {result:?}\", JsString::from(source))"
+---
+"/\u005cb/iu.exec('a')" "[\u0022\u0022]"

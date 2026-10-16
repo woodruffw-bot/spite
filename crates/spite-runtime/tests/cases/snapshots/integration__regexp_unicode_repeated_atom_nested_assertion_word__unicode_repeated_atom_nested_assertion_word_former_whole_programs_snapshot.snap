@@ -1,0 +1,6 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_repeated_atom_nested_assertion_word.rs
+expression: rows
+---
+/\b(\b(a))+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022,\u0022a\u0022]"
+/(\b(a))+\b/v.exec('a') "[\u0022a\u0022,\u0022a\u0022,\u0022a\u0022]"

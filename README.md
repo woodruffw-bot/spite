@@ -46,6 +46,12 @@ their normal unoptimized profile. Test builds retain line and function debug
 information while omitting full variable and type details to reduce linking costs.
 Link-time optimization is disabled for test builds.
 
+Runtime integration cases live under `crates/spite-runtime/tests/cases` and share
+one harness. For example, run a subset with
+`cargo test -p spite-runtime --test integration regexp_unicode_devanagari_script`.
+Add each new case file to the harness module list; CI checks for omitted or
+duplicate files. Keep fixture helpers under `cases/fixtures`.
+
 ## Embed
 
 ```rust
