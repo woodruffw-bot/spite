@@ -46,6 +46,11 @@ their normal unoptimized profile. Test builds retain line and function debug
 information while omitting full variable and type details to reduce linking costs.
 Link-time optimization is disabled for test builds.
 
+The complete Test262 gate explicitly uses two corpus workers. Every reviewed
+variant runs, and reports retain manifest order. Each evaluated variant uses a
+fresh realm, ordinary native stacks, and runtime defaults with JavaScript quotas
+disabled. The library's `run_corpus` API and the CLI use serial execution.
+
 Runtime integration cases live under `crates/spite-runtime/tests/cases` and share
 one harness. For example, run a subset with
 `cargo test -p spite-runtime --test integration regexp_unicode_devanagari_script`.

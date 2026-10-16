@@ -12001,3 +12001,32 @@ on Linux and 983 to 583 seconds on Windows. Linux stable Core compilation falls
 from 158.45 to 84.62 seconds and invocation recording from 19.51 to 2.92 seconds,
 with the same 890 Core tests. Other jobs vary; the longest job falls from 983 to
 872 seconds, with corpus execution now determining workflow duration.
+
+
+## Parallel full-corpus execution
+
+The existing pinned-corpus gate explicitly selects two workers through
+`run_corpus_with_workers`; `run_corpus` and the CLI use serial execution. Workers
+run every reviewed entry and its required execution variants. Each evaluated
+variant uses a fresh realm, and reports retain manifest order. Workers use
+ordinary native thread stacks and runtime defaults, with JavaScript quotas
+disabled. Non-passing outcomes retain their individual categories; infrastructure
+failures fail the gate.
+
+The full-corpus command and all thirteen CI jobs keep their existing commands.
+The gate checks the revision, complete source count, complete variant count, and
+absence of every non-passing category. Corpus fixtures, harness files and the
+upstream pin retain their existing bytes.
+
+Local Linux comparisons at the Bengali implementation revision ran all 7,594
+sources and 14,666 variants on both Rust stable and Rust 1.85.0. All four runs
+passed every variant and produced byte-identical complete reports. Stable took
+1,106.05 seconds serially and 513.96 seconds with two workers; Rust 1.85.0 took
+1,109.45 and 484.62 seconds respectively. The two serial baselines ran concurrently
+with one worker each; the two-worker runs ran separately. These are local
+comparisons with that scheduling difference, rather than hosted CI measurements.
+
+Per-process peak RSS rose from 3,159,112 to 5,617,244 KiB on stable and from
+3,159,188 to 5,548,452 KiB on Rust 1.85.0. No out-of-memory events occurred.
+GitHub documents 16 GB of RAM for this public repository's standard Linux and
+Windows runners; these Linux measurements do not establish Windows peak usage.

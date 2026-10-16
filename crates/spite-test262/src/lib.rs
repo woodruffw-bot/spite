@@ -7,4 +7,4 @@ pub use metadata::{Metadata, MetadataError, MetadataErrorKind, Mode, Negative, P
 mod runner;
 pub use runner::{CaseResult, Outcome, ParseExpectation, Runner, Stage};
 mod corpus;
-pub use corpus::{CorpusReport, CorpusTest, run_corpus};
+pub use corpus::{CorpusReport, CorpusTest, run_corpus, run_corpus_with_workers};

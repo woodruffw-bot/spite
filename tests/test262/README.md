@@ -5,6 +5,15 @@ These 7613 unmodified test fixtures and twelve harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Full-corpus execution
+
+The pinned full-corpus gate runs every reviewed source and required Script
+variant with two workers. Each evaluated variant uses an independent realm,
+ordinary native stacks, and runtime defaults with JavaScript quotas disabled.
+Reports retain manifest order and every per-variant outcome. I/O, review, and
+thread-creation errors fail the gate; worker panics propagate. The library's
+`run_corpus` API and the CLI use serial execution.
+
 
 
 ## Generated Cyrillic Script property fixture

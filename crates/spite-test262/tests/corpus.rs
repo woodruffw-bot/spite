@@ -1,8 +1,9 @@
 //! Pinned corpus inventory and command-line failure semantics.
 
-use spite_test262::run_corpus;
+use spite_test262::{run_corpus, run_corpus_with_workers};
 use std::{
     fs,
+    num::NonZeroUsize,
     path::{Path, PathBuf},
     process::Command,
     sync::atomic::{AtomicUsize, Ordering},
@@ -43,7 +44,7 @@ impl Drop for TemporaryCorpus {
 
 #[test]
 fn pinned_corpus_runs_all_reviewed_variants() {
-    let report = run_corpus(&pinned()).unwrap();
+    let report = run_corpus_with_workers(&pinned(), NonZeroUsize::new(2).unwrap()).unwrap();
     assert!(report.is_success(), "{report:#?}");
     assert_eq!(report.revision, "7ab7fafa0003f73fc85c1b95d88094d33f7eb8bd");
     assert_eq!(report.tests.len(), 7594);
