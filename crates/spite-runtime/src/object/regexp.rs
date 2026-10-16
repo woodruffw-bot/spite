@@ -8,8 +8,8 @@ use spite_core::{
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
     RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher, RegExpUnicodeClassPairMatcher,
-    RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
+    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -26,6 +26,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeClass(RegExpUnicodeClassMatcher),
     UnicodeClassLiteral(RegExpUnicodeClassLiteralMatcher),
     UnicodeClassPair(RegExpUnicodeClassPairMatcher),
+    UnicodeLiteralClassPair(RegExpUnicodeLiteralClassPairMatcher),
     UnicodeFoldedLiteral(RegExpUnicodeFoldedLiteralMatcher),
     UnicodeRepeatedAtom(RegExpUnicodeRepeatedAtomMatcher),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
@@ -62,7 +63,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeCharacter(_)
             | RegExpMatcherBody::UnicodeClass(_)
             | RegExpMatcherBody::UnicodeClassLiteral(_)
-            | RegExpMatcherBody::UnicodeClassPair(_) => 0,
+            | RegExpMatcherBody::UnicodeClassPair(_)
+            | RegExpMatcherBody::UnicodeLiteralClassPair(_) => 0,
             RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -164,6 +166,20 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodeLiteralClassPair(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodePropertyDot(matcher) = &self.body {
             return matcher
                 .find_with_work(input, start, sticky, charge)
@@ -193,7 +209,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodePropertyDot(_)
             | RegExpMatcherBody::UnicodeClassLiteral(_)
-            | RegExpMatcherBody::UnicodeClassPair(_) => {
+            | RegExpMatcherBody::UnicodeClassPair(_)
+            | RegExpMatcherBody::UnicodeLiteralClassPair(_) => {
                 unreachable!("fallible matching dispatch")
             }
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
@@ -261,6 +278,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeClass(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassLiteral(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassPair(matcher) => matcher.search_passes(),
+            RegExpMatcherBody::UnicodeLiteralClassPair(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodePropertyDot(matcher) => matcher.search_passes(),
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
@@ -277,6 +295,13 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        if matches!(self.body, RegExpMatcherBody::UnicodeLiteralClassPair(_)) {
+            // Three original characters consume at most six units. The first
+            // literal retains the approved initial-low-surrogate rewind.
+            let remaining = remaining.saturating_add(1);
+            return if sticky { 6.min(remaining) } else { remaining };
+        }
+
         if matches!(
             self.body,
             RegExpMatcherBody::UnicodePropertyDot(_)
@@ -361,7 +386,8 @@ impl RegExpMatch<'_> {
             | RegExpMatcherBody::UnicodeCharacter(_)
             | RegExpMatcherBody::UnicodeClass(_)
             | RegExpMatcherBody::UnicodeClassLiteral(_)
-            | RegExpMatcherBody::UnicodeClassPair(_) => {
+            | RegExpMatcherBody::UnicodeClassPair(_)
+            | RegExpMatcherBody::UnicodeLiteralClassPair(_) => {
                 return None;
             }
             RegExpMatcherBody::UnicodeRepeatedAtom(_) => return self.atom_capture.clone(),
@@ -447,6 +473,71 @@ impl Objects {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn literal_checked_pair_work_bound_covers_three_original_characters() {
+        let source = JsString::from(r"\u{1f600}[[\u{1f601}]][[\u{1f602}]]");
+        let body = RegExpUnicodeLiteralClassPairMatcher::compile_v_set_with_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeLiteralClassPair(body), 2);
+        for source_len in [0, 1, source.len(), usize::MAX] {
+            for remaining in 0usize..=7 {
+                assert_eq!(
+                    matcher.search_work(true, source_len, remaining),
+                    [1, 2, 3, 4, 5, 6, 6, 6][remaining]
+                );
+                assert_eq!(
+                    matcher.search_work(false, source_len, remaining),
+                    remaining + 1
+                );
+            }
+            assert_eq!(matcher.search_work(true, source_len, usize::MAX), 6);
+            assert_eq!(
+                matcher.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        let input = JsString::from("😀😁😂");
+        // Start1 is inside the leading pair. Its five remaining units need the
+        // extra rewind unit; the complete three-character range is six units.
+        assert_eq!(matcher.search_work(true, source.len(), input.len() - 1), 6);
+        let mut charges = Vec::new();
+        let found = matcher
+            .find_with_work(&input, 1, true, |n| {
+                charges.push(n);
+                Ok::<(), std::convert::Infallible>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(charges, [1]);
+        assert_eq!(found.range, 0..6);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(0..6));
+        assert_eq!(found.capture(1), Some(0..6));
+        assert_eq!(found.capture(2), None);
+        let pair = RegExpUnicodeClassPairMatcher::compile_v_set_with_work(
+            &JsString::from("[[a]][[b]]"),
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let old = RegExpMatcher::new(RegExpMatcherBody::UnicodeClassPair(pair), 0);
+        for remaining in 0usize..=7 {
+            assert_eq!(
+                old.search_work(true, 1, remaining),
+                [1, 2, 3, 4, 4, 4, 4, 4][remaining]
+            );
+            assert_eq!(old.search_work(false, 1, remaining), remaining + 1);
+        }
+    }
 
     #[test]
     fn foreign_and_stale_handles_cannot_receive_original_slots() {

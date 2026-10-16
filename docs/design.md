@@ -8085,3 +8085,29 @@ Runtime reuses the same representation and complete whole-body capture proof.
 Existing endpoint allowances, one entry charge and four-unit sticky bound remain
 in use. No source/input buffer, parser refactor, dependency, default quota,
 profile, stack or worker-policy change is introduced.
+
+A separate typed plan matches one decoded Unicode literal followed by exactly
+two checked character-only v/vi classes (22.2.2.3, 22.2.2.7.3). An optional ^
+belongs to the literal prefix and optional $ to the second class; line assertions
+inspect the original input and m context. The existing literal decoder proves
+one complete atom, and each class independently retains the nested-class/set-
+operator gate. Borrowed framing charges 3N before literal decoding and the two
+class-end walks. Complete literal, first-class and second-class proofs then run
+in source order, including rejection of hidden string leaves behind an empty
+first class. Flat components, word gates, quantifiers, additional atoms, inner
+assertions and partial captures remain separate proofs. Earlier APIs are unchanged.
+
+Matching checks both classes sticky after the literal. If either fails, search
+retries at the literal's complete-character end, preserving the 1..4 overlap of
+a[[a]][[b]] on aaab. All ranges use original UTF-16 characters, folding and lone-
+surrogate semantics. The documented leading-boundary behavior for an initial
+low surrogate remains in use. Runtime adds a dedicated zero-inner-capture variant
+and retains the existing proof of complete whole-body captures.
+
+Three complete characters consume at most six UTF-16 units. The new Runtime
+work path adds the possible one-unit initial-pair rewind to the remaining suffix
+before applying the six-unit sticky cap; nonsticky work retains that rewind
+allowance. Entry charging and summed predicate/traversal bounds remain fallible.
+The preceding four-unit paths and their callbacks are unchanged. No source/input
+buffer, parser refactor, dependency, default quota, profile, stack or worker-policy
+change is introduced.
