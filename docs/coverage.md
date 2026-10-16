@@ -12425,3 +12425,34 @@ Both complete corpus gates pass all 14,710 variants from 7,616 sources using the
 existing two workers. Formatting, Clippy, dependency policy, inventories, all 39
 runner/discovery regression probes and all seven generators pass. No new upstream
 fixture programs are admitted by this implementation.
+
+## Nested character-only UnicodeSets expressions
+
+The checked v/vi extension admits bare nested classes and nested unions,
+intersections, left-subtractions and complements. Each bracket level retains
+its homogeneous grammar and each completed child retains its Boolean structure.
+The existing line-assertion, single-class repetition and whole-body wrapper paths
+reuse this compiler. String/q operands, binary properties of strings, additional
+consuming concatenation, inner quantified captures and new word wrappers remain
+Unsupported. The 61 legacy local Core rejection controls keep their narrow
+constructor contracts.
+
+The existing sparse pinned-data oracle retains its 2262 checks and adds 858
+nested case/mode/code-point checks for Boolean structure, raw ranges, complements,
+empty/all-character children and Kelvin/long-s folding. Six checked literal
+controls and the 20,000-level case-sensitive nesting control now assert successful
+matching. One new Core test checks that transparent vi nesting does not repeat
+fold-table work. Runtime migrates ten eligible source occurrences across eight
+existing tests and adds two tests for nested algebra, captures, UTF-16 boundaries
+and state, including an eight-row insta snapshot. Small work-abort prefixes and
+deterministic frame-capacity failures exercise host errors without default quotas.
+
+Stable and Rust 1.85.0 pass all 27 workspace invocations / 5163 tests, including
+926 Core, 347 Parser and 3506 Runtime integration tests, plus the documentation
+test. Both complete 14720-variant / 7621-source corpus gates pass with the existing
+two workers. All 685 previous snapshots remain byte-identical; the single new
+eight-row snapshot agrees with the independent expected JSON/UTF-16 values and
+Node v24.19.0 (Unicode 17), with no exclusions or discrepancies. Formatting,
+denied-warning Clippy, policy, inventories, all 39 runner/discovery probes and all
+seven generator checks pass. No fixture, dependency, profile, default quota or
+native-stack allowance changes belong to this implementation.

@@ -139,8 +139,10 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
     check(
         r"let m=/[a--b]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
+    check(
+        r"let m=/[[a]]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
+    );
     for source in [
-        r"/[[a]]/v.exec('a')",
         r"/([a])+b/iv.exec('a')",
         r"/([^a])+b/v.exec('b')",
         r"/(\D)+b/v.exec('a')",

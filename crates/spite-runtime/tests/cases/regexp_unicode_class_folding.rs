@@ -144,11 +144,13 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         r#"let m=/[\p{Script_Extensions=Latin}]/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
     check(r"/[a&&b]/iv.exec('a')===null");
+    check(
+        r"let m=/[[a]]/iv.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'&&/[[a]]/iv.test('A')&&!/[[a]]/iv.test('b')",
+    );
     for source in [
         r"/([a])+b/iu.exec('a')",
         r"/[a]+b/iv.exec('a')",
         r"/[a]b/iu.exec('ab')",
-        r"/[[a]]/iv.exec('a')",
         r"/[\q{ab}]/iv.exec('ab')",
     ] {
         assert!(

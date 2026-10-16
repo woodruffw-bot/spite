@@ -143,13 +143,15 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
     check(
         r#"let m=/([\p{Script_Extensions=Latin}])/iu.exec('a');JSON.stringify(m)==='["a","a"]'&&m.index===0&&m.input==='a'"#,
     );
+    check(
+        r"let m=/(?:[[a]])/iv.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'&&m.groups===undefined",
+    );
     for source in [
         r"/([a])+b/iu.exec('a')",
         r"/([a])b/iv.exec('ab')",
         r"/([a]|b)/iu.exec('a')",
         r"/^([a])+b$/iu.exec('a')",
         r"/(?=([a]))/iv.exec('a')",
-        r"/(?:[[a]])/iv.exec('a')",
         r"/(?:[\q{a\)b}])/iv.exec('a)b')",
         r"/(.)(.)/u.exec('ab')",
     ] {

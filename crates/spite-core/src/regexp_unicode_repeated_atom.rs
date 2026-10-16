@@ -252,10 +252,21 @@ mod v_set_checked_repetition_tests {
 
     #[test]
     fn checked_v_set_repetition_complete_body_and_legacy_contracts() {
+        for source in ["[[a]]+", "[[a--b]&&a]+"] {
+            let matcher =
+                RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(find(&matcher, &JsString::from("aab"), 0, true), Some(0..2));
+            assert_eq!(find(&matcher, &JsString::from("b"), 0, true), None);
+        }
         for source in [
             "[a--b]",
-            "[[a]]+",
-            "[[a--b]&&a]+",
             "([a--b])+",
             "a[a--b]+",
             "[a--b]+b",
@@ -982,7 +993,7 @@ enum AlternativeProof {
 }
 
 impl RegExpUnicodeRepeatedAtomMatcher {
-    /// Compiles one checked v-mode set-operation class with a quantifier.
+    /// Compiles one checked nested v-mode set expression with a quantifier.
     ///
     /// Requires complete v-mode Pattern validation. Optional outside ^/$ retain
     /// their line contexts (22.2.2.4); the quantifier keeps its exact greedy or

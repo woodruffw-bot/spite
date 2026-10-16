@@ -534,6 +534,62 @@ fn checked_v_set_sparse_pinned_reference_matches_both_modes() {
             }
         }
     }
+    for (case, source) in [
+        r"[[a]b]",
+        r"[[A--a]b]",
+        r"[[A&&a]b]",
+        r"[A--[a--A]]",
+        r"[[a-c]--[[b]c]]",
+        r"[^[[^A]&&[a]]]",
+        r"[[[K]&&[k]]\u017f]",
+        r"[[^]--[[^]--a]]",
+        r"[[][a--a]]",
+        r"[[[Z-a]&&[A-z]]--[a]]",
+        r"[[\p{ASCII}]--[[A]b]]",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        for ignore_case in [false, true] {
+            let matcher = plan(source, ignore_case, false);
+            for &point in POINTS {
+                let member = |ranges: &'static [(u32, u32)]| {
+                    reference.leaf(Leaf::Ranges(ranges, false), point, ignore_case)
+                };
+                let upper_a = member(&[(0x41, 0x41)]);
+                let lower_a = member(&[(0x61, 0x61)]);
+                let lower_b = member(&[(0x62, 0x62)]);
+                // Explicit Boolean predicates use the raw pinned leaf oracle,
+                // not the production frame evaluator or interval operations.
+                let expected = match case {
+                    0 => lower_a || lower_b,
+                    1 => (upper_a && !lower_a) || lower_b,
+                    2 => (upper_a && lower_a) || lower_b,
+                    3 => upper_a, // A -- (a -- A) is A, including under folding.
+                    4 => member(&[(0x61, 0x63)]) && !(lower_b || member(&[(0x63, 0x63)])),
+                    5 => upper_a || !lower_a,
+                    6 => {
+                        (member(&[(0x4b, 0x4b)]) && member(&[(0x6b, 0x6b)]))
+                            || member(&[(0x17f, 0x17f)])
+                    }
+                    7 => lower_a,
+                    8 => false,
+                    9 => member(&[(0x5a, 0x61)]) && member(&[(0x41, 0x7a)]) && !lower_a,
+                    10 => {
+                        reference.leaf(Leaf::Property("ASCII", false), point, ignore_case)
+                            && !(upper_a || lower_b)
+                    }
+                    _ => unreachable!(),
+                };
+                let text = input(point);
+                assert_eq!(
+                    matcher.find(&text, 0, true),
+                    expected.then_some(0..text.len()),
+                    "{source} i={ignore_case} cp={point:x}"
+                );
+            }
+        }
+    }
 }
 
 #[test]
@@ -603,12 +659,20 @@ fn checked_v_set_tokens_class_escapes_and_raw_ranges() {
 
 #[test]
 fn checked_v_set_complete_body_and_legacy_domains_remain_distinct() {
+    for (source, expected) in [
+        ("[[a]]", Some(0..1)),
+        ("[[[a]]&&a]", Some(0..1)),
+        ("[[a&&a]--a]", None),
+        ("[a&&[b--c]]", None),
+    ] {
+        assert_eq!(
+            plan(source, false, false).find(&JsString::from("a"), 0, true),
+            expected,
+            "{source}"
+        );
+    }
     for source in [
         "[a]",
-        "[[a]]",
-        "[[[a]]&&a]",
-        "[[a&&a]--a]",
-        "[a&&[b--c]]",
         r"[\q{a}&&a]",
         r"[\q{ab}&&a]",
         r"[^\q{ab}&&a]",
@@ -629,6 +693,13 @@ fn checked_v_set_complete_body_and_legacy_domains_remain_distinct() {
         "[a&&b--c]",
         "[a-z&&a]",
         "[a&&&b]",
+        "[ab&&c]",
+        "[a&&bc]",
+        "[a&&b-c]",
+        "[[a]-z]",
+        "[a-[z]]",
+        r"[[a--a]&&[[\q{ab}]]]",
+        r"[[][^][\p{RGI_Emoji}]]",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_v_set_with_work(
@@ -664,15 +735,9 @@ fn checked_v_set_complete_body_and_legacy_domains_remain_distinct() {
     );
     let depth = 20_000;
     let source = format!("{}a{}", "[".repeat(depth), "]".repeat(depth));
-    assert!(
-        RegExpUnicodeClassMatcher::compile_v_set_with_work(
-            &JsString::from(source.as_str()),
-            false,
-            false,
-            |_| Ok::<(), ()>(()),
-        )
-        .unwrap()
-        .is_none()
+    assert_eq!(
+        plan(&source, false, false).find(&JsString::from("a"), 0, true),
+        Some(0..1)
     );
     let source = format!("[a{}]", "&&a".repeat(depth));
     assert_eq!(
@@ -728,6 +793,7 @@ fn checked_v_set_work_errors_preserve_every_callback_prefix() {
     for (source, ignore_case) in [
         (r"[[\p{ASCII}\dA-Z]--[Q]--a]", false),
         (r"[[K]&&[k]]", true),
+        (r"[[a--[b]]c]", false),
     ] {
         let source = JsString::from(source);
         let mut charges = Vec::new();
@@ -784,4 +850,50 @@ fn checked_v_set_capacity_failure_preserves_buffers() {
     );
     assert!(empty.is_empty());
     assert_eq!(*charges.borrow(), [usize::MAX]);
+    charges.borrow_mut().clear();
+    let mut frames = vec![Frame::new(false)];
+    assert_eq!(
+        builder.reserve_frames(&mut frames, usize::MAX),
+        Err(RegExpUnicodeSetCompileError::Capacity)
+    );
+    assert_eq!(frames.len(), 1);
+    assert!(charges.borrow().is_empty());
+    let mut frames = Vec::new();
+    assert_eq!(
+        builder.reserve_frames(&mut frames, usize::MAX),
+        Err(RegExpUnicodeSetCompileError::Capacity)
+    );
+    assert!(frames.is_empty());
+    assert_eq!(*charges.borrow(), [usize::MAX]);
+}
+
+#[test]
+fn checked_v_set_closed_children_move_through_transparent_frames() {
+    let compile = |depth: usize| {
+        let source =
+            JsString::from(format!("{}K{}", "[".repeat(depth), "]".repeat(depth)).as_str());
+        let mut work = 0usize;
+        let matcher =
+            RegExpUnicodeClassMatcher::compile_v_set_with_work(&source, true, false, |amount| {
+                work = work.checked_add(amount).unwrap();
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        for text in ["K", "k", "\u{212a}"] {
+            assert_eq!(matcher.find(&JsString::from(text), 0, true), Some(0..1));
+        }
+        assert_eq!(matcher.find(&JsString::from("x"), 0, true), None);
+        work
+    };
+    let shallow = compile(2);
+    let depth = 512;
+    let deep = compile(depth);
+    // Source scans and geometric frame moves are linear in these wrappers.
+    // Forty units per frame leaves ample room for geometric growth, while a
+    // single repeated 1,533-record fold pass per wrapper exceeds this bound.
+    assert!(
+        deep <= shallow + 40 * depth,
+        "shallow={shallow} deep={deep}"
+    );
 }

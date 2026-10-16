@@ -160,17 +160,35 @@ fn checked_v_set_anchored_repetition() {
     check(
         r"let r=/^[[a-z]--[aeiou]]+$/dmvg,a=r.exec('😀\r\nbcd\u2028f'),b=r.exec('😀\r\nbcd\u2028f');a[0]==='bcd'&&a.index===4&&a.indices[0][1]===7&&b[0]==='f'&&b.index===8&&r.lastIndex===9",
     );
+    check(
+        r"/[[a--a]]+/v.exec('')===null&&/[[a--a]]+/v.exec('a')===null&&/^[[a--a]]*$/v.test('')&&!/^[[a--a]]*$/v.test('a')",
+    );
+    check(r"/^[^[[a--a]]]{2}$/v.test('😀a')&&!/^[^[[a--a]]]{3}$/v.test('😀a')");
 }
 
 #[test]
 fn checked_v_set_error_categories_and_effects() {
-    for pattern in ["[a&&]", "[a&&b--c]", "[z-a]", r"[^\q{}]"] {
+    for pattern in [
+        "[a&&]",
+        "[a&&b--c]",
+        "[z-a]",
+        r"[^\q{}]",
+        "[[a&&b--c]]",
+        "[[a]-z]",
+        "[a-[z]]",
+    ] {
         let code = JsString::from(format!("marker=1; /{pattern}/v;").as_str());
         check(&format!(
             "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
         ));
     }
-    for (pattern, expected) in [("[a--b]", true), ("[a&&b]", false)] {
+    for (pattern, expected) in [
+        ("[a--b]", true),
+        ("[a&&b]", false),
+        ("[[a]]", true),
+        ("[[[a]]&&a]", true),
+        ("[[a&&a]&&a]", true),
+    ] {
         let code = JsString::from(format!("marker=1; /{pattern}/v.test('a');").as_str());
         check(&format!(
             "let marker=0,result,caught=false;try{{result=eval({code:?})}}catch{{caught=true}}finally{{marker=3}}!caught&&marker===3&&result==={expected}"
@@ -181,9 +199,8 @@ fn checked_v_set_error_categories_and_effects() {
         r"[a--a--\q{ab}]",
         r"[\q{}&&a]",
         r"[\p{RGI_Emoji}&&a]",
-        "[[a]]",
-        "[[[a]]&&a]",
-        "[[a&&a]&&a]",
+        r"[[a--a]&&[\q{ab}]]",
+        r"[[][^][\p{RGI_Emoji}]]",
         "[a--b]c",
         "([a--b])+",
         r"\b[a--b]\b",
@@ -223,4 +240,53 @@ fn checked_v_set_opted_work_preserves_state() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+}
+
+#[test]
+fn checked_v_set_nested_algebra_and_state() {
+    check(r"let r=/[[a[b]]c]/v;r.test('a')&&r.test('b')&&r.test('c')&&!r.test('A')&&!r.test('d')");
+    check(r"/[a--[b--a]]/v.test('a')&&!/[a--b--a]/v.test('a')");
+    check(r"/[A--[a--A]]/iv.test('A')&&/[A--[a--A]]/iv.test('a')&&!/[A--a--A]/iv.test('A')");
+    check(r"/[[^[A&&a]]&&[a]]/v.test('a')&&!/[[^[A&&a]]&&[a]]/iv.test('a')");
+    check(r"!/[[a--a]]/v.test('a')&&/[^[[a--a]]]/v.test('a')&&/[^[[a--a]]]/v.test('😀')");
+    check(
+        r"let r=/[[[\u{1f600}]]--[[\uD800-\uDFFF]]]/dvy;r.lastIndex=1;let m=r.exec('😀a');m[0]==='😀'&&m.index===0&&m.indices[0][0]===0&&m.indices[0][1]===2&&r.lastIndex===2&&r.exec('😀a')===null&&r.lastIndex===0",
+    );
+    check(
+        r"let r=/^(?<whole>([[\(\)]]))$/dv,a=r.exec('('),b=r.exec(')');a.length===3&&a[0]==='('&&a[1]==='('&&a[2]==='('&&a.groups.whole==='('&&a.indices.groups.whole===a.indices[1]&&a.indices[2][1]===1&&b[0]===')'&&b[2]===')'&&b.index===0&&b.input===')'",
+    );
+}
+
+#[test]
+fn checked_v_set_nested_results() {
+    let mut rows = String::new();
+    let mut row_count = 0;
+    for (pattern, input) in [
+        (r"(?<whole>([[a]b]))", JsString::from("😀A")),
+        (r"(?<whole>([[A--a]&&[A]]))", JsString::from("😀Aa")),
+        (r"^(?<whole>([[a-z]--[[aeiou]b]]+))$", JsString::from("cdf")),
+        (
+            r"(?<whole>([[[\u{1f600}]]--[[\uD800-\uDFFF]]]))",
+            JsString::from_code_units(vec![0xd800, 0xd83d, 0xde00, 0xdc00]),
+        ),
+    ] {
+        let pattern = JsString::from(pattern);
+        let start = 0;
+        for flags in ["dvg", "divg"] {
+            let script = format!(
+                "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            );
+            let Value::String(result) = Realm::default().eval(&script).unwrap() else {
+                panic!("{script}")
+            };
+            writeln!(
+                rows,
+                "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+            )
+            .unwrap();
+            row_count += 1;
+        }
+    }
+    assert_eq!(row_count, 8);
+    insta::assert_snapshot!(rows);
 }

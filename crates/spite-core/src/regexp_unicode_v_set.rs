@@ -1,4 +1,4 @@
-//! Checked character-only UnicodeSets intersection and subtraction (22.2.2.9).
+//! Checked nested character-only UnicodeSets expressions (22.2.2.9).
 
 use super::{
     ClassAtom, RegExpUnicodeClassMatcher, SIMPLE_CASE_FOLD, append_escape, class_atom,
@@ -11,13 +11,13 @@ use std::fmt;
 ///
 /// Valid but unimplemented Pattern shapes return `Ok(None)` instead. Capacity
 /// failures are host resource failures, not JavaScript exceptions. New interval
-/// buffers reserve fallibly; final shared matcher storage retains the existing
-/// infallible `Arc` allocation boundary of the other class constructors.
+/// and construction-frame buffers reserve fallibly; shared matcher storage
+/// retains the existing infallible `Arc` allocation boundary.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RegExpUnicodeSetCompileError<E> {
     /// The embedding's opt-in construction work callback failed.
     Work(E),
-    /// Interval storage exceeds the allocator's or platform's capacity.
+    /// Interval or construction-frame storage exceeds platform capacity.
     Capacity,
 }
 
@@ -53,6 +53,42 @@ enum Operator {
     Subtraction,
 }
 
+enum Term {
+    Raw(ClassAtom),
+    Range(u32, u32),
+    Closed(Intervals),
+}
+
+struct Union {
+    raw: Intervals,
+    closed: Intervals,
+    escapes: u8,
+    properties: [u64; PROPERTY_WORDS],
+}
+
+enum Expression {
+    Empty,
+    Single(Term),
+    Union(Union),
+    Operation(Operator, Intervals),
+}
+
+struct Frame {
+    expression: Expression,
+    inverted: bool,
+    need_operand: bool,
+}
+
+impl Frame {
+    fn new(inverted: bool) -> Self {
+        Self {
+            expression: Expression::Empty,
+            inverted,
+            need_operand: true,
+        }
+    }
+}
+
 struct Builder<'a, F> {
     units: &'a [u16],
     at: usize,
@@ -61,13 +97,14 @@ struct Builder<'a, F> {
 }
 
 impl RegExpUnicodeClassMatcher {
-    /// Compiles a character-only v-mode intersection or subtraction chain.
+    /// Compiles a nested character-only v-mode set expression.
     ///
     /// The caller must validate the complete Pattern in v/vi mode. Operands are
-    /// characters, supported class/property escapes, or nested flat classes and
-    /// complements. Optional outside line assertions are admitted. String leaves,
-    /// deeper nesting, mixed nested operations and consuming concatenations remain
-    /// unimplemented. This does not widen the legacy flat-class constructors.
+    /// characters, supported class/property escapes, or nested unions,
+    /// intersections, subtractions and complements. At least one nested class or
+    /// set operator is required. Optional outside line assertions are admitted.
+    /// String leaves and consuming concatenations remain unimplemented. This
+    /// does not widen the legacy flat-class constructors.
     ///
     /// Case folding precedes every set operation. Work is opt-in and storage is
     /// proportional to source intervals and the fixed simple-fold table; ranges
@@ -106,31 +143,86 @@ impl RegExpUnicodeClassMatcher {
             ignore_case,
             charge,
         };
-        // Token and escape recognition visit the retained source iteratively.
+        // Token recognition and constant-size frame transitions visit the
+        // retained source iteratively. Growing stack movement is charged below.
         builder.work(units.len().saturating_mul(4))?;
-        let Some(mut ranges) = builder.operand()? else {
-            return Ok(None);
-        };
-        let Some(operator) = builder.operator() else {
-            // A standalone nested class is intentionally a separate proof.
-            return Ok(None);
-        };
+        builder.work(1)?;
+        let mut current = Frame::new(inverted);
+        let mut parents = Vec::new();
+        let mut eligible = false;
+        let ranges;
         loop {
-            if builder.operator() != Some(operator) {
-                return Ok(None);
-            }
-            builder.at += 2;
-            let Some(right) = builder.operand()? else {
-                return Ok(None);
-            };
-            // Do not skip an operand when ranges is empty: unimplemented string
-            // leaves remain unimplemented even if MayContainStrings is false.
-            ranges = builder.combine(ranges, &right, operator)?;
             if builder.units.get(builder.at) == Some(&0x5d) {
-                if builder.at + 1 != builder.units.len() {
+                if current.need_operand && !matches!(current.expression, Expression::Empty) {
                     return Ok(None);
                 }
-                break;
+                builder.at += 1;
+                let mut completed = builder.finish(current.expression)?;
+                let Some(mut parent) = parents.pop() else {
+                    if builder.at != builder.units.len() || !eligible {
+                        return Ok(None);
+                    }
+                    // The root's inversion remains the matcher's flag. A child
+                    // inversion instead becomes its parent's closed operand.
+                    ranges = completed;
+                    break;
+                };
+                if current.inverted {
+                    completed = builder.complement(&completed)?;
+                }
+                builder.accept(&mut parent, Term::Closed(completed))?;
+                current = parent;
+                continue;
+            }
+            if current.need_operand {
+                if builder.units.get(builder.at) == Some(&0x5b) {
+                    eligible = true;
+                    builder.reserve_frames(&mut parents, 1)?;
+                    parents.push(current);
+                    builder.at += 1;
+                    let inverted = builder.units.get(builder.at) == Some(&0x5e);
+                    builder.at += usize::from(inverted);
+                    current = Frame::new(inverted);
+                } else {
+                    let Some(term) = builder.term() else {
+                        return Ok(None);
+                    };
+                    if matches!(term, Term::Range(..))
+                        && matches!(current.expression, Expression::Operation(..))
+                    {
+                        return Ok(None);
+                    }
+                    builder.accept(&mut current, term)?;
+                }
+                continue;
+            }
+            if let Some(operator) = builder.operator() {
+                if builder.units.get(builder.at + 2) == Some(&0x26)
+                    && operator == Operator::Intersection
+                {
+                    return Ok(None);
+                }
+                let expression = std::mem::replace(&mut current.expression, Expression::Empty);
+                current.expression = match expression {
+                    Expression::Single(Term::Range(..)) => return Ok(None),
+                    Expression::Single(term) => {
+                        Expression::Operation(operator, builder.close_term(term)?)
+                    }
+                    Expression::Operation(previous, left) if previous == operator => {
+                        Expression::Operation(operator, left)
+                    }
+                    _ => return Ok(None),
+                };
+                eligible = true;
+                builder.at += 2;
+                current.need_operand = true;
+            } else if matches!(
+                current.expression,
+                Expression::Single(_) | Expression::Union(_)
+            ) {
+                current.need_operand = true;
+            } else {
+                return Ok(None);
             }
         }
         builder.work(ranges.len())?;
@@ -181,88 +273,153 @@ impl<E, F: FnMut(usize) -> Result<(), E>> Builder<'_, F> {
         }
     }
 
-    fn operand(&mut self) -> Checked<Option<Intervals>, E> {
-        if self.units.get(self.at) == Some(&0x5b) {
-            return self.flat_class();
-        }
-        let Some(atom) = class_atom(self.units, &mut self.at, true) else {
-            return Ok(None);
+    fn reserve_frames(&mut self, frames: &mut Vec<Frame>, additional: usize) -> Checked<(), E> {
+        let needed = frames
+            .len()
+            .checked_add(additional)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        let movement = if needed > frames.capacity() {
+            frames.len()
+        } else {
+            0
         };
-        let mut ranges = Vec::new();
-        self.append_atom(&mut ranges, atom)?;
-        self.close(ranges).map(Some)
+        self.work(movement.saturating_add(additional))?;
+        frames
+            .try_reserve(additional)
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)
     }
 
-    fn flat_class(&mut self) -> Checked<Option<Intervals>, E> {
-        self.at += 1;
-        let inverted = self.units.get(self.at) == Some(&0x5e);
-        self.at += usize::from(inverted);
-        let mut ranges = Vec::new();
-        let mut escapes = 0u8;
-        let mut properties = [0u64; PROPERTY_WORDS];
-        while self.units.get(self.at) != Some(&0x5d) {
-            let Some(atom) = class_atom(self.units, &mut self.at, true) else {
-                return Ok(None);
+    fn term(&mut self) -> Option<Term> {
+        // A raw '-' is a range separator, never an operand. A decoded escaped
+        // '-' remains a Character and can be an endpoint.
+        if self.units.get(self.at) == Some(&0x2d) {
+            return None;
+        }
+        let atom = class_atom(self.units, &mut self.at, true)?;
+        if matches!(&atom, ClassAtom::Property(kind) if usize::from(*kind) >= PROPERTY_COUNT) {
+            return None;
+        }
+        if self.units.get(self.at) == Some(&0x2d) && self.units.get(self.at + 1) != Some(&0x2d) {
+            self.at += 1;
+            let ClassAtom::Point(first) = atom else {
+                return None;
             };
-            if self.units.get(self.at) == Some(&0x2d) {
-                // Flat ranges use raw endpoints; '--' is never a range marker.
-                if self.units.get(self.at + 1) == Some(&0x2d) {
-                    return Ok(None);
-                }
-                self.at += 1;
-                let Some(ClassAtom::Point(last)) = class_atom(self.units, &mut self.at, true)
-                else {
-                    return Ok(None);
+            let ClassAtom::Point(last) = class_atom(self.units, &mut self.at, true)? else {
+                return None;
+            };
+            (first <= last).then_some(Term::Range(first, last))
+        } else {
+            Some(Term::Raw(atom))
+        }
+    }
+
+    fn accept(&mut self, frame: &mut Frame, term: Term) -> Checked<(), E> {
+        let expression = std::mem::replace(&mut frame.expression, Expression::Empty);
+        frame.expression = match expression {
+            Expression::Empty => Expression::Single(term),
+            Expression::Single(first) => {
+                self.work(2 + PROPERTY_WORDS)?;
+                let mut union = Union {
+                    raw: Vec::new(),
+                    closed: Vec::new(),
+                    escapes: 0,
+                    properties: [0; PROPERTY_WORDS],
                 };
-                let ClassAtom::Point(first) = atom else {
-                    return Ok(None);
-                };
-                if first > last {
-                    return Ok(None);
+                self.union_term(&mut union, first)?;
+                self.union_term(&mut union, term)?;
+                Expression::Union(union)
+            }
+            Expression::Union(mut union) => {
+                self.union_term(&mut union, term)?;
+                Expression::Union(union)
+            }
+            Expression::Operation(operator, left) => {
+                let right = self.close_term(term)?;
+                Expression::Operation(operator, self.combine(left, &right, operator)?)
+            }
+        };
+        frame.need_operand = false;
+        Ok(())
+    }
+
+    fn union_term(&mut self, union: &mut Union, term: Term) -> Checked<(), E> {
+        match term {
+            Term::Raw(ClassAtom::Point(point)) => {
+                self.reserve(&mut union.raw, 1)?;
+                union.raw.push((point, point));
+            }
+            Term::Range(first, last) => {
+                self.reserve(&mut union.raw, 1)?;
+                union.raw.push((first, last));
+            }
+            Term::Raw(ClassAtom::Escape(kind)) => union.escapes |= 1 << kind,
+            Term::Raw(ClassAtom::Property(kind)) => {
+                let kind = usize::from(kind);
+                // class_atom only returns kinds from the fixed registry.
+                debug_assert!(kind < PROPERTY_COUNT);
+                union.properties[kind / u64::BITS as usize] |= 1u64 << (kind % u64::BITS as usize);
+            }
+            Term::Closed(ranges) => {
+                if union.closed.is_empty() {
+                    union.closed = ranges;
+                } else {
+                    self.reserve(&mut union.closed, ranges.len())?;
+                    union.closed.extend_from_slice(&ranges);
                 }
+            }
+        }
+        Ok(())
+    }
+
+    fn close_term(&mut self, term: Term) -> Checked<Intervals, E> {
+        let mut ranges = Vec::new();
+        match term {
+            Term::Closed(closed) => return Ok(closed),
+            Term::Range(first, last) => {
                 self.reserve(&mut ranges, 1)?;
                 ranges.push((first, last));
-            } else {
-                match atom {
-                    ClassAtom::Point(point) => {
-                        self.reserve(&mut ranges, 1)?;
-                        ranges.push((point, point));
-                    }
-                    ClassAtom::Escape(kind) => escapes |= 1 << kind,
-                    ClassAtom::Property(kind) => {
-                        let kind = usize::from(kind);
-                        if kind >= PROPERTY_COUNT {
-                            return Ok(None);
-                        }
-                        properties[kind / u64::BITS as usize] |=
-                            1u64 << (kind % u64::BITS as usize);
-                    }
-                }
             }
+            Term::Raw(atom) => self.append_atom(&mut ranges, atom)?,
         }
-        self.at += 1;
+        if ranges.is_empty() {
+            Ok(ranges)
+        } else {
+            self.close(ranges)
+        }
+    }
+
+    fn finish(&mut self, expression: Expression) -> Checked<Intervals, E> {
+        let mut union = match expression {
+            Expression::Empty => return Ok(Vec::new()),
+            Expression::Single(term) => return self.close_term(term),
+            Expression::Operation(_, ranges) => return Ok(ranges),
+            Expression::Union(union) => union,
+        };
         self.work(6 + PROPERTY_WORDS)?;
         for kind in 0..6 {
-            if escapes & (1 << kind) != 0 {
-                self.append_atom(&mut ranges, ClassAtom::Escape(kind))?;
+            if union.escapes & (1 << kind) != 0 {
+                self.append_atom(&mut union.raw, ClassAtom::Escape(kind))?;
             }
         }
-        for (word, mut remaining) in properties.into_iter().enumerate() {
+        for (word, mut remaining) in union.properties.into_iter().enumerate() {
             while remaining != 0 {
                 let bit = remaining.trailing_zeros() as usize;
                 remaining &= remaining - 1;
-                // Bits are set only after the kind bound above, including the
-                // last partial word; no narrowing or padding tag can escape it.
                 let kind = (word * u64::BITS as usize + bit) as u16;
-                self.append_atom(&mut ranges, ClassAtom::Property(kind))?;
+                self.append_atom(&mut union.raw, ClassAtom::Property(kind))?;
             }
         }
-        let ranges = self.close(ranges)?;
-        if inverted {
-            self.complement(&ranges).map(Some)
-        } else {
-            Ok(Some(ranges))
+        if !union.raw.is_empty() {
+            let raw = self.close(union.raw)?;
+            if union.closed.is_empty() {
+                return Ok(raw);
+            }
+            self.reserve(&mut union.closed, raw.len())?;
+            union.closed.extend_from_slice(&raw);
         }
+        // All child chunks are already closed. Normalize once after batching;
+        // never refold children or merge a growing accumulator per sibling.
+        self.normalize(union.closed)
     }
 
     fn append_atom(&mut self, ranges: &mut Intervals, atom: ClassAtom) -> Checked<(), E> {

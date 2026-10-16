@@ -136,13 +136,15 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
         Ok(Value::Boolean(true))
     );
     check(r"/[\u{61}&&\u{62}]/v.exec('a')===null");
+    check(
+        r"let m=/[[\u{61}]]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
+    );
     for source in [
         r"/([\u{10000}])+b/u.exec('a')",
         r"/([\u{D800}])+b/v.exec('\uD800')",
         r"/([\u{D7FF}-\u{E000}])+b/u.exec('a')",
         r"/([\u{61}])+b/iv.exec('a')",
         r"/([^\u{61}])+b/u.exec('b')",
-        r"/[[\u{61}]]/v.exec('a')",
         r"/[\u{61}]*b/u.exec('a')",
         r"/([\u{61}])+b/u.exec('a')",
         r"/[\u{61}]\u{62}/v.exec('ab')",

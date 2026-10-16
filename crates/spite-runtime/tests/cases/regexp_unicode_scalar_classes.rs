@@ -163,6 +163,9 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
     check(
         r"let m=/[a--b]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
+    check(
+        r"let m=/[[a]]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
+    );
     for source in [
         r"/([a])+b/iu.exec('a')",
         r"/([\W])+b/iv.exec('a')",
@@ -170,7 +173,6 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
         r"/^([a])+b$/v.exec('a')",
         r"/[a]+b/u.exec('a')",
         r"/[a]b/v.exec('ab')",
-        r"/[[a]]/v.exec('a')",
         r"/[\q{ab}]/v.exec('ab')",
         r"/[a]|b/u.exec('b')",
     ] {

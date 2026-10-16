@@ -7723,27 +7723,40 @@ an abrupt conversion or work failure preserves mutations made by hooks.
 
 ## Character-only UnicodeSets operations
 
-The checked v-mode class compiler recognizes a complete homogeneous intersection
-or left-subtraction chain (22.2.2.9). Operands are supported characters, class and
-character-property escapes, or flat nested union/range classes and their
-complements. Optional line assertions and single-class quantifiers reuse existing
-Unicode matching plans, capture handling and UTF-16 boundaries. Runtime validates
-the complete Pattern before selecting this local compiler. String operands,
-deeper nesting, nested operators and additional consuming concatenation remain
-explicitly unimplemented; an empty intermediate result does not skip validation
-of later operands.
+The checked v-mode class compiler recognizes complete character-only classes
+with arbitrarily nested unions, intersections, left-subtractions and complements
+(22.2.1, 22.2.2.9). Each bracket level uses a union or one homogeneous operator
+chain; nesting retains the chosen structure. Supported operands are characters,
+class escapes, character-property escapes and nested classes. Raw character
+endpoints form ranges before folding. Optional line assertions, single-class
+quantifiers and existing whole-body capturing/noncapturing wrappers reuse the
+Unicode matching plans and original UTF-16 boundaries. Runtime validates the
+complete Pattern before selecting this local compiler.
 
 Case-sensitive v uses raw code-point intervals including lone surrogates. In vi,
-each operand is closed under pinned simple-fold preimages before intersection,
-subtraction or complement. Forming ranges before folding preserves punctuation
-between cased endpoints. Full closure prevents subtraction results from regaining
-removed characters during input canonicalization; complements use the complete
-code-point universe. Existing u-mode semantics and narrow compiler contracts are
-unchanged.
+raw leaves are closed under the pinned full simple-fold preimages before Boolean
+operations or complement. Completed children are already closed; a child's
+complement is applied before its parent operation. For example,
+`[A--[a--A]]/vi` matches A and a, while `[A--a--A]/vi` is empty.
+Complements use the complete code-point universe. Unions close their raw leaves
+once and normalize the combined child intervals once; a sole completed child
+moves through enclosing classes without copying or repeating the fold-table scan.
 
-New source and interval work is iterative, with no default depth or work quota.
-Checked reservations recover new interval and scratch capacity failures as host
+One source cursor and fallibly reserved flat frames evaluate nesting without
+native recursion.
+Source, frame and interval work is charged before it is performed. Checked
+reservations report new frame, interval and scratch capacity failures as host
 resource limits, distinct from JavaScript exceptions and unsupported syntax.
 Work-callback errors pass through unchanged. Final Vec-to-Arc publication retains
 the existing infallible allocation boundary of shared matcher storage; these
 constructors do not promise process-wide recovery from every allocation failure.
+No default depth, work or heap limit is introduced.
+
+String operands, every `\q` operand and binary properties of strings remain
+Unsupported, including when surrounding set operations would produce an empty
+set or an all-character set. Additional consuming concatenation, inner quantified
+captures and new word-assertion wrappers remain outside this proof. Standalone
+flat classes still use the legacy constructors; their checked entry point returns
+None unless a structural nested class or set operator occurs. Existing u-mode
+semantics, narrow legacy Core compiler domains and their work callbacks remain
+unchanged.

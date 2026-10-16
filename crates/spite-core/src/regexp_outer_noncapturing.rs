@@ -36,8 +36,10 @@ pub struct RegExpOuterGroupBody {
 /// Removes complete ordinary capturing/noncapturing outer groups (22.2.2.3).
 ///
 /// The Pattern must already be validated. Unicode callers must additionally
-/// compile the complete retained body as a subset excluding nested v sets and
-/// string-set escapes, which this delimiter scan does not interpret. Quantified
+/// compile the complete retained body as a supported subset. Nested character-only
+/// v classes are safe here: raw parentheses are forbidden inside them, and escaped
+/// parentheses remain opaque to this scan even after an inner closing bracket.
+/// String-set escapes remain excluded. Quantified
 /// groups, continuations and assertion/named/modifier groups remain inside the
 /// body. Three linear scans use constant space and no native recursion.
 pub fn regexp_outer_group_body(source: &JsString) -> Option<RegExpOuterGroupBody> {
@@ -353,6 +355,20 @@ mod tests {
 
     #[test]
     fn deeply_mixed_capturing_wrappers_keep_whole_match_prefix_counts() {
+        for (text, opening, closing, captures) in
+            [(r"([[a]\(\)])", 1, 1, 1), (r"(?:(?:[[a]\(\)]))", 6, 2, 0)]
+        {
+            let source = JsString::from(text);
+            assert_eq!(
+                regexp_outer_group_body(&source),
+                Some(RegExpOuterGroupBody {
+                    body: opening..source.len() - closing,
+                    captures,
+                })
+            );
+            let source = JsString::from(format!("{text}b").as_str());
+            assert_eq!(regexp_outer_group_body(&source), None);
+        }
         let text = format!("{}a+b{}", "((?:".repeat(50_000), "))".repeat(50_000));
         assert_eq!(
             regexp_outer_group_body(&JsString::from(text.as_str())),
