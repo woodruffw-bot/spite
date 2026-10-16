@@ -10,8 +10,9 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
-    RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
+    RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher,
+    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -465,7 +466,7 @@ impl Realm {
         // Unicode dot/escape and flat-class plans precede the checked v-set and
         // legacy BMP proofs (22.2.2.7.1, 22.2.2.9).
         let matcher = if matcher.is_none() && unicode {
-            // Complete wrappers around a proved atom or single-atom repetition
+            // Complete wrappers around a proved consuming body
             // capture its whole original range (22.2.2.7). Compile the retained
             // body completely before admitting wrappers.
             let (matching_source, wrappers) = self.object_work(span, |_, budget| {
@@ -976,21 +977,35 @@ impl Realm {
                     flags.code_units().contains(&0x6d), flags.code_units().contains(&0x73), |work| budget.charge(work),
                 )? { return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body))); }
                 // Legacy BMP APIs retain their case-sensitive Unicode contract.
-                if flags.code_units().contains(&u16::from(b'i')) {
-                    return Ok(None);
+                if !flags.code_units().contains(&u16::from(b'i')) {
+                    let body = if flags.code_units().contains(&u16::from(b'v')) {
+                        RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(
+                            &matching_source,
+                            |work| budget.charge(work),
+                        )
+                    } else {
+                        RegExpCharacterMatcher::compile_bmp_unicode_with_work(
+                            &matching_source,
+                            |work| budget.charge(work),
+                        )
+                    }?;
+                    if let Some(body) = body {
+                        return Ok(Some(RegExpMatcherBody::Character(body)));
+                    }
                 }
-                let body = if flags.code_units().contains(&u16::from(b'v')) {
-                    RegExpCharacterMatcher::compile_bmp_unicode_sets_with_work(
+                if flags.code_units().contains(&u16::from(b'v')) {
+                    if let Some(body) = RegExpUnicodeClassLiteralMatcher::compile_v_set_with_work(
                         &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
                         |work| budget.charge(work),
                     )
-                } else {
-                    RegExpCharacterMatcher::compile_bmp_unicode_with_work(
-                        &matching_source,
-                        |work| budget.charge(work),
-                    )
-                }?;
-                Ok(body.map(RegExpMatcherBody::Character))
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClassLiteral(body)));
+                    }
+                }
+                Ok(None)
             })?;
             if body.is_some() {
                 enclosing_captures = wrappers;

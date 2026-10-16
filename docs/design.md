@@ -7847,3 +7847,34 @@ the existing host-error mapping; search and all legacy callbacks are unchanged.
 No new source-copy buffer, recursion, dependency or default quota is introduced.
 Existing Runtime preprocessing/legacy source copies and final matcher Arc
 allocation retain their documented allocation boundaries.
+
+## Checked UnicodeSets class with one literal continuation
+
+A separate `RegExpUnicodeClassLiteralMatcher::compile_v_set_with_work` entry
+point admits one complete character-only nested/operator v/vi class
+followed by exactly one literal Unicode atom (22.2.2.3, 22.2.2.9). Optional ^/$
+assertions constrain the whole sequence. Runtime uses it only after complete
+Pattern validation, with existing complete enclosing wrappers retaining captures
+of the whole sequence. Legacy Core constructors keep their narrower domains and
+callback contracts.
+
+The class must pass the existing checked set compiler in full, and the literal
+continuation must pass its complete Unicode-atom proof. Every string operand,
+including every \q leaf and property of strings, remains Unsupported even when
+set algebra would eliminate it. Quantified components, multiple continuation
+atoms, a literal prefix, a second class, internal assertions and captures of only
+part of the sequence remain outside this entry point.
+
+Matching consumes one class character and one literal character in source
+order. Class algebra and literal comparison use the actual i flag and pinned
+common/simple folding. Candidate starts and both consumed characters retain the
+existing Unicode decoding and start normalization; match/capture ranges and
+lastIndex remain UTF-16 code-unit offsets. A class match with a failing literal
+continuation does not end the search early. Optional line assertions use the
+original input and m flag at the whole sequence's endpoints.
+
+Construction work and checked capacity failures retain distinct host-error
+handling. Search accounts for class checks, literal checks and attached line
+assertions before publishing success or lastIndex. Existing Runtime coercion,
+consumer and host-error boundaries remain in force. This extension adds
+no default work, heap or depth limit, dependency, profile or fixture change.

@@ -168,12 +168,25 @@ impl RegExpUnicodeCharacterMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_literal_units_with_flags_and_work(
+            source.code_units(),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+
+    pub(crate) fn compile_literal_units_with_flags_and_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         // Braced escapes may contain source-sized runs of leading zeroes.
         // Charge before decoding, including rejected literal bodies.
-        charge(source.len())?;
-        let units = source.code_units();
+        charge(units.len())?;
         let start_anchor = units.first() == Some(&0x5e);
         let mut index = usize::from(start_anchor);
         let Some(&first) = units.get(index) else {

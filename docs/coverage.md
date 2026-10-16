@@ -12664,3 +12664,37 @@ all seven generator checks pass.
 
 No fixture, dependency, profile, native-stack or default limit changes accompany
 this implementation. Earlier feature and test-speed records retain their scope.
+
+## Checked UnicodeSets class with one literal continuation
+
+The v/vi adapter admits one complete unquantified character-only nested/operator
+class followed by one literal Unicode atom, optional outside line assertions and
+existing complete whole-body capture wrappers (22.2.2.3, 22.2.2.9). Quantified
+components, multiple continuation atoms, a literal prefix, a second class,
+internal assertions, partial captures and string operands remain outside this
+proof. Legacy Core domains and work-callback contracts are unchanged. Exactly
+the existing `[a--b]c` Runtime Unsupported control moves to concrete matching and
+normal-completion assertions; neighboring rejection controls are retained.
+
+Two Core tests compare 1,000 finite searches against independent class/literal
+and fold expectations and check rejected shapes and fallible work prefixes.
+Two Runtime tests cover suffix-mismatch retries, UTF-16 widths and starts,
+whole-sequence captures/indices, global/sticky state, original line context,
+consumers, coercion order and opted-in host-work errors. One new ten-row Insta
+snapshot agrees exactly with Node 24.19 (Unicode 17) on all result JSON and
+UTF-16 units. These stable-data witnesses require no Unicode-version exclusions;
+they establish no broader Unicode-version equivalence. All 688 preceding
+snapshots remain byte-identical, for 689 snapshots in total.
+
+Stable and Rust 1.85 each pass all 27 workspace invocations with 5,177 tests:
+932 Core, 347 Parser, 3,512 Runtime integration and 279 Runtime unit tests, plus
+the other workspace cases. Both documentation suites pass their one example.
+Both full conformance gates pass all 14,740 variants from 7,631 reviewed sources,
+with every other outcome category zero. Formatting, denied-warning Clippy,
+dependency policy, corpus/Runtime/Parser inventories, all 39 runner/discovery
+probes and all seven generators pass.
+
+The corpus remains at 7,650 original fixtures and 12 helpers at its existing
+pin. No fixture, dependency, profile, native-stack or default limit changes
+accompany this extension. Earlier feature and test-speed records retain their
+original scope.
