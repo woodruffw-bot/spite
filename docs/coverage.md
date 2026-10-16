@@ -12874,3 +12874,49 @@ byte-identical; the new snapshot makes 693. Both complete corpus gates pass
 zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
 and inventory probes, and all seven generators pass. No fixture, corpus,
 dependency, profile, default quota or native-stack changes accompany this item.
+
+## Checked UnicodeSets class followed by a flat class
+
+One unquantified checked character-only v/vi class can precede one flat Unicode
+class, with optional outside line assertions and existing complete whole-body
+captures. The first class retains its nested-class/set-operator eligibility
+gate. A borrowed flat adapter preserves the old flat compiler's framing, charge
+sequence and membership behavior. Previous public constructors retain their
+domains. Both components compile fully even when the first class is empty;
+string leaves remain unsupported. Reverse order, outside word assertions,
+additional atoms, repetition and partial captures remain separate work.
+
+The existing typed pair plan matches the second class sticky at the first end
+and retries at that first end after failure, preserving overlaps and original
+complete-character boundaries. Original line context, pinned folding, lone
+surrogates and the documented leading-boundary behavior remain in use. Runtime
+tries the new v-only constructor after all preceding typed constructors and
+retains the existing zero-inner-capture variant and four-unit sticky bound.
+
+Two Core tests independently decode 20 tiny UTF-16 inputs for 16 plans, every
+initial offset and both sticky modes: 3,488 range comparisons. The borrowed
+flat adapter is compared with the old public flat constructor for selected
+framing, domain, work trace, pass and range cases. Explicit malformed/nested/
+operator/string rejection, complete hidden-leaf validation, old constructor
+domains and every construction-charge error prefix are checked.
+
+Two Runtime tests cover the two former [a--b][c] controls as precise positive and
+negative memberships, flat unions/ranges/inversion/escapes/properties, overlap,
+complete captures/groups/indices, consumers, global/sticky state, coercion,
+read-only lastIndex, original multiline context, supplementary/lone-surrogate
+inputs, folding/complements and opted-in cancellation.
+
+All ten full JSON rows in the new insta snapshot match handwritten expectations
+and Node, including the documented initial-low-pair behavior. Complete UTF-16
+metadata and result units compare for every row with no exclusions. Raw Unicode
+17/18 finite K/S/A/Ll fold witnesses agree; this establishes no general
+Unicode-version equivalence.
+
+Stable and Rust 1.85 each pass all 27 workspace invocations and 5,197 tests,
+including 942 Core, 347 Parser, 3,522 Runtime integration and 279 Runtime unit
+tests, plus one documentation example. All 693 preceding snapshots are
+byte-identical; the new snapshot makes 694. Both complete corpus gates pass
+14,740 variants from 7,631 reviewed sources with every other outcome category
+zero. Formatting, denied-warning Clippy, policy/inventory checks, all 39 runner
+and inventory probes, and all seven generators pass. No fixture, corpus,
+dependency, profile, default quota or native-stack changes accompany this item.

@@ -194,6 +194,41 @@ impl RegExpUnicodeClassMatcher {
         )
     }
 
+    /// Compiles one complete flat v/vi class from borrowed source units.
+    ///
+    /// Requires complete validated v/vi input for this whole component. Framing,
+    /// initial source charge and private flat compilation match the existing
+    /// public flag-aware entry exactly, with UnicodeSets fixed to true. Nested
+    /// classes, operators and string leaves remain outside this flat proof.
+    /// No previous entry body/callback changes and no source buffer is added.
+    pub(crate) fn compile_flat_v_set_units_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let Some(body) =
+            units.get(usize::from(start_anchor)..units.len() - usize::from(end_anchor))
+        else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        charge(units.len())?;
+        Self::compile_units_with_work(
+            body,
+            true,
+            start_anchor,
+            end_anchor,
+            multiline,
+            ignore_case,
+            charge,
+        )
+    }
+
     /// Compiles standalone supported Unicode properties and boundaries.
     ///
     /// Admits ASCII, Any, ASCII_Hex_Digit/AHex, Hex_Digit/Hex, White_Space/space

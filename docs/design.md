@@ -7945,9 +7945,9 @@ Two unquantified checked character-only UnicodeSets classes can form one typed
 v/vi sequence (22.2.2.3, 22.2.2.7.3). Each component independently satisfies the
 existing nested-class/set-operator compiler gate. Exact borrowed class boundaries
 prove there are two complete classes and optional outside ^/$, with no remaining
-atom, repetition, inner assertion or capture. Flat component admission is a
-separate proof: `[a--b][c]` remains unsupported. Full checked compilation of both
-components rejects string leaves even when the first class is empty.
+atom, repetition, inner assertion or capture. Flat components remain outside
+this constructor's domain. Full checked compilation of both components rejects
+string leaves even when the first class is empty.
 
 The immutable plan contains two existing Unicode class matchers. The first
 searches normally; the second is sticky at the first character's end. A failed
@@ -7974,3 +7974,20 @@ characters retries the first end, preserving the overlapping match1..3 of
 one entry charge and four-unit sticky bound are reused. Only new-plan predicate
 allowances are added; no source/input buffer, dependency, default quota, profile
 or stack change is introduced.
+
+A separate constructor matches a checked character-only v/vi class followed by
+one flat class, with optional outside ^/$ (22.2.2.3, 22.2.2.7.3). The prefix keeps
+the original nested-class/set-operator gate. A crate-private borrowed flat adapter
+preserves the public flat compiler's framing and initial source charge with
+UnicodeSets enabled, then uses the unchanged flat parser. Complete class
+boundaries prove there are exactly two atoms. The suffix rejects nested classes,
+operators and string leaves, including behind an empty checked prefix. Reverse
+order, outside word assertions, extra atoms, repetitions and partial captures
+remain separate work. Previous constructors retain their domains and callbacks.
+
+The existing two-matcher plan and zero-inner-capture Runtime variant are reused
+with absent outside-word metadata. The second match remains sticky at the first
+end; search retries at that first end after failure. Original character and line
+boundaries, pinned case folding, opted-in work charges and the approved
+initial-low-pair behavior remain in use. No source/input buffer, dependency,
+default quota, profile or stack change is introduced.
