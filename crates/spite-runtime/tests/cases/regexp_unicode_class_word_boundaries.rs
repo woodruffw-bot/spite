@@ -150,11 +150,13 @@ fn unicode_class_word_boundaries_opted_work_and_remaining_compositions() {
     check(
         r"let m=/\b[[A]]\b/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'&&!/\b[[A]]\b/v.test('a')&&!/\b[[A]]\b/v.test('B')&&/\b[[A]]\b/iv.test('a')&&!/\b[[A]]\b/v.test('AA')",
     );
+    check(
+        r"let r=/\b[A][B]\b/v,m=r.exec('AB');m!==null&&m.length===1&&m[0]==='AB'&&m.index===0&&m.input==='AB'&&r.lastIndex===0&&!r.test('AC')&&!r.test('XAB')&&!r.test('ABX')&&/\b[A][B]\b/iv.test('ab')",
+    );
     for source in [
         r"/\bA+\bb/u.exec('A')",
         r"/\b([A])\bb/u.exec('A')",
         r"/\b[A]+\bb/u.exec('AA')",
-        r"/\b[A][B]\b/v.exec('AB')",
         r"/\b\b[A]\b/u.exec('A')",
     ] {
         assert!(
