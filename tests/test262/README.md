@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7645 unmodified test fixtures and twelve harness files come from
+These 7650 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -15,6 +15,52 @@ thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
 
+
+## Generated character-class/property v-set intersection and subtraction fixtures
+
+Five unchanged whole originals cover nested digit-class intersection with `\d` and
+ASCII_Hex_Digit, ASCII_Hex_Digit intersection with a nested digit class, and
+ASCII_Hex_Digit subtraction by nested digit class or `\d`. They retain all 4659
+upstream bytes, complete metadata, helper calls, lists, copyright notices and
+BSD license terms at the existing pin. Three sets contain ASCII digits 0–9;
+two contain ASCII hexadecimal letters A–F/a–f. The original Unicode 17 and
+pinned Unicode 18 ASCII_Hex_Digit ranges agree exactly; `\d` is the spec's fixed
+ASCII digit class. The twelve existing helpers and upstream revision are unchanged.
+
+The 54 positive and 59 nonmatching listed strings retain the original
+regExpUtils.js batch/fallback behavior. They are finite source expectations,
+not exhaustive membership proof or 59 guaranteed separate negative assertions.
+All five programs use v without i, at most one nested class level, outside anchors and
+one greedy class repetition. They add no folding, word-assertion, string-set,
+inner-capture, deeper-operator or consuming-continuation coverage. They exercise
+the already-published character-only set and class-repetition implementation;
+no new outside-word adapter is needed. The two separately reviewed subtraction
+originals with empty positive lists are excluded from this five-file cohort.
+
+The inventory contains 7650 fixtures, twelve helpers, 7631 reviewed sources
+and 14740 variants: 13207 harness positives, 1525 parse negatives, four raw
+positives and four runtime negatives. RegExp builtin inventory has 764 whole
+positive sources; grammar remains 369 fixtures including twenty-three positives.
+Only the five originals, appended inventory rows, three count assertions in two
+Rust test files and fixture evidence change; the two-worker gate is retained.
+
+Stable and Rust 1.85.0 conformance builds pass all ten complete original Script
+and StrictScript modes each, with every non-passing outcome category at zero.
+Both expanded full gates pass all 14740 variants from 7631 reviewed sources,
+with every other outcome category zero. Each affected Test262 package run passes
+34 tests across seven invocations; package documentation checks pass too.
+Formatting, denied-warning Clippy, policy, inventories and all 39 runner/discovery
+probes pass. Ordinary native stacks and quota-free default execution are retained.
+
+The published implementation proof at 7fb5ab42 is retained after verifying all
+prior implementation source and snapshot bytes. Apart from the three count
+assertions, all 1534 tracked crate files retain their bytes. The affected package
+and expanded corpus checks validate this fixture delta. The prior complete
+workspace result remains 5173 tests across 27 invocations, including 930 Core,
+347 Parser and 3510 Runtime integration tests, plus one documentation test and
+688 byte-identical snapshot files. No dependency, profile or default quota
+changes accompany this admission. Earlier feature and performance records keep
+their original source scope.
 
 ## Generated nested character-only v-set union fixtures
 
