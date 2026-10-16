@@ -147,13 +147,15 @@ fn unicode_class_word_boundaries_opted_work_and_remaining_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r"let m=/\b[[A]]\b/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'&&!/\b[[A]]\b/v.test('a')&&!/\b[[A]]\b/v.test('B')&&/\b[[A]]\b/iv.test('a')&&!/\b[[A]]\b/v.test('AA')",
+    );
     for source in [
         r"/\bA+\bb/u.exec('A')",
         r"/\b([A])\bb/u.exec('A')",
         r"/\b[A]+\bb/u.exec('AA')",
         r"/\b[A][B]\b/v.exec('AB')",
         r"/\b\b[A]\b/u.exec('A')",
-        r"/\b[[A]]\b/v.exec('A')",
     ] {
         assert!(
             matches!(

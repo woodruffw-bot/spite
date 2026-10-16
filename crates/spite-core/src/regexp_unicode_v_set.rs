@@ -119,6 +119,74 @@ impl RegExpUnicodeClassMatcher {
         Self::compile_v_set_units_with_work(source.code_units(), ignore_case, multiline, charge)
     }
 
+    /// Compiles outside word assertions around one checked v-mode class.
+    ///
+    /// The complete Pattern must already be validated in v/vi. This admits an
+    /// optional ^, optional leading \b/\B, one unquantified nested/operator
+    /// class, optional trailing \b/\B, and optional $, in that order. At least
+    /// one word assertion is required. Other assertion orders, strings, captures,
+    /// quantifiers and consuming continuations remain separate caller proofs.
+    ///
+    /// The class units are borrowed without a source copy. Work errors and new
+    /// construction capacity failures retain the checked compiler's host-error
+    /// contract and final shared-storage allocation boundary. Legacy flat-class
+    /// and repetition constructors retain their existing domains and callbacks.
+    pub fn compile_v_set_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        let units = source.code_units();
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2 {
+            match &units[end - 2..end] {
+                [0x5c, kind @ (0x62 | 0x42)] => {
+                    end -= 2;
+                    Some(*kind == 0x62)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+        if start_word.is_none() && end_word.is_none() {
+            return Ok(None);
+        }
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        // A bare complete class proves that neither edge token was escaped:
+        // removing an escaped trailing $ or \b would leave a backslash here.
+        // It also excludes leftover line gates and repeated word assertions.
+        if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        charge(units.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some(mut matcher) =
+            Self::compile_v_set_units_with_work(body, ignore_case, multiline, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        matcher.start_anchor = start_anchor;
+        matcher.end_anchor = end_anchor;
+        matcher.start_word = start_word;
+        matcher.end_word = end_word;
+        Ok(Some(matcher))
+    }
+
     pub(crate) fn compile_v_set_units_with_work<E>(
         units: &[u16],
         ignore_case: bool,

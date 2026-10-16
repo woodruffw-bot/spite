@@ -12513,3 +12513,38 @@ workers. All 686 snapshots remain byte-identical. Formatting, denied-warning
 Clippy, policy, inventories, all 39 runner/discovery probes and all seven generator
 checks pass. No fixture, dependency, profile or default quota changes accompany
 this implementation.
+
+## Word assertions around checked UnicodeSets classes
+
+The checked adapter admits optional leading/trailing \b or \B around one
+complete unquantified nested/operator v/vi class, with at least one word
+assertion and optional outside ^/$. Borrowed class units retain the existing
+Unicode matcher, boundary predicates and search-work accounting. Old Core APIs,
+their three named word-wrapper rejection controls and all 61 legacy nested
+controls keep their narrow domains. Two Runtime Unsupported entries now have
+membership, normal-completion and error-effect checks. Repeated classes, other
+assertion orders, consuming continuations and string leaves remain pending.
+
+Two Core tests compare 3136 finite cases against independent class membership
+and raw-input neighbor predicates. They cover v/vi and multiline contexts,
+long-s/Kelvin, supplementary and lone-surrogate inputs, sticky/nonsticky starts,
+small work-error prefixes and depth-512 bodies. Two Runtime tests cover captures
+and indices, global/sticky state, line context, string consumers and host-error
+effects. One ten-row insta snapshot checks the approved leading-boundary rule
+before word assertions. Node 24.19.0 (Unicode 17) agrees with all ten exact JSON
+and UTF-16 results; these stable-data witnesses require no version exclusion.
+All 686 old snapshots retain their bytes; the new snapshot brings the total to
+687. Existing source programs and remaining rejection controls are unchanged.
+
+Stable and Rust 1.85.0 pass all 5167 tests across 27 workspace invocations,
+including 928 Core, 347 Parser and 3508 Runtime integration tests, plus the
+documentation test. Both full two-worker gates pass all 14730 variants from
+7626 reviewed sources, with every non-passing outcome category at zero.
+Formatting, denied-warning Clippy, dependency policy, inventories, all 39
+runner/discovery probes and all seven generator checks pass. Ordinary native
+stacks and runtime defaults retain disabled JavaScript quotas.
+
+The separate five-original admission was published before this implementation.
+No fixture, dependency, profile, default limit or native-stack allowance changes
+accompany this feature. Earlier feature and test-speed records retain their
+original scope.

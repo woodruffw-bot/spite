@@ -7755,8 +7755,44 @@ No default depth, work or heap limit is introduced.
 String operands, every `\q` operand and binary properties of strings remain
 Unsupported, including when surrounding set operations would produce an empty
 set or an all-character set. Additional consuming concatenation, inner quantified
-captures and new word-assertion wrappers remain outside this proof. Standalone
+captures and word assertions on repeated classes remain outside this proof. Standalone
 flat classes still use the legacy constructors; their checked entry point returns
 None unless a structural nested class or set operator occurs. Existing u-mode
 semantics, narrow legacy Core compiler domains and their work callbacks remain
 unchanged.
+
+## Word assertions around checked UnicodeSets classes
+
+A separate checked v/vi constructor admits word assertions around one complete,
+unquantified nested/operator class (22.2.2.4, 22.2.2.9). Its exact order is an
+optional ^, at most one leading \b or \B, the class, at most one trailing \b or
+\B, and an optional $. At least one word assertion is required. Runtime validates
+the complete Pattern and tries this adapter after the legacy class-word path,
+only in v mode. Bare flat classes and all earlier Core constructor domains and
+work callbacks retain their existing behavior.
+
+The adapter borrows the complete class units and records the outside assertions
+without allocating a stripped source buffer. It requires the retained body to
+start with [ and end with ], then delegates to the checked class compiler and
+attaches assertions only after successful complete compilation. Other valid
+orders such as \b^CLASS and CLASS$\b remain outside this new entry point, as do
+duplicate or contradictory assertion sequences. Existing whole-body wrapper
+proofs retain complete-character captures and indices; partial captures, repeated
+word-wrapped classes, inner quantified captures, consuming continuations and
+string operands remain separate implementation work.
+
+Word assertions inspect the original input neighbors at the consumed character's
+start and end. Word characters are ASCII letters, digits and underscore, plus
+long-s and Kelvin under i; other Unicode letters and surrogate units are
+non-word. The existing Unicode start normalization runs before assertion checks,
+including the approved leading-boundary behavior for an offset inside a surrogate
+pair. Line assertions retain their original endpoint and multiline context;
+matching never substitutes synthetic folded input. Class algebra and folding
+continue through the existing checked compiler.
+
+The existing search-work bound includes each attached word predicate. Work(E)
+retains the first callback error and Capacity remains a host resource failure,
+distinct from Unsupported and JavaScript exceptions. Any new construction buffer
+requires checked, fallible reservation; the existing final matcher Arc and Runtime
+normalization allocations retain their documented boundaries. No default work,
+heap or depth limit, dependency or matching kernel is added.

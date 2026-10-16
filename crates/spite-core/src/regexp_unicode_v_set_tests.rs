@@ -897,3 +897,337 @@ fn checked_v_set_closed_children_move_through_transparent_frames() {
         "shallow={shallow} deep={deep}"
     );
 }
+
+#[test]
+fn checked_v_set_word_predicates_match_independent_neighbors() {
+    // Only raw pinned C/S mappings enter this oracle. Neither production class
+    // membership nor the production word/UTF-16 helpers supply expectations.
+    let folds: BTreeMap<_, _> = fields(include_str!("testdata/CaseFolding-18.0.0.txt"))
+        .filter(|record| matches!(record[1], "C" | "S"))
+        .map(|record| {
+            (
+                u32::from_str_radix(record[0], 16).unwrap(),
+                u32::from_str_radix(record[2], 16).unwrap(),
+            )
+        })
+        .collect();
+    let inputs: Vec<_> = [
+        JsString::from(""),
+        JsString::from("A A_ a"),
+        JsString::from("K ſ αΑ"),
+        JsString::from("A😀B"),
+        JsString::from_code_units(vec![0x41, 0xd800, 0x5f, 0xdc00, 0x42]),
+        JsString::from("x\r\nA\u{2028}K\u{2029}_\n1\r"),
+        JsString::from("A\u{8}!"),
+    ]
+    .into_iter()
+    .map(|text| {
+        let mut offset = 0;
+        let characters: Vec<_> = char::decode_utf16(text.code_units().iter().copied())
+            .map(|decoded| {
+                let (point, width) = match decoded {
+                    Ok(character) => (u32::from(character), character.len_utf16()),
+                    Err(error) => (u32::from(error.unpaired_surrogate()), 1),
+                };
+                let begin = offset;
+                offset += width;
+                (begin, offset, point)
+            })
+            .collect();
+        (text, characters)
+    })
+    .collect();
+    for (source, members, leading, trailing, start_anchor, end_anchor, multiline) in [
+        (
+            r"\b[[A]]\b",
+            Some(&[0x41][..]),
+            Some(true),
+            Some(true),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\B[[A]]\B",
+            Some(&[0x41][..]),
+            Some(false),
+            Some(false),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\b[[A]]\B",
+            Some(&[0x41][..]),
+            Some(true),
+            Some(false),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\B[[A]]\b",
+            Some(&[0x41][..]),
+            Some(false),
+            Some(true),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\b[[Kſα]]",
+            Some(&[0x4b, 0x17f, 0x3b1][..]),
+            Some(true),
+            None,
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\B[[Kſα]]",
+            Some(&[0x4b, 0x17f, 0x3b1][..]),
+            Some(false),
+            None,
+            false,
+            false,
+            false,
+        ),
+        (
+            r"[[Kſα]]\b",
+            Some(&[0x4b, 0x17f, 0x3b1][..]),
+            None,
+            Some(true),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"[[Kſα]]\B",
+            Some(&[0x4b, 0x17f, 0x3b1][..]),
+            None,
+            Some(false),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"^\b[[Kſα]]\b$",
+            Some(&[0x4b, 0x17f, 0x3b1][..]),
+            Some(true),
+            Some(true),
+            true,
+            true,
+            false,
+        ),
+        (
+            r"^\b[[Kſα]]\b$",
+            Some(&[0x4b, 0x17f, 0x3b1][..]),
+            Some(true),
+            Some(true),
+            true,
+            true,
+            true,
+        ),
+        (
+            r"^\B[[\p{Any}]]\B$",
+            None,
+            Some(false),
+            Some(false),
+            true,
+            true,
+            true,
+        ),
+        (
+            r"\b[[\b]]\B",
+            Some(&[8][..]),
+            Some(true),
+            Some(false),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\b[[a--a]]\b",
+            Some(&[][..]),
+            Some(true),
+            Some(true),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"\B[[\p{Any}]]\B",
+            None,
+            Some(false),
+            Some(false),
+            false,
+            false,
+            false,
+        ),
+        (
+            r"^\b[[A]]",
+            Some(&[0x41][..]),
+            Some(true),
+            None,
+            true,
+            false,
+            true,
+        ),
+        (
+            r"[[A]]\b$",
+            Some(&[0x41][..]),
+            None,
+            Some(true),
+            false,
+            true,
+            true,
+        ),
+    ] {
+        for ignore_case in [false, true] {
+            let matcher = RegExpUnicodeClassMatcher::compile_v_set_with_word_boundaries_and_work(
+                &JsString::from(source),
+                ignore_case,
+                multiline,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            let canonical = |point| {
+                if ignore_case {
+                    folds.get(&point).copied().unwrap_or(point)
+                } else {
+                    point
+                }
+            };
+            for (text, characters) in &inputs {
+                let units = text.code_units();
+                let word = |unit: Option<&u16>| {
+                    unit.is_some_and(|&unit| matches!(canonical(u32::from(unit)), 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a))
+                };
+                let boundary = |at: usize| {
+                    word(at.checked_sub(1).and_then(|previous| units.get(previous)))
+                        != word(units.get(at))
+                };
+                let line = |unit: u16| matches!(unit, 0x0a | 0x0d | 0x2028 | 0x2029);
+                for start in 0..=units.len() + 1 {
+                    let normalized = characters
+                        .iter()
+                        .find(|&&(begin, end, _)| begin <= start && start < end)
+                        .map_or(start, |&(begin, _, _)| begin);
+                    for sticky in [false, true] {
+                        let expected = characters
+                            .iter()
+                            .find(|&&(begin, end, point)| {
+                                start <= units.len()
+                                    && begin >= normalized
+                                    && (!sticky || begin == normalized)
+                                    && (!start_anchor
+                                        || begin == 0
+                                        || (multiline && line(units[begin - 1])))
+                                    && (!end_anchor
+                                        || end == units.len()
+                                        || (multiline && line(units[end])))
+                                    && leading.is_none_or(|wanted| boundary(begin) == wanted)
+                                    && trailing.is_none_or(|wanted| boundary(end) == wanted)
+                                    && members.is_none_or(|points| {
+                                        points.iter().any(|&raw| canonical(raw) == canonical(point))
+                                    })
+                            })
+                            .map(|&(begin, end, _)| begin..end);
+                        assert_eq!(
+                            matcher.find(text, start, sticky),
+                            expected,
+                            "{source} i={ignore_case} m={multiline} input={text:?} start={start} sticky={sticky}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn checked_v_set_word_domains_work_and_deep_bodies() {
+    for source in [
+        "",
+        r"\b",
+        r"^\b$",
+        "[a&&a]",
+        r"\b[A]\b",
+        r"\b[^]\b",
+        r"\b[[A]]+\b",
+        r"\b([[A]])\b",
+        r"(\b[[A]]\b)",
+        r"\b[[A]][[B]]\b",
+        r"\b[[A]]\bb",
+        r"\b\b[[A]]\b",
+        r"\b\B[[A]]\b",
+        r"\b^[[A]]\b",
+        r"\b[[A]]$\b",
+        r"^^\b[[A]]\b$",
+        r"\b[[A]]\b$$",
+        r"\b[[\q{a}]]\b",
+        r"\b[[\p{RGI_Emoji}]]\b",
+        r"\b[[A]]\\b",
+        r"\b[[A]]\$",
+    ] {
+        assert!(
+            RegExpUnicodeClassMatcher::compile_v_set_with_word_boundaries_and_work(
+                &JsString::from(source),
+                false,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .is_none(),
+            "{source}"
+        );
+    }
+    for (source, ignore_case) in [(r"^\b[[A]b]\B$", false), (r"\b[[K]]\b", true)] {
+        let source = JsString::from(source);
+        let mut charges = Vec::new();
+        RegExpUnicodeClassMatcher::compile_v_set_with_word_boundaries_and_work(
+            &source,
+            ignore_case,
+            false,
+            |work| {
+                charges.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for failure in 1..=charges.len() {
+            let mut seen = Vec::new();
+            let result = RegExpUnicodeClassMatcher::compile_v_set_with_word_boundaries_and_work(
+                &source,
+                ignore_case,
+                false,
+                |work| {
+                    seen.push(work);
+                    if seen.len() == failure {
+                        Err(failure)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(matches!(result, Err(RegExpUnicodeSetCompileError::Work(at)) if at == failure));
+            assert_eq!(seen, charges[..failure]);
+        }
+    }
+    let depth = 512;
+    let source =
+        JsString::from(format!(r"\b{}K{}\b", "[".repeat(depth), "]".repeat(depth)).as_str());
+    for (ignore_case, text) in [(false, " K "), (true, " K ")] {
+        let matcher = RegExpUnicodeClassMatcher::compile_v_set_with_word_boundaries_and_work(
+            &source,
+            ignore_case,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(matcher.find(&JsString::from(text), 0, false), Some(1..2));
+    }
+}
