@@ -41,3 +41,15 @@ and CaseFolding. Independent tests parse all 179 canonical values and 351 value
 spellings, honor Unknown's @missing default, and retain Katakana_Or_Hiragana as a
 valid empty set. The generator emits 167 new Script sets while preserving the
 earlier specialized plans.
+
+ScriptExtensions-18.0.0.txt: https://www.unicode.org/Public/18.0.0/ucd/ScriptExtensions.txt
+SHA-256: 5c9d34a922f687726f2a8bcf57d49f905987e51f1b21b58c95a00fbe255cec23
+
+Script_Extensions uses each explicit nonempty set instead of its Script fallback;
+unlisted points inherit Script, including Unknown's default. All 179 canonical
+values and 351 exact spellings form 702 Script_Extensions=/scx= keys; Hrkt is a
+valid empty set. Common and Greek retain distinct u+i/v+i complement plans.
+Independent tests parse aliases, Scripts, ScriptExtensions and CaseFolding
+separately from the generator, checking overlapping memberships, canonical
+images and complete fold preimages. The offline generator verifies all four
+source pins and reproduces both matcher modules.

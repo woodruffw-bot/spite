@@ -192,6 +192,21 @@ fn latin_script_work_utf16_and_exact_namespace_contracts() {
             assert!(result.is_err());
         }
     }
+    {
+        let pattern = r"\p{Script_Extensions=Latin}";
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(pattern),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert!(plan.matches(0x41), "{pattern}");
+        assert!(!plan.matches(0x5d0), "{pattern}");
+        // This extension membership differs from the Script fallback.
+        assert!(plan.matches(0xb7));
+        assert!(!compile(r"\p{sc=Latin}", false, false).matches(0xb7));
+    }
     for pattern in [
         r"\p{Latin}",
         r"\p{Latn}",
@@ -199,7 +214,6 @@ fn latin_script_work_utf16_and_exact_namespace_contracts() {
         r"\p{SCRIPT=Latin}",
         r"\p{Script=latin}",
         r"\p{sc=Script=Latin}",
-        r"\p{Script_Extensions=Latin}",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(

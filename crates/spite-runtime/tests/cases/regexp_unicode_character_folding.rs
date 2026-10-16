@@ -130,13 +130,15 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/\p{Script_Extensions=Latin}/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/([a])+b/iu.exec('a')",
         r"/([^a])+b/iv.exec('b')",
         r"/(\w)+b/iu.exec('a')",
         r"/\w+b/iv.exec('a')",
         r"/\w\d/iu.exec('a9')",
-        r"/\p{Script_Extensions=Latin}/iv.exec('a')",
         r"/(?:\b)+/iu.exec('a')",
     ] {
         assert!(

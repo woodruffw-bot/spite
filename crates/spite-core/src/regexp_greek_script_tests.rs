@@ -217,6 +217,21 @@ fn greek_script_work_utf16_and_exact_namespace_contracts() {
             assert!(result.is_err());
         }
     }
+    {
+        let pattern = r"\p{Script_Extensions=Greek}";
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(pattern),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert!(plan.matches(0x3b1), "{pattern}");
+        assert!(!plan.matches(0x41), "{pattern}");
+        // This extension membership differs from the Script fallback.
+        assert!(plan.matches(0xb7));
+        assert!(!compile(r"\p{sc=Greek}", false, false).matches(0xb7));
+    }
     for pattern in [
         r"\p{Greek}",
         r"\p{Grek}",
@@ -224,7 +239,6 @@ fn greek_script_work_utf16_and_exact_namespace_contracts() {
         r"\p{SCRIPT=Greek}",
         r"\p{Script=greek}",
         r"\p{sc=Script=Greek}",
-        r"\p{Script_Extensions=Greek}",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(

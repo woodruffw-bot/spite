@@ -192,6 +192,21 @@ fn arabic_script_work_utf16_and_exact_namespace_contracts() {
             assert!(result.is_err());
         }
     }
+    {
+        let pattern = r"\p{Script_Extensions=Arabic}";
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(pattern),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert!(plan.matches(0x627), "{pattern}");
+        assert!(!plan.matches(0x41), "{pattern}");
+        // This extension membership differs from the Script fallback.
+        assert!(plan.matches(0x60c));
+        assert!(!compile(r"\p{sc=Arabic}", false, false).matches(0x60c));
+    }
     for pattern in [
         r"\p{Arabic}",
         r"\p{Arab}",
@@ -199,7 +214,6 @@ fn arabic_script_work_utf16_and_exact_namespace_contracts() {
         r"\p{SCRIPT=Arabic}",
         r"\p{Script=arabic}",
         r"\p{sc=Script=Arabic}",
-        r"\p{Script_Extensions=Arabic}",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(

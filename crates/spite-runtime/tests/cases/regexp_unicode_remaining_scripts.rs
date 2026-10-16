@@ -420,18 +420,12 @@ fn remaining_scripts_exact_names_and_unadmitted_set_operations() {
                 "let caught=false;try{{new RegExp({pattern:?},{mode:?})}}catch(e){{caught=e instanceof SyntaxError}}caught"
             ));
         }
-        for source in [
-            format!(r"/\p{{Script_Extensions=Coptic}}/{mode}.exec('Ⲁ')"),
-            format!(r"/\p{{scx=Unknown}}/{mode}.exec('\u0378')"),
-        ] {
-            assert!(
-                matches!(
-                    Realm::default().eval(&source),
-                    Err(Error::Unsupported { .. })
-                ),
-                "{source}"
-            );
-        }
+        check(&format!(
+            r"let m=/\p{{Script_Extensions=Coptic}}/{mode}.exec('Ⲁ');m.length===1&&m[0]==='Ⲁ'&&m.index===0&&m.input==='Ⲁ'"
+        ));
+        check(&format!(
+            r"let m=/\p{{scx=Unknown}}/{mode}.exec('\u0378');m.length===1&&m[0]==='\u0378'&&m.index===0&&m.input==='\u0378'"
+        ));
     }
     for source in [
         r"/[\p{sc=Coptic}&&A]/v.exec('A')",

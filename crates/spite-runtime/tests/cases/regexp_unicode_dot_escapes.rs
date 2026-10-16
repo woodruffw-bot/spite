@@ -147,6 +147,9 @@ fn unicode_dot_escapes_opted_work_preserves_state_and_pending_completion() {
 
 #[test]
 fn unicode_dot_escapes_unproved_syntax_remains_unsupported() {
+    check(
+        r#"let m=/\p{Script_Extensions=Latin}/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/(.)+b/iu.exec('a')",
         r"/(\W)+b/iv.exec('a')",
@@ -157,7 +160,6 @@ fn unicode_dot_escapes_unproved_syntax_remains_unsupported() {
         r"/^../u.exec('a')",
         r"/([\D])+b/u.exec('a')",
         r"/([^a])+b/v.exec('b')",
-        r"/\p{Script_Extensions=Latin}/u.exec('a')",
         r"/[\q{ab}]/v.exec('ab')",
         r"/\d|a/u.exec('a')",
     ] {

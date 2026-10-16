@@ -12215,3 +12215,49 @@ and from 4.14 to 2.30 seconds on Rust 1.85.0. Compiler/invocation collection cos
 are separate; these focused timings do not predict complete CI duration. The
 other 907 Core test bodies and all 682 snapshots remain unchanged from the
 preceding complete Core runs. Formatting, Clippy and dependency policy pass.
+
+## RegExp Script_Extensions
+
+The Script_Extensions=/scx= implementation admits all 179 canonical
+values and 351 exact value spellings, for 702 keys. Each explicit extension set
+replaces Script fallback; unlisted points inherit the singleton Script value.
+The 210 records cover 741 points and produce overlapping sets with 1,115,175
+memberships. Unknown preserves the missing default, and Hrkt is valid and empty.
+Only Common and Greek need distinct v+i negative fold-preimage lists; u+i
+complements raw membership before folding, and outer class inversion is separate.
+The new kinds are 540..897, with bound 898 and a fifteen-word class-property mask.
+The original four Unicode references and new ScriptExtensions checksum are
+recorded in the Core testdata and third-party Unicode documentation.
+
+Six Core tests compare all generated intervals and bounds against
+independently parsed raw references and perform 16,848 finite key/form/flag
+compilations. Fifteen runtime tests include 2,808 constructions covering every
+exact key and both polarities in u/v. Shared cases cover explicit replacement,
+overlap, Common/Greek complement order, Script/scx differences, Unknown and
+empty Hrkt, UTF-16 widths, high mask words, alias deduplication, opt-in work
+failures, captures, consumers, collection and realms. The 78 former Core and
+86 runtime namespace controls now assert their expected semantics; unrelated
+unsupported controls and existing snapshot functions remain.
+
+Stable and Rust 1.85.0 each pass all 95 workspace invocations and 5,141 tests,
+including 914 Core and 3,496 runtime integration cases, plus documentation tests.
+The two new golds contain 72 Core and 24 runtime rows, all checked against the
+independent Unicode 18 oracle; all 682 existing golds remain byte-identical.
+Both complete 14,696-variant corpus gates pass. The stable corpus ran before an
+exact test-only restoration in the literal-character matcher; its production
+prefix and every other source input are unchanged. That historical result keeps
+its original source record and explicit equivalence proof. MSRV corpus and both
+workspace runs use the final source. Formatting, Clippy, policy, inventory and
+offline generator checks pass. Test262 inventories and the upstream pin stay
+unchanged.
+
+Node 24.19.0 with Unicode 17 agrees with 2,835 shared comparisons: 63 Core
+rows, 20 runtime rows and 2,752 alias/polarity/flag matrix cases. Exact aliases,
+both polarities and version-local C/S preimages are screened for every input
+point before comparison; 40 data-version-sensitive matrix cases are excluded. All 96 snapshot
+rows match the independent Unicode 18 oracle. Node rejects the four valid-empty
+Hrkt keys in nine Core rows, four runtime rows and sixteen matrix cases; these
+29 syntax exclusions receive no matching credit. A separate 96-constructor
+probe across all six forms and u/ui/v/vi observes SyntaxError in every case.
+Spite follows the specified empty-set semantics, covered by the raw-data oracle
+and native regressions.

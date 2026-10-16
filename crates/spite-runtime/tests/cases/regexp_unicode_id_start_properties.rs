@@ -168,8 +168,10 @@ fn unicode_id_start_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+    );
     for source in [
-        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{IDS}&&A]/v.exec('A')",
         r"/[\p{IDS}--A]/v.exec('A')",
         r"/\p{IDS}+b/u.exec('AA')",

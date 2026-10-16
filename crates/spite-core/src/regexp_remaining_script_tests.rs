@@ -537,8 +537,6 @@ fn remaining_scripts_exact_names_bounds_and_utf16_find() {
         "Script=ADLAM",
         "sc=Ad_lam",
         "sc=Script=Adlam",
-        "scx=Adlam",
-        "Script_Extensions=Adlam",
         "sc=Hrkt ",
         "sc=QAAc",
         "sc=Qaai ",
@@ -552,6 +550,15 @@ fn remaining_scripts_exact_names_bounds_and_utf16_find() {
                     .unwrap()
                     .is_none()
             );
+        }
+    }
+    for name in ["scx=Adlam", "Script_Extensions=Adlam"] {
+        let units: Vec<_> = name.encode_utf16().collect();
+        assert_eq!(fixed_property_kind(&units), Some(540));
+        for pattern in [format!(r"\p{{{name}}}"), format!(r"[\p{{{name}}}]")] {
+            let plan = compile(&pattern, false, false);
+            assert!(plan.matches(0x1e900));
+            assert!(!plan.matches(0x41));
         }
     }
     for tail in [0xd800, 0xdc00, 0x100, 0xffff] {

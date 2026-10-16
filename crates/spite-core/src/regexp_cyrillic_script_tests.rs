@@ -192,6 +192,21 @@ fn cyrillic_script_work_utf16_and_exact_namespace_contracts() {
             assert!(result.is_err());
         }
     }
+    {
+        let pattern = r"\p{Script_Extensions=Cyrillic}";
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(pattern),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert!(plan.matches(0x410), "{pattern}");
+        assert!(!plan.matches(0x41), "{pattern}");
+        // This extension membership differs from the Script fallback.
+        assert!(plan.matches(0x2bc));
+        assert!(!compile(r"\p{sc=Cyrillic}", false, false).matches(0x2bc));
+    }
     for pattern in [
         r"\p{Cyrillic}",
         r"\p{Cyrl}",
@@ -199,7 +214,6 @@ fn cyrillic_script_work_utf16_and_exact_namespace_contracts() {
         r"\p{SCRIPT=Cyrillic}",
         r"\p{Script=latin}",
         r"\p{sc=Script=Cyrillic}",
-        r"\p{Script_Extensions=Cyrillic}",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(

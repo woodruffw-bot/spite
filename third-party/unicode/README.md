@@ -67,19 +67,30 @@ second uses a local copy. CI verifies the checked-in output against the pinned
 source. Updating Unicode requires an explicit version, source digest, generated
 table, and test update.
 
-The remaining Script matcher registry is generated offline by
+The Script and Script_Extensions matcher registries are generated offline by
 `tools/generate-regexp-scripts.py` from unchanged local Unicode 18
-PropertyValueAliases, Scripts, and CaseFolding references under
+PropertyValueAliases, Scripts, ScriptExtensions and CaseFolding references under
 `crates/spite-core/src/testdata/`. The alias reference has SHA-256
 `06c4c8eaf7b0bf34abe73b113da1215bd784ac254d4c223600b90267caa4bbbd`.
-The generator verifies all three pins and checks all 1,533 common/simple fold
-records to prove invariance of the 167 newly generated Script sets. It emits 652
-exact Script/sc keys and their positive/complement intervals. It includes
-Unknown's default membership and the empty Katakana_Or_Hiragana value. Earlier
-Script plans retain their existing IDs and fold handling. The local check needs
-no network access or build-time dependency:
+The unchanged new reference is
+https://www.unicode.org/Public/18.0.0/ucd/ScriptExtensions.txt, SHA-256
+`5c9d34a922f687726f2a8bcf57d49f905987e51f1b21b58c95a00fbe255cec23`,
+covered by the included Unicode License v3.
+
+The generator verifies all four pins and all 1,533 common/simple fold records.
+It preserves the earlier Script output and specialized fold plans. Each namespace
+accepts 179 canonical values and 351 exact value spellings. Explicit extension
+sets replace singleton Script fallback; unlisted points retain that fallback,
+including Unknown's default. Both namespaces retain the valid empty
+Katakana_Or_Hiragana/Hrkt value. Extension memberships overlap, and generated
+negative v+i class lists exclude complete canonical preimages where required.
+The generator emits both static modules in one invocation; no network access or
+build-time dependency is needed for the local check:
 
 ```sh
 python3 tools/generate-regexp-scripts.py --check
 python3 tools/generate-regexp-scripts.py /path/to/versioned-reference-directory --check
 ```
+
+When reproducing into scratch files, select both `--output` and
+`--extensions-output`; otherwise each omitted output uses its checked-in path.

@@ -162,12 +162,14 @@ fn unicode_property_dot_opted_work_and_remaining_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/(\p{Script_Extensions=Latin})(.)/v.exec('Aa');JSON.stringify(m)==='["Aa","A","a"]'&&m.index===0&&m.input==='Aa'"#,
+    );
     for source in [
         r"/(\p{sc=Han})(a)/u.exec('𠮷a')",
         r"/(\p{sc=Han})(.)+/v.exec('𠮷a')",
         r"/(\p{sc=Han}|a)(.)/u.exec('𠮷a')",
         r"/(\p{sc=Han})(.)x/v.exec('𠮷ax')",
-        r"/(\p{Script_Extensions=Latin})(.)/v.exec('Aa')",
     ] {
         assert!(
             matches!(

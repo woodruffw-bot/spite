@@ -259,6 +259,22 @@ mod tests {
 
     #[test]
     fn property_dot_contracts_clones_and_every_construction_charge() {
+        {
+            let source = r"(\p{Script_Extensions=Latin})(.)";
+            let plan = RegExpUnicodePropertyDotMatcher::compile_with_work(
+                &JsString::from(source),
+                true,
+                false,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            let found = plan.find(&JsString::from("Aα"), 0, true).unwrap();
+            assert_eq!(found.range, 0..2);
+            assert_eq!(found.captures, [0..1, 1..2]);
+            assert!(plan.find(&JsString::from("אα"), 0, true).is_none());
+        }
         for source in [
             r"(\p{sc=Han})",
             r"\p{sc=Han}(.)",
@@ -269,7 +285,6 @@ mod tests {
             r"(\p{sc=Han})(a)",
             r"(\p{sc=Han})(.)$",
             r"(\p{sc=Han})(.)x",
-            r"(\p{Script_Extensions=Latin})(.)",
         ] {
             assert!(
                 RegExpUnicodePropertyDotMatcher::compile_with_work(

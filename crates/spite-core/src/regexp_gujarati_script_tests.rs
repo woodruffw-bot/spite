@@ -219,6 +219,21 @@ fn gujarati_script_work_utf16_and_exact_namespace_contracts() {
             assert!(result.is_err());
         }
     }
+    {
+        let pattern = r"\p{Script_Extensions=Gujarati}";
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(pattern),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert!(plan.matches(0xa95), "{pattern}");
+        assert!(!plan.matches(0x41), "{pattern}");
+        // This extension membership differs from the Script fallback.
+        assert!(plan.matches(0x951));
+        assert!(!compile(r"\p{sc=Gujarati}", false, false).matches(0x951));
+    }
     for pattern in [
         r"\p{Gujarati}",
         r"\p{Gujr}",
@@ -226,7 +241,6 @@ fn gujarati_script_work_utf16_and_exact_namespace_contracts() {
         r"\p{SCRIPT=Gujarati}",
         r"\p{Script=gujarati}",
         r"\p{sc=Script=Gujarati}",
-        r"\p{Script_Extensions=Gujarati}",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(

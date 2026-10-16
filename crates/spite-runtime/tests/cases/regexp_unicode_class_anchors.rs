@@ -144,6 +144,9 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/^[\p{Script_Extensions=Latin}]$/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/(^[a]$)+b/iu.exec('a')",
         r"/^([a])+b$/u.exec('a')",
@@ -151,7 +154,6 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         r"/^[a]b$/v.exec('ab')",
         r"/^[a&&b]$/v.exec('a')",
         r"/^[[a]]$/v.exec('a')",
-        r"/^[\p{Script_Extensions=Latin}]$/u.exec('a')",
         r"/^[\q{ab}]$/v.exec('ab')",
         r"/^[a]$|b/u.exec('b')",
     ] {

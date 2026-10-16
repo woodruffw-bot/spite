@@ -140,13 +140,15 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/[\p{Script_Extensions=Latin}]/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/([a])+b/iu.exec('a')",
         r"/[a]+b/iv.exec('a')",
         r"/[a]b/iu.exec('ab')",
         r"/[a&&b]/iv.exec('a')",
         r"/[[a]]/iv.exec('a')",
-        r"/[\p{Script_Extensions=Latin}]/iv.exec('a')",
         r"/[\q{ab}]/iv.exec('ab')",
     ] {
         assert!(

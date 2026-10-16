@@ -170,13 +170,17 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+    );
+    check(
+        r#"let m=/\p{scx=Han}/u.exec('一');JSON.stringify(m)==='["一"]'&&m.index===0&&m.input==='一'"#,
+    );
     for source in [
-        r"/\p{Script_Extensions=Latin}/u.exec('A')",
         r"/[\p{sc=Han}&&A]/v.exec('A')",
         r"/[\p{sc=Han}--A]/v.exec('A')",
         r"/\p{sc=Han}+b/u.exec('一一')",
         r"/\p{sc=Han}A/v.exec('一A')",
-        r"/\p{scx=Han}/u.exec('一')",
     ] {
         assert!(
             matches!(

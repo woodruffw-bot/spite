@@ -140,6 +140,9 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/([\p{Script_Extensions=Latin}])/iu.exec('a');JSON.stringify(m)==='["a","a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/([a])+b/iu.exec('a')",
         r"/([a])b/iv.exec('ab')",
@@ -148,7 +151,6 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         r"/(?=([a]))/iv.exec('a')",
         r"/(?:[[a]])/iv.exec('a')",
         r"/(?:[\q{a\)b}])/iv.exec('a)b')",
-        r"/([\p{Script_Extensions=Latin}])/iu.exec('a')",
         r"/(.)(.)/u.exec('ab')",
     ] {
         assert!(

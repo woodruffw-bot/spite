@@ -218,6 +218,21 @@ fn common_script_work_utf16_and_exact_namespace_contracts() {
             assert!(result.is_err());
         }
     }
+    {
+        let pattern = r"\p{Script_Extensions=Common}";
+        let plan = RegExpUnicodeClassMatcher::compile_binary_property_with_flags(
+            &JsString::from(pattern),
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+        assert!(plan.matches(0x3f), "{pattern}");
+        assert!(!plan.matches(0x41), "{pattern}");
+        // This extension membership differs from the Script fallback.
+        assert!(!plan.matches(0xb7));
+        assert!(compile(r"\p{sc=Common}", false, false).matches(0xb7));
+    }
     for pattern in [
         r"\p{Common}",
         r"\p{Zyyy}",
@@ -225,7 +240,6 @@ fn common_script_work_utf16_and_exact_namespace_contracts() {
         r"\p{SCRIPT=Common}",
         r"\p{Script=common}",
         r"\p{sc=Script=Common}",
-        r"\p{Script_Extensions=Common}",
     ] {
         assert!(
             RegExpUnicodeClassMatcher::compile_binary_property_with_flags(

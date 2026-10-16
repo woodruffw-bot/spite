@@ -144,8 +144,8 @@ fn unicode_bengali_script_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(r"/\p{Script_Extensions=Bengali}/u.exec('A')===null");
     for source in [
-        r"/\p{Script_Extensions=Bengali}/u.exec('A')",
         r"/[\p{sc=Beng}&&A]/v.exec('A')",
         r"/[\p{sc=Beng}--A]/v.exec('A')",
         r"/\p{sc=Beng}+b/u.exec('AA')",

@@ -192,8 +192,8 @@ fn unicode_hebrew_script_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(r"/\p{Script_Extensions=Hebrew}/u.exec('A')===null");
     for source in [
-        r"/\p{Script_Extensions=Hebrew}/u.exec('A')",
         r"/[\p{sc=Hebr}&&A]/v.exec('A')",
         r"/[\p{sc=Hebr}--A]/v.exec('A')",
         r"/\p{sc=Hebr}+b/u.exec('AA')",

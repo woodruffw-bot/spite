@@ -130,6 +130,9 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/[\p{Script_Extensions=Latin}]/v.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/[a&&a]/v.exec('a')",
         r"/[a--b]/v.exec('a')",
@@ -144,7 +147,6 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         r"/([a])+b/v.exec('a')",
         r"/[a]*b/v.exec('a')",
         r"/(.)+b/v.exec('a')",
-        r"/[\p{Script_Extensions=Latin}]/v.exec('a')",
     ] {
         assert!(
             matches!(

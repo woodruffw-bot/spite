@@ -197,8 +197,8 @@ fn unicode_devanagari_script_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(r"/\p{Script_Extensions=Devanagari}/u.exec('A')===null");
     for source in [
-        r"/\p{Script_Extensions=Devanagari}/u.exec('A')",
         r"/[\p{sc=Deva}&&A]/v.exec('A')",
         r"/[\p{sc=Deva}--A]/v.exec('A')",
         r"/\p{sc=Deva}+b/u.exec('AA')",

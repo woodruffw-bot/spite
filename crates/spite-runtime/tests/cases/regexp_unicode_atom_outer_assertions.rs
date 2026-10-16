@@ -146,10 +146,12 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/^(\p{Script_Extensions=Latin})$/u.exec('A');JSON.stringify(m)==='["A","A"]'&&m.index===0&&m.input==='A'"#,
+    );
     for source in [
         r"/^((.)+)b$/u.exec('A')",
         r"/^(.)(.)$/v.exec('AA')",
-        r"/^(\p{Script_Extensions=Latin})$/u.exec('A')",
         r"/^(a|b)$/v.exec('a')",
         r"/^(^.$)$/u.exec('A')",
         r"/^([\q{a\)b}])$/v.exec('a)b')",

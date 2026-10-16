@@ -124,9 +124,16 @@ fn unicode_property_errors_precede_eval_effects_and_matching_remains_a_host_gap(
             "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
         ));
     }
+    for (pattern, flags, expected) in [
+        (r"\p{Script_Extensions=Latin}", "u", true),
+        (r"[\P{scx=Latin}]", "u", false),
+    ] {
+        let code = format!("marker=1; /{pattern}/{flags}.test('a');");
+        check(&format!(
+            "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result==={expected}"
+        ));
+    }
     for (pattern, flags) in [
-        (r"\p{Script_Extensions=Latin}", "u"),
-        (r"[\P{scx=Latin}]", "u"),
         (r"\p{RGI_Emoji}", "v"),
         (r"[^\p{Basic_Emoji}&&\p{Letter}]", "v"),
     ] {

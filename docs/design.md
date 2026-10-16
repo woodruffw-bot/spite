@@ -4142,9 +4142,8 @@ source, without member or repetition expansion, new dependencies or default quot
 
 Unicode 18 adds U+2B81E to Han compared with Node's Unicode 17 data. The pinned
 Unicode 18 baseline remains authoritative. Shared-data results agree with Node;
-the new member is verified independently against Scripts.txt. Other scripts,
-Script_Extensions, set operators and concatenated consuming terms remain separate
-implementation work. Two original unsupported Han examples now have positive
+the new member is verified independently against Scripts.txt. Set operators and
+concatenated consuming terms remain separate implementation work. Two original unsupported Han examples now have positive
 whole-program regressions; their prior gap cases use Script=Greek.
 
 
@@ -4949,8 +4948,8 @@ The sixteen compatible original fixtures are reviewed for a separate commit.
 
 
 Latin Script escapes admit exactly Script=Latin, Script=Latn, sc=Latin and
-sc=Latn (22.2.2.9 and UnicodeMatchPropertyValue). Bare Latin names are invalid;
-Script_Extensions remains a separate unsupported property namespace. The pinned
+sc=Latn (22.2.2.9 and UnicodeMatchPropertyValue). Bare Latin names are invalid.
+The pinned
 Unicode 18 Scripts file defines 1,653 Latin characters in 40 merged intervals.
 Its 41-interval complement includes lone surrogates. Both sets are invariant
 under the reviewed simple/common case folds, preserving u+i and v+i semantics.
@@ -4965,14 +4964,12 @@ behavior also covers matches starting inside a Latin supplementary character.
 Node uses Unicode 17. Its 161 missing Latin additions are documented separately
 from matching semantics. The original Script=Latin Test262 fixture at the
 existing pin is reviewed unchanged and remains unvendored because its negative
-set excludes these Unicode 18 additions. Earlier unsupported-property controls
-now use valid, still-unsupported Script_Extensions=Latin; exact former Latin
-patterns have positive execution regressions.
+set excludes these Unicode 18 additions.
 
 
 Greek Script escapes admit exactly Script=Greek, Script=Grek, sc=Greek and
-sc=Grek (22.2.2.9 and UnicodeMatchPropertyValue). Bare Greek names are invalid;
-Script_Extensions remains a separate unsupported namespace. The pinned Unicode
+sc=Grek (22.2.2.9 and UnicodeMatchPropertyValue). Bare Greek names are invalid.
+The pinned Unicode
 18 Scripts file defines 520 Greek characters in 37 merged intervals. Its
 38-interval complement includes lone surrogates.
 
@@ -4994,7 +4991,8 @@ includes those newly assigned Greek characters.
 
 Cyrillic Script escapes admit exactly Script=Cyrillic, Script=Cyrl, sc=Cyrillic
 and sc=Cyrl (22.2.2.9 and UnicodeMatchPropertyValue). Bare Cyrillic names are
-invalid; Script_Extensions remains a separate unsupported namespace. The pinned
+invalid.
+The pinned
 Unicode 18 Scripts file defines 508 Cyrillic characters in ten merged intervals.
 Its eleven-interval complement includes lone surrogates. Common/simple case
 folding preserves both sets, so u+i and v+i complement orders agree.
@@ -5009,8 +5007,8 @@ existing pin is reviewed unchanged for a separate vendoring commit.
 
 
 Arabic Script escapes admit exactly Script=Arabic, Script=Arab, sc=Arabic and
-sc=Arab (22.2.2.9 and UnicodeMatchPropertyValue). Bare Arabic names are invalid;
-Script_Extensions remains a separate unsupported namespace. The pinned Unicode
+sc=Arab (22.2.2.9 and UnicodeMatchPropertyValue). Bare Arabic names are invalid.
+The pinned Unicode
 18 Scripts file defines 1,452 Arabic characters in 56 merged intervals. Its
 57-interval complement includes lone surrogates. Common/simple case folding
 preserves both sets, so u+i and v+i complement orders agree.
@@ -5026,8 +5024,8 @@ older original Test262 fixture remains unchanged and unvendored.
 
 
 Hebrew Script escapes admit exactly Script=Hebrew, Script=Hebr, sc=Hebrew and
-sc=Hebr (22.2.2.9 and UnicodeMatchPropertyValue). Bare Hebrew names are invalid;
-Script_Extensions remains a separate unsupported namespace. The pinned Unicode
+sc=Hebr (22.2.2.9 and UnicodeMatchPropertyValue). Bare Hebrew names are invalid.
+The pinned Unicode
 18 Scripts file defines 136 Hebrew characters in nine merged BMP intervals. Its
 ten-interval complement includes lone surrogates and all supplementary points.
 Common/simple case folding preserves both sets, so u+i and v+i complement orders
@@ -5044,8 +5042,8 @@ remains unchanged and unvendored.
 
 
 Common Script escapes admit exactly Script=Common, Script=Zyyy, sc=Common and
-sc=Zyyy (22.2.2.9 and UnicodeMatchPropertyValue). Bare names are invalid;
-Script_Extensions remains a separate unsupported namespace. The unchanged
+sc=Zyyy (22.2.2.9 and UnicodeMatchPropertyValue). Bare names are invalid.
+The unchanged
 Unicode 18 Scripts file defines 9,276 Common characters. Merging the raw ranges yields
 179 positive intervals. The raw complement also has 179
 intervals; the v+i complement has 181 intervals.
@@ -5066,8 +5064,8 @@ and unvendored.
 
 Inherited Script escapes admit exactly Script=Inherited, Script=Zinh,
 Script=Qaai, sc=Inherited, sc=Zinh and sc=Qaai (22.2.2.9 and
-UnicodeMatchPropertyValue). Bare names are invalid; Script_Extensions remains
-a separate unsupported namespace. The unchanged Unicode 18 Scripts file
+UnicodeMatchPropertyValue). Bare names are invalid.
+The unchanged Unicode 18 Scripts file
 defines 695 Inherited characters in 31 merged intervals. The raw complement
 has 32 intervals; the v+i complement has 35.
 
@@ -5087,7 +5085,8 @@ unvendored.
 
 Devanagari Script escapes admit exactly Script=Devanagari, Script=Deva,
 sc=Devanagari and sc=Deva (22.2.2.9 and UnicodeMatchPropertyValue). Bare names
-are invalid; Script_Extensions remains a separate unsupported namespace. The
+are invalid.
+The
 unchanged Unicode 18 Scripts file defines 165 Devanagari characters in five
 merged intervals. Its six-interval complement includes lone surrogates. Both
 sets are invariant under common/simple case folding, so u+i and v+i complement
@@ -5101,8 +5100,8 @@ in the existing Unicode 18 pin. Shared membership and folding cases agree. The
 older original Test262 fixture remains unchanged and unvendored.
 
 Bengali Script escapes admit exactly Script=Bengali, Script=Beng, sc=Bengali
-and sc=Beng (22.2.2.9 and UnicodeMatchPropertyValue). Bare names are invalid;
-Script_Extensions remains a separate unsupported namespace. The unchanged
+and sc=Beng (22.2.2.9 and UnicodeMatchPropertyValue). Bare names are invalid.
+The unchanged
 Unicode 18 Scripts file defines 98 Bengali characters in 15 merged intervals.
 Its 16-interval complement includes lone surrogates. Both sets are invariant
 under common/simple case folding, so u+i and v+i complement orders agree.
@@ -5116,7 +5115,8 @@ agree. The older original Test262 fixture remains unchanged and unvendored.
 
 Gurmukhi Script escapes admit exactly Script=Gurmukhi, Script=Guru,
 sc=Gurmukhi and sc=Guru (22.2.2.9 and UnicodeMatchPropertyValue). Bare names
-are invalid; Script_Extensions remains a separate unsupported namespace. The
+are invalid.
+The
 unchanged Unicode 18 Scripts file defines 80 Gurmukhi characters in 16 merged
 intervals. Its 17-interval complement includes lone surrogates. Both sets are
 invariant under common/simple case folding, so u+i and v+i complements agree.
@@ -5126,7 +5126,8 @@ are preserved. No recursion, dependency or default JavaScript quota is added.
 
 Gujarati Script escapes admit exactly Script=Gujarati, Script=Gujr,
 sc=Gujarati and sc=Gujr (22.2.2.9 and UnicodeMatchPropertyValue). Bare names
-are invalid; Script_Extensions remains a separate unsupported namespace. The
+are invalid.
+The
 unchanged Unicode 18 Scripts file defines 91 Gujarati characters in 14 merged
 intervals. Its 15-interval complement includes lone surrogates. Both sets are
 invariant under common/simple case folding, so u+i and v+i complements agree.
@@ -5139,9 +5140,10 @@ property and class plans (22.2.2.9 and UnicodeMatchPropertyValue). All 179
 canonical values accept 351 distinct value spellings under Script= and sc=,
 for 702 exact keys at the existing Unicode 18 pin. Existing kinds 0..205 and the
 specialized Latin/Greek/Common/Inherited complement plans are retained. The remaining 167
-values occupy internal u16 kinds 206..539; nine temporary u64 words deduplicate
-class properties. A bounded adapter preserves the existing u8 General_Category
-tables and excludes every later Script kind from that dispatch.
+values occupy internal u16 kinds 206..539. The shared class-property mask also
+includes the separate Script_Extensions registry described below. A bounded
+adapter preserves the existing u8 General_Category tables and excludes every
+later Script or Script_Extensions kind from that dispatch.
 
 The independent pinned ownership partition supplies Unknown/Zzzz for every
 unlisted code point, including lone surrogates and private use. The valid
@@ -5158,10 +5160,52 @@ Edition 17 [UnicodeMatchPropertyValue (22.2.2.9.8)](https://tc39.es/ecma262/2026
 in PropertyValueAliases.txt for Script and Script_Extensions; the early errors
 in 22.2.1.1 use that same source. Unicode [UAX #44, 2.3.1](https://www.unicode.org/reports/tr44/tr44-38.html)
 identifies Katakana_Or_Hiragana as a Script value with no associated characters. Node
-24.19.0 with Unicode 17 rejects its Hrkt and long-name escapes with SyntaxError.
+24.19.0 with Unicode 17 rejects those values under Script= and sc= with
+SyntaxError.
 Spite follows the specification and admits the empty set and its full complement.
 Differential checks record those Node syntax discrepancies separately, while the
 pinned-data oracle and native regressions cover their complete semantics.
+
+Script_Extensions= and scx= admit the same 179 canonical Script values and 351
+exact value spellings, giving 702 keys (22.2.2.9 and UnicodeMatchPropertyValue).
+For an explicitly listed code point, ScriptExtensions.txt supplies the complete
+replacement set; otherwise the value is the singleton containing Script(c).
+An explicit set does not retain an omitted Script fallback. Thus U+30FC belongs
+to both scx=Hiragana and scx=Katakana, and not scx=Common; U+0300 has several
+extensions including Latin, Greek and Coptic, and not Inherited. The 210 records
+cover 741 code points. The resulting sets overlap: 1,115,175 memberships cover
+all 1,114,112 code points. Unknown retains Script's missing default, including
+surrogates, private use and noncharacters. Hrkt remains a valid empty set,
+independent of the Hiragana/Katakana union.
+
+Only scx=Common and scx=Greek change membership across the 1,533 pinned
+common/simple folds. In u+i, a negative escape complements the raw set before
+folding; in v+i it complements the canonical positive set. A negative member
+inside a v+i class excludes every fold preimage before union and the shared
+fold pass; outer class inversion remains separate. Common's v+i exclusion also
+removes U+039C and U+03BC; Greek's also removes U+00B5. U+0345 and its target
+U+03B9 both belong to scx=Greek, so scx=Inherited is fold-invariant. In
+particular, \P{Script=Greek} under u+i admits U+03B9 through U+0345, while
+\P{scx=Greek} does not. Full and Turkic folds remain excluded.
+
+The extension namespace appends u16 kinds 540..897, with exclusive bound 898;
+fifteen temporary u64 words deduplicate class properties. Existing property IDs,
+Script/General_Category tables and specialized fold plans retain their meanings.
+Generated static ranges include raw positives, raw complements and the two
+additional v+i negative lists. Before an append can allocate, standalone
+construction charges the maximum list length; classes charge prior ranges plus
+four times that bound using saturating arithmetic. Repeated aliases share the
+same kind. Existing optional work failures, UTF-16 matching boundaries and
+native-stack guards remain; no dependency or default JavaScript quota is added.
+
+The offline generator verifies the original PropertyValueAliases, Scripts,
+ScriptExtensions and CaseFolding pins and reproduces both matcher modules.
+ScriptExtensions-18.0.0.txt has SHA-256
+5c9d34a922f687726f2a8bcf57d49f905987e51f1b21b58c95a00fbe255cec23.
+Node 24.19.0 with Unicode 17 also rejects all 96 measured constructors for the
+four Script_Extensions=/scx= Hrkt keys across six forms and u/ui/v/vi flags.
+Those SyntaxErrors are recorded separately from matching agreement. Spite
+admits the valid empty set and its complement as specified above.
 
 Optional chains (13.3.10) use a flat list of property/call steps. Evaluate the base
 once, preserve references for method receivers, and check only explicitly optional

@@ -335,15 +335,30 @@ mod start_assertion_tests {
                 .is_err()
             );
         }
-        for source in [
-            "^^a+",
-            "^a+$",
-            r"^\ba+",
-            "^(a)+",
-            "^a+b",
-            r"^[a--b]+",
-            r"^\p{Script_Extensions=Latin}+",
-        ] {
+        {
+            let source = r"^\p{Script_Extensions=Latin}+";
+            let plan = RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
+                &JsString::from(source),
+                true,
+                true,
+                true,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(
+                plan.find_with_work(&JsString::from("AA"), 0, true, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(0..2)
+            );
+            assert_eq!(
+                plan.find_with_work(&JsString::from("א"), 0, true, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                None
+            );
+        }
+        for source in ["^^a+", "^a+$", r"^\ba+", "^(a)+", "^a+b", r"^[a--b]+"] {
             assert!(
                 RegExpUnicodeRepeatedAtomMatcher::compile_with_start_anchor_and_work(
                     &JsString::from(source),
@@ -4289,6 +4304,28 @@ mod tests {
             )
             .is_err()
         );
+        {
+            let source = r"\p{Script_Extensions=Latin}+";
+            let plan = RegExpUnicodeRepeatedAtomMatcher::compile_with_flags_and_work(
+                &JsString::from(source),
+                true,
+                true,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(
+                plan.find_with_work(&JsString::from("AA"), 0, true, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(0..2)
+            );
+            assert_eq!(
+                plan.find_with_work(&JsString::from("א"), 0, true, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                None
+            );
+        }
         for source in [
             "a",
             "ab+",
@@ -4298,7 +4335,6 @@ mod tests {
             r"\ba+",
             r"[a--b]+",
             r"[\q{ab}]+",
-            r"\p{Script_Extensions=Latin}+",
             "a{2,1}",
         ] {
             assert!(

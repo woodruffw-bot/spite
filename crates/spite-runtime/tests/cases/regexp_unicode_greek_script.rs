@@ -194,8 +194,8 @@ fn unicode_greek_script_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(r"/\p{Script_Extensions=Greek}/u.exec('A')===null");
     for source in [
-        r"/\p{Script_Extensions=Greek}/u.exec('A')",
         r"/[\p{sc=Grek}&&A]/v.exec('A')",
         r"/[\p{sc=Grek}--A]/v.exec('A')",
         r"/\p{sc=Grek}+b/u.exec('AA')",

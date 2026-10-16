@@ -139,6 +139,9 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/^\p{Script_Extensions=Latin}$/v.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+    );
     for source in [
         r"/(^.$)+b/iu.exec('a')",
         r"/^(.+)b$/v.exec('a')",
@@ -147,7 +150,6 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         r"/^..$/u.exec('ab')",
         r"/^\D+b$/v.exec('ab')",
         r"/^.$|b/u.exec('b')",
-        r"/^\p{Script_Extensions=Latin}$/v.exec('a')",
         r"/^$/.exec('')+/(?:^$)+/u.exec('')",
     ] {
         assert!(
