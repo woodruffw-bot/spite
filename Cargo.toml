@@ -37,6 +37,9 @@ overflow-checks = true
 [profile.test.package.spite-core]
 opt-level = 1
 
+[profile.test.package.spite-runtime]
+opt-level = 1
+
 # Exhaustive Test262 loops need optimized execution without relaxing checks.
 [profile.conformance]
 inherits = "dev"
