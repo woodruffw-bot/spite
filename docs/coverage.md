@@ -12323,3 +12323,37 @@ workspace documentation tests. All 684 snapshot files remain byte-identical.
 Both complete corpus gates pass all 14,710 variants from 7,616 reviewed sources
 with the existing two workers. Formatting, Clippy, dependency policy, inventory
 checks, runner regressions and all pinned generators pass.
+
+## Parser integration target grouping
+
+Parser retains all 69 integration source files and their 329 tests in one
+unconditional `parser_integration` target. Its 18 unit tests remain separate.
+All 129 Parser snapshots are renamed for the combined target with their entire
+contents unchanged; all 684 existing snapshots retain their bytes. The complete
+workspace drops from 95 to 27 invocations, preserving all 5,141 tests. An inventory
+check and 19 regression probes enforce complete, unconditional file discovery.
+
+Separate cold and immediately warm full-workspace collections use both Rust
+versions, identical profiles and features, two Cargo build jobs, and the existing
+Runtime opt-in optimization. All 347 Parser tests pass before and after grouping,
+with exact test-name mapping and retained executable/environment evidence.
+Warm collection falls from 6.120 to 1.914 seconds on stable and from 6.334 to 2.110
+on Rust 1.85.0. Cold collection is mixed: stable rises from 349.998 to 403.131
+seconds, while MSRV falls from 527.805 to 478.337. Retained fingerprint timestamps
+show longer unchanged Core/Runtime compilation windows in the slower stable run;
+these approximate windows do not establish causality. A concurrent review read
+retained baseline executables during that candidate's cold build.
+
+Summed Parser process times fall from 3.648 to 1.004 seconds on stable and from
+8.303 to 2.165 on MSRV; these sums are not parallel-suite wall times. Summed user
+CPU time falls from 3.084 to 1.806 seconds on stable but rises from 3.785 to 3.969
+on MSRV. These single local comparisons support a focused harness/recording
+benefit, not an overall CI speedup. Existing test bodies, compilation profiles
+and JavaScript resource defaults remain unchanged.
+
+Stable Rust and Rust 1.85.0 each pass all 5,141 workspace tests across 27
+invocations, including 914 Core, 347 Parser and 3,496 Runtime integration tests,
+and the workspace documentation tests. Formatting, Clippy, dependency policy,
+inventories and all runner/discovery probes pass. The unchanged production,
+fixture, corpus and conformance-profile inputs retain the preceding complete
+14,710-variant corpus proofs; all CI matrix checks remain required.

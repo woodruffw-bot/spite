@@ -79,6 +79,8 @@ jobs:
       - run: python3 tools/test-cargo-workspace-tests.py
       - run: python3 tools/test-runtime-tests.py
       - run: python3 tools/check-runtime-tests.py
+      - run: python3 tools/test-parser-tests.py
+      - run: python3 tools/check-parser-tests.py
       - run: python3 tools/check-policy.py
       - run: python3 tools/check-test262.py
       - run: python3 tools/generate-unicode.py --check
