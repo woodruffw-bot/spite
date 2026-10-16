@@ -321,11 +321,10 @@ fn checked_v_set_word_state_context_and_consumers() {
     check(
         r"let r=/\b[a--b]\b/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('aa')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    for source in [
-        r"/\b^[[K]]/v.test('K')",
-        r"/[[K]]$\b/v.test('K')",
-        r"/\b[a--b]+\b/v.test('a')",
-    ] {
+    check(
+        r"let marker=0,result,caught=false;try{marker=1;result=/\b[a--b]+\b/v.test('a')}catch{caught=true}finally{marker=3}!caught&&marker===3&&result&&!/\b[a--b]+\b/v.test('b')&&/\b[a--b]+\b/v.exec('aaa!')[0]==='aaa'",
+    );
+    for source in [r"/\b^[[K]]/v.test('K')", r"/[[K]]$\b/v.test('K')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),
@@ -403,6 +402,100 @@ fn checked_v_set_word_results() {
             .unwrap();
             row_count += 1;
         }
+    }
+    assert_eq!(row_count, 10);
+    insta::assert_snapshot!(rows);
+}
+
+#[test]
+fn checked_v_set_repeated_word_state_context_and_consumers() {
+    check(
+        r"/\b[[a]]{0002,0003}\b/v.exec('aaa!')[0]==='aaa'&&/\b[[a]]{2,}\b/v.exec('aaa!')[0]==='aaa'&&/\b[[a]]??\b/v.exec('aaa!')[0]===''&&!/\b[[a]]{999999999999999999999999}\b/v.test('a')&&/\b[[a]]{0,999999999999999999999999}\b/v.exec('aaa!')[0]==='aaa'",
+    );
+    check(
+        r"let r=/\b[a--a]*\b/dvg,m=r.exec('a');m[0]===''&&m.index===0&&m.indices[0][1]===0&&r.lastIndex===0&&r.exec('a').index===0&&r.lastIndex===0&&!/\b[a--a]+\b/v.test('a')&&/\B[a--a]{0}\B/v.exec('')[0]===''&&/\b[a--a]*\B/v.exec('a')===null",
+    );
+    check(
+        r"let r=/\b[a--a]*\b/dvy;r.lastIndex=2;let m=r.exec('A😀B');m[0]===''&&m.index===1&&m.indices[0][0]===1&&m.indices[0][1]===1&&r.lastIndex===1&&(r.lastIndex=1,r.exec('😀!')===null)&&r.lastIndex===0",
+    );
+    check(
+        r"let r=/\b[a--a]*\b/dvg,a=[...'A😀B'.matchAll(r)];a.map(m=>m.index).join(',')==='0,1,3,4'&&r.lastIndex===0&&'A😀B'.replace(/\b[a--a]*\b/vg,'|')==='|A|😀|B|'",
+    );
+    check(
+        r"'aa_!'.replace(/(?<whole>(\b[[a_]]+\B))/v,'<$1:$<whole>>')==='<aa:aa>_!'&&'aaa!'.match(/\b[[a]]+?\b/v)[0]==='aaa'",
+    );
+    check(r"let r=/\b[[a]]+?\b/vg;r.lastIndex=1;'x aaa!'.search(r)===2&&r.lastIndex===1");
+    check(
+        r"let r=/\b[[\p{Any}]]{2}\b/dvy,m=r.exec('A\uD800B');m.index===0&&m[0]==='A\uD800'&&m.indices[0][1]===2&&r.lastIndex===2&&r.exec('A\uD800B')===null&&r.lastIndex===0",
+    );
+    check(
+        r"let marker=0,caught=false;try{eval('marker=1; /\\b[[a]]{3,2}\\b/v;')}catch(e){caught=e instanceof SyntaxError}caught&&marker===0",
+    );
+    for source in [
+        r"/\b^[[a]]+/v.test('a')",
+        r"/\b[[a]]+$\b/v.test('a')",
+        r"/(\b[[a]]\b)+/v.test('a')",
+        r"/\b[[\q{a}]]{0}\b/v.test('a')",
+    ] {
+        assert!(
+            matches!(
+                Realm::default().eval(source),
+                Err(Error::Unsupported { .. })
+            ),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn checked_v_set_repeated_word_results() {
+    let mut rows = String::new();
+    let mut row_count = 0;
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>(\b[[a_]]+\B))", JsString::from("aa_!"), "dvg", 0),
+        (
+            r"(?<whole>(\b[[a_]]+?\B))",
+            JsString::from("aa_!"),
+            "dvg",
+            0,
+        ),
+        (r"(?<whole>(\b[[a]]+?\b))", JsString::from("aaa!"), "dvg", 0),
+        (r"(?<whole>(\b[[K]]+\b))", JsString::from("KK!"), "dvg", 0),
+        (r"(?<whole>(\b[[K]]+\b))", JsString::from("KK!"), "divg", 0),
+        (r"(?<whole>(\B[a--a]*\B))", JsString::from("😀!"), "dvy", 1),
+        (r"(?<whole>(\b[a--a]*\b))", JsString::from("A😀B"), "dvy", 2),
+        (
+            r"^(?<whole>(\b[[a]]{2,3}?\b))$",
+            JsString::from("x\r\naaa\u{2028}"),
+            "dvmg",
+            0,
+        ),
+        (
+            r"(?<whole>(\b[[\p{Any}]]{2}\b))",
+            JsString::from("A😀B"),
+            "dvg",
+            0,
+        ),
+        (
+            r"(?<whole>(\b[[a]]{0,1}?\b))",
+            JsString::from("a!"),
+            "dvg",
+            0,
+        ),
+    ] {
+        let pattern = JsString::from(pattern);
+        let script = format!(
+            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+        );
+        let Value::String(result) = Realm::default().eval(&script).unwrap() else {
+            panic!("{script}")
+        };
+        writeln!(
+            rows,
+            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+        )
+        .unwrap();
+        row_count += 1;
     }
     assert_eq!(row_count, 10);
     insta::assert_snapshot!(rows);

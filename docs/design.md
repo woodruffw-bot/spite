@@ -7755,7 +7755,7 @@ No default depth, work or heap limit is introduced.
 String operands, every `\q` operand and binary properties of strings remain
 Unsupported, including when surrounding set operations would produce an empty
 set or an all-character set. Additional consuming concatenation, inner quantified
-captures and word assertions on repeated classes remain outside this proof. Standalone
+captures and assertions inside repeated classes remain separate proofs. Standalone
 flat classes still use the legacy constructors; their checked entry point returns
 None unless a structural nested class or set operator occurs. Existing u-mode
 semantics, narrow legacy Core compiler domains and their work callbacks remain
@@ -7777,8 +7777,8 @@ start with [ and end with ], then delegates to the checked class compiler and
 attaches assertions only after successful complete compilation. Other valid
 orders such as \b^CLASS and CLASS$\b remain outside this new entry point, as do
 duplicate or contradictory assertion sequences. Existing whole-body wrapper
-proofs retain complete-character captures and indices; partial captures, repeated
-word-wrapped classes, inner quantified captures, consuming continuations and
+proofs retain complete-character captures and indices; partial captures, word
+assertions inside repeated atoms, inner quantified captures, consuming continuations and
 string operands remain separate implementation work.
 
 Word assertions inspect the original input neighbors at the consumed character's
@@ -7796,3 +7796,37 @@ distinct from Unsupported and JavaScript exceptions. Any new construction buffer
 requires checked, fallible reservation; the existing final matcher Arc and Runtime
 normalization allocations retain their documented boundaries. No default work,
 heap or depth limit, dependency or matching kernel is added.
+
+## Word assertions around checked UnicodeSets class repetitions
+
+A separate typed v/vi constructor admits optional outside word assertions around
+one complete checked nested/operator class with one greedy or lazy quantifier
+(22.2.2.3, 22.2.2.4, 22.2.2.9). The exact order is optional ^, at most one leading
+\b or \B, the class and its quantifier, at most one trailing \b or \B, optional $.
+At least one word assertion is required. Existing decimal bounds retain their
+zero, finite, open and native-overflow semantics without expanding counts into
+storage. Complete class compilation remains mandatory even for {0} or an
+impossible minimum; string leaves are never admitted through an empty result.
+
+The wrapper borrows the retained units and delegates to the existing checked
+class/quantifier proof. Retained inner line gates are rejected before outside
+flags are attached, so \bCLASS+$\b cannot lose its dollar assertion. Word gates
+apply to the complete repetition, never to each class iteration. Other assertion
+orders, duplicate gates, inner groups/captures, per-iteration word assertions,
+string operands and consuming continuations retain their separate proof domains.
+Existing complete enclosing wrappers may retain whole-repetition captures.
+
+The existing monotone boundary-search kernel selects the earliest start and its
+longest or shortest eligible endpoint. A lazy count can grow until its trailing
+word gate succeeds; a greedy count can retain an earlier eligible end. Empty
+results from zero minimum still check both gates at the same original boundary.
+WordCharacters uses the original input and the actual i flag; class folding does
+not replace it. Unicode normalization precedes boundary checks, retaining the
+approved leading-boundary behavior for starts inside a surrogate pair.
+
+The borrowed typed helper preserves the old line-only constructor's complete
+callback sequence and narrow domain. New construction Work(E) and Capacity keep
+the existing host-error mapping; search and all legacy callbacks are unchanged.
+No new source-copy buffer, recursion, dependency or default quota is introduced.
+Existing Runtime preprocessing/legacy source copies and final matcher Arc
+allocation retain their documented allocation boundaries.

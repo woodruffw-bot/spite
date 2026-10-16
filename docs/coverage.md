@@ -12548,3 +12548,36 @@ The separate five-original admission was published before this implementation.
 No fixture, dependency, profile, default limit or native-stack allowance changes
 accompany this feature. Earlier feature and test-speed records retain their
 original scope.
+
+## Word assertions around checked UnicodeSets class repetitions
+
+The typed adapter admits outside \\b/\\B assertions around one checked
+nested/operator v/vi class with one greedy or lazy quantifier and optional line
+assertions. The complete retained class is compiled even for zero or impossible
+bounds. Retained inner line gates cannot be discarded when outside flags are
+attached. Legacy Core constructors retain their None controls and callback
+sequences. One repeated-word Runtime Unsupported entry now has concrete matching
+and error-effect assertions.
+
+Two bounded Core tests compare 252 tiny literal/empty-set plans across 94 sparse
+queries, for 23,688 independent finite endpoint/word/fold comparisons. They also
+cover UTF-16 starts, greedy/lazy trailing gates, zero/large bounds and small
+construction/search work-abort prefixes. Two Runtime tests cover captures,
+indices, state and consumers. A ten-row insta snapshot uses stable literal,
+Any and empty-set witnesses. Node 24.19.0 (Unicode 17) agrees with all ten exact
+JSON and UTF-16 results, without exclusions or discrepancies. All 687 prior
+snapshots retain their bytes; the new snapshot brings the total to 688.
+
+Stable and Rust 1.85.0 pass all 5,171 tests across 27 workspace invocations,
+including 930 Core, 347 Parser and 3,510 Runtime integration tests, plus the
+documentation test. Both full two-worker corpus gates pass all 14,730 variants
+from 7,626 reviewed sources, with every non-passing outcome category at zero.
+Formatting, denied-warning Clippy, dependency policy, inventories, all 39
+runner/discovery probes and all seven generator checks pass. Native stacks and
+runtime defaults remain unchanged, with JavaScript quotas disabled by default.
+
+These new tests use no scalar or alias Cartesian matrix. No fixture, Unicode
+input, dependency, profile or default limit changes accompany this feature.
+The bounded cached-pin scout found no natural new whole-program fixture fit;
+unavailable bodies remain unreviewed. Earlier feature and test-speed records
+retain their original scope.

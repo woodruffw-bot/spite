@@ -339,6 +339,428 @@ mod v_set_checked_repetition_tests {
             assert_eq!(seen, charges[..failure]);
         }
     }
+    #[test]
+    fn checked_v_set_repetition_word_endpoints_match_sparse_reference() {
+        #[derive(Clone, Copy)]
+        struct Gates {
+            before: &'static str,
+            after: &'static str,
+            start_word: Option<bool>,
+            end_word: Option<bool>,
+            start_anchor: bool,
+            end_anchor: bool,
+            multiline: bool,
+        }
+        struct Input {
+            text: JsString,
+            points: Vec<u32>,
+            boundaries: Vec<usize>,
+        }
+        struct Reference {
+            class: u8,
+            minimum: usize,
+            maximum: Option<usize>,
+            greedy: bool,
+            gates: Gates,
+            ignore_case: bool,
+        }
+        fn boundary(units: &[u16], at: usize, ignore_case: bool) -> bool {
+            let word = |unit: Option<&u16>| {
+                unit.is_some_and(|&unit| {
+                    matches!(unit, 0x30..=0x39 | 0x41..=0x5a | 0x5f | 0x61..=0x7a)
+                        || (ignore_case && matches!(unit, 0x17f | 0x212a))
+                })
+            };
+            word(at.checked_sub(1).and_then(|at| units.get(at))) != word(units.get(at))
+        }
+        fn member(class: u8, point: u32, ignore_case: bool) -> bool {
+            match class {
+                0 => point == 0x21 || point == 0x61 || (ignore_case && point == 0x41),
+                // Independent C/S preimages: K/k/Kelvin and long-s/s/S.
+                1 => {
+                    matches!(point, 0x4b | 0x17f | 0x1f600 | 0xd800 | 0xdc00)
+                        || (ignore_case && matches!(point, 0x6b | 0x212a | 0x73 | 0x53))
+                }
+                2 => false,
+                _ => unreachable!(),
+            }
+        }
+        fn expected(
+            reference: &Reference,
+            input: &Input,
+            start: usize,
+            sticky: bool,
+        ) -> Option<Range<usize>> {
+            let units = input.text.code_units();
+            if start > units.len() {
+                return None;
+            }
+            let first = input.boundaries.partition_point(|&at| at <= start) - 1;
+            let gates = reference.gates;
+            for candidate in first..input.boundaries.len() {
+                if sticky && candidate != first {
+                    break;
+                }
+                let begin = input.boundaries[candidate];
+                if (gates.start_anchor
+                    && begin != 0
+                    && !(gates.multiline
+                        && matches!(units[begin - 1], 0x0a | 0x0d | 0x2028 | 0x2029)))
+                    || gates
+                        .start_word
+                        .is_some_and(|word| boundary(units, begin, reference.ignore_case) != word)
+                {
+                    continue;
+                }
+                let mut best = None;
+                for count in 0..=input.points.len() - candidate {
+                    if reference.maximum.is_some_and(|maximum| count > maximum) {
+                        break;
+                    }
+                    let end = input.boundaries[candidate + count];
+                    let line_end = !gates.end_anchor
+                        || end == units.len()
+                        || (gates.multiline && matches!(units[end], 0x0a | 0x0d | 0x2028 | 0x2029));
+                    let word_end = gates
+                        .end_word
+                        .is_none_or(|word| boundary(units, end, reference.ignore_case) == word);
+                    if count >= reference.minimum && line_end && word_end {
+                        best = Some(begin..end);
+                        if !reference.greedy {
+                            return best;
+                        }
+                    }
+                    if candidate + count == input.points.len()
+                        || !member(
+                            reference.class,
+                            input.points[candidate + count],
+                            reference.ignore_case,
+                        )
+                    {
+                        break;
+                    }
+                }
+                if best.is_some() {
+                    return best;
+                }
+            }
+            None
+        }
+        let inputs: Vec<_> = [
+            JsString::from(""),
+            JsString::from("aa!"),
+            JsString::from("aa_!"),
+            JsString::from("KkKſsS!"),
+            JsString::from("a😀B"),
+            JsString::from_code_units(vec![0x61, 0xd800, 0x21, 0xdc00, 0x61]),
+            JsString::from("x\r\nAA\u{2028}"),
+            JsString::from("Kſ"),
+        ]
+        .into_iter()
+        .map(|text| {
+            let units = text.code_units();
+            let mut points = Vec::new();
+            let mut boundaries = vec![0];
+            let mut at = 0;
+            while at < units.len() {
+                let first = units[at];
+                at += 1;
+                let point = if (0xd800..=0xdbff).contains(&first)
+                    && units
+                        .get(at)
+                        .is_some_and(|last| (0xdc00..=0xdfff).contains(last))
+                {
+                    let point =
+                        0x10000 + 0x400 * u32::from(first - 0xd800) + u32::from(units[at] - 0xdc00);
+                    at += 1;
+                    point
+                } else {
+                    u32::from(first)
+                };
+                points.push(point);
+                boundaries.push(at);
+            }
+            Input {
+                text,
+                points,
+                boundaries,
+            }
+        })
+        .collect();
+        let both = Gates {
+            before: r"\b",
+            after: r"\b",
+            start_word: Some(true),
+            end_word: Some(true),
+            start_anchor: false,
+            end_anchor: false,
+            multiline: false,
+        };
+        let gates = [
+            both,
+            Gates {
+                after: r"\B",
+                end_word: Some(false),
+                ..both
+            },
+            Gates {
+                before: "",
+                start_word: None,
+                ..both
+            },
+            Gates {
+                after: "",
+                end_word: None,
+                ..both
+            },
+            Gates {
+                before: r"\B",
+                after: r"\B",
+                start_word: Some(false),
+                end_word: Some(false),
+                ..both
+            },
+            Gates {
+                before: r"^\b",
+                after: r"\b$",
+                start_anchor: true,
+                end_anchor: true,
+                ..both
+            },
+            Gates {
+                before: r"^\b",
+                after: r"\b$",
+                start_anchor: true,
+                end_anchor: true,
+                multiline: true,
+                ..both
+            },
+        ];
+        for (class, body) in [
+            (0, "[[a!]]"),
+            (1, r"[[Kſ\u{1F600}][\uD800][\uDC00]]"),
+            (2, "[a--a]"),
+        ] {
+            for (quantifier, minimum, maximum, greedy) in [
+                ("+", 1, None, true),
+                ("+?", 1, None, false),
+                ("*", 0, None, true),
+                ("*?", 0, None, false),
+                ("{1,2}", 1, Some(2), true),
+                ("{0}", 0, Some(0), true),
+            ] {
+                for gates in gates {
+                    let source = format!("{}{body}{quantifier}{}", gates.before, gates.after);
+                    for ignore_case in [false, true] {
+                        let matcher = RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_word_boundaries_and_work(
+                            &JsString::from(source.as_str()), ignore_case, gates.multiline,
+                            |_| Ok::<(), ()>(()),
+                        ).unwrap().unwrap();
+                        let reference = Reference {
+                            class,
+                            minimum,
+                            maximum,
+                            greedy,
+                            gates,
+                            ignore_case,
+                        };
+                        for input in &inputs {
+                            for start in 0..=input.text.len() + 1 {
+                                for sticky in [false, true] {
+                                    assert_eq!(
+                                        find(&matcher, &input.text, start, sticky),
+                                        expected(&reference, input, start, sticky),
+                                        "{source} i={ignore_case} m={} {:?} start={start} sticky={sticky}",
+                                        gates.multiline,
+                                        input.text,
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn checked_v_set_repetition_word_contracts_and_work_prefixes() {
+        fn checked(
+            source: &str,
+            ignore_case: bool,
+            multiline: bool,
+        ) -> RegExpUnicodeRepeatedAtomMatcher {
+            RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_word_boundaries_and_work(
+                &JsString::from(source),
+                ignore_case,
+                multiline,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap()
+        }
+        for (source, input, start, sticky, ignore_case, multiline, expected) in [
+            (r"\b[[a]]?\b", "aa", 0, true, false, false, Some(0..0)),
+            (r"\b[[a!]]+\b", "a!", 0, true, false, false, Some(0..1)),
+            (r"\b[[a]]+?\b", "aa!", 0, true, false, false, Some(0..2)),
+            (r"[[a]]{1,2}\b", "aaa", 0, false, false, false, Some(1..3)),
+            (r"[[a]]{1,2}\b", "aaa", 0, true, false, false, None),
+            (r"\B[a--a]{0}\B", "", 0, true, false, false, Some(0..0)),
+            (
+                r"\b[[\p{Any}]]+\B",
+                "a😀",
+                2,
+                true,
+                false,
+                false,
+                Some(1..3),
+            ),
+            (
+                r"\b[[\p{Any}]]{0}\b",
+                "a😀",
+                2,
+                true,
+                false,
+                false,
+                Some(1..1),
+            ),
+            (
+                r"^\b[[a]]{1,2}?\b$",
+                "x\naa\n",
+                0,
+                false,
+                false,
+                true,
+                Some(2..4),
+            ),
+            (r"\b[[ſ]]+\b", "ſ", 0, true, false, false, None),
+            (r"\b[[ſ]]+\b", "ſ", 0, true, true, false, Some(0..1)),
+        ] {
+            assert_eq!(
+                find(
+                    &checked(source, ignore_case, multiline),
+                    &JsString::from(input),
+                    start,
+                    sticky
+                ),
+                expected,
+                "{source} {input:?} start={start} sticky={sticky} i={ignore_case} m={multiline}",
+            );
+        }
+        let huge = "9".repeat(100);
+        for (quantifier, expected) in [
+            (format!("{{{huge}}}"), None),
+            (format!("{{0,{huge}}}?"), Some(0..0)),
+            (format!("{{1,{huge}}}"), Some(0..2)),
+            (format!("{{{}}}", usize::MAX), None),
+        ] {
+            let source = format!(r"\b[[a]]{quantifier}\b");
+            assert_eq!(
+                find(
+                    &checked(&source, false, false),
+                    &JsString::from("aa"),
+                    0,
+                    true
+                ),
+                expected
+            );
+        }
+        for source in [
+            "[[a]]+",
+            r"\b[[a]]\b",
+            r"\b[a]+\b",
+            r"\b^[[a]]+\b",
+            r"\b[[a]]+$\b",
+            r"\b\B[[a]]+",
+            r"[[a]]+\b\B",
+            r"a\b[[a]]+",
+            r"\b[[a]]+a",
+            r"(\b[[a]]+\b)",
+            r"\b([[a]])+\b",
+            r"\b[a--a--\q{a}]{0}\b",
+            r"\B[\p{RGI_Emoji}--\p{RGI_Emoji}]{0}\B",
+            r"\b[[a]]+\\b",
+            r"\b[[a]]+\$",
+            r"\b[[a]]\+\b",
+            r"^\b[[a]]+\b$$",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_word_boundaries_and_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        for (source, ignore_case) in [
+            (r"\b[[\p{ASCII}\dA-Z]--[Q]]{1,2}?\b", false),
+            (r"^\b[[K]&&[k]]+\b$", true),
+        ] {
+            let source = JsString::from(source);
+            let mut charges = Vec::new();
+            RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_word_boundaries_and_work(
+                &source,
+                ignore_case,
+                true,
+                |work| {
+                    charges.push(work);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+            for failure in 1..=charges.len() {
+                let mut seen = Vec::new();
+                let result =
+                    RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_word_boundaries_and_work(
+                        &source,
+                        ignore_case,
+                        true,
+                        |work| {
+                            seen.push(work);
+                            if seen.len() == failure {
+                                Err(failure)
+                            } else {
+                                Ok(())
+                            }
+                        },
+                    );
+                assert!(
+                    matches!(result, Err(crate::RegExpUnicodeSetCompileError::Work(at)) if at == failure)
+                );
+                assert_eq!(seen, charges[..failure]);
+            }
+        }
+        let matcher = checked(r"\b[[a_]]+\B", false, false);
+        let input = JsString::from(" aa_!");
+        let mut charges = Vec::new();
+        assert_eq!(
+            matcher
+                .find_with_work(&input, 0, false, |work| {
+                    charges.push(work);
+                    Ok::<(), usize>(())
+                })
+                .unwrap(),
+            Some(1..3)
+        );
+        for failure in 1..=charges.len() {
+            let mut seen = Vec::new();
+            let result = matcher.find_with_work(&input, 0, false, |work| {
+                seen.push(work);
+                if seen.len() == failure {
+                    Err(failure)
+                } else {
+                    Ok(())
+                }
+            });
+            assert!(matches!(result, Err(at) if at == failure));
+            assert_eq!(seen, charges[..failure]);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1003,13 +1425,102 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_v_set_units_with_line_anchors_and_work(
+            source.code_units(),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+
+    /// Compiles outside word assertions on one checked v-mode class repetition.
+    ///
+    /// Requires complete validated v/vi Pattern input. The admitted order is
+    /// optional ^, optional leading \b/\B, one nested/operator character class
+    /// with one greedy or lazy quantifier, optional trailing \b/\B, optional $.
+    /// At least one word assertion is required. Inner groups, reordered gates,
+    /// strings and consuming continuations remain separate caller proofs.
+    ///
+    /// Class units are borrowed; even zero or impossible bounds require complete
+    /// class compilation. Word predicates apply to the whole repetition in its
+    /// original input context. Work and capacity errors retain the checked class
+    /// contract and final shared-storage allocation boundary. Legacy constructors
+    /// retain their existing domains and callback sequences.
+    pub fn compile_v_set_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2 {
+            match &units[end - 2..end] {
+                [0x5c, kind @ (0x62 | 0x42)] => {
+                    end -= 2;
+                    Some(*kind == 0x62)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+        if start_word.is_none() && end_word.is_none() {
+            return Ok(None);
+        }
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        // Retained line gates cannot be overwritten with the outside flags.
+        // Complete class/quantifier compilation also rejects escaped edge tokens.
+        if body.first() != Some(&0x5b) || body.last() == Some(&0x24) {
+            return Ok(None);
+        }
+        charge(units.len()).map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        let Some(mut plan) = Self::compile_v_set_units_with_line_anchors_and_work(
+            body,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        if plan.start_anchor || plan.end_anchor {
+            return Ok(None);
+        }
+        plan.start_anchor = start_anchor;
+        plan.end_anchor = end_anchor;
+        plan.multiline = multiline;
+        plan.start_word = start_word;
+        plan.end_word = end_word;
+        plan.word_ignore_case = ignore_case;
+        Ok(Some(plan))
+    }
+
+    fn compile_v_set_units_with_line_anchors_and_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
         // Bound both quantifier attempts, decimal comparisons and anchor scans
         // before inspecting source. No quantifier count expands into storage.
-        charge(source.len().saturating_mul(8))
-            .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
-        let units = source.code_units();
+        charge(units.len().saturating_mul(8)).map_err(crate::RegExpUnicodeSetCompileError::Work)?;
         let start_anchor = units.first() == Some(&0x5e);
         let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
         let units = &units[usize::from(start_anchor)..units.len() - usize::from(end_anchor)];

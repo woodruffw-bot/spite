@@ -578,6 +578,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match character-only v/vi intersection and subtraction chains with flat nested operands, line assertions and single-class repetition.
 - [x] Match arbitrarily nested character-only v/vi unions, intersections, subtraction and complements with existing line assertions and single-class repetition.
 - [x] Match \b/\B assertions around one unquantified checked character-only v/vi class with optional line assertions.
+- [x] Match outside \b/\B assertions around one repeated checked character-only v/vi class with greedy/lazy bounds and optional line assertions.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
