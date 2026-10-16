@@ -12837,3 +12837,40 @@ byte-identical; the new snapshot makes 692. Both complete corpus gates pass
 zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
 and inventory probes, and all seven generators pass. No fixture, corpus,
 dependency, profile, default quota or native-stack changes accompany this item.
+
+## Outside word assertions around two checked UnicodeSets classes
+
+Canonical outside \b/\B assertions now compose with exactly two checked
+character-only v/vi classes, optional outside line assertions and existing
+complete whole-body captures. The new constructor requires a word gate and
+preserves the old bare-pair constructor's domain and callback sequence. Both
+classes compile fully; flat components, inner/reordered assertions, additional
+atoms, repetition and string leaves remain separate work.
+
+A failed outside assertion retries at the first character's end, preserving the
+overlapping 1..3 match of \B[[a]][[a]]\b on aaa!. Endpoint predicates use the
+original input, actual i WordCharacters and original multiline context. The
+existing typed Runtime plan, entry charge and four-unit sticky bound are reused.
+
+Two Core tests independently decode 20 tiny UTF-16 inputs for 16 plans, all
+initial offsets and both sticky modes: 3,488 range comparisons. Domain and work
+checks preserve the old compiler gates, reject hidden string leaves and abort
+every construction-charge prefix. Two Runtime tests cover overlap, consumers,
+captures/groups/indices, global/sticky state, coercion and read-only lastIndex,
+multiline context, folding/complements, surrogate boundaries and opted-in host
+cancellation.
+
+All ten full JSON rows in the new insta snapshot match handwritten expectations
+and Node, including the approved initial-low-pair behavior. Complete UTF-16 JSON
+units compare for every row with no exclusions. Raw Unicode 17/18 witnesses agree
+on the complete 65-point Unicode-i ASCIIWord preimage; this finite comparison
+establishes no general Unicode-version equivalence.
+
+Stable and Rust 1.85 each pass all 27 workspace invocations and 5,193 tests,
+including 940 Core, 347 Parser, 3,520 Runtime integration and 279 Runtime unit
+tests, plus one documentation example. All 692 preceding snapshots are
+byte-identical; the new snapshot makes 693. Both complete corpus gates pass
+14,740 variants from 7,631 reviewed sources with every other outcome category
+zero. Formatting, denied-warning Clippy, policy/inventory checks, the 39 runner
+and inventory probes, and all seven generators pass. No fixture, corpus,
+dependency, profile, default quota or native-stack changes accompany this item.

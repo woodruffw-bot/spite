@@ -7958,3 +7958,19 @@ for initial offsets inside a pair. Work bounds sum both existing predicates plus
 pair traversal; one fallible entry charge and the four-unit sticky allowance are
 retained. No source/input buffer, dependency, quota, profile or stack change is
 introduced. Whole enclosing captures are proved separately by Runtime.
+
+A separate typed constructor admits canonical outside \b/\B around the two
+checked character-only v/vi classes (22.2.2.3,22.2.2.4). It requires at least one
+word gate, independently retains each existing checked nested/operator gate,
+and proves the exact borrowed order ^? word? CLASS CLASS word? $?. Full component
+compilation rejects string leaves even behind empty sets. Inner/reordered gates,
+flat components, repetitions, extra atoms and partial captures remain separate
+proofs. The previous bare-pair constructor/domain/callbacks are unchanged.
+
+Optional local endpoint predicates test original whole-pair ranges using actual
+i WordCharacters and original m line context. Failure after two consumed
+characters retries the first end, preserving the overlapping match1..3 of
+\B[[a]][[a]]\b on aaa!. Whole enclosing captures, the existing Runtime variant,
+one entry charge and four-unit sticky bound are reused. Only new-plan predicate
+allowances are added; no source/input buffer, dependency, default quota, profile
+or stack change is introduced.
