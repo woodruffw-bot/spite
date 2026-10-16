@@ -8025,3 +8025,24 @@ component callbacks retain checked-then-flat source order. Existing predicate
 allowances, one entry charge, four-unit sticky bound, Runtime representation and
 whole-body capture proof are reused. No source/input buffer, parser refactor,
 dependency, default quota, profile or native-stack change is introduced.
+
+A separate typed constructor admits canonical outside word assertions around a
+flat-then-checked v/vi pair (22.2.2.3, 22.2.2.4). Its exact borrowed order is
+^? word? FLAT CHECKED word? $?, with at least one \b/\B. The prefix retains the
+existing flat proof; the suffix retains the nested-class/set-operator gate.
+Both components compile fully in source order, even behind an empty flat set.
+String leaves, flat-flat, inner/reordered assertions, extra atoms, repetition
+and partial captures remain outside this constructor. Earlier pair constructors
+retain their separate domains and exact callback bodies.
+
+WordCharacters uses actual i, including Kelvin and long-s, independently of
+fold-invariant Any membership. Line predicates use original m context. The
+existing endpoint record and search kernel retry at the first character's end
+after a failed outside gate, preserving overlaps and original UTF-16 ranges.
+The documented leading-boundary behavior for an initial low surrogate remains
+unchanged. Construction charges 3N before borrowed framing, then flat and checked
+callbacks in source order; Work and checked Capacity failures retain their host
+error distinction. The same Runtime representation, complete enclosing capture
+proof, endpoint allowances, one entry charge and four-unit sticky bound are
+reused. No source/input buffer, parser refactor, dependency, default quota,
+profile, native-stack or worker-policy change is introduced.
