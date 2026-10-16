@@ -44,7 +44,12 @@ jobs:
           TOOLCHAIN: ${{ matrix.toolchain }}
           WORKSPACE_SUITE: ${{ matrix.suite == 'workspace-core' && 'core' || 'rest' }}
         # The complete corpus runs once in the independent optimized-profile job.
-        run: python tools/run-cargo-workspace-tests.py --toolchain "$TOOLCHAIN" --suite "$WORKSPACE_SUITE"
+        run: |
+          extra_args=()
+          if [[ "$RUNNER_OS" == "Linux" && "$WORKSPACE_SUITE" == "rest" ]]; then
+            extra_args+=(--optimize-runtime)
+          fi
+          python tools/run-cargo-workspace-tests.py --toolchain "$TOOLCHAIN" --suite "$WORKSPACE_SUITE" "${extra_args[@]}"
       - name: Run documentation tests
         if: matrix.suite == 'workspace-rest'
         shell: bash

@@ -41,6 +41,8 @@ def main():
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--suite', choices=['all', 'core', 'rest'], default='all',
                         help='Select recorded packages after compiling the complete workspace')
+    parser.add_argument('--optimize-runtime', action='store_true',
+                        help='Compile spite-runtime at opt-level 1 for this run')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     version = subprocess.check_output(['rustc', '+' + args.toolchain, '-vV'], text=True)
@@ -60,6 +62,8 @@ def main():
         configuration = 'target.' + host[1] + '.runner=' + json.dumps(runner)
         command = ['cargo', '+' + args.toolchain, 'test', '--workspace', '--all-targets',
                    '--locked', '--config', configuration]
+        if args.optimize_runtime:
+            command += ['--config', 'profile.test.package.spite-runtime.opt-level=1']
         if args.offline:
             command.append('--offline')
         command += ['--', '--skip', 'pinned_corpus_runs_all_reviewed_variants']

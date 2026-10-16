@@ -36,21 +36,48 @@ fn pinned_corpus_runs_all_reviewed_variants() { panic!("corpus must run separate
 '''
 
 
-def make_workspace(root, core_name='spite-core', include_rest=True):
+PROFILE_BUILD = '''
+fn main() {
+    println!("cargo:rustc-env=SPITE_RUNNER_PROBE_OPT_LEVEL={}",
+             std::env::var("OPT_LEVEL").unwrap());
+}
+'''
+PROFILE_SOURCE = '''
+#[test]
+fn compiler_profile_preserves_checks() {
+    let expected = if env!("CARGO_PKG_NAME") == "spite-runtime" {
+        std::env::var("SPITE_RUNNER_PROBE_RUNTIME_OPT").unwrap()
+    } else {
+        "0".to_owned()
+    };
+    assert_eq!(env!("SPITE_RUNNER_PROBE_OPT_LEVEL"), expected);
+    assert!(cfg!(debug_assertions));
+    assert!(std::panic::catch_unwind(|| {
+        std::hint::black_box(u8::MAX) + std::hint::black_box(1u8)
+    }).is_err(), "integer overflow checks must remain active");
+}
+'''
+
+
+def make_workspace(root, core_name='spite-core', include_rest=True,
+                   rest_name='runner-probe-b', profile_probe=False):
     names = ['a', 'b'] if include_rest else ['a']
     (root / 'Cargo.toml').write_text(
         '[workspace]\nmembers=' + json.dumps(names) + '\nresolver="2"\n', encoding='utf-8')
     for name in names:
         package = root / name
         (package / 'src').mkdir(parents=True)
-        package_name = core_name if name == 'a' else 'runner-probe-b'
+        package_name = core_name if name == 'a' else rest_name
         (package / 'Cargo.toml').write_text(
             f'[package]\nname="{package_name}"\nversion="0.1.0"\nedition="2021"\n'
             '[features]\nworkspace-unified=[]\n'
             + (f'[dependencies]\n{core_name}={{path="../a",features=["workspace-unified"]}}\n'
                if name == 'b' else ''),
             encoding='utf-8')
-        (package / 'src/lib.rs').write_text(SOURCE, encoding='utf-8')
+        (package / 'src/lib.rs').write_text(
+            SOURCE + (PROFILE_SOURCE if profile_probe else ''), encoding='utf-8')
+        if profile_probe:
+            (package / 'build.rs').write_text(PROFILE_BUILD, encoding='utf-8')
 
 
 class CargoRunnerTests(unittest.TestCase):
@@ -70,16 +97,20 @@ class CargoRunnerTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.temporary.cleanup()
 
-    def run_suite(self, fail=None, suite='all', root=None):
+    def run_suite(self, fail=None, suite='all', root=None,
+                  extra_arguments=(), extra_environment=None):
         root = root or self.root
         report = root / 'report.json'
         report.unlink(missing_ok=True)
         environment = self.environment.copy()
+        if extra_environment:
+            environment.update(extra_environment)
         if fail:
             environment['SPITE_RUNNER_PROBE_FAIL'] = fail
         result = subprocess.run(
             [sys.executable, str(RUNNER), '--toolchain', 'stable', '--offline',
-             '--suite', suite, '--report', str(report)], cwd=root, env=environment,
+             '--suite', suite, '--report', str(report), *extra_arguments],
+            cwd=root, env=environment,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         return result, json.loads(report.read_text()) if report.exists() else None
 
@@ -156,6 +187,89 @@ class CargoRunnerTests(unittest.TestCase):
             self.assertIsNone(report)
         finally:
             source.write_text(SOURCE, encoding='utf-8')
+
+    def test_optional_runtime_optimization_preserves_workspace_invocations(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-runner-profile-') as temporary:
+            root = Path(temporary)
+            make_workspace(root, rest_name='spite-runtime', profile_probe=True)
+            environment = self.environment.copy()
+            environment['CARGO_TARGET_DIR'] = str(root / 'target')
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env=environment, check=True)
+            reports = {}
+            for optimize in [False, True]:
+                for suite in ['all', 'rest']:
+                    with self.subTest(optimize=optimize, suite=suite):
+                        result, report = self.run_suite(
+                            suite=suite, root=root,
+                            extra_arguments=['--optimize-runtime'] if optimize else [],
+                            extra_environment={
+                                'CARGO_TARGET_DIR': str(root / 'target'),
+                                'SPITE_RUNNER_PROBE_RUNTIME_OPT': '1' if optimize else '0',
+                            })
+                        self.assertEqual(result.returncode, 0, result.stdout)
+                        self.assertEqual(report['recorded_invocations'], 2)
+                        self.assertEqual(report['suite'], suite)
+                        self.assertEqual(
+                            {row['package'] for row in report['invocations']},
+                            {'spite-core', 'spite-runtime'} if suite == 'all'
+                            else {'spite-runtime'})
+                        for row in report['invocations']:
+                            self.assertEqual(row['status'], 0)
+                            self.assertEqual(row['command'][1:],
+                                             ['--skip', 'pinned_corpus_runs_all_reviewed_variants'])
+                            self.assertEqual(row['cwd'], str(root / (
+                                'a' if row['package'] == 'spite-core' else 'b')))
+                            self.assertEqual(row['summaries'],
+                                             [['ok', '3', '0', '1', '0', '1']])
+                            self.assertNotIn('environment', json.dumps(row))
+                        reports[optimize, suite] = report
+
+            # Executable names can change when the runtime profile changes;
+            # every recorded argument, directory and test outcome must agree.
+            def project(rows):
+                return sorted([{
+                    'arguments': row['command'][1:], 'cwd': row['cwd'],
+                    'package': row['package'], 'status': row['status'],
+                    'summaries': row['summaries'],
+                } for row in rows], key=lambda row: row['package'])
+
+            for suite in ['all', 'rest']:
+                self.assertEqual(project(reports[False, suite]['invocations']),
+                                 project(reports[True, suite]['invocations']))
+            for optimize in [False, True]:
+                runtime = [row for row in reports[optimize, 'all']['invocations']
+                           if row['package'] == 'spite-runtime']
+                self.assertEqual(project(runtime),
+                                 project(reports[optimize, 'rest']['invocations']))
+                self.assertEqual(runtime[0]['command'],
+                                 reports[optimize, 'rest']['invocations'][0]['command'],
+                                 'The rest suite must execute the recorded runtime artifact')
+            core_commands = [[row['command'] for row in reports[optimize, 'all']['invocations']
+                              if row['package'] == 'spite-core'] for optimize in [False, True]]
+            self.assertEqual(core_commands[0], core_commands[1],
+                             'The Core test artifact must stay unchanged')
+
+            # The override must not swallow failures or select the Core package
+            # into the rest suite. Both cases execute real compiled test code.
+            for fail, suite, expected_statuses in [
+                    ('spite-runtime', 'all', [0, 101]),
+                    ('spite-core', 'rest', [0])]:
+                with self.subTest(fail=fail, suite=suite):
+                    result, report = self.run_suite(
+                        fail=fail, suite=suite, root=root,
+                        extra_arguments=['--optimize-runtime'],
+                        extra_environment={
+                            'CARGO_TARGET_DIR': str(root / 'target'),
+                            'SPITE_RUNNER_PROBE_RUNTIME_OPT': '1',
+                        })
+                    self.assertEqual(result.returncode, int(101 in expected_statuses), result.stdout)
+                    self.assertEqual(report['recorded_invocations'], 2)
+                    self.assertEqual(sorted(row['status'] for row in report['invocations']),
+                                     expected_statuses)
+                    self.assertEqual({row['package'] for row in report['invocations']},
+                                     {'spite-core', 'spite-runtime'} if suite == 'all'
+                                     else {'spite-runtime'})
 
     def test_missing_records_cannot_succeed(self):
         specification = importlib.util.spec_from_file_location('workspace_runner', RUNNER)

@@ -12102,3 +12102,26 @@ Per-process peak RSS rose from 3,159,112 to 5,617,244 KiB on stable and from
 3,159,188 to 5,548,452 KiB on Rust 1.85.0. No out-of-memory events occurred.
 GitHub documents 16 GB of RAM for this public repository's standard Linux and
 Windows runners; these Linux measurements do not establish Windows peak usage.
+
+## Optional Runtime test optimization
+
+The workspace test collector accepts `--optimize-runtime`, which passes Cargo
+`profile.test.package.spite-runtime.opt-level=1` for that invocation. Linux CI
+enables it only for the remaining-workspace suite. Default Cargo profiles, Core
+jobs, Windows jobs, documentation tests and the conformance profile retain their
+existing settings. Every recorded test invocation and feature-unified workspace
+build is retained, including debug assertions and integer overflow checks.
+
+A complete thirteen-job diagnostic on the same published source passed every
+test with the global override, but its longest job increased from 568 to 621
+seconds. Linux stable and MSRV remaining-workspace jobs fell from 421 to 310 and
+478 to 352 seconds; Windows compilation cost exceeded its execution benefit.
+These are single hosted comparisons with runner variance. The global override
+was rejected; the Linux-only option avoids adding that measured Windows cost.
+
+Both toolchains freshly pass all 95 workspace invocations and 5,099 cases with
+the option, including 902 Core and 3,466 runtime integration cases, plus ordinary
+documentation tests. All 680 snapshots remain byte-identical. Nine Cargo probes
+retain the original eight cases and verify actual per-package optimization,
+assertions, overflow checks, feature unification, invocation arguments and
+failure propagation for the optional path.
