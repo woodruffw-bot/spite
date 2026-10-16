@@ -136,9 +136,12 @@ fn unicode_gujarati_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     check(r"/\p{Script_Extensions=Gujarati}/u.exec('A')===null");
+    check(r"/[\p{sc=Gujr}&&A]/v.exec('A')===null");
+    check(r"/[\p{sc=Gujr}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0xa95),m=/[\p{sc=Gujr}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{sc=Gujr}&&A]/v.exec('A')",
-        r"/[\p{sc=Gujr}--A]/v.exec('A')",
         r"/\p{sc=Gujr}+b/u.exec('AA')",
         r"/\p{sc=Gujr}A/v.exec('AA')",
     ] {

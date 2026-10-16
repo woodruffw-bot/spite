@@ -176,9 +176,12 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{scx=Han}/u.exec('一');JSON.stringify(m)==='["一"]'&&m.index===0&&m.input==='一'"#,
     );
+    check(r"/[\p{sc=Han}&&A]/v.exec('A')===null");
+    check(r"/[\p{sc=Han}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x20bb7),m=/[\p{sc=Han}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{sc=Han}&&A]/v.exec('A')",
-        r"/[\p{sc=Han}--A]/v.exec('A')",
         r"/\p{sc=Han}+b/u.exec('一一')",
         r"/\p{sc=Han}A/v.exec('一A')",
     ] {

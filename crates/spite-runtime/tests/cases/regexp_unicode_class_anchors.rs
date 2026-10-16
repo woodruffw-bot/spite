@@ -147,12 +147,12 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
     check(
         r#"let m=/^[\p{Script_Extensions=Latin}]$/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
+    check(r"/^[a&&b]$/v.exec('a')===null");
     for source in [
         r"/(^[a]$)+b/iu.exec('a')",
         r"/^([a])+b$/u.exec('a')",
         r"/^[a]+b$/u.exec('a')",
         r"/^[a]b$/v.exec('ab')",
-        r"/^[a&&b]$/v.exec('a')",
         r"/^[[a]]$/v.exec('a')",
         r"/^[\q{ab}]$/v.exec('ab')",
         r"/^[a]$|b/u.exec('b')",

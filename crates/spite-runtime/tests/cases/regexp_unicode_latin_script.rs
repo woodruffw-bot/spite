@@ -196,9 +196,14 @@ fn unicode_latin_script_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
+    check(
+        r"let m=/[\p{sc=Latn}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
+    );
+    check(r"/[\p{sc=Latn}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x61),m=/[\p{sc=Latn}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{sc=Latn}&&A]/v.exec('A')",
-        r"/[\p{sc=Latn}--A]/v.exec('A')",
         r"/\p{sc=Latn}+b/u.exec('AA')",
         r"/\p{sc=Latn}A/v.exec('AA')",
     ] {

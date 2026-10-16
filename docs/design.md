@@ -7720,3 +7720,30 @@ defaults. Year setters preserve literal years 0–99 without MakeFullYear adjust
 Both use shared MakeDay/MakeDate and clip only the final timestamp. The stored
 slot changes only after all conversions and optional native integer work succeed;
 an abrupt conversion or work failure preserves mutations made by hooks.
+
+## Character-only UnicodeSets operations
+
+The checked v-mode class compiler recognizes a complete homogeneous intersection
+or left-subtraction chain (22.2.2.9). Operands are supported characters, class and
+character-property escapes, or flat nested union/range classes and their
+complements. Optional line assertions and single-class quantifiers reuse existing
+Unicode matching plans, capture handling and UTF-16 boundaries. Runtime validates
+the complete Pattern before selecting this local compiler. String operands,
+deeper nesting, nested operators and additional consuming concatenation remain
+explicitly unimplemented; an empty intermediate result does not skip validation
+of later operands.
+
+Case-sensitive v uses raw code-point intervals including lone surrogates. In vi,
+each operand is closed under pinned simple-fold preimages before intersection,
+subtraction or complement. Forming ranges before folding preserves punctuation
+between cased endpoints. Full closure prevents subtraction results from regaining
+removed characters during input canonicalization; complements use the complete
+code-point universe. Existing u-mode semantics and narrow compiler contracts are
+unchanged.
+
+New source and interval work is iterative, with no default depth or work quota.
+Checked reservations recover new interval and scratch capacity failures as host
+resource limits, distinct from JavaScript exceptions and unsupported syntax.
+Work-callback errors pass through unchanged. Final Vec-to-Arc publication retains
+the existing infallible allocation boundary of shared matcher storage; these
+constructors do not promise process-wide recovery from every allocation failure.

@@ -168,12 +168,12 @@ fn unicode_grapheme_extend_properties_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    for source in [
-        r"/[\p{Gr_Ext}&&A]/v.exec('A')",
-        r"/[\p{Gr_Ext}--A]/v.exec('A')",
-        r"/\p{Gr_Ext}+b/u.exec('AA')",
-        r"/\p{Gr_Ext}A/v.exec('AA')",
-    ] {
+    check(r"/[\p{Gr_Ext}&&A]/v.exec('A')===null");
+    check(r"/[\p{Gr_Ext}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x300),m=/[\p{Gr_Ext}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
+    for source in [r"/\p{Gr_Ext}+b/u.exec('AA')", r"/\p{Gr_Ext}A/v.exec('AA')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

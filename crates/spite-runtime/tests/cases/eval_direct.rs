@@ -87,11 +87,14 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
             "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
         ));
     }
+    let code = "marker=1; /[a&&b]/v.test('a');";
+    check(&format!(
+        "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result===false"
+    ));
     for pattern in [
         r"([\u{1f600}])+b",
         r"[\q{a|b}]",
         r"[^\q{a|b}]",
-        "[a&&b]",
         "[[a]b]",
         r"[^\q{ab}&&a]",
     ] {

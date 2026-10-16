@@ -153,9 +153,14 @@ fn unicode_assigned_properties_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
+    check(
+        r"let m=/[\p{Assigned}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
+    );
+    check(r"/[\p{Assigned}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0xe000),m=/[\p{Assigned}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{Assigned}&&A]/v.exec('A')",
-        r"/[\p{Assigned}--A]/v.exec('A')",
         r"/\p{Assigned}+b/u.exec('AA')",
         r"/\p{Assigned}A/v.exec('AA')",
     ] {

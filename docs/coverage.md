@@ -12357,3 +12357,35 @@ and the workspace documentation tests. Formatting, Clippy, dependency policy,
 inventories and all runner/discovery probes pass. The unchanged production,
 fixture, corpus and conformance-profile inputs retain the preceding complete
 14,710-variant corpus proofs; all CI matrix checks remain required.
+
+## Character-only UnicodeSets operations
+
+The checked v/vi compiler supports homogeneous character-only intersection
+and subtraction chains, flat nested operands and their complements, optional
+line assertions and single-class repetition. Legacy Core compiler domains remain
+unchanged. Runtime dispatch uses the checked compiler only for v mode; existing
+Unsupported controls for the newly eligible patterns become concrete match/null
+assertions with positive subtraction witnesses. String operands and deeper nested
+algebra remain Unsupported.
+
+Eleven new Core tests use an independent raw-Unicode sparse matrix, finite fold
+and UTF-16 witnesses, small work-abort prefixes, deterministic capacity failures
+and iterative long-chain recognition. Eight Runtime tests cover state, captures,
+indices, consumers, repetitions and error categories, with one finite 24-row
+snapshot. Both Rust versions pass all 19 focused tests and all 5,160 complete
+workspace tests across 27 invocations, including 925 Core, 347 Parser and 3,504
+Runtime integration tests, plus documentation tests. All 684 old snapshots retain
+their bytes; the sole new snapshot contains 24 independently checked rows.
+
+The raw Unicode 18 oracle checks all 2,262 sparse membership cells. Node with
+Unicode 17 agrees on 2,100 shared cells; six version-sensitive cells and 156 cells
+using Hrkt are excluded without agreement credit. Node accepts 54 of 58 tested
+constructors and reports its known SyntaxError for the four Hrkt forms. All 24
+Runtime snapshot cases also agree with Node, with no exclusions or discrepancies.
+Only the Node comparison child omits the environment's NODE_PATH resolver
+setting; Rust tests keep their ordinary environment and resource defaults.
+
+Both complete corpus gates pass all 14,710 variants from 7,616 sources using the
+existing two workers. Formatting, Clippy, dependency policy, inventories, all 39
+runner/discovery regression probes and all seven generators pass. No new upstream
+fixture programs are admitted by this implementation.

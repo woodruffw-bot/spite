@@ -153,12 +153,12 @@ fn unicode_emoji_modifier_properties_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    for source in [
-        r"/[\p{EMod}&&A]/v.exec('A')",
-        r"/[\p{EMod}--A]/v.exec('A')",
-        r"/\p{EMod}+b/u.exec('AA')",
-        r"/\p{EMod}A/v.exec('AA')",
-    ] {
+    check(r"/[\p{EMod}&&A]/v.exec('A')===null");
+    check(r"/[\p{EMod}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x1f3fb),m=/[\p{EMod}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
+    for source in [r"/\p{EMod}+b/u.exec('AA')", r"/\p{EMod}A/v.exec('AA')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

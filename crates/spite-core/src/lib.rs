@@ -66,7 +66,7 @@ pub use regexp_repeated_prefixed::RegExpRepeatedPrefixedMatcher;
 pub use regexp_repeated_sequence::RegExpRepeatedSequenceMatcher;
 pub use regexp_sequence::RegExpSequenceMatcher;
 pub use regexp_unicode_character::RegExpUnicodeCharacterMatcher;
-pub use regexp_unicode_class::RegExpUnicodeClassMatcher;
+pub use regexp_unicode_class::{RegExpUnicodeClassMatcher, RegExpUnicodeSetCompileError};
 pub use regexp_unicode_folded_literal::{
     RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
 };

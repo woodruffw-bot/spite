@@ -157,10 +157,17 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
         r#"let m=/[\p{Script_Extensions=Latin}]/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
     check(r"/[\p{Script_Extensions=Greek}]/v.exec('𠮷')===null");
+    check(
+        r"let m=/[\p{ASCII}&&K]/v.exec('K');m!==null&&m.length===1&&m[0]==='K'&&m.index===0&&m.input==='K'",
+    );
+    check(
+        r"let m=/[\p{ASCII}--K]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
+    );
+    check(
+        r"let s=String.fromCodePoint(0x61),m=/[\p{ASCII}--K]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
         r"/[\p{RGI_Emoji}]/v.exec('😀')",
-        r"/[\p{ASCII}&&K]/v.exec('K')",
-        r"/[\p{ASCII}--K]/v.exec('A')",
         r"/[\p{ASCII}]+b/v.exec('A')",
         r"/[\p{ASCII}]x/u.exec('Ax')",
     ] {

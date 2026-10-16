@@ -11,7 +11,7 @@ use spite_core::{
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
     RegExpUnicodeClassMatcher, RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher, Span, regexp_outer_group_body,
+    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -462,12 +462,12 @@ impl Realm {
             }
         };
         // Unicode u/v atoms require complete-character matching.
-        // Unicode dot/escape and flat-class plans precede the legacy BMP proof
-        // (22.2.2.7.1, 22.2.2.9). Set operators and string/property escapes remain separate.
+        // Unicode dot/escape and flat-class plans precede the checked v-set and
+        // legacy BMP proofs (22.2.2.7.1, 22.2.2.9).
         let matcher = if matcher.is_none() && unicode {
             // Complete wrappers around a proved atom or single-atom repetition
             // capture its whole original range (22.2.2.7). Compile the retained
-            // body completely before admitting wrappers; nested v sets stay excluded.
+            // body completely before admitting wrappers.
             let (matching_source, wrappers) = self.object_work(span, |_, budget| {
                 // Assertions surrounding a complete ordinary atom wrapper are
                 // zero-width, so moving them inside that wrapper preserves its
@@ -557,6 +557,18 @@ impl Realm {
                 )? {
                     return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
                 }
+                if flags.code_units().contains(&u16::from(b'v')) {
+                    if let Some(body) = RegExpUnicodeClassMatcher::compile_v_set_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
+                    }
+                }
                 if let Some(body) =
                     RegExpUnicodeClassMatcher::compile_binary_property_with_flags_and_work(
                         &matching_source,
@@ -637,6 +649,19 @@ impl Realm {
                     )?
                 {
                     return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body)));
+                }
+                if flags.code_units().contains(&u16::from(b'v')) {
+                    if let Some(body) =
+                        RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+                            &matching_source,
+                            flags.code_units().contains(&u16::from(b'i')),
+                            flags.code_units().contains(&u16::from(b'm')),
+                            |work| budget.charge(work),
+                        )
+                        .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body)));
+                    }
                 }
                 if let Some(body) =
                     RegExpUnicodeRepeatedAtomMatcher::compile_capturing_atom_with_work(
@@ -1030,5 +1055,16 @@ impl Realm {
             span,
         )?;
         Ok(Value::Object(object))
+    }
+}
+
+fn unicode_set_compile_error(
+    error: RegExpUnicodeSetCompileError<crate::object::Error>,
+) -> crate::object::Error {
+    match error {
+        RegExpUnicodeSetCompileError::Work(error) => error,
+        RegExpUnicodeSetCompileError::Capacity => {
+            crate::object::Error::Heap(spite_heap::Error::Capacity)
+        }
     }
 }

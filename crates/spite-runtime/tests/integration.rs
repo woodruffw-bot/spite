@@ -822,6 +822,8 @@ mod regexp_unicode_unrepresentable_exact_nullable_alternatives;
 mod regexp_unicode_unrepresentable_finite_nullable_alternatives;
 #[path = "cases/regexp_unicode_uppercase_properties.rs"]
 mod regexp_unicode_uppercase_properties;
+#[path = "cases/regexp_unicode_v_sets.rs"]
+mod regexp_unicode_v_sets;
 #[path = "cases/regexp_unicode_variation_selector_properties.rs"]
 mod regexp_unicode_variation_selector_properties;
 #[path = "cases/regexp_unicode_whitespace_properties.rs"]

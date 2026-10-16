@@ -11,6 +11,11 @@ use crate::{
 };
 use std::{ops::Range, sync::Arc};
 
+#[path = "regexp_unicode_v_set.rs"]
+mod v_set;
+
+pub use v_set::RegExpUnicodeSetCompileError;
+
 /// Immutable intervals for one flat u/v character set.
 ///
 /// The caller must validate the complete Pattern in its u/v mode. Bare/assertion
@@ -1967,26 +1972,19 @@ fn generic_property_construction_intervals(kind: u16) -> Option<usize> {
 // before union and the shared fold closure. Under u+i, complement the raw set.
 // Both hex properties have no additional simple/common-fold preimages: uppercase
 // members already have lowercase partners. Both u/v complement orders agree.
-fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u16, unicode_sets: bool, ignore_case: bool) {
+fn property_ranges(kind: u16, unicode_sets: bool, ignore_case: bool) -> &'static [(u32, u32)] {
     if let Some(intervals) =
         crate::regexp_script_extensions_data::ranges(kind, unicode_sets, ignore_case)
     {
-        ranges.extend_from_slice(intervals);
-        return;
+        return intervals;
     }
     if let Some(intervals) = crate::regexp_script_data::ranges(kind) {
-        ranges.extend_from_slice(intervals);
-        return;
+        return intervals;
     }
     if let Some(kind) = general_category_kind(kind) {
-        ranges.extend_from_slice(crate::regexp_general_category_data::ranges(
-            kind,
-            unicode_sets,
-            ignore_case,
-        ));
-        return;
+        return crate::regexp_general_category_data::ranges(kind, unicode_sets, ignore_case);
     }
-    let intervals: &[(u32, u32)] = match kind {
+    match kind {
         0 => &[(0, 0x7f)],
         1 if unicode_sets && ignore_case => &[(0x80, 0x17e), (0x180, 0x2129), (0x212b, 0x10ffff)],
         1 => &[(0x80, 0x10ffff)],
@@ -34471,8 +34469,11 @@ fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u16, unicode_sets: bool, 
             (0xb00, 0x10ffff),
         ],
         _ => unreachable!("validated binary property kind"),
-    };
-    ranges.extend_from_slice(intervals);
+    }
+}
+
+fn append_property(ranges: &mut Vec<(u32, u32)>, kind: u16, unicode_sets: bool, ignore_case: bool) {
+    ranges.extend_from_slice(property_ranges(kind, unicode_sets, ignore_case));
 }
 
 fn append_escape(ranges: &mut Vec<(u32, u32)>, kind: u8, ignore_case: bool) {

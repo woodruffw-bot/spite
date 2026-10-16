@@ -171,9 +171,14 @@ fn unicode_grapheme_base_properties_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
+    check(
+        r"let m=/[\p{Gr_Base}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
+    );
+    check(r"/[\p{Gr_Base}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x42),m=/[\p{Gr_Base}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{Gr_Base}&&A]/v.exec('A')",
-        r"/[\p{Gr_Base}--A]/v.exec('A')",
         r"/\p{Gr_Base}+b/u.exec('AA')",
         r"/\p{Gr_Base}A/v.exec('AA')",
     ] {

@@ -103,6 +103,234 @@ struct QuantifierBounds {
 }
 
 #[cfg(test)]
+mod v_set_checked_repetition_tests {
+    use super::*;
+
+    fn plan(source: &str, ignore_case: bool, multiline: bool) -> RegExpUnicodeRepeatedAtomMatcher {
+        RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+            &JsString::from(source),
+            ignore_case,
+            multiline,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    fn find(
+        plan: &RegExpUnicodeRepeatedAtomMatcher,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+    ) -> Option<Range<usize>> {
+        plan.find_with_work(input, start, sticky, |_| Ok::<(), ()>(()))
+            .unwrap()
+    }
+
+    #[test]
+    fn checked_v_set_repetition_empty_and_finite_bounds() {
+        for (source, input, expected) in [
+            ("[a--a]+", "", None),
+            ("[a--a]+", "a", None),
+            ("^[a--a]*$", "", Some(0..0)),
+            ("^[a--a]*$", "a", None),
+            ("^[a--a]{0,0}$", "", Some(0..0)),
+            ("^[a--a]{1,3}$", "", None),
+            ("^[a--b]{2,3}$", "a", None),
+            ("^[a--b]{2,3}$", "aa", Some(0..2)),
+            ("^[a--b]{2,3}$", "aaaa", None),
+            ("^[a--b]{0002,0003}$", "aaa", Some(0..3)),
+        ] {
+            assert_eq!(
+                find(&plan(source, false, false), &JsString::from(input), 0, true),
+                expected,
+                "{source} {input:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn checked_v_set_repetition_greediness_and_unrepresentable_bounds() {
+        for (quantifier, end) in [
+            ("+", 3),
+            ("+?", 1),
+            ("*", 3),
+            ("*?", 0),
+            ("?", 1),
+            ("??", 0),
+            ("{1,2}", 2),
+            ("{1,2}?", 1),
+        ] {
+            let matcher = plan(&format!("[a--b]{quantifier}"), false, false);
+            assert_eq!(
+                find(&matcher, &JsString::from("aaa"), 0, true),
+                Some(0..end)
+            );
+        }
+        assert_eq!(
+            find(
+                &plan("^[a--b]+?$", false, false),
+                &JsString::from("aaa"),
+                0,
+                true
+            ),
+            Some(0..3)
+        );
+        let huge = "9".repeat(100);
+        let impossible = plan(&format!("[a--b]{{{huge}}}"), false, false);
+        assert_eq!(impossible.minimum, None);
+        assert_eq!(find(&impossible, &JsString::from("aa"), 0, false), None);
+        let unbounded = plan(&format!("^[a--b]{{1,{huge}}}$"), false, false);
+        assert_eq!(unbounded.minimum, Some(1));
+        assert_eq!(unbounded.maximum, None);
+        assert_eq!(
+            find(&unbounded, &JsString::from("aaa"), 0, true),
+            Some(0..3)
+        );
+        let native_bound = plan(&format!("[a--b]{{{}}}", usize::MAX), false, false);
+        assert_eq!(native_bound.minimum, Some(usize::MAX));
+        assert_eq!(find(&native_bound, &JsString::from("aa"), 0, false), None);
+    }
+
+    #[test]
+    fn checked_v_set_repetition_line_contexts_and_unicode_widths() {
+        let input = JsString::from("x\naaa\n");
+        assert_eq!(
+            find(&plan("^[a--b]+$", false, false), &input, 0, false),
+            None
+        );
+        assert_eq!(
+            find(&plan("^[a--b]+$", false, true), &input, 0, false),
+            Some(2..5)
+        );
+        assert_eq!(
+            find(
+                &plan("^[a--b]+$", false, true),
+                &JsString::from("\u{2028}aa\u{2029}"),
+                0,
+                false,
+            ),
+            Some(1..3)
+        );
+        assert_eq!(
+            find(
+                &plan("^[A&&a]+$", false, false),
+                &JsString::from("Aa"),
+                0,
+                true
+            ),
+            None
+        );
+        assert_eq!(
+            find(
+                &plan("^[A&&a]+$", true, false),
+                &JsString::from("Aa"),
+                0,
+                true
+            ),
+            Some(0..2)
+        );
+        let source = r"^[[\u{10400}-\u{10427}]&&[\u{10400}]]+$";
+        let matcher = plan(source, false, false);
+        assert_eq!(find(&matcher, &JsString::from("𐐀𐐀"), 0, true), Some(0..4));
+        // Retain the approved whole-match leading-boundary behavior inside a pair.
+        assert_eq!(find(&matcher, &JsString::from("𐐀𐐀"), 1, true), Some(0..4));
+        assert_eq!(
+            find(&plan(source, true, false), &JsString::from("𐐨𐐨"), 0, true),
+            Some(0..4)
+        );
+        assert_eq!(
+            find(
+                &plan(r"^[[\uD800]--[a]]+$", false, false),
+                &JsString::from_code_units(vec![0xd800]),
+                0,
+                true,
+            ),
+            Some(0..1)
+        );
+    }
+
+    #[test]
+    fn checked_v_set_repetition_complete_body_and_legacy_contracts() {
+        for source in [
+            "[a--b]",
+            "[[a]]+",
+            "[[a--b]&&a]+",
+            "([a--b])+",
+            "a[a--b]+",
+            "[a--b]+b",
+            "^[a--b]+$x",
+            r"\b[a--b]+\b",
+            "[a--b]+|c",
+            r"[a--b]\+",
+            r"[a--a--\q{a}]+",
+            r"[a&&\p{RGI_Emoji}]+",
+        ] {
+            assert!(
+                RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodeRepeatedAtomMatcher::compile_with_line_anchors_and_work(
+                &JsString::from("^[a--b]+$"),
+                true,
+                false,
+                false,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn checked_v_set_repetition_work_errors_preserve_prefix() {
+        let source = JsString::from(r"^[[A-Z]--[Q]]{2,4}?$");
+        let mut charges = Vec::new();
+        RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+            &source,
+            true,
+            true,
+            |work| {
+                charges.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for failure in 1..=charges.len() {
+            let mut seen = Vec::new();
+            let result = RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+                &source,
+                true,
+                true,
+                |work| {
+                    seen.push(work);
+                    if seen.len() == failure {
+                        Err(failure)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(
+                matches!(result, Err(crate::RegExpUnicodeSetCompileError::Work(at)) if at == failure)
+            );
+            assert_eq!(seen, charges[..failure]);
+        }
+    }
+}
+
+#[cfg(test)]
 mod start_assertion_tests {
     use super::*;
     use std::fmt::Write;
@@ -754,6 +982,73 @@ enum AlternativeProof {
 }
 
 impl RegExpUnicodeRepeatedAtomMatcher {
+    /// Compiles one checked v-mode set-operation class with a quantifier.
+    ///
+    /// Requires complete v-mode Pattern validation. Optional outside ^/$ retain
+    /// their line contexts (22.2.2.4); the quantifier keeps its exact greedy or
+    /// lazy bounds (22.2.2.3). Inner groups, word assertions and concatenations
+    /// remain separate proofs. The retained class is borrowed without copying.
+    pub fn compile_v_set_with_line_anchors_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        // Bound both quantifier attempts, decimal comparisons and anchor scans
+        // before inspecting source. No quantifier count expands into storage.
+        charge(source.len().saturating_mul(8))
+            .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        let units = source.code_units();
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
+        let units = &units[usize::from(start_anchor)..units.len() - usize::from(end_anchor)];
+        // As in the legacy repetition proof, try a final lazy marker first.
+        // Only a complete retained class can select either interpretation.
+        for (end, greedy) in [
+            (
+                units
+                    .len()
+                    .checked_sub(1)
+                    .filter(|_| units.last() == Some(&0x3f)),
+                false,
+            ),
+            (Some(units.len()), true),
+        ] {
+            let Some(end) = end else { continue };
+            let Some((body_end, minimum, maximum)) = quantifier(units, end) else {
+                continue;
+            };
+            let body = &units[..body_end];
+            if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
+                continue;
+            }
+            let Some(atom) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+                body,
+                ignore_case,
+                false,
+                &mut charge,
+            )?
+            else {
+                continue;
+            };
+            return Ok(Some(Self {
+                atom: Atom::Class(atom),
+                minimum,
+                maximum,
+                greedy,
+                start_anchor,
+                multiline,
+                end_anchor,
+                atom_captures: 0,
+                start_word: None,
+                end_word: None,
+                word_ignore_case: false,
+                nullable: None,
+            }));
+        }
+        Ok(None)
+    }
+
     /// Compiles one unanchored consuming atom and quantifier after full validation.
     ///
     /// Exact decimal bounds beyond native storage are retained semantically:

@@ -224,9 +224,12 @@ fn unicode_inherited_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     check(r"/\p{Script_Extensions=Inherited}/u.exec('A')===null");
+    check(r"/[\p{sc=Zinh}&&A]/v.exec('A')===null");
+    check(r"/[\p{sc=Zinh}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x300),m=/[\p{sc=Zinh}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{sc=Zinh}&&A]/v.exec('A')",
-        r"/[\p{sc=Zinh}--A]/v.exec('A')",
         r"/\p{sc=Zinh}+b/u.exec('AA')",
         r"/\p{sc=Zinh}A/v.exec('AA')",
     ] {

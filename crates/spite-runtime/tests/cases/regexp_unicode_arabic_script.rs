@@ -193,9 +193,12 @@ fn unicode_arabic_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     check(r"/\p{Script_Extensions=Arabic}/u.exec('A')===null");
+    check(r"/[\p{sc=Arab}&&A]/v.exec('A')===null");
+    check(r"/[\p{sc=Arab}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x600),m=/[\p{sc=Arab}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{sc=Arab}&&A]/v.exec('A')",
-        r"/[\p{sc=Arab}--A]/v.exec('A')",
         r"/\p{sc=Arab}+b/u.exec('AA')",
         r"/\p{sc=Arab}A/v.exec('AA')",
     ] {

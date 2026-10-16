@@ -171,12 +171,14 @@ fn unicode_id_start_properties_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    for source in [
-        r"/[\p{IDS}&&A]/v.exec('A')",
-        r"/[\p{IDS}--A]/v.exec('A')",
-        r"/\p{IDS}+b/u.exec('AA')",
-        r"/\p{IDS}A/v.exec('AA')",
-    ] {
+    check(
+        r"let m=/[\p{IDS}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
+    );
+    check(r"/[\p{IDS}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x42),m=/[\p{IDS}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
+    for source in [r"/\p{IDS}+b/u.exec('AA')", r"/\p{IDS}A/v.exec('AA')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

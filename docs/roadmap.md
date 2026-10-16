@@ -575,6 +575,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match exact Gujarati Script property escapes and classes with Unicode complements and case folding.
 - [x] Match every remaining exact Script value and alias with pinned Unicode membership, complements and case folding.
 - [x] Match all exact Script_Extensions/scx property escapes and classes with Script fallback replacement, Unicode complements and case folding.
+- [x] Match character-only v/vi intersection and subtraction chains with flat nested operands, line assertions and single-class repetition.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

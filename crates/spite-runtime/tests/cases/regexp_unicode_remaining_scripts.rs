@@ -427,18 +427,11 @@ fn remaining_scripts_exact_names_and_unadmitted_set_operations() {
             r"let m=/\p{{scx=Unknown}}/{mode}.exec('\u0378');m.length===1&&m[0]==='\u0378'&&m.index===0&&m.input==='\u0378'"
         ));
     }
-    for source in [
-        r"/[\p{sc=Coptic}&&A]/v.exec('A')",
-        r"/[\p{sc=Unknown}--A]/v.exec('A')",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+    check(r"/[\p{sc=Coptic}&&A]/v.exec('A')===null");
+    check(r"/[\p{sc=Unknown}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0xe000),m=/[\p{sc=Unknown}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
 }
 
 #[test]

@@ -177,13 +177,15 @@ fn unicode_repeated_atom_starts_opted_work_and_remaining_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r"let m=/^[a--b]+/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
+    );
     for source in [
         r"/^^a+/u.exec('a')",
         r"/^a+b$/u.exec('a')",
         r"/^a+b/v.exec('ab')",
         r"/^\ba+b/u.exec('a')",
         r"/^(a)+b/u.exec('a')",
-        r"/^[a--b]+/v.exec('a')",
     ] {
         assert!(
             matches!(

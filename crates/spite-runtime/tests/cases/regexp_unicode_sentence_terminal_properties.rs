@@ -153,12 +153,12 @@ fn unicode_sentence_terminal_properties_opted_work_and_remaining_sets() {
     check(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    for source in [
-        r"/[\p{STerm}&&A]/v.exec('A')",
-        r"/[\p{STerm}--A]/v.exec('A')",
-        r"/\p{STerm}+b/u.exec('AA')",
-        r"/\p{STerm}A/v.exec('AA')",
-    ] {
+    check(r"/[\p{STerm}&&A]/v.exec('A')===null");
+    check(r"/[\p{STerm}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x21),m=/[\p{STerm}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
+    for source in [r"/\p{STerm}+b/u.exec('AA')", r"/\p{STerm}A/v.exec('AA')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

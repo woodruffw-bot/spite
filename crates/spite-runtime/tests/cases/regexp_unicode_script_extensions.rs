@@ -542,9 +542,12 @@ fn script_extensions_exact_names_and_unadmitted_compositions() {
             ));
         }
     }
+    check(r"/[\p{scx=Hira}&&A]/v.exec('A')===null");
+    check(r"/[\p{scx=Greek}--A]/v.exec('A')===null");
+    check(
+        r"let s=String.fromCodePoint(0x300),m=/[\p{scx=Greek}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+    );
     for source in [
-        r"/[\p{scx=Hira}&&A]/v.exec('A')",
-        r"/[\p{scx=Greek}--A]/v.exec('A')",
         r"/\p{scx=Latin}A/u.exec('AA')",
         r"/\p{scx=Latin}+b/u.exec('AA')",
     ] {
