@@ -8046,3 +8046,23 @@ error distinction. The same Runtime representation, complete enclosing capture
 proof, endpoint allowances, one entry charge and four-unit sticky bound are
 reused. No source/input buffer, parser refactor, dependency, default quota,
 profile, native-stack or worker-policy change is introduced.
+
+A separate typed constructor admits exactly two flat character-only v/vi classes
+in sequence (22.2.2.3, 22.2.2.7.3). Borrowed boundaries prove the complete order
+^? FLAT FLAT $?, with no remaining atom. Construction charges 2N before the two
+class-end walks, then invokes the unchanged flat compiler first and second in
+source order. Both components compile fully even when the first set is empty;
+nested classes, set operators and every string leaf fail the flat proof.
+Earlier checked and mixed constructors retain their domains and exact callback
+bodies. Outside word assertions around flat-flat pairs, inner assertions or
+captures, extra atoms and repetitions remain separate work.
+
+The optional leading ^ belongs to the first component and trailing $ to the
+second; both inspect the original input and m line context. The existing pair
+plan matches the second character sticky at the first end and retries at that
+end after failure, preserving overlaps and complete original UTF-16 characters.
+Pinned folding, lone surrogates and the documented initial-low-pair boundary
+remain unchanged. Runtime reuses the same representation and separately proved
+complete whole-body captures. The existing entry charge, work bounds and
+four-unit sticky allowance remain in use. No source/input buffer, parser
+refactor, dependency, default quota, profile, stack or worker change is added.

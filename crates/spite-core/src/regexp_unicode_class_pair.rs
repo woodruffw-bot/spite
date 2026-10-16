@@ -11,7 +11,8 @@ use std::ops::Range;
 ///
 /// Requires complete validated v/vi Pattern input. Checked-pair entry points
 /// require both nested/operator gates; mixed-order entry points prove one flat
-/// and one checked component separately. Optional outside
+/// and one checked component separately; the flat-pair entry proves both flat
+/// components. Optional outside
 /// ^/$ use original input line context. Separate constructors admit canonical
 /// outside word gates for two checked components or either mixed class order.
 /// Inner captures/assertions,
@@ -531,6 +532,65 @@ impl RegExpUnicodeClassPairMatcher {
         }))
     }
 
+    /// Compiles exactly two complete flat character-only v/vi classes.
+    ///
+    /// Requires complete validated v/vi Pattern input. Both components use the
+    /// existing borrowed flat proof, with optional outside ^/$ retaining
+    /// original line context. Outside word gates, nested/operator classes,
+    /// inner captures/assertions, repetitions, extra atoms and string leaves
+    /// remain separate proofs. Empty first sets never bypass full second
+    /// compilation. Previous constructors and callbacks are unchanged.
+    pub fn compile_flat_pair_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        let begin = usize::from(units.first() == Some(&0x5e));
+        if units.get(begin) != Some(&0x5b) {
+            return Ok(None);
+        }
+        charge(units.len().saturating_mul(2)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some(split) = class_end(units, begin) else {
+            return Ok(None);
+        };
+        if units.get(split) != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(end) = class_end(units, split) else {
+            return Ok(None);
+        };
+        let end_anchor = units.get(end) == Some(&0x24);
+        if end.saturating_add(usize::from(end_anchor)) != units.len() {
+            return Ok(None);
+        }
+        let Some(first) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &units[..split],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(second) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &units[split..],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            classes: [first, second],
+            assertions: None,
+        }))
+    }
+
     /// Bounds pair traversal and both existing membership predicates.
     pub fn search_passes(&self) -> usize {
         self.classes[0]
@@ -606,3 +666,7 @@ mod checked_flat_word_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_flat_class_pair_word_tests.rs"]
 mod flat_checked_word_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_flat_pair_tests.rs"]
+mod flat_pair_tests;
