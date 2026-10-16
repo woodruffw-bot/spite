@@ -358,7 +358,7 @@ impl RegExpUnicodeClassLiteralMatcher {
 // Full v validation precedes this range proof. Escaped brackets are opaque;
 // property/Unicode escape payloads cannot contain raw brackets in valid input.
 // Reject q immediately rather than interpreting any string-disjunction payload.
-fn class_end(units: &[u16], begin: usize) -> Option<usize> {
+pub(crate) fn class_end(units: &[u16], begin: usize) -> Option<usize> {
     let mut at = begin;
     let mut depth = 0usize;
     while let Some(&unit) = units.get(at) {

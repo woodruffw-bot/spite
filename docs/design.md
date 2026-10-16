@@ -7940,3 +7940,21 @@ search passes; the four-unit sticky consumption bound and entry callback remain.
 There is no new source buffer, input-sized state, recursion, allocation boundary,
 dependency, default quota or stack setting. Existing checked Work(E)/Capacity
 failures keep their host-error distinction.
+
+Two unquantified checked character-only UnicodeSets classes can form one typed
+v/vi sequence (22.2.2.3, 22.2.2.7.3). Each component independently satisfies the
+existing nested-class/set-operator compiler gate. Exact borrowed class boundaries
+prove there are two complete classes and optional outside ^/$, with no remaining
+atom, repetition, inner assertion or capture. Flat component admission is a
+separate proof: `[a--b][c]` remains unsupported. Full checked compilation of both
+components rejects string leaves even when the first class is empty.
+
+The immutable plan contains two existing Unicode class matchers. The first
+searches normally; the second is sticky at the first character's end. A failed
+second match retries at the first end, preserving overlapping candidates. Both
+consume original complete input characters and retain original line context,
+pinned i folding, lone surrogates and the documented leading-boundary behavior
+for initial offsets inside a pair. Work bounds sum both existing predicates plus
+pair traversal; one fallible entry charge and the four-unit sticky allowance are
+retained. No source/input buffer, dependency, quota, profile or stack change is
+introduced. Whole enclosing captures are proved separately by Runtime.
