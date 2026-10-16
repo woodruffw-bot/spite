@@ -440,8 +440,15 @@ impl RegExpUnicodeClassMatcher {
             }
         }
         // Fixed properties are appended once even when repeated in the source.
-        for kind in 0..PROPERTY_KIND_COUNT {
-            if properties[usize::from(kind) / 64] & (1u64 << (kind % 64)) != 0 {
+        for (word_index, mut remaining) in properties.into_iter().enumerate() {
+            while remaining != 0 {
+                let bit = remaining.trailing_zeros() as usize;
+                remaining &= remaining - 1;
+                let index = word_index * u64::BITS as usize + bit;
+                if index >= usize::from(PROPERTY_KIND_COUNT) {
+                    continue;
+                }
+                let kind = u16::try_from(index).expect("checked property-kind index");
                 // Appending may move the original intervals if capacity grows.
                 // Charge that move and the fixed set before allocating.
                 charge(

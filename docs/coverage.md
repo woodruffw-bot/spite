@@ -12294,3 +12294,32 @@ Hrkt keys in nine Core rows, four runtime rows and sixteen matrix cases; these
 probe across all six forms and u/ui/v/vi observes SyntaxError in every case.
 Spite follows the specified empty-set semantics, covered by the raw-data oracle
 and native regressions.
+
+## RegExp class property traversal
+
+Class construction visits set bits in the fifteen-word property mask in ascending
+kind order, replacing the scan of all 898 kinds. Alias deduplication, interval
+append order, capacity/work charges and abort points are preserved; padding bits
+are skipped before the checked u16 conversion. JavaScript defaults remain
+unlimited.
+
+An isolated constructor probe covers eighteen shapes and four flag combinations.
+Both Rust versions preserve all 72 ordered result traces and 1,372 callback-abort
+prefixes. Three alternating baseline/candidate pairs use retained binaries with
+no intervening source changes. Median process time falls from 2.637 to 2.446
+seconds on stable (7.25%) and 2.897 to 2.705 on Rust 1.85.0 (6.66%). The simple
+case-sensitive literal improves 10.03x and 6.50x respectively. Seven stable and
+three MSRV case medians regress slightly, with the worst about 4.1% and 2.1%
+slower; these observations are retained in the comparison.
+
+The probe uses its own opt-level 2 profile with assertions and overflow checks,
+LTO off, and unchanged repository profiles. Its cold baseline and dependency-warm
+candidate builds are recorded separately. These constructor measurements do not
+establish complete workspace or CI speedups.
+
+Stable Rust and Rust 1.85.0 each pass all 5,141 workspace tests across 95
+invocations, including 914 Core and 3,496 Runtime integration tests, and the
+workspace documentation tests. All 684 snapshot files remain byte-identical.
+Both complete corpus gates pass all 14,710 variants from 7,616 reviewed sources
+with the existing two workers. Formatting, Clippy, dependency policy, inventory
+checks, runner regressions and all pinned generators pass.
