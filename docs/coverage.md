@@ -14234,3 +14234,16 @@ nulls, without exclusions. The focused Core and work-bound tests and all
 Clippy, dependency policy, inventories and generator checks pass. The retained
 fifteen-job matrix requires all 55 framework probes and four full reviewed-
 corpus gates; this local result does not claim hosted CI completion.
+
+## Shared Core property snapshot rows
+
+One private nongeneric row builder serves the existing 52 Core property
+snapshot tests. Their names, ordered pattern and input literals, flag
+combinations and fresh matcher/String construction remain intact: 2,488
+matcher constructions, 9,952 fresh input JsStrings and 99,520 find/result rows.
+The named insta assertions remain in their original test functions, with all
+721 snapshot files unchanged. Production code, independent membership/search
+oracles and the ordinary test settings are preserved. All 996 Core tests pass
+on stable and Rust 1.85.0 with the exact preceding test names. Formatting,
+Clippy, dependency policy and inventory checks pass. No compile-time or
+workflow-speed improvement is claimed from these local runs.
