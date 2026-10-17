@@ -13944,3 +13944,59 @@ denied-warning Clippy, policy/inventory checks and all seven generators passed.
 The full Core inventory, workspace and documentation tests, all 47 framework
 probes and four full reviewed-corpus gates remain required in the retained
 fifteen-job hosted matrix.
+
+## One literal followed by two flat UnicodeSets classes
+
+The v/vi adapter admits one decoded literal followed by two
+independently flat classes, with canonical optional outside word and line
+assertions and complete whole-body captures. Exactly five original Boolean
+programs in five preceding owners are the only migrations. Their literal
+expressions remain explicit positive checks alongside intrinsic Array, source,
+index, input, groups, indices and lastIndex checks. The leading-only form must
+still match the prefix cab in cabx. All other 440 preceding v_sets negative
+rows, all seventeen mixed/string prefix neighbors and all thirty-one preceding
+snapshot function sources are preserved. Twenty-three Boolean checks, twenty
+new closed-domain controls and two host-state blocks specify the new scope and
+its neighbors. Unsupported syntax receives no passing-negative conformance
+credit.
+
+Two Core tests provide 7,302 bounded independent UTF-16 oracle comparisons,
+four separate actual-i assertions for invariant consuming predicates, ten
+complete construction transcripts with fresh work-error prefixes and
+thirty-one framing neighbors. They cover source-ordered full proofs behind
+actual empty classes, late string-property rejection, early explicit \q
+framing rejection, original-character retry and unchanged earlier constructor
+domains. Two Runtime integration tests cover overlap, sticky/global state,
+original line and word context, complete captures, consumers, coercion,
+read-only lastIndex, GC retention and explicitly opted-in cancellation. A
+separate direct unit checks the unchanged six-unit bound, remaining
+zero/MAX, source-length independence, initial-low-pair handling, captures and
+entry errors without altering earlier bound units.
+
+Ten handwritten rows specify eight matches and two nulls with complete JSON
+and original UTF-16 payloads. They distinguish first-class, second-class and
+late-word failures, sticky overlap, the leading-only gate, six-unit
+supplementary spans, lone surrogates, an actual empty class and actual-i word
+behavior with invariant consumers. Finite companions cover original CRLF/LS
+multiline context, complements and the distinct early \q and late
+string-property proof stages. Previously reviewed pinned Unicode 17/18 facts
+are reused only for identical selected witnesses; no new raw dataset or
+exhaustive query loop is added. The generated snapshot and Node 24.19
+(Unicode 17) agree with all ten complete handwritten JSON/UTF-16 rows, with no
+exclusions or discrepancies. All 715 preceding snapshots remain byte for byte
+unchanged; the new snapshot brings the total to 716.
+
+The registered Native inventory is 5,295: 986 Core and 4,309 REST, including
+3,566 Runtime integration tests and 289 Runtime units. Parser retains 347
+tests. The one documentation test and reviewed corpus of 14,740 variants from
+7,631 sources are counted separately. These are definition counts, not totals
+locally executed. Local validation passed the complete six-test
+literal/class-pair Core module, the new direct bound unit and all 3,566 Runtime
+integration tests on both Rust versions, along with the new snapshot.
+Formatting, denied-warning Clippy, policy/inventory checks and all seven
+generators passed.
+The retained fifteen-job hosted matrix still requires the normal Cargo graph
+of 27 commands, including full Core, workspace and documentation tests, as well
+as all 47 framework probes and four full reviewed-corpus gates. No local full
+Core, workspace, documentation or corpus completion, or new hosted success, is
+claimed here.
