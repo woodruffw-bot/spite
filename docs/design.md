@@ -8420,3 +8420,31 @@ lone surrogates, line context and the approved initial-low-pair leading boundary
 are retained. Sticky work remains min(4, remaining + 1) and nonsticky work remains
 remaining + 1, with saturating arithmetic independent of source length. A new
 separate bound unit leaves all preceding bounds and tests unchanged.
+
+## Outside words around a flat class and one literal
+
+A separate constructor proves canonical optional ^, optional word gate, one
+flat character-only v/vi class, one decoded literal, optional word gate and
+optional $. At least one outside \b/\B is required. The existing caller may
+prove complete whole-body captures. Literal-first order, checked classes,
+partial captures, repetitions, extra atoms, repeated/reordered gates and string
+leaves remain separate proofs. All preceding constructors and callbacks retain
+their exact domains and order.
+
+Construction borrows original units and charges saturating 3N before complete
+framing. It then proves the flat class and literal in source order with actual
+i/m and immediate work-error propagation. Neither an empty class nor an
+impossible endpoint gate skips later validation. The existing ClassThenLiteral
+representation and OutsideAssertions retain actual i WordCharacters, including
+Kelvin/long-s classification when class membership itself is invariant, and
+original m line context.
+
+Matching preserves complete original characters, UTF-16 spans, lone surrogates
+and the approved initial-low-pair leading boundary. A late literal or outside-
+gate failure retries the first class end in nonsticky mode; sticky failure does
+not retry. Thus \B[a]a\b over aaa! matches original 1..3 after the 0..2 pair
+fails its gates. Existing complete captures, GC ownership, search-pass charges
+and the Runtime four-unit branch are reused: sticky work is saturating
+min(4, remaining + 1), and nonsticky work is remaining + 1, independent of source
+length. No new representation, source buffer, allocation boundary or default
+resource limit is introduced.

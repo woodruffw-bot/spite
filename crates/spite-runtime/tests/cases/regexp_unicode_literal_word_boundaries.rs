@@ -148,6 +148,10 @@ fn unicode_literal_word_boundaries_captures_collection_and_long_search_are_unlim
 
 #[test]
 fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
+    check(r"/\b[a]b\b/v.test('ab')");
+    check(
+        r#"let r=/\b[a]b\b/v,m=r.exec('ab');m!==null&&Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='\\b[a]b\\b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab')===null&&r.exec('!ab').index===1&&r.exec('abx')===null"#,
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -167,7 +171,6 @@ fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
         r"/\b(a)+\bb/u.test('a')",
         r"/\b(a|b)\b/u.test('a')",
         r"/(\ba)b/u.test('ab')",
-        r"/\b[a]b\b/v.test('ab')",
         r"/\b(a)(?=b)/u.test('ab')",
     ] {
         assert!(

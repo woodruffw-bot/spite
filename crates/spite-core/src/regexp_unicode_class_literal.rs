@@ -450,6 +450,113 @@ impl RegExpUnicodeClassLiteralMatcher {
     }
 }
 
+impl RegExpUnicodeClassLiteralMatcher {
+    /// Proves canonical outside words around one flat v/vi class then one literal.
+    ///
+    /// Requires complete validated Pattern input and at least one outside
+    /// word gate. Borrowed framing finishes before both component proofs,
+    /// which run in class-then-literal source order even for an empty class.
+    /// Existing constructors, matching and work bounds remain unchanged.
+    pub fn compile_flat_v_set_then_literal_with_word_boundaries_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(3)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        if start_word.is_none() && end_word.is_none() {
+            return Ok(None);
+        }
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(split) = class_end(body, 0) else {
+            return Ok(None);
+        };
+        let Some(&first) = body.get(split) else {
+            return Ok(None);
+        };
+        let mut at = split + 1;
+        if unicode_literal_atom(body, &mut at, first).is_none() || at != body.len() {
+            return Ok(None);
+        }
+        let Some(class) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &body[..split],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &body[split..],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            literal,
+            order: Order::ClassThenLiteral,
+            assertions: Some(OutsideAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            }),
+        }))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -800,3 +907,7 @@ mod outside_word_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_flat_class_literal_tests.rs"]
 mod flat_class_literal_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_flat_class_literal_word_tests.rs"]
+mod flat_class_literal_word_tests;

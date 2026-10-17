@@ -13767,3 +13767,47 @@ in 0.185 seconds including Cargo startup, using the existing normal-profile
 binary, default workers and snapshot updates disabled. This bounds their direct
 cost in that run; it is not a before/after benchmark or an explanation of full-
 suite timing variation.
+
+## Outside words around a flat class and one literal
+
+The flat-class then literal adapter now admits canonical outside word gates,
+optional outside line gates and complete whole-body captures. Four original
+Boolean programs remain in their two original owners with full match metadata
+and independent leading-only/trailing-only neighbor checks. All other 371
+preceding v_sets unsupported rows and 27 snapshot function bodies remain exact;
+20 new closed-domain controls keep reverse order, inner assertions, partial
+captures, quantifiers, extra atoms and string leaves explicit. Unsupported
+syntax receives no passing-negative conformance credit.
+
+Two Core tests make 8,300 bounded independent UTF-16 comparisons and verify full
+source-ordered work transcripts, every fresh abort prefix, empty-class proofs
+and unchanged neighboring constructor domains. Two Runtime integration tests
+cover endpoint-overlap retries, sticky/global state, actual i WordCharacters,
+original m context, complete captures, consumers, coercion, read-only lastIndex,
+GC retention and explicitly opted-in cancellation. A separate Runtime unit
+checks the unchanged four-unit bound with remaining zero/MAX, source-length
+independence, initial-low-pair handling, complete captures and entry errors.
+
+Ten handwritten snapshot rows specify eight matches and two nulls with complete
+JSON and original UTF-16 payloads. They include first-end overlap, sticky
+failure/success, invariant Any membership with actual-i Kelvin/long-s endpoints,
+the selected A/a exclusions under vi Ll complement, supplementary and lone
+surrogates, canonical word/line framing, original CRLF/LS context and escaped or
+braced atoms. The Ll complement is not globally empty; punctuation, digits and
+lone surrogates remain members. Independently parsed pinned Unicode 17/18 data
+supports these selected finite witnesses.
+
+The generated snapshot was inspected against all ten handwritten rows, and
+Node matched every complete JSON/UTF-16 result with no exclusions or
+discrepancies. All 711 preceding snapshots remain byte for byte unchanged; the
+new snapshot brings the total to 712. Two Core, two Runtime integration and one
+Runtime unit definition bring the Native inventory to 5,275: 978 Core and 4,297
+REST, including 3,558 Runtime integration tests and 285 Runtime units. Parser
+retains 347 tests. The one documentation test and reviewed corpus of 14,740
+variants from 7,631 sources are counted separately.
+
+Both Rust versions passed the complete ten-test class/literal Core module, the
+new direct bound unit and all 3,558 Runtime integration tests. Formatting,
+denied-warning Clippy, policy/inventory checks and all seven generators passed.
+Full workspace, documentation, all 47 hosted framework probes and four full
+reviewed-corpus gates remain required in the retained fifteen-job matrix.
