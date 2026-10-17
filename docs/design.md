@@ -8691,3 +8691,22 @@ captures and six-unit Runtime work accounting are unchanged. Earlier entries
 keep their domains; reverse mixed suffix order, mixed middle placements,
 string leaves, extra atoms, inner assertions, partial captures and quantifiers
 remain outside this entry. Resource limits remain explicitly opt-in.
+
+## Flat UnicodeSets class, checked class and literal
+
+A separate entry proves one flat character-only v/vi class, one checked nested
+or set-operator class and one decoded literal. Canonical optional outside word
+and line assertions and complete caller-proved whole-body captures retain the
+existing ClassPairLiteralWord representation. Construction charges saturating
+4N before borrowed whole framing, then proves flat class, checked class and
+literal fully in source order. A successful empty flat class cannot skip the
+checked proof; explicit \q leaves reject framing early while a hidden string
+property reaches its component compiler. Work errors propagate immediately.
+
+Original UTF-16 ranges, supplementary and lone surrogates, initial-low-pair
+handling, word context under the original i flag and line context under the
+original m flag are retained. Later-class, literal or gate failure retries
+first.end in nonsticky mode; sticky failure does not retry. Earlier entries, complete captures, search and six-unit work
+accounting remain unchanged. Mixed middle placements, string leaves, extra
+atoms, inner assertions, partial captures and quantified bodies remain outside
+this entry; resource limits remain explicitly opt-in.

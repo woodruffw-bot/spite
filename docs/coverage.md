@@ -14210,3 +14210,27 @@ and 19 Parser inventory probes, 55 in total. Real Cargo probes cover both Rust
 versions, feature context, executable identity, exact paired coverage, moved
 failures and default-option compatibility. This scheduling change makes no
 measured workflow-speed claim.
+
+## Flat class and checked class followed by a literal
+
+Eight original Boolean controls across five owners retain their exact
+expressions with independent intrinsic Array and full metadata checks,
+including leading-only abc in abcx. All other old controls and 36 preceding
+snapshot function bodies are preserved. Two Core tests specify 8,944 bounded
+independent UTF-16 oracle comparisons, fourteen ordered construction
+transcripts with fresh abort prefixes and thirty-three framing neighbors.
+Two Runtime functions cover state, overlap, captures, consumers, coercion,
+read-only lastIndex, GC and explicit opt-in cancellation; a separate direct
+unit checks the unchanged six-unit bound.
+
+The Native inventory is 5,322: 996 Core and 4,326 REST, including 3,576 Runtime
+integration tests and 296 Runtime units. Parser retains 347 tests; the one
+documentation test and 14,740 reviewed corpus variants from 7,631 sources are
+separate. The reviewed new snapshot brings the inventory to 721 files,
+retaining all 720 preceding files unchanged. All ten handwritten full-JSON/
+UTF-16 rows match a fresh Node v24.19.0 comparison: eight matches and two
+nulls, without exclusions. The focused Core and work-bound tests and all
+3,576 Runtime integration tests pass on stable and Rust 1.85.0. Formatting,
+Clippy, dependency policy, inventories and generator checks pass. The retained
+fifteen-job matrix requires all 55 framework probes and four full reviewed-
+corpus gates; this local result does not claim hosted CI completion.
