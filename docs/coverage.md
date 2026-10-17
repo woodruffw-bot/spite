@@ -14120,3 +14120,31 @@ with all 717 preceding snapshots preserved. The ten new snapshot rows match
 the handwritten expectations and a fresh Node comparison without exclusions.
 The retained fifteen-job matrix requires all 50 framework probes and four
 full reviewed-corpus gates.
+
+## Literal followed by a flat and a checked UnicodeSets class
+
+The v/vi entry admits one literal, one flat class and one checked class with
+canonical optional outside word and line assertions and complete whole-body
+captures. Nine original Boolean controls across five owners retain their
+exact expressions as positive checks with independent intrinsic Array and
+full metadata companions, including the leading-only cabx case. All other old
+controls and all 34 preceding snapshot function sources are preserved.
+
+Two Core tests define 7,332 bounded independent UTF-16 oracle comparisons,
+four separate actual-i assertions, fourteen complete construction transcripts
+with fresh work-error prefixes and thirty-one early framing neighbors. Two
+Runtime integration functions specify overlap, sticky/global state, original
+word and line context, captures, consumers, coercion, read-only lastIndex,
+GC and explicitly opted-in cancellation. A separate direct unit checks the
+existing six-unit bound without changing older units. Ten handwritten
+full-JSON/UTF-16 rows specify eight matches and two nulls for the new snapshot
+and independent Node comparison.
+
+The Native inventory is 5,312: 992 Core and 4,320 REST, including
+3,572 Runtime integration tests and 294 Runtime units. Parser retains 347
+tests; the one documentation test and reviewed corpus of 14,740 variants from
+7,631 sources are separate. The snapshot inventory is 719, retaining all 718
+preceding snapshots. The ten new rows match the handwritten expectations and
+a fresh Node comparison without exclusions. The retained fifteen-job matrix
+requires full Core and REST coverage, all 50 framework probes and four full
+reviewed-corpus gates.

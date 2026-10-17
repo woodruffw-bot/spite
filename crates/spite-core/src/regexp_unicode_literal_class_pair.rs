@@ -141,7 +141,7 @@ impl RegExpUnicodeLiteralClassPairMatcher {
 /// One literal and two UnicodeSets classes with canonical outside assertions.
 ///
 /// Requires complete validated v/vi Pattern input. The checked constructor
-/// requires at least one outside \b/\B; the flat and checked-then-flat entries also
+/// requires at least one outside \b/\B; the flat and mixed-class entries also
 /// prove bare bodies. Optional ^/$ inspect original input and multiline context.
 /// Complete whole-body captures remain a separate caller proof. The existing plain
 /// matcher and all earlier typed domains/callbacks remain unchanged.
@@ -574,6 +574,123 @@ impl RegExpUnicodeLiteralClassPairWordMatcher {
     }
 }
 
+impl RegExpUnicodeLiteralClassPairWordMatcher {
+    /// Proves one literal, one flat v/vi class and one checked v/vi class.
+    ///
+    /// Requires complete validated v/vi input. Canonical outside word gates and
+    /// line anchors are optional. Borrowed framing charges four source walks
+    /// before decoding, then the complete literal, flat and checked proofs run
+    /// in source order, including the checked proof behind an empty flat class.
+    /// Existing entries, callbacks, matching and six-unit accounting are unchanged.
+    pub fn compile_flat_then_checked_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(4)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        let Some(&first) = body.first() else {
+            return Ok(None);
+        };
+        let mut literal_end = 1;
+        if unicode_literal_atom(body, &mut literal_end, first).is_none()
+            || body.get(literal_end) != Some(&0x5b)
+        {
+            return Ok(None);
+        }
+        let Some(split) = class_end(body, literal_end) else {
+            return Ok(None);
+        };
+        if body.get(split) != Some(&0x5b) || class_end(body, split) != Some(body.len()) {
+            return Ok(None);
+        }
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &body[..literal_end],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(first) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &body[literal_end..split],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(second) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+            &body[split..],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            matcher: RegExpUnicodeLiteralClassPairMatcher {
+                literal,
+                classes: [first, second],
+            },
+            assertions: LiteralClassPairWordAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            },
+        }))
+    }
+}
+
 #[cfg(test)]
 #[path = "regexp_unicode_literal_class_pair_tests.rs"]
 mod tests;
@@ -589,3 +706,7 @@ mod flat_class_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_literal_checked_flat_class_pair_tests.rs"]
 mod checked_flat_class_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_literal_flat_checked_class_pair_tests.rs"]
+mod flat_checked_class_tests;

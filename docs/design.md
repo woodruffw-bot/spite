@@ -8650,3 +8650,26 @@ string-set leaves, inner or reordered assertions, partial captures and
 quantified bodies remain outside this entry. Earlier constructors preserve
 their closed domains. General unsupported RegExp syntax receives no passing
 conformance credit, and resource limits remain explicitly opt-in.
+
+## Literal, flat UnicodeSets class and checked class
+
+A separate entry proves one decoded Unicode literal followed by one flat
+character-only v/vi class and one checked nested or set-operator class.
+Canonical optional outside assertions retain the order ^, word gate, complete
+three-term body, word gate and $. The caller proves complete whole-body
+captures; the same representation also admits the bare form.
+
+Construction charges saturating 4N before borrowed whole-frame validation,
+then proves the literal, flat class and checked class fully in source order.
+A successfully empty flat class cannot skip the checked proof or its errors.
+Explicit \q string leaves reject during framing; a hidden string property
+reaches its component compiler. Work errors propagate immediately.
+
+The existing matcher retains original UTF-16 ranges, initial-low-pair
+handling, supplementary and lone surrogates, actual-i WordCharacters and
+original-m line context. A failed class or outside gate retries literal.end
+in nonsticky mode; sticky failure does not retry. Captures, storage, search
+and the six-unit work bound are shared without changes. Earlier entries keep
+their closed domains. Other mixed literal placements, extra atoms, string-set
+leaves, inner or reordered assertions, partial captures and quantified bodies
+remain outside this entry; resource limits remain explicitly opt-in.

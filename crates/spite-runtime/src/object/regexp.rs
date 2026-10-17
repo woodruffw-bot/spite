@@ -1922,4 +1922,77 @@ mod tests {
             Err(spite_core::RegExpUnicodeSetCompileError::Work(9))
         ));
     }
+
+    #[test]
+    fn unicode_literal_flat_checked_class_pair_work_bound_tracks_proved_terms() {
+        let source = JsString::from(r"\b\u{1f600}[\u{1f601}][[\u{1f600}]]\B");
+        let body =
+            RegExpUnicodeLiteralClassPairWordMatcher::compile_flat_then_checked_v_set_with_work(
+                &source,
+                false,
+                false,
+                |_| Ok::<(), std::convert::Infallible>(()),
+            )
+            .unwrap()
+            .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeLiteralClassPairWord(body), 2);
+        for source_len in [0, 1, source.len(), usize::MAX] {
+            for remaining in 0usize..=7 {
+                assert_eq!(
+                    matcher.search_work(true, source_len, remaining),
+                    6.min(remaining + 1)
+                );
+                assert_eq!(
+                    matcher.search_work(false, source_len, remaining),
+                    remaining + 1
+                );
+            }
+            assert_eq!(matcher.search_work(true, source_len, usize::MAX), 6);
+            assert_eq!(
+                matcher.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        // No trailing unit: initial low-pair start2 leaves five units and needs the sixth.
+        let input = JsString::from("A😀😁😀");
+        for sticky in [false, true] {
+            let mut work = Vec::new();
+            let found = matcher
+                .find_with_work(&input, 2, sticky, |n| {
+                    work.push(n);
+                    Ok::<(), std::convert::Infallible>(())
+                })
+                .unwrap()
+                .unwrap();
+            assert_eq!(work, [1]);
+            assert_eq!(found.range, 1..7);
+            assert_eq!(found.capture_count, 2);
+            assert_eq!(found.capture(0), Some(1..7));
+            assert_eq!(found.capture(1), Some(1..7));
+            assert_eq!(found.capture(2), None);
+        }
+        assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
+        assert!(matches!(
+            matcher.find_with_work(&input, 2, true, |_| Err(7)),
+            Err(7)
+        ));
+        assert!(
+            matcher
+                .find_with_work(&input, input.len() + 1, false, |_| Ok::<
+                    (),
+                    std::convert::Infallible,
+                >(()))
+                .unwrap()
+                .is_none()
+        );
+        assert!(matches!(
+            RegExpUnicodeLiteralClassPairWordMatcher::compile_flat_then_checked_v_set_with_work(
+                &source,
+                false,
+                false,
+                |_| Err(9)
+            ),
+            Err(spite_core::RegExpUnicodeSetCompileError::Work(9))
+        ));
+    }
 }
