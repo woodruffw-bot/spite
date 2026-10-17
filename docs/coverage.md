@@ -13811,3 +13811,46 @@ new direct bound unit and all 3,558 Runtime integration tests. Formatting,
 denied-warning Clippy, policy/inventory checks and all seven generators passed.
 Full workspace, documentation, all 47 hosted framework probes and four full
 reviewed-corpus gates remain required in the retained fifteen-job matrix.
+
+## One literal followed by a flat UnicodeSets class
+
+A separate v/vi adapter admits one decoded literal followed by one full flat
+character-only class, optional outside line gates and complete whole-body
+captures. No preceding Unsupported program was migrated: the complete global
+fixed/direct/computed source audit found no eligible original. All 391 preceding
+v_sets unsupported rows, 63 function bodies and 28 snapshot function sources
+remain exact. Twenty new closed-domain controls retain word gates, inner
+assertions, partial captures, quantifiers, extra atoms and string leaves;
+Unsupported syntax receives no passing-negative conformance credit.
+
+Two Core tests make 2,920 bounded independent UTF-16 comparisons and verify
+complete framing, source-ordered literal/class proofs, actual empty suffixes,
+all fresh work-abort prefixes and unchanged neighboring constructor domains.
+Two Runtime integration tests cover first-end overlap, sticky/global state,
+independent literal/class folding, original line context, full captures,
+consumers, coercion, read-only lastIndex, GC retention and explicitly opted-in
+cancellation. A separate Runtime unit checks the unchanged four-unit bound at
+remaining zero/MAX, source-length independence, initial-low-pair handling,
+complete captures and entry errors.
+
+Ten handwritten rows specify eight matches and two nulls with complete JSON and
+original UTF-16. They cover overlap, sticky failure/success, Kelvin/long-s fold
+preimages, original CRLF/LS anchors, an actual empty class, negation,
+supplementary/lone surrogates and escaped literal/class delimiters. The selected
+fold/Any facts reuse the previously reviewed pinned Unicode 17/18 evidence for
+identical witnesses; no new raw dataset or exhaustive query loop is added.
+
+The generated snapshot was inspected against all ten handwritten rows, and
+Node matched every complete JSON/UTF-16 result with no exclusions or
+discrepancies. All 712 preceding snapshots remain byte for byte unchanged; the
+new snapshot brings the total to 713. Two Core, two Runtime integration and one
+Runtime unit definition bring the Native inventory to 5,280: 980 Core and 4,300
+REST, including 3,560 Runtime integration tests and 286 Runtime units. Parser
+retains 347 tests. The one documentation test and reviewed corpus of 14,740
+variants from 7,631 sources are counted separately.
+
+Both Rust versions passed the complete twelve-test class/literal Core module,
+the new direct bound unit and all 3,560 Runtime integration tests. Formatting,
+denied-warning Clippy, policy/inventory checks and all seven generators passed.
+Full workspace, documentation, all 47 hosted framework probes and four full
+reviewed-corpus gates remain required in the retained fifteen-job matrix.

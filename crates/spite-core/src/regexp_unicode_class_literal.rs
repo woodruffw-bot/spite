@@ -10,8 +10,8 @@ use std::ops::Range;
 
 /// One unquantified v/vi class and one literal Unicode character.
 ///
-/// Separate checked constructors prove both orders. The flat-only entry proves
-/// class-then-literal; every earlier entry retains its own closed domain.
+/// Separate checked and flat constructors prove both orders; every earlier
+/// entry retains its own closed domain.
 ///
 /// Requires complete validated v/vi Pattern input. Optional outside ^/$ use
 /// original line context. A separate entry admits canonical outside word gates.
@@ -557,6 +557,69 @@ impl RegExpUnicodeClassLiteralMatcher {
     }
 }
 
+impl RegExpUnicodeClassLiteralMatcher {
+    /// Proves exactly one decoded literal followed by one flat v/vi class.
+    ///
+    /// Requires complete validated Pattern input. Borrowed framing finishes
+    /// before component proofs, which run in literal-then-class source order.
+    /// The literal owns an optional leading ^ and the class an optional final $;
+    /// both retain original i/m behavior. Empty classes still compile in full.
+    /// Words, checked classes, strings, groups, quantifiers and additional atoms
+    /// remain separate proofs. Earlier constructors and callbacks are unchanged.
+    pub fn compile_literal_then_flat_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(3)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let begin = usize::from(units.first() == Some(&0x5e));
+        let Some(&first) = units.get(begin) else {
+            return Ok(None);
+        };
+        let mut split = begin + 1;
+        if unicode_literal_atom(units, &mut split, first).is_none()
+            || units.get(split) != Some(&0x5b)
+        {
+            return Ok(None);
+        }
+        let Some(end) = class_end(units, split) else {
+            return Ok(None);
+        };
+        if end.saturating_add(usize::from(units.get(end) == Some(&0x24))) != units.len() {
+            return Ok(None);
+        }
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &units[..split],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(class) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &units[split..],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            literal,
+            order: Order::LiteralThenClass,
+            assertions: None,
+        }))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -911,3 +974,7 @@ mod flat_class_literal_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_flat_class_literal_word_tests.rs"]
 mod flat_class_literal_word_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_literal_flat_class_tests.rs"]
+mod literal_flat_class_tests;

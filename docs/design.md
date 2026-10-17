@@ -8448,3 +8448,31 @@ and the Runtime four-unit branch are reused: sticky work is saturating
 min(4, remaining + 1), and nonsticky work is remaining + 1, independent of source
 length. No new representation, source buffer, allocation boundary or default
 resource limit is introduced.
+
+## One literal followed by a flat UnicodeSets class
+
+A separate constructor proves exactly one decoded Unicode literal followed by
+one unquantified flat character-only v/vi class, with optional canonical outside
+^/$ and the existing caller proof for complete whole-body captures. Outside or
+inner word gates, partial captures, quantifiers, extra terms, nested/operator
+classes and string leaves retain their separate treatment. All five preceding
+constructor domains and callbacks remain unchanged.
+
+Construction borrows original source units and charges saturating 3N before
+boundary walks or decoding. The complete literal boundary and full suffix
+class_end framing are checked before component compilers run. The literal is
+then proved first and the complete flat class second in source order, with
+actual i/m flags and immediate work-error propagation. An empty suffix class
+still receives its complete proof. Original component slices retain their
+outside anchors, escaped brackets/dollars and braced Unicode atoms.
+
+The existing literal-first representation, complete captures, GC ownership and
+original-character search are reused without outside-word assertions. A late
+class failure retries the first literal's original character end in nonsticky
+mode; sticky matching attempts only its selected candidate. Thus a[b] over
+aab! selects original 1..3 after the suffix class fails at the first candidate.
+Original UTF-16 spans, supplementary/lone characters, original m line context
+and the approved initial-low-pair leading boundary are retained. The shared
+Runtime path keeps saturating sticky min(4, remaining + 1) and nonsticky
+remaining + 1, independent of source length. A separate direct bound test
+preserves every earlier bound test and work formula.
