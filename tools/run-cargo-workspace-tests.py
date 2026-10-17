@@ -252,6 +252,22 @@ def can_collect_core_libs(metadata):
     return len(core) == 1
 
 
+def can_collect_runtime_integration_libs(metadata):
+    """Retain all workspace dev roots and one unambiguous Runtime test target."""
+    if not can_collect_core_libs(metadata):
+        return False
+    members = set(metadata['workspace_members'])
+    matches = [(package, target) for package in metadata['packages']
+               if package['id'] in members for target in package['targets']
+               if target['name'] == 'integration']
+    if len(matches) != 1:
+        return False
+    package, target = matches[0]
+    return (package['name'] == 'spite-runtime' and target['kind'] == ['test']
+            and target['crate_types'] == ['bin'] and target['test'] is True
+            and not target.get('required-features', []))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain', choices=['stable', '1.85.0'], required=True)
@@ -287,8 +303,8 @@ def main():
             encoding='utf-8')
         runner = [sys.executable, str(Path(__file__).resolve()), '--record', temporary]
         configuration = 'target.' + host[1] + '.runner=' + json.dumps(runner)
-        target_selection = '--all-targets'
-        if args.collect_core_libs:
+        target_selection = ['--all-targets']
+        if args.collect_core_libs or args.runtime_shard == 1:
             metadata_command = ['cargo', '+' + args.toolchain, 'metadata', '--no-deps',
                                 '--format-version', '1', '--locked']
             if args.offline:
@@ -297,13 +313,22 @@ def main():
                                    text=True, encoding='utf-8')
             if metadata.returncode:
                 return metadata.returncode
-            eligible = can_collect_core_libs(json.loads(metadata.stdout))
-            if eligible:
-                target_selection = '--lib'
-            print('Core library collection: ' +
-                  ('eligible; using --workspace --lib' if eligible else
-                   'ineligible; using --workspace --all-targets'), flush=True)
-        command = ['cargo', '+' + args.toolchain, 'test', '--workspace', target_selection,
+            metadata = json.loads(metadata.stdout)
+            if args.collect_core_libs:
+                eligible = can_collect_core_libs(metadata)
+                if eligible:
+                    target_selection = ['--lib']
+                print('Core library collection: ' +
+                      ('eligible; using --workspace --lib' if eligible else
+                       'ineligible; using --workspace --all-targets'), flush=True)
+            else:
+                eligible = can_collect_runtime_integration_libs(metadata)
+                if eligible:
+                    target_selection = ['--lib', '--test', 'integration']
+                print('Runtime integration library collection: ' +
+                      ('eligible; using --workspace --lib --test integration' if eligible else
+                       'ineligible; using --workspace --all-targets'), flush=True)
+        command = ['cargo', '+' + args.toolchain, 'test', '--workspace', *target_selection,
                    '--locked', '--config', configuration]
         if args.optimize_runtime:
             command += ['--config', 'profile.test.package.spite-runtime.opt-level=1']

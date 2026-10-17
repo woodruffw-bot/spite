@@ -487,6 +487,150 @@ fn sibling_dev_feature_and_primary_package_remain_active() {
             self.assertNotIn('Collecting Cargo test invocations', result.stdout)
             self.assertNotIn('Queued Cargo test invocation:', result.stdout)
 
+    def test_runtime_library_collection_preserves_actual_binary_and_dev_roots(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-runtime-libs-features-') as temporary:
+            root = Path(temporary)
+            make_runtime_shard_workspace(root)
+            (root / 'a/build.rs').unlink()
+            core_source = root / 'a/src/lib.rs'
+            core_source.write_text(core_source.read_text().replace(PROFILE_SOURCE, '', 1),
+                                   encoding='utf-8')
+            manifest = root / 'a/Cargo.toml'
+            manifest.write_text(manifest.read_text().replace(
+                'workspace-unified=[]\n',
+                'workspace-unified=[]\nsibling-dev-unified=[]\n'), encoding='utf-8')
+            with (root / 'a/src/lib.rs').open('a', encoding='utf-8') as source:
+                source.write('''
+pub fn sibling_dev_and_primary_roots() -> (bool, bool) {
+    (cfg!(feature = "sibling-dev-unified"), option_env!("CARGO_PRIMARY_PACKAGE").is_some())
+}
+''')
+            with (root / 'c/Cargo.toml').open('a', encoding='utf-8') as manifest:
+                manifest.write('[dev-dependencies]\n'
+                               'spite-core={path="../a",features=["sibling-dev-unified"]}\n')
+            (root / 'c/tests').mkdir()
+            (root / 'c/tests/extra.rs').write_text('''
+#[test]
+fn sibling_dev_context_is_selected() {
+    assert_eq!(spite_core::sibling_dev_and_primary_roots(), (true, true));
+}
+''', encoding='utf-8')
+            (root / 'b/tests/integration.rs').write_text(RUNTIME_SHARD_SOURCE.replace(
+                '    assert!(spite_core::workspace_feature_is_unified());',
+                '    assert!(spite_core::workspace_feature_is_unified());\n'
+                '    assert_eq!(spite_core::sibling_dev_and_primary_roots(), (true, true));'),
+                encoding='utf-8')
+            environment = {'CARGO_TARGET_DIR': str(root / 'target'),
+                           'SPITE_RUNNER_PROBE_RUNTIME_OPT': '0',
+                           'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env={**self.environment, **environment}, check=True)
+            for toolchain in ['stable', '1.85.0']:
+                with self.subTest(toolchain=toolchain):
+                    reference, complete = self.run_suite(
+                        suite='all', root=root, toolchain=toolchain,
+                        extra_environment=environment)
+                    self.assertEqual(reference.returncode, 0, reference.stdout)
+                    self.assertEqual(complete['recorded_invocations'], 5)
+                    original = self.runtime_row(complete)
+                    original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
+                    result, report = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=['--runtime-shard', '1'], extra_environment=environment)
+                    runtime = self.assert_runtime_shard(result, report, 1, RUNTIME_SHARD_NAMES)
+                    self.assertEqual(runtime['command'][0], original['command'][0])
+                    self.assertEqual(runtime['cwd'], original['cwd'])
+                    self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                     original_hash)
+                    decision = ('Runtime integration library collection: eligible; '
+                                'using --workspace --lib --test integration')
+                    self.assertEqual(result.stdout.count(decision), 1)
+                    self.assertLess(result.stdout.index(decision),
+                                    result.stdout.index('Queued Cargo test invocation:'))
+                    self.assertNotIn('Runtime integration library collection:', reference.stdout)
+
+    def test_runtime_library_collection_falls_back_before_ambiguous_or_disabled_targets(self):
+        for shape, recorded in [('second-integration', 5), ('integration-bin', 5),
+                                ('sibling-bin-only', 4), ('required-integration-feature', 4)]:
+            with self.subTest(shape=shape), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-runtime-libs-fallback-') as temporary:
+                root = Path(temporary)
+                make_runtime_shard_workspace(root)
+                (root / 'a/build.rs').unlink()
+                core_source = root / 'a/src/lib.rs'
+                core_source.write_text(core_source.read_text().replace(PROFILE_SOURCE, '', 1),
+                                       encoding='utf-8')
+                if shape == 'second-integration':
+                    (root / 'c/tests').mkdir()
+                    (root / 'c/tests/integration.rs').write_text(
+                        '#[test]\nfn another_integration_target() {}\n', encoding='utf-8')
+                elif shape == 'integration-bin':
+                    (root / 'c/src/bin').mkdir()
+                    (root / 'c/src/bin/integration.rs').write_text(
+                        'fn main() {}\n#[test]\nfn binary_named_integration() {}\n', encoding='utf-8')
+                elif shape == 'sibling-bin-only':
+                    (root / 'c/src/lib.rs').unlink()
+                    (root / 'c/src/main.rs').write_text(
+                        'fn main() {}\n#[test]\nfn binary_only_workspace_member() {}\n', encoding='utf-8')
+                else:
+                    manifest = root / 'b/Cargo.toml'
+                    manifest.write_text(manifest.read_text().replace(
+                        'workspace-unified=[]\n',
+                        'workspace-unified=[]\ndefault=["gated"]\ngated=[]\n') +
+                        '\n[[test]]\nname="integration"\npath="tests/integration.rs"\n'
+                        'required-features=["gated"]\n', encoding='utf-8')
+                environment = {'CARGO_TARGET_DIR': str(root / 'target'),
+                               'SPITE_RUNNER_PROBE_RUNTIME_OPT': '0',
+                               'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
+                subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                               cwd=root, env={**self.environment, **environment}, check=True)
+                for toolchain in ['stable', '1.85.0']:
+                    with self.subTest(toolchain=toolchain):
+                        reference, complete = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain,
+                            extra_environment=environment)
+                        self.assertEqual(reference.returncode, 0, reference.stdout)
+                        original = self.runtime_row(complete)
+                        original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
+                        result, report = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain,
+                            extra_arguments=['--runtime-shard', '1'], extra_environment=environment)
+                        self.assertEqual(result.returncode, 0, result.stdout)
+                        self.assertEqual(complete['recorded_invocations'], recorded)
+                        self.assertEqual(report['recorded_invocations'], recorded)
+                        self.assertEqual(len(report['invocations']), 1)
+                        runtime = self.runtime_row(report)
+                        self.assertEqual(runtime['command'][0], original['command'][0])
+                        self.assertEqual(runtime['cwd'], original['cwd'])
+                        self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                         original_hash)
+                        plan = report['runtime_shard']
+                        self.assertEqual(plan['full_names'], RUNTIME_SHARD_NAMES)
+                        self.assertEqual(runtime['runtime_shard_execution']['names'],
+                                         plan['planned_shards'][1])
+                        self.assertEqual(runtime['child_status'], 0)
+                        decision = ('Runtime integration library collection: ineligible; '
+                                    'using --workspace --all-targets')
+                        self.assertEqual(result.stdout.count(decision), 1)
+                        self.assertLess(result.stdout.index(decision),
+                                        result.stdout.index('Queued Cargo test invocation:'))
+                        self.assertEqual(result.stdout.count('Queued Cargo test invocation:'), recorded)
+                        self.assertNotIn('Runtime integration library collection:', reference.stdout)
+
+    def test_runtime_library_collection_metadata_error_never_retries_collection(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-runtime-libs-metadata-error-') as temporary:
+            root = Path(temporary)
+            make_runtime_shard_workspace(root)
+            (root / 'Cargo.toml').write_text('[workspace\n', encoding='utf-8')
+            result, report = self.run_suite(
+                suite='rest', root=root, extra_arguments=['--runtime-shard', '1'],
+                extra_environment={'CARGO_TARGET_DIR': str(root / 'target')})
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIsNone(report)
+            self.assertNotIn('Runtime integration library collection:', result.stdout)
+            self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+            self.assertNotIn('Queued Cargo test invocation:', result.stdout)
+
     def runtime_row(self, report):
         rows = [row for row in report['invocations']
                 if row['package'] == 'spite-runtime'

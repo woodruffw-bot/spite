@@ -14148,3 +14148,24 @@ preceding snapshots. The ten new rows match the handwritten expectations and
 a fresh Node comparison without exclusions. The retained fifteen-job matrix
 requires full Core and REST coverage, all 50 framework probes and four full
 reviewed-corpus gates.
+
+## Runtime integration library collection
+
+The collector uses all workspace library roots plus the
+unique Runtime integration target for explicit shard 1 collection: eight
+invocations instead of 27. Metadata must prove ordinary enabled libraries
+and one unambiguous Runtime integration target without required features.
+Other shapes retain the full collector before compilation; metadata, build
+and test failures propagate without retry. Core, full REST and shard 0
+collection, Native partitions, profiles and limits remain unchanged.
+
+Three additional real-Cargo probes bring the framework inventory to 23 Cargo,
+11 Runtime and 19 Parser probes, 53 in total. The Native definition inventory
+remains 5,312, including all 3,572 Runtime integration cases; all 719 snapshots,
+the documentation test and 14,740 reviewed corpus variants remain required.
+Same-source comparisons on stable and Rust 1.85 retain the Runtime executable,
+arguments, package context, all 3,572 Native names, both partitions and all
+1,786 selected passes. The 23-probe suite passes, including feature-context and
+fallback checks on both Rust versions. These existing-target observations
+include unequal recompilation and do not establish cold-build or whole-CI
+speed gains; hosted coverage remains required before the following push.
