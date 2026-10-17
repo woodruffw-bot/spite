@@ -13259,3 +13259,47 @@ Stable and Rust 1.85 each pass all 958 Core tests without filtering. Formatting,
 denied-warning Clippy and policy checks pass, and all 702 preceding snapshots
 are byte-identical. Full workspace, Runtime, documentation and reviewed-corpus
 coverage continue through the unchanged thirteen-job CI matrix.
+
+## Three checked UnicodeSets classes
+
+Exactly three independently checked, unquantified nested/operator character-only
+v/vi classes match in sequence, with optional outside ^/$ and existing complete
+whole-body captures. All three component proofs run in source order even after
+an empty first or second set. Search retries the first class's complete-character
+end after a later failure, retaining overlaps and original UTF-16/folding/line
+context. A separate Runtime variant shares the existing six-unit work bound;
+prior typed API domains and None controls remain unchanged.
+
+The complete Runtime Unsupported audit identifies four exact triple-class rows
+in the original pair, prefix, suffix and middle tests. Those rows move to positive
+checks with their original expressions, full match metadata and first-/second-/
+third-class and short-input negatives. All other old controls and snapshot
+functions are retained. Two Core tests check 1,880 independent finite range
+comparisons and five complete work traces with every callback failure prefix.
+Two Runtime integration tests cover consumers, captures/groups/indices, coercion,
+global/sticky state, GC retention, read-only lastIndex and opted-in cancellation.
+The existing direct Runtime bound unit is extended; no unit function is added.
+
+Ten insta rows agree with complete handwritten JSON and original UTF-16
+expectations: eight matches and two nulls, including initial-low-pair, six-unit
+and lone-surrogate cases. A fresh Node comparison passes all ten complete rows
+with no exclusions. Pinned Unicode 17/18 witnesses establish selected finite
+fold/category facts only, not general version equivalence.
+
+Stable and Rust 1.85 each pass the two new Core tests and two preceding tests
+for each of the literal-prefix, literal-suffix and literal-middle plans, each
+with 958 filtered, plus six existing class/literal tests with 954 filtered.
+Both versions pass all 3,540 Runtime integration tests without filtering and the
+extended direct Runtime bound unit with 279 filtered. The stable snapshot test
+also passes with 3,539 filtered. All 702 preceding snapshots are byte-identical;
+the inspected new snapshot makes 703. Two new Core and two new Runtime
+integration tests bring the
+registered inventory to 5,234 workspace tests: 960 Core and 4,274 REST. REST
+includes 3,540 Runtime integration tests and 280 Runtime units. Parser has 347
+tests, and one documentation test is registered. The reviewed corpus remains
+14,740 variants from 7,631 sources.
+
+Formatting, denied-warning Clippy, policy/inventory checks, all 39 runner/inventory
+probes and all seven generators pass. Full workspace, documentation and all
+reviewed corpus variants remain separately required in the unchanged
+thirteen-job CI matrix.

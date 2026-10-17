@@ -8164,3 +8164,28 @@ summed predicate/traversal bounds remain fallible. Earlier APIs, callback bodies
 prefix/suffix plans and four-unit paths retain their behavior. No source/input
 buffer, parser refactor, dependency, default quota, profile, stack or worker-policy
 change is introduced.
+
+A separate typed plan matches exactly three unquantified checked character-only
+v/vi classes (22.2.2.3, 22.2.2.7.3). Each class independently retains the nested-
+class/set-operator gate. Optional outside ^/$ belong to the first/third class and
+inspect original input and m context. Borrowed framing charges 3N before the
+three class-boundary walks. Complete first-, second- and third-class proofs run
+in source order, including rejection of a hidden string leaf in the third class
+behind an empty first or second set. Complete whole-body captures remain a
+separate Runtime caller proof; the typed plan has no inner captures.
+
+The first class searches for a candidate; the second and third then match sticky
+at the preceding complete-character end. Either later failure retries the first
+class's end, preserving the 1..4 overlap of [[a]][[a]][[c]] on aaac. Original
+UTF-16 ranges, actual i/m behavior, lone surrogates and the documented leading-
+boundary behavior at an initial low surrogate are retained. Three complete
+characters consume at most six UTF-16 units. The Runtime variant shares the
+existing six-unit work path, initial-pair rewind and fallible entry/predicate
+charging.
+
+Flat components, word gates, extra atoms, repetitions, string-valued leaves and
+inner assertions or partial captures remain outside this three-class proof.
+Earlier typed APIs retain their closed domains, callbacks and search behavior,
+including their existing triple-class None controls. The direct Runtime work-
+bound unit gains assertions without a new test function. No source/input buffer,
+dependency, default quota or build-profile change is introduced.
