@@ -8710,3 +8710,23 @@ first.end in nonsticky mode; sticky failure does not retry. Earlier entries, com
 accounting remain unchanged. Mixed middle placements, string leaves, extra
 atoms, inner assertions, partial captures and quantified bodies remain outside
 this entry; resource limits remain explicitly opt-in.
+
+## Checked UnicodeSets class, literal and flat class
+
+A separate entry proves one checked character-only v/vi class, one decoded
+literal and one flat class. Canonical optional outside word and line
+assertions and complete caller-proved whole-body captures reuse the existing
+ClassLiteralClassWord representation. Construction charges saturating 4N
+before borrowed whole framing, then proves checked class, literal and flat
+class completely in source order, including after a successful empty checked
+class. Explicit \q leaves reject framing early; a later flat string property
+still reaches its component proof. Work errors propagate immediately.
+
+Matching retains original UTF-16 text and indices, supplementary and lone
+surrogates, initial-low-pair handling, word context under the original i flag
+and line context under the original m flag. A later literal, class or outside
+gate miss retries first.end in nonsticky mode; sticky calls do not retry.
+Earlier typed entries, storage, search, complete captures and six-unit Runtime
+accounting remain unchanged. Flat-literal-checked forms, string leaves, extra
+atoms, inner assertions, partial captures and quantified bodies remain outside
+this entry. Resource limits remain explicitly opt-in.

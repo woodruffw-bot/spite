@@ -430,6 +430,126 @@ impl RegExpUnicodeClassLiteralClassWordMatcher {
         }))
     }
 
+    /// Proves one checked class, one literal and one complete flat class.
+    ///
+    /// Canonical outside word gates and line anchors are optional. Four source
+    /// walks are charged before borrowed framing. Complete checked-class,
+    /// literal and flat-class proofs run in source order, even behind an empty
+    /// checked class. Earlier typed domains and callback bodies stay unchanged.
+    pub fn compile_checked_then_flat_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(4)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(split) = class_end(body, 0) else {
+            return Ok(None);
+        };
+        let Some(&first) = body.get(split) else {
+            return Ok(None);
+        };
+        let mut literal_end = split + 1;
+        if unicode_literal_atom(body, &mut literal_end, first).is_none()
+            || body.get(literal_end) != Some(&0x5b)
+        {
+            return Ok(None);
+        }
+        let Some(end) = class_end(body, literal_end) else {
+            return Ok(None);
+        };
+        if end != body.len() {
+            return Ok(None);
+        }
+        let Some(first) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+            &body[..split],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &body[split..literal_end],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(second) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &body[literal_end..],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            matcher: RegExpUnicodeClassLiteralClassMatcher {
+                classes: [first, second],
+                literal,
+            },
+            assertions: ClassLiteralClassWordAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            },
+        }))
+    }
+
     /// Bounds all three consuming predicates and original outside assertions.
     pub fn search_passes(&self) -> usize {
         self.matcher
@@ -480,3 +600,7 @@ mod word_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_flat_class_literal_class_tests.rs"]
 mod flat_class_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_checked_class_literal_flat_class_tests.rs"]
+mod checked_flat_class_tests;
