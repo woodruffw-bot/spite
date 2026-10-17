@@ -13671,6 +13671,54 @@ checked-sequence and flat-pair regressions, the separate flat-bound unit and all
 policy/inventory checks and all seven generators. Full workspace, documentation,
 all 47 hosted runner/inventory probes and the four reviewed-corpus gates remain
 separately required in the retained fifteen-job CI matrix. The preceding checked
-sequence passed all fifteen hosted jobs. This flat increment's own hosted
-results remain pending publication; complete hosted acceptance is required
-before the following feature is pushed.
+sequence passed all fifteen hosted jobs. The flat increment's own hosted
+CI subsequently passed all fifteen jobs before the mixed increment was pushed.
+
+## Finite mixed UnicodeSets class sequences
+
+The new constructor composes at least three flat and checked nested/operator
+character-only v/vi classes, requiring both kinds. Canonical outside word/line
+assertions and complete whole-body captures remain available through the existing
+sequence program. Exactly 19 original Unsupported occurrences in nine Runtime
+functions become positive checks, preserving each expression and both duplicate-
+owner copies. Full metadata, per-component nonmembers, short inputs and neighbor
+behavior are checked. Leading-only word expressions still match abcx at 0..3.
+The other 330 old negative rows and all 25 preceding snapshot functions remain
+unchanged. Earlier typed APIs retain their closed None controls and callbacks.
+
+Two Core tests use 4,548 bounded independent UTF-16 comparisons, six
+mixed-success, two late-string and two homogeneous callback transcripts with
+fresh abort-prefix checks, plus a 65-term domain/work witness. Failed-flat charges
+remain explicit before checked proofs, and successful empty sets still count as
+their proof kind. Two Runtime integration tests cover all six three-term mixed
+layouts, count-3/4/17 captures, state, consumers, ordered coercion, read-only
+lastIndex, GC retention and explicitly opted-in cancellation. A new separate
+Runtime unit verifies mixed term-derived widths, remaining zero/MAX, source-
+length independence, entry errors, captures and initial-low-pair handling.
+
+Ten handwritten finite snapshot rows specify complete JSON and original UTF-16
+input/result units: eight matches and two nulls. They cover distinct late-term
+and outside-gate overlaps, sticky failure/success, actual-i Kelvin/long-s Any
+endpoints, a vi Ll-complement/intersection empty set, seventeen alternating Any
+terms spanning 34 units after initial-pair rewind, lone high surrogates,
+original CRLF/LS multiline context and complemented K-fold membership. Pinned
+Unicode 17/18 facts support only these selected finite witnesses.
+
+The generated insta snapshot was inspected against all ten handwritten rows,
+and Node matched all ten complete results with no exclusions or discrepancies.
+All 709 preceding snapshots remain byte for byte unchanged; the new snapshot
+brings the total to 710. Two Core, two Runtime integration and one Runtime unit
+definition bring the Native inventory to 5,265 tests: 974 Core and 4,291 REST,
+including 3,554 Runtime integration tests and 283 Runtime units. Parser retains
+347 tests, and one documentation test is counted separately. The reviewed corpus
+remains 14,740 variants from 7,631 sources; its full conformance gate remains
+separate from the Native inventory and required in all four CI lanes.
+
+All 24 local gates passed: both Rust versions' new mixed and preceding checked/
+flat sequence Core tests, the new direct mixed-bound unit and all Runtime
+integration tests, plus formatting, denied-warning Clippy, policy/inventory
+checks and all seven generators. Full workspace, documentation, all 47 hosted
+framework probes and the four reviewed-corpus gates remain required in the
+retained fifteen-job matrix. The preceding flat feature passed its own fifteen
+hosted jobs. This mixed increment's own hosted results remain pending publication;
+complete hosted acceptance is required before the following feature is pushed.

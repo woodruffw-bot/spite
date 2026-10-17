@@ -8361,3 +8361,36 @@ variant retains its term-derived saturating sticky min(2 * count, remaining + 1)
 bound, nonsticky remaining + 1 and fallible entry charge. The separate flat-bound
 unit verifies counts 3/4/17 without changing the checked bound or older fixed
 width paths.
+
+A separate mixed constructor on the same finite class-sequence matcher admits
+at least three unquantified character-only v/vi classes with both a proved flat
+class and a proved checked nested/operator class (22.2.2.3, 22.2.2.4, 22.2.2.7.3).
+Canonical framing remains ^? word? CLASS...CLASS word? $?, with optional line
+assertions and at most one \b/\B at each endpoint. Complete whole-body captures
+remain a separate Runtime caller proof. Homogeneous sources remain outside this
+new entry; their earlier constructors retain their exact domains and callbacks.
+Mixed pairs, literals, repetition, alternatives, inner/reordered assertions,
+partial captures and string leaves retain their earlier separate treatment.
+
+Construction retains the borrowed 4N precharge and complete class-only shape/
+count pass before fallible exact storage reservation. The second boundary pass
+proves every component in source order. Each component tries the existing flat
+primitive first; only Ok(None) tries the checked primitive. Flat work errors and
+checked work/capacity errors propagate immediately, and failed-flat charges
+remain part of the callback transcript. If both proofs return None, the source
+is unsupported. A successful empty class still records its proved kind and
+never skips later validation or hidden-string rejection. After all components
+succeed, both kinds are required before the existing immutable shared program
+is published. No additional classifier walk, kind vector, source/input copy,
+count ceiling, representation or default resource limit is introduced.
+
+The existing sequence search, captures, GC ownership and Runtime dynamic work
+branch remain unchanged. Later terms match sticky at the preceding original
+character end; a late term or outside-gate failure retries the first class end
+in nonsticky mode. Sticky failure returns no match. Word gates retain actual i
+WordCharacters, and line gates retain original input and m context. Whole ranges
+and complete captures preserve original UTF-16, lone surrogates and the approved
+initial-low-pair leading boundary. Sticky work retains the saturating
+min(2 * count, remaining + 1) bound, and nonsticky work retains remaining + 1,
+independent of source length or capacity. A separate mixed-bound unit verifies
+counts 3/4/17 without changing any preceding bound unit or fixed-width path.
