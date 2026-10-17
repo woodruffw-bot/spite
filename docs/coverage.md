@@ -13245,3 +13245,17 @@ Formatting, denied-warning Clippy, policy/inventory checks, all 39 runner/invent
 probes and all seven generators pass. Full workspace, documentation and
 all reviewed corpus variants remain separately required in the unchanged
 thirteen-job CI matrix.
+
+## Assigned membership oracle representation
+
+The exhaustive Assigned Core test stores 735 coalesced ranges in place of
+41,319 UnicodeData-derived record intervals. Independent expansion of the pinned
+Unicode 18 data and comparison of every code point prove the same 312,389-member
+bitmap. Its 32 matcher plans and all 35,651,584 membership assertions are
+unchanged. Coalescing removes 1,542,625 bytes of test source; production tables,
+upstream fixtures and test inputs remain unchanged.
+
+Stable and Rust 1.85 each pass all 958 Core tests without filtering. Formatting,
+denied-warning Clippy and policy checks pass, and all 702 preceding snapshots
+are byte-identical. Full workspace, Runtime, documentation and reviewed-corpus
+coverage continue through the unchanged thirteen-job CI matrix.
