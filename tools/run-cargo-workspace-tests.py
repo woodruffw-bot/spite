@@ -2,6 +2,7 @@
 """Run Cargo's unchanged workspace invocations, optionally split by package."""
 
 import argparse
+from collections import Counter
 import concurrent.futures
 import hashlib
 import json
@@ -13,6 +14,200 @@ import sys
 import tempfile
 import time
 import uuid
+
+
+CORPUS_SKIP = ['--skip', 'pinned_corpus_runs_all_reviewed_variants']
+
+
+def guard_windows_command(command, windows=None):
+    """Check CreateProcessW's bound using the actual quoted command line."""
+    if windows is None:
+        windows = os.name == 'nt'
+    if windows:
+        units = len(subprocess.list2cmdline(command).encode('utf-16-le')) // 2 + 1
+        if units > 32767:
+            raise RuntimeError(f'Windows command line exceeds 32767 UTF-16 units: {units}')
+        return units
+    return None
+
+
+def run_command(command, **kwargs):
+    guard_windows_command(command)
+    return subprocess.run(command, shell=False, **kwargs)
+
+
+def names_hash(names):
+    encoded = json.dumps(sorted(names), ensure_ascii=True, separators=(',', ':'))
+    return hashlib.sha256(encoded.encode('utf-8')).hexdigest()
+
+
+def parse_test_listing(output):
+    """Accept only a complete ordinary libtest --list inventory."""
+    lines = output.splitlines()
+    while lines and not lines[-1]:
+        lines.pop()
+    if not lines:
+        raise RuntimeError('Runtime test listing is empty')
+    summary = re.fullmatch(r'(\d+) tests?, 0 benchmarks?', lines.pop())
+    if not summary:
+        raise RuntimeError('Runtime test listing has no complete test-only summary')
+    names = []
+    for line in lines:
+        if not line:
+            continue
+        match = re.fullmatch(r'(.+): test', line)
+        if not match:
+            raise RuntimeError('Unexpected Runtime test listing line: ' + repr(line))
+        names.append(match[1])
+    if len(names) != int(summary[1]) or len(names) != len(set(names)):
+        raise RuntimeError('Runtime test listing has duplicate names or a wrong count')
+    return sorted(names)
+
+
+def runtime_partition(names):
+    """Keep every substring-colliding module prefix in the same shard."""
+    names = sorted(names)
+    if not names or len(names) != len(set(names)):
+        raise RuntimeError('Runtime inventory must contain unique test names')
+    owners = {name: name.split('::', 1)[0] + '::' if '::' in name else name
+              for name in names}
+    prefixes = sorted(set(owners.values()))
+    parent = {prefix: prefix for prefix in prefixes}
+
+    def find(prefix):
+        while parent[prefix] != prefix:
+            parent[prefix] = parent[parent[prefix]]
+            prefix = parent[prefix]
+        return prefix
+
+    for name in names:
+        for prefix in prefixes:
+            if prefix in name:
+                left, right = find(owners[name]), find(prefix)
+                if left != right:
+                    parent[max(left, right)] = min(left, right)
+    groups = {}
+    for prefix in prefixes:
+        groups.setdefault(find(prefix), []).append(prefix)
+    components = []
+    for filters in groups.values():
+        members = [name for name in names if owners[name] in filters]
+        components.append((filters, members))
+    components.sort(key=lambda row: (-len(row[1]), row[0][0]))
+    shards, filters = [[], []], [[], []]
+    for component_filters, members in components:
+        index = min(range(2), key=lambda i: (len(shards[i]), i))
+        shards[index].extend(members)
+        filters[index].extend(component_filters)
+    shards = [sorted(shard) for shard in shards]
+    if not all(shards):
+        raise RuntimeError('Runtime partition requires two nonempty collision components')
+    skips = [sorted(filters[1]), sorted(filters[0])]
+    for index in range(2):
+        selected = [name for name in names
+                    if not any(prefix in name for prefix in skips[index])]
+        if selected != shards[index]:
+            raise RuntimeError('Runtime complement filters do not match the partition')
+    return {'names': names, 'prefixes': prefixes,
+            'components': [row[0] for row in components],
+            'shards': shards, 'skips': skips}
+
+
+def validate_runtime_invocation(invocations):
+    matches = [row for row in invocations if row['package'] == 'spite-runtime'
+               and re.fullmatch(r'integration-[0-9a-f]{16}(?:\.exe)?',
+                                Path(row['command'][0]).name)]
+    if len(matches) != 1:
+        raise RuntimeError('Expected exactly one hashed Runtime integration invocation')
+    if matches[0]['command'][1:] != CORPUS_SKIP:
+        raise RuntimeError('Unexpected Runtime integration arguments')
+    return matches[0]
+
+
+def invocation_environment(invocation, baseline):
+    environment = baseline.copy()
+    environment.update(invocation['changed_environment'])
+    for key in invocation['removed_environment']:
+        environment.pop(key, None)
+    return environment
+
+
+def prepare_runtime_shard(invocations, index, baseline):
+    invocation = validate_runtime_invocation(invocations)
+    environment = invocation_environment(invocation, baseline)
+    executable = invocation['command'][0]
+    listings = []
+
+    def listing(command):
+        result = run_command(command, cwd=invocation['cwd'], env=environment,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             text=True, encoding='utf-8', errors='replace')
+        listings.append((command, result.stdout))
+        try:
+            if result.returncode:
+                raise RuntimeError(f'Runtime listing exited with status {result.returncode}')
+            return parse_test_listing(result.stdout)
+        except RuntimeError:
+            print(result.stdout, flush=True)
+            raise
+
+    def reject(message):
+        for command, output in listings:
+            print('Runtime listing command: ' + json.dumps(command), flush=True)
+            print(output, flush=True)
+        raise RuntimeError(message)
+
+    names = listing([executable, '--list'])
+    if listing(invocation['command'] + ['--list']) != names:
+        reject('The original Runtime arguments filter the complete inventory')
+    try:
+        plan = runtime_partition(names)
+    except RuntimeError as error:
+        reject(str(error))
+    commands = [invocation['command'] +
+                [argument for prefix in skips for argument in ['--skip', prefix]]
+                for skips in plan['skips']]
+    observed = [listing(command + ['--list']) for command in commands]
+    if observed != plan['shards'] or set(observed[0]) & set(observed[1]) \
+            or sorted(observed[0] + observed[1]) != names:
+        reject('Actual Runtime shard listings are not a disjoint complete partition')
+    metadata = {'schema': 1, 'algorithm': 'substring-components-greedy-v1',
+                'index': index, 'count': 2, 'full_count': len(names),
+                'full_sha256': names_hash(names),
+                'partition_counts': [len(shard) for shard in observed],
+                'partition_sha256': [names_hash(shard) for shard in observed],
+                'prefix_count': len(plan['prefixes']),
+                'component_count': len(plan['components']),
+                'listing_counts': [len(names), len(names), *map(len, observed)],
+                'listing_output_sha256': [hashlib.sha256(output.encode('utf-8')).hexdigest()
+                                          for _, output in listings],
+                'listing_command_utf16_units': [guard_windows_command(command)
+                                                for command, _ in listings],
+                'native_command_utf16_units': [guard_windows_command(command)
+                                               for command in commands]}
+    print('Runtime shard plan: ' + json.dumps(metadata, sort_keys=True), flush=True)
+    selected = dict(invocation, command=commands[index])
+    return invocation, selected, metadata, plan
+
+
+def runtime_execution(output, expected_names, full_count):
+    rows = re.findall(r'^test (.+) \.\.\. ([^\r\n]+)$',
+                      output, re.MULTILINE)
+    summaries = re.findall(
+        r'^test result: (\w+)\. (\d+) passed; (\d+) failed; (\d+) ignored; '
+        r'(\d+) measured; (\d+) filtered out(?:; finished in [^\r\n]+)?$',
+        output, re.MULTILINE)
+    running = re.findall(r'^running (\d+) tests?$', output, re.MULTILINE)
+    names = [name for name, _ in rows]
+    expected = ['ok', str(len(expected_names)), '0', '0', '0',
+                str(full_count - len(expected_names))]
+    if Counter(names) != Counter(expected_names) or any(verdict != 'ok' for _, verdict in rows) \
+            or summaries != [tuple(expected)] or running != [str(len(expected_names))]:
+        raise RuntimeError('Runtime execution names or verdicts differ from the selected inventory')
+    return {'names': sorted(names), 'executed_name_count': len(names),
+            'executed_names_sha256': names_hash(names),
+            'passed': len(names), 'failed': 0, 'ignored': 0, 'measured': 0,
+            'filtered': full_count - len(names)}
 
 
 def fingerprint(value):
@@ -43,9 +238,15 @@ def main():
                         help='Select recorded packages after compiling the complete workspace')
     parser.add_argument('--optimize-runtime', action='store_true',
                         help='Compile spite-runtime at opt-level 1 for this run')
+    parser.add_argument('--runtime-shard', type=int, choices=[0, 1],
+                        help='Opt into one of two complete Runtime integration partitions')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
-    version = subprocess.check_output(['rustc', '+' + args.toolchain, '-vV'], text=True)
+    if args.runtime_shard is not None and args.suite != 'rest':
+        parser.error('--runtime-shard requires --suite rest')
+    version_command = ['rustc', '+' + args.toolchain, '-vV']
+    guard_windows_command(version_command)
+    version = subprocess.check_output(version_command, text=True, shell=False)
     host = re.search(r'^host: ([A-Za-z0-9_-]+)$', version, re.MULTILINE)
     if not host:
         raise RuntimeError('Rust did not report a host target')
@@ -68,7 +269,7 @@ def main():
             command.append('--offline')
         command += ['--', '--skip', 'pinned_corpus_runs_all_reviewed_variants']
         print('Collecting Cargo test invocations with their original arguments and environment', flush=True)
-        status = subprocess.run(command).returncode
+        status = run_command(command).returncode
         if status:
             return status
         invocations = [json.loads(path.read_text(encoding='utf-8')) for path in
@@ -76,7 +277,7 @@ def main():
         if not invocations:
             raise RuntimeError('Cargo recorded no test invocations; check the host runner configuration')
         # Every suite compiles the same workspace, preserving Cargo's feature
-        # unification. Partition only the recorded invocations, never test names.
+        # unification. Package suites filter only the recorded invocations.
         if args.suite != 'all':
             if not any(row['package'] == 'spite-core' for row in invocations):
                 raise RuntimeError('The split workspace suites require a spite-core package')
@@ -86,18 +287,25 @@ def main():
             selected = invocations
         if not selected:
             raise RuntimeError('The selected workspace suite recorded no test invocations')
+        runtime = shard_metadata = shard_plan = None
+        batches = [selected]
+        if args.runtime_shard is not None:
+            original, runtime, shard_metadata, shard_plan = prepare_runtime_shard(
+                invocations, args.runtime_shard, baseline)
+            if args.runtime_shard == 0:
+                others = [row for row in selected if row is not original]
+                batches = [others, [runtime]]
+            else:
+                batches = [[runtime]]
         collected = time.monotonic()
 
         def run(invocation):
-            environment = baseline.copy()
-            environment.update(invocation['changed_environment'])
-            for key in invocation['removed_environment']:
-                environment.pop(key, None)
+            environment = invocation_environment(invocation, baseline)
             beginning = time.monotonic()
-            result = subprocess.run(invocation['command'], cwd=invocation['cwd'],
-                                    env=environment, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT, text=True,
-                                    encoding='utf-8', errors='replace')
+            result = run_command(invocation['command'], cwd=invocation['cwd'],
+                                 env=environment, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, text=True,
+                                 encoding='utf-8', errors='replace')
             # Exit status is authoritative, including for custom test harnesses.
             summaries = re.findall(
                 r'test result: (\w+)\. (\d+) passed; (\d+) failed; (\d+) ignored; '
@@ -106,23 +314,44 @@ def main():
                    'package': invocation['package'],
                    'status': result.returncode, 'seconds': time.monotonic() - beginning,
                    'summaries': summaries}
+            if invocation is runtime:
+                row['child_status'] = result.returncode
+                try:
+                    row['runtime_shard_execution'] = runtime_execution(
+                        result.stdout, shard_plan['shards'][args.runtime_shard],
+                        len(shard_plan['names']))
+                except RuntimeError as error:
+                    row['shard_validation_error'] = str(error)
+                    row['status'] = result.returncode or 1
             return row, result.stdout
 
         results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(run, invocation) for invocation in selected]
-            for future in concurrent.futures.as_completed(futures):
-                row, output = future.result()
-                results.append(row)
-                print('::group::' + Path(row['command'][0]).name, flush=True)
-                print(output, end='' if output.endswith('\n') else '\n', flush=True)
-                print('::endgroup::', flush=True)
-                print(f'Cargo invocation elapsed: {Path(row["command"][0]).name} {row["seconds"]:.3f}s', flush=True)
+            for batch in batches:
+                futures = [executor.submit(run, invocation) for invocation in batch]
+                for future in concurrent.futures.as_completed(futures):
+                    row, output = future.result()
+                    results.append(row)
+                    print('::group::' + Path(row['command'][0]).name, flush=True)
+                    print(output, end='' if output.endswith('\n') else '\n', flush=True)
+                    print('::endgroup::', flush=True)
+                    print(f'Cargo invocation elapsed: {Path(row["command"][0]).name} {row["seconds"]:.3f}s', flush=True)
+                    if 'child_status' in row:
+                        execution = row.get('runtime_shard_execution', {})
+                        public = {key: value for key, value in execution.items() if key != 'names'}
+                        public.update(shard_metadata, child_status=row['child_status'],
+                                      status=row['status'])
+                        if 'shard_validation_error' in row:
+                            public['validation_error'] = row['shard_validation_error']
+                        print('Runtime shard result: ' + json.dumps(public, sort_keys=True), flush=True)
         finished = time.monotonic()
         report = {'collection_seconds': collected - started,
                   'test_seconds': finished - collected, 'total_seconds': finished - started,
                   'suite': args.suite, 'recorded_invocations': len(invocations),
                   'invocations': sorted(results, key=lambda row: (row['command'], row['cwd']))}
+        if shard_metadata is not None:
+            report['runtime_shard'] = dict(shard_metadata, full_names=shard_plan['names'],
+                                           planned_shards=shard_plan['shards'])
         if args.report:
             args.report.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
         failures = sum(row['status'] != 0 for row in results)

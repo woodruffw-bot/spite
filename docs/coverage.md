@@ -13303,3 +13303,31 @@ Formatting, denied-warning Clippy, policy/inventory checks, all 39 runner/invent
 probes and all seven generators pass. Full workspace, documentation and all
 reviewed corpus variants remain separately required in the unchanged
 thirteen-job CI matrix.
+
+## Windows Runtime integration shard trial
+
+Windows runs the Runtime integration target in two explicit partitions on each
+Rust version. The existing REST job runs its other 25 targets, the first Runtime
+partition and documentation tests. One additional job runs the second Runtime
+partition. Each job still collects the complete 27-target Cargo workspace graph
+with its original feature unification. Linux retains its complete target runs;
+the Core, documentation and four reviewed-corpus gates retain their coverage.
+The trial has fifteen jobs in total.
+
+Each shard discovers the complete Runtime inventory from its actual compiled
+target. Module prefixes that overlap anywhere in a test name stay together;
+deterministic complementary skip lists divide the discovered tests into two
+nonempty partitions. Fresh full, original-argument and both filtered listings
+must prove an exact disjoint union before execution. Every selected case must
+then report a passing verdict, with no ignored, failed or measured cases. The
+logs record canonical inventory, partition and actual execution hashes so the
+completed-run audit can independently reconstruct the full test-name union.
+
+The current inventory remains 5,234 workspace tests, including all 3,540 Runtime
+integration tests. Windows executes 28 Native invocations across Core, REST and
+the additional Runtime job; Linux retains 27. Documentation runs once per
+platform/toolchain, and all four full corpus gates retain 14,740 variants from
+7,631 sources. This trial changes no test profiles, executor or libtest workers,
+stacks, JavaScript resource defaults, fixtures or snapshot bodies. Its complete
+hosted timings, queue cost and additional runner use will determine whether the
+trial improves CI completion time.
